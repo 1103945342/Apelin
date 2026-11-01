@@ -195,7 +195,11 @@ jobs:
         run: |
           set -euo pipefail
           cd build/Packages
-          sha256sum --check SHA256SUMS
+          if ! out="$(sha256sum --check SHA256SUMS 2>&1)"; then
+            echo "::error::checksum check: $(printf '%s' "$out" | tr '\n' '|' | head -c 900)"
+            exit 1
+          fi
+          echo "$out"
           notes="$RUNNER_TEMP/apelin-release.md"
           if [ -f "../../Documents/Releases/$VERSION.md" ]; then
             cp "../../Documents/Releases/$VERSION.md" "$notes"
@@ -211,9 +215,18 @@ jobs:
           # The tag names the commit this run built. One already there is kept:
           # a tag pushed by hand owns its release, through release.yml.
           if ! gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" > /dev/null 2>&1; then
-            gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" \
-              -f ref="refs/tags/$TAG" -f sha="$GITHUB_SHA" > /dev/null
+            if ! out="$(gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" \
+                  -f ref="refs/tags/$TAG" -f sha="$GITHUB_SHA" 2>&1)"; then
+              echo "::error::tag creation: $(printf '%s' "$out" | tr '\n' '|' | head -c 900)"
+              exit 1
+            fi
           fi
-          gh release create "$TAG" --verify-tag --title "Apelin $VERSION" \
-            --notes-file "$notes" \
-            ./*.deb ./*_source.tar.xz ./*_dSYMs.zip ./*_Templates.tar.zst ./SHA256SUMS
+          # Each failure says why in an annotation: the run's log is not the
+          # only place a maintainer reads.
+          if ! out="$(gh release create "$TAG" --verify-tag --title "Apelin $VERSION" \
+                --notes-file "$notes" \
+                ./*.deb ./*_source.tar.xz ./*_dSYMs.zip ./*_Templates.tar.zst ./SHA256SUMS 2>&1)"; then
+            echo "::error::gh release create: $(printf '%s' "$out" | tr '\n' '|' | head -c 900)"
+            exit 1
+          fi
+          echo "$out"
