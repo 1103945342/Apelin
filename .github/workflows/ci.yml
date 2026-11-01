@@ -1,9 +1,7 @@
-# Pushes and pull requests: test on the host, and in parallel
-# build and package the IDE and every extension (the four development
-# extensions, the agent tool extensions and the GPL assembler's
-# corresponding-source archive), keeping them for thirty days. Nothing is
-# published from here: a tag publishes, through `release.yml`, the
-# packages of its commit's run, once that run has passed.
+# Pushes and pull requests test on the host and build both package layouts
+# in parallel. After both pass, a main-branch push publishes an unpublished
+# version from that run's artifact, never from a second build. release.yml
+# remains the publisher for tags pushed by hand.
 name: CI
 
 on:
@@ -33,10 +31,56 @@ env:
 # iPhone Duo runs edge to edge, with vertical bars). Its default Xcode may be
 # newer than 27.1, so 27.1 is named rather than the newest found.
 jobs:
+  # Preserve ordinary pushes for tagged releases. Only an explicitly marked
+  # restart cancels older CI runs; it finishes cancelling before compiling.
+  prepare:
+    name: Prepare requested CI restart
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Cancel previous CI runs when a restart was requested
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[restart-ci]')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_RUN_ID" =~ ^[0-9]+$ ]]
+          runs="$(gh api --paginate \
+            "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?branch=main&per_page=100" \
+            --jq ".workflow_runs[] | select(.id < $GITHUB_RUN_ID and .status != \"completed\") | .id")"
+          if [ -z "$runs" ]; then
+            echo "::notice::No previous CI runs remain active"
+            exit 0
+          fi
+          while IFS= read -r run; do
+            if ! output="$(gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$run/cancel" 2>&1)"; then
+              status="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run" --jq .status)"
+              if [ "$status" != completed ]; then
+                echo "::error::Cannot cancel CI $run: $output"
+                exit 1
+              fi
+            fi
+            status=""
+            for attempt in $(seq 30); do
+              status="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run" --jq .status)"
+              [ "$status" = completed ] && break
+              sleep 2
+            done
+            if [ "$status" != completed ]; then
+              echo "::error::CI $run has not stopped; refusing to start another build"
+              exit 1
+            fi
+            echo "::notice::Previous CI $run stopped"
+          done <<< "$runs"
+
   # Seconds, where the build takes minutes, so a broken host test says so
   # long before the packages would.
   test:
     name: Host tests
+    needs: prepare
     runs-on: xcode-27
     timeout-minutes: 60
 
@@ -57,6 +101,7 @@ jobs:
 
   build:
     name: Build and verify Debian packages
+    needs: prepare
     runs-on: xcode-27
     timeout-minutes: 90
 
@@ -212,18 +257,12 @@ jobs:
           SHA-256 sums are in \`SHA256SUMS\`.
           NOTES
           fi
-          # The tag names the commit this run built. One already there is kept:
-          # a tag pushed by hand owns its release, through release.yml.
-          if ! gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" > /dev/null 2>&1; then
-            if ! out="$(gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" \
-                  -f ref="refs/tags/$TAG" -f sha="$GITHUB_SHA" 2>&1)"; then
-              echo "::error::tag creation: $(printf '%s' "$out" | tr '\n' '|' | head -c 900)"
-              exit 1
-            fi
-          fi
+          # The release API creates the tag at this exact commit. A separate
+          # git/refs call is forbidden for this fork's GITHUB_TOKEN.
           # Each failure says why in an annotation: the run's log is not the
           # only place a maintainer reads.
-          if ! out="$(gh release create "$TAG" --verify-tag --title "Apelin $VERSION" \
+          if ! out="$(gh release create "$TAG" --target "$GITHUB_SHA" \
+                --title "Apelin $VERSION" \
                 --notes-file "$notes" \
                 ./*.deb ./*_source.tar.xz ./*_dSYMs.zip ./*_Templates.tar.zst ./SHA256SUMS 2>&1)"; then
             echo "::error::gh release create: $(printf '%s' "$out" | tr '\n' '|' | head -c 900)"
