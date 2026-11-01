@@ -99,11 +99,20 @@ jobs:
           # and the source is the address of this folder.
           apt-ftparchive release . > Release
           ls -l Packages Packages.gz Release debs
+      # A Pages site is made once, by hand: Settings ▸ Pages ▸ Source "GitHub
+      # Actions". The workflow cannot make one — the API answers "Resource not
+      # accessible by integration" for GITHUB_TOKEN, whatever this asks — so it
+      # says what is missing instead of failing inside configure-pages.
+      - name: Check the repository has a Pages site
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if ! gh api "repos/$GH_REPO/pages" > /dev/null 2>&1; then
+            echo "::error::No Pages site yet. In Settings ▸ Pages set Source to \"GitHub Actions\", then re-run this workflow."
+            exit 1
+          fi
       - uses: actions/configure-pages@v5
-        with:
-          # A fork has no Pages site until one is asked for; this makes one, so
-          # a fresh fork serves its packages without a visit to Settings.
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: Documents/Site
