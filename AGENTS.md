@@ -4129,3 +4129,17 @@ fragment. The chat's ListViewKit keeps its own update mechanism.
   signs it with `Packaging/ApelinWidgets.entitlements` and reads them back;
   `install-device.sh --app` signs it too, and the rpath check takes an
   `.appex` as its own `@executable_path`.
+
+## Building without a Mac
+
+The app cannot be built on the device. `make build` needs `xcodebuild`, the
+iPhoneOS SDK in `IOS_SDK_TIER` and SwiftPM 6.1, and a jailbroken iPhone has
+none of them: its own toolchain reads an older SDK, and `sdk-tier` stops the
+build before anything is compiled. CI is the build. `.github/workflows/ci.yml`
+runs on every push to `main` — `make harness` in one job, and in the other
+`make deb-all CONFIGURATION=Release SKIP_HARNESS=1`, which compiles the app,
+packages both flavours and every extension, reads each package back, and keeps
+`build/Packages/` as the artifact `apelin-<sha>` for thirty days. Take the
+`.deb` from that run and install it with the device's package manager; `make
+install`, `make vphone` and `make device-*` need a host reaching the device
+over ssh.
