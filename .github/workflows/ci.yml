@@ -127,3 +127,93 @@ jobs:
             build/Packages/SHA256SUMS
           if-no-files-found: error
           retention-days: 30
+
+  # A push is a release. This runs only once both jobs above have passed, and
+  # publishes what they built: the artifact, never a second build. The version
+  # in Configuration/Version.xcconfig names it, so a push that carries an
+  # already published version publishes nothing, and `make set-version
+  # VERSION=x.y.z` followed by a push publishes a new one. The tag it creates
+  # names the commit the run built; release.yml still publishes a tag pushed by
+  # hand, and its own verification covers the archive that pushes.
+  release:
+    name: Publish the release
+    needs: [test, build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      actions: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Read the version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(sed -n 's/^[[:space:]]*MARKETING_VERSION[[:space:]]*=[[:space:]]*//p' Configuration/Version.xcconfig | tr -d '[:space:]')"
+          if [ -z "$version" ]; then
+            echo "::error::Configuration/Version.xcconfig names no MARKETING_VERSION"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+      - name: Is the version published already?
+        id: lookup
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if gh release view "${{ steps.version.outputs.tag }}" > /dev/null 2>&1; then
+            echo "${{ steps.version.outputs.tag }} is published already; nothing to publish"
+            echo "published=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=0" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Take the packages this run built
+        if: steps.lookup.outputs.published == '0'
+        uses: actions/download-artifact@v4
+        with:
+          name: apelin-${{ github.sha }}
+          path: build/Packages/
+
+      - name: Publish
+        if: steps.lookup.outputs.published == '0'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          cd build/Packages
+          sha256sum --check SHA256SUMS
+          notes="$RUNNER_TEMP/apelin-release.md"
+          if [ -f "../../Documents/Releases/$VERSION.md" ]; then
+            cp "../../Documents/Releases/$VERSION.md" "$notes"
+          else
+            echo "::warning::Documents/Releases/$VERSION.md is missing; the generic notes go out instead"
+            cat > "$notes" <<NOTES
+          Apelin $VERSION, for roothide and for rootless (/var/jb) bootstraps,
+          with its development and agent tool extensions.
+
+          SHA-256 sums are in \`SHA256SUMS\`.
+          NOTES
+          fi
+          # The tag names the commit this run built. One already there is kept:
+          # a tag pushed by hand owns its release, through release.yml.
+          if ! gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" > /dev/null 2>&1; then
+            gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" \
+              -f ref="refs/tags/$TAG" -f sha="$GITHUB_SHA" > /dev/null
+          fi
+          gh release create "$TAG" --verify-tag --title "Apelin $VERSION" \
+            --notes-file "$notes" \
+            ./*.deb ./*_source.tar.xz ./*_dSYMs.zip ./*_Templates.tar.zst ./SHA256SUMS

@@ -13,7 +13,9 @@ on:
   release:
     types: [published, edited]
   workflow_run:
-    workflows: [Release]
+    # CI publishes a version, Release publishes a tag pushed by hand: either
+    # carries packages the site serves.
+    workflows: [CI, Release]
     types: [completed]
   workflow_dispatch:
 
@@ -64,6 +66,39 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_REPOSITORY: ${{ github.repository }}
         run: python3 .depiction-tools/scripts/update-depiction-changelogs.py --repository "$RELEASE_REPOSITORY" --depiction Documents/Site/depiction.json
+      # A package source the device's package manager can add once and update
+      # from: the newest release's packages, and the index that names them, at
+      # <site>/repo/. It is built here rather than committed, so the site
+      # carries what the release carries and nothing older.
+      - name: Assemble the package source
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          repo=Documents/Site/repo
+          tag="$(gh release view --json tagName --jq .tagName 2>/dev/null || true)"
+          if [ -z "$tag" ]; then
+            echo "no release is published yet: the site carries no package source"
+            exit 0
+          fi
+          echo "packages of $tag"
+          rm -rf "${repo:?}"
+          mkdir -p "$repo/debs"
+          gh release download "$tag" --pattern '*.deb' --dir "$repo/debs"
+          cp Documents/Site/icon.png "$repo/CydiaIcon.png"
+          if ! command -v dpkg-scanpackages > /dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq dpkg-dev apt-utils > /dev/null
+          fi
+          cd "$repo"
+          dpkg-scanpackages -m debs /dev/null > Packages
+          gzip -9c Packages > Packages.gz
+          # A flat repository: the Release file sits beside the index it sums,
+          # and the source is the address of this folder.
+          apt-ftparchive release . > Release
+          ls -l Packages Packages.gz Release debs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
