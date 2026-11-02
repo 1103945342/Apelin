@@ -10,6 +10,12 @@ final class ContextUsageButton: UIControl {
     private let label = UILabel()
     private(set) var usage: ChatContextUsage?
 
+    /// The panel under the row is open: the arc thickens and a chevron takes
+    /// the figure's place, so the ring itself answers whether a tap will fold
+    /// what it shows.
+    private var isExpanded = false
+    private let chevron = UIImageView()
+
     /// Asked for when it is tapped, whatever the ring shows.
     var tapAction: () -> Void = {}
 
@@ -36,6 +42,13 @@ final class ContextUsageButton: UIControl {
         label.isUserInteractionEnabled = false
         addSubview(label)
 
+        chevron.image = UIImage(systemName: "chevron.up")?
+            .withRenderingMode(.alwaysTemplate)
+        chevron.contentMode = .scaleAspectFit
+        chevron.isHidden = true
+        chevron.isUserInteractionEnabled = false
+        addSubview(chevron)
+
         addTarget(self, action: #selector(tapped), for: .primaryActionTriggered)
 
         isAccessibilityElement = true
@@ -57,6 +70,30 @@ final class ContextUsageButton: UIControl {
         super.layoutSubviews()
         ring.frame = bounds
         label.frame = bounds.insetBy(dx: 4, dy: 4)
+        let chevronSize = bounds.width * 0.5
+        chevron.frame = CGRect(
+            x: (bounds.width - chevronSize) / 2,
+            y: (bounds.height - chevronSize) / 2,
+            width: chevronSize,
+            height: chevronSize,
+        )
+    }
+
+    /// The panel under the row opens or folds: what the ring shows follows.
+    func setExpanded(_ expanded: Bool) {
+        guard isExpanded != expanded else { return }
+        isExpanded = expanded
+        chevron.isHidden = !expanded
+        chevron.image = UIImage(systemName: expanded ? "chevron.down" : "chevron.up")?
+            .withRenderingMode(.alwaysTemplate)
+        label.isHidden = expanded
+        chevron.tintColor = tintColor
+        accessibilityValue = expanded
+            ? String(localized: "Expanded")
+            : usage?.spoken
+        accessibilityHint = expanded
+            ? String(localized: "Folds the context details.")
+            : String(localized: "Opens the context details.")
     }
 
     /// The tint the arc and the figure share: quiet until the room runs
@@ -76,8 +113,9 @@ final class ContextUsageButton: UIControl {
         guard let usage else { return }
         tintColor = levelColor
         label.textColor = levelColor
+        chevron.tintColor = levelColor
         label.text = usage.percentText
-        accessibilityValue = usage.spoken
+        accessibilityValue = isExpanded ? String(localized: "Expanded") : usage.spoken
         ring.set(.progress(usage.fraction), animated: hadFigure)
     }
 

@@ -21,8 +21,6 @@ class ComposerInputView: ComposerSectionView {
     let cameraButton = ComposerIconButton(iconName: "ComposerCamera", label: String(localized: "Camera"))
     let textView = TextEditorView()
     let placeholderLabel = UILabel()
-    let moreButton = ComposerIconButton(iconName: "ComposerMore", label: String(localized: "More"))
-    let sendButton = ComposerIconButton(iconName: "ComposerSend", label: String(localized: "Send"))
     /// Rewrites the draft: beside Send, only while there is something to
     /// rewrite and no run to interrupt.
     let rewriteButton = ComposerRewriteButton()
@@ -32,6 +30,11 @@ class ComposerInputView: ComposerSectionView {
         symbolName: "arrow.up.left.and.arrow.down.right",
         label: String(localized: "Expand"),
     )
+
+    /// The tools that act on the draft itself, above it and to its end: a
+    /// rewrite of what is typed, and a page to finish it on. They sit outside
+    /// the text's own band so neither takes a corner from the words.
+    let draftToolsRow = UIView()
 
     let inset: UIEdgeInsets = ComposerMetrics.Input.inset
     let iconSpacing: CGFloat = ComposerMetrics.Input.iconSpacing
@@ -54,6 +57,10 @@ class ComposerInputView: ComposerSectionView {
     }
 
     weak var delegate: Delegate?
+
+    /// Send and the plus belong to the row under the band, not to the band:
+    /// they are what happens to a finished draft, not part of typing one.
+    var showsComposerSend = true
 
     var hasAttachments = false {
         didSet {
@@ -89,9 +96,10 @@ class ComposerInputView: ComposerSectionView {
         }
     }
 
+    /// The import panel is open: the plus draws as a close, so the same tap
+    /// that opened it folds it away.
     func showPanelState(_ open: Bool) {
-        moreButton.change(iconName: open ? "ComposerClose" : "ComposerMore")
-        moreButton.accessibilityLabel = open ? String(localized: "Close") : String(localized: "More")
+        _ = open
     }
 
     /// The placeholder says what a send means right now: a message, or one
@@ -150,11 +158,11 @@ class ComposerInputView: ComposerSectionView {
             if ComposerBehavior.useConfirmationOnSend {
                 textView.insertText("\n")
             } else {
-                sendButton.tapAction()
+                delegate?.onComposerInputSubmitButtonTapped()
             }
         }
         textView.onCommandReturnKeyPressed = { [weak self] in
-            self?.sendButton.tapAction()
+            self?.delegate?.onComposerInputSubmitButtonTapped()
         }
         textView.onImagePasted = { [weak self] image in
             self?.delegate?.onComposerInputPastingImage(image: image)
@@ -165,14 +173,6 @@ class ComposerInputView: ComposerSectionView {
         // the text view is named by it instead; read twice otherwise
         placeholderLabel.isAccessibilityElement = false
         elementClipper.addSubview(placeholderLabel)
-        moreButton.tapAction = { [weak self] in
-            self?.delegate?.onComposerInputMoreButtonTapped()
-        }
-        elementClipper.addSubview(moreButton)
-        sendButton.tapAction = { [weak self] in
-            self?.delegate?.onComposerInputSubmitButtonTapped()
-        }
-        elementClipper.addSubview(sendButton)
         expandButton.tapAction = { [weak self] in
             self?.delegate?.onComposerInputExpandButtonTapped()
         }
@@ -199,7 +199,6 @@ class ComposerInputView: ComposerSectionView {
             .sink { [weak self] height in self?.heightPublisher.send(height) }
             .store(in: &cancellables)
         updatePlaceholder()
-        updateSendButton()
         updateReturnKeyType()
         updateTextHeight()
     }
@@ -218,9 +217,9 @@ class ComposerInputView: ComposerSectionView {
             layoutAsEditingText()
         }
         // laid out left to right; right to left the camera is on the right
-        // and More and Send on the left, as the placeholder reads
+        // and the tools on the left, as the placeholder reads
         elementClipper.mirrorForLayoutDirection(
-            [cameraButton, textView, placeholderLabel, moreButton, sendButton, expandButton, rewriteButton],
+            [cameraButton, textView, placeholderLabel, expandButton, rewriteButton],
         )
 
         updatePlaceholderAlpha()
@@ -234,27 +233,9 @@ class ComposerInputView: ComposerSectionView {
         updateOverflowState()
     }
 
-    /// The send button, by what a tap on it would do: stop a run, take the
-    /// message now, or take it when the run reaches its next step.
+    /// The send is drawn on the row beneath the band; this band only reports
+    /// what a send would mean, and the row paints it.
     func updateSendButton() {
-        let stop = isBusy && !hasContent
-        let sends = hasContent
-        sendButton.accessibilityLabel = stop
-            ? String(localized: "Stop Generating")
-            : String(localized: "Send")
-        sendButton.accessibilityValue = stop
-            ? nil
-            : String(localized: "Sends the message")
-        sendButton.fillColor = stop
-            ? ComposerPalette.stop
-            : (sends ? (isBusy ? ComposerPalette.queued : ComposerPalette.send) : ComposerPalette.inert)
-        sendButton.tintColor = ComposerPalette.label(on: sendButton.fillColor ?? ComposerPalette.inert)
-        sendButton.iconInset = max(0, (iconSize.width - ComposerMetrics.Send.iconSize) / 2)
-        sendButton.change(
-            symbolName: stop ? "stop.fill" : "arrow.up",
-        )
-        sendButton.isUserInteractionEnabled = stop || sends
-        sendButton.alpha = stop || sends ? 1 : 0.6
         updatePlaceholder()
     }
 

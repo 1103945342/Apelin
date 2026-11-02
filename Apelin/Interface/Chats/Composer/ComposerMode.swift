@@ -39,6 +39,16 @@ enum ComposerMode: String, CaseIterable, Codable, Sendable {
         }
     }
 
+    /// The same three, as the wire names them: what a prompt carries so the
+    /// agent reads this run's mode in its `<system-state>`.
+    var runMode: AgentRunMode {
+        switch self {
+        case .plan: .plan
+        case .build: .build
+        case .auto: .auto
+        }
+    }
+
     /// The approval mode a run starts in, for a mode that sets one. Automatic
     /// runs ask nothing; the other two keep whatever the reader chose.
     var impliedApprovalMode: ApelinProtocol.ApprovalMode? {

@@ -86,7 +86,7 @@ final class ChatController: UIViewController {
     /// The rewrite in flight, so a second tap stops it rather than racing it.
     private var rewriteTask: Task<Void, Never>?
     private var modelButton: UIButton {
-        composer.modelBar.button
+        composer.modelBar.modelButton
     }
 
     private var attachmentHeightLimit: CGFloat {
@@ -536,13 +536,10 @@ final class ChatController: UIViewController {
             let stoppable = summary.isWorking ? chat.id : nil
             if stoppable != stoppableChat {
                 stoppableChat = stoppable
-                composer.modelBar.setOutputCancellation(summary.isWorking ? { [weak self] in
-                    guard let self else { return }
-                    Task {
-                        do { try await self.runtime.stop(chat.id) }
-                        catch { self.presentNotice(title: "Unable to Stop", message: error.readableMessage) }
-                    }
-                } : nil)
+                composer.modelBar.setSendState(
+                    isBusy: summary.isWorking,
+                    hasContent: !composer.draft.text.isEmpty || !composer.draft.attachments.isEmpty,
+                )
             }
         }
     }
@@ -651,9 +648,8 @@ final class ChatController: UIViewController {
 
     @objc private func updateModelSelection() {
         let selection = ComposerModelSelection.current
-        composer.modelBar.setModelName(selection?.model)
+        composer.modelBar.setProvider(selection?.provider)
         composer.modelBar.setEfforts(selection?.supportedEfforts ?? [], selected: selection?.effort)
-        composer.modelBar.setTiers(selection?.supportedTiers ?? [], selected: selection?.tier)
     }
 
     /// A model disabled in Settings stops being the one the next message uses.
@@ -876,22 +872,52 @@ extension ChatController: ComposerView.Delegate {
         }
     }
 
+    func onComposerSendTapped() {
+        // The row under the draft has no draft of its own: it asks the
+        // composer to send what is there, which is the one path a keyboard's
+        // Send takes too.
+        composer.submitValues()
+    }
+
+    func onComposerStopTapped() {
+        guard let chat else { return }
+        Task { [weak self] in
+            guard let self else { return }
+            do { try await runtime.stop(chat.id) }
+            catch { presentNotice(title: "Unable to Stop", message: error.readableMessage) }
+        }
+    }
+
+    func onComposerModelPickerTapped() {
+        // The mark carries the picker already: a menu that reads the accounts
+        // live. Asking it to open is the one way in.
+        modelButton.performPrimaryAction()
+    }
+
     func onComposerBeginEditing() {
         ensureModelSelection()
         loadSkillsIfNeeded()
     }
 
     func onComposerRewriteRequested(draft: String) {
-        composer.setRewriting(true)
         rewriteTask?.cancel()
-        let selection = ComposerModelSelection.current
+        // Nothing chosen is nothing to rewrite with: said here rather than
+        // after a request the worker would refuse.
+        guard let selection = ComposerModelSelection.current else {
+            presentNotice(
+                title: "Unable to Rewrite",
+                message: String(localized: "Choose a model before rewriting."),
+            )
+            return
+        }
+        composer.setRewriting(true)
         rewriteTask = Task { [weak self] in
             guard let self else { return }
             do {
                 let answer = try await ApelinService.app.agentRewritePrompt(
                     text: draft,
-                    provider: selection?.provider,
-                    model: selection?.model,
+                    provider: selection.provider,
+                    model: selection.model,
                 )
                 try Task.checkCancellation()
                 composer.applyRewrite(original: draft, rewritten: answer.text)

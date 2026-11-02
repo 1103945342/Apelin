@@ -100,6 +100,9 @@ enum SystemState {
         var date: Date
         var timeZone: TimeZone
         var mode: ApprovalMode
+        /// What this run may do, from the composer's pill; nil leaves the line
+        /// out, as a session opened before the app sent one would.
+        var runMode: AgentRunMode?
         /// Ask Before Using the Screen, the app's setting beside the mode.
         var asksBeforeScreen = true
         /// What changed since the model was last told (`PromptState`).
@@ -113,6 +116,7 @@ enum SystemState {
     static func facts(
         _ source: SystemStateSource,
         mode: ApprovalMode,
+        runMode: AgentRunMode? = nil,
         asksBeforeScreen: Bool = true,
         changes: [String] = [],
         hostRestarted: Bool = false,
@@ -124,6 +128,7 @@ enum SystemState {
             date: source.now(),
             timeZone: source.timeZone(),
             mode: mode,
+            runMode: runMode,
             asksBeforeScreen: asksBeforeScreen,
             changes: changes,
             hostRestarted: hostRestarted,
@@ -154,6 +159,12 @@ enum SystemState {
             "- Approval mode: \(modeName(facts.mode)).",
             "- Ask Before Using the Screen: \(facts.asksBeforeScreen ? "on" : "off").",
         ]
+        if let runMode = facts.runMode {
+            // Beside the approval mode rather than in the system prompt: the
+            // pill can change between messages, and the prompt is the
+            // session's snapshot.
+            lines.append("- This run: \(runMode.instruction)")
+        }
         if facts.hostRestarted {
             lines.append(restartNote(installRoot: facts.installRoot, changesBelow: !facts.changes.isEmpty))
         }

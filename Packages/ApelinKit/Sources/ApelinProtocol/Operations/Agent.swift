@@ -7,6 +7,31 @@ import Foundation
 // is in AGENTS.md ▸ Decisions ▸ Agent sessions.
 // Served by apelin-agent (Workers/Agent; Packages/ApelinAgent) through the host.
 
+/// What a run is allowed to do, as the composer's pill sets it. Sent with
+/// every prompt, because it can change between messages; the approval mode
+/// answers when the user is asked, this one answers whether the work happens.
+public enum AgentRunMode: String, Codable, Sendable, CaseIterable {
+    /// Read and answer: no edit, no build, no install.
+    case plan
+    /// Work as the approval mode allows.
+    case build
+    /// A build run that stops asking.
+    case auto
+
+    /// What the agent is told this run may do, written into the message's
+    /// `<system-state>`.
+    public var instruction: String {
+        switch self {
+        case .plan:
+            "This run is a plan: read what you need, and answer with what you would change and why. Do not edit, create or delete a file, and do not build, install or run anything that changes the device."
+        case .build:
+            "This run is a build: make the change the user asked for, as the approval mode allows."
+        case .auto:
+            "This run is automatic: make the change the user asked for without stopping to ask, except where a rule below still asks."
+        }
+    }
+}
+
 public enum ApprovalMode: String, Codable, Sendable {
     /// Everything runs, except a shell_run as root, which asks every time.
     case relaxed
@@ -338,6 +363,14 @@ public struct AgentPromptRequest: OperationRequest {
     /// nil leaves the session's as it is, as a nil `approvalMode` does. The
     /// host drops it from an agent's prompt.
     public var asksBeforeScreen: Bool?
+    /// What this run is allowed to do, from the composer's pill: `plan` reads
+    /// and answers without changing anything, `build` works as the approval
+    /// mode allows, `auto` is a build run that stops asking. Not the approval
+    /// mode under another name: that one says when the user is asked, this one
+    /// says whether the work happens at all. The worker writes it into the
+    /// message's `<system-state>`, which is where a setting that can change
+    /// between messages belongs (the system prompt is the session's snapshot).
+    public var runMode: AgentRunMode?
     /// The session whose agent sent this, written by the host for an
     /// agent's prompt and cleared for the app's; the worker records it on
     /// the `prompt` event as `from`.
@@ -354,6 +387,7 @@ public struct AgentPromptRequest: OperationRequest {
         serviceTier: AgentServiceTier? = nil,
         approvalMode: ApprovalMode? = nil,
         asksBeforeScreen: Bool? = nil,
+        runMode: AgentRunMode? = nil,
         fromSessionID: String? = nil,
         modelParameters: AgentModelParameters? = nil,
     ) {
@@ -368,6 +402,7 @@ public struct AgentPromptRequest: OperationRequest {
         self.attachments = attachments
         self.approvalMode = approvalMode
         self.asksBeforeScreen = asksBeforeScreen
+        self.runMode = runMode
         self.fromSessionID = fromSessionID
     }
 }

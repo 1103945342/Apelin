@@ -157,6 +157,13 @@ class ComposerView: ComposerSectionView {
         contextPanel.onCompact = { [weak self] in self?.onCompactContext?() }
         modelBar.onContextTapped = { [weak self] in self?.toggleContextPanel() }
         modelBar.onModeChanged = { [weak self] mode in self?.onModeChanged?(mode) }
+        modelBar.onAddTapped = { [weak self] in
+            guard let self else { return }
+            controlPanel.setPanelOpen(!controlPanel.isPanelOpen.value)
+        }
+        modelBar.onSendTapped = { [weak self] in self?.delegate?.onComposerSendTapped() }
+        modelBar.onStopTapped = { [weak self] in self?.delegate?.onComposerStopTapped() }
+        modelBar.onModelTapped = { [weak self] in self?.delegate?.onComposerModelPickerTapped() }
         inputEditor.expandButton.accessibilityHint = String(localized: "Opens the whole draft on a page.")
 
         addSubview(commandMenu)
@@ -373,6 +380,7 @@ class ComposerView: ComposerSectionView {
     /// The ring was tapped: show what is left, or fold it away.
     func toggleContextPanel() {
         contextPanel.setExpanded(!contextPanel.isExpanded)
+        modelBar.setContextExpanded(contextPanel.isExpanded)
     }
 
     /// What the ring and its panel draw, from the agent's last record.
@@ -581,6 +589,7 @@ class ComposerView: ComposerSectionView {
         assert(Thread.isMainThread)
         inputEditor.hasAttachments = !currentDraft.attachments.isEmpty
         inputEditor.hasContent = !text.isEmpty || !currentDraft.attachments.isEmpty
+        modelBar.setSendState(isBusy: inputEditor.isBusy, hasContent: inputEditor.hasContent)
         delegate?.onComposerUpdateDraft(draft)
     }
 
@@ -590,6 +599,7 @@ class ComposerView: ComposerSectionView {
     func setBusy(_ busy: Bool) {
         inputEditor.isBusy = busy
         inputEditor.hasContent = !text.isEmpty || !currentDraft.attachments.isEmpty
+        modelBar.setSendState(isBusy: busy, hasContent: inputEditor.hasContent)
     }
 }
 

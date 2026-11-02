@@ -48,9 +48,14 @@ enum PromptRewriter {
             throw ApelinError(.badRequest, "There is nothing to rewrite.")
         }
         // The app names the provider and model it is about to message with, as
-        // a prompt does; nothing here reads a setting of its own.
+        // a prompt does; nothing here reads a setting of its own. A rewrite
+        // without a model is refused rather than answered by another provider:
+        // the text would come back in a voice the reader did not pick.
+        guard let provider = request.provider else {
+            throw ApelinError(.badRequest, "Choose a model before rewriting.")
+        }
         let configuration = try AgentWorker.provider(
-            provider: request.provider ?? .githubCopilot,
+            provider: provider,
             model: request.model,
         )
         let resolved = try await ProviderResolver.resolve(configuration, credentials: source)
@@ -64,7 +69,10 @@ enum PromptRewriter {
 
         let answer: String = try await withTaskCancellationHandler {
             let auth = try await resolved.authResolver?(resolved.model, nil)
-            let response = try await KWWKAI.complete(
+            // The stream the rest of the package uses, so the rewrite rides the
+            // same paths as a turn: the caller reads it to its end and takes
+            // the message it finishes with.
+            let stream = try await KWWKAI.stream(
                 model: resolved.model,
                 context: Context(
                     systemPrompt: systemPrompt,
@@ -79,7 +87,15 @@ enum PromptRewriter {
                     verbose: false,
                 ),
             )
-            return text(of: response.content)
+            for await _ in stream {}
+            let final = await stream.result()
+            guard final.stopReason == .stop || final.stopReason == .length else {
+                throw ApelinError(
+                    .badRequest,
+                    final.providerFailure?.message ?? "The model did not answer the rewrite.",
+                )
+            }
+            return text(of: final.content)
         } onCancel: {
             cancellation.cancel()
         }

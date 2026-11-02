@@ -49,8 +49,6 @@ extension ComposerInputView {
     @objc private func switchToRequiredStatusEx() {
         doWithAnimation { [self] in
             cameraButton.transform = .identity
-            moreButton.transform = .identity
-            sendButton.transform = .identity
             if textView.isFirstResponder {
                 if textView.text.isEmpty, !hasAttachments {
                     layoutStatus = .preFocusText
@@ -80,57 +78,55 @@ extension ComposerInputView {
         )
     }
 
-    /// Expand takes a corner of the band only while the text has outgrown it,
-    /// and never while Send has that corner.
+    /// Expand takes the band's trailing corner while the text has outgrown it.
+    /// Send is not here to compete for that corner: it belongs to the row
+    /// under the band.
     private func placeExpand(in band: CGRect) {
-        let shows = isOverflowing && sendButton.alpha == 0
+        let shows = isOverflowing
         expandButton.alpha = shows ? 1 : 0
         expandButton.isUserInteractionEnabled = shows
-        expandButton.frame = CGRect(
+        expandButton.frame = directionalFrame(CGRect(
             x: band.maxX - iconSize.width,
             y: inset.top,
             width: iconSize.width,
             height: iconSize.height,
-        )
+        ))
     }
 
-    /// The wand sits just before Send, and shows only when there is something
-    /// to rewrite and nothing else is holding the band: a rewrite during a run
-    /// would race the message the run is taking.
-    private func placeRewrite(before send: CGRect, sendShown: Bool) {
-        let shows = hasContent && !isBusy && sendShown
+    /// The wand sits at the band's leading end of the tools row, above the
+    /// text: a rewrite acts on what is typed, so it is read before it.
+    private func placeRewrite(in tools: CGRect) {
+        let shows = hasContent && !isBusy && showsComposerSend
         rewriteButton.alpha = shows ? 1 : 0
         rewriteButton.isUserInteractionEnabled = shows
-        rewriteButton.frame = CGRect(
-            x: send.minX - iconSize.width - iconSpacing * 0.5,
-            y: send.minY,
-            width: iconSize.width,
+        rewriteButton.frame = tools
+    }
+
+    /// The band is the text and nothing else: the icons that act on a finished
+    /// draft — Send and the plus — live on the row beneath it, and the two
+    /// tools that act on the draft itself live on the row above.
+    private func placeText(fullWidth: Bool) -> CGRect {
+        let width = fullWidth
+            ? bounds.width - inset.left - inset.right
+            : bounds.width - inset.left - inset.right - iconSize.width - iconSpacing
+        let frame = textFrame(width: width)
+        textView.frame = frame
+        placeholderLabel.frame = frame
+        placeExpand(in: frame)
+        return frame
+    }
+
+    /// The tools row is as tall as its icons and sits over the text's end.
+    private func toolsFrame() -> CGRect {
+        CGRect(
+            x: bounds.width - inset.right - iconSize.width * 2 - iconSpacing,
+            y: 0,
+            width: iconSize.width * 2 + iconSpacing,
             height: iconSize.height,
         )
     }
 
     func layoutAsEditingText() {
-        // textField | sendButton
-        let corner = CGRect(
-            x: bounds.width - inset.right - iconSize.width,
-            y: bounds.height - iconSize.height - inset.bottom,
-            width: iconSize.width,
-            height: iconSize.height,
-        )
-        sendButton.frame = corner
-        sendButton.alpha = 1
-        moreButton.frame = corner
-        defer { moreButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5) }
-        moreButton.alpha = 0
-
-        let trailingRoom = sendButton.frame.minX - inset.left - iconSpacing
-        let frame = textFrame(width: trailingRoom)
-        textView.frame = frame
-        placeholderLabel.frame = frame
-        placeExpand(in: frame)
-        placeRewrite(before: sendButton.frame, sendShown: sendButton.alpha > 0)
-
-        // invisible element
         cameraButton.frame = CGRect(
             x: 0 - inset.left - iconSize.width,
             y: inset.top,
@@ -138,13 +134,22 @@ extension ComposerInputView {
             height: iconSize.height,
         )
         cameraButton.alpha = 0
+
+        let frame = placeText(fullWidth: !isOverflowing)
+        let tools = toolsFrame()
+        // With text to work on, the wand takes the row's leading seat and
+        // Expand its trailing one; neither is drawn when it has nothing to do.
+        placeRewrite(in: CGRect(
+            x: tools.minX - inset.right,
+            y: 0,
+            width: iconSize.width,
+            height: iconSize.height,
+        ))
     }
 
     func layoutAsPreEditingText() {
         defer { cameraButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5) }
-        defer { sendButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5) }
 
-        // invisible elements
         cameraButton.frame = CGRect(
             x: 0 - inset.left - iconSize.width,
             y: inset.top,
@@ -153,82 +158,46 @@ extension ComposerInputView {
         )
         cameraButton.alpha = 0
 
-        moreButton.frame = CGRect(
-            x: bounds.width - inset.right - iconSize.width,
-            y: inset.top,
-            width: iconSize.width,
-            height: iconSize.height,
-        )
-        moreButton.alpha = 1
-        // reset textField width to fill the space
-        let frame = textFrame(width: moreButton.frame.minX - inset.left - iconSpacing)
-        textView.frame = frame
-        textView.alpha = 1
-        placeholderLabel.frame = frame
-        placeExpand(in: frame)
-
-        // invisible element
-        sendButton.frame = CGRect(
-            x: bounds.width + iconSpacing + inset.right,
-            y: bounds.height - iconSize.height - inset.bottom,
-            width: iconSize.width,
-            height: iconSize.height,
-        )
-        sendButton.alpha = 0
+        placeText(fullWidth: false)
         // Nothing typed: nothing to rewrite.
         rewriteButton.alpha = 0
         rewriteButton.isUserInteractionEnabled = false
     }
 
     func layoutAsStandard() {
-        defer { sendButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5) }
-
-        // captureButton | textField | moreButton
-        cameraButton.frame = CGRect(
+        // camera | text | (tools row takes the trailing corner when it has
+        // something to show)
+        cameraButton.frame = directionalFrame(CGRect(
             x: inset.left,
             y: inset.top,
             width: iconSize.width,
             height: iconSize.height,
-        )
+        ))
         cameraButton.alpha = 1
-        moreButton.frame = CGRect(
-            x: bounds.width - inset.right - iconSize.width,
-            y: inset.top,
-            width: iconSize.width,
-            height: iconSize.height,
-        )
-        moreButton.alpha = 1
-        moreButton.transform = .identity
-        // reset textField width to fill the space
+        cameraButton.transform = .identity
+
         let frame = textFrame(
-            width: moreButton.frame.minX - cameraButton.frame.maxX - iconSpacing * 2,
+            width: bounds.width - inset.left - inset.right
+                - iconSize.width - iconSpacing * 2,
         )
         textView.frame = CGRect(
             x: cameraButton.frame.maxX + iconSpacing,
             y: frame.origin.y,
-            width: frame.width,
+            width: max(0, frame.width),
             height: frame.height,
         )
         textView.alpha = 1
         placeholderLabel.frame = textView.frame
         placeExpand(in: textView.frame)
 
-        // invisible element
-        sendButton.frame = CGRect(
-            x: bounds.width + inset.right,
-            y: inset.top,
-            width: iconSize.width,
-            height: iconSize.height,
-        )
-        sendButton.alpha = 0
         // A draft restored from another conversation is rewritten like a typed
         // one.
-        placeRewrite(before: CGRect(
-            x: bounds.width - inset.right - iconSize.width,
+        placeRewrite(in: CGRect(
+            x: textView.frame.maxX + iconSpacing * 0.5,
             y: inset.top,
             width: iconSize.width,
             height: iconSize.height,
-        ), sendShown: false)
+        ))
     }
 
     /// The text outgrew the band: rewrite what is drawn, then measure up. Called

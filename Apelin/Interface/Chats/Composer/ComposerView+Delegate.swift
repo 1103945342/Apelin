@@ -31,5 +31,12 @@ extension ComposerView {
         func onComposerPastedImage(_ image: UIImage)
         /// Items dropped on the composer, each with a file to read.
         func onComposerDropped(_ providers: [NSItemProvider])
+        /// Send, from the row under the draft. The composer has already been
+        /// asked to take the draft; this says a send was meant now.
+        func onComposerSendTapped()
+        /// The stop the send turns into while a run is going.
+        func onComposerStopTapped()
+        /// The provider's mark was tapped: choose which model answers.
+        func onComposerModelPickerTapped()
     }
 }

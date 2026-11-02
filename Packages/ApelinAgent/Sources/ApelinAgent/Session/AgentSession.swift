@@ -81,6 +81,10 @@ public actor AgentSession {
     /// A compaction rewrote the conversation: the next run takes the system
     /// prompt afresh, since its prefix is written anew anyway.
     private var snapshotStale = false
+    /// What this run may do, from the composer's pill; nil leaves the line out
+    /// of `<system-state>`. Kept here rather than in the prompt, which is the
+    /// session's snapshot.
+    private var runMode: AgentRunMode?
     /// This session's own memory and skill calls, until they end, by call id.
     private var ownCalls: [String: (tool: AgentToolName, arguments: KWWKAI.JSONValue)] = [:]
     /// What the current run has received, for the app's counter.
@@ -293,6 +297,13 @@ public actor AgentSession {
         await runner.setAsksBeforeScreen(asks)
     }
 
+    /// What this run may do, from the composer's pill. Read in the next
+    /// message's `<system-state>`, like the approval mode: the pill can change
+    /// between messages, and the system prompt is the session's snapshot.
+    public func setRunMode(_ mode: AgentRunMode?) {
+        runMode = mode
+    }
+
     /// What the system prompt would show now, with the extensions whose
     /// tools the agent has.
     private func currentState() -> PromptState {
@@ -403,6 +414,7 @@ public actor AgentSession {
         let facts = await SystemState.facts(
             configuration.systemState,
             mode: runner.approvalMode,
+            runMode: runMode,
             asksBeforeScreen: runner.asksBeforeScreen,
             changes: changes,
             hostRestarted: delta && restartUntoldBefore,
