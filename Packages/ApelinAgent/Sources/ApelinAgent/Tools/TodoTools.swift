@@ -46,7 +46,7 @@ struct TodoTools {
                 sessionID: sessionID,
             ))
         }
-        store.replace(items, for: sessionID)
+        try store.replace(items, for: sessionID)
         return TodoList(items: items)
     }
 

@@ -67,7 +67,7 @@ public struct ResolvedProvider: Sendable {
     public init(
         model: Model,
         authResolver: (@Sendable (Model, String?) async throws -> ResolvedProviderAuth?)?,
-        credentials: OAuthCredentials?,
+        credentials: OAuthCredentials? = nil,
     ) {
         self.model = model
         self.authResolver = authResolver

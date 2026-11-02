@@ -549,7 +549,8 @@ public struct ApprovalPolicy: Sendable, Hashable {
              .packageList, .packageConfirmLoaded, .logRead, .crashList, .crashRead, .crashSymbolicate,
              .screenCapture, .screenReadTree, .memoryList, .skillList, .skillRead, .projectCheckDistribution,
              .templateList, .projectList, .gitStatus, .gitDiff, .gitReadSettings, .gitRemoteList,
-             .conversationList, .conversationRead, .toolchainList, .sdkList, .webFetch, .feedbackRead:
+             .conversationList, .conversationRead, .toolchainList, .sdkList, .webFetch, .feedbackRead,
+             .todoList:
             if presets.readTools.contains(tool) {
                 return .allow(.preset(tool.rawValue))
             }
