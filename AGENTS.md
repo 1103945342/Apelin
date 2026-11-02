@@ -2536,9 +2536,8 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   it, so the figure the user set is the one the agent compacts by. The
   model row is on the input's own ground, not below the box
   (`ComposerView.layoutSubviews`), with the context ring at its end.
-  The stop control's icon, text
-  and border are red. It takes a
-  live output cancellation callback and stays hidden without one. Settings stores a global `AgentPermissions.mode`,
+  The stop control's icon, text and border are red. It takes a live output
+  cancellation callback and stays hidden without one. Settings stores a global `AgentPermissions.mode`,
   default relaxed, one of Strict / Relaxed / Full (严格 / 宽松 / 完全), with a
   confirmation when changing into Relaxed from Strict, and, for Full, a
   confirmation that root runs without asking followed by `DeviceOwnerCheck`
