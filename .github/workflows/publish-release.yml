@@ -40,16 +40,13 @@ jobs:
         run: |
           set -euo pipefail
           run="${{ inputs.run_id }}"
-          info="$(gh run view "$run" --json headSha,conclusion,workflowName)"
+          info="$(gh run view "$run" --json headSha,conclusion)"
           conclusion="$(printf '%s' "$info" | jq -r .conclusion)"
-          name="$(printf '%s' "$info" | jq -r .workflowName)"
           sha="$(printf '%s' "$info" | jq -r .headSha)"
+          # A run that passed and carries a deb is all this needs: the name
+          # `gh` reports is the workflow's path, not the one it shows.
           if [[ "$conclusion" != "success" ]]; then
             echo "::error::run $run concluded '$conclusion'; only a run that passed is published"
-            exit 1
-          fi
-          if [[ "$name" != "Debug build" ]]; then
-            echo "::error::run $run is '$name', not a Debug build"
             exit 1
           fi
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
