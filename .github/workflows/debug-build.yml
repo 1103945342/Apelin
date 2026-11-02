@@ -1,0 +1,65 @@
+# A package to try on a device, started by hand: one bootstrap, the host
+# tests skipped, and nothing published. CI on main stays the only thing that
+# publishes a version, so this changes no release and no Pages source.
+name: Debug build
+
+on:
+  workflow_dispatch:
+    inputs:
+      bootstrap:
+        description: The bootstrap to package for
+        type: choice
+        options:
+          - roothide
+          - rootless
+        default: roothide
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Package for ${{ inputs.bootstrap }}
+    runs-on: xcode-27
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Select Xcode 27.1
+        run: |
+          sudo xcode-select -s /Applications/Xcode_27.1.app/Contents/Developer
+          xcodebuild -version
+          echo "iPhoneOS SDK $(xcrun --sdk iphoneos --show-sdk-version)"
+
+      - name: Install packaging dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          formulae=()
+          command -v dpkg-deb >/dev/null 2>&1 || formulae+=(dpkg)
+          command -v ldid >/dev/null 2>&1 || formulae+=(ldid)
+          if (( ${#formulae[@]} > 0 )); then
+            brew install "${formulae[@]}"
+          fi
+
+      # `make deb` builds and packages the IDE and its daemon for one
+      # bootstrap; the development extensions are left to CI's deb-all.
+      - name: Build and package the IDE
+        shell: bash
+        run: |
+          set -euo pipefail
+          make deb FLAVOR="${{ inputs.bootstrap }}" CONFIGURATION=Release SKIP_HARNESS=1 \
+            DERIVED_DATA="$RUNNER_TEMP/apelin-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
+            BUILD_NUMBER="$GITHUB_RUN_NUMBER"
+
+      - name: Upload the package
+        uses: actions/upload-artifact@v4
+        with:
+          name: apelin-debug-${{ inputs.bootstrap }}-${{ github.sha }}
+          path: build/Packages/*.deb
+          if-no-files-found: error
+          retention-days: 7
