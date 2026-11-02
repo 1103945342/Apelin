@@ -142,8 +142,7 @@ jobs:
           name: apelin-debug-${{ inputs.bootstrap }}-${{ github.sha }}
           path: build/Packages/
 
-      - name: Publish
-        if: steps.lookup.outputs.published == '0'
+      - name: Create the draft
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
@@ -151,23 +150,54 @@ jobs:
           TAG: ${{ steps.version.outputs.tag }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          set -euo pipefail
-          cd build/Packages
-          if [[ -z "$(ls ./*.deb 2>/dev/null)" ]]; then
-            echo "::error::this run wrote no deb to publish"
-            exit 1
-          fi
-          shasum -a 256 ./*.deb > SHA256SUMS
-          cat SHA256SUMS
+          set -uo pipefail
           notes="$RUNNER_TEMP/apelin-release.md"
           if [[ -f "$GITHUB_WORKSPACE/Documents/Releases/$VERSION.md" ]]; then
             cp "$GITHUB_WORKSPACE/Documents/Releases/$VERSION.md" "$notes"
           else
-            echo "::warning::Documents/Releases/$VERSION.md is missing; the generic notes go out instead"
-            printf 'Apelin %s, from the build of %s.\n\nSHA-256 sums are in `SHA256SUMS`.\n' \
-              "$VERSION" "$GITHUB_SHA" > "$notes"
+            printf 'Apelin %s, from the build of %s.
+
+SHA-256 sums are in `SHA256SUMS`.
+'               "$VERSION" "$GITHUB_SHA" > "$notes"
           fi
-          gh release create "$TAG" --target "$GITHUB_SHA" \
-            --title "Apelin $VERSION" \
-            --notes-file "$notes" \
-            ./*.deb SHA256SUMS
+          rc=0
+          out="$(gh api -X POST "repos/$GH_REPO/releases"             -f tag_name="$TAG"             -f target_commitish="$GITHUB_SHA"             -f name="Apelin $VERSION"             -f body=@"$notes"             -F draft=true 2>&1)" || rc=$?
+          if [[ "$rc" != 0 ]]; then
+            echo "::error::creating the draft was refused (exit $rc): $(printf '%s' "$out" | tr '\n' ' ' | head -c 400)"
+            exit 1
+          fi
+          id="$(printf '%s' "$out" | jq -r '.id // empty')"
+          echo "::notice::draft release $id"
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+
+      - name: Upload the packages
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -uo pipefail
+          rc=0
+          out="$(gh release upload "$TAG" build/Packages/*.deb build/Packages/SHA256SUMS --clobber 2>&1)" || rc=$?
+          if [[ "$rc" != 0 ]]; then
+            echo "::error::uploading the packages was refused (exit $rc): $(printf '%s' "$out" | tr '\n' ' ' | head -c 400)"
+            exit 1
+          fi
+          echo "$out"
+
+      - name: Publish it
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -uo pipefail
+          rc=0
+          out="$(gh api -X PATCH "repos/$GH_REPO/releases/${{ steps.draft.outputs.id }}" -f draft=false 2>&1)" || rc=$?
+          if [[ "$rc" != 0 ]]; then
+            echo "::error::publishing the release was refused (exit $rc): $(printf '%s' "$out" | tr '\n' ' ' | head -c 400)"
+            exit 1
+          fi
+          echo "::notice::published $TAG"
