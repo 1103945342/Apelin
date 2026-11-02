@@ -1,7 +1,6 @@
-# A package to try on a device, started by hand: one bootstrap, the host
-# tests skipped. What it builds is published as a GitHub release, which the
-# Pages site turns into the package source a device updates from — so one run
-# is a build, a release and a Sileo update. Set `publish` off to build only.
+# One manual run is the whole path: build the selected bootstrap, package it,
+# and publish the exact .deb from that same job. There is no artifact hand-off
+# and no second workflow to start.
 name: Debug build
 
 on:
@@ -14,22 +13,16 @@ on:
           - roothide
           - rootless
         default: roothide
-      publish:
-        description: Publish the package as a release when the build passes
-        type: boolean
-        default: true
 
 permissions:
   contents: write
-  # A failed build writes the end of its log into an issue, which is the one
-  # place this fork can read a log back without a GitHub sign-in.
   issues: write
 
 jobs:
-  build:
-    name: Package for ${{ inputs.bootstrap }}
+  build-and-publish:
+    name: Build and publish ${{ inputs.bootstrap }}
     runs-on: xcode-27
-    timeout-minutes: 60
+    timeout-minutes: 75
 
     steps:
       - name: Check out repository
@@ -39,6 +32,7 @@ jobs:
 
       - name: Select Xcode 27.1
         run: |
+          set -euo pipefail
           sudo xcode-select -s /Applications/Xcode_27.1.app/Contents/Developer
           xcodebuild -version
           echo "iPhoneOS SDK $(xcrun --sdk iphoneos --show-sdk-version)"
@@ -54,9 +48,7 @@ jobs:
             brew install "${formulae[@]}"
           fi
 
-      # `make deb` builds and packages the IDE and its daemon for one
-      # bootstrap; the development extensions are left to CI's deb-all.
-      - name: Build and package the IDE
+      - name: Build and package
         shell: bash
         run: |
           set -euo pipefail
@@ -64,16 +56,135 @@ jobs:
             DERIVED_DATA="$RUNNER_TEMP/apelin-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
             BUILD_NUMBER="$GITHUB_RUN_NUMBER" 2>&1 | tee "$RUNNER_TEMP/build.log"
 
-      - name: Report a failed build
+      - name: Read version and prepare release files
+        id: release
+        shell: bash
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          version="$(sed -n 's/^[[:space:]]*MARKETING_VERSION[[:space:]]*=[[:space:]]*//p' \
+            Configuration/Version.xcconfig | tr -d '[:space:]')"
+          if [[ -z "$version" ]]; then
+            echo "::error::Configuration/Version.xcconfig names no MARKETING_VERSION"
+            exit 1
+          fi
+
+          shopt -s nullglob
+          packages=(build/Packages/*.deb)
+          if (( ${#packages[@]} == 0 )); then
+            echo "::error::the build produced no .deb"
+            exit 1
+          fi
+          (cd build/Packages && shasum -a 256 ./*.deb > SHA256SUMS)
+
+          notes="$RUNNER_TEMP/apelin-release.md"
+          if [[ -f "Documents/Releases/$version.md" ]]; then
+            cp "Documents/Releases/$version.md" "$notes"
+          else
+            {
+              printf 'Apelin %s from commit %s.\n\n' "$version" "$SHA"
+              printf 'SHA-256 sums are included in `SHA256SUMS`.\n'
+            } > "$notes"
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          echo "notes=$notes" >> "$GITHUB_OUTPUT"
+          echo "::notice::prepared ${#packages[@]} package(s) for v$version"
+
+      - name: Create, upload and publish the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ steps.release.outputs.tag }}
+          VERSION: ${{ steps.release.outputs.version }}
+          NOTES: ${{ steps.release.outputs.notes }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -uo pipefail
+          api="repos/$GH_REPO/releases"
+          rc=0
+          existing="$(gh api "$api/tags/$TAG" 2>&1)" || rc=$?
+
+          if [[ "$rc" == 0 ]]; then
+            release_id="$(printf '%s' "$existing" | jq -r '.id // empty')"
+            if [[ -z "$release_id" ]]; then
+              echo "::error::GitHub returned a release without an id"
+              exit 1
+            fi
+            echo "::notice::updating existing $TAG release"
+          elif [[ "$rc" == 1 ]] && grep -q 'HTTP 404' <<<"$existing"; then
+            rc=0
+            created="$(gh api -X POST "$api" \
+              -f tag_name="$TAG" \
+              -f target_commitish="$SHA" \
+              -f name="Apelin $VERSION" \
+              -F "body=@$NOTES" \
+              -F draft=true 2>&1)" || rc=$?
+            if [[ "$rc" != 0 ]]; then
+              echo "::error::creating the draft was refused (exit $rc): $(printf '%s' "$created" | tr '\n' ' ' | head -c 500)"
+              exit 1
+            fi
+            release_id="$(printf '%s' "$created" | jq -r '.id // empty')"
+            if [[ -z "$release_id" ]]; then
+              echo "::error::GitHub created no release id"
+              exit 1
+            fi
+            echo "::notice::created draft release $release_id"
+          else
+            echo "::error::looking up $TAG failed (exit $rc): $(printf '%s' "$existing" | tr '\n' ' ' | head -c 500)"
+            exit 1
+          fi
+
+          shopt -s nullglob
+          assets=(build/Packages/*.deb build/Packages/SHA256SUMS)
+          if (( ${#assets[@]} < 2 )); then
+            echo "::error::the package or SHA256SUMS is missing"
+            exit 1
+          fi
+
+          rc=0
+          uploaded="$(gh release upload "$TAG" "${assets[@]}" --clobber 2>&1)" || rc=$?
+          if [[ "$rc" != 0 ]]; then
+            echo "::error::uploading the packages was refused (exit $rc): $(printf '%s' "$uploaded" | tr '\n' ' ' | head -c 500)"
+            exit 1
+          fi
+          echo "$uploaded"
+
+          rc=0
+          published="$(gh api -X PATCH "$api/$release_id" \
+            -F draft=false \
+            -f name="Apelin $VERSION" \
+            -F "body=@$NOTES" 2>&1)" || rc=$?
+          if [[ "$rc" != 0 ]]; then
+            echo "::error::publishing the release was refused (exit $rc): $(printf '%s' "$published" | tr '\n' ' ' | head -c 500)"
+            exit 1
+          fi
+          echo "::notice::published or updated $TAG with ${#assets[@]} asset(s)"
+
+      - name: Keep the package artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apelin-${{ inputs.bootstrap }}-${{ github.sha }}
+          path: |
+            build/Packages/*.deb
+            build/Packages/SHA256SUMS
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Report a failed build or publish
         if: failure()
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
           body="$RUNNER_TEMP/failure.md"
           {
-            echo "The debug build of \`$GITHUB_SHA\` for ${{ inputs.bootstrap }} failed."
+            echo "The debug build or release of \`$GITHUB_SHA\` for ${{ inputs.bootstrap }} failed."
             echo
             echo "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
             echo
@@ -82,122 +193,5 @@ jobs:
             echo '```'
           } > "$body"
           gh issue create \
-            --title "Debug build failed: ${GITHUB_SHA:0:8} (${{ inputs.bootstrap }})" \
-            --body-file "$body" || true
-
-      - name: Upload the package
-        uses: actions/upload-artifact@v4
-        with:
-          name: apelin-debug-${{ inputs.bootstrap }}-${{ github.sha }}
-          path: build/Packages/*.deb
-          if-no-files-found: error
-          retention-days: 7
-
-  publish:
-    name: Publish the release
-    needs: build
-    if: inputs.publish
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: write
-      actions: read
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Read the version
-        id: version
-        shell: bash
-        run: |
-          set -euo pipefail
-          version="$(sed -n 's/^[[:space:]]*MARKETING_VERSION[[:space:]]*=[[:space:]]*//p' Configuration/Version.xcconfig | tr -d '[:space:]')"
-          if [[ -z "$version" ]]; then
-            echo "::error::Configuration/Version.xcconfig names no MARKETING_VERSION"
-            exit 1
-          fi
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "tag=v$version" >> "$GITHUB_OUTPUT"
-
-      - name: Is it published already?
-        id: lookup
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          set -euo pipefail
-          if gh release view "${{ steps.version.outputs.tag }}" > /dev/null 2>&1; then
-            echo "::notice::${{ steps.version.outputs.tag }} is published already; nothing to do"
-            echo "published=1" >> "$GITHUB_OUTPUT"
-          else
-            echo "published=0" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Take the package this run built
-        if: steps.lookup.outputs.published == '0'
-        uses: actions/download-artifact@v4
-        with:
-          name: apelin-debug-${{ inputs.bootstrap }}-${{ github.sha }}
-          path: build/Packages/
-
-      - name: Create the draft
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
-          GH_REPO: ${{ github.repository }}
-          TAG: ${{ steps.version.outputs.tag }}
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          set -uo pipefail
-          notes="$RUNNER_TEMP/apelin-release.md"
-          if [[ -f "$GITHUB_WORKSPACE/Documents/Releases/$VERSION.md" ]]; then
-            cp "$GITHUB_WORKSPACE/Documents/Releases/$VERSION.md" "$notes"
-          else
-            printf 'Apelin %s, from the build of %s.
-
-SHA-256 sums are in `SHA256SUMS`.
-'               "$VERSION" "$GITHUB_SHA" > "$notes"
-          fi
-          rc=0
-          out="$(gh api -X POST "repos/$GH_REPO/releases"             -f tag_name="$TAG"             -f target_commitish="$GITHUB_SHA"             -f name="Apelin $VERSION"             -f body=@"$notes"             -F draft=true 2>&1)" || rc=$?
-          if [[ "$rc" != 0 ]]; then
-            echo "::error::creating the draft was refused (exit $rc): $(printf '%s' "$out" | tr '\n' ' ' | head -c 400)"
-            exit 1
-          fi
-          id="$(printf '%s' "$out" | jq -r '.id // empty')"
-          echo "::notice::draft release $id"
-          echo "id=$id" >> "$GITHUB_OUTPUT"
-
-      - name: Upload the packages
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
-          GH_REPO: ${{ github.repository }}
-          TAG: ${{ steps.version.outputs.tag }}
-        run: |
-          set -uo pipefail
-          rc=0
-          out="$(gh release upload "$TAG" build/Packages/*.deb build/Packages/SHA256SUMS --clobber 2>&1)" || rc=$?
-          if [[ "$rc" != 0 ]]; then
-            echo "::error::uploading the packages was refused (exit $rc): $(printf '%s' "$out" | tr '\n' ' ' | head -c 400)"
-            exit 1
-          fi
-          echo "$out"
-
-      - name: Publish it
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
-          GH_REPO: ${{ github.repository }}
-          TAG: ${{ steps.version.outputs.tag }}
-        run: |
-          set -uo pipefail
-          rc=0
-          out="$(gh api -X PATCH "repos/$GH_REPO/releases/${{ steps.draft.outputs.id }}" -f draft=false 2>&1)" || rc=$?
-          if [[ "$rc" != 0 ]]; then
-            echo "::error::publishing the release was refused (exit $rc): $(printf '%s' "$out" | tr '\n' ' ' | head -c 400)"
-            exit 1
-          fi
-          echo "::notice::published $TAG"
+            --title "Debug build or publish failed: ${GITHUB_SHA:0:8} (${{ inputs.bootstrap }})" \
+            --body-file "$body" > /dev/null 2>&1 || true
