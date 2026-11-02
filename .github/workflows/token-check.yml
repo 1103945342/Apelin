@@ -1,0 +1,42 @@
+# Says, in one red line on the run page, whether this repository's token may
+# create a release. Nothing is published: a release it manages to create as a
+# draft is deleted in the same step.
+name: Token check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    name: Can the token write?
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Ask GitHub
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -uo pipefail
+          default="$(gh api "repos/$GH_REPO/actions/permissions/workflow" --jq '.default_workflow_permissions' 2>&1 | head -1)"
+          echo "::error::Workflow permissions setting: $default"
+
+          created="$(gh api -X POST "repos/$GH_REPO/releases" \
+            -f tag_name="token-check-$GITHUB_RUN_ID" \
+            -f name="token check" \
+            -f body="Created by Token check; deleted at once." \
+            -F draft=true 2>&1)"
+          if [[ "$created" == *'"id"'* ]]; then
+            echo "::error::Release creation: ALLOWED"
+            id="$(printf '%s' "$created" | jq -r '.id' 2>/dev/null || true)"
+            if [[ -n "${id:-}" ]]; then
+              gh api -X DELETE "repos/$GH_REPO/releases/$id" > /dev/null 2>&1 || true
+            fi
+          else
+            echo "::error::Release creation: REFUSED — $(printf '%s' "$created" | tr '\n' ' ' | head -c 300)"
+          fi
