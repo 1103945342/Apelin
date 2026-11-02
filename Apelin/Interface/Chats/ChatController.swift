@@ -146,8 +146,7 @@ final class ChatController: UIViewController {
             Task { await self.decide(request, decision, in: chat.id) }
         }
         composer.modelBar.onEffortChanged = { ComposerModelPreferences.effort = $0 }
-        composer.modelBar.onTierChanged = { ComposerModelPreferences.tier = $0 }
-        composer.modelBar.usageButton.tapAction = { [weak self] in
+        composer.modelBar.onTierChanged = { ComposerModelPreferences.tier = $0 }        composer.modelBar.usageButton.tapAction = { [weak self] in
             guard let self, let chat else { return }
             ChatActions.askToCompact(for: chat.id, runtime: runtime, from: self)
         }
@@ -195,8 +194,7 @@ final class ChatController: UIViewController {
         modelButton.menu = UIMenu(children: [UIDeferredMenuElement.uncached { [weak self] completion in
             guard let self else { completion([]); return }
             loadModelMenu(completion: completion)
-        }])
-        view.addSubview(composer)
+        }])        view.addSubview(composer)
         composer.snp.makeConstraints { make in
             if #available(iOS 17.0, *) {
                 // Above a keyboard, the gap the bands keep between
@@ -650,6 +648,7 @@ final class ChatController: UIViewController {
         let selection = ComposerModelSelection.current
         composer.modelBar.setProvider(selection?.provider)
         composer.modelBar.setEfforts(selection?.supportedEfforts ?? [], selected: selection?.effort)
+        composer.modelBar.setTiers(selection?.supportedTiers ?? [], selected: selection?.tier)
     }
 
     /// A model disabled in Settings stops being the one the next message uses.
@@ -890,8 +889,9 @@ extension ChatController: ComposerView.Delegate {
 
     func onComposerModelPickerTapped() {
         // The mark carries the picker already: a menu that reads the accounts
-        // live. Asking it to open is the one way in.
-        modelButton.performPrimaryAction()
+        // live. Asking it to open is the one way in, and `performPrimaryAction`
+        // would be the iOS 17.4 one: the trigger is what a tap sends.
+        modelButton.sendActions(for: .primaryActionTriggered)
     }
 
     func onComposerBeginEditing() {

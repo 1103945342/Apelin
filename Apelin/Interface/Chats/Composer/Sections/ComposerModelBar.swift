@@ -17,6 +17,11 @@ final class ComposerModelBar: ComposerSectionView {
     /// the row's room belongs to the draft above.
     let modelButton = ComposerIconButton(symbolName: "cpu", label: String(localized: "Select Model"))
 
+    /// The speed the model answers at, for the ones that offer a faster tier
+    /// than standard: the letters say which, a tap changes it. Absent for a
+    /// model with one tier, as most have.
+    private let tierButton = ComposerIconButton(symbolName: "hare", label: String(localized: "Speed"))
+
     /// The lightning and the level it is set to, tapped to change it.
     private let effortButton = ComposerIconButton(symbolName: "bolt", label: String(localized: "Reasoning Effort"))
     private let effortLabel = UILabel()
@@ -34,6 +39,10 @@ final class ComposerModelBar: ComposerSectionView {
 
     var onEffortChanged: ((AgentReasoningEffort) -> Void)?
     var onModeChanged: ((ComposerMode) -> Void)?
+    var onTierChanged: ((AgentServiceTier?) -> Void)?
+    /// The mark was tapped: the owner opens its model picker, which reads the
+    /// accounts live. This row only reports the tap.
+    var onModelTapped: (() -> Void)?
     /// The ring was tapped: open the context panel, or fold it again.
     var onContextTapped: (() -> Void)?
     var onAddTapped: (() -> Void)?
@@ -43,13 +52,17 @@ final class ComposerModelBar: ComposerSectionView {
     /// The efforts this model offers, kept so a tap can redraw the menu against
     /// the level it took.
     private var efforts: [AgentReasoningEffort] = []
+    /// The tiers this model offers, the standard one being none of them.
+    private var tiers: [AgentServiceTier] = []
+    /// Which tier the next message is sent at.
+    private var selectedTier: AgentServiceTier?
     /// The run is going: with nothing typed the send becomes a stop.
     private var sendIsStop = false
 
     override func initializeViews() {
         super.initializeViews()
 
-        for control in [modePill, modelButton, effortButton, usageButton, addButton, sendButton] {
+        for control in [modePill, modelButton, effortButton, tierButton, usageButton, addButton, sendButton] {
             addSubview(control)
         }
         effortLabel.font = .systemFont(ofSize: 12, weight: .semibold)
@@ -65,6 +78,7 @@ final class ComposerModelBar: ComposerSectionView {
         addButton.tapAction = { [weak self] in self?.onAddTapped?() }
         sendButton.tapAction = { [weak self] in self?.tapSend() }
         effortButton.showsMenuAsPrimaryAction = true
+        tierButton.showsMenuAsPrimaryAction = true
 
         sendButton.iconInset = 8
         sendButton.fillColor = ComposerPalette.inert
@@ -119,6 +133,28 @@ final class ComposerModelBar: ComposerSectionView {
         })
     }
 
+    /// The tiers the model offers: none of them is the standard one, so an
+    /// empty list hides the control.
+    func setTiers(_ tiers: [AgentServiceTier], selected: AgentServiceTier?) {
+        self.tiers = tiers
+        selectedTier = selected
+        updateControls { [self] in
+            let shown = !tiers.isEmpty
+            tierButton.alpha = shown ? 1 : 0
+            tierButton.isUserInteractionEnabled = shown
+            tierButton.accessibilityElementsHidden = !shown
+            tierButton.accessibilityValue = Self.title(for: selected)
+        }
+        // Rebuilt with the level it took, so the tick follows the choice.
+        tierButton.menu = UIMenu(children: ([nil] + tiers).map { tier in
+            UIAction(title: Self.title(for: tier), state: tier == selected ? .on : .off) { [weak self] _ in
+                guard let self else { return }
+                self.setTiers(self.tiers, selected: tier)
+                self.onTierChanged?(tier)
+            }
+        })
+    }
+
     /// Nothing to send: the disc greys; a run going and nothing typed: it is
     /// the stop.
     func setSendState(isBusy: Bool, hasContent: Bool) {
@@ -160,8 +196,7 @@ final class ComposerModelBar: ComposerSectionView {
 
     /// The import panel is open: the plus draws as a close, so the same tap
     /// that opened it folds it away.
-    func setPanelOpen(_ open: Bool) {
-        updateControls { [self] in
+    func setPanelOpen(_ open: Bool) {        updateControls { [self] in
             addButton.change(symbolName: open ? "xmark" : "plus")
             addButton.accessibilityLabel = open
                 ? String(localized: "Close")
@@ -225,6 +260,15 @@ final class ComposerModelBar: ComposerSectionView {
         }
     }
 
+    /// The speed's name; nil is the standard tier, which every model has.
+    private static func title(for tier: AgentServiceTier?) -> String {
+        switch tier {
+        case nil: String(localized: "Standard")
+        case .priority: String(localized: "Fast")
+        case .ultrafast: String(localized: "Ultrafast")
+        }
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         let height = preferredHeight
@@ -285,6 +329,13 @@ final class ComposerModelBar: ComposerSectionView {
             height: effortLabel.font.lineHeight,
         ))
         x += lightning + labelWidth + spacing * 0.25
+
+        // The speed sits between the effort and the ring: both are read for a
+        // model, and both are hidden for one that offers no choice.
+        tierButton.frame = directionalFrame(CGRect(
+            x: x, y: mid, width: iconSize, height: iconSize,
+        ))
+        x += iconSize + spacing * 0.25
 
         let ringSize = ContextUsageButton.size
         usageButton.frame = directionalFrame(CGRect(

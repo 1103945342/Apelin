@@ -49,6 +49,13 @@ final class ComposerControlPanel: ComposerSectionView {
         doWithAnimation { [self] in isPanelOpen.send(!isPanelOpen.value) }
     }
 
+    /// Opened or folded from outside, as the row's plus does: one value, one
+    /// place it is kept, so both controls agree on which way it is.
+    func setPanelOpen(_ open: Bool) {
+        guard isPanelOpen.value != open else { return }
+        toggle()
+    }
+
     func close() {
         guard isPanelOpen.value else { return }
         toggle()
