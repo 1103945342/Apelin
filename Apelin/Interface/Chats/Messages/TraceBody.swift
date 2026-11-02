@@ -76,6 +76,16 @@ enum TraceBody {
             .font: UIFont.preferredFont(forTextStyle: .body),
             .foregroundColor: UIColor.label,
         ]
+        // A result and anything given as several lines — a command's output,
+        // a file's content — read as code: a monospaced face a size down, so
+        // the columns are the ones that were written.
+        let code: [NSAttributedString.Key: Any] = [
+            .font: UIFont.monospacedSystemFont(
+                ofSize: max(11, UIFont.preferredFont(forTextStyle: .body).pointSize - 1),
+                weight: .regular,
+            ),
+            .foregroundColor: UIColor.label,
+        ]
         guard let title = key.callTitle else {
             return NSAttributedString(string: key.source, attributes: body)
         }
@@ -92,7 +102,8 @@ enum TraceBody {
             if let label = section.name {
                 result.append(NSAttributedString(string: label + "\n", attributes: name))
             }
-            result.append(NSAttributedString(string: section.value, attributes: body))
+            let isCode = section.isResult || section.value.contains("\n")
+            result.append(NSAttributedString(string: section.value, attributes: isCode ? code : body))
         }
         return result
     }

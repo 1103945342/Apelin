@@ -41,12 +41,20 @@ func checkToolCallDetail() {
                  "anything but a string as compact JSON: \(values.sections.map(\.value))")
 
     let notObject = "[\"make\",\"-j2\"]\n\nBuilt"
-    precondition(ToolCallDetail(detail: notObject, title: "Run").sections == [.init(name: nil, value: notObject)])
+    precondition(ToolCallDetail(detail: notObject, title: "Run").sections == [.init(name: nil, value: notObject, isResult: false)])
     let garbled = "{\"path\": \"Sour\n\nUnable to read the arguments"
     precondition(ToolCallDetail(detail: garbled, title: "Read").text == garbled, "unreadable arguments show as they came")
-    precondition(ToolCallDetail(detail: "\n\nDone", title: "Respring").sections == [.init(name: String(localized: "Result"), value: "Done")],
+    precondition(ToolCallDetail(detail: "\n\nDone", title: "Respring").sections == [.init(name: String(localized: "Result"), value: "Done", isResult: true)],
                  "a call without arguments shows its result")
     precondition(ToolCallDetail(detail: "", title: "Respring").sections.isEmpty)
     precondition(ToolCallDetail(detail: "{}\n\n", title: "Respring").sections.isEmpty, "an empty result adds nothing")
+
+    // A command's colours are not its words: the escapes go, the text stays.
+    let coloured = ToolCallDetail(
+        detail: "{\"reason\":\"Build\"}\n\n\u{1B}[31merror\u{1B}[0m: no such file",
+        title: "Build",
+    )
+    precondition(coloured.sections.last?.value == "error: no such file",
+                 "escape sequences are dropped: \(coloured.sections.last?.value ?? "nil")")
     print("ok: a call in the trace reads as its arguments by name and its result, strings as themselves")
 }
