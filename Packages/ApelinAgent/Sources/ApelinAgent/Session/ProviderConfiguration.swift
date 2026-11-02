@@ -65,6 +65,19 @@ struct ResolvedProvider: Sendable {
 }
 
 enum ProviderResolver {
+    /// What the app's model settings override on the model's own record. A
+    /// figure that is not positive leaves the record's alone.
+    static func applying(_ parameters: AgentModelParameters, to model: Model) -> Model {
+        var model = model
+        if let window = parameters.contextWindow, window > 0 {
+            model.contextWindow = window
+        }
+        if let tokens = parameters.maxTokens, tokens > 0 {
+            model.maxTokens = tokens
+        }
+        return model
+    }
+
     /// Registers the provider on kwwk's registry from `credentials`, with
     /// the same model capabilities used when verifying the account.
     static func resolve(

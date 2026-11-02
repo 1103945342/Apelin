@@ -39,6 +39,9 @@ public actor AgentSession {
     /// sign-in keep that resolution: resolving again exchanges some
     /// providers' tokens over the network, before the message is recorded.
     private var resolvedFrom: (provider: ProviderConfiguration, credentials: OAuthCredentials?)
+    /// The model the provider's record gives, before the app's settings
+    /// override its figures: a later change of those starts from it again.
+    private var recordModel: Model?
     private var titleTask: Task<Void, Never>?
     private var hasTitle = false
     /// Title completions that named nothing. Each prompt asks again until
@@ -184,7 +187,7 @@ public actor AgentSession {
         let agent = Agent(options: AgentOptions(
             initialState: AgentInitialState(
                 systemPrompt: systemPrompt,
-                model: resolved.model,
+                model: ProviderResolver.applying(configuration.modelParameters, to: resolved.model),
                 thinkingLevel: configuration.thinking,
                 tools: runner.agentTools(mcp: mcpTools, extensions: toolExtensions.extensions),
                 messages: transcript,
@@ -214,6 +217,7 @@ public actor AgentSession {
         // a conversation with nothing in it named nothing that went stale
         restartUntold = configuration.hostRestarted && !transcript.isEmpty
         resolvedFrom = (configuration.provider, resolved.credentials)
+        recordModel = resolved.model
         self.configuration = configuration
         self.log = log
         self.journal = journal
@@ -241,24 +245,30 @@ public actor AgentSession {
         provider: ProviderConfiguration,
         thinking: ThinkingLevel,
         serviceTier: ServiceTier? = nil,
+        modelParameters: AgentModelParameters = .init(),
         credentials: any CredentialSource,
     ) async throws {
         guard runTask == nil else { return }
         let stored = try await ProviderResolver.storedCredentials(provider, in: credentials)
-        if provider == resolvedFrom.provider, stored == resolvedFrom.credentials {
+        if provider == resolvedFrom.provider, stored == resolvedFrom.credentials,
+           let record = recordModel
+        {
             guard runTask == nil else { return }
+            // the same sign-in: only the figures the app may have changed
+            agent.state.model = ProviderResolver.applying(modelParameters, to: record)
             agent.state.thinkingLevel = thinking
             agent.state.serviceTier = serviceTier
             return
         }
         let resolved = try await ProviderResolver.resolve(provider, credentials: credentials)
         guard runTask == nil else { return }
-        agent.state.model = resolved.model
+        recordModel = resolved.model
+        agent.state.model = ProviderResolver.applying(modelParameters, to: resolved.model)
         agent.state.thinkingLevel = thinking
         agent.state.serviceTier = serviceTier
         agent.authResolver = resolved.authResolver
         resolvedFrom = (provider, resolved.credentials)
-        journal.modelChanged(to: resolved.model)
+        journal.modelChanged(to: agent.state.model)
     }
 
     // MARK: - Control

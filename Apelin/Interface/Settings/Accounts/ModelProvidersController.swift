@@ -249,6 +249,12 @@ final class ModelProvidersController: TableController, UISearchResultsUpdating {
             ) { [weak self] _ in
                 self?.presentPageAsFormSheet(ModelActivationController(account: account))
             },
+            UIAction(
+                title: String(localized: "Model Parameters"),
+                image: UIImage(systemName: "slider.horizontal.3"),
+            ) { [weak self] _ in
+                self?.presentPageAsFormSheet(ModelParametersController(account: account))
+            },
             UIMenu(options: .displayInline, children: [
                 UIAction(
                     title: String(localized: "Sign Out"),

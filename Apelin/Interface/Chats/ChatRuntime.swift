@@ -399,6 +399,7 @@ final class ChatRuntime {
                 serviceTier: selection?.tier,
                 approvalMode: AgentPermissions.mode,
                 asksBeforeScreen: AgentPermissions.asksBeforeScreen,
+                modelParameters: ModelParameters.values(for: selection?.provider, model: selection?.model).wire,
             ),
             descriptors: descriptors,
         )
@@ -487,6 +488,7 @@ final class ChatRuntime {
             asksBeforeScreen: AgentPermissions.asksBeforeScreen,
             reasoningEffort: selected?.effort,
             serviceTier: selected?.tier,
+            modelParameters: ModelParameters.values(for: selected?.provider, model: selected?.model).wire,
         )
         if request.temporaryID != nil {
             try DataFolder.app.makeLevels(to: DataFolder.app.root.appendingPathComponent("Temporary/" + id.uuidString))

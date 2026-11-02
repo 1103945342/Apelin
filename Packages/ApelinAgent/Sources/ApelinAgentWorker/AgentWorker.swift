@@ -72,6 +72,7 @@ public enum AgentWorker {
                         provider: AgentWorker.provider(AgentOpenRequest(provider: provider, model: prompt.model)),
                         thinking: .init(rawValue: prompt.reasoningEffort?.rawValue ?? "off") ?? .off,
                         serviceTier: AgentWorker.serviceTier(prompt.serviceTier),
+                        modelParameters: prompt.modelParameters ?? .init(),
                         credentials: KeychainCredentialSource(accessGroup: keychainAccessGroup),
                     )
                     await state.modelChoice.set(
@@ -79,6 +80,7 @@ public enum AgentWorker {
                         model: prompt.model,
                         reasoningEffort: prompt.reasoningEffort,
                         serviceTier: prompt.serviceTier,
+                        modelParameters: prompt.modelParameters,
                     )
                 }
                 guard (prompt.attachments?.count ?? 0) <= 8 else {
@@ -297,6 +299,7 @@ actor WorkerState {
                     dataRoot: dataRoot,
                     thinking: .init(rawValue: open.reasoningEffort?.rawValue ?? "off") ?? .off,
                     serviceTier: AgentWorker.serviceTier(open.serviceTier),
+                    modelParameters: open.modelParameters ?? .init(),
                     installRoot: context.assignment.installRoot,
                     hostRestarted: open.hostRestarted == true,
                 ),
@@ -332,6 +335,7 @@ actor WorkerState {
             model: open.model,
             reasoningEffort: open.reasoningEffort,
             serviceTier: open.serviceTier,
+            modelParameters: open.modelParameters,
         )
 
         let events = try await session.events(afterSeq: 0)

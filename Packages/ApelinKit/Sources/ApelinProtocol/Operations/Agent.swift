@@ -193,6 +193,21 @@ public enum AgentServiceTier: String, Codable, Sendable, CaseIterable {
     case priority, ultrafast
 }
 
+/// What the app's model settings say a model's own record does not, or says
+/// better: the two figures a conversation is read against.
+public struct AgentModelParameters: Codable, Sendable, Equatable, Hashable {
+    /// Tokens the conversation may take before the agent compacts it: the
+    /// window the composer's ring is drawn against.
+    public var contextWindow: Int?
+    /// The most a reply may be.
+    public var maxTokens: Int?
+
+    public init(contextWindow: Int? = nil, maxTokens: Int? = nil) {
+        self.contextWindow = contextWindow
+        self.maxTokens = maxTokens
+    }
+}
+
 public struct AgentOpenRequest: OperationRequest {
     public typealias Response = AgentOpenResponse
     public static let operation = AppOperation.agentOpen
@@ -214,6 +229,9 @@ public struct AgentOpenRequest: OperationRequest {
     public var asksBeforeScreen: Bool?
     public var reasoningEffort: AgentReasoningEffort?
     public var serviceTier: AgentServiceTier?
+    /// The model's own figures for this choice, as the app's model settings
+    /// have them: nil leaves what the model's record says.
+    public var modelParameters: AgentModelParameters?
     /// A first prompt, submitted as soon as the session is open.
     public var prompt: String?
     /// End the session (its task) when the first run finishes: `succeeded`
@@ -243,6 +261,7 @@ public struct AgentOpenRequest: OperationRequest {
         asksBeforeScreen: Bool? = nil,
         reasoningEffort: AgentReasoningEffort? = nil,
         serviceTier: AgentServiceTier? = nil,
+        modelParameters: AgentModelParameters? = nil,
         prompt: String? = nil,
         closeWhenFinished: Bool? = nil,
         title: String? = nil,
@@ -258,6 +277,7 @@ public struct AgentOpenRequest: OperationRequest {
         self.asksBeforeScreen = asksBeforeScreen
         self.reasoningEffort = reasoningEffort
         self.serviceTier = serviceTier
+        self.modelParameters = modelParameters
         self.prompt = prompt
         self.closeWhenFinished = closeWhenFinished
         self.title = title
@@ -309,6 +329,9 @@ public struct AgentPromptRequest: OperationRequest {
     public var model: String?
     public var reasoningEffort: AgentReasoningEffort?
     public var serviceTier: AgentServiceTier?
+    /// The model's own figures for this choice, as the app's model settings
+    /// have them: nil leaves what the model's record says.
+    public var modelParameters: AgentModelParameters?
     public var attachments: [AgentInputAttachment]?
     public var approvalMode: ApprovalMode?
     /// Ask Before Using the Screen (`ScreenConsent`), as the app has it now;
@@ -332,6 +355,7 @@ public struct AgentPromptRequest: OperationRequest {
         approvalMode: ApprovalMode? = nil,
         asksBeforeScreen: Bool? = nil,
         fromSessionID: String? = nil,
+        modelParameters: AgentModelParameters? = nil,
     ) {
         self.sessionID = sessionID
         self.text = text
@@ -340,6 +364,7 @@ public struct AgentPromptRequest: OperationRequest {
         self.model = model
         self.reasoningEffort = reasoningEffort
         self.serviceTier = serviceTier
+        self.modelParameters = modelParameters
         self.attachments = attachments
         self.approvalMode = approvalMode
         self.asksBeforeScreen = asksBeforeScreen
