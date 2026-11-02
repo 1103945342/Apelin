@@ -79,8 +79,9 @@ final class ModelParameterFormController: TableController {
     private var window = UITextField()
     private var output = UITextField()
 
+    /// One band per field, its row carrying its own name: a section is its
+    /// row here, so the footer that explains a field sits under it.
     private enum Section: Hashable { case window, output }
-    private enum Row: Hashable { case field }
 
     init(model: String, provider: AgentProvider, onSave: @escaping () -> Void) {
         self.model = model
@@ -94,9 +95,9 @@ final class ModelParameterFormController: TableController {
         fatalError("Use init(model:provider:onSave:)")
     }
 
-    private lazy var dataSource = TableDataSource<Section, Row, Section>(
+    private lazy var dataSource = TableDataSource<Section, Section, Section>(
         tableView: tableView,
-        identifier: { _ in .field },
+        identifier: { $0 },
     ) { [weak self] _, _, section in
         guard let self else { return nil }
         let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
@@ -143,7 +144,7 @@ final class ModelParameterFormController: TableController {
                 String(localized: "The most a reply may be. Leave it empty to use what the model reports.")
             }
         }
-        dataSource.update([(.window, [.field]), (.output, [.field])])
+        dataSource.update([(.window, [.window]), (.output, [.output])])
     }
 
     private func save() {

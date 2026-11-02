@@ -16,6 +16,9 @@ on:
 
 permissions:
   contents: read
+  # A failed build writes the end of its log into an issue, which is the one
+  # place this fork can read a log back without a GitHub sign-in.
+  issues: write
 
 jobs:
   build:
@@ -54,7 +57,28 @@ jobs:
           set -euo pipefail
           make deb FLAVOR="${{ inputs.bootstrap }}" CONFIGURATION=Release SKIP_HARNESS=1 \
             DERIVED_DATA="$RUNNER_TEMP/apelin-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
-            BUILD_NUMBER="$GITHUB_RUN_NUMBER"
+            BUILD_NUMBER="$GITHUB_RUN_NUMBER" 2>&1 | tee "$RUNNER_TEMP/build.log"
+
+      - name: Report a failed build
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          body="$RUNNER_TEMP/failure.md"
+          {
+            echo "The debug build of \`$GITHUB_SHA\` for ${{ inputs.bootstrap }} failed."
+            echo
+            echo "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo
+            echo '```'
+            tail -c 40000 "$RUNNER_TEMP/build.log" 2>/dev/null | grep -v '^##\[debug\]' || true
+            echo '```'
+          } > "$body"
+          gh issue create \
+            --title "Debug build failed: ${GITHUB_SHA:0:8} (${{ inputs.bootstrap }})" \
+            --body-file "$body" || true
 
       - name: Upload the package
         uses: actions/upload-artifact@v4
