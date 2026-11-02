@@ -180,10 +180,14 @@ jobs:
   # VERSION=x.y.z` followed by a push publishes a new one. The tag it creates
   # names the commit the run built; release.yml still publishes a tag pushed by
   # hand, and its own verification covers the archive that pushes.
+  #
+  # A run started by hand on main publishes the same way (2026-11-02): GitHub
+  # stopped creating runs for this fork's pushes while its settings said they
+  # were allowed, and a dispatch was the only way left to build a version.
   release:
     name: Publish the release
     needs: [test, build]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
