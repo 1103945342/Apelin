@@ -1,3 +1,4 @@
+import ApelinProtocol
 import struct ApelinToolCore.ToolManifestPolicy
 import Foundation
 import KWWKAgent

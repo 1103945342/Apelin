@@ -2526,7 +2526,16 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   Model, effort, Speed and Stop blocks fade and reposition on the composer's spring, including
   when the import panel hides or restores the row; Reduce Motion applies
   changes immediately. `AgentOpenRequest.reasoningEffort` and
-  `serviceTier` reach the worker's session configuration. The stop control's icon, text
+  `serviceTier` reach the worker's session configuration. Since 2026-11-02
+  so do `AgentOpenRequest.modelParameters` and `AgentPromptRequest`'s
+  (`AgentModelParameters`: the context window and the output cap), which
+  Settings ▸ Model Providers ▸ Model Parameters keeps per model
+  (`ModelParameters`, app side): the worker lays them over kwwk's own
+  record before the session reads compaction and the request budget from
+  it, so the figure the user set is the one the agent compacts by. The
+  model row is on the input's own ground, not below the box
+  (`ComposerView.layoutSubviews`), with the context ring at its end.
+  The stop control's icon, text
   and border are red. It takes a
   live output cancellation callback and stays hidden without one. Settings stores a global `AgentPermissions.mode`,
   default relaxed, one of Strict / Relaxed / Full (严格 / 宽松 / 完全), with a

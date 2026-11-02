@@ -27,8 +27,8 @@ final class ModelParametersController: TableController {
     private lazy var dataSource = TableDataSource<Int, String, String>(
         tableView: tableView,
         identifier: { $0 },
-    ) { [weak self] table, indexPath, model in
-        let cell = table.dequeueReusableCell(withIdentifier: "model") ?? UITableViewCell(style: .value1, reuseIdentifier: "model")
+    ) { [weak self] _, _, model in
+        let cell = UITableViewCell(style: .value1, reuseIdentifier: nil)
         var content = cell.defaultContentConfiguration()
         content.text = model
         content.textProperties.numberOfLines = 0
@@ -97,9 +97,9 @@ final class ModelParameterFormController: TableController {
     private lazy var dataSource = TableDataSource<Section, Row, Section>(
         tableView: tableView,
         identifier: { _ in .field },
-    ) { [weak self] table, _, section in
+    ) { [weak self] _, _, section in
         guard let self else { return nil }
-        let cell = table.dequeueReusableCell(withIdentifier: "field") ?? UITableViewCell(style: .default, reuseIdentifier: "field")
+        let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
         var content = cell.defaultContentConfiguration()
         switch section {
         case .window: content.text = String(localized: "Context Window")
