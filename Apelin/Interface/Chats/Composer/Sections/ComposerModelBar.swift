@@ -25,7 +25,8 @@ final class ComposerModelBar: ComposerSectionView {
     /// how much. The ring is the only control here whose state is a figure.
     let usageButton = ContextUsageButton()
 
-    /// Attachments: the plus that opens the camera, photos, files and the web.
+    /// Attachments: the plus that opens the camera, photos, files and the web,
+    /// and closes them again.
     let addButton = ComposerIconButton(symbolName: "plus", label: String(localized: "Add Attachment"))
 
     /// The send, and the stop it becomes while a run is going.
@@ -42,10 +43,7 @@ final class ComposerModelBar: ComposerSectionView {
     /// The efforts this model offers, kept so a tap can redraw the menu against
     /// the level it took.
     private var efforts: [AgentReasoningEffort] = []
-    private var selectedEffort: AgentReasoningEffort?
     /// The run is going: with nothing typed the send becomes a stop.
-    private var isBusy = false
-    private var hasContent = false
     private var sendIsStop = false
 
     override func initializeViews() {
@@ -101,7 +99,6 @@ final class ComposerModelBar: ComposerSectionView {
 
     func setEfforts(_ efforts: [AgentReasoningEffort], selected: AgentReasoningEffort?) {
         self.efforts = efforts
-        selectedEffort = selected
         updateControls { [self] in
             let shown = !efforts.isEmpty
             effortButton.alpha = shown ? 1 : 0
@@ -125,26 +122,23 @@ final class ComposerModelBar: ComposerSectionView {
     /// Nothing to send: the disc greys; a run going and nothing typed: it is
     /// the stop.
     func setSendState(isBusy: Bool, hasContent: Bool) {
+        // Sent while the state is unchanged too: the disc is drawn here, and the
+        // first call after the row is built is the one that decides its colour.
         let stop = isBusy && !hasContent
-        guard stop != sendIsStop || hasContent != self.hasContent || isBusy != self.isBusy else { return }
-        self.isBusy = isBusy
-        self.hasContent = hasContent
         sendIsStop = stop
-        updateControls { [self] in
-            let able = stop || hasContent
-            sendButton.iconView.image = UIImage(systemName: stop ? "stop.fill" : "arrow.up")?
-                .withRenderingMode(.alwaysTemplate)
-            sendButton.fillColor = stop
-                ? ComposerPalette.stop
-                : (hasContent ? (isBusy ? ComposerPalette.queued : ComposerPalette.send) : ComposerPalette.inert)
-            sendButton.iconView.tintColor = able
-                ? ComposerPalette.label(on: sendButton.fillColor ?? ComposerPalette.inert)
-                : .secondaryLabel
-            sendButton.isUserInteractionEnabled = able
-            sendButton.accessibilityLabel = stop
-                ? String(localized: "Stop Generating")
-                : String(localized: "Send")
-        }
+        let able = stop || hasContent
+        sendButton.iconView.image = UIImage(systemName: stop ? "stop.fill" : "arrow.up")?
+            .withRenderingMode(.alwaysTemplate)
+        sendButton.fillColor = stop
+            ? ComposerPalette.stop
+            : (hasContent ? (isBusy ? ComposerPalette.queued : ComposerPalette.send) : ComposerPalette.inert)
+        sendButton.iconView.tintColor = able
+            ? ComposerPalette.label(on: sendButton.fillColor ?? ComposerPalette.inert)
+            : .secondaryLabel
+        sendButton.isUserInteractionEnabled = able
+        sendButton.accessibilityLabel = stop
+            ? String(localized: "Stop Generating")
+            : String(localized: "Send")
     }
 
     /// The context's fill, from the agent's last record of it; nothing to
@@ -162,6 +156,17 @@ final class ComposerModelBar: ComposerSectionView {
     /// it again.
     func setContextExpanded(_ expanded: Bool) {
         usageButton.setExpanded(expanded)
+    }
+
+    /// The import panel is open: the plus draws as a close, so the same tap
+    /// that opened it folds it away.
+    func setPanelOpen(_ open: Bool) {
+        updateControls { [self] in
+            addButton.change(symbolName: open ? "xmark" : "plus")
+            addButton.accessibilityLabel = open
+                ? String(localized: "Close")
+                : String(localized: "Add Attachment")
+        }
     }
 
     // MARK: - Picking

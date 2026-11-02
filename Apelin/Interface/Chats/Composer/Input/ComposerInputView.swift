@@ -31,11 +31,6 @@ class ComposerInputView: ComposerSectionView {
         label: String(localized: "Expand"),
     )
 
-    /// The tools that act on the draft itself, above it and to its end: a
-    /// rewrite of what is typed, and a page to finish it on. They sit outside
-    /// the text's own band so neither takes a corner from the words.
-    let draftToolsRow = UIView()
-
     let inset: UIEdgeInsets = ComposerMetrics.Input.inset
     let iconSpacing: CGFloat = ComposerMetrics.Input.iconSpacing
     let iconSize = CGSize(
@@ -61,6 +56,9 @@ class ComposerInputView: ComposerSectionView {
     /// Send and the plus belong to the row under the band, not to the band:
     /// they are what happens to a finished draft, not part of typing one.
     var showsComposerSend = true
+
+    /// The import panel is open, as the row below draws its plus.
+    private(set) var showsPanelOpen = false
 
     var hasAttachments = false {
         didSet {
@@ -97,9 +95,10 @@ class ComposerInputView: ComposerSectionView {
     }
 
     /// The import panel is open: the plus draws as a close, so the same tap
-    /// that opened it folds it away.
+    /// that opened it folds it away. The button lives on the row below, which
+    /// the composer tells; nothing here draws it any more.
     func showPanelState(_ open: Bool) {
-        _ = open
+        showsPanelOpen = open
     }
 
     /// The placeholder says what a send means right now: a message, or one

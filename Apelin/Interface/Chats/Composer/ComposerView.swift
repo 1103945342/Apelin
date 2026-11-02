@@ -134,6 +134,7 @@ class ComposerView: ComposerSectionView {
         controlPanel.webButton.actionBlock = { [weak self] in self?.delegate?.onComposerWebTapped() }
         controlPanel.isPanelOpen.removeDuplicates().sink { [weak self] open in
             self?.inputEditor.showPanelState(open)
+            self?.modelBar.setPanelOpen(open)
             self?.updateModelBarVisibility()
         }.store(in: &cancellables)
         attachmentsBar.onRemove = { [weak self] id in
