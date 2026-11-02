@@ -155,6 +155,13 @@ public enum AgentWorker {
                 let home = URL(fileURLWithPath: context.assignment.home, isDirectory: true)
                 return SkillCatalog.listing(userDirectory: ApelinDataRoot(home: home).skills)
             }
+        case .agentRewritePrompt:
+            await WorkerMain.serve(AgentRewritePromptRequest.self, request) { query in
+                try await PromptRewriter.rewrite(
+                    query,
+                    credentials: KeychainCredentialSource(accessGroup: keychainAccessGroup),
+                )
+            }
         case .agentAPIConfiguration:
             await WorkerMain.serve(AgentAPIConfigurationRequest.self, request) { query in
                 try await accounts.apiConfiguration(for: query.provider)
@@ -219,8 +226,16 @@ public enum AgentWorker {
     /// every other provider uses its credential store id and the default
     /// model chosen by ProviderRegistration when none is named.
     static func provider(_ open: AgentOpenRequest) throws -> ProviderConfiguration {
-        let model = open.model.flatMap { $0.isEmpty ? nil : $0 }
-        let provider = open.provider ?? .githubCopilot
+        try provider(provider: open.provider ?? .githubCopilot, model: open.model)
+    }
+
+    /// The same, from a provider and model rather than an open request: a
+    /// rewrite asks the model a session would, without opening one.
+    static func provider(
+        provider: AgentProvider,
+        model requested: String?,
+    ) throws -> ProviderConfiguration {
+        let model = requested.flatMap { $0.isEmpty ? nil : $0 }
         switch provider {
         case .githubCopilot:
             return .githubCopilot(model: model ?? defaultCopilotModel)

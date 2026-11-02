@@ -58,17 +58,27 @@ public enum ProviderResolutionError: Error, Equatable, LocalizedError {
     }
 }
 
-struct ResolvedProvider: Sendable {
-    var model: Model
-    var authResolver: (@Sendable (Model, String?) async throws -> ResolvedProviderAuth?)?
+public struct ResolvedProvider: Sendable {
+    public var model: Model
+    public var authResolver: (@Sendable (Model, String?) async throws -> ResolvedProviderAuth?)?
     /// The stored sign-in it was resolved from; nil for one that needs none.
-    var credentials: OAuthCredentials?
+    public var credentials: OAuthCredentials?
+
+    public init(
+        model: Model,
+        authResolver: (@Sendable (Model, String?) async throws -> ResolvedProviderAuth?)?,
+        credentials: OAuthCredentials?,
+    ) {
+        self.model = model
+        self.authResolver = authResolver
+        self.credentials = credentials
+    }
 }
 
-enum ProviderResolver {
+public enum ProviderResolver {
     /// What the app's model settings override on the model's own record. A
     /// figure that is not positive leaves the record's alone.
-    static func applying(_ parameters: AgentModelParameters, to model: Model) -> Model {
+    public static func applying(_ parameters: AgentModelParameters, to model: Model) -> Model {
         var model = model
         if let window = parameters.contextWindow, window > 0 {
             model.contextWindow = window
@@ -81,7 +91,7 @@ enum ProviderResolver {
 
     /// Registers the provider on kwwk's registry from `credentials`, with
     /// the same model capabilities used when verifying the account.
-    static func resolve(
+    public static func resolve(
         _ configuration: ProviderConfiguration,
         credentials: any CredentialSource,
     ) async throws -> ResolvedProvider {

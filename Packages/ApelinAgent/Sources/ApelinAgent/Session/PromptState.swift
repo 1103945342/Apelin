@@ -183,6 +183,10 @@ struct PromptState: Equatable {
     ) -> PromptState {
         var told = told
         switch tool {
+        // The todo list is drawn from the store by the app, so a call that
+        // changed it tells the model nothing it does not already read back.
+        case .todoList, .todoWrite:
+            return told
         case .memorySave:
             guard let memory = now.memory else { return told }
             // an empty id is a new record, as the tool reads it

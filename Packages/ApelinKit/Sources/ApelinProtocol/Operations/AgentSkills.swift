@@ -73,4 +73,13 @@ public extension ApelinService {
     func agentSkillList() async throws -> AgentSkillListResponse {
         try await send(AgentSkillListRequest())
     }
+
+    /// One turn of a model with no session: the composer's rewrite.
+    func agentRewritePrompt(
+        text: String,
+        provider: AgentProvider?,
+        model: String?,
+    ) async throws -> AgentRewritePromptResponse {
+        try await send(AgentRewritePromptRequest(text: text, provider: provider, model: model))
+    }
 }

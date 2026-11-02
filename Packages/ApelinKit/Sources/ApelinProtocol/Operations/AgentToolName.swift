@@ -38,6 +38,9 @@ public enum AgentToolName: String, Sendable, Hashable, Codable, CaseIterable {
     case memoryList = "apelin_memory_list"
     case memorySave = "apelin_memory_save"
     case memoryDelete = "apelin_memory_delete"
+    /// The conversation's todo list, as the composer shows it.
+    case todoList = "apelin_todo_list"
+    case todoWrite = "apelin_todo_write"
     case skillList = "apelin_skill_list"
     case skillRead = "apelin_skill_read"
     case skillSave = "apelin_skill_save"

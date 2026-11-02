@@ -91,6 +91,7 @@ extension ComposerInputView: UITextViewDelegate {
     func textViewDidChange(_ textView: UITextView) {
         updatePlaceholderAlpha()
         updateTextHeight()
+        updateOverflowState()
         delegate?.onComposerInputTextChanged(text: textView.text)
         switchToRequiredStatus()
     }
@@ -141,6 +142,7 @@ extension ComposerInputView: UITextViewDelegate {
         ).height
         let decision = ceil(max(textHeight, font.lineHeight))
         doWithAnimation { self.textHeight.send(decision) }
+        updateOverflowState()
     }
 
     func clearAttributedText() {

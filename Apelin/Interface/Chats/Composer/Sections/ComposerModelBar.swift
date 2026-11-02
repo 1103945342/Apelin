@@ -13,18 +13,27 @@ final class ComposerModelBar: ComposerSectionView {
         text: String(localized: "Stop"),
         image: UIImage(systemName: "stop.fill"),
     )
+    /// What this run may do, first on the row: it is the setting read before
+    /// a message is sent, and the others are read for it.
+    let modePill = ComposerModePill()
     /// How full the context is, at the row's end; a tap asks about compacting.
     let usageButton = ContextUsageButton()
     var onEffortChanged: ((AgentReasoningEffort) -> Void)?
     var onTierChanged: ((AgentServiceTier?) -> Void)?
+    /// The pill was tapped: the answer is the mode it took.
+    var onModeChanged: ((ComposerMode) -> Void)?
+    /// The ring was tapped: open the context panel.
+    var onContextTapped: (() -> Void)?
     private var cancelOutput: (() -> Void)?
 
     override func initializeViews() {
         super.initializeViews()
-        for control in [button, effortButton, tierButton, stopButton] {
+        for control in [modePill, button, effortButton, tierButton, stopButton] {
             addSubview(control)
         }
         addSubview(usageButton)
+        modePill.onChange = { [weak self] mode in self?.onModeChanged?(mode) }
+        usageButton.tapAction = { [weak self] in self?.onContextTapped?() }
         effortButton.showsMenuAsPrimaryAction = true
         setControl(effortButton, visible: false)
         tierButton.showsMenuAsPrimaryAction = true
@@ -107,7 +116,13 @@ final class ComposerModelBar: ComposerSectionView {
 
     /// As tall as the tallest thing on the row: the chips, or the ring.
     private var preferredHeight: CGFloat {
-        max(button.intrinsicContentSize.height, usageButton.isHidden ? 0 : ContextUsageButton.size)
+        max(
+            max(
+                max(button.intrinsicContentSize.height, modePill.intrinsicContentSize.height),
+                usageButton.isHidden ? 0 : ContextUsageButton.size,
+            ),
+            26,
+        )
     }
 
     private func setControl(_ control: UIButton, visible: Bool) {
@@ -159,9 +174,10 @@ final class ComposerModelBar: ComposerSectionView {
         let ringRoom = ringWidth > 0 ? ringWidth + spacing : 0
         let controls = [button, effortButton, tierButton, stopButton].filter(\.isUserInteractionEnabled)
         let otherWidth = controls.dropFirst().reduce(CGFloat.zero) { $0 + $1.intrinsicContentSize.width + spacing }
-        let room = max(0, bounds.width - ringRoom)
+        let pillWidth = modePill.intrinsicContentSize.width
+        let room = max(0, bounds.width - ringRoom - pillWidth - spacing)
         let modelWidth = min(button.intrinsicContentSize.width, max(44, room - otherWidth))
-        var x = max(0, (room - modelWidth - otherWidth) / 2)
+        var x = max(0, (room - modelWidth - otherWidth) / 2) + pillWidth + spacing
         // model, effort, speed, Stop in reading order: right to left, from the right
         for control in [button, effortButton, tierButton, stopButton] {
             let width = control === button ? modelWidth : control.intrinsicContentSize.width
@@ -172,6 +188,12 @@ final class ComposerModelBar: ComposerSectionView {
                 x += width + spacing
             }
         }
+        modePill.frame = directionalFrame(CGRect(
+            x: 0,
+            y: (height - modePill.intrinsicContentSize.height) / 2,
+            width: pillWidth,
+            height: modePill.intrinsicContentSize.height,
+        ))
         usageButton.frame = directionalFrame(
             CGRect(x: bounds.width - ringWidth, y: (height - ringWidth) / 2, width: ringWidth, height: ringWidth),
         )

@@ -11,8 +11,28 @@ class ComposerIconButton: UIButton {
 
     var tapAction: () -> Void = {}
 
+    var iconInset: CGFloat = 2 {
+        didSet { setNeedsLayout() }
+    }
+
+    /// The fill behind the symbol, for a button that draws as a disc: a send,
+    /// or a stop. Drawn under the symbol so the button's own background stays
+    /// clear and a highlight never paints over the disc.
+    var fillColor: UIColor? {
+        didSet {
+            fillView.isHidden = fillColor == nil
+            fillView.backgroundColor = fillColor
+        }
+    }
+
+    private let fillView = UIView()
+
     required init() {
         super.init(frame: .zero)
+        fillView.isUserInteractionEnabled = false
+        fillView.isHidden = true
+        fillView.layer.cornerCurve = .continuous
+        addSubview(fillView)
         addSubview(iconView)
         iconView.tintColor = .label
         iconView.translatesAutoresizingMaskIntoConstraints = false
@@ -36,9 +56,20 @@ class ComposerIconButton: UIButton {
         accessibilityLabel = label
     }
 
+    /// A control drawn with a system symbol instead of an asset: some of what
+    /// the composer shows is a state of another control rather than a mark of
+    /// its own, and carries no artwork.
+    required convenience init(symbolName: String, label: String) {
+        self.init()
+        iconView.image = UIImage(systemName: symbolName)?.withRenderingMode(.alwaysTemplate)
+        accessibilityLabel = label
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
-        iconView.frame = bounds.insetBy(dx: 2, dy: 2)
+        fillView.frame = bounds
+        fillView.layer.cornerRadius = bounds.width / 2
+        iconView.frame = bounds.insetBy(dx: iconInset, dy: iconInset)
     }
 
     /// Hidden or faded out, it is not there: the composer keeps its unused
@@ -59,6 +90,12 @@ class ComposerIconButton: UIButton {
     func change(iconName: String) {
         UIView.transition(with: iconView, duration: 0.3, options: [.transitionCrossDissolve, .allowUserInteraction, .beginFromCurrentState]) {
             self.iconView.image = UIImage(named: iconName)?.withRenderingMode(.alwaysTemplate)
+        }
+    }
+
+    func change(symbolName: String) {
+        UIView.transition(with: iconView, duration: 0.3, options: [.transitionCrossDissolve, .allowUserInteraction, .beginFromCurrentState]) {
+            self.iconView.image = UIImage(systemName: symbolName)?.withRenderingMode(.alwaysTemplate)
         }
     }
 }

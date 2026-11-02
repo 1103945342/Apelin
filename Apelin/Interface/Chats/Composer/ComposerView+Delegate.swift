@@ -13,6 +13,12 @@ extension ComposerView {
         func onComposerUpdateDraft(_ draft: ComposerDraft)
         /// The text field took the keyboard.
         func onComposerBeginEditing()
+        /// Expand was tapped: show the same draft on a page tall enough for it.
+        func onComposerExpandTapped()
+        /// The wand was tapped, with the draft as it stood.
+        func onComposerRewriteRequested(draft: String)
+        /// The wand was tapped again while a rewrite ran.
+        func onComposerRewriteCancelled()
         func onComposerCameraTapped()
         func onComposerPhotoTapped()
         func onComposerFileTapped()

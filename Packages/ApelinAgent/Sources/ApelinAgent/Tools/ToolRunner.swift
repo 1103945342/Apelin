@@ -27,6 +27,9 @@ actor ToolRunner {
     let digests: any ApprovalDigestStore
     let gate: ApprovalGate
     let memory: MemoryStore?
+    /// The conversation's todo list, beside the memory in the same folder: the
+    /// app draws it, the agent writes it.
+    let todos: TodoStore?
     let skills: URL?
     /// Where the read tools reach besides the project.
     let readOnlyRoots: ReadOnlyRoots
@@ -49,6 +52,7 @@ actor ToolRunner {
         digests: any ApprovalDigestStore,
         gate: ApprovalGate,
         memory: MemoryStore? = nil,
+        todos: TodoStore? = nil,
         skills: URL? = nil,
         readOnlyRoots: ReadOnlyRoots = .none,
         record: (@Sendable (AgentSessionEvent) async throws -> Void)? = nil,
@@ -63,6 +67,7 @@ actor ToolRunner {
         self.digests = digests
         self.gate = gate
         self.memory = memory
+        self.todos = todos
         self.skills = skills
         self.readOnlyRoots = readOnlyRoots
         self.record = record
@@ -379,6 +384,14 @@ actor ToolRunner {
     ) async throws -> AgentToolResult {
         let files = ProjectFileTools(root: root)
         switch name {
+        case .todoList, .todoWrite:
+            guard let todos else { throw ToolDeniedError(message: "Todo storage is unavailable.") }
+            let tools = TodoTools(store: todos, sessionID: sessionID)
+            switch name {
+            case .todoList: return try json(tools.list())
+            case .todoWrite: return try json(tools.write(arguments))
+            default: throw ToolDeniedError(message: "unknown tool")
+            }
         case .memoryList, .memorySave, .memoryDelete:
             guard let memory else { throw ToolDeniedError(message: "Memory storage is unavailable.") }
             do {

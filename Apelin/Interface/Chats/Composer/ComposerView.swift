@@ -1,6 +1,7 @@
 // Lakr233's Inhouse Code, from FlowDown.
 // I CAN DO WHAT THE FUCK I WANT.
 
+import ApelinProtocol
 import Combine
 import UIKit
 
@@ -23,7 +24,33 @@ class ComposerView: ComposerSectionView {
     let attachmentsBar = ComposerAttachmentsBar()
     let controlPanel = ComposerControlPanel()
     let modelBar = ComposerModelBar()
+    /// What the context has left, opened from the ring on the model row. It
+    /// sits above the card, like the request panels, and closes on a second
+    /// tap of the ring.
+    let contextPanel = ComposerContextPanel()
+    /// The two menus the draft opens: a leading slash names a command, an `@`
+    /// names a file. Both sit above the card and never at once.
+    let commandMenu = ComposerCommandMenu()
+    let mentionMenu = ComposerMentionMenu()
+    /// What the menus list, filled by the conversation once it knows which
+    /// project it is in.
+    let commands = ComposerCommandCatalog(
+        actions: [CompactCommand(), UsageCommand(), InitProjectCommand()],
+    )
+    /// The project's file paths, relative to its root; nil until read.
+    private var projectFiles: [String]?
+    /// The project's folder, when this conversation has one.
+    var projectRoot: URL?
+    /// The messages waiting their turn, folded above the card. The session
+    /// holds the queue; this only shows it.
+    let queuePanel = ComposerQueuePanel()
+    /// Says a rewrite happened, with the words it replaced. Above the card,
+    /// where it can be reached before the next Send.
+    let rewriteBar = ComposerRewriteBar()
+    /// The conversation's todo list, read from the store the agent writes.
+    let todoPanel = ComposerTodoPanel()
     private var currentDraft = ComposerDraft()
+    private var panelHost = ComposerPanelHost()
 
     let shadowContainer = UIView()
     private var glassEffectView: UIVisualEffectView?
@@ -39,6 +66,15 @@ class ComposerView: ComposerSectionView {
         modelBar,
         controlPanel,
     ]
+
+    /// What the context panel's button asks for.
+    var onCompactContext: (() -> Void)?
+    /// Told when the mode pill changes, with the mode it took.
+    var onModeChanged: ((ComposerMode) -> Void)?
+    /// A command that the app runs itself was chosen.
+    var onRunCommand: ((ComposerActionCommand, String) -> Void)?
+    /// A skill was chosen: its name, and the arguments typed after the slash.
+    var onRunSkill: ((AgentSkill, String) -> Void)?
 
     let spacing: CGFloat = 10
 
@@ -108,6 +144,32 @@ class ComposerView: ComposerSectionView {
         }
         attachmentsBar.onPreview = { [weak self] item in self?.delegate?.onComposerPreviewAttachment(item) }
 
+        addSubview(contextPanel)
+        panelHost.add(contextPanel)
+        panelHost.add(queuePanel)
+        addSubview(queuePanel)
+        panelHost.add(todoPanel)
+        addSubview(todoPanel)
+        panelHost.onHeightChanged = { [weak self] in
+            self?.setNeedsLayout()
+            self?.layoutIfNeeded()
+        }
+        contextPanel.onCompact = { [weak self] in self?.onCompactContext?() }
+        modelBar.onContextTapped = { [weak self] in self?.toggleContextPanel() }
+        modelBar.onModeChanged = { [weak self] mode in self?.onModeChanged?(mode) }
+        inputEditor.expandButton.accessibilityHint = String(localized: "Opens the whole draft on a page.")
+
+        addSubview(commandMenu)
+        addSubview(mentionMenu)
+        for menu in [commandMenu as UIView, mentionMenu] {
+            menu.isHidden = true
+        }
+        commandMenu.onPick = { [weak self] command in self?.pick(command) }
+        mentionMenu.onPick = { [weak self] path in self?.pick(path) }
+
+        addSubview(rewriteBar)
+        rewriteBar.isHidden = true
+
         heightPublisher
             .removeDuplicates()
             .ensureMainThread()
@@ -130,7 +192,24 @@ class ComposerView: ComposerSectionView {
         }
 
         let inputTop = place(attachmentsBar, at: spacing)
-        place(inputEditor, at: inputTop)
+        // The panels and the two draft menus sit above the card, in the bands'
+        // own column, and push it down rather than covering what is typed.
+        var bandsTop = placePanel(queuePanel, at: inputTop)
+        bandsTop = placePanel(todoPanel, at: bandsTop)
+        if !rewriteBar.isHidden {
+            let height = max(20, UIFont.preferredFont(forTextStyle: .caption1).lineHeight)
+            rewriteBar.frame = CGRect(
+                x: spacing,
+                y: bandsTop,
+                width: bounds.width - spacing * 2,
+                height: height,
+            )
+            bandsTop = rewriteBar.frame.maxY + spacing
+        }
+        bandsTop = placePanel(contextPanel, at: bandsTop)
+        bandsTop = placeMenu(commandMenu, at: bandsTop)
+        bandsTop = placeMenu(mentionMenu, at: bandsTop)
+        place(inputEditor, at: bandsTop)
         // the attachments bar, once it is here, shares the input's ground
         var inputFrame = attachmentsBar.heightPublisher.value > 0
             ? attachmentsBar.frame.union(inputEditor.frame) : inputEditor.frame
@@ -173,6 +252,52 @@ class ComposerView: ComposerSectionView {
         heightPublisher.send(finalHeight)
     }
 
+    /// Lays a panel out across the composer at `y`, and answers where the next
+    /// band starts: the panel's own height plus the composer's spacing, or `y`
+    /// when it is folded away.
+    @discardableResult
+    private func placePanel(_ panel: ComposerPanel, at y: CGFloat) -> CGFloat {
+        let height = panel.heightPublisher.value
+        guard height > 0 else {
+            panel.isHidden = true
+            return y
+        }
+        panel.isHidden = false
+        panel.frame = CGRect(
+            x: spacing,
+            y: y,
+            width: bounds.width - spacing * 2,
+            height: height,
+        )
+        return panel.frame.maxY + spacing
+    }
+
+    /// Lays a draft menu out above the card, and answers where the next band
+    /// starts: the menu's own height plus the composer's spacing, or `y` when
+    /// it is not showing.
+    @discardableResult
+    private func placeMenu(_ menu: UIView, at y: CGFloat) -> CGFloat {
+        let height: CGFloat = if let menu = menu as? ComposerCommandMenu {
+            menu.preferredHeight
+        } else if let menu = menu as? ComposerMentionMenu {
+            menu.preferredHeight
+        } else {
+            0
+        }
+        guard height > 0 else {
+            menu.isHidden = true
+            return y
+        }
+        menu.isHidden = false
+        menu.frame = CGRect(
+            x: spacing,
+            y: y,
+            width: bounds.width - spacing * 2,
+            height: height,
+        )
+        return menu.frame.maxY + spacing
+    }
+
     /// Lays `band` out across the composer at `y`, as tall as it asks unless
     /// told otherwise, and answers where the next band starts.
     @discardableResult
@@ -213,6 +338,122 @@ class ComposerView: ComposerSectionView {
             responder = current.next
         }
         return nil
+    }
+
+    /// The rewrite button's state, held by whoever owns the request: the
+    /// composer only draws it.
+    func setRewriting(_ rewriting: Bool) {
+        inputEditor.rewriteButton.isRewriting = rewriting
+    }
+
+    /// A rewrite came back: the draft takes the new text, and the old one is
+    /// kept for the undo bar.
+    func applyRewrite(original: String, rewritten: String) {
+        currentDraft.text = rewritten
+        inputEditor.set(text: rewritten)
+        publishNewEditorStatus()
+        setRewriting(false)
+        rewriteBar.isHidden = false
+        rewriteBar.onUndo = { [weak self] in
+            guard let self else { return }
+            currentDraft.text = original
+            inputEditor.set(text: original)
+            publishNewEditorStatus()
+            rewriteBar.isHidden = true
+        }
+        setNeedsLayout()
+        layoutIfNeeded()
+    }
+
+    /// The rewrite did not land: the wand rests, and the draft stays as it was.
+    func rewriteFailed() {
+        setRewriting(false)
+    }
+
+    /// The ring was tapped: show what is left, or fold it away.
+    func toggleContextPanel() {
+        contextPanel.setExpanded(!contextPanel.isExpanded)
+    }
+
+    /// What the ring and its panel draw, from the agent's last record.
+    func setContextUsage(
+        usedTokens: Int,
+        limitTokens: Int,
+        compactable: Bool,
+    ) {
+        contextPanel.set(
+            usedTokens: usedTokens,
+            limitTokens: limitTokens,
+            compactEnabled: compactable,
+        )
+    }
+
+    /// The text changed: work out which menu, if either, the draft has opened.
+    /// A command wins over a mention, and neither opens while a run is taking
+    /// the message.
+    private func refreshMenus() {
+        let draft = text
+        if let query = composerCommandQuery(in: draft), !inputEditor.isBusy {
+            commandMenu.show(commands.matching(query))
+            mentionMenu.show(.idle)
+        } else if let query = composerMentionQuery(in: draft), !inputEditor.isBusy {
+            commandMenu.show([])
+            mentionMenu.show(mentionState(for: query))
+        } else {
+            commandMenu.show([])
+            mentionMenu.show(.idle)
+        }
+        setNeedsLayout()
+        layoutIfNeeded()
+    }
+
+    private func mentionState(for query: String) -> ComposerMentionState {
+        guard let root = projectRoot else { return .unavailable }
+        if projectFiles == nil {
+            projectFiles = ComposerProjectIndex.files(in: root)
+        }
+        guard let files = projectFiles else { return .failed(message: String(localized: "Could not read the project's files.")) }
+        return .ready(files: composerMatchingFiles(files, query: query))
+    }
+
+    /// A row was chosen: a command runs, a file closes the mention.
+    private func pick(_ command: ComposerCommand) {
+        switch command.kind {
+        case .action:
+            guard let action = commands.action(named: command.name) else { return }
+            onRunCommand?(action, commandArguments(for: command))
+        case .skill:
+            guard let skill = commands.skill(named: command.name) else { return }
+            onRunSkill?(skill, commandArguments(for: command))
+        }
+        // Choosing a command takes the draft: it was the command being named,
+        // and what is left of it is not a message.
+        resetValues()
+        refreshMenus()
+    }
+
+    private func pick(_ path: String) {
+        let updated = composerApplyingMention(path, to: text)
+        currentDraft.text = updated
+        inputEditor.set(text: updated)
+        publishNewEditorStatus()
+        refreshMenus()
+        inputEditor.beginEditing()
+    }
+
+    /// What follows the command's name, for a command that takes arguments.
+    private func commandArguments(for command: ComposerCommand) -> String {
+        guard command.acceptsArguments else { return "" }
+        let draft = text
+        let name = command.display
+        guard draft.hasPrefix(name) else { return "" }
+        return String(draft.dropFirst(name.count)).trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// The skills the agent reports, for the command menu's second half.
+    func setSkills(_ skills: [AgentSkill]) {
+        commands.setSkills(skills)
+        refreshMenus()
     }
 
     func showApproval(_ message: ChatMessage?) {
@@ -281,6 +522,7 @@ class ComposerView: ComposerSectionView {
         attachmentsBar.show([])
         controlPanel.close()
         inputEditor.set(text: "")
+        inputEditor.hasContent = false
         inputEditor.endEditing(true)
         setNeedsLayout()
         publishNewEditorStatus()
@@ -294,6 +536,7 @@ class ComposerView: ComposerSectionView {
         currentDraft = draft
         attachmentsBar.show(draft.attachments)
         inputEditor.hasAttachments = !draft.attachments.isEmpty
+        inputEditor.hasContent = !draft.text.isEmpty || !draft.attachments.isEmpty
         controlPanel.close()
         inputEditor.set(text: draft.text)
     }
@@ -309,6 +552,7 @@ class ComposerView: ComposerSectionView {
         currentDraft.attachments.append(attachment)
         attachmentsBar.show(currentDraft.attachments)
         inputEditor.hasAttachments = true
+        inputEditor.hasContent = true
         publishNewEditorStatus()
     }
 
@@ -336,7 +580,16 @@ class ComposerView: ComposerSectionView {
     func publishNewEditorStatus() {
         assert(Thread.isMainThread)
         inputEditor.hasAttachments = !currentDraft.attachments.isEmpty
+        inputEditor.hasContent = !text.isEmpty || !currentDraft.attachments.isEmpty
         delegate?.onComposerUpdateDraft(draft)
+    }
+
+    /// A run started or ended: the send button says which of its two jobs a
+    /// tap does now. Kept on the composer rather than in the delegate so the
+    /// band repaints even when nothing else has changed.
+    func setBusy(_ busy: Bool) {
+        inputEditor.isBusy = busy
+        inputEditor.hasContent = !text.isEmpty || !currentDraft.attachments.isEmpty
     }
 }
 
@@ -363,6 +616,18 @@ extension ComposerView: ComposerInputView.Delegate {
         submitValues()
     }
 
+    func onComposerInputExpandButtonTapped() {
+        delegate?.onComposerExpandTapped()
+    }
+
+    func onComposerInputRewriteRequested(draft: String) {
+        delegate?.onComposerRewriteRequested(draft: draft)
+    }
+
+    func onComposerInputRewriteCancelled() {
+        delegate?.onComposerRewriteCancelled()
+    }
+
     func onComposerInputEndEditing() {
         publishNewEditorStatus()
     }
@@ -378,8 +643,8 @@ extension ComposerView: ComposerInputView.Delegate {
     func onComposerInputTextChanged(text: String) {
         dropColorView.alpha = 0
         publishNewEditorStatus()
+        refreshMenus()
         if text.isEmpty {
             controlPanel.close()
         }
-    }
-}
+    }}

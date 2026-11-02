@@ -1,3 +1,4 @@
+import ApelinCore
 import ApelinProtocol
 import ListViewKit
 import SnapKit
@@ -80,6 +81,10 @@ final class ChatController: UIViewController {
     private var modelLoader: Task<Void, Never>?
     private var selectionCheck: Task<Void, Never>?
     private var attachmentImport: ComposerAttachmentImport?
+    private var skillsLoaded = false
+    private var skillsLoading = false
+    /// The rewrite in flight, so a second tap stops it rather than racing it.
+    private var rewriteTask: Task<Void, Never>?
     private var modelButton: UIButton {
         composer.modelBar.button
     }
@@ -145,6 +150,21 @@ final class ChatController: UIViewController {
         composer.modelBar.usageButton.tapAction = { [weak self] in
             guard let self, let chat else { return }
             ChatActions.askToCompact(for: chat.id, runtime: runtime, from: self)
+        }
+        composer.onCompactContext = { [weak self] in
+            guard let self, let chat else { return }
+            ChatActions.askToCompact(for: chat.id, runtime: runtime, from: self)
+        }
+        composer.onRunCommand = { [weak self] command, arguments in
+            guard let self else { return }
+            command.run(arguments: arguments, in: self)
+        }
+        composer.onRunSkill = { [weak self] skill, arguments in
+            guard let self else { return }
+            // A skill is the turn's instructions: its body is the prompt, with
+            // what was typed after the name where the body asks for it.
+            let prompt = substituteArguments(skill.body, with: arguments)
+            self.sendPrompt(prompt)
         }
         NotificationCenter.default.addObserver(
             self,
@@ -490,7 +510,24 @@ final class ChatController: UIViewController {
             titleView.setTitle(summary.displayTitle, animated: view.window != nil)
             let transcript = runtime.transcript(chat.id)
             updateMessages(transcript.messages)
+            composer.setBusy(summary.isWorking)
+            composer.queuePanel.show(transcript.messages.filter(\.isQueued))
+            // The agent writes the list through a tool; reading it here is what
+            // makes a change the app never saw an event for show up.
+            if let sessionID = runtime.records[chat.id]?.sessionID {
+                composer.todoPanel.show(TodoStore(root: DataFolder.app.root).list(for: sessionID))
+            } else {
+                composer.todoPanel.show(TodoList())
+            }
+            // The conversation's project decides what an `@` can offer; a
+            // temporary chat has no files of its own to name.
+            composer.projectRoot = summary.projectName.flatMap { DataFolder.app.project(named: $0) }
             composer.modelBar.setContextUsage(transcript.contextUsage, compactable: runtime.canCompact(chat.id))
+            composer.setContextUsage(
+                usedTokens: transcript.contextUsage?.tokens ?? 0,
+                limitTokens: transcript.contextUsage?.window ?? 0,
+                compactable: runtime.canCompact(chat.id) && !summary.isWorking,
+            )
             quietWatch.wake(at: transcript.quietDeadline) { [weak self] in self?.refreshRuntime() }
             if summary.isWorking != chat.isWorking {
                 // the session stopped (or came back) with no event that redraws the request
@@ -779,6 +816,43 @@ extension ChatController {
     }
 }
 
+extension ChatController: ComposerCommandContext {
+    func compactConversation() {
+        guard let chat else { return }
+        ChatActions.askToCompact(for: chat.id, runtime: runtime, from: self)
+    }
+
+    func showUsage() {
+        guard let chat else { return }
+        guard let usage = runtime.transcript(chat.id).contextUsage else {
+            presentNotice(
+                title: String(localized: "No Usage Yet"),
+                message: String(localized: "This conversation has not made a request yet."),
+            )
+            return
+        }
+        let percent = usage.percentText
+        presentNotice(
+            title: String(localized: "Context Usage"),
+            message: String(
+                localized: "\(usage.tokens.formatted()) of \(usage.window.formatted()) tokens used (\(percent)).",
+            ),
+        )
+    }
+
+    func send(prompt: String) {
+        sendPrompt(prompt)
+    }
+
+    func fillComposer(with text: String) {
+        var draft = composer.draft
+        draft.text = text
+        composer.restore(draft: draft)
+        composer.publishNewEditorStatus()
+        composer.beginEditing()
+    }
+}
+
 extension ChatController: ComposerView.Delegate {
     func onComposerSubmit(draft: ComposerDraft, completion: @escaping @MainActor () -> Void) {
         guard let chat else {
@@ -804,6 +878,56 @@ extension ChatController: ComposerView.Delegate {
 
     func onComposerBeginEditing() {
         ensureModelSelection()
+        loadSkillsIfNeeded()
+    }
+
+    func onComposerRewriteRequested(draft: String) {
+        composer.setRewriting(true)
+        rewriteTask?.cancel()
+        let selection = ComposerModelSelection.current
+        rewriteTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let answer = try await ApelinService.app.agentRewritePrompt(
+                    text: draft,
+                    provider: selection?.provider,
+                    model: selection?.model,
+                )
+                try Task.checkCancellation()
+                composer.applyRewrite(original: draft, rewritten: answer.text)
+            } catch is CancellationError {
+                composer.rewriteFailed()
+            } catch {
+                composer.rewriteFailed()
+                presentNotice(title: "Unable to Rewrite", message: error.readableMessage)
+            }
+        }
+    }
+
+    func onComposerRewriteCancelled() {
+        rewriteTask?.cancel()
+        rewriteTask = nil
+        composer.rewriteFailed()
+    }
+
+    func onComposerExpandTapped() {
+        let editor = ComposerFullScreenEditor(
+            text: composer.draft.text,
+            placeholderText: String(localized: "Ask anything"),
+        ) { [weak self] text in
+            guard let self, composer.draft.text != text else { return }
+            // Written back through the composer so the draft it reports is the
+            // one that was typed on the page.
+            composer.restore(draft: {
+                var draft = composer.draft
+                draft.text = text
+                return draft
+            }())
+            composer.publishNewEditorStatus()
+        }
+        let navigation = UINavigationController(rootViewController: editor)
+        navigation.modalPresentationStyle = .pageSheet
+        present(navigation, animated: true)
     }
 
     func onComposerUpdateDraft(_ draft: ComposerDraft) {
@@ -846,6 +970,28 @@ extension ChatController: ComposerView.Delegate {
     func onComposerPreviewAttachment(_ attachment: ComposerAttachment) {
         do { try present(ComposerAttachmentPreview(attachment: attachment), animated: true) }
         catch { presentNotice(title: "Unable to Preview Attachment", message: error.readableMessage) }
+    }
+
+    /// The skills the agent offers, fetched once and handed to the command
+    /// menu. Read when the composer is first touched rather than at launch:
+    /// a reader who never types never pays for it.
+    private func loadSkillsIfNeeded() {
+        guard !skillsLoaded, !skillsLoading else { return }
+        skillsLoading = true
+        Task { [weak self] in
+            defer {
+                self?.skillsLoading = false
+                self?.skillsLoaded = true
+            }
+            guard let self else { return }
+            do {
+                let listing = try await ApelinService.app.agentSkillList()
+                composer.setSkills(listing.skills)
+            } catch {
+                // No skills is a usable composer: the actions still run.
+                composer.setSkills([])
+            }
+        }
     }
 
     private func importer() -> ComposerAttachmentImport? {

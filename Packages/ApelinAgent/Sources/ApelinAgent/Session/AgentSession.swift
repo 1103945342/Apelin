@@ -155,6 +155,7 @@ public actor AgentSession {
             _ = try? await log.append(event)
         }
         let memory = MemoryStore(root: configuration.dataRoot.url)
+        let todos = TodoStore(root: configuration.dataRoot.url)
         let runner = ToolRunner(
             sessionID: configuration.id,
             project: configuration.project,
@@ -164,6 +165,7 @@ public actor AgentSession {
             digests: digests,
             gate: gate,
             memory: memory,
+            todos: todos,
             skills: configuration.dataRoot.skills,
             readOnlyRoots: ReadOnlyRoots(installRoot: configuration.installRoot, dataRoot: configuration.dataRoot),
             record: { _ = try await log.append($0) },
