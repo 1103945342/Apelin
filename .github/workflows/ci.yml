@@ -5,10 +5,10 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  # Automatic runs are off (2026-11-02, owner): a push no longer starts the
+  # whole chain. `Debug build` packages one bootstrap, `Publish release`
+  # publishes a finished build, and this workflow stays for the day the
+  # release pipeline is wanted back.
   workflow_dispatch:
 
 permissions:

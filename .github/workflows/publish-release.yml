@@ -1,0 +1,127 @@
+# Publishes the package a finished debug build made: it downloads that run's
+# artifact, writes SHA256SUMS and creates the GitHub release the Pages site
+# builds the Sileo source from. Nothing is compiled here, so what goes out is
+# exactly what the run verified.
+name: Publish release
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: The Debug build run whose packages to publish
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    name: Publish the run's packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Read the run
+        id: run
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          run="${{ inputs.run_id }}"
+          info="$(gh run view "$run" --json headSha,conclusion,workflowName)"
+          conclusion="$(printf '%s' "$info" | jq -r .conclusion)"
+          name="$(printf '%s' "$info" | jq -r .workflowName)"
+          sha="$(printf '%s' "$info" | jq -r .headSha)"
+          if [[ "$conclusion" != "success" ]]; then
+            echo "::error::run $run concluded '$conclusion'; only a run that passed is published"
+            exit 1
+          fi
+          if [[ "$name" != "Debug build" ]]; then
+            echo "::error::run $run is '$name', not a Debug build"
+            exit 1
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "::notice::publishing $sha from run $run"
+
+      - name: Read the version of that commit
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin "${{ steps.run.outputs.sha }}"
+          version="$(git show "${{ steps.run.outputs.sha }}:Configuration/Version.xcconfig" \
+            | sed -n 's/^[[:space:]]*MARKETING_VERSION[[:space:]]*=[[:space:]]*//p' | tr -d '[:space:]')"
+          if [[ -z "$version" ]]; then
+            echo "::error::that commit's Configuration/Version.xcconfig names no MARKETING_VERSION"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+      - name: Is it published already?
+        id: lookup
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if gh release view "${{ steps.version.outputs.tag }}" > /dev/null 2>&1; then
+            echo "::notice::${{ steps.version.outputs.tag }} is published already; nothing to do"
+            echo "published=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=0" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Take the packages that run built
+        if: steps.lookup.outputs.published == '0'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p build/Packages "$RUNNER_TEMP/dl"
+          gh run download "${{ inputs.run_id }}" --dir "$RUNNER_TEMP/dl"
+          find "$RUNNER_TEMP/dl" -name '*.deb' -exec cp {} build/Packages/ \;
+          if [[ -z "$(ls -A build/Packages)" ]]; then
+            echo "::error::run ${{ inputs.run_id }} carries no deb to publish"
+            exit 1
+          fi
+          cd build/Packages
+          shasum -a 256 ./*.deb > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Publish
+        if: steps.lookup.outputs.published == '0'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+          SHA: ${{ steps.run.outputs.sha }}
+        run: |
+          set -euo pipefail
+          notes="$RUNNER_TEMP/apelin-release.md"
+          if git show "$SHA:Documents/Releases/$VERSION.md" > "$notes" 2>/dev/null; then
+            :
+          else
+            echo "::warning::Documents/Releases/$VERSION.md is missing; the generic notes go out instead"
+            cat > "$notes" <<NOTES
+          Apelin $VERSION, from the build of $SHA.
+
+          SHA-256 sums are in \`SHA256SUMS\`.
+          NOTES
+          fi
+          gh release create "$TAG" --target "$SHA" \
+            --title "Apelin $VERSION" \
+            --notes-file "$notes" \
+            build/Packages/*.deb build/Packages/SHA256SUMS
