@@ -13,9 +13,12 @@ on:
   release:
     types: [published, edited]
   workflow_run:
-    # CI publishes a version, Release publishes a tag pushed by hand: either
-    # carries packages the site serves.
-    workflows: [CI, Release]
+    # Every workflow that ends with a published release carries packages the
+    # site serves: CI publishes a version, Release publishes a tag pushed by
+    # hand, and Debug build is the one this repository publishes with while its
+    # automatic runs are off. A publisher missing here leaves the package source
+    # naming the previous version, which a device then keeps offering.
+    workflows: [CI, Release, Debug build]
     types: [completed]
   workflow_dispatch:
 
