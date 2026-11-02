@@ -68,7 +68,7 @@ public enum AgentWorker {
                     await session.setAsksBeforeScreen(asks)
                 }
                 if let runMode = prompt.runMode {
-                    session.setRunMode(runMode)
+                    await session.setRunMode(runMode)
                 }
                 if let provider = prompt.provider {
                     try await session.configure(
