@@ -1328,7 +1328,10 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `compactionFinished` {outcome: compacted, tooShort, cancelled or failed,
   messagesCompacted?, message?, summary?} (`AgentCompactionResult`; only
   `agentCompact` records them — kwwk's own compaction as the context fills
-  is no event). `summary` (2026-10-28), when compacted, is what the
+  is no event). `contextUsage` {tokens, window} (2026-11-02), how full the
+  conversation's context is by the measure compaction goes by, recorded
+  when a run ends and once a compaction has ended: the composer shows it
+  as a ring, whose tap offers `Compact Context…`. `summary` (2026-10-28), when compacted, is what the
   conversation goes on from as the reader reads it: the history and
   current-turn sections of kwwk's recap, unescaped, without its markup or
   its file ledger (`CompactionRecap`; a recap of another shape whole),
