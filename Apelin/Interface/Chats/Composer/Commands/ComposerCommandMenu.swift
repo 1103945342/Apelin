@@ -109,8 +109,13 @@ private final class CommandCell: UITableViewCell {
         kindLabel.textColor = .tintColor
 
         for label in [nameLabel, summaryLabel, kindLabel] {
+            label.isUserInteractionEnabled = false
             contentView.addSubview(label)
         }
+        // The cell joins three labels into one sentence, which UIKit only reads
+        // when the cell is the element; a cell it does not treat as one is
+        // walked past and its subviews read instead.
+        isAccessibilityElement = true
     }
 
     @available(*, unavailable)

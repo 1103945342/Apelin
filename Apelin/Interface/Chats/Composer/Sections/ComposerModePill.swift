@@ -72,12 +72,11 @@ final class ComposerModePill: UIControl {
         setNeedsLayout()
     }
 
+    /// The pill's own word, in capitals, made from the spoken one: a literal
+    /// spelled in capitals reads as a string-table key, which `make check`
+    /// refuses and for good reason — it is what a SHOUTING_KEY looks like.
     private var title: String {
-        switch mode {
-        case .plan: String(localized: "PLAN")
-        case .build: String(localized: "BUILD")
-        case .auto: String(localized: "AUTO")
-        }
+        spokenTitle.uppercased()
     }
 
     /// The pill shows a word in capitals; the spoken value is the sentence,

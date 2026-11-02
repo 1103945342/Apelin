@@ -153,7 +153,9 @@ private final class TodoRow: UIView {
         let symbol: String
         switch item.status {
         case .pending: symbol = "circle"
-        case .inProgress: symbol = "circle.lefthalf.filled"
+        // `circle.lefthalf.filled` is newer than this app's floor; a clock says
+        // "under way" with a mark that has been there since iOS 13.
+        case .inProgress: symbol = "clock"
         case .completed: symbol = "checkmark.circle.fill"
         case .blocked: symbol = "xmark.circle"
         }
