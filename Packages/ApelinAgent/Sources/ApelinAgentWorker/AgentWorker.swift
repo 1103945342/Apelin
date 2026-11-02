@@ -542,6 +542,11 @@ actor EventRelay {
             return [("message", .object(["text": .string(text)]))]
         case let .received(tokens):
             return [("received", .object(["tokens": .number(Double(tokens))]))]
+        case let .contextUsage(tokens, window):
+            return [("contextUsage", .object([
+                "tokens": .number(Double(tokens)),
+                "window": .number(Double(window)),
+            ]))]
         case let .toolCallStarted(call):
             return [("toolCall", .object([
                 "id": .string(call.id),

@@ -132,8 +132,21 @@ class ComposerView: ComposerSectionView {
         let inputTop = place(attachmentsBar, at: spacing)
         place(inputEditor, at: inputTop)
         // the attachments bar, once it is here, shares the input's ground
-        let inputFrame = attachmentsBar.heightPublisher.value > 0
+        var inputFrame = attachmentsBar.heightPublisher.value > 0
             ? attachmentsBar.frame.union(inputEditor.frame) : inputEditor.frame
+        // The model row is on the input's ground, not below it: the model,
+        // the effort, the speed and the context ring are part of what is
+        // typed. It takes the room the band keeps under its own row.
+        let modelHeight = modelBar.heightPublisher.value
+        if modelHeight > 0 {
+            modelBar.frame = CGRect(
+                x: inputEditor.frame.minX + inputEditor.inset.left,
+                y: inputFrame.maxY - inputEditor.inset.bottom,
+                width: inputEditor.frame.width - inputEditor.inset.left - inputEditor.inset.right,
+                height: modelHeight,
+            )
+            inputFrame.size.height += modelHeight
+        }
 
         // One card morphs between the input and the request: the request's
         // band is cut off at the card's edge, shown or fading, never
@@ -151,12 +164,10 @@ class ComposerView: ComposerSectionView {
         dropColorView.frame = dropContainer.bounds
 
         var finalHeight = shadowContainer.frame.maxY
-        var y = finalHeight + spacing
-        for band in [modelBar, controlPanel] {
-            y = place(band, at: y)
-            if band.heightPublisher.value > 0 {
-                finalHeight = band.frame.maxY
-            }
+        // The import panel opens below the box, off its ground.
+        if controlPanel.heightPublisher.value > 0 {
+            place(controlPanel, at: finalHeight + spacing)
+            finalHeight = controlPanel.frame.maxY
         }
 
         heightPublisher.send(finalHeight)

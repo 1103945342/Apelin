@@ -728,6 +728,8 @@ public actor AgentSession {
             }
         }
         await record(.compactionFinished(result))
+        // the context shrank (or did not): the figure after it
+        await recordContextUsage()
         compaction = nil
     }
 
@@ -942,6 +944,13 @@ public actor AgentSession {
         }
     }
 
+    /// How full the context is, for the ring beside the composer: kwwk's own
+    /// measure, the one compaction goes by.
+    private func recordContextUsage() async {
+        let usage = contextUsage
+        await record(.contextUsage(tokens: usage.tokens, window: usage.window))
+    }
+
     private func recordRunError(_ error: Error) async {
         if aborted {
             return
@@ -980,6 +989,8 @@ public actor AgentSession {
         }
         await runner.turnEnded()
         journal.runEnded(reason)
+        // the turn's messages are in: what compaction would now go by
+        await recordContextUsage()
         await record(.finished(reason: reason))
         // a stop meanwhile dropped them
         runTask = next.isEmpty || aborted ? nil : carryOver(next)

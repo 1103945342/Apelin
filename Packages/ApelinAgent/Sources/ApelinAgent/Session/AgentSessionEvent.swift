@@ -40,6 +40,10 @@ public enum AgentSessionEvent: Sendable, Hashable, Codable {
     /// recorded a few times a second while a message streams, and when it
     /// ends, at the provider's count where it gave one.
     case received(tokens: Int)
+    /// How full the conversation's context is, as kwwk measures it for
+    /// compaction: recorded when a run ends and once a compaction has ended,
+    /// so the composer shows the figure compaction goes by.
+    case contextUsage(tokens: Int, window: Int)
     case toolCallStarted(ToolCallRecord)
     case toolCallFinished(ToolResultRecord)
     /// The session is waiting: nothing runs until `approve` answers, and an

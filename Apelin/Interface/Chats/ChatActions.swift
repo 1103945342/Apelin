@@ -102,18 +102,24 @@ enum ChatActions {
             image: UIImage(systemName: "doc.text"),
             attributes: runtime.canCompact(id) ? [] : .disabled,
         ) { [weak presenter, weak runtime] _ in
-            guard let presenter else { return }
-            presenter.presentConfirmation(
-                title: "Compact Context?",
-                message: """
-                Your agent will continue from a summary of the earlier messages, which frees room for new work. \
-                The messages stay in this chat.
-                """,
-                confirmTitle: "Compact Context",
-            ) { [weak presenter, weak runtime] in
-                guard let presenter, let runtime else { return }
-                Task { await compact(id, runtime: runtime, from: presenter) }
-            }
+            guard let presenter, let runtime else { return }
+            askToCompact(for: id, runtime: runtime, from: presenter)
+        }
+    }
+
+    /// The same ask, from the context ring beside the composer: what the
+    /// menu's Compact Context… puts up, offered where the figure is.
+    static func askToCompact(for id: UUID, runtime: ChatRuntime, from presenter: UIViewController) {
+        presenter.presentConfirmation(
+            title: "Compact Context?",
+            message: """
+            Your agent will continue from a summary of the earlier messages, which frees room for new work. \
+            The messages stay in this chat.
+            """,
+            confirmTitle: "Compact Context",
+        ) { [weak presenter, weak runtime] in
+            guard let presenter, let runtime else { return }
+            Task { await compact(id, runtime: runtime, from: presenter) }
         }
     }
 

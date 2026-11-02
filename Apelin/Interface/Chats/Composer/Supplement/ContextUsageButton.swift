@@ -1,0 +1,104 @@
+import UIKit
+
+/// How full the conversation's context is, at the end of the composer's
+/// model row: a ring with the share inside it, tapped to ask about
+/// compacting. Hidden until the agent has recorded a figure.
+final class ContextUsageButton: UIControl {
+    static let size = ProgressRing.diameter
+
+    private let ring = ProgressRing()
+    private let label = UILabel()
+    private(set) var usage: ChatContextUsage?
+
+    /// Asked for when it is tapped, whatever the ring shows.
+    var tapAction: () -> Void = {}
+
+    /// Whether a tap can ask about compacting: false while the chat runs,
+    /// drawn faint and read as unavailable.
+    var isAvailable = true {
+        didSet {
+            updateAlpha()
+            accessibilityTraits = isAvailable ? .button : [.button, .notEnabled]
+        }
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        translatesAutoresizingMaskIntoConstraints = false
+
+        ring.isUserInteractionEnabled = false
+        addSubview(ring)
+
+        label.font = .monospacedDigitSystemFont(ofSize: 9, weight: .semibold)
+        label.textAlignment = .center
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.6
+        label.isUserInteractionEnabled = false
+        addSubview(label)
+
+        addTarget(self, action: #selector(tapped), for: .primaryActionTriggered)
+
+        isAccessibilityElement = true
+        accessibilityTraits = .button
+        accessibilityLabel = String(localized: "Context")
+        isHidden = true
+    }
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
+        fatalError("Use init(frame:)")
+    }
+
+    override var intrinsicContentSize: CGSize {
+        CGSize(width: Self.size, height: Self.size)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        ring.frame = bounds
+        label.frame = bounds.insetBy(dx: 4, dy: 4)
+    }
+
+    /// The tint the arc and the figure share: quiet until the room runs
+    /// short, then the colour of a warning.
+    private var levelColor: UIColor {
+        switch usage?.fraction ?? 0 {
+        case 0.9...: .systemRed
+        case 0.75...: .systemOrange
+        default: .secondaryLabel
+        }
+    }
+
+    func set(_ usage: ChatContextUsage?) {
+        let hadFigure = self.usage != nil
+        self.usage = usage
+        isHidden = usage == nil
+        guard let usage else { return }
+        tintColor = levelColor
+        label.textColor = levelColor
+        label.text = usage.percentText
+        accessibilityValue = usage.spoken
+        ring.set(.progress(usage.fraction), animated: hadFigure)
+    }
+
+    @objc private func tapped() {
+        guard !isHidden, isAvailable else { return }
+        tapAction()
+    }
+
+    override var isHighlighted: Bool {
+        didSet { updateAlpha() }
+    }
+
+    private func updateAlpha() {
+        alpha = isHighlighted ? 0.4 : (isAvailable ? 1 : 0.5)
+    }
+
+    /// VoiceOver's double tap arrives here through the button trait, and
+    /// `primaryActionTriggered` is not sent for it.
+    override func accessibilityActivate() -> Bool {
+        guard !isHidden, isAvailable else { return false }
+        tapAction()
+        return true
+    }
+}

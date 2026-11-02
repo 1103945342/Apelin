@@ -13,6 +13,8 @@ final class ComposerModelBar: ComposerSectionView {
         text: String(localized: "Stop"),
         image: UIImage(systemName: "stop.fill"),
     )
+    /// How full the context is, at the row's end; a tap asks about compacting.
+    let usageButton = ContextUsageButton()
     var onEffortChanged: ((AgentReasoningEffort) -> Void)?
     var onTierChanged: ((AgentServiceTier?) -> Void)?
     private var cancelOutput: (() -> Void)?
@@ -22,6 +24,7 @@ final class ComposerModelBar: ComposerSectionView {
         for control in [button, effortButton, tierButton, stopButton] {
             addSubview(control)
         }
+        addSubview(usageButton)
         effortButton.showsMenuAsPrimaryAction = true
         setControl(effortButton, visible: false)
         tierButton.showsMenuAsPrimaryAction = true
@@ -49,7 +52,7 @@ final class ComposerModelBar: ComposerSectionView {
         updateControls { [self] in
             isUserInteractionEnabled = visible
             accessibilityElementsHidden = !visible
-            heightPublisher.send(visible ? button.intrinsicContentSize.height : 0)
+            heightPublisher.send(visible ? preferredHeight : 0)
         }
     }
 
@@ -89,6 +92,22 @@ final class ComposerModelBar: ComposerSectionView {
     func setOutputCancellation(_ cancel: (() -> Void)?) {
         cancelOutput = cancel
         updateControls { [self] in setControl(stopButton, visible: cancel != nil) }
+    }
+
+    /// The context's fill, from the agent's last record of it; nothing to
+    /// show until it has recorded one. Tappable only between runs.
+    func setContextUsage(_ usage: ChatContextUsage?, compactable: Bool) {
+        usageButton.isAvailable = compactable
+        guard usageButton.usage != usage else { return }
+        updateControls { [self] in
+            usageButton.set(usage)
+            heightPublisher.send(isUserInteractionEnabled ? preferredHeight : 0)
+        }
+    }
+
+    /// As tall as the tallest thing on the row: the chips, or the ring.
+    private var preferredHeight: CGFloat {
+        max(button.intrinsicContentSize.height, usageButton.isHidden ? 0 : ContextUsageButton.size)
     }
 
     private func setControl(_ control: UIButton, visible: Bool) {
@@ -132,20 +151,29 @@ final class ComposerModelBar: ComposerSectionView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        let controls = [button, effortButton, tierButton, stopButton].filter(\.isUserInteractionEnabled)
         let spacing: CGFloat = 10
+        let height = preferredHeight
+        // The ring keeps the row's end for itself; the chips centre in what
+        // is left, as they did before it was there.
+        let ringWidth = usageButton.isHidden ? 0 : ContextUsageButton.size
+        let ringRoom = ringWidth > 0 ? ringWidth + spacing : 0
+        let controls = [button, effortButton, tierButton, stopButton].filter(\.isUserInteractionEnabled)
         let otherWidth = controls.dropFirst().reduce(CGFloat.zero) { $0 + $1.intrinsicContentSize.width + spacing }
-        let modelWidth = min(button.intrinsicContentSize.width, max(44, bounds.width - otherWidth))
-        var x = max(0, (bounds.width - modelWidth - otherWidth) / 2)
+        let room = max(0, bounds.width - ringRoom)
+        let modelWidth = min(button.intrinsicContentSize.width, max(44, room - otherWidth))
+        var x = max(0, (room - modelWidth - otherWidth) / 2)
         // model, effort, speed, Stop in reading order: right to left, from the right
         for control in [button, effortButton, tierButton, stopButton] {
             let width = control === button ? modelWidth : control.intrinsicContentSize.width
             control.frame = directionalFrame(
-                CGRect(x: x, y: 0, width: width, height: control.intrinsicContentSize.height),
+                CGRect(x: x, y: (height - control.intrinsicContentSize.height) / 2, width: width, height: control.intrinsicContentSize.height),
             )
             if control.isUserInteractionEnabled {
                 x += width + spacing
             }
         }
+        usageButton.frame = directionalFrame(
+            CGRect(x: bounds.width - ringWidth, y: (height - ringWidth) / 2, width: ringWidth, height: ringWidth),
+        )
     }
 }

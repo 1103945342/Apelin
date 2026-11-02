@@ -142,6 +142,10 @@ final class ChatController: UIViewController {
         }
         composer.modelBar.onEffortChanged = { ComposerModelPreferences.effort = $0 }
         composer.modelBar.onTierChanged = { ComposerModelPreferences.tier = $0 }
+        composer.modelBar.usageButton.tapAction = { [weak self] in
+            guard let self, let chat else { return }
+            ChatActions.askToCompact(for: chat.id, runtime: runtime, from: self)
+        }
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(updateModelSelection),
@@ -486,6 +490,7 @@ final class ChatController: UIViewController {
             titleView.setTitle(summary.displayTitle, animated: view.window != nil)
             let transcript = runtime.transcript(chat.id)
             updateMessages(transcript.messages)
+            composer.modelBar.setContextUsage(transcript.contextUsage, compactable: runtime.canCompact(chat.id))
             quietWatch.wake(at: transcript.quietDeadline) { [weak self] in self?.refreshRuntime() }
             if summary.isWorking != chat.isWorking {
                 // the session stopped (or came back) with no event that redraws the request

@@ -15,6 +15,9 @@ struct ChatTranscript {
     var isWorking = false
     /// Compacting between runs, as the app asked (`agentCompact`).
     var isCompacting = false
+    /// How full the conversation's context is, from the last `contextUsage`
+    /// the agent recorded: the figure the ring beside the composer shows.
+    var contextUsage: ChatContextUsage?
     var approvalIDs: [UUID: String] = [:]
     /// While the turn runs and its last row is a reply with nothing after
     /// it: when, with no event before then, a running summary stands in
@@ -263,6 +266,12 @@ struct ChatTranscript {
                 add(ChatMessage(id: id, role: .assistant, text: message ?? ""))
             case "received":
                 receivedTokens = payload?["tokens"]?.doubleValue.map { Int($0) }
+            case "contextUsage":
+                // Outlives the run it was recorded in: it describes the
+                // conversation, and only a compaction brings it down.
+                if let usage = ChatContextUsage(payload) {
+                    contextUsage = usage
+                }
             case "finished":
                 finishThinking(at: event.time)
                 assistant = nil
@@ -625,5 +634,44 @@ struct ChatTranscript {
             bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7],
             bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15],
         ))
+    }
+}
+
+/// How full a conversation's context is: what the agent measures for
+/// compaction (`contextUsage`), and what the ring beside the composer draws.
+struct ChatContextUsage: Equatable {
+    /// What the conversation takes now.
+    var tokens: Int
+    /// What it may take before compaction.
+    var window: Int
+
+    init(tokens: Int, window: Int) {
+        self.tokens = max(0, tokens)
+        self.window = max(0, window)
+    }
+
+    /// From an event's payload, and only with a window to read it against.
+    init?(_ payload: JSONValue?) {
+        guard let tokens = payload?["tokens"]?.doubleValue,
+              let window = payload?["window"]?.doubleValue,
+              window > 0
+        else { return nil }
+        self.init(tokens: Int(tokens), window: Int(window))
+    }
+
+    /// How much of the window is used, 0 ... 1.
+    var fraction: Double {
+        guard window > 0 else { return 0 }
+        return min(1, max(0, Double(tokens) / Double(window)))
+    }
+
+    /// The figure the ring writes, in the user's locale: "12%".
+    var percentText: String {
+        fraction.formatted(.percent.precision(.fractionLength(0)))
+    }
+
+    /// What VoiceOver reads for the ring: the share and the room.
+    var spoken: String {
+        String(localized: "\(percentText) of \(window.formatted()) tokens used")
     }
 }
