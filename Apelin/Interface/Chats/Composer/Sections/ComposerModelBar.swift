@@ -63,10 +63,10 @@ final class ComposerModelBar: ComposerSectionView {
 
         modePill.onChange = { [weak self] mode in self?.onModeChanged?(mode) }
         usageButton.tapAction = { [weak self] in self?.onContextTapped?() }
-        modelButton.tapAction = { [weak self] in self?.presentModelPicker() }
+        modelButton.tapAction = { [weak self] in self?.onModelTapped?() }
         addButton.tapAction = { [weak self] in self?.onAddTapped?() }
         sendButton.tapAction = { [weak self] in self?.tapSend() }
-        effortButton.tapAction = { [weak self] in self?.presentEffortPicker() }
+        effortButton.showsMenuAsPrimaryAction = true
 
         sendButton.iconInset = 8
         sendButton.fillColor = ComposerPalette.inert
@@ -111,6 +111,15 @@ final class ComposerModelBar: ComposerSectionView {
             effortLabel.text = Self.shortTitle(for: selected ?? .high)
             effortButton.accessibilityValue = Self.title(for: selected ?? .high)
         }
+        // The menu is the button's action, rebuilt with the levels it took so a
+        // tick follows the choice that was made.
+        effortButton.menu = UIMenu(children: efforts.map { effort in
+            UIAction(title: Self.title(for: effort), state: effort == selected ? .on : .off) { [weak self] _ in
+                guard let self else { return }
+                self.setEfforts(self.efforts, selected: effort)
+                self.onEffortChanged?(effort)
+            }
+        })
     }
 
     /// Nothing to send: the disc greys; a run going and nothing typed: it is
@@ -157,34 +166,12 @@ final class ComposerModelBar: ComposerSectionView {
 
     // MARK: - Picking
 
-    private func presentEffortPicker() {
-        guard !efforts.isEmpty else { return }
-        let actions = efforts.map { effort in
-            UIAction(title: Self.title(for: effort), state: effort == selectedEffort ? .on : .off) { [weak self] _ in
-                self?.setEfforts(self?.efforts ?? [], selected: effort)
-                self?.onEffortChanged?(effort)
-            }
-        }
-        effortButton.menu = UIMenu(children: actions)
-        // The button is an icon with a menu on it: the menu is what a tap is
-        // for, and it opens where the button is.
-        effortButton.showsMenuAsPrimaryAction = true
-        effortButton.menu?.reload()
-    }
-
     private func tapSend() {
         if sendIsStop {
             onStopTapped?()
         } else {
             onSendTapped?()
         }
-    }
-
-    /// The model picker is the owner's: this row only reports the tap, and the
-    /// owner answers with `setProvider`.
-    var onModelTapped: (() -> Void)?
-    private func presentModelPicker() {
-        onModelTapped?()
     }
 
     // MARK: - Layout

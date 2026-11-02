@@ -84,7 +84,7 @@ public actor AgentSession {
     /// What this run may do, from the composer's pill; nil leaves the line out
     /// of `<system-state>`. Kept here rather than in the prompt, which is the
     /// session's snapshot.
-    private var runMode: AgentRunMode?
+    private var runMode: ApelinProtocol.AgentRunMode?
     /// This session's own memory and skill calls, until they end, by call id.
     private var ownCalls: [String: (tool: AgentToolName, arguments: KWWKAI.JSONValue)] = [:]
     /// What the current run has received, for the app's counter.
@@ -300,7 +300,7 @@ public actor AgentSession {
     /// What this run may do, from the composer's pill. Read in the next
     /// message's `<system-state>`, like the approval mode: the pill can change
     /// between messages, and the system prompt is the session's snapshot.
-    public func setRunMode(_ mode: AgentRunMode?) {
+    public func setRunMode(_ mode: ApelinProtocol.AgentRunMode?) {
         runMode = mode
     }
 

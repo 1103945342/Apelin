@@ -1,3 +1,4 @@
+import ApelinProtocol
 import CoreFoundation
 import Foundation
 
@@ -102,7 +103,7 @@ enum SystemState {
         var mode: ApprovalMode
         /// What this run may do, from the composer's pill; nil leaves the line
         /// out, as a session opened before the app sent one would.
-        var runMode: AgentRunMode?
+        var runMode: ApelinProtocol.AgentRunMode?
         /// Ask Before Using the Screen, the app's setting beside the mode.
         var asksBeforeScreen = true
         /// What changed since the model was last told (`PromptState`).
@@ -116,7 +117,7 @@ enum SystemState {
     static func facts(
         _ source: SystemStateSource,
         mode: ApprovalMode,
-        runMode: AgentRunMode? = nil,
+        runMode: ApelinProtocol.AgentRunMode? = nil,
         asksBeforeScreen: Bool = true,
         changes: [String] = [],
         hostRestarted: Bool = false,
