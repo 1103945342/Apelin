@@ -97,8 +97,8 @@ extension ComposerInputView {
     /// The wand sits just before Send, and shows only when there is something
     /// to rewrite and nothing else is holding the band: a rewrite during a run
     /// would race the message the run is taking.
-    private func placeRewrite(before send: CGRect) {
-        let shows = hasContent && !isBusy && send.alpha > 0
+    private func placeRewrite(before send: CGRect, sendShown: Bool) {
+        let shows = hasContent && !isBusy && sendShown
         rewriteButton.alpha = shows ? 1 : 0
         rewriteButton.isUserInteractionEnabled = shows
         rewriteButton.frame = CGRect(
@@ -128,7 +128,7 @@ extension ComposerInputView {
         textView.frame = frame
         placeholderLabel.frame = frame
         placeExpand(in: frame)
-        placeRewrite(before: sendButton.frame)
+        placeRewrite(before: sendButton.frame, sendShown: sendButton.alpha > 0)
 
         // invisible element
         cameraButton.frame = CGRect(
@@ -228,7 +228,7 @@ extension ComposerInputView {
             y: inset.top,
             width: iconSize.width,
             height: iconSize.height,
-        ))
+        ), sendShown: false)
     }
 
     /// The text outgrew the band: rewrite what is drawn, then measure up. Called

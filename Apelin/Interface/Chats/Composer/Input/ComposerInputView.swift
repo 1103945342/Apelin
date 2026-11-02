@@ -1,6 +1,7 @@
 // Lakr233's Inhouse Code, from FlowDown.
 // I CAN DO WHAT THE FUCK I WANT.
 
+import Combine
 import UIKit
 
 /// The composer's text band: the text view between its icons, laid out one
@@ -81,7 +82,7 @@ class ComposerInputView: ComposerSectionView {
     }
 
     /// The draft is longer than the band: Expand shows.
-    private(set) var isOverflowing = false {
+    var isOverflowing = false {
         didSet {
             guard isOverflowing != oldValue else { return }
             setNeedsLayout()

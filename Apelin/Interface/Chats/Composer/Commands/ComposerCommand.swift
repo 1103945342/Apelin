@@ -1,3 +1,4 @@
+import ApelinProtocol
 import Foundation
 
 /// The placeholder a prompt-shaped command writes its arguments into.
@@ -103,10 +104,11 @@ final class ComposerCommandCatalog {
     }
 
     func setSkills(_ listed: [AgentSkill]) {
-        skills = Dictionary(
+        let byName: [String: AgentSkill] = Dictionary(
             listed.map { ($0.name, $0) },
             uniquingKeysWith: { first, _ in first },
         )
+        skills = byName
         rebuild()
     }
 

@@ -438,7 +438,7 @@ class ComposerView: ComposerSectionView {
         inputEditor.set(text: updated)
         publishNewEditorStatus()
         refreshMenus()
-        inputEditor.beginEditing()
+        beginEditing()
     }
 
     /// What follows the command's name, for a command that takes arguments.

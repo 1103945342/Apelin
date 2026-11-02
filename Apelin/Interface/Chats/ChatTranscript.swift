@@ -556,6 +556,8 @@ struct ChatTranscript {
                 return String(localized: "Show \(paths.count) files")
             }
             return paths.first.map { String(localized: "Show \($0)") } ?? String(localized: "Show a file")
+        case .todoList: return String(localized: "Read the to-do list")
+        case .todoWrite: return String(localized: "Update the to-do list")
         case .shellRun: return String(localized: "Run a command")
         case .sdkAnalyzeFramework, .sdkReadHeader: return String(localized: "Read the SDK")
         case .projectBuild: return String(localized: "Build the project")

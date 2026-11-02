@@ -826,17 +826,17 @@ extension ChatController: ComposerCommandContext {
         guard let chat else { return }
         guard let usage = runtime.transcript(chat.id).contextUsage else {
             presentNotice(
-                title: String(localized: "No Usage Yet"),
-                message: String(localized: "This conversation has not made a request yet."),
+                title: "No Usage Yet",
+                message: "This conversation has not made a request yet.",
             )
             return
         }
         let percent = usage.percentText
+        // The figure is a value the catalogue cannot hold, so it goes in as one
+        // already-formed sentence.
         presentNotice(
-            title: String(localized: "Context Usage"),
-            message: String(
-                localized: "\(usage.tokens.formatted()) of \(usage.window.formatted()) tokens used (\(percent)).",
-            ),
+            title: "Context Usage",
+            message: "\(usage.tokens.formatted()) of \(usage.window.formatted()) tokens used (\(percent)).",
         )
     }
 
@@ -915,15 +915,13 @@ extension ChatController: ComposerView.Delegate {
             text: composer.draft.text,
             placeholderText: String(localized: "Ask anything"),
         ) { [weak self] text in
-            guard let self, composer.draft.text != text else { return }
+            guard let self, self.composer.draft.text != text else { return }
             // Written back through the composer so the draft it reports is the
             // one that was typed on the page.
-            composer.restore(draft: {
-                var draft = composer.draft
-                draft.text = text
-                return draft
-            }())
-            composer.publishNewEditorStatus()
+            var draft = self.composer.draft
+            draft.text = text
+            self.composer.restore(draft: draft)
+            self.composer.publishNewEditorStatus()
         }
         let navigation = UINavigationController(rootViewController: editor)
         navigation.modalPresentationStyle = .pageSheet
