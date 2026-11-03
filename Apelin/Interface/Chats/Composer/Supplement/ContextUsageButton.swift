@@ -1,10 +1,10 @@
 import UIKit
 
 /// How full the conversation's context is, at the end of the composer's
-/// model row: a ring with the share inside it, tapped to ask about
-/// compacting. Hidden until the agent has recorded a figure.
+/// model row: a ring with the share inside it, tapped to open what the context
+/// holds. Hidden until the agent has recorded a figure.
 final class ContextUsageButton: UIControl {
-    static let size: CGFloat = 28
+    static let size: CGFloat = 24
 
     private let ring = ProgressRing()
     private let label = UILabel()
@@ -74,7 +74,7 @@ final class ContextUsageButton: UIControl {
     override func layoutSubviews() {
         super.layoutSubviews()
         ring.frame = bounds
-        label.frame = bounds.insetBy(dx: 4, dy: 4)
+        label.frame = bounds.insetBy(dx: 3, dy: 3)
         let chevronSize = bounds.width * 0.5
         chevron.frame = CGRect(
             x: (bounds.width - chevronSize) / 2,

@@ -17,10 +17,10 @@ final class ComposerModelBar: ComposerSectionView {
     /// the row's room belongs to the draft above.
     let modelButton = ComposerIconButton(symbolName: "cpu", label: String(localized: "Select Model"))
 
-    /// The lightning, in the colour of the level it is set to, tapped to
-    /// change it. The level is drawn, never written: the row has no room for
-    /// a word, and the colour says which of the settings is on.
-    private let effortButton = ComposerIconButton(symbolName: "bolt", label: String(localized: "Reasoning Effort"))
+    /// The reasoning effort, as a brain in the colour of the level it is set
+    /// to, tapped to change it. The level is drawn, never written: the row has
+    /// no room for a word, and the colour says which of the settings is on.
+    private let effortButton = ComposerIconButton(symbolName: "brain", label: String(localized: "Reasoning Effort"))
 
     /// The speed the model answers at, for the ones that offer a faster tier
     /// than standard: the letters say which, a tap changes it. Absent for a
@@ -98,8 +98,14 @@ final class ComposerModelBar: ComposerSectionView {
     /// symbol for one the bundle has none for.
     func setProvider(_ provider: AgentProvider?) {
         updateControls { [self] in
-            let image = provider?.icon ?? UIImage(systemName: "cpu")
-            modelButton.iconView.image = image?.withRenderingMode(.alwaysTemplate)
+            // A provider's own mark keeps the colours it was drawn with: as a
+            // template it would be one flat silhouette, and a black one in
+            // light mode. Only the fallback symbol follows the label's colour.
+            if let icon = provider?.icon {
+                modelButton.iconView.image = icon.withRenderingMode(.alwaysOriginal)
+            } else {
+                modelButton.iconView.image = UIImage(systemName: "cpu")?.withRenderingMode(.alwaysTemplate)
+            }
             modelButton.accessibilityLabel = String(localized: "Select Model")
             modelButton.accessibilityValue = provider?.displayName
         }

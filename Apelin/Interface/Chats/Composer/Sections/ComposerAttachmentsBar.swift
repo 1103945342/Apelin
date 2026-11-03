@@ -95,7 +95,16 @@ private final class AttachmentCell: UICollectionViewCell {
         for view in [imageView, nameLabel, textLabel, deleteButton] {
             contentView.addSubview(view)
         }
-        deleteButton.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
+        deleteButton.setImage(UIImage(systemName: "xmark")?.withRenderingMode(.alwaysTemplate), for: .normal)
+        // The disc and the glyph carry their own colours: the button sits on
+        // top of a photograph, and the app's tint is not guaranteed to stand
+        // out against one.
+        deleteButton.tintColor = .white
+        deleteButton.backgroundColor = UIColor.black.withAlphaComponent(0.55)
+        deleteButton.layer.cornerRadius = 11
+        deleteButton.layer.cornerCurve = .continuous
+        deleteButton.layer.borderWidth = 1 / UIScreen.main.scale
+        deleteButton.layer.borderColor = UIColor.white.withAlphaComponent(0.65).cgColor
         deleteButton.accessibilityLabel = String(localized: "Remove Attachment")
         deleteButton.addAction(UIAction { [weak self] _ in self?.remove?() }, for: .touchUpInside)
         isAccessibilityElement = true
@@ -136,8 +145,8 @@ private final class AttachmentCell: UICollectionViewCell {
         super.layoutSubviews()
         imageView.frame = contentView.bounds
         // the remove button at the trailing corner, the name before it
-        deleteButton.frame = contentView.directionalFrame(CGRect(x: bounds.width - 24, y: 4, width: 20, height: 20))
-        nameLabel.frame = contentView.directionalFrame(CGRect(x: 4, y: 4, width: bounds.width - 32, height: 20))
+        deleteButton.frame = contentView.directionalFrame(CGRect(x: bounds.width - 26, y: 4, width: 22, height: 22))
+        nameLabel.frame = contentView.directionalFrame(CGRect(x: 4, y: 4, width: bounds.width - 34, height: 20))
         textLabel.frame = CGRect(x: 4, y: 28, width: bounds.width - 8, height: bounds.height - 32)
     }
 }
