@@ -4,7 +4,7 @@ import UIKit
 /// model row: a ring with the share inside it, tapped to ask about
 /// compacting. Hidden until the agent has recorded a figure.
 final class ContextUsageButton: UIControl {
-    static let size: CGFloat = 30
+    static let size: CGFloat = 32
 
     private let ring = ProgressRing()
     private let label = UILabel()
@@ -19,11 +19,12 @@ final class ContextUsageButton: UIControl {
     /// Asked for when it is tapped, whatever the ring shows.
     var tapAction: () -> Void = {}
 
-    /// Whether a tap can ask about compacting: false while the chat runs,
-    /// drawn faint and read as unavailable.
+    /// Whether the chat can compact right now, which the panel's button reads.
+    /// It has nothing to do with opening the panel: the ring is the way in to
+    /// what the context holds, and a running chat has just as much to say.
     var isAvailable = true {
         didSet {
-            updateAlpha()
+            guard isAvailable != oldValue else { return }
             accessibilityTraits = isAvailable ? .button : [.button, .notEnabled]
         }
     }
@@ -120,7 +121,7 @@ final class ContextUsageButton: UIControl {
     }
 
     @objc private func tapped() {
-        guard !isHidden, isAvailable else { return }
+        guard !isHidden else { return }
         tapAction()
     }
 
@@ -135,7 +136,7 @@ final class ContextUsageButton: UIControl {
     /// VoiceOver's double tap arrives here through the button trait, and
     /// `primaryActionTriggered` is not sent for it.
     override func accessibilityActivate() -> Bool {
-        guard !isHidden, isAvailable else { return false }
+        guard !isHidden else { return false }
         tapAction()
         return true
     }

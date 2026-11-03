@@ -128,7 +128,6 @@ class ComposerView: ComposerSectionView {
         }
 
         inputEditor.delegate = self
-        controlPanel.cameraButton.actionBlock = { [weak self] in self?.delegate?.onComposerCameraTapped() }
         controlPanel.photoButton.actionBlock = { [weak self] in self?.delegate?.onComposerPhotoTapped() }
         controlPanel.fileButton.actionBlock = { [weak self] in self?.delegate?.onComposerFileTapped() }
         controlPanel.webButton.actionBlock = { [weak self] in self?.delegate?.onComposerWebTapped() }
@@ -605,10 +604,6 @@ class ComposerView: ComposerSectionView {
 }
 
 extension ComposerView: ComposerInputView.Delegate {
-    func onComposerInputCameraButtonTapped() {
-        delegate?.onComposerCameraTapped()
-    }
-
     func onComposerInputMoreButtonTapped() {
         endEditing(true)
         controlPanel.toggle()

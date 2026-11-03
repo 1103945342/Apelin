@@ -37,32 +37,11 @@ extension ComposerInputView {
 
     func switchToRequiredStatus() {
         assert(Thread.isMainThread)
-        // avoid flickering animation if set twice
-        NSObject.cancelPreviousPerformRequests(
-            withTarget: self,
-            selector: #selector(switchToRequiredStatusEx),
-            object: nil,
-        )
-        perform(#selector(switchToRequiredStatusEx), with: nil, afterDelay: 0.1)
-    }
-
-    @objc private func switchToRequiredStatusEx() {
-        doWithAnimation { [self] in
-            cameraButton.transform = .identity
-            if textView.isFirstResponder {
-                if textView.text.isEmpty, !hasAttachments {
-                    layoutStatus = .preFocusText
-                } else {
-                    layoutStatus = .editingText
-                }
-            } else {
-                if textView.text.isEmpty, !hasAttachments {
-                    layoutStatus = .standard
-                } else {
-                    layoutStatus = .editingText
-                }
-            }
-        }
+        // The band no longer has three shapes to choose between — the text
+        // takes the whole row whatever the state — but a caller setting the
+        // text twice still asks for a layout, and the height it publishes
+        // follows.
+        setNeedsLayout()
     }
 
     /// Where the text starts: the band's own inset, and the text sits against
@@ -92,95 +71,39 @@ extension ComposerInputView {
 
         // Leading to trailing: the wand, then the expand, at the text's end.
         // Both keep their frames even while faded out, so the band never moves
-        // the words as either appears.
+        // the words as either appears. The two gaps between the three things
+        // are what `toolsRoom` set aside, so the expand ends where the band's
+        // inset begins.
         rewriteButton.frame = CGRect(
-            x: textWidth + iconSpacing * 0.5,
+            x: textWidth + iconSpacing,
             y: inset.top,
             width: iconSize.width,
             height: iconSize.height,
         )
         expandButton.frame = CGRect(
-            x: rewriteButton.frame.maxX + iconSpacing * 0.5,
+            x: rewriteButton.frame.maxX + iconSpacing,
             y: inset.top,
             width: iconSize.width,
             height: iconSize.height,
         )
     }
 
-    /// The band is the text and the two tools that act on it; what happens to
-    /// a finished draft — the send and the plus — lives on the row beneath,
-    /// which the model bar draws.
-    private func placeText(fullWidth: Bool) -> CGRect {
+    /// One shape, whatever the state: the text takes the band's row, and the
+    /// two tools that act on it take the end of that row when they have
+    /// something to do. What happens to a finished draft — the send and the
+    /// plus — lives on the row beneath, which the model bar draws.
+    func layoutTextBand() {
         // The tools' room is only taken when one of them is there to take it:
         // a band with nothing to rewrite gives the words the whole row.
         let toolsShown = (hasContent && !isBusy && showsComposerSend) || isOverflowing
         let toolsRoom: CGFloat = toolsShown
             ? iconSize.width * 2 + iconSpacing * 2
             : 0
-        let width = fullWidth
-            ? bounds.width - inset.left - inset.right
-            : bounds.width - inset.left - inset.right - toolsRoom
+        let width = bounds.width - inset.left - inset.right - toolsRoom
         let frame = textFrame(width: width)
         textView.frame = frame
         placeholderLabel.frame = frame
         placeTools(after: frame.maxX)
-        return frame
-    }
-
-    func layoutAsEditingText() {
-        cameraButton.frame = CGRect(
-            x: 0 - inset.left - iconSize.width,
-            y: inset.top,
-            width: iconSize.width,
-            height: iconSize.height,
-        )
-        cameraButton.alpha = 0
-
-        placeText(fullWidth: false)
-    }
-
-    func layoutAsPreEditingText() {
-        defer { cameraButton.transform = CGAffineTransform(scaleX: 0.5, y: 0.5) }
-
-        cameraButton.frame = CGRect(
-            x: 0 - inset.left - iconSize.width,
-            y: inset.top,
-            width: iconSize.width,
-            height: iconSize.height,
-        )
-        cameraButton.alpha = 0
-
-        placeText(fullWidth: false)
-    }
-
-    func layoutAsStandard() {
-        // camera | text | (wand, expand at the text's end)
-        cameraButton.frame = directionalFrame(CGRect(
-            x: inset.left,
-            y: inset.top,
-            width: iconSize.width,
-            height: iconSize.height,
-        ))
-        cameraButton.alpha = 1
-        cameraButton.transform = .identity
-
-        let toolsShown = (hasContent && !isBusy && showsComposerSend) || isOverflowing
-        let toolsRoom: CGFloat = toolsShown
-            ? iconSize.width * 2 + iconSpacing * 2
-            : 0
-        let frame = textFrame(
-            width: bounds.width - inset.left - inset.right
-                - iconSize.width - iconSpacing - toolsRoom,
-        )
-        textView.frame = CGRect(
-            x: cameraButton.frame.maxX + iconSpacing,
-            y: frame.origin.y,
-            width: max(0, frame.width),
-            height: frame.height,
-        )
-        textView.alpha = 1
-        placeholderLabel.frame = textView.frame
-        placeTools(after: textView.frame.maxX)
     }
 
     /// The text outgrew the band: rewrite what is drawn, then measure up. Called

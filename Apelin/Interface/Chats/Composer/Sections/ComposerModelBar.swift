@@ -86,7 +86,7 @@ final class ComposerModelBar: ComposerSectionView {
         effortButton.showsMenuAsPrimaryAction = true
         tierButton.showsMenuAsPrimaryAction = true
 
-        sendButton.iconInset = 10
+        sendButton.iconInset = 11
         sendButton.fillColor = ComposerPalette.inert
         sendButton.iconView.tintColor = .secondaryLabel
 
@@ -298,7 +298,7 @@ final class ComposerModelBar: ComposerSectionView {
             width: sendSize,
             height: sendSize,
         ))
-        addButton.iconInset = 10
+        addButton.iconInset = 11
 
         // The left side reads in the order it is decided in: what the run may
         // do, which model answers, how hard it thinks, how full the context is.

@@ -948,10 +948,6 @@ extension ChatController: ComposerView.Delegate {
         runtime.saveDraft(draft, for: chat.id)
     }
 
-    func onComposerCameraTapped() {
-        importer()?.camera()
-    }
-
     func onComposerPhotoTapped() {
         importer()?.photos()
     }

@@ -15,7 +15,10 @@ class ComposerPanel: UIView {
     /// What a caller tells a panel to do when another one opens.
     var collapseAction: (() -> Void)?
 
-    private(set) var isExpanded = true {
+    /// A panel opens only when something asks it to. It starts folded, with
+    /// the height it publishes at zero, so the first tap on the control that
+    /// opens it does what it says rather than folding what was never there.
+    private(set) var isExpanded = false {
         didSet { updateExpansion() }
     }
 

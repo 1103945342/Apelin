@@ -6,12 +6,9 @@ import UIKit
 
 /// The composer's text band: the text, with the wand and the expand at its
 /// right end on the first row, above the row under it that carries what goes
-/// out. At rest the camera sits inside the band's leading edge, and goes
-/// when the text is focused, giving the words its room. Right to left, the
-/// band is mirrored.
-///
-/// The band is as tall as the text, from one line to `maxTextEditorHeight`;
-/// past that the text scrolls inside it and Expand stays at its corner.
+/// out. The band is as tall as the text, from one line to
+/// `maxTextEditorHeight`; past that the text scrolls inside it and Expand
+/// stays at its corner. Right to left, the band is mirrored.
 class ComposerInputView: ComposerSectionView {
     let font = UIFont.preferredFont(forTextStyle: .body)
     let textHeight: CurrentValueSubject<CGFloat, Never> = .init(0)
@@ -19,7 +16,6 @@ class ComposerInputView: ComposerSectionView {
 
     let elementClipper = UIView()
 
-    let cameraButton = ComposerIconButton(iconName: "ComposerCamera", label: String(localized: "Camera"))
     let textView = TextEditorView()
     let placeholderLabel = UILabel()
     /// Rewrites the draft, beside the text's end on the band's own row:
@@ -38,19 +34,6 @@ class ComposerInputView: ComposerSectionView {
         width: ComposerMetrics.Input.iconSize,
         height: ComposerMetrics.Input.iconSize,
     )
-
-    enum LayoutStatus {
-        case standard
-        case preFocusText
-        case editingText
-    }
-
-    var layoutStatus: LayoutStatus = .standard {
-        didSet {
-            guard oldValue != layoutStatus else { return }
-            setNeedsLayout()
-        }
-    }
 
     weak var delegate: Delegate?
 
@@ -136,12 +119,8 @@ class ComposerInputView: ComposerSectionView {
             object: nil,
         )
 
-        cameraButton.tapAction = { [weak self] in
-            self?.delegate?.onComposerInputCameraButtonTapped()
-        }
         addSubview(elementClipper)
         elementClipper.clipsToBounds = true
-        elementClipper.addSubview(cameraButton)
         textView.font = font
         textView.delegate = self
         textView.showsVerticalScrollIndicator = false
@@ -214,18 +193,11 @@ class ComposerInputView: ComposerSectionView {
 
         elementClipper.frame = bounds
 
-        switch layoutStatus {
-        case .standard:
-            layoutAsStandard()
-        case .preFocusText:
-            layoutAsPreEditingText()
-        case .editingText:
-            layoutAsEditingText()
-        }
-        // laid out left to right; right to left the camera is on the right
-        // and the tools on the left, as the placeholder reads
+        layoutTextBand()
+        // laid out left to right; right to left the band is mirrored, and the
+        // tools follow the text's end as the placeholder reads
         elementClipper.mirrorForLayoutDirection(
-            [cameraButton, textView, placeholderLabel, expandButton, rewriteButton],
+            [textView, placeholderLabel, expandButton, rewriteButton],
         )
 
         updatePlaceholderAlpha()

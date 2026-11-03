@@ -7,11 +7,10 @@ import UIKit
 /// FlowDown's four import buttons, expanded inside the editor.
 final class ComposerControlPanel: ComposerSectionView {
     let isPanelOpen = CurrentValueSubject<Bool, Never>(false)
-    let cameraButton = ComposerGiantButton(title: String(localized: "Camera"), icon: "ComposerCamera")
     let photoButton = ComposerGiantButton(title: String(localized: "Photo"), icon: "ComposerPhoto")
     let fileButton = ComposerGiantButton(title: String(localized: "File"), icon: "ComposerFile")
     let webButton = ComposerGiantButton(title: String(localized: "Web"), icon: "ComposerWeb")
-    private lazy var buttons = [cameraButton, photoButton, fileButton, webButton]
+    private lazy var buttons = [photoButton, fileButton, webButton]
 
     override func initializeViews() {
         super.initializeViews()

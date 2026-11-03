@@ -5,7 +5,6 @@ import UIKit
 
 extension ComposerInputView {
     protocol Delegate: AnyObject {
-        func onComposerInputCameraButtonTapped()
         func onComposerInputMoreButtonTapped()
         func onComposerInputBeginEditing()
         func onComposerInputEndEditing()

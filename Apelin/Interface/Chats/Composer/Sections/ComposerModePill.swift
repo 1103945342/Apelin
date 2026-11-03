@@ -34,6 +34,10 @@ final class ComposerModePill: UIControl {
         isAccessibilityElement = true
         accessibilityTraits = .button
         addTarget(self, action: #selector(tapped), for: .primaryActionTriggered)
+        // `primaryActionTriggered` reaches a plain UIControl only when the
+        // system decides it is a button; on some versions it does not. The
+        // touch itself is the one event that always arrives.
+        addTarget(self, action: #selector(tapped), for: .touchUpInside)
 
         applyMode()
     }
@@ -90,13 +94,25 @@ final class ComposerModePill: UIControl {
     }
 
     @objc private func tapped() {
+        // Two events are registered, and a tap can deliver both: take the
+        // first only.
+        guard !isTrackingTap else { return }
+        isTrackingTap = true
+        DispatchQueue.main.async { [weak self] in self?.isTrackingTap = false }
         mode = mode.next
         ComposerModeStore.mode = mode
         onChange?(mode)
     }
 
+    private var isTrackingTap = false
+
     override var isHighlighted: Bool {
-        didSet { alpha = isHighlighted ? 0.6 : 1 }
+        didSet {
+            alpha = isHighlighted ? 0.6 : 1
+            if !isHighlighted, oldValue {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            }
+        }
     }
 
     override func accessibilityActivate() -> Bool {
