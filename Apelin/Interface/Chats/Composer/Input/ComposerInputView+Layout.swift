@@ -1,5 +1,5 @@
 // Lakr233's Inhouse Code, from FlowDown.
-// I CAN DO WHAT THE FUCK I WANT.
+// I CAN DO WHAT I WANT.
 
 import UIKit
 
@@ -78,52 +78,53 @@ extension ComposerInputView {
         )
     }
 
-    /// Expand takes the band's trailing corner while the text has outgrown it.
-    /// Send is not here to compete for that corner: it belongs to the row
-    /// under the band.
-    private func placeExpand(in band: CGRect) {
-        let shows = isOverflowing
-        expandButton.alpha = shows ? 1 : 0
-        expandButton.isUserInteractionEnabled = shows
-        expandButton.frame = directionalFrame(CGRect(
-            x: band.maxX - iconSize.width,
+    /// The text's end, on the band's own row: the wand first, then the expand.
+    /// Both sit beside the words they act on — a rewrite works on what is
+    /// typed, the expand on a draft that has outgrown the band — and neither
+    /// gives up its place to the other, because each has its own.
+    private func placeTools(after textWidth: CGFloat) {
+        let showsRewrite = hasContent && !isBusy && showsComposerSend
+        rewriteButton.alpha = showsRewrite ? 1 : 0
+        rewriteButton.isUserInteractionEnabled = showsRewrite
+
+        expandButton.alpha = isOverflowing ? 1 : 0
+        expandButton.isUserInteractionEnabled = isOverflowing
+
+        // Leading to trailing: the wand, then the expand, at the text's end.
+        // Both keep their frames even while faded out, so the band never moves
+        // the words as either appears.
+        rewriteButton.frame = CGRect(
+            x: textWidth + iconSpacing * 0.5,
             y: inset.top,
             width: iconSize.width,
             height: iconSize.height,
-        ))
+        )
+        expandButton.frame = CGRect(
+            x: rewriteButton.frame.maxX + iconSpacing * 0.5,
+            y: inset.top,
+            width: iconSize.width,
+            height: iconSize.height,
+        )
     }
 
-    /// The wand sits at the band's leading end of the tools row, above the
-    /// text: a rewrite acts on what is typed, so it is read before it.
-    private func placeRewrite(in tools: CGRect) {
-        let shows = hasContent && !isBusy && showsComposerSend
-        rewriteButton.alpha = shows ? 1 : 0
-        rewriteButton.isUserInteractionEnabled = shows
-        rewriteButton.frame = tools
-    }
-
-    /// The band is the text and nothing else: the icons that act on a finished
-    /// draft — Send and the plus — live on the row beneath it, and the two
-    /// tools that act on the draft itself live on the row above.
+    /// The band is the text and the two tools that act on it; what happens to
+    /// a finished draft — the send and the plus — lives on the row beneath,
+    /// which the model bar draws.
     private func placeText(fullWidth: Bool) -> CGRect {
+        // The tools' room is only taken when one of them is there to take it:
+        // a band with nothing to rewrite gives the words the whole row.
+        let toolsShown = (hasContent && !isBusy && showsComposerSend) || isOverflowing
+        let toolsRoom: CGFloat = toolsShown
+            ? iconSize.width * 2 + iconSpacing * 2
+            : 0
         let width = fullWidth
             ? bounds.width - inset.left - inset.right
-            : bounds.width - inset.left - inset.right - iconSize.width - iconSpacing
+            : bounds.width - inset.left - inset.right - toolsRoom
         let frame = textFrame(width: width)
         textView.frame = frame
         placeholderLabel.frame = frame
-        placeExpand(in: frame)
+        placeTools(after: frame.maxX)
         return frame
-    }
-
-    /// The tools row is as tall as its icons and sits over the text's end.
-    private func toolsFrame() -> CGRect {
-        CGRect(
-            x: bounds.width - inset.right - iconSize.width * 2 - iconSpacing,
-            y: 0,
-            width: iconSize.width * 2 + iconSpacing,
-            height: iconSize.height,
-        )
     }
 
     func layoutAsEditingText() {
@@ -135,16 +136,7 @@ extension ComposerInputView {
         )
         cameraButton.alpha = 0
 
-        let frame = placeText(fullWidth: !isOverflowing)
-        let tools = toolsFrame()
-        // With text to work on, the wand takes the row's leading seat and
-        // Expand its trailing one; neither is drawn when it has nothing to do.
-        placeRewrite(in: CGRect(
-            x: tools.minX - inset.right,
-            y: 0,
-            width: iconSize.width,
-            height: iconSize.height,
-        ))
+        placeText(fullWidth: false)
     }
 
     func layoutAsPreEditingText() {
@@ -159,14 +151,10 @@ extension ComposerInputView {
         cameraButton.alpha = 0
 
         placeText(fullWidth: false)
-        // Nothing typed: nothing to rewrite.
-        rewriteButton.alpha = 0
-        rewriteButton.isUserInteractionEnabled = false
     }
 
     func layoutAsStandard() {
-        // camera | text | (tools row takes the trailing corner when it has
-        // something to show)
+        // camera | text | (wand, expand at the text's end)
         cameraButton.frame = directionalFrame(CGRect(
             x: inset.left,
             y: inset.top,
@@ -176,9 +164,13 @@ extension ComposerInputView {
         cameraButton.alpha = 1
         cameraButton.transform = .identity
 
+        let toolsShown = (hasContent && !isBusy && showsComposerSend) || isOverflowing
+        let toolsRoom: CGFloat = toolsShown
+            ? iconSize.width * 2 + iconSpacing * 2
+            : 0
         let frame = textFrame(
             width: bounds.width - inset.left - inset.right
-                - iconSize.width - iconSpacing * 2,
+                - iconSize.width - iconSpacing - toolsRoom,
         )
         textView.frame = CGRect(
             x: cameraButton.frame.maxX + iconSpacing,
@@ -188,16 +180,7 @@ extension ComposerInputView {
         )
         textView.alpha = 1
         placeholderLabel.frame = textView.frame
-        placeExpand(in: textView.frame)
-
-        // A draft restored from another conversation is rewritten like a typed
-        // one.
-        placeRewrite(in: CGRect(
-            x: textView.frame.maxX + iconSpacing * 0.5,
-            y: inset.top,
-            width: iconSize.width,
-            height: iconSize.height,
-        ))
+        placeTools(after: textView.frame.maxX)
     }
 
     /// The text outgrew the band: rewrite what is drawn, then measure up. Called

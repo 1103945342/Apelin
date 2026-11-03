@@ -34,7 +34,11 @@ enum ComposerMetrics {
         static let contentPadding: CGFloat = 4
         static let iconSize: CGFloat = 30
         static let iconSpacing: CGFloat = 10
-        static let inset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        // The text band and the row beneath it sit in one card: the band's
+        // own inset is the text's breathing room, and the row takes its own,
+        // so the card's height is the text plus one row, not text plus two
+        // insets' worth of air.
+        static let inset = UIEdgeInsets(top: 6, left: 12, bottom: 6, right: 12)
     }
 
     /// The send button, and the stop it becomes: one control, two jobs.

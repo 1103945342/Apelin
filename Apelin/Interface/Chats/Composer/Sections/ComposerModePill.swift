@@ -19,7 +19,7 @@ final class ComposerModePill: UIControl {
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        label.font = .systemFont(ofSize: 11, weight: .bold)
+        label.font = .systemFont(ofSize: 13, weight: .bold)
         label.textAlignment = .center
         label.adjustsFontSizeToFitWidth = true
         label.minimumScaleFactor = 0.7
@@ -27,7 +27,7 @@ final class ComposerModePill: UIControl {
         label.translatesAutoresizingMaskIntoConstraints = false
         addSubview(label)
 
-        layer.cornerRadius = ComposerMetrics.Radius.sm
+        layer.cornerRadius = 16
         layer.cornerCurve = .continuous
         clipsToBounds = true
 
@@ -51,7 +51,7 @@ final class ComposerModePill: UIControl {
 
     override var intrinsicContentSize: CGSize {
         let height = max(label.font.lineHeight + ComposerMetrics.Spacing.sm, 26)
-        let width = max(52, label.intrinsicContentSize.width + ComposerMetrics.Spacing.md * 2)
+        let width = max(46, label.intrinsicContentSize.width + ComposerMetrics.Spacing.md * 2)
         return CGSize(width: ceil(width), height: ceil(height))
     }
 

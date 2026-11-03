@@ -3,9 +3,9 @@ import UIKit
 
 /// The row under the draft: what the run may do, which model answers it, how
 /// hard that model thinks, and how full the context is — all on the left, in
-/// reading order; what goes out, on the right.
+/// reading order; the plus and the send on the right.
 ///
-/// The left four are icons rather than words, because the row is read at a
+/// The left controls are icons rather than words, because the row is read at a
 /// glance between typing and sending: a mark says whose model it is faster than
 /// its name does, and the pill is the only one that needs a word.
 final class ComposerModelBar: ComposerSectionView {
@@ -17,14 +17,14 @@ final class ComposerModelBar: ComposerSectionView {
     /// the row's room belongs to the draft above.
     let modelButton = ComposerIconButton(symbolName: "cpu", label: String(localized: "Select Model"))
 
+    /// The lightning and the level it is set to, tapped to change it.
+    private let effortButton = ComposerIconButton(symbolName: "bolt", label: String(localized: "Reasoning Effort"))
+    private let effortLabel = UILabel()
+
     /// The speed the model answers at, for the ones that offer a faster tier
     /// than standard: the letters say which, a tap changes it. Absent for a
     /// model with one tier, as most have.
     private let tierButton = ComposerIconButton(symbolName: "hare", label: String(localized: "Speed"))
-
-    /// The lightning and the level it is set to, tapped to change it.
-    private let effortButton = ComposerIconButton(symbolName: "bolt", label: String(localized: "Reasoning Effort"))
-    private let effortLabel = UILabel()
 
     /// How full the context is, tapped to open or fold the panel that says by
     /// how much. The ring is the only control here whose state is a figure.
@@ -72,7 +72,13 @@ final class ComposerModelBar: ComposerSectionView {
         effortLabel.textAlignment = .center
         addSubview(effortLabel)
 
-        modePill.onChange = { [weak self] mode in self?.onModeChanged?(mode) }
+        modePill.onChange = { [weak self] mode in
+            self?.onModeChanged?(mode)
+            // The pill's own word changes with it, and the row's left side
+            // starts at the pill's width: relaid out at once, or the mark
+            // behind it stays where the old word left it.
+            self?.setNeedsLayout()
+        }
         usageButton.tapAction = { [weak self] in self?.onContextTapped?() }
         modelButton.tapAction = { [weak self] in self?.onModelTapped?() }
         addButton.tapAction = { [weak self] in self?.onAddTapped?() }
@@ -196,7 +202,8 @@ final class ComposerModelBar: ComposerSectionView {
 
     /// The import panel is open: the plus draws as a close, so the same tap
     /// that opened it folds it away.
-    func setPanelOpen(_ open: Bool) {        updateControls { [self] in
+    func setPanelOpen(_ open: Bool) {
+        updateControls { [self] in
             addButton.change(symbolName: open ? "xmark" : "plus")
             addButton.accessibilityLabel = open
                 ? String(localized: "Close")
@@ -273,10 +280,10 @@ final class ComposerModelBar: ComposerSectionView {
         super.layoutSubviews()
         let height = preferredHeight
         let mid = (bounds.height - height) / 2
-        let spacing = ComposerMetrics.Spacing.sm
+        let spacing = ComposerMetrics.Spacing.xs
 
-        // The right pair keeps the row's end: what leaves the composer is read
-        // there, away from what decides it.
+        // The right pair keeps the row's end: the plus, then the send, in the
+        // order they are pressed — a draft is finished before it leaves.
         let sendSize = ComposerMetrics.Send.diameter
         let sendFrame = CGRect(
             x: bounds.width - sendSize,
@@ -293,7 +300,7 @@ final class ComposerModelBar: ComposerSectionView {
         ))
         addButton.iconInset = 8
 
-        // The left four read in the order they are decided in: what the run may
+        // The left side reads in the order it is decided in: what the run may
         // do, which model answers, how hard it thinks, how full the context is.
         var x: CGFloat = 0
         let pillSize = modePill.intrinsicContentSize
@@ -303,7 +310,7 @@ final class ComposerModelBar: ComposerSectionView {
             width: pillSize.width,
             height: pillSize.height,
         ))
-        x += pillSize.width + spacing
+        x += pillSize.width + ComposerMetrics.Spacing.sm
 
         let iconSize = sendSize
         let markSize = ComposerMetrics.Send.iconSize + 6
@@ -311,7 +318,7 @@ final class ComposerModelBar: ComposerSectionView {
         modelButton.frame = directionalFrame(CGRect(
             x: x, y: mid, width: iconSize, height: iconSize,
         ))
-        x += iconSize + spacing * 0.5
+        x += iconSize + spacing
 
         // The lightning and its level sit together as one control: the symbol
         // says what the setting is, the letters say where it is set.
@@ -328,18 +335,20 @@ final class ComposerModelBar: ComposerSectionView {
             width: labelWidth,
             height: effortLabel.font.lineHeight,
         ))
-        x += lightning + labelWidth + spacing * 0.25
+        x += lightning + labelWidth + spacing
 
-        // The speed sits between the effort and the ring: both are read for a
-        // model, and both are hidden for one that offers no choice.
-        tierButton.frame = directionalFrame(CGRect(
-            x: x, y: mid, width: iconSize, height: iconSize,
-        ))
-        x += iconSize + spacing * 0.25
+        // The speed, where the model offers one, sits between the effort and
+        // the ring; hidden, it takes no room.
+        if tierButton.alpha > 0 {
+            tierButton.frame = directionalFrame(CGRect(
+                x: x, y: mid, width: iconSize, height: iconSize,
+            ))
+            x += iconSize + spacing
+        }
 
         let ringSize = ContextUsageButton.size
         usageButton.frame = directionalFrame(CGRect(
-            x: x + spacing * 0.5,
+            x: x,
             y: (bounds.height - ringSize) / 2,
             width: ringSize,
             height: ringSize,

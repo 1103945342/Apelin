@@ -283,6 +283,7 @@ public actor AgentSession {
     /// session. The model reads it in the next message's `<system-state>`;
     /// the system prompt names every mode and none as the one on.
     public func setApprovalMode(_ mode: ApprovalMode) async {
+        appApprovalMode = mode
         guard await runner.setMode(mode) else { return }
         journal.modeChanged(to: mode)
         if var metadata = try? await log.readMetadata() {
@@ -297,11 +298,26 @@ public actor AgentSession {
         await runner.setAsksBeforeScreen(asks)
     }
 
+    /// The approval mode the app last said, so a run-mode change away from
+    /// `auto` can put it back: `auto` is the one thing that overrode it.
+    private var appApprovalMode: ApprovalMode?
+
     /// What this run may do, from the composer's pill. Read in the next
     /// message's `<system-state>`, like the approval mode: the pill can change
     /// between messages, and the system prompt is the session's snapshot.
-    public func setRunMode(_ mode: ApelinProtocol.AgentRunMode?) {
+    /// The runner hears it too: a plan run's reads-only wall is the runner's,
+    /// and an automatic run's "stop asking" is the approval gate's.
+    public func setRunMode(_ mode: ApelinProtocol.AgentRunMode?) async {
         runMode = mode
+        await runner.setRunMode(mode)
+        // An automatic run is a build run that stops asking; the other two
+        // keep the approval mode the app last said, restored here because
+        // `auto` was the one thing that overrode it.
+        if mode == .auto {
+            await runner.setMode(.full)
+        } else if let mode = appApprovalMode, await runner.approvalMode != mode {
+            await runner.setMode(mode)
+        }
     }
 
     /// What the system prompt would show now, with the extensions whose

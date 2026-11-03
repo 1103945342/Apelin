@@ -4,13 +4,14 @@
 import Combine
 import UIKit
 
-/// The composer's text band: the text view between its icons, laid out one
-/// of three ways. At rest, the camera, the text and More;
-/// focused and empty, the camera goes and the text takes its room; with
-/// text, More gives way to Send. Right to left, the band is mirrored.
+/// The composer's text band: the text, with the wand and the expand at its
+/// right end on the first row, above the row under it that carries what goes
+/// out. At rest the camera sits inside the band's leading edge, and goes
+/// when the text is focused, giving the words its room. Right to left, the
+/// band is mirrored.
 ///
 /// The band is as tall as the text, from one line to `maxTextEditorHeight`;
-/// past that the text scrolls inside it and Expand appears at its corner.
+/// past that the text scrolls inside it and Expand stays at its corner.
 class ComposerInputView: ComposerSectionView {
     let font = UIFont.preferredFont(forTextStyle: .body)
     let textHeight: CurrentValueSubject<CGFloat, Never> = .init(0)
@@ -21,11 +22,11 @@ class ComposerInputView: ComposerSectionView {
     let cameraButton = ComposerIconButton(iconName: "ComposerCamera", label: String(localized: "Camera"))
     let textView = TextEditorView()
     let placeholderLabel = UILabel()
-    /// Rewrites the draft: beside Send, only while there is something to
-    /// rewrite and no run to interrupt.
+    /// Rewrites the draft, beside the text's end on the band's own row:
+    /// visible while there is something to rewrite and no run to interrupt.
     let rewriteButton = ComposerRewriteButton()
-    /// Shown once the text has outgrown the band, at its trailing corner: the
-    /// same draft, on a page tall enough to see it.
+    /// At the text's trailing corner, once the draft has outgrown the band:
+    /// the same text, on a page tall enough to see it.
     let expandButton = ComposerIconButton(
         symbolName: "arrow.up.left.and.arrow.down.right",
         label: String(localized: "Expand"),
@@ -74,6 +75,9 @@ class ComposerInputView: ComposerSectionView {
         didSet {
             guard isBusy != oldValue else { return }
             updateSendButton()
+            // The wand leaves while a run is going, as it does when the
+            // draft empties: the frame it leaves behind is laid out again.
+            setNeedsLayout()
         }
     }
 
@@ -83,6 +87,9 @@ class ComposerInputView: ComposerSectionView {
         didSet {
             guard hasContent != oldValue else { return }
             updateSendButton()
+            // The wand is drawn at the text's end, and appears only now:
+            // without this the frame it would take is never laid out.
+            setNeedsLayout()
         }
     }
 

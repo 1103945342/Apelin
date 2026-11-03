@@ -151,6 +151,12 @@ final class ChatController: UIViewController {
             guard let self, let chat else { return }
             ChatActions.askToCompact(for: chat.id, runtime: runtime, from: self)
         }
+        composer.onModeChanged = { mode in
+            // The store is what the next prompt reads; the pill has already
+            // taken its own colour. Written here so the write and the read
+            // agree on one place.
+            ComposerModeStore.mode = mode
+        }
         composer.onCompactContext = { [weak self] in
             guard let self, let chat else { return }
             ChatActions.askToCompact(for: chat.id, runtime: runtime, from: self)

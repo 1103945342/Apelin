@@ -6,6 +6,7 @@ import enum ApelinProtocol.AgentToolName
 import struct ApelinProtocol.ApelinError
 import enum ApelinProtocol.BuildBootstrap
 import struct ApelinProtocol.GitPushLease
+import enum ApelinProtocol.AgentRunMode
 import Foundation
 import KWWKAgent
 import KWWKAI
@@ -94,6 +95,37 @@ actor ToolRunner {
 
     var asksBeforeScreen: Bool {
         policy.asksBeforeScreen
+    }
+
+    /// The composer's pill, sent with each prompt: a plan run is a hard
+    /// sandbox, not a request of the model's. Write and system tools are
+    /// denied here whatever the approval mode allows, so a plan answers
+    /// from reads alone even when the model tries to act.
+    func setRunMode(_ mode: ApelinProtocol.AgentRunMode?) {
+        runMode = mode
+    }
+
+    private var runMode: ApelinProtocol.AgentRunMode?
+
+    /// Why a tool is wrong in a plan run, or nil when the tool may run: only
+    /// reads pass. MCP and extension tools have no risk of their own, so they
+    /// are refused as a whole — a plan reads what Apelin itself keeps.
+    private func planVerdict(for tool: InvocationFacts.Tool) -> String? {
+        switch tool {
+        case .mcp(let name):
+            return "\(name) is not a read tool"
+        case .toolExtension(let tool):
+            return "\(tool.name) is not a read tool"
+        case .local(let name):
+            switch name.risk {
+            case .readOnly:
+                return nil
+            case .writeProject:
+                return "\(name.rawValue) writes; a plan answers with what it would change"
+            case .system:
+                return "\(name.rawValue) changes the device; a plan answers with what it would change"
+            }
+        }
     }
 
     /// A run ended: the next one may send its own notices.
@@ -208,6 +240,14 @@ actor ToolRunner {
            ProjectBuildSystem.externalScript(in: root) == nil
         {
             throw ToolDeniedError(message: ProjectBuildSystem.externalBuildRefusal)
+        }
+        // Before the gate: a plan run is read-only by force. The model is
+        // told so in `<system-state>`, and this is the wall behind the words:
+        // what writes or runs is refused without asking, whatever the
+        // approval mode says, because a plan is not the approval mode.
+        if runMode == .plan, let verdict = planVerdict(for: tool) {
+            journal?.note(ToolCallOutcome(.denied, "a plan run refused it: \(verdict)"), for: toolCallID)
+            throw ToolDeniedError(message: "refused: this run is a plan — \(verdict)")
         }
         let facts = try await gatherFacts(tool, arguments: arguments)
         let workingDirectory = arguments.argString("cwd") ?? "."
