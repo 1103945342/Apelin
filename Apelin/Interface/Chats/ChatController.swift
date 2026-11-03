@@ -26,10 +26,6 @@ final class ChatController: UIViewController {
     private let titleView = ChatTitleView()
     private var messageList = ListView<ChatMessage>()
     private let composer = ComposerView()
-    /// Behind the composer and down past the page's edge, so the list does
-    /// not show beside or under it, with a hairline along its top.
-    private let composerBackground = UIView()
-    private let composerSeparator = UIView()
     private let topBlur = ChatTopBlurView()
     private let latestMessageButton = UIButton(type: .system)
     private weak var tracePage: TraceController?
@@ -131,15 +127,6 @@ final class ChatController: UIViewController {
         replaceMessageList()
         view.addSubview(topBlur)
 
-        composerBackground.backgroundColor = .pageBackground
-        composerSeparator.backgroundColor = .separator
-        composerBackground.addSubview(composerSeparator)
-        composerSeparator.snp.makeConstraints { make in
-            make.leading.top.trailing.equalToSuperview()
-            make.height.equalTo(1 / max(traitCollection.displayScale, 1))
-        }
-        view.addSubview(composerBackground)
-
         composer.delegate = self
         composer.approvalSection.onDecision = { [weak self] request, decision in
             guard let self, let chat else { return }
@@ -209,25 +196,19 @@ final class ChatController: UIViewController {
                 // themselves; without one, the safe area's own edge.
                 view.keyboardLayoutGuide.usesBottomSafeArea = false
                 make.bottom.lessThanOrEqualTo(view.keyboardLayoutGuide.snp.top).offset(-composer.spacing)
-                make.bottom.lessThanOrEqualTo(view.safeAreaLayoutGuide)
-                make.bottom.equalTo(view.safeAreaLayoutGuide).priority(.high)
+                make.bottom.lessThanOrEqualTo(view.safeAreaLayoutGuide).offset(-8)
+                make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-8).priority(.high)
             } else {
                 make.bottom.equalTo(view.keyboardLayoutGuide.snp.top)
             }
-            // Centred in the safe area, not on the page: a vertical bar
-            // insets one side only, and centring on the page would take the
-            // same width off the other side as well.
+            // A floating card, not a band welded to the page's edge: the
+            // messages scroll under it on both sides, so the card keeps a
+            // margin of its own on each side and sits above the safe area.
             make.centerX.equalTo(view.safeAreaLayoutGuide)
             make.width.lessThanOrEqualTo(750)
-            make.leading.greaterThanOrEqualTo(view.safeAreaLayoutGuide)
-            make.trailing.lessThanOrEqualTo(view.safeAreaLayoutGuide)
-            make.width.equalTo(view.safeAreaLayoutGuide).priority(.low)
-        }
-        composerBackground.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
-            // past the bottom, for the keyboard's bounce
-            make.bottom.equalToSuperview().offset(128)
-            make.top.equalTo(composer.snp.top).offset(-4)
+            make.leading.greaterThanOrEqualTo(view.safeAreaLayoutGuide).offset(16)
+            make.trailing.lessThanOrEqualTo(view.safeAreaLayoutGuide).offset(-16)
+            make.width.equalTo(view.safeAreaLayoutGuide).offset(-32).priority(.low)
         }
 
         var latestConfiguration: UIButton.Configuration
@@ -256,7 +237,7 @@ final class ChatController: UIViewController {
         view.addSubview(latestMessageButton)
         latestMessageButton.snp.makeConstraints { make in
             make.centerX.equalTo(view.safeAreaLayoutGuide)
-            make.bottom.equalTo(composerBackground.snp.top).offset(-8)
+            make.bottom.equalTo(composer.snp.top).offset(-8)
             make.size.equalTo(44)
         }
     }
@@ -666,7 +647,7 @@ final class ChatController: UIViewController {
 
     /// The list scrolls clear of the composer, and of the keyboard under it.
     private func updateMessageListInsets() {
-        let covered = max(view.bounds.height - composerBackground.frame.minY, 0)
+        let covered = max(view.bounds.height - composer.frame.minY + 8, 0)
         let bottom = max(covered - view.safeAreaInsets.bottom, 0)
         if messageList.contentInset.bottom != bottom + 16 {
             // a reader at the latest message, or following a turn, stays there

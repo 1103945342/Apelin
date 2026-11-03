@@ -4,7 +4,7 @@ import UIKit
 /// model row: a ring with the share inside it, tapped to ask about
 /// compacting. Hidden until the agent has recorded a figure.
 final class ContextUsageButton: UIControl {
-    static let size = ProgressRing.diameter
+    static let size: CGFloat = 30
 
     private let ring = ProgressRing()
     private let label = UILabel()
@@ -35,7 +35,7 @@ final class ContextUsageButton: UIControl {
         ring.isUserInteractionEnabled = false
         addSubview(ring)
 
-        label.font = .monospacedDigitSystemFont(ofSize: 9, weight: .semibold)
+        label.font = .monospacedDigitSystemFont(ofSize: 10, weight: .semibold)
         label.textAlignment = .center
         label.adjustsFontSizeToFitWidth = true
         label.minimumScaleFactor = 0.6

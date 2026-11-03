@@ -28,23 +28,23 @@ enum ComposerMetrics {
 
     /// The text band: two lines at rest, seven before it scrolls inside itself.
     enum Input {
-        static let minHeight: CGFloat = 44
-        static let maxHeight: CGFloat = 140
+        static let minHeight: CGFloat = 52
+        static let maxHeight: CGFloat = 150
         /// The room the text keeps around it, inside the band's own inset.
         static let contentPadding: CGFloat = 4
-        static let iconSize: CGFloat = 30
+        static let iconSize: CGFloat = 32
         static let iconSpacing: CGFloat = 10
         // The text band and the row beneath it sit in one card: the band's
         // own inset is the text's breathing room, and the row takes its own,
         // so the card's height is the text plus one row, not text plus two
         // insets' worth of air.
-        static let inset = UIEdgeInsets(top: 6, left: 12, bottom: 6, right: 12)
+        static let inset = UIEdgeInsets(top: 8, left: 14, bottom: 8, right: 14)
     }
 
     /// The send button, and the stop it becomes: one control, two jobs.
     enum Send {
-        static let diameter: CGFloat = 36
-        static let iconSize: CGFloat = 18
+        static let diameter: CGFloat = 40
+        static let iconSize: CGFloat = 20
         static let inset: CGFloat = 4
     }
 
