@@ -94,7 +94,10 @@ final class ComposerContextPanel: ComposerPanel {
         compactButton.isEnabled = compactEnabled
         updateText()
         setNeedsLayout()
-        heightPublisher.send(preferredHeight)
+        // A folded panel publishes nothing. The composer lays out whatever has
+        // a height, so a figure arriving while it is folded must not put the
+        // card back over a body it is not showing.
+        heightPublisher.send(isExpanded ? preferredHeight : 0)
     }
 
     private var fraction: Double? {

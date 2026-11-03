@@ -19,6 +19,7 @@ extension ComposerView {
         func onComposerRewriteRequested(draft: String)
         /// The wand was tapped again while a rewrite ran.
         func onComposerRewriteCancelled()
+        func onComposerCameraTapped()
         func onComposerPhotoTapped()
         func onComposerFileTapped()
         func onComposerWebTapped()

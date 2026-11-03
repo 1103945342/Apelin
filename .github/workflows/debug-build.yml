@@ -1,9 +1,12 @@
-# One manual run is the whole path: build the selected bootstrap, package it,
-# and publish the exact .deb from that same job. There is no artifact hand-off
-# and no second workflow to start.
+# A push to main builds the package and keeps it as this run's artifact; only a
+# manual run publishes it, so no commit can rewrite a release somebody has
+# already installed. The manual run is otherwise the whole path: build the
+# selected bootstrap, package it, and publish the exact .deb from that same job.
 name: Debug build
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       bootstrap:
@@ -20,7 +23,7 @@ permissions:
 
 jobs:
   build-and-publish:
-    name: Build and publish ${{ inputs.bootstrap }}
+    name: Build and publish ${{ github.event.inputs.bootstrap || 'roothide' }}
     runs-on: xcode-27
     timeout-minutes: 75
 
@@ -52,12 +55,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          make deb FLAVOR="${{ inputs.bootstrap }}" CONFIGURATION=Release SKIP_HARNESS=1 \
+          make deb FLAVOR="${{ github.event.inputs.bootstrap || 'roothide' }}" CONFIGURATION=Release SKIP_HARNESS=1 \
             DERIVED_DATA="$RUNNER_TEMP/apelin-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
             BUILD_NUMBER="$GITHUB_RUN_NUMBER" 2>&1 | tee "$RUNNER_TEMP/build.log"
 
       - name: Read version and prepare release files
         id: release
+        if: github.event_name == 'workflow_dispatch'
         shell: bash
         env:
           SHA: ${{ github.sha }}
@@ -94,6 +98,7 @@ jobs:
           echo "::notice::prepared ${#packages[@]} package(s) for v$version"
 
       - name: Create, upload and publish the release
+        if: github.event_name == 'workflow_dispatch'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -168,7 +173,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: apelin-${{ inputs.bootstrap }}-${{ github.sha }}
+          name: apelin-${{ github.event.inputs.bootstrap || 'roothide' }}-${{ github.sha }}
           path: |
             build/Packages/*.deb
             build/Packages/SHA256SUMS
@@ -184,7 +189,7 @@ jobs:
           set -uo pipefail
           body="$RUNNER_TEMP/failure.md"
           {
-            echo "The debug build or release of \`$GITHUB_SHA\` for ${{ inputs.bootstrap }} failed."
+            echo "The debug build or release of \`$GITHUB_SHA\` for ${{ github.event.inputs.bootstrap || 'roothide' }} failed."
             echo
             echo "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
             echo

@@ -70,6 +70,9 @@ done
 for resource in "${worker_resources[@]}"; do
     [[ -f "$workers_dir/$resource/Info.plist" ]] || { echo "error: worker resource bundle is missing: $resource" >&2; exit 66; }
 done
+# What the composer's wand is told: shipped as data, so a rewrite can be
+# retuned without a build (`PromptRewriter.instructions`).
+[[ -f "$packaging_root/PromptOptimization.md" ]] || { echo "error: Packaging/PromptOptimization.md is missing" >&2; exit 66; }
 for worker in "${workers[@]}"; do
     [[ -x "$workers_dir/$worker" ]] || { echo "error: worker binary is missing: $worker" >&2; exit 66; }
     [[ -f "$packaging_root/Workers/$worker.entitlements" ]] || { echo "error: Packaging/Workers/$worker.entitlements is missing" >&2; exit 66; }
@@ -216,9 +219,10 @@ installed_app="$installed_root/Applications/Apelin.app"
 installed_daemon="$installed_root/usr/libexec/apelind"
 installed_plist="$installed_root/Library/LaunchDaemons/wiki.qaq.apelind.plist"
 installed_workers="$installed_root/usr/libexec/apelin"
+installed_share="$installed_root/usr/share/apelin"
 installed_profile="$installed_root/etc/profile.d/wiki.qaq.apelin.sh"
 mkdir -p "$debian" "$(dirname "$installed_app")" "$(dirname "$installed_daemon")" "$(dirname "$installed_plist")" "$installed_workers" \
-    "$(dirname "$installed_profile")"
+    "$installed_share" "$(dirname "$installed_profile")"
 cp "$login_profile" "$installed_profile"
 chmod 0644 "$installed_profile"
 /usr/bin/ditto "$app_bundle" "$installed_app"
@@ -244,6 +248,10 @@ for resource in "${worker_resources[@]}"; do
     /usr/bin/ditto "$workers_dir/$resource" "$installed_workers/$resource"
     chmod -R u=rwX,go=rX "$installed_workers/$resource"
 done
+# The rewrite's instructions, beside the workers' data rather than inside a
+# binary: a reader's copy in their data folder is read instead when it is there.
+/usr/bin/ditto "$packaging_root/PromptOptimization.md" "$installed_share/PromptOptimization.md"
+chmod 0644 "$installed_share/PromptOptimization.md"
 for source_library in "${runtime_library_sources[@]}"; do
     library="${source_library##*/}"
     /usr/bin/ditto "$source_library" "$installed_workers/$library"

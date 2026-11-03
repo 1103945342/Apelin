@@ -10,25 +10,38 @@ import KWWKAI
 /// into a conversation. The shape is `AgentSession`'s title pass — a system
 /// prompt, one user message, a token cap — because that is the one place this
 /// package already asks a model for text with no conversation around it.
+///
+/// The instructions are a file, `PromptOptimization.md`, read when the wand is
+/// tapped rather than compiled in, so what a rewrite is told can change without
+/// a build. A reader's own copy in the data folder wins over the one the
+/// package installs.
 enum PromptRewriter {
-    /// What the model is asked, in one paragraph. It is told not to answer the
-    /// prompt: the draft is an instruction addressed to another model, and a
-    /// rewrite that carries out the instruction is no rewrite at all.
-    private static let systemPrompt = """
-    You rewrite the message a developer is about to send to a coding agent. \
-    Return the rewritten message and nothing else: no preamble, no explanation, \
-    no quotation marks, no Markdown fence.
+    static let instructionsFileName = "PromptOptimization.md"
 
-    Keep the request the same. Say what it asked for, in the words a competent \
-    engineer would use, with the same intent and no more scope. Make it specific: \
-    name the files, the behaviour and the outcome when the writer implied them \
-    and the message itself makes them clear; do not invent a requirement that \
-    was not there. Drop filler, apologies and hedging. Keep every fact, path, \
-    identifier and code fragment exactly as written. Keep the writer's language.
-
-    Do not carry out the instruction. Do not write the code it asks for. Do not \
-    answer it. Rewrite it.
-    """
+    /// The instructions as they stand now: the reader's copy in
+    /// `~/Documents/wiki.qaq.apelin/` first, then the one the package puts in
+    /// `usr/share/apelin/`. A missing or emptied file is passed over, so a copy
+    /// cleared by accident falls back to the shipped words instead of failing.
+    static func instructions(home: URL, installRoot: String) throws -> String {
+        let shipped = URL(fileURLWithPath: installRoot, isDirectory: true)
+            .appendingPathComponent("usr/share/apelin", isDirectory: true)
+            .appendingPathComponent(instructionsFileName)
+        let mine = ApelinDataRoot(home: home).url.appendingPathComponent(instructionsFileName)
+        for url in [mine, shipped] {
+            guard let text = try? String(contentsOf: url, encoding: .utf8) else { continue }
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                return trimmed
+            }
+        }
+        throw ApelinError(
+            .unavailable,
+            """
+            The prompt optimization instructions are missing from this install. Reinstall Apelin \
+            with your preferred package manager, then try again.
+            """,
+        )
+    }
 
     /// Past this many characters the draft is cut for the model: a rewrite of
     /// the opening is worth more than a request the provider rejects.
@@ -41,12 +54,15 @@ enum PromptRewriter {
 
     static func rewrite(
         _ request: AgentRewritePromptRequest,
+        home: URL,
+        installRoot: String,
         credentials source: any CredentialSource,
     ) async throws -> AgentRewritePromptResponse {
         let draft = request.text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !draft.isEmpty else {
             throw ApelinError(.badRequest, "There is nothing to rewrite.")
         }
+        let systemPrompt = try instructions(home: home, installRoot: installRoot)
         // The app names the provider and model it is about to message with, as
         // a prompt does; nothing here reads a setting of its own. A rewrite
         // without a model is refused rather than answered by another provider:

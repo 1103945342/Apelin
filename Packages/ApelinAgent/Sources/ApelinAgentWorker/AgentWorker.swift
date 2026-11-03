@@ -162,6 +162,8 @@ public enum AgentWorker {
             await WorkerMain.serve(AgentRewritePromptRequest.self, request) { query in
                 try await PromptRewriter.rewrite(
                     query,
+                    home: URL(fileURLWithPath: context.assignment.home, isDirectory: true),
+                    installRoot: context.assignment.installRoot,
                     credentials: KeychainCredentialSource(accessGroup: keychainAccessGroup),
                 )
             }

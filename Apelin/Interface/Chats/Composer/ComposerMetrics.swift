@@ -1,3 +1,4 @@
+import ApelinProtocol
 import UIKit
 
 /// The composer's measures, in one place: what the bands space themselves by,
@@ -26,25 +27,27 @@ enum ComposerMetrics {
         static let ground: CGFloat = 20
     }
 
-    /// The text band: two lines at rest, seven before it scrolls inside itself.
+    /// The text band: two lines at rest, nine before it scrolls inside itself.
     enum Input {
-        static let minHeight: CGFloat = 60
-        static let maxHeight: CGFloat = 168
+        /// What the band is worth before a word is typed: the two lines it
+        /// keeps, and the room its own inset asks for.
+        static let minHeight: CGFloat = 72
+        static let maxHeight: CGFloat = 200
         /// The room the text keeps around it, inside the band's own inset.
         static let contentPadding: CGFloat = 4
-        static let iconSize: CGFloat = 32
+        static let iconSize: CGFloat = 28
         static let iconSpacing: CGFloat = 10
         // The text band and the row beneath it sit in one card: the band's
         // own inset is the text's breathing room, and the row takes its own,
         // so the card's height is the text plus one row, not text plus two
         // insets' worth of air.
-        static let inset = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
+        static let inset = UIEdgeInsets(top: 14, left: 16, bottom: 14, right: 16)
     }
 
     /// The send button, and the stop it becomes: one control, two jobs.
     enum Send {
-        static let diameter: CGFloat = 44
-        static let iconSize: CGFloat = 22
+        static let diameter: CGFloat = 36
+        static let iconSize: CGFloat = 18
         static let inset: CGFloat = 4
     }
 
@@ -109,6 +112,26 @@ enum ComposerPalette {
         if fraction >= 0.9 { return .systemRed }
         if fraction >= 0.75 { return .systemOrange }
         return .secondaryLabel
+    }
+
+    /// The reasoning effort as the lightning's own colour: green where the
+    /// model is asked to think least, yellow across the middle, red where it
+    /// is asked to think hardest, and grey when it is asked not to think at
+    /// all. Every level keeps a hue of its own on that sweep, so two
+    /// neighbouring settings never read as the same one.
+    static func effort(_ effort: AgentReasoningEffort) -> UIColor {
+        let place: CGFloat
+        switch effort {
+        case .off: return .tertiaryLabel
+        case .minimal: place = 0
+        case .low: place = 0.2
+        case .medium: place = 0.4
+        case .high: place = 0.62
+        case .xhigh: place = 0.8
+        case .max: place = 1
+        }
+        // Green is a third of the way round the wheel; red is none of it.
+        return UIColor(hue: (1 - place) / 3, saturation: 0.85, brightness: 0.9, alpha: 1)
     }
 
     /// The mode pill, by what the run is allowed to do.

@@ -177,8 +177,13 @@ class ComposerInputView: ComposerSectionView {
         textHeight.removeDuplicates()
             .compactMap { [weak self] textHeight -> CGFloat? in
                 guard let self else { return nil }
-                return max(textLayoutHeight(textHeight), iconSize.height)
-                    + inset.top + inset.bottom
+                // Two lines of room before a word is typed, and the band
+                // grows from there: it is the one thing in the card a reader
+                // writes in, and the row under it is theirs to read.
+                return max(
+                    max(textLayoutHeight(textHeight), iconSize.height) + inset.top + inset.bottom,
+                    ComposerMetrics.Input.minHeight,
+                )
             }
             .ensureMainThread()
             .sink { [weak self] height in self?.heightPublisher.send(height) }

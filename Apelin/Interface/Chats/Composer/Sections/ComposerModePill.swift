@@ -1,7 +1,7 @@
 import UIKit
 
 /// The pill under the composer: what this run is allowed to do, tapped to
-/// change it. Plan, build, automatic, in that order, wrapping round.
+/// change it. Build, plan, automatic, in that order, wrapping round.
 ///
 /// The pill is the only place the setting is changed, and it says what a run
 /// will do before one is sent, which is the answer a reader wants from a
@@ -19,7 +19,7 @@ final class ComposerModePill: UIControl {
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        label.font = .systemFont(ofSize: 13, weight: .bold)
+        label.font = .systemFont(ofSize: 12, weight: .bold)
         label.textAlignment = .center
         label.adjustsFontSizeToFitWidth = true
         label.minimumScaleFactor = 0.7
@@ -27,7 +27,7 @@ final class ComposerModePill: UIControl {
         label.translatesAutoresizingMaskIntoConstraints = false
         addSubview(label)
 
-        layer.cornerRadius = 16
+        layer.cornerRadius = 12
         layer.cornerCurve = .continuous
         clipsToBounds = true
 
@@ -54,8 +54,8 @@ final class ComposerModePill: UIControl {
     }
 
     override var intrinsicContentSize: CGSize {
-        let height = max(label.font.lineHeight + ComposerMetrics.Spacing.sm, 26)
-        let width = max(46, label.intrinsicContentSize.width + ComposerMetrics.Spacing.md * 2)
+        let height = max(label.font.lineHeight + ComposerMetrics.Spacing.sm, 24)
+        let width = max(42, label.intrinsicContentSize.width + ComposerMetrics.Spacing.md * 2)
         return CGSize(width: ceil(width), height: ceil(height))
     }
 
@@ -76,15 +76,20 @@ final class ComposerModePill: UIControl {
         setNeedsLayout()
     }
 
-    /// The pill's own word, in capitals, made from the spoken one: a literal
-    /// spelled in capitals reads as a string-table key, which `make check`
-    /// refuses and for good reason — it is what a SHOUTING_KEY looks like.
+    /// The word the pill draws: the mode's own name, in lower case, the same
+    /// in every language. The row shows it as a badge of three known words
+    /// rather than as a sentence, and VoiceOver reads the reader's own word
+    /// for it instead (`spokenTitle`), so nothing is left untranslated that
+    /// is meant to be read.
     private var title: String {
-        spokenTitle.uppercased()
+        switch mode {
+        case .plan: "plan"
+        case .build: "build"
+        case .auto: "auto"
+        }
     }
 
-    /// The pill shows a word in capitals; the spoken value is the sentence,
-    /// which the screen reader would otherwise spell out letter by letter.
+    /// What the screen reader says the setting is.
     private var spokenTitle: String {
         switch mode {
         case .plan: String(localized: "Plan")

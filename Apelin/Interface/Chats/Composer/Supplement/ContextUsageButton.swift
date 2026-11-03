@@ -4,7 +4,7 @@ import UIKit
 /// model row: a ring with the share inside it, tapped to ask about
 /// compacting. Hidden until the agent has recorded a figure.
 final class ContextUsageButton: UIControl {
-    static let size: CGFloat = 32
+    static let size: CGFloat = 28
 
     private let ring = ProgressRing()
     private let label = UILabel()
@@ -51,6 +51,10 @@ final class ContextUsageButton: UIControl {
         addSubview(chevron)
 
         addTarget(self, action: #selector(tapped), for: .primaryActionTriggered)
+        // `primaryActionTriggered` reaches a plain `UIControl` only when the
+        // system decides it is a button, and on the versions this ships to it
+        // does not: the touch itself is the event that always arrives.
+        addTarget(self, action: #selector(tapped), for: .touchUpInside)
 
         isAccessibilityElement = true
         accessibilityTraits = .button
@@ -122,8 +126,15 @@ final class ContextUsageButton: UIControl {
 
     @objc private func tapped() {
         guard !isHidden else { return }
+        // Two events are registered, and a tap can deliver both: take the
+        // first only, or the panel would open and shut in one touch.
+        guard !isTrackingTap else { return }
+        isTrackingTap = true
+        DispatchQueue.main.async { [weak self] in self?.isTrackingTap = false }
         tapAction()
     }
+
+    private var isTrackingTap = false
 
     override var isHighlighted: Bool {
         didSet { updateAlpha() }

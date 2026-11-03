@@ -17,9 +17,10 @@ final class ComposerModelBar: ComposerSectionView {
     /// the row's room belongs to the draft above.
     let modelButton = ComposerIconButton(symbolName: "cpu", label: String(localized: "Select Model"))
 
-    /// The lightning and the level it is set to, tapped to change it.
+    /// The lightning, in the colour of the level it is set to, tapped to
+    /// change it. The level is drawn, never written: the row has no room for
+    /// a word, and the colour says which of the settings is on.
     private let effortButton = ComposerIconButton(symbolName: "bolt", label: String(localized: "Reasoning Effort"))
-    private let effortLabel = UILabel()
 
     /// The speed the model answers at, for the ones that offer a faster tier
     /// than standard: the letters say which, a tap changes it. Absent for a
@@ -65,12 +66,6 @@ final class ComposerModelBar: ComposerSectionView {
         for control in [modePill, modelButton, effortButton, tierButton, usageButton, addButton, sendButton] {
             addSubview(control)
         }
-        effortLabel.font = .systemFont(ofSize: 12, weight: .semibold)
-        effortLabel.adjustsFontSizeToFitWidth = true
-        effortLabel.minimumScaleFactor = 0.8
-        effortLabel.isUserInteractionEnabled = false
-        effortLabel.textAlignment = .center
-        addSubview(effortLabel)
 
         modePill.onChange = { [weak self] mode in
             self?.onModeChanged?(mode)
@@ -86,7 +81,10 @@ final class ComposerModelBar: ComposerSectionView {
         effortButton.showsMenuAsPrimaryAction = true
         tierButton.showsMenuAsPrimaryAction = true
 
-        sendButton.iconInset = 11
+        // The disc is the reach and the mark is what is drawn on it: both
+        // follow the one measure, so a smaller row keeps them apart.
+        sendButton.iconInset = (ComposerMetrics.Send.diameter - ComposerMetrics.Send.iconSize) / 2
+        addButton.iconInset = sendButton.iconInset
         sendButton.fillColor = ComposerPalette.inert
         sendButton.iconView.tintColor = .secondaryLabel
 
@@ -124,8 +122,8 @@ final class ComposerModelBar: ComposerSectionView {
             effortButton.alpha = shown ? 1 : 0
             effortButton.isUserInteractionEnabled = shown
             effortButton.accessibilityElementsHidden = !shown
-            effortLabel.alpha = shown ? 1 : 0
-            effortLabel.text = Self.shortTitle(for: selected ?? .high)
+            // The colour is the level; the spoken value is the word for it.
+            effortButton.iconView.tintColor = ComposerPalette.effort(selected ?? .high)
             effortButton.accessibilityValue = Self.title(for: selected ?? .high)
         }
         // The menu is the button's action, rebuilt with the levels it took so a
@@ -253,20 +251,6 @@ final class ComposerModelBar: ComposerSectionView {
         }
     }
 
-    /// The one or two letters the row has room for; the full word is what
-    /// VoiceOver reads.
-    private static func shortTitle(for effort: AgentReasoningEffort) -> String {
-        switch effort {
-        case .off: "—"
-        case .minimal: "MIN"
-        case .low: "LOW"
-        case .medium: "MED"
-        case .high: "HIGH"
-        case .xhigh: "XH"
-        case .max: "MAX"
-        }
-    }
-
     /// The speed's name; nil is the standard tier, which every model has.
     private static func title(for tier: AgentServiceTier?) -> String {
         switch tier {
@@ -298,7 +282,6 @@ final class ComposerModelBar: ComposerSectionView {
             width: sendSize,
             height: sendSize,
         ))
-        addButton.iconInset = 11
 
         // The left side reads in the order it is decided in: what the run may
         // do, which model answers, how hard it thinks, how full the context is.
@@ -320,22 +303,14 @@ final class ComposerModelBar: ComposerSectionView {
         ))
         x += iconSize + spacing
 
-        // The lightning and its level sit together as one control: the symbol
-        // says what the setting is, the letters say where it is set.
+        // The lightning is one control again: its colour says which level is
+        // set, so it takes a slot of its own and no room for a word.
         let lightning = iconSize * 0.8
         effortButton.iconInset = (lightning - ComposerMetrics.Send.iconSize) / 2
-        effortButton.iconView.tintColor = effortLabel.alpha > 0 ? .secondaryLabel : .tertiaryLabel
         effortButton.frame = directionalFrame(CGRect(
             x: x, y: (bounds.height - lightning) / 2, width: lightning, height: lightning,
         ))
-        let labelWidth = min(effortLabel.intrinsicContentSize.width, 34)
-        effortLabel.frame = directionalFrame(CGRect(
-            x: x + lightning - 2,
-            y: (bounds.height - effortLabel.font.lineHeight) / 2,
-            width: labelWidth,
-            height: effortLabel.font.lineHeight,
-        ))
-        x += lightning + labelWidth + spacing
+        x += lightning + spacing
 
         // The speed, where the model offers one, sits between the effort and
         // the ring; hidden, it takes no room.
