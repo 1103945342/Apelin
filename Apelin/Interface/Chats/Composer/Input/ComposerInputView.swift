@@ -4,11 +4,11 @@
 import Combine
 import UIKit
 
-/// The composer's text band: the text, with the expand at its right end on
-/// the first row, above the row under it that carries what goes out. The band
-/// is as tall as the text, from one line to `maxTextEditorHeight`; past that
-/// the text scrolls inside it and Expand stays at its corner. Right to left,
-/// the band is mirrored.
+/// The composer's text band: the text, with the wand and the expand at its
+/// right end on the first row, above the row under it that carries what goes
+/// out. The band is as tall as the text, from one line to `maxTextEditorHeight`;
+/// past that the text scrolls inside it and Expand stays at its corner. Right
+/// to left, the band is mirrored.
 class ComposerInputView: ComposerSectionView {
     let font = UIFont.preferredFont(forTextStyle: .body)
     let textHeight: CurrentValueSubject<CGFloat, Never> = .init(0)
@@ -18,6 +18,9 @@ class ComposerInputView: ComposerSectionView {
 
     let textView = TextEditorView()
     let placeholderLabel = UILabel()
+    /// Rewrites the draft, beside the text's end on the band's own row:
+    /// visible while there is something to rewrite and no run to interrupt.
+    let rewriteButton = ComposerRewriteButton()
     /// At the text's trailing corner, once the draft has outgrown the band:
     /// the same text, on a page tall enough to see it.
     let expandButton = ComposerIconButton(
@@ -51,8 +54,8 @@ class ComposerInputView: ComposerSectionView {
         didSet {
             guard isBusy != oldValue else { return }
             updateSendButton()
-            // The placeholder says what a send means now; the band is laid out
-            // again for the text it draws.
+            // The wand leaves while a run is going, as it does when the draft
+            // empties: the frame it leaves behind is laid out again.
             setNeedsLayout()
         }
     }
@@ -63,9 +66,8 @@ class ComposerInputView: ComposerSectionView {
         didSet {
             guard hasContent != oldValue else { return }
             updateSendButton()
-            // Nothing in the band draws it any more — the send and the wand
-            // are on the row beneath — but the band's own height follows what
-            // it is asked to say.
+            // The wand is drawn at the text's end, and appears only now:
+            // without this the frame it would take is never laid out.
             setNeedsLayout()
         }
     }
@@ -157,6 +159,14 @@ class ComposerInputView: ComposerSectionView {
         }
         expandButton.alpha = 0
         elementClipper.addSubview(expandButton)
+        elementClipper.addSubview(rewriteButton)
+        rewriteButton.draftProvider = { [weak self] in self?.textView.text ?? "" }
+        rewriteButton.onRewrite = { [weak self] draft in
+            self?.delegate?.onComposerInputRewriteRequested(draft: draft)
+        }
+        rewriteButton.onCancel = { [weak self] in
+            self?.delegate?.onComposerInputRewriteCancelled()
+        }
 
         // the icons and the rest of the band share a height of 30;
         // the band is max(30, textHeight) plus the insets
@@ -188,7 +198,7 @@ class ComposerInputView: ComposerSectionView {
         // laid out left to right; right to left the band is mirrored, and the
         // tools follow the text's end as the placeholder reads
         elementClipper.mirrorForLayoutDirection(
-            [textView, placeholderLabel, expandButton],
+            [textView, placeholderLabel, expandButton, rewriteButton],
         )
 
         updatePlaceholderAlpha()

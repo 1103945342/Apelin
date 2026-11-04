@@ -31,7 +31,9 @@ final class ComposerRewriteButton: ComposerIconButton {
 
     required init() {
         super.init()
-        iconInset = 5
+        // The same disc as the send, so all the icons that act on the draft are
+        // drawn alike: the wand, the plus, the send.
+        iconInset = (ComposerMetrics.Send.diameter - ComposerMetrics.Send.iconSize) / 2
         spinner.fillColor = nil
         spinner.lineWidth = 2
         spinner.lineCap = .round

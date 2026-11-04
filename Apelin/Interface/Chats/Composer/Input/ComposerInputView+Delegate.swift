@@ -11,6 +11,10 @@ extension ComposerInputView {
         func onComposerInputSubmitButtonTapped()
         /// Expand was tapped: the same draft, on a page tall enough for it.
         func onComposerInputExpandButtonTapped()
+        /// The wand was tapped, with the draft as it stood.
+        func onComposerInputRewriteRequested(draft: String)
+        /// The wand was tapped again while a rewrite ran.
+        func onComposerInputRewriteCancelled()
         func onComposerInputPasteAsAttachmentTapped()
         func onComposerInputTextChanged(text: String)
         func onComposerInputPastingLargeTextAsDocument(content: String)
