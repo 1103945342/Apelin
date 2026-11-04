@@ -67,6 +67,6 @@ extension BuiltInSkills {
           user there; you cannot read them from here.
         - Pushing publishes: in Strict mode `git_push` asks the user, and that
           is the step that makes a change public.
-        """
+        """,
     )
 }

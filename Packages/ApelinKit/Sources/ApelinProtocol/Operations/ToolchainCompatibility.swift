@@ -42,7 +42,7 @@ public struct ToolchainCompatibility: Codable, Sendable, Equatable {
         staticInstructionFeatures: [String] = [],
         systemSymbolSDK: String? = nil,
         systemSymbolCount: Int? = nil,
-        notes: [String] = []
+        notes: [String] = [],
     ) {
         self.revision = revision
         self.sourceProductIDs = sourceProductIDs
@@ -66,7 +66,7 @@ public struct ToolchainCompatibility: Codable, Sendable, Equatable {
     public func refusal(
         hostVersion: String,
         hasFeature: (String) -> Bool,
-        hasLibcxxSymbol: (String) -> Bool = { _ in false }
+        hasLibcxxSymbol: (String) -> Bool = { _ in false },
     ) -> String? {
         if hostVersion.compare(minimumHost, options: .numeric) == .orderedAscending {
             return "This toolchain requires iOS \(minimumHost) or later."
@@ -88,7 +88,7 @@ public struct ToolchainCompatibility: Codable, Sendable, Equatable {
             return refusal(
                 hostVersion: "\(os.majorVersion).\(os.minorVersion).\(os.patchVersion)",
                 hasFeature: HostCPU.has,
-                hasLibcxxSymbol: HostCPU.hasLibcxxSymbol
+                hasLibcxxSymbol: HostCPU.hasLibcxxSymbol,
             )
         #else
             return nil

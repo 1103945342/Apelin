@@ -16,7 +16,7 @@ public enum ApprovalError: Error, Equatable, LocalizedError {
 actor ApprovalGate {
     private var waiting: [String: (
         request: ApprovalRequest,
-        continuation: CheckedContinuation<ApprovalDecision, Never>
+        continuation: CheckedContinuation<ApprovalDecision, Never>,
     )] = [:]
     private var sessionFingerprints: Set<String> = []
     private let emit: @Sendable (AgentSessionEvent) async -> Void

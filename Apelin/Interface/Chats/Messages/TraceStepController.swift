@@ -77,7 +77,7 @@ extension TraceStepController: TextLabelViewDelegate {
     func textLabelView(
         _ label: TextLabelView,
         editMenuForSelection selection: NSRange,
-        suggestedActions: [UIMenuElement]
+        suggestedActions: [UIMenuElement],
     ) -> UIMenu? {
         ChatSelectionMenu.menu(for: label, selection: selection, suggestedActions: suggestedActions)
     }

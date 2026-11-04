@@ -114,7 +114,7 @@ struct EventRelayMappingTests {
         var waiting = 0
         let request = ApprovalRequest(
             id: "approval-1", toolCallID: "call-1", tool: "shell_run", arguments: "{}", workingDirectory: ".",
-            projectID: "p", fingerprint: "f", reason: "asks", detail: .command(.argv(["make"])), allowsSessionScope: true
+            projectID: "p", fingerprint: "f", reason: "asks", detail: .command(.argv(["make"])), allowsSessionScope: true,
         )
         let asked = EventRelay.events(for: .approvalRequested(request), waiting: &waiting)
         #expect(asked.map(\.0) == ["approvalRequested", "state"])
@@ -134,13 +134,13 @@ struct EventRelayMappingTests {
         func payload(_ invocation: RunCodeInvocation, cwd: String) -> ApelinCore.JSONValue {
             let request = ApprovalRequest(
                 id: "a", toolCallID: "c", tool: "shell_run", arguments: "{}", workingDirectory: cwd,
-                projectID: "p", fingerprint: "f", reason: "asks", detail: .command(invocation), allowsSessionScope: true
+                projectID: "p", fingerprint: "f", reason: "asks", detail: .command(invocation), allowsSessionScope: true,
             )
             return EventRelay.approvalPayload(request)
         }
         let argv = payload(.argv(["make", "-j2"]), cwd: "Sources")
         let argvCommand: ApelinCore.JSONValue = .object([
-            "argv": .object(["_0": .array([.string("make"), .string("-j2")])])
+            "argv": .object(["_0": .array([.string("make"), .string("-j2")])]),
         ])
         #expect(argv["workingDirectory"]?.stringValue == "Sources")
         #expect(argv["detail"]?["command"] == argvCommand)
@@ -149,7 +149,7 @@ struct EventRelayMappingTests {
         #expect(shell["detail"]?["command"] == shellCommand)
         let script = payload(.script(interpreter: "python3", source: "print(1)"), cwd: ".")
         let scriptCommand: ApelinCore.JSONValue = .object([
-            "script": .object(["interpreter": .string("python3"), "source": .string("print(1)")])
+            "script": .object(["interpreter": .string("python3"), "source": .string("print(1)")]),
         ])
         #expect(script["detail"]?["command"] == scriptCommand)
         // And the agent sends shell text to the host as an sh script.
@@ -166,13 +166,13 @@ struct EventRelayMappingTests {
         let invocation = RunCodeInvocation.argv(["irisin-cli", "install", "--yes", "mobilesubstrate"])
         let request = ApprovalRequest(
             id: "a", toolCallID: "c", tool: "shell_run", arguments: "{}", workingDirectory: "Sources",
-            projectID: "p", fingerprint: "f", reason: "root", detail: .rootCommand(invocation), allowsSessionScope: false
+            projectID: "p", fingerprint: "f", reason: "root", detail: .rootCommand(invocation), allowsSessionScope: false,
         )
         let payload = EventRelay.approvalPayload(request)
         let command: ApelinCore.JSONValue = .object([
             "argv": .object(["_0": .array([
-                .string("irisin-cli"), .string("install"), .string("--yes"), .string("mobilesubstrate")
-            ])])
+                .string("irisin-cli"), .string("install"), .string("--yes"), .string("mobilesubstrate"),
+            ])]),
         ])
         #expect(payload["detail"]?[RunCodeApproval.rootCommandDetail] == command)
         #expect(payload["detail"]?["command"] == nil, "a root request does not also fill command")
@@ -188,7 +188,7 @@ struct EventRelayMappingTests {
         let root = try ScopedRoot(URL(fileURLWithPath: NSTemporaryDirectory()))
         let verdict = ApprovalPolicy(mode: .confirm).evaluate(
             InvocationFacts(tool: .local(.packageRemove), installationID: "inst-1"),
-            root: root
+            root: root,
         )
         guard case let .ask(reason, detail) = verdict else {
             Issue.record("package removal must ask under Confirm, got \(verdict)")
@@ -196,11 +196,11 @@ struct EventRelayMappingTests {
         }
         let request = ApprovalRequest(
             id: "a", toolCallID: "c", tool: "apelin_package_remove", arguments: "{}", workingDirectory: ".",
-            projectID: "p", fingerprint: "f", reason: reason, detail: detail, allowsSessionScope: false
+            projectID: "p", fingerprint: "f", reason: reason, detail: detail, allowsSessionScope: false,
         )
         let payload = EventRelay.approvalPayload(request)
         let expected: ApelinCore.JSONValue = .object([
-            "packageRemoval": .object(["installationID": .string("inst-1")])
+            "packageRemoval": .object(["installationID": .string("inst-1")]),
         ])
         #expect(payload["tool"]?.stringValue == "apelin_package_remove")
         #expect(payload["detail"] == expected)

@@ -28,7 +28,7 @@ extension DiagnosticsService {
             locked: outcome?.lock?.locked,
             screenOff: outcome?.lock?.screenOff,
             typedTextMatches: outcome?.typed?.matches,
-            fieldValues: outcome?.typed?.fieldValues
+            fieldValues: outcome?.typed?.fieldValues,
         )
     }
 
@@ -71,7 +71,7 @@ extension DiagnosticsService {
             return .tapElement(UIElementSelector(
                 text: text,
                 identifier: identifier,
-                match: identifier == nil ? .exact : .contains
+                match: identifier == nil ? .exact : .contains,
             ))
         case let .type(text):
             return .type(text: text, delayMilliseconds: ApelinDiagnosticsCore.UIAction.defaultTypeDelayMilliseconds)
@@ -79,7 +79,7 @@ extension DiagnosticsService {
             return .swipe(
                 from: UIPoint(x: fromX, y: fromY),
                 to: UIPoint(x: toX, y: toY),
-                seconds: Double(durationMilliseconds) / 1000
+                seconds: Double(durationMilliseconds) / 1000,
             )
         case let .press(button):
             guard let pressed = HardwareButton(rawValue: button) else {

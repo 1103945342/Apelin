@@ -57,7 +57,7 @@ final class GitRemoteServiceTests: XCTestCase {
         let result = try git.cloneInto(request, into: git.checkCloneInto(request), reporter: log.reporter)
         let commit = try XCTUnwrap(seed.head().commit)
         XCTAssertEqual(result, .object([
-            "branch": .string("main"), "commit": .string(commit), "projectID": .string(id), "projectFile": .string("project")
+            "branch": .string("main"), "commit": .string(commit), "projectID": .string(id), "projectFile": .string("project"),
         ]))
         XCTAssertEqual(log.events.first?.0, "stage")
         XCTAssertEqual(log.events.first?.1?["stage"]?.stringValue, "fetching")
@@ -192,7 +192,7 @@ final class GitRemoteServiceTests: XCTestCase {
         XCTAssertFalse(try git.diff(GitDiffRequest(projectID: created.projectID)).diff.contains("Attachments"))
 
         _ = try git.commit(GitCommitRequest(
-            projectID: created.projectID, message: "First", authorName: "A", authorEmail: "a@apelin.invalid", all: true
+            projectID: created.projectID, message: "First", authorName: "A", authorEmail: "a@apelin.invalid", all: true,
         ))
         XCTAssertEqual(try git.status(GitStatusRequest(projectID: created.projectID)).entries, [])
         // Had it been committed, its removal would be a change.
@@ -258,7 +258,7 @@ final class GitRemoteServiceTests: XCTestCase {
         try Data("b\n".utf8).write(to: root.appendingPathComponent("b.m"))
         let commit = { (message: String) in
             try git.commit(GitCommitRequest(
-                projectID: id, message: message, authorName: "A", authorEmail: "a@apelin.invalid", all: true
+                projectID: id, message: message, authorName: "A", authorEmail: "a@apelin.invalid", all: true,
             ))
         }
         _ = try commit("First")
@@ -272,7 +272,7 @@ final class GitRemoteServiceTests: XCTestCase {
         // without all, only what was staged
         try Data("a3\n".utf8).write(to: root.appendingPathComponent("a.m"))
         XCTAssertThrowsError(try git.commit(GitCommitRequest(
-            projectID: id, message: "Staged only", authorName: "A", authorEmail: "a@apelin.invalid"
+            projectID: id, message: "Staged only", authorName: "A", authorEmail: "a@apelin.invalid",
         )))
     }
 
@@ -321,7 +321,7 @@ final class GitRemoteServiceTests: XCTestCase {
         let pullLog = EventLog()
         let upToDate = try git.pull(git.preparePull(GitPullRequest(projectID: id)), reporter: pullLog.reporter)
         XCTAssertEqual(upToDate, .object([
-            "branch": .string("main"), "from": .string(first), "to": .string(first), "upToDate": .bool(true)
+            "branch": .string("main"), "from": .string(first), "to": .string(first), "upToDate": .bool(true),
         ]))
 
         // The seed moves on; fetch sees it, pull takes it.
@@ -333,8 +333,8 @@ final class GitRemoteServiceTests: XCTestCase {
         XCTAssertEqual(fetched, .object([
             "remote": .string("origin"),
             "updated": .array([.object([
-                "ref": .string("refs/remotes/origin/main"), "from": .string(first), "to": .string(second)
-            ])])
+                "ref": .string("refs/remotes/origin/main"), "from": .string(first), "to": .string(second),
+            ])]),
         ]))
         let pulled = try git.pull(git.preparePull(GitPullRequest(projectID: id)), reporter: .silent)
         XCTAssertEqual(pulled["upToDate"], .bool(false))
@@ -348,7 +348,7 @@ final class GitRemoteServiceTests: XCTestCase {
         let pushLog = EventLog()
         let pushed = try git.push(git.preparePush(GitPushRequest(projectID: id)), reporter: pushLog.reporter)
         XCTAssertEqual(pushed, .object([
-            "remote": .string("origin"), "branch": .string("main"), "commit": .string(third.commitID), "from": .string(second)
+            "remote": .string("origin"), "branch": .string("main"), "commit": .string(third.commitID), "from": .string(second),
         ]))
         XCTAssertEqual(pushLog.events.first?.1?["stage"]?.stringValue, "pushing")
         for (kind, payload) in pushLog.events where kind == "progress" {
@@ -409,7 +409,7 @@ final class GitRemoteServiceTests: XCTestCase {
         let id = created.projectID
         let git = service(home)
         let commit = try git.commit(GitCommitRequest(
-            projectID: id, message: "First", authorName: "A", authorEmail: "a@apelin.invalid", all: true
+            projectID: id, message: "First", authorName: "A", authorEmail: "a@apelin.invalid", all: true,
         )).commitID
 
         XCTAssertThrowsError(try git.preparePush(GitPushRequest(projectID: id))) {
@@ -571,7 +571,7 @@ final class GitRemoteServiceTests: XCTestCase {
         let settings = try git.settings()
         XCTAssertEqual(settings.credentials, [
             GitCredentialSummary(host: "git.example.com:8443", username: "bob"),
-            GitCredentialSummary(host: "github.com", username: "ada2")
+            GitCredentialSummary(host: "github.com", username: "ada2"),
         ])
         XCTAssertFalse(try String(decoding: JSONCoding.encode(settings), as: UTF8.self).contains("secret"))
         XCTAssertEqual(try store.credential(forHost: "github.com"), GitCredential(username: "ada2", token: "secret-three"))
@@ -610,7 +610,7 @@ final class GitRemoteServiceTests: XCTestCase {
             GitCredentialSetRequest(host: "github.com", username: "a", token: ""),
             GitCredentialSetRequest(host: "github.com", username: "a", token: "one\ntwo"),
             GitCredentialSetRequest(host: "github.com", username: "a", token: "one\rtwo"),
-            GitCredentialSetRequest(host: "github.com", username: "a", token: String(repeating: "t", count: 4097))
+            GitCredentialSetRequest(host: "github.com", username: "a", token: String(repeating: "t", count: 4097)),
         ]
         for request in refused {
             XCTAssertThrowsError(try git.setCredential(request)) { error in
@@ -621,7 +621,7 @@ final class GitRemoteServiceTests: XCTestCase {
         XCTAssertNoThrow(try git.setCredential(GitCredentialSetRequest(
             host: "github.com",
             username: "a",
-            token: String(repeating: "t", count: 4096)
+            token: String(repeating: "t", count: 4096),
         )))
         XCTAssertThrowsError(try git.removeCredential(GitCredentialRemoveRequest(host: "a/b")))
     }

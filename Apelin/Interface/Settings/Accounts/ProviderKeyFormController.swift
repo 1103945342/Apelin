@@ -32,14 +32,14 @@ final class ProviderKeyFormController: TableController {
 
     private lazy var dataSource = TableDataSource<Section, Row, Row>(
         tableView: tableView,
-        identifier: { $0 }
+        identifier: { $0 },
     ) { [weak self] _, _, row in
         self?.cell(for: row)
     }
 
     lazy var submitItem = UIBarButtonItem(
         title: String(localized: "Fetch Models"),
-        primaryAction: UIAction { [weak self] _ in self?.submit() }
+        primaryAction: UIAction { [weak self] _ in self?.submit() },
     )
 
     init(keys: [SignInProgress.KeyField], alternatives: [AgentSignInMethod], initialValues: [String: String] = [:]) {
@@ -117,7 +117,7 @@ final class ProviderKeyFormController: TableController {
             input.trailingAnchor.constraint(equalTo: margins.trailingAnchor),
             input.topAnchor.constraint(equalTo: margins.topAnchor),
             input.bottomAnchor.constraint(equalTo: margins.bottomAnchor),
-            cell.contentView.heightAnchor.constraint(greaterThanOrEqualToConstant: 52)
+            cell.contentView.heightAnchor.constraint(greaterThanOrEqualToConstant: 52),
         ])
         return cell
     }

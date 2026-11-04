@@ -98,7 +98,7 @@ final class RemoteCallbacks {
                 receivedObjects: Int(stats.pointee.received_objects),
                 indexedObjects: Int(stats.pointee.indexed_objects),
                 totalObjects: Int(stats.pointee.total_objects),
-                receivedBytes: Int(stats.pointee.received_bytes)
+                receivedBytes: Int(stats.pointee.received_bytes),
             )) ?? true
             return keepGoing ? 0 : GIT_EUSER.rawValue
         }
@@ -115,7 +115,7 @@ final class RemoteCallbacks {
             RemoteCallbacks.from(payload).updates.append(GitRefUpdate(
                 ref: String(cString: name),
                 from: from,
-                to: GitRepository.hex(new)
+                to: GitRepository.hex(new),
             ))
             return 0
         }
@@ -165,13 +165,13 @@ final class RemoteCallbacks {
         if let refusedBy {
             return GitError(
                 .authenticationFailed,
-                "\(what): authentication failed: \(refusedBy) refused the saved credential"
+                "\(what): authentication failed: \(refusedBy) refused the saved credential",
             )
         }
         if let unanswered {
             return GitError(
                 .authenticationFailed,
-                "\(what): authentication failed: \(unanswered) asks for a sign-in, and no credential is saved for it"
+                "\(what): authentication failed: \(unanswered) asks for a sign-in, and no credential is saved for it",
             )
         }
         return GitError.last(code, what)

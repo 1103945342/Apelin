@@ -55,7 +55,7 @@ enum TransferOpener {
     static func open(
         _ url: URL,
         from presenter: UIViewController,
-        pushingOnto navigation: UINavigationController? = nil
+        pushingOnto navigation: UINavigationController? = nil,
     ) {
         let file: TransferFile
         switch Self.file(at: url) {
@@ -66,7 +66,7 @@ enum TransferOpener {
             case .unknownKind:
                 presenter.presentNotice(
                     title: "Not an Apelin File",
-                    message: "Apelin opens toolchains (.apetc), SDKs (.apesdk) and projects (.apeproj)."
+                    message: "Apelin opens toolchains (.apetc), SDKs (.apesdk) and projects (.apeproj).",
                 )
             case let .unreadable(reason):
                 presenter.presentNotice(title: "Unable to Open", message: reason)
@@ -106,7 +106,7 @@ enum TransferOpener {
         var metadata = stat()
         guard fstat(descriptor, &metadata) == 0, metadata.st_mode & S_IFMT == S_IFREG else {
             return .failure(.unreadable(
-                String(localized: "This item is not a file. Choose a toolchain, SDK or project file.")
+                String(localized: "This item is not a file. Choose a toolchain, SDK or project file."),
             ))
         }
         return .success(TransferFile(descriptor: owned, fileName: fileName, kind: kind))

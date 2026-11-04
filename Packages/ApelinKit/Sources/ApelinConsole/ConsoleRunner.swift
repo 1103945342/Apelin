@@ -38,7 +38,7 @@ public actor ConsoleRunner {
         service: ApelinService,
         folder: DataFolder,
         log: any ConsoleLogSink = UnifiedLogSink(),
-        respringPause: TimeInterval = ConsoleRunner.defaultRespringPause
+        respringPause: TimeInterval = ConsoleRunner.defaultRespringPause,
     ) {
         self.service = service
         self.folder = folder
@@ -100,7 +100,7 @@ public actor ConsoleRunner {
         let output = ConsoleOutput(
             url: folder.consoleOut.appendingPathComponent("\(runID).jsonl"),
             runID: runID,
-            log: log
+            log: log,
         )
         output.write("run.start", ["script": .string(source.lastPathComponent)])
 
@@ -139,7 +139,7 @@ public actor ConsoleRunner {
         from start: Int = 0,
         results carried: [String: ConsoleStepResult] = [:],
         previous carriedPrevious: ConsoleStepResult? = nil,
-        output: ConsoleOutput
+        output: ConsoleOutput,
     ) async throws -> Int? {
         var results = carried
         var previous = carriedPrevious
@@ -157,7 +157,7 @@ public actor ConsoleRunner {
                     index: index,
                     previous: previous,
                     results: results,
-                    output: output
+                    output: output,
                 )
             } catch {
                 result = ConsoleStepResult(ok: false, error: Self.errorJSON(error))
@@ -190,7 +190,7 @@ public actor ConsoleRunner {
         output.write("step.note", [
             "index": .number(Double(index)),
             "note": .string("respringSurvived"),
-            "message": .string("the app was still running \(Int(respringPause)) s after the respring; going on")
+            "message": .string("the app was still running \(Int(respringPause)) s after the respring; going on"),
         ])
     }
 
@@ -200,7 +200,7 @@ public actor ConsoleRunner {
         index: Int,
         previous: ConsoleStepResult?,
         results: [String: ConsoleStepResult],
-        output: ConsoleOutput
+        output: ConsoleOutput,
     ) async throws -> ConsoleStepResult {
         if let builtin = ConsoleBuiltin(rawValue: step.op) {
             switch builtin {
@@ -215,7 +215,7 @@ public actor ConsoleRunner {
                 if let problem = Self.check(expectation, against: subject) {
                     return ConsoleStepResult(
                         ok: false,
-                        error: .object(["code": .string("expectationFailed"), "message": .string(problem)])
+                        error: .object(["code": .string("expectationFailed"), "message": .string(problem)]),
                     )
                 }
                 return ConsoleStepResult(ok: true)
@@ -263,7 +263,7 @@ public actor ConsoleRunner {
                 response: response,
                 index: index,
                 timeout: step.timeoutSeconds ?? Self.defaultTimeout,
-                output: output
+                output: output,
             )
         }
         guard let handle = Self.taskHandle(in: response, nested: step.follow == true) else {
@@ -277,7 +277,7 @@ public actor ConsoleRunner {
             response: response,
             index: index,
             timeout: step.timeoutSeconds ?? Self.defaultTimeout,
-            output: output
+            output: output,
         )
     }
 
@@ -290,7 +290,7 @@ public actor ConsoleRunner {
             "index": .number(Double(index)),
             "taskID": .string(handle.taskID.rawValue),
             "kind": .string(handle.kind.rawValue),
-            "response": response
+            "response": response,
         ])
     }
 
@@ -306,7 +306,7 @@ public actor ConsoleRunner {
         response: JSONValue,
         index: Int,
         timeout: Double,
-        output: ConsoleOutput
+        output: ConsoleOutput,
     ) async -> ConsoleStepResult {
         let handle = TaskHandle(taskID: batch.taskID, kind: kind)
         if !batch.finished {
@@ -317,7 +317,7 @@ public actor ConsoleRunner {
             output.write("step.event", [
                 "index": .number(Double(index)),
                 "taskID": .string(handle.taskID.rawValue),
-                "event": event
+                "event": event,
             ])
         }
         guard batch.finished else {
@@ -328,7 +328,7 @@ public actor ConsoleRunner {
                 timeout: timeout,
                 afterSeq: batch.lastSeq,
                 earlier: earlier,
-                output: output
+                output: output,
             )
         }
         var result = ConsoleStepResult(ok: true, response: response, events: earlier, state: batch.state.rawValue)
@@ -336,7 +336,7 @@ public actor ConsoleRunner {
             result.ok = false
             result.error = .object([
                 "code": .string("taskEnded"),
-                "message": .string("the task ended \(batch.state.rawValue)")
+                "message": .string("the task ended \(batch.state.rawValue)"),
             ])
         }
         return result
@@ -352,7 +352,7 @@ public actor ConsoleRunner {
         timeout: Double,
         afterSeq: EventSeq = .start,
         earlier: [JSONValue] = [],
-        output: ConsoleOutput
+        output: ConsoleOutput,
     ) async -> ConsoleStepResult {
         var result = ConsoleStepResult(ok: true, response: response)
         let service = service
@@ -368,7 +368,7 @@ public actor ConsoleRunner {
                     output.write("step.event", [
                         "index": .number(Double(index)),
                         "taskID": .string(handle.taskID.rawValue),
-                        "event": json
+                        "event": json,
                     ])
                     if event.kind == TaskEvent.stateKind, let name = event.payload?["state"]?.stringValue {
                         state = name
@@ -403,7 +403,7 @@ public actor ConsoleRunner {
             result.ok = false
             result.error = .object([
                 "code": .string("timeout"),
-                "message": .string("the task did not finish in \(Int(timeout)) s")
+                "message": .string("the task did not finish in \(Int(timeout)) s"),
             ])
         } else if let error {
             result.ok = false
@@ -474,7 +474,7 @@ public actor ConsoleRunner {
                         from: last.index + 1,
                         results: replay.results,
                         previous: last.result,
-                        output: output
+                        output: output,
                     )
                 } else {
                     let lastStep = replay.lastStarted.map { JSONValue.number(Double($0)) } ?? .null
@@ -499,7 +499,7 @@ public actor ConsoleRunner {
         _ following: Replay.Following,
         script: ConsoleScript,
         replay: Replay,
-        output: ConsoleOutput
+        output: ConsoleOutput,
     ) async throws -> Int? {
         let step = script.steps[following.index]
         let afterSeq = following.events.compactMap { $0["seq"]?.doubleValue }.max()
@@ -507,7 +507,7 @@ public actor ConsoleRunner {
         output.write("run.resumed", [
             "fromStep": .number(Double(following.index)),
             "taskID": .string(following.handle.taskID.rawValue),
-            "afterSeq": .number(Double(afterSeq.rawValue))
+            "afterSeq": .number(Double(afterSeq.rawValue)),
         ])
         let started = Date()
         let result = await follow(
@@ -517,7 +517,7 @@ public actor ConsoleRunner {
             timeout: step.timeoutSeconds ?? Self.defaultTimeout,
             afterSeq: afterSeq,
             earlier: following.events,
-            output: output
+            output: output,
         )
         Self.writeResult(result, header: Self.header(step, index: following.index), started: started, output: output)
         if !result.ok, step.allowError != true {
@@ -532,7 +532,7 @@ public actor ConsoleRunner {
             from: following.index + 1,
             results: results,
             previous: result,
-            output: output
+            output: output,
         )
     }
 
@@ -555,7 +555,7 @@ public actor ConsoleRunner {
         _ result: ConsoleStepResult,
         header: [String: JSONValue],
         started: Date,
-        output: ConsoleOutput
+        output: ConsoleOutput,
     ) {
         var line = header
         line["ok"] = .bool(result.ok)

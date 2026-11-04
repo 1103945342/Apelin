@@ -28,7 +28,7 @@ struct ScreenUseConsentTests {
         _ mode: ApprovalMode,
         _ facts: InvocationFacts,
         asks: Bool = true,
-        presets: ApprovalPresets = .default
+        presets: ApprovalPresets = .default,
     ) -> GateVerdict {
         ApprovalPolicy(mode: mode, presets: presets, asksBeforeScreen: asks).evaluate(facts, root: root)
     }
@@ -80,7 +80,7 @@ struct ScreenUseConsentTests {
             // host could match.
             #expect(verdict(mode, InvocationFacts(tool: .local(.screenReadTree))) == .ask(
                 reason: "What this call does on the screen could not be read. \(ApprovalPolicy.screenNote)",
-                detail: .none
+                detail: .none,
             ))
         }
         #expect(!ToolRunner.allowsSessionScope(.local(.screenReadTree), detail: .screenControl(read)))
@@ -97,7 +97,7 @@ struct ScreenUseConsentTests {
             .argv(["env", "icli", "app", "list"]),
             .argv(["uiopen", "https://example.com"]),
             .shell("icli screen info | head -n 5"),
-            .script(interpreter: "python3", source: "import subprocess\nsubprocess.run(['icli', 'input', 'type', 'hi'])")
+            .script(interpreter: "python3", source: "import subprocess\nsubprocess.run(['icli', 'input', 'type', 'hi'])"),
         ]
         for mode in Self.modes {
             for command in commands {
@@ -152,7 +152,7 @@ struct ScreenUseConsentTests {
         #expect(verdict(.confirm, tap, asks: false) == .ask(reason: "This action changes this device. Review it before running.", detail: .none))
         #expect(verdict(.confirm, icli, asks: false) == .ask(
             reason: "This command is not in your approved presets. Review it before running.",
-            detail: .command(.argv(["icli", "url", "open", "https://example.com"]))
+            detail: .command(.argv(["icli", "url", "open", "https://example.com"])),
         ))
         var presets = ApprovalPresets.default
         presets.systemTools.insert(.screenInteract)
@@ -218,7 +218,7 @@ struct ScreenUseConsentTests {
         let on = SystemState.make(SystemState.Facts(languages: ["en-US"], region: "US", date: date, timeZone: zone, mode: .full))
         #expect(on.contains("- Approval mode: Full.\n- Ask Before Using the Screen: on.\n"))
         let off = SystemState.make(SystemState.Facts(
-            languages: ["en-US"], region: "US", date: date, timeZone: zone, mode: .relaxed, asksBeforeScreen: false
+            languages: ["en-US"], region: "US", date: date, timeZone: zone, mode: .relaxed, asksBeforeScreen: false,
         ))
         #expect(off.contains("- Ask Before Using the Screen: off."))
         #expect(on.utf8.count < 440, "\(on.utf8.count) bytes")
@@ -227,7 +227,7 @@ struct ScreenUseConsentTests {
         defer { provider.unregister() }
         let configuration = AgentSessionConfiguration(
             project: home.project, provider: .registered(provider.getModel()),
-            approval: ApprovalPolicy(mode: .relaxed, asksBeforeScreen: false), dataRoot: home.dataRoot
+            approval: ApprovalPolicy(mode: .relaxed, asksBeforeScreen: false), dataRoot: home.dataRoot,
         )
         let session = try await AgentSession(configuration: configuration, backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
         let requests = Requests()

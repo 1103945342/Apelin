@@ -48,7 +48,7 @@ struct HostRestartNoteTests {
             approval: ApprovalPolicy(mode: .confirm),
             dataRoot: home.dataRoot,
             installRoot: home.home.path + "/jb",
-            hostRestarted: hostRestarted
+            hostRestarted: hostRestarted,
         )
     }
 
@@ -69,7 +69,7 @@ struct HostRestartNoteTests {
         let id = UUID().uuidString
         var session = try await AgentSession(
             configuration: Self.configuration(home, provider, id: id, hostRestarted: false),
-            backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource()
+            backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource(),
         )
         try await session.prompt("Build it.", messageID: UUID())
         await session.waitForIdle()
@@ -78,7 +78,7 @@ struct HostRestartNoteTests {
         // Opened again by the host that started since, as the app opens it.
         session = try await AgentSession(
             configuration: Self.configuration(home, provider, id: id, hostRestarted: true),
-            backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource()
+            backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource(),
         )
         try await session.prompt("Go on.", messageID: UUID())
         await session.waitForIdle()
@@ -117,7 +117,7 @@ struct HostRestartNoteTests {
         }])
         let session = try await AgentSession(
             configuration: Self.configuration(home, provider, id: UUID().uuidString, hostRestarted: true),
-            backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource()
+            backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource(),
         )
         try await session.prompt("Hello", messageID: UUID())
         await session.waitForIdle()
@@ -145,11 +145,11 @@ struct HostRestartNoteTests {
             .factory { context, _, _, _ in
                 await requests.add(context)
                 return fauxAssistantMessage("Two.")
-            }
+            },
         ])
         let session = try await AgentSession(
             configuration: Self.configuration(home, provider, id: UUID().uuidString, hostRestarted: false),
-            backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource()
+            backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource(),
         )
         let stream = try await session.events(afterSeq: 0)
         try await session.prompt("remove it")
@@ -194,7 +194,7 @@ struct HostRestartNoteTests {
         let block = SystemState.make(SystemState.Facts(
             languages: ["en-US"], region: "US", date: Date(), timeZone: .gmt, mode: .confirm,
             changes: ["memory added (all chats): Editor: Prefers tabs."],
-            hostRestarted: true, installRoot: "/var/jb"
+            hostRestarted: true, installRoot: "/var/jb",
         ))
         let lines = block.components(separatedBy: "\n")
         let noteLine = lines.firstIndex { $0.hasPrefix("- " + Self.note) }

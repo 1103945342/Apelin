@@ -26,7 +26,7 @@ final class OperationTableTests: XCTestCase {
         XCTAssertEqual(typed.values, ["apiKey": "k", "baseUrl": "u", "defaultModel": "m"])
         let decoded = try JSONCoding.decode(
             AgentSignInRespondRequest.self,
-            from: Data(#"{"taskID":"t","values":{"callbackURL":"http://localhost:53692/callback?code=c"}}"#.utf8)
+            from: Data(#"{"taskID":"t","values":{"callbackURL":"http://localhost:53692/callback?code=c"}}"#.utf8),
         )
         XCTAssertEqual(decoded.values[AgentSignInField.callbackURL.rawValue], "http://localhost:53692/callback?code=c")
         let signIn = try JSONCoding.decode(AgentSignInRequest.self, from: Data(#"{"provider":"anthropicOAuth"}"#.utf8))
@@ -43,7 +43,7 @@ final class OperationTableTests: XCTestCase {
     func testProviderNamesStay() throws {
         XCTAssertEqual(
             AgentProvider.allCases.prefix(4).map(\.rawValue),
-            ["githubCopilot", "anthropic", "anthropicOAuth", "openAICompatible"]
+            ["githubCopilot", "anthropic", "anthropicOAuth", "openAICompatible"],
         )
         for provider in AgentProvider.allCases {
             let decoded = try JSONCoding.decode(AgentProvider.self, from: Data("\"\(provider.rawValue)\"".utf8))
@@ -51,7 +51,7 @@ final class OperationTableTests: XCTestCase {
         }
         let account = try JSONCoding.decode(
             AgentAccount.self,
-            from: Data(#"{"provider":"githubCopilot","method":"deviceCode","signedIn":false}"#.utf8)
+            from: Data(#"{"provider":"githubCopilot","method":"deviceCode","signedIn":false}"#.utf8),
         )
         XCTAssertNil(account.alternativeMethods)
     }
@@ -202,11 +202,11 @@ final class ServiceTests: XCTestCase {
     func testConfirmLoadedReadsTheAnswerFromTheFinalState() async throws {
         let answer = ConfirmLoadedResponse(loaded: true, evidence: [
             LoadEvidence(kind: "log", passed: true, detail: "confirmed: Marker logged by pid 55."),
-            LoadEvidence(kind: "image", passed: false, detail: "notRead: the image check is off")
+            LoadEvidence(kind: "image", passed: false, detail: "notRead: the image check is off"),
         ])
         let final = try TaskEvent(seq: EventSeq(2), kind: TaskEvent.stateKind, payload: .object([
             "state": .string("succeeded"),
-            ConfirmLoadedResponse.stateMember: JSONValue(encoding: answer)
+            ConfirmLoadedResponse.stateMember: JSONValue(encoding: answer),
         ]))
         let service = ApelinService(transport: LoopbackTransport { request in
             switch request.operation {
@@ -277,14 +277,14 @@ final class ToolHostCallTests: XCTestCase {
             XCTAssertEqual(descriptors.count, 2)
             let response = ToolHostCallResponse(text: "ok", attachments: [
                 ToolHostAttachment(descriptor: DescriptorSlot(index: 1), name: "second", byteCount: 3, sha256: "sha256:b"),
-                ToolHostAttachment(descriptor: DescriptorSlot(index: 0), name: "first", mimeType: "text/plain", byteCount: 3, sha256: "sha256:a")
+                ToolHostAttachment(descriptor: DescriptorSlot(index: 0), name: "first", mimeType: "text/plain", byteCount: 3, sha256: "sha256:a"),
             ])
             // Answers with the request's own descriptors.
             return (.success(request.requestID, response), [descriptors[0], descriptors[1]])
         })
         let files = [
             ToolHostOutgoingFile(descriptor: pipeEnd(writing: "one"), argument: "binary", name: "a"),
-            ToolHostOutgoingFile(descriptor: pipeEnd(writing: "two"))
+            ToolHostOutgoingFile(descriptor: pipeEnd(writing: "two")),
         ]
         let (response, received) = try await service.toolHostCall(ToolHostCallRequest(sessionID: "s", tool: "t"), files: files)
         XCTAssertEqual(response.text, "ok")

@@ -8,7 +8,7 @@ import Testing
 @Suite("conversation tools")
 struct ConversationToolTests {
     static let tools: [AgentToolName] = [
-        .conversationCreate, .conversationSend, .conversationList, .conversationRead, .conversationStop
+        .conversationCreate, .conversationSend, .conversationList, .conversationRead, .conversationStop,
     ]
 
     // MARK: Catalog
@@ -16,7 +16,7 @@ struct ConversationToolTests {
     @Test
     func `the catalog names the conversation tools with their risks, in every chat`() {
         #expect(Self.tools.map(\.rawValue) == [
-            "apelin_conversation_create", "apelin_conversation_send", "apelin_conversation_list", "apelin_conversation_read", "apelin_conversation_stop"
+            "apelin_conversation_create", "apelin_conversation_send", "apelin_conversation_list", "apelin_conversation_read", "apelin_conversation_stop",
         ])
         for tool in [AgentToolName.conversationCreate, .conversationSend, .conversationStop] {
             #expect(tool.risk == .writeProject, "\(tool.rawValue)")
@@ -67,7 +67,7 @@ struct ConversationToolTests {
                 policy: ApprovalPolicy(mode: .confirm),
                 backend: MockBackend(),
                 digests: MockDigestLedger(),
-                gate: ApprovalGate { _ in }
+                gate: ApprovalGate { _ in },
             ).agentTools(mcp: []).map(\.name)
         }
         let project = try offered(home.project)
@@ -87,7 +87,7 @@ struct ConversationToolTests {
         project: ProjectIdentity,
         mode: ApprovalMode = .confirm,
         backend: MockBackend,
-        gate: ApprovalGate
+        gate: ApprovalGate,
     ) throws -> ToolRunner {
         try ToolRunner(
             sessionID: UUID().uuidString,
@@ -96,7 +96,7 @@ struct ConversationToolTests {
             policy: ApprovalPolicy(mode: mode),
             backend: backend,
             digests: MockDigestLedger(),
-            gate: gate
+            gate: gate,
         )
     }
 
@@ -113,7 +113,7 @@ struct ConversationToolTests {
             action: "create",
             projectID: Self.far.id,
             projectName: "Far",
-            text: "Import the repo and build it"
+            text: "Import the repo and build it",
         )))
         #expect(asked.first?.reason.contains("Far") == true && asked.first?.reason.contains("Import the repo and build it") == true)
         let createdText = created.content.compactMap {
@@ -130,7 +130,7 @@ struct ConversationToolTests {
             projectID: Self.far.id,
             projectName: "Far",
             sessionID: "far-chat",
-            text: "Also push"
+            text: "Also push",
         )))
         let (_, listAsked) = try await harness.run(.conversationList, ["project": "Far"])
         let (_, readAsked) = try await harness.run(.conversationRead, ["session_id": "far-chat", "project": "Far"])
@@ -144,7 +144,7 @@ struct ConversationToolTests {
             }
         } == [
             "apelin_conversation_create \(Self.far.id)", "apelin_conversation_send \(Self.far.id)",
-            "apelin_conversation_list \(Self.far.id)", "apelin_conversation_read \(Self.far.id)"
+            "apelin_conversation_list \(Self.far.id)", "apelin_conversation_read \(Self.far.id)",
         ])
         // The same call again asks again.
         let (_, again) = try await harness.run(.conversationCreate, ["prompt": "Import the repo and build it", "project": "Far"], answering: .approve(.session))
@@ -251,7 +251,7 @@ struct ConversationToolTests {
             .conversationRead(sessionID: "child-session", afterSeq: 12, waitSeconds: ConversationReadToolRequest.maximumWaitSeconds),
             .conversationRead(sessionID: "child-session", afterSeq: nil, waitSeconds: 0),
             .conversationStop(sessionID: "child-session", close: false),
-            .conversationStop(sessionID: "child-session", close: true)
+            .conversationStop(sessionID: "child-session", close: true),
         ])
     }
 
@@ -298,7 +298,7 @@ struct ConversationToolTests {
             project: ProjectIdentity(id: "temporary:" + id, name: ProjectName(id)),
             projectRoot: home.projectURL.path,
             skills: [],
-            mcpServers: []
+            mcpServers: [],
         )
         #expect(general.contains("# Conversations") && general.contains("apelin_conversation_create with project set to the new project"))
         for prompt in [project, general] {
@@ -332,11 +332,11 @@ struct ConversationToolTests {
                 project: home.project,
                 provider: .registered(provider.getModel()),
                 approval: ApprovalPolicy(mode: .confirm),
-                dataRoot: home.dataRoot
+                dataRoot: home.dataRoot,
             ),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            credentials: DeliveredCredentialSource()
+            credentials: DeliveredCredentialSource(),
         )
         let sender = ConversationSender(sessionID: "opener-session", title: "Plan the tweak")
         try await session.prompt("Review Tweak.x", from: sender)

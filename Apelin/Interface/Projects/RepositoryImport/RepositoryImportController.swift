@@ -66,20 +66,20 @@ final class RepositoryImportController: TableController, UITextFieldDelegate {
             nameField.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),
             nameField.trailingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.trailingAnchor),
             nameField.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 12),
-            nameField.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -12)
+            nameField.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -12),
         ])
     }
 
     private lazy var dataSource = TableDataSource<Section, String, Row>(
         tableView: tableView,
-        identifier: \.id
+        identifier: \.id,
     ) { [weak self] _, _, row in
         self?.cell(for: row)
     }
 
     private lazy var importButton = UIBarButtonItem(
         title: String(localized: "Import"),
-        primaryAction: UIAction { [weak self] _ in self?.startImport() }
+        primaryAction: UIAction { [weak self] _ in self?.startImport() },
     ).then { $0.style = .done }
 
     private lazy var importingIndicator = UIBarButtonItem(customView: UIActivityIndicatorView(style: .medium).then {
@@ -164,7 +164,7 @@ final class RepositoryImportController: TableController, UITextFieldDelegate {
     /// each one's `.git/config` without following a link.
     private static func projects(
         in projects: [ProjectSummary],
-        withOrigin address: String
+        withOrigin address: String,
     ) async -> [ProjectSummary] {
         guard let wanted = RepositoryImportPlan.comparable(address) else { return [] }
         let folder = DataFolder.app
@@ -249,7 +249,7 @@ final class RepositoryImportController: TableController, UITextFieldDelegate {
     override func tableView(
         _: UITableView,
         contextMenuConfigurationForRowAt indexPath: IndexPath,
-        point _: CGPoint
+        point _: CGPoint,
     ) -> UIContextMenuConfiguration? {
         let text: String
         switch dataSource.value(at: indexPath) {
@@ -260,7 +260,7 @@ final class RepositoryImportController: TableController, UITextFieldDelegate {
         return UIContextMenuConfiguration(actionProvider: { _ in
             UIMenu(children: [UIAction(
                 title: String(localized: "Copy"),
-                image: UIImage(systemName: "doc.on.doc")
+                image: UIImage(systemName: "doc.on.doc"),
             ) { _ in
                 UIPasteboard.general.string = text
             }])
@@ -293,7 +293,7 @@ final class RepositoryImportController: TableController, UITextFieldDelegate {
         if takenNames.contains(where: { $0.caseInsensitiveCompare(name) == .orderedSame }) {
             presentNotice(
                 title: "Name Already Used",
-                message: "Another project is already named “\(name)”. Choose another name."
+                message: "Another project is already named “\(name)”. Choose another name.",
             ) { [weak self] in
                 self?.nameField.becomeFirstResponder()
             }
@@ -308,7 +308,7 @@ final class RepositoryImportController: TableController, UITextFieldDelegate {
                     title: String(localized: "Importing Project…"),
                     message: request.address,
                     cancellable: true,
-                    from: self
+                    from: self,
                 ) { update in
                     try await RepositoryImporter.run(request, name: name, update: update)
                 }
@@ -346,7 +346,7 @@ final class RepositoryImportController: TableController, UITextFieldDelegate {
             presentConfirmation(
                 title: "Sign In with GitHub",
                 message: "This repository needs a GitHub sign-in. Sign In with GitHub in Settings ▸ Git, then import again.",
-                confirmTitle: "Open Settings"
+                confirmTitle: "Open Settings",
             ) { [weak self] in
                 guard let self else { return }
                 SettingsViewController.presentGit(from: self)

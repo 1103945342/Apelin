@@ -17,7 +17,7 @@ enum RepositoryImportFlow {
     static func open(
         _ request: RepositoryImportPlan.Request,
         from root: UIViewController,
-        onOpen: @escaping (ProjectSummary, _ imported: Bool) -> Void
+        onOpen: @escaping (ProjectSummary, _ imported: Bool) -> Void,
     ) {
         switch RepositoryImportPlan.arrival(of: request, current: current?.openRequest) {
         case .showCurrent:
@@ -27,7 +27,7 @@ enum RepositoryImportFlow {
                 title: String(localized: "Import Under Way"),
                 message: String(localized: "Finish or cancel the current import first."),
                 preset: .error,
-                haptic: .warning
+                haptic: .warning,
             )
         case .start:
             let page = RepositoryImportController(request: request)
@@ -44,7 +44,7 @@ enum RepositoryImportFlow {
             title: String(localized: "Unable to Import"),
             message: String(localized: "This link names no HTTPS repository Apelin can import."),
             preset: .error,
-            haptic: .error
+            haptic: .error,
         )
     }
 

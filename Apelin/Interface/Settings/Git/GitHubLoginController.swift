@@ -180,7 +180,7 @@ final class GitHubLoginController: UIViewController {
                 try await ApelinService.app.gitCredentialSet(GitCredentialSetRequest(
                     host: GitHubDeviceFlow.host,
                     username: login,
-                    token: token
+                    token: token,
                 ))
                 guard !Task.isCancelled else { return }
                 self?.signedIn(as: login)

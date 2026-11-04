@@ -22,7 +22,7 @@ enum BuiltInSkills {
         crashTriage,
         deviceCLI,
         gitWorkflow,
-        packageRepository
+        packageRepository,
     ]
 
     /// Every built-in's name begins `apelin-` (owner, 2026-10-25), so none
@@ -39,6 +39,6 @@ enum BuiltInSkills {
         "external-build": "apelin-external-build",
         "packaging-and-install": "apelin-packaging-and-install",
         "package-dependencies": "apelin-package-dependencies",
-        "crash-triage": "apelin-crash-triage"
+        "crash-triage": "apelin-crash-triage",
     ]
 }

@@ -68,7 +68,7 @@ enum InstallConflicts {
         control: DebControlPeek.Control?,
         installed: [String: InstalledPackage],
         lists: PackageFileLists,
-        records: [InstallationRecord]
+        records: [InstallationRecord],
     ) -> [InstallConflict] {
         func conflict(_ relation: InstallConflict.Relation, _ other: InstalledPackage, file: String? = nil) -> InstallConflict {
             let record = ManagedPackagePolicy.removableRecord(of: other.packageID, installed: installed, records: records)
@@ -78,7 +78,7 @@ enum InstallConflicts {
                 packageID: other.packageID,
                 version: other.version,
                 installationID: record?.installationID,
-                projectID: record?.projectID
+                projectID: record?.projectID,
             )
         }
         let others = installed.values.filter { $0.isInstalled && $0.packageID != packageID }
@@ -95,7 +95,7 @@ enum InstallConflicts {
         }
         let relations: [(InstallConflict.Relation, [DebControlPeek.Relation])] = [
             (.conflicts, control?.conflicts ?? []),
-            (.breaks, control?.breaks ?? [])
+            (.breaks, control?.breaks ?? []),
         ]
         for (relation, named) in relations {
             let names = Set(named.filter { $0.constraint == nil }.map(\.package))
@@ -118,8 +118,8 @@ enum InstallConflicts {
                 protected: ManagedPackagePolicy.isReserved(
                     conflict.packageID,
                     installed: installed[conflict.packageID],
-                    origin: .build
-                )
+                    origin: .build,
+                ),
             )
         }
         if packages.count > 3 {

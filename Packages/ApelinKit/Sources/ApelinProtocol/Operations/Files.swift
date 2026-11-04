@@ -98,7 +98,7 @@ public struct ProtectedEditOpenResponse: Codable, Sendable, Equatable {
         path: String,
         version: FileVersion,
         needsConfirmation: Bool = false,
-        backups: [String] = []
+        backups: [String] = [],
     ) {
         self.grantID = grantID
         self.expiresIn = expiresIn
@@ -127,7 +127,7 @@ public struct ProtectedEditCommitRequest: OperationRequest {
         contents: DescriptorSlot?,
         contentsBase64: String? = nil,
         expectedVersion: FileVersion,
-        confirmed: Bool = false
+        confirmed: Bool = false,
     ) {
         self.grantID = grantID
         self.contents = contents
@@ -161,11 +161,11 @@ public extension ApelinService {
     /// The read-only descriptor comes back owned by the caller.
     func fileRead(scopeID: String, relativePath: String) async throws -> (FileReadResponse, OwnedDescriptor?) {
         let (response, descriptors) = try await sendReturningDescriptors(
-            FileReadRequest(scopeID: scopeID, relativePath: relativePath)
+            FileReadRequest(scopeID: scopeID, relativePath: relativePath),
         )
         return (
             response,
-            descriptors.indices.contains(response.descriptor.index) ? descriptors[response.descriptor.index] : nil
+            descriptors.indices.contains(response.descriptor.index) ? descriptors[response.descriptor.index] : nil,
         )
     }
 
@@ -173,7 +173,7 @@ public extension ApelinService {
         let (response, descriptors) = try await sendReturningDescriptors(ProtectedEditOpenRequest(path: path))
         return (
             response,
-            descriptors.indices.contains(response.descriptor.index) ? descriptors[response.descriptor.index] : nil
+            descriptors.indices.contains(response.descriptor.index) ? descriptors[response.descriptor.index] : nil,
         )
     }
 
@@ -182,13 +182,13 @@ public extension ApelinService {
         grantID: String,
         contents: OwnedDescriptor,
         expectedVersion: FileVersion,
-        confirmed: Bool = false
+        confirmed: Bool = false,
     ) async throws -> ProtectedEditCommitResponse {
         let request = ProtectedEditCommitRequest(
             grantID: grantID,
             contents: DescriptorSlot(index: 0),
             expectedVersion: expectedVersion,
-            confirmed: confirmed
+            confirmed: confirmed,
         )
         return try await send(request, descriptors: [contents])
     }

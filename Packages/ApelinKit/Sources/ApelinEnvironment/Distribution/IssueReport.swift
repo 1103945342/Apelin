@@ -35,7 +35,7 @@ struct IssueReport: Sendable {
             appVersion: version.short,
             appBuild: version.build,
             osVersion: osVersion,
-            bootstrap: BuildBootstrap.resolve(installRoot: layout.installRoot, home: layout.home)
+            bootstrap: BuildBootstrap.resolve(installRoot: layout.installRoot, home: layout.home),
         )
     }
 
@@ -58,7 +58,7 @@ struct IssueReport: Sendable {
               let data = BoundedFile.read(
                   layout.installRoot + "/Applications/Apelin.app/Info.plist",
                   inside: root,
-                  limit: Self.maximumInfoPlistBytes
+                  limit: Self.maximumInfoPlistBytes,
               ),
               let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any]
         else { return (nil, nil) }

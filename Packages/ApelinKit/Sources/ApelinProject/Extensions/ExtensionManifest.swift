@@ -157,7 +157,7 @@ public struct JSONDocumentBox: Codable, Sendable, Equatable {
         case let .object(object):
             try container.encode(Dictionary(
                 object.entries.map { ($0.key, JSONDocumentBox($0.value)) },
-                uniquingKeysWith: { a, _ in a }
+                uniquingKeysWith: { a, _ in a },
             ))
         }
     }

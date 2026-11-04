@@ -33,7 +33,7 @@ enum AgentConversationRules {
     static func childOpen(
         _ open: AgentOpenRequest,
         opener: AgentSessionTable.Entry,
-        target: ResolvedProject
+        target: ResolvedProject,
     ) throws -> AgentOpenRequest {
         guard !target.isTemporary else {
             throw ApelinError(.denied, "an agent opens conversations only in a project; name one with its projectID or folder")
@@ -41,7 +41,7 @@ enum AgentConversationRules {
         guard opener.depth < AgentConversations.maximumDepth else {
             throw ApelinError(
                 .denied,
-                "a conversation another agent opened \(opener.depth) deep cannot open more; do the work here"
+                "a conversation another agent opened \(opener.depth) deep cannot open more; do the work here",
             )
         }
         guard let prompt = open.prompt, !prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -57,7 +57,7 @@ enum AgentConversationRules {
             reasoningEffort: open.reasoningEffort,
             serviceTier: open.serviceTier,
             prompt: prompt,
-            title: title(open.title)
+            title: title(open.title),
         )
     }
 
@@ -68,7 +68,7 @@ enum AgentConversationRules {
         _ prompt: AgentPromptRequest,
         sender: AgentSessionTable.Entry,
         target: AgentSessionTable.Entry?,
-        descriptorCount: Int
+        descriptorCount: Int,
     ) throws -> AgentPromptRequest {
         guard descriptorCount == 0, prompt.attachments?.isEmpty ?? true else {
             throw ApelinError(.badRequest, "a message from another conversation carries no files")
@@ -113,7 +113,7 @@ enum AgentConversationRules {
         _ taskID: TaskID,
         target: AgentSessionTable.Entry?,
         caller: AgentSessionTable.Entry,
-        reachable: Bool = false
+        reachable: Bool = false,
     ) throws {
         guard let target else {
             throw ApelinError(.denied, "task \(taskID) is not a conversation of this project")
@@ -132,7 +132,7 @@ enum AgentConversationRules {
         guard !caller.mode.asks || reachable else {
             throw ApelinError(
                 .denied,
-                "approval required: the user has not let this conversation reach the project \(project.name)"
+                "approval required: the user has not let this conversation reach the project \(project.name)",
             )
         }
     }
@@ -168,12 +168,12 @@ enum AgentConversationRules {
         task: TaskHandle,
         title: String?,
         prompt: String,
-        project: ResolvedProject? = nil
+        project: ResolvedProject? = nil,
     ) -> JSONValue {
         var payload: [String: JSONValue] = [
             "sessionID": .string(sessionID),
             "task": .object(["taskID": .string(task.taskID.rawValue), "kind": .string(task.kind.rawValue)]),
-            "prompt": .string(prompt)
+            "prompt": .string(prompt),
         ]
         if let title {
             payload["title"] = .string(title)

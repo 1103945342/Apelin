@@ -11,20 +11,20 @@ let package = Package(
         // kwwk declares macOS 14, and SwiftPM refuses a product whose floor
         // is below a dependency's. macOS is only the test host here; the
         // product ships on iOS.
-        .macOS(.v14)
+        .macOS(.v14),
     ],
     products: [
         .library(name: "ApelinAgent", targets: ["ApelinAgent"]),
         // What Workers/Agent/main.swift calls: the session over the worker
         // channel, the host backend and the credential inbox.
-        .library(name: "ApelinAgentWorker", targets: ["ApelinAgentWorker"])
+        .library(name: "ApelinAgentWorker", targets: ["ApelinAgentWorker"]),
     ],
     dependencies: [
         // EYHN/kwwk v0.1.109, pinned to the commit the tag names so a moved
         // tag cannot change what is built. Bump deliberately.
         .package(
             url: "https://github.com/EYHN/kwwk.git",
-            revision: "b2c8b4a95f6c314034a2d955023bedda7bb19053"
+            revision: "b2c8b4a95f6c314034a2d955023bedda7bb19053",
         ),
         // kwwk's swift-nio, held below 2.104.0. That release made
         // ByteToMessageHandler's decoder `~Copyable`, and an iOS runtime
@@ -38,7 +38,7 @@ let package = Package(
         .package(path: "../ApelinKit"),
         // The agent tool extensions' manifests and their validation, read
         // to offer their tools. System code only.
-        .package(path: "../ApelinToolHost")
+        .package(path: "../ApelinToolHost"),
     ],
     targets: [
         .target(
@@ -59,9 +59,9 @@ let package = Package(
                 .product(name: "ApelinProject", package: "ApelinKit"),
                 // ToolManifestValidator: the installed agent tool extensions
                 // whose tools a session offers.
-                .product(name: "ApelinToolCore", package: "ApelinToolHost")
+                .product(name: "ApelinToolCore", package: "ApelinToolHost"),
             ],
-            path: "Sources/ApelinAgent"
+            path: "Sources/ApelinAgent",
         ),
         // apelin-agent's worker: AgentHostBackend over ApelinService (the
         // worker channel to the session host), keychain credentials and the
@@ -72,10 +72,10 @@ let package = Package(
                 "ApelinAgent",
                 .product(name: "KWWKAI", package: "kwwk"),
                 .product(name: "ApelinCore", package: "ApelinKit"),
-                .product(name: "ApelinProtocol", package: "ApelinKit")
+                .product(name: "ApelinProtocol", package: "ApelinKit"),
             ],
             path: "Sources/ApelinAgentWorker",
-            swiftSettings: [.enableUpcomingFeature("ConciseMagicFile")]
+            swiftSettings: [.enableUpcomingFeature("ConciseMagicFile")],
         ),
         .testTarget(
             name: "ApelinAgentWorkerTests",
@@ -84,9 +84,9 @@ let package = Package(
                 "ApelinAgent",
                 .product(name: "KWWKAI", package: "kwwk"),
                 .product(name: "ApelinCore", package: "ApelinKit"),
-                .product(name: "ApelinProtocol", package: "ApelinKit")
+                .product(name: "ApelinProtocol", package: "ApelinKit"),
             ],
-            path: "Tests/ApelinAgentWorkerTests"
+            path: "Tests/ApelinAgentWorkerTests",
         ),
         .testTarget(
             name: "ApelinAgentTests",
@@ -94,9 +94,9 @@ let package = Package(
                 "ApelinAgent",
                 .product(name: "KWWKAgent", package: "kwwk"),
                 .product(name: "KWWKAI", package: "kwwk"),
-                .product(name: "ApelinToolCore", package: "ApelinToolHost")
+                .product(name: "ApelinToolCore", package: "ApelinToolHost"),
             ],
-            path: "Tests/ApelinAgentTests"
+            path: "Tests/ApelinAgentTests",
         ),
         // Talks to a real provider. Every test here is skipped unless
         // APELIN_LIVE_OAUTH_PATH names a kwwk-format credential file.
@@ -104,10 +104,10 @@ let package = Package(
             name: "ApelinAgentLiveTests",
             dependencies: [
                 "ApelinAgent",
-                .product(name: "KWWKAI", package: "kwwk")
+                .product(name: "KWWKAI", package: "kwwk"),
             ],
-            path: "Tests/ApelinAgentLiveTests"
-        )
+            path: "Tests/ApelinAgentLiveTests",
+        ),
     ],
-    swiftLanguageModes: [.v6]
+    swiftLanguageModes: [.v6],
 )

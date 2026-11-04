@@ -25,14 +25,14 @@ extension Blame {
     /// in `/usr/lib/TweakInject`, which would otherwise read as Apple's.
     private static let tweakDirectories = ["/MobileSubstrate/DynamicLibraries/", "/TweakInject/"]
     private static let applePrefixes = [
-        "/System/", "/usr/lib/", "/usr/libexec/", "/private/preboot/Cryptexes/"
+        "/System/", "/usr/lib/", "/usr/libexec/", "/private/preboot/Cryptexes/",
     ]
     /// ponytail: the injectors we have seen, by name. A bootstrap that names
     /// its hook something else is merely scored as an ordinary third party —
     /// noisier, never wrong — so this list grows only when one shows up.
     private static let bootstrapHooks: Set<String> = [
         "systemhook.dylib", "libsystemhook.dylib", "libellekit.dylib", "libsubstrate.dylib",
-        "CydiaSubstrate", "libhooker.dylib", "libsubstitute.dylib", "TweakInject.dylib"
+        "CydiaSubstrate", "libhooker.dylib", "libsubstitute.dylib", "TweakInject.dylib",
     ]
     /// A package unpacked this long before the crash is worth mentioning.
     private static let recentInstallWindow: TimeInterval = 72 * 60 * 60
@@ -94,7 +94,7 @@ extension Blame {
                 imageName: image.name,
                 reasons: reasons,
                 owner: owner,
-                score: score
+                score: score,
             ))
         }
         return suspects.sorted {

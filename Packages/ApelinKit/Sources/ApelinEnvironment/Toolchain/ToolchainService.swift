@@ -74,7 +74,7 @@ public struct ToolchainService: Sendable {
                     swiftRequirements: $0.swiftRequirements,
                     swiftUnavailableReason: $0.swiftUnavailableReason,
                     clangModuleCPUFeatures: $0.clangModuleCPUFeatures,
-                    compatibility: $0.compatibility
+                    compatibility: $0.compatibility,
                 )
             }
         return ToolchainCatalogResponse(products: products)
@@ -105,7 +105,7 @@ public struct ToolchainService: Sendable {
         guard case .appleCatalog = request.source else {
             throw ApelinError(
                 .badRequest,
-                "setting up a toolchain from a package file is not supported yet; use appleCatalog"
+                "setting up a toolchain from a package file is not supported yet; use appleCatalog",
             )
         }
         guard !request.components.isEmpty, request.components.contains(.c) else {
@@ -117,7 +117,7 @@ public struct ToolchainService: Sendable {
         guard !sdks.list().isEmpty || supplier.hasEnabledSource else {
             throw ApelinError(
                 .badRequest,
-                "Import an SDK first. Apelin tests each new toolchain against an SDK."
+                "Import an SDK first. Apelin tests each new toolchain against an SDK.",
             )
         }
         return PreparedSetup(request: request)
@@ -127,7 +127,7 @@ public struct ToolchainService: Sendable {
         _ prepared: PreparedSetup,
         taskID: TaskID,
         installer: any PackageInstaller,
-        reporter: TaskReporter
+        reporter: TaskReporter,
     ) async throws -> ToolchainRecord {
         let request = prepared.request
         // Resolve the product before choosing the SDK it can self-test against.
@@ -154,7 +154,7 @@ public struct ToolchainService: Sendable {
             throw ApelinError(
                 .badRequest,
                 product.swiftUnavailableReason
-                    ?? "Swift is not available with Command Line Tools \(product.version). Choose a release marked for Swift, or set it up without Swift."
+                    ?? "Swift is not available with Command Line Tools \(product.version). Choose a release marked for Swift, or set it up without Swift.",
             )
         }
         try reporter.checkCancelled()
@@ -164,7 +164,7 @@ public struct ToolchainService: Sendable {
         guard RunningJobs.shared.claim(key) else {
             throw ApelinError(
                 .conflict,
-                "Command Line Tools \(product.version) is already being set up with these components. Wait for that setup to finish."
+                "Command Line Tools \(product.version) is already being set up with these components. Wait for that setup to finish.",
             )
         }
         defer { RunningJobs.shared.release(key) }
@@ -178,7 +178,7 @@ public struct ToolchainService: Sendable {
                 components: components,
                 stage: "downloading",
                 taskID: taskID.rawValue,
-                updated: Date()
+                updated: Date(),
             )
         if job.taskID != taskID.rawValue {
             reporter.emit("resumed", .object(["stage": .string(job.stage), "previousTask": .string(job.taskID)]))
@@ -206,7 +206,7 @@ public struct ToolchainService: Sendable {
                     update.stage,
                     completed: update.completed,
                     total: update.total,
-                    detail: update.detail.isEmpty ? nil : update.detail
+                    detail: update.detail.isEmpty ? nil : update.detail,
                 )
             }
         }
@@ -227,7 +227,7 @@ public struct ToolchainService: Sendable {
                 swift: swift,
                 staging: directory.appendingPathComponent("sdk", isDirectory: true),
                 journal: journal,
-                reporter: reporter
+                reporter: reporter,
             )
             try reporter.checkCancelled()
 
@@ -239,7 +239,7 @@ public struct ToolchainService: Sendable {
             guard let sdk = CanonicalPath.resolve(sdkRecord.path) else {
                 throw ApelinError(
                     .notFound,
-                    "The files for SDK \(sdkRecord.id) are missing. Remove the SDK and import it again."
+                    "The files for SDK \(sdkRecord.id) are missing. Remove the SDK and import it again.",
                 )
             }
 
@@ -248,7 +248,7 @@ public struct ToolchainService: Sendable {
                 components: components,
                 staging: staging,
                 output: output,
-                progress: progress
+                progress: progress,
             )
             try reporter.checkCancelled()
             journal.toolchainID = tree.id
@@ -283,7 +283,7 @@ public struct ToolchainService: Sendable {
                         do {
                             let result = try await installer.finishInstall(
                                 TaskHandle(taskID: TaskID(pending), kind: .install),
-                                reporter: reporter
+                                reporter: reporter,
                             )
                             journal.installationID = result.installationID
                             journal.installTaskID = nil
@@ -294,7 +294,7 @@ public struct ToolchainService: Sendable {
                             // Ended without installing, or gone: hand it over again.
                             journal.installTaskID = nil
                             reporter.warning(
-                                "the earlier install task \(pending) did not install (\(error)); installing again"
+                                "the earlier install task \(pending) did not install (\(error)); installing again",
                             )
                         }
                     }
@@ -334,12 +334,12 @@ public struct ToolchainService: Sendable {
                     guard installs.latest == nil else {
                         throw ApelinError(
                             .internal,
-                            "irisind installed \(artifact.packageID), but the bytes under \(tree.installRelativePath) are not the package's"
+                            "irisind installed \(artifact.packageID), but the bytes under \(tree.installRelativePath) are not the package's",
                         )
                     }
                     try await install()
                 },
-                progress: progress
+                progress: progress,
             )
             try reporter.checkCancelled()
 
@@ -350,7 +350,7 @@ public struct ToolchainService: Sendable {
                 path: CanonicalPath.resolve(path) ?? path,
                 selfTests: selfTests,
                 installationID: installs.latest ?? remembered,
-                selfTestSDK: sdkRecord.version
+                selfTestSDK: sdkRecord.version,
             )
             if journal.enter("ready") {
                 reporter.stage("ready")
@@ -367,7 +367,7 @@ public struct ToolchainService: Sendable {
                 previous: previous,
                 journal: journal,
                 installer: installer,
-                reporter: reporter
+                reporter: reporter,
             )
             if cancelled, clean, journal.installTaskID == nil {
                 // A cancel cleans up only this setup's own work.
@@ -390,7 +390,7 @@ public struct ToolchainService: Sendable {
         previous: ToolchainRecord?,
         journal: JobJournal,
         installer: any PackageInstaller,
-        reporter: TaskReporter
+        reporter: TaskReporter,
     ) async -> Bool {
         guard let installationID = installs.latest ?? journal.installationID else { return true }
         // A run that failed before it looked the registry up still knows the
@@ -424,7 +424,7 @@ public struct ToolchainService: Sendable {
         path: String,
         selfTests: [ToolchainSelfTestResult],
         installationID: String?,
-        selfTestSDK: String
+        selfTestSDK: String,
     ) throws -> ToolchainRecord {
         var registry = ToolchainRegistry.load(layout)
         // A case's language is its first word: `Swift dylib` and `Swift async` count as Swift.
@@ -441,7 +441,7 @@ public struct ToolchainService: Sendable {
                 ToolchainComponent(
                     kind: .swift,
                     selfCheckPassed: passed(["swift"]),
-                    problem: passed(["swift"]) ? nil : "Swift did not pass its self-test"
+                    problem: passed(["swift"]) ? nil : "Swift did not pass its self-test",
                 )
             case .auxiliary: ToolchainComponent(kind: .auxiliary, selfCheckPassed: nil)
             }
@@ -452,7 +452,7 @@ public struct ToolchainService: Sendable {
         guard let installationID else {
             throw ApelinError(
                 .internal,
-                "Apelin has no install record for this toolchain, so it was not added. Try again."
+                "Apelin has no install record for this toolchain, so it was not added. Try again.",
             )
         }
         let record = ToolchainRecord(
@@ -470,7 +470,7 @@ public struct ToolchainService: Sendable {
             selfTestSDK: selfTestSDK,
             swiftRequirements: tree.product.swiftRequirements,
             clangModuleCPUFeatures: tree.product.clangModuleCPUFeatures,
-            compatibility: tree.product.compatibility
+            compatibility: tree.product.compatibility,
         )
         registry.toolchains.removeAll { $0.id == record.id }
         registry.toolchains.append(record)
@@ -509,7 +509,7 @@ public struct ToolchainService: Sendable {
             at: root,
             includingPropertiesForKeys: [.isRegularFileKey],
             options: [],
-            errorHandler: { _, _ in true }
+            errorHandler: { _, _ in true },
         ) else { return true }
         for case let url as URL in walk
             where (try? url.resourceValues(forKeys: [.isRegularFileKey]))?.isRegularFile == true

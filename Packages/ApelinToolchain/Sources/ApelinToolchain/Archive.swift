@@ -34,7 +34,7 @@ struct PackageArchive {
                 output.bindMemory(to: UInt8.self).baseAddress!,
                 &size,
                 input.bindMemory(to: UInt8.self).baseAddress!,
-                uLong(packed.count)
+                uLong(packed.count),
             )
         } }
         guard status == Z_OK, size == expanded else {
@@ -191,7 +191,7 @@ struct PackageArchive {
                     if component == ".." {
                         guard !linkParts.isEmpty else {
                             throw ToolchainFailure(
-                                "A package symbolic link points outside the extraction folder: \(relative) -> \(link)."
+                                "A package symbolic link points outside the extraction folder: \(relative) -> \(link).",
                             )
                         }
                         linkParts.removeLast()
@@ -211,7 +211,7 @@ struct PackageArchive {
                 guard FileManager.default.createFile(
                     atPath: target.path,
                     contents: Data(),
-                    attributes: [.posixPermissions: 0o644]
+                    attributes: [.posixPermissions: 0o644],
                 ) else {
                     throw ToolchainFailure("Unable to extract a linked package file.")
                 }
@@ -340,7 +340,7 @@ final class PBZXReader: ByteReader {
             guard reader.offset <= end, end - reader.offset >= 16 else {
                 if chunks.isEmpty {
                     throw ToolchainFailure(
-                        "The compressed package content is incomplete. Download the toolchain again."
+                        "The compressed package content is incomplete. Download the toolchain again.",
                     )
                 }
                 break
@@ -376,7 +376,7 @@ final class PBZXReader: ByteReader {
                 source.bindMemory(to: UInt8.self).baseAddress!,
                 source.count,
                 nil,
-                COMPRESSION_LZMA
+                COMPRESSION_LZMA,
             )
         } }
         guard count == expanded else { throw ToolchainFailure("The compressed package content is damaged.") }
@@ -393,7 +393,7 @@ private final class XarTOC: NSObject, XMLParserDelegate {
         didStartElement elementName: String,
         namespaceURI _: String?,
         qualifiedName _: String?,
-        attributes: [String: String]
+        attributes: [String: String],
     ) {
         stack.append(elementName); text = ""
         if elementName == "archived-checksum", fileDepth == 1 {
@@ -414,7 +414,7 @@ private final class XarTOC: NSObject, XMLParserDelegate {
         _: XMLParser,
         didEndElement elementName: String,
         namespaceURI _: String?,
-        qualifiedName _: String?
+        qualifiedName _: String?,
     ) {
         if fileDepth == 1 {
             fields[stack.suffix(2).joined(separator: "/")] = text
@@ -429,7 +429,7 @@ private final class XarTOC: NSObject, XMLParserDelegate {
                     offset: offset,
                     length: length,
                     checksum: fields["data/archived-checksum"] ?? "",
-                    algorithm: fields["checksumAlgorithm"] ?? ""
+                    algorithm: fields["checksumAlgorithm"] ?? "",
                 )
             }
             fileDepth -= 1

@@ -54,7 +54,7 @@ actor InstallBridge {
         packages: InstalledPackageSource,
         fileLists: PackageFileLists,
         approvals: ApprovalLedger,
-        pollInterval: TimeInterval = 0.25
+        pollInterval: TimeInterval = 0.25,
     ) {
         self.paths = paths
         self.service = service
@@ -130,7 +130,7 @@ actor InstallBridge {
             guard stagedDigest == digest else {
                 throw ApelinError(
                     .conflict,
-                    "the package's SHA-256 is \(stagedDigest), not \(digest); it changed after it was approved"
+                    "the package's SHA-256 is \(stagedDigest), not \(digest); it changed after it was approved",
                 )
             }
             control = try readControl(staged)
@@ -147,7 +147,7 @@ actor InstallBridge {
                 unlink(staged.path)
                 throw ApelinError(
                     .conflict,
-                    "the package was expected to be \(expected); its control file says \(control.packageID)"
+                    "the package was expected to be \(expected); its control file says \(control.packageID)",
                 )
             }
             packageID = control.packageID
@@ -162,7 +162,7 @@ actor InstallBridge {
             unlink(staged.path)
             throw ApelinError(
                 .badRequest,
-                "the package's control file could not be read (gzip, xz or uncompressed control members only)"
+                "the package's control file could not be read (gzip, xz or uncompressed control members only)",
             )
         }
 
@@ -171,7 +171,7 @@ actor InstallBridge {
                 packageID: packageID,
                 origin: origin,
                 installed: packages.installedPackages(),
-                records: installations.all()
+                records: installations.all(),
             )
         } catch {
             unlink(staged.path)
@@ -199,7 +199,7 @@ actor InstallBridge {
             receipt: nil,
             removalTransactionID: nil,
             removalTaskID: nil,
-            removalReceipt: nil
+            removalReceipt: nil,
         )
         do {
             try await installations.save(record)
@@ -211,7 +211,7 @@ actor InstallBridge {
         await registry.setResume(handle.taskID, .object(["installationID": .string(installationID)]))
         await registry.append(handle.taskID, kind: "stage", payload: .object([
             "stage": .string("staged"), "installationID": .string(installationID), "packageID": .string(packageID),
-            "version": .string(version), "digest": .string(digest), "transactionID": .string(record.transactionID)
+            "version": .string(version), "digest": .string(digest), "transactionID": .string(record.transactionID),
         ]))
         Task { await self.runInstall(installationID, taskID: handle.taskID) }
         return handle
@@ -222,7 +222,7 @@ actor InstallBridge {
     /// the package database as it is now.
     private func conflicts(
         blocking record: InstallationRecord,
-        staged: URL
+        staged: URL,
     ) async -> (found: [InstallConflict], explanation: String?) {
         let files = await artifacts.artifact(record.artifactID)?.packageFiles ?? []
         let control = try? readControl(staged)
@@ -233,7 +233,7 @@ actor InstallBridge {
             control: control,
             installed: installed,
             lists: fileLists,
-            records: installations.all()
+            records: installations.all(),
         )
         return (found, InstallConflicts.explanation(found, installed: installed))
     }
@@ -244,13 +244,13 @@ actor InstallBridge {
         guard let project = artifact.projectID, let packaging = artifact.packagingDigest else {
             throw ApelinError(
                 .denied,
-                "approval required: the build recorded no packaging digest for \(artifact.artifactID), so the host cannot tell it matches the template"
+                "approval required: the build recorded no packaging digest for \(artifact.artifactID), so the host cannot tell it matches the template",
             )
         }
         guard try await approvals.allows(packaging, kind: .packaging, project: project) else {
             throw ApelinError(
                 .denied,
-                "approval required: the packaging description \(packaging) of project \(project) changed since the template and was never approved"
+                "approval required: the packaging description \(packaging) of project \(project) changed since the template and was never approved",
             )
         }
     }
@@ -282,21 +282,21 @@ actor InstallBridge {
                     try await self.service.submitInstall(
                         transaction: transaction,
                         descriptor: descriptor,
-                        sha256: record.artifactDigest
+                        sha256: record.artifactDigest,
                     )
                 }
                 record = try await installations.update(installationID) { $0.status = .submitted }
                 await registry.append(taskID, kind: "stage", payload: .object([
                     "stage": .string("submitted"),
                     "transactionID": .string(record.transactionID),
-                    "duplicate": .bool(status.duplicate)
+                    "duplicate": .bool(status.duplicate),
                 ]))
             }
             let final = try await follow(
                 transaction,
                 after: record.followedSeq,
                 taskID: taskID,
-                installationID: installationID
+                installationID: installationID,
             )
             let receipt = Self.receipt(final)
             if final.state == .succeeded {
@@ -316,7 +316,7 @@ actor InstallBridge {
                     await registry.finish(
                         taskID,
                         .failed,
-                        message: "Installed \(reported) instead of \(expected). Details are saved in installation \(installationID)."
+                        message: "Installed \(reported) instead of \(expected). Details are saved in installation \(installationID).",
                     )
                     return
                 }
@@ -327,13 +327,13 @@ actor InstallBridge {
                     version: record.version,
                     artifactDigest: record.artifactDigest,
                     projectID: record.projectID,
-                    buildID: record.buildID
+                    buildID: record.buildID,
                 )
                 let resultValue = try? JSONValue(encoding: result)
                 await registry.append(taskID, kind: "result", payload: resultValue)
                 // The last event carries the result too, for a reader that only keeps the last.
                 await registry.append(taskID, kind: TaskEvent.stateKind, payload: .object([
-                    "state": .string(TaskState.succeeded.rawValue), "result": resultValue ?? .null
+                    "state": .string(TaskState.succeeded.rawValue), "result": resultValue ?? .null,
                 ]))
             } else {
                 record = try await installations.update(installationID) {
@@ -369,7 +369,7 @@ actor InstallBridge {
         try await ManagedPackagePolicy.checkRemoval(
             record,
             installed: packages.installedPackages(),
-            records: installations.all()
+            records: installations.all(),
         )
         guard var record else { throw ApelinError(.notFound, "no installation \(request.installationID)") }
         try Self.checkRemover(caller, of: record)
@@ -381,7 +381,7 @@ actor InstallBridge {
             else {
                 throw ApelinError(
                     .denied,
-                    "approval required: removing \(record.packageID) needs the user's approval for this removal"
+                    "approval required: removing \(record.packageID) needs the user's approval for this removal",
                 )
             }
         }
@@ -401,11 +401,11 @@ actor InstallBridge {
         }
         await registry.setResume(
             handle.taskID,
-            .object(["installationID": .string(record.installationID), "removal": .bool(true)])
+            .object(["installationID": .string(record.installationID), "removal": .bool(true)]),
         )
         await registry.append(handle.taskID, kind: "stage", payload: .object([
             "stage": .string("removing"), "installationID": .string(record.installationID),
-            "packageID": .string(record.packageID), "transactionID": .string(record.removalTransactionID ?? "")
+            "packageID": .string(record.packageID), "transactionID": .string(record.removalTransactionID ?? ""),
         ]))
         Task { await self.runRemoval(record.installationID, taskID: handle.taskID) }
         return handle
@@ -427,7 +427,7 @@ actor InstallBridge {
                 transaction,
                 after: record.followedSeq,
                 taskID: taskID,
-                installationID: installationID
+                installationID: installationID,
             )
             let receipt = Self.receipt(final)
             if final.state == .succeeded {
@@ -440,11 +440,11 @@ actor InstallBridge {
                 }
                 let removed: JSONValue = .object([
                     "installationID": .string(installationID), "packageID": .string(record.packageID),
-                    "transactionID": .string(transaction.uuidString.lowercased())
+                    "transactionID": .string(transaction.uuidString.lowercased()),
                 ])
                 await registry.append(taskID, kind: "removed", payload: removed)
                 await registry.append(taskID, kind: TaskEvent.stateKind, payload: .object([
-                    "state": .string(TaskState.succeeded.rawValue), "removed": removed
+                    "state": .string(TaskState.succeeded.rawValue), "removed": removed,
                 ]))
             } else {
                 try await installations.update(installationID) {
@@ -454,7 +454,7 @@ actor InstallBridge {
                 await registry.finish(
                     taskID,
                     .failed,
-                    message: final.failureText ?? "Irisin could not remove the package. Try again."
+                    message: final.failureText ?? "Irisin could not remove the package. Try again.",
                 )
             }
         } catch {
@@ -478,14 +478,14 @@ actor InstallBridge {
             case .file:
                 throw ApelinError(
                     .denied,
-                    "This package was installed from a file, not by a project's build, so the agent cannot remove it. Remove it with your preferred package manager."
+                    "This package was installed from a file, not by a project's build, so the agent cannot remove it. Remove it with your preferred package manager.",
                 )
             }
         case .worker(.environment, _):
             guard record.origin == .environment else {
                 throw ApelinError(
                     .denied,
-                    "the environment worker removes the toolchain packages it installed, nothing else"
+                    "the environment worker removes the toolchain packages it installed, nothing else",
                 )
             }
         case .worker:
@@ -529,7 +529,7 @@ actor InstallBridge {
                 buildID: record.buildID,
                 installedAt: record.receipt?.finishedAt ?? record.createdAt,
                 removable: refusal == nil,
-                reason: refusal
+                reason: refusal,
             )
         })
     }
@@ -626,7 +626,7 @@ actor InstallBridge {
         _ transaction: UUID,
         after: UInt64,
         taskID: TaskID,
-        installationID: String
+        installationID: String,
     ) async throws -> InstallTransactionStatus {
         var cursor = after
         var missingSince: Date?
@@ -684,7 +684,7 @@ actor InstallBridge {
             case .unavailable, .interrupted:
                 throw ApelinError(
                     .unavailable,
-                    "Irisin is not responding. Make sure Irisin \(InstallServiceRequirement.minimumIrisin) or later is installed, then try again."
+                    "Irisin is not responding. Make sure Irisin \(InstallServiceRequirement.minimumIrisin) or later is installed, then try again.",
                 )
             default: throw ApelinError(.unavailable, Self.message(error))
             }
@@ -694,13 +694,13 @@ actor InstallBridge {
             NSLog("apelind-session: irisind lacks %@", missing.sorted().joined(separator: ", "))
             throw ApelinError(
                 .unavailable,
-                "This version of Irisin cannot install packages for Apelin. Update Irisin, then try again."
+                "This version of Irisin cannot install packages for Apelin. Update Irisin, then try again.",
             )
         }
         guard Self.sameRoot(info.installRoot, paths.installRoot) else {
             throw ApelinError(
                 .unavailable,
-                "Irisin installs to \(info.installRoot), but Apelin is installed in \(paths.installRoot). Make sure Apelin and Irisin are installed in the same location, then try again."
+                "Irisin installs to \(info.installRoot), but Apelin is installed in \(paths.installRoot). Make sure Apelin and Irisin are installed in the same location, then try again.",
             )
         }
         checkedService = true
@@ -736,7 +736,7 @@ actor InstallBridge {
         try FileManager.default.createDirectory(
             at: paths.staging,
             withIntermediateDirectories: true,
-            attributes: [.posixPermissions: 0o700]
+            attributes: [.posixPermissions: 0o700],
         )
         let output = open(staged.path, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0o600)
         guard output >= 0 else { throw ApelinError(.internal, "staging: \(String(cString: strerror(errno)))") }
@@ -814,7 +814,7 @@ actor InstallBridge {
             version: status.version,
             failure: status.failure,
             failureText: status.failureText,
-            finishedAt: Date()
+            finishedAt: Date(),
         )
     }
 
@@ -822,7 +822,7 @@ actor InstallBridge {
         var fields: [String: JSONValue] = [
             "seq": .number(Double(event.sequence)),
             "kind": .string(event.kind),
-            "text": .string(event.text)
+            "text": .string(event.text),
         ]
         if let value = event.phase {
             fields["phase"] = .string(value)

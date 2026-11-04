@@ -79,7 +79,7 @@ private extension EditMenuController {
         // offers Replace through the responder chain instead.
         let selector = NSSelectorFromString("replaceTextInSelectedHighlightedRange")
         UIMenuController.shared.menuItems = [
-            UIMenuItem(title: L10n.Menu.ItemTitle.replace, action: selector)
+            UIMenuItem(title: L10n.Menu.ItemTitle.replace, action: selector),
         ]
     }
 

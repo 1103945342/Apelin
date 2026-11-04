@@ -9,7 +9,7 @@ struct DependencyClosure {
     /// which `swiftc` does not ask for; it stays out.
     static let swiftExcluded: Set<String> = [
         "usr/lib/swift/host/compiler/lib_InternalSwiftScan.dylib",
-        "usr/lib/swift/host/lib_InternalSwiftScan.dylib"
+        "usr/lib/swift/host/lib_InternalSwiftScan.dylib",
     ]
     /// Links the Swift component keeps as links: the driver names, which the
     /// frontend tells apart by `argv[0]`, and the clang resource folder Swift's
@@ -80,7 +80,7 @@ struct DependencyClosure {
             guard FileManager.default.fileExists(atPath: url.path) else { continue }
             guard let enumerator = FileManager.default.enumerator(
                 at: url,
-                includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey]
+                includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey],
             ) else {
                 throw ToolchainFailure("Cannot enumerate compiler resources")
             }
@@ -143,7 +143,7 @@ struct DependencyClosure {
         var links: [String: String] = [:]
         for path in Self.swiftLinks {
             let target = try FileManager.default.destinationOfSymbolicLink(
-                atPath: root.appendingPathComponent(path).path
+                atPath: root.appendingPathComponent(path).path,
             )
             guard let resolved = Self.lexicallyResolved(target, from: path),
                   selected[resolved] != nil || selected.keys.contains(where: { $0.hasPrefix(resolved + "/") })
@@ -197,7 +197,7 @@ struct DependencyClosure {
                 let resolved = try canonical(file)
                 guard contained(resolved, in: root) else { throw ToolchainFailure("Dependency outside toolchain") }
                 return MachOImage.flattened(
-                    resolved.pathComponents.dropFirst(root.pathComponents.count).joined(separator: "/")
+                    resolved.pathComponents.dropFirst(root.pathComponents.count).joined(separator: "/"),
                 )
             }
             // Source has Versions/A; output does not. The outer alias resolves the source layout.

@@ -16,7 +16,7 @@ public struct TransferLimits: Sendable {
         manifestBytes: Int = 64 << 20,
         payloadBytes: Int64 = 32 << 30,
         members: Int = 1_000_000,
-        depth: Int = 64
+        depth: Int = 64,
     ) {
         self.manifestBytes = manifestBytes
         self.payloadBytes = payloadBytes
@@ -45,7 +45,7 @@ struct TransferArchiveWriter {
         try check(
             archive,
             archive_write_open_filename(archive, destination.path),
-            "create \(destination.lastPathComponent)"
+            "create \(destination.lastPathComponent)",
         )
 
         try ArchiveExtractor.withUTF8Names {
@@ -75,7 +75,7 @@ struct TransferArchiveWriter {
                         name,
                         type: S_IFREG,
                         mode: member.executable == true ? 0o755 : 0o644,
-                        size: size
+                        size: size,
                     )
                     let descriptor = try TransferDigest.openFile(source, inside: root)
                     defer { close(descriptor) }
@@ -100,7 +100,7 @@ struct TransferArchiveWriter {
                     guard count == size, TransferDigest.hex(hash.finalize()) == member.sha256 else {
                         throw ApelinError(
                             .conflict,
-                            "\(member.path) changed while it was being exported; export it again"
+                            "\(member.path) changed while it was being exported; export it again",
                         )
                     }
                 }
@@ -116,7 +116,7 @@ struct TransferArchiveWriter {
         type: mode_t,
         mode: mode_t,
         size: Int64,
-        link: String? = nil
+        link: String? = nil,
     ) throws {
         guard let entry = archive_entry_new() else { throw ApelinError(.internal, "archive_entry_new failed") }
         defer { archive_entry_free(entry) }
@@ -184,7 +184,7 @@ struct TransferArchiveReader {
     func extract(
         _ input: ArchiveExtractor.Input,
         into destination: URL,
-        reporter: TaskReporter
+        reporter: TaskReporter,
     ) throws -> TransferManifest {
         try withArchive(input) { archive in
             let manifest = try readManifest(archive)
@@ -259,7 +259,7 @@ struct TransferArchiveReader {
             guard manifest.toolchain != nil else {
                 throw ApelinError(
                     .badRequest,
-                    "The file is missing its toolchain information. Export the toolchain again."
+                    "The file is missing its toolchain information. Export the toolchain again.",
                 )
             }
         case .sdk:
@@ -270,7 +270,7 @@ struct TransferArchiveReader {
             guard manifest.project != nil else {
                 throw ApelinError(
                     .badRequest,
-                    "The file is missing its project information. Export the project again."
+                    "The file is missing its project information. Export the project again.",
                 )
             }
         }
@@ -318,7 +318,7 @@ struct TransferArchiveReader {
         _ archive: OpaquePointer,
         manifest: TransferManifest,
         into root: URL,
-        reporter: TaskReporter
+        reporter: TaskReporter,
     ) throws {
         var expected: [String: TransferMember] = [:]
         for member in manifest.members {
@@ -344,7 +344,7 @@ struct TransferArchiveReader {
             guard let name = Self.name(of: entry), name.hasPrefix(TransferManifest.payloadPrefix) else {
                 throw ApelinError(
                     .badRequest,
-                    "the file carries \(Self.name(of: entry) ?? "a nameless member"), outside its payload"
+                    "the file carries \(Self.name(of: entry) ?? "a nameless member"), outside its payload",
                 )
             }
             let path = String(name.dropFirst(TransferManifest.payloadPrefix.count))
@@ -353,7 +353,7 @@ struct TransferArchiveReader {
             guard let member = expected.removeValue(forKey: relative) else {
                 throw ApelinError(
                     .badRequest,
-                    "the file carries \(relative), which its manifest does not list (or lists once)"
+                    "the file carries \(relative), which its manifest does not list (or lists once)",
                 )
             }
             guard archive_entry_hardlink(entry) == nil, archive_entry_hardlink_utf8(entry) == nil else {
@@ -388,7 +388,7 @@ struct TransferArchiveReader {
                 let descriptor = open(
                     target.path,
                     O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC,
-                    member.executable == true ? 0o755 : 0o644
+                    member.executable == true ? 0o755 : 0o644,
                 )
                 guard descriptor >= 0 else { throw ArchiveExtractor.posix("create \(relative)") }
                 defer { close(descriptor) }
@@ -420,7 +420,7 @@ struct TransferArchiveReader {
                 guard count == size, TransferDigest.hex(hash.finalize()) == member.sha256 else {
                     throw ApelinError(
                         .badRequest,
-                        "This file is damaged or was changed after it was exported (\(relative)). Export it again."
+                        "This file is damaged or was changed after it was exported (\(relative)). Export it again.",
                     )
                 }
             }
@@ -454,7 +454,7 @@ enum TransferDigest {
     static func file(
         _ url: URL,
         inside root: URL? = nil,
-        progress: (Int64) throws -> Void = { _ in }
+        progress: (Int64) throws -> Void = { _ in },
     ) throws -> (sha256: String, size: Int64) {
         let descriptor = try openFile(url, inside: root)
         defer { close(descriptor) }

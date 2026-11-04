@@ -34,7 +34,7 @@ struct EventCoalescingTests {
             .thinkingDelta("Let me look."),
             .toolCallPreparing,
             .textDelta("Here it is."),
-            .thinkingDelta("And")
+            .thinkingDelta("And"),
         ])
         await reopened.close()
     }
@@ -63,7 +63,7 @@ struct EventCoalescingTests {
         }
         #expect(received.map(\.event) == [
             .thinkingDelta(String(repeating: "思考", count: 86)),
-            .thinkingDelta("尾")
+            .thinkingDelta("尾"),
         ])
         #expect(received.map(\.seq) == [1, 2])
         await log.close()
@@ -84,11 +84,11 @@ struct EventCoalescingTests {
                 project: home.project,
                 provider: .registered(faux.getModel()),
                 approval: ApprovalPolicy(mode: .relaxed),
-                dataRoot: home.dataRoot
+                dataRoot: home.dataRoot,
             ),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            credentials: DeliveredCredentialSource()
+            credentials: DeliveredCredentialSource(),
         )
         let stream = try await session.events(afterSeq: 0)
         let clock = ContinuousClock()

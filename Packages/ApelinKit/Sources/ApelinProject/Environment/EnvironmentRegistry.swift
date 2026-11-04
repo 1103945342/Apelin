@@ -32,7 +32,7 @@ public struct RegisteredToolchain: Codable, Sendable, Equatable {
         newestSDK: String? = nil,
         swiftRequirements: SwiftToolchainRequirements? = nil,
         clangModuleCPUFeatures: [String]? = nil,
-        compatibility: ToolchainCompatibility? = nil
+        compatibility: ToolchainCompatibility? = nil,
     ) {
         self.id = id
         self.digest = digest
@@ -167,7 +167,7 @@ public struct EnvironmentStores: EnvironmentRegistry {
                 newestSDK: record.newestSDK,
                 swiftRequirements: record.swiftRequirements,
                 clangModuleCPUFeatures: record.clangModuleCPUFeatures,
-                compatibility: record.compatibility
+                compatibility: record.compatibility,
             )
         }
     }
@@ -185,7 +185,7 @@ public struct EnvironmentStores: EnvironmentRegistry {
                 digest: Self.tagged(digest),
                 version: record.version,
                 path: BootstrapRootPath.rebased(record.path, onto: dataFolder.root.path),
-                targets: record.targets
+                targets: record.targets,
             )
         }
     }

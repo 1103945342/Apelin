@@ -72,7 +72,7 @@ final class FeedbackEditTests: XCTestCase {
                         "title": issue.title,
                         "body": issue.body.map { $0 as Any } ?? NSNull(),
                         "state": issue.state,
-                        "user": ["login": issue.author]
+                        "user": ["login": issue.author],
                     ]
                     if issue.isPullRequest {
                         object["pull_request"] = ["url": "https://api.github.com/repos/owngoal-dev/Apelin/pulls/\(number)"]
@@ -106,7 +106,7 @@ final class FeedbackEditTests: XCTestCase {
         github.set(number, IssueGitHub.Issue(
             title: "The build log stops early",
             body: FeedbackRules.issueBody("It ends before the link step.", footer: Self.footer),
-            author: author
+            author: author,
         ))
     }
 
@@ -116,7 +116,7 @@ final class FeedbackEditTests: XCTestCase {
             title: title,
             body: body,
             expectedTitle: "The build log stops early",
-            expectedBody: "It ends before the link step."
+            expectedBody: "It ends before the link step.",
         )
     }
 
@@ -135,7 +135,7 @@ final class FeedbackEditTests: XCTestCase {
             footer: Self.footer,
             author: "someone",
             state: "open",
-            isAuthor: true
+            isAuthor: true,
         ), "the login is compared without case")
         for sent in github.requests {
             XCTAssertEqual(sent.httpMethod, "GET")
@@ -143,7 +143,7 @@ final class FeedbackEditTests: XCTestCase {
         }
         XCTAssertEqual(
             Set(github.requests.compactMap(\.url?.absoluteString)),
-            ["https://api.github.com/repos/owngoal-dev/Apelin/issues/12", "https://api.github.com/user"]
+            ["https://api.github.com/repos/owngoal-dev/Apelin/issues/12", "https://api.github.com/user"],
         )
 
         // Another account's issue, and one whose footer and body are gone.
@@ -163,7 +163,7 @@ final class FeedbackEditTests: XCTestCase {
         github.set(6, IssueGitHub.Issue(
             title: "Moved",
             body: "Body",
-            htmlURL: "https://github.com/someone/elsewhere/issues/1"
+            htmlURL: "https://github.com/someone/elsewhere/issues/1",
         ))
         let service = try service(home, github: github)
         let refused: [(number: Int, words: String)] = [(5, "pull request"), (6, "no longer an issue"), (7, "has no issue #7")]
@@ -198,7 +198,7 @@ final class FeedbackEditTests: XCTestCase {
         try PropertyListSerialization.data(
             fromPropertyList: ["CFBundleShortVersionString": "0.3.0", "CFBundleVersion": "23"],
             format: .binary,
-            options: 0
+            options: 0,
         ).write(to: app.appendingPathComponent("Info.plist"))
         let github = IssueGitHub()
         filed(github)
@@ -209,7 +209,7 @@ final class FeedbackEditTests: XCTestCase {
             number: 12,
             url: "https://github.com/owngoal-dev/Apelin/issues/12",
             title: "The build log stops early",
-            body: "It ends before the link step, on roothide and rootless."
+            body: "It ends before the link step, on roothide and rootless.",
         ))
         XCTAssertEqual(github.edits, [["body": "It ends before the link step, on roothide and rootless.\n\n---\n" + Self.footer]])
         let patch = try XCTUnwrap(github.requests.last)
@@ -222,7 +222,7 @@ final class FeedbackEditTests: XCTestCase {
             title: "  The build log stops before linking ",
             body: "It ends before the link step, on roothide and rootless.",
             expectedTitle: "The build log stops early",
-            expectedBody: "It ends before the link step, on roothide and rootless."
+            expectedBody: "It ends before the link step, on roothide and rootless.",
         ))
         XCTAssertEqual(retitled.title, "The build log stops before linking")
         XCTAssertEqual(github.edits.last, ["title": "The build log stops before linking"])
@@ -253,7 +253,7 @@ final class FeedbackEditTests: XCTestCase {
         XCTAssertEqual(read.body, "It ends before the link step.\r\nAlso on iOS 26.")
         _ = try await service.edit(FeedbackEditRequest(
             number: 12, title: nil, body: read.body + "\r\nAnd on 17.",
-            expectedTitle: read.title, expectedBody: read.body
+            expectedTitle: read.title, expectedBody: read.body,
         ))
         XCTAssertEqual(github.edits, [["body": read.body + "\r\nAnd on 17.\r\n\r\n---\r\n" + Self.footer]])
 
@@ -263,7 +263,7 @@ final class FeedbackEditTests: XCTestCase {
         github.set(12, retitled)
         do {
             _ = try await service.edit(FeedbackEditRequest(
-                number: 12, title: "Mine", body: nil, expectedTitle: read.title, expectedBody: read.body + "\r\nAnd on 17."
+                number: 12, title: "Mine", body: nil, expectedTitle: read.title, expectedBody: read.body + "\r\nAnd on 17.",
             ))
             XCTFail("an edit made against an older title went through")
         } catch let error as ApelinError {
@@ -303,7 +303,7 @@ final class FeedbackEditTests: XCTestCase {
             edit(body: FeedbackRules.issueBody("Body", footer: Self.footer)),
             edit(),
             edit(title: "  The build log stops early ", body: "It ends before the link step."),
-            edit(body: "New", number: 0)
+            edit(body: "New", number: 0),
         ]
         for request in refused {
             do {
@@ -330,7 +330,7 @@ final class FeedbackEditTests: XCTestCase {
         let signedOut = try service(home, github: github, signedIn: false)
         for call in [
             { _ = try await signedOut.read(FeedbackReadRequest(number: 12)) },
-            { _ = try await signedOut.edit(self.edit(body: "Broadened.")) }
+            { _ = try await signedOut.edit(self.edit(body: "Broadened.")) },
         ] as [() async throws -> Void] {
             do {
                 try await call()

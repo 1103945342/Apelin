@@ -22,7 +22,7 @@ struct FileReadImageTests {
             policy: ApprovalPolicy(mode: .confirm),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            gate: ApprovalGate { _ in }
+            gate: ApprovalGate { _ in },
         )
     }
 
@@ -190,7 +190,7 @@ struct FileReadImageTests {
         try #require(Self.encoded([Self.picture(width: 10, height: 10)], as: "public.png")).write(to: outside)
         try FileManager.default.createSymbolicLink(
             atPath: home.projectURL.appendingPathComponent("linked.png").path,
-            withDestinationPath: outside.path
+            withDestinationPath: outside.path,
         )
         let tools = try ProjectFileTools(root: ScopedRoot(home.projectURL))
 
@@ -266,7 +266,7 @@ struct FileReadImageTests {
                 bitsPerComponent: 8,
                 bytesPerRow: 4,
                 space: CGColorSpace(name: CGColorSpace.sRGB)!,
-                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue,
             )!
             context.draw(image, in: CGRect(x: 0, y: 0, width: 1, height: 1))
             switch (pixel[0] > 200, pixel[1] > 200, pixel[2] > 200) {
@@ -286,7 +286,7 @@ struct FileReadImageTests {
         height: Int,
         alpha: Bool = false,
         color: (Double, Double, Double) = (1, 0, 0),
-        noise: Bool = false
+        noise: Bool = false,
     ) -> CGImage {
         let context = CGContext(
             data: nil,
@@ -295,7 +295,7 @@ struct FileReadImageTests {
             bitsPerComponent: 8,
             bytesPerRow: width * 4,
             space: CGColorSpace(name: CGColorSpace.sRGB)!,
-            bitmapInfo: (alpha ? CGImageAlphaInfo.premultipliedLast : .noneSkipLast).rawValue
+            bitmapInfo: (alpha ? CGImageAlphaInfo.premultipliedLast : .noneSkipLast).rawValue,
         )!
         if noise {
             // xorshift64: the same noise every run.

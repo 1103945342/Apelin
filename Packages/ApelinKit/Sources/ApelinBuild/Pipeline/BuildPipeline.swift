@@ -56,7 +56,7 @@ public final class BuildPipeline: @unchecked Sendable {
     public func run() throws -> BuildProducts {
         try FileManager.default.createDirectory(
             at: work.appendingPathComponent("tmp"),
-            withIntermediateDirectories: true
+            withIntermediateDirectories: true,
         )
         FileManager.default.createFile(atPath: logURL.path, contents: nil)
         logHandle = try FileHandle(forWritingTo: logURL)
@@ -112,7 +112,7 @@ public final class BuildPipeline: @unchecked Sendable {
             "HOME": inputs.home,
             "TMPDIR": work.appendingPathComponent("tmp").path + "/",
             "LANG": "C",
-            "LC_ALL": "C"
+            "LC_ALL": "C",
         ]
     }
 
@@ -123,13 +123,13 @@ public final class BuildPipeline: @unchecked Sendable {
         _ executable: String,
         _ arguments: [String],
         label: String,
-        workingDirectory: String? = nil
+        workingDirectory: String? = nil,
     ) throws -> ToolResult {
         let invocation = ToolInvocation(
             executable: executable,
             arguments: arguments,
             workingDirectory: workingDirectory ?? root,
-            environment: environment
+            environment: environment,
         )
         log("$ " + invocation.displayLine)
         let result = try ToolRunner.run(invocation, cancellation: cancellation) { [self] line in log(line) }
@@ -166,7 +166,7 @@ public final class BuildPipeline: @unchecked Sendable {
             ("APELIN_PACKAGE_ID", "\"\(project.package.id)\""),
             ("APELIN_VERSION", "\"\(project.package.version)\""),
             (bootstrapDefine, "1"),
-            (configurationDefine, "1")
+            (configurationDefine, "1"),
         ]
         out += (configuration.defines ?? [:]).sorted { $0.key < $1.key }.map { ($0.key, $0.value) }
         return out
@@ -194,7 +194,7 @@ public final class BuildPipeline: @unchecked Sendable {
                 try out.libraryDirectories.append(ProjectFiles.resolve(stubs, in: found.root))
             } else if component.linkStubDirectories != nil {
                 throw BuildFailure(
-                    "\(reference.extension) (\(reference.component)) has no link stubs for \(inputs.bootstrap.rawValue)"
+                    "\(reference.extension) (\(reference.component)) has no link stubs for \(inputs.bootstrap.rawValue)",
                 )
             }
             let prefix = inputs.bootstrap == .rootless ? "/var/jb" : ""
@@ -244,7 +244,7 @@ public final class BuildPipeline: @unchecked Sendable {
             if project.language == .swift {
                 let object = directory + "/\(product.name).o"
                 var argv = [
-                    "-sdk", inputs.sdk.path, "-target", swiftTarget(arch), "-wmo", "-c", "-module-name", product.name
+                    "-sdk", inputs.sdk.path, "-target", swiftTarget(arch), "-wmo", "-c", "-module-name", product.name,
                 ] + swiftToolFlags
                 if product.type == .dylib || product.type == .bundle {
                     argv.append("-parse-as-library")
@@ -269,7 +269,7 @@ public final class BuildPipeline: @unchecked Sendable {
                     var argv = targetFlags(arch)
                     argv += [
                         "-O\(configuration.optimization)", "-Wall", "-Wextra", "-Werror=unguarded-availability-new",
-                        "-fvisibility=hidden", "-ffile-prefix-map=\(root)=.", "-fno-color-diagnostics"
+                        "-fvisibility=hidden", "-ffile-prefix-map=\(root)=.", "-fno-color-diagnostics",
                     ]
                     if configuration.debugInfo {
                         argv.append("-g")
@@ -366,7 +366,7 @@ public final class BuildPipeline: @unchecked Sendable {
                 "\(product.id): the linker bound the \(slice.architecture) slice without pointer authentication, "
                     + "so it would crash when it runs. CLT 15.0's linker does this with -undefined dynamic_lookup "
                     + "or suppress: name each symbol left to load time with -Wl,-U,_symbol instead, or link with "
-                    + "another toolchain."
+                    + "another toolchain.",
             )
         }
     }
@@ -409,9 +409,9 @@ public final class BuildPipeline: @unchecked Sendable {
                                 code: "plist.invalid",
                                 severity: .error,
                                 message: "not a property list",
-                                file: resource.relative
-                            )
-                        ]
+                                file: resource.relative,
+                            ),
+                        ],
                     )
                 }
                 try PropertyListSerialization.data(fromPropertyList: value, format: .xml, options: 0)
@@ -462,7 +462,7 @@ public final class BuildPipeline: @unchecked Sendable {
             let inspection = try image.inspect(slice)
             guard inspection.segments.contains(where: { $0.name == "__DWARF" && $0.sections.contains("__debug_info") }) else {
                 throw BuildFailure(
-                    "the dSYM of \(product.id) has no __debug_info for \(slice.architecture): build with debugInfo"
+                    "the dSYM of \(product.id) has no __debug_info for \(slice.architecture): build with debugInfo",
                 )
             }
         }
@@ -473,7 +473,7 @@ public final class BuildPipeline: @unchecked Sendable {
         }
         log(
             "dSYM \((output as NSString).lastPathComponent): "
-                + productUUIDs.sorted { $0.key < $1.key }.map { "\($0.key) \($0.value)" }.joined(separator: ", ")
+                + productUUIDs.sorted { $0.key < $1.key }.map { "\($0.key) \($0.value)" }.joined(separator: ", "),
         )
         dsyms.append(BuildProducts.DSYM(product: product.id, path: output, uuids: dsymUUIDs))
     }
@@ -490,7 +490,7 @@ public final class BuildPipeline: @unchecked Sendable {
         do {
             try CodeSigner.sign(
                 fileAt: URL(fileURLWithPath: binary),
-                options: .init(identifier: identifier, entitlements: entitlements)
+                options: .init(identifier: identifier, entitlements: entitlements),
             )
         } catch {
             throw BuildFailure("signing \(identifier) failed: \(error)")
@@ -502,7 +502,7 @@ public final class BuildPipeline: @unchecked Sendable {
         id: String,
         interpreter: ProjectDocument.ScriptInterpreter,
         file: String,
-        arguments: [String]
+        arguments: [String],
     ) throws {
         let base = inputs.installRoot == "/" ? "" : inputs.installRoot
         let candidates = [base + "/usr/bin/" + interpreter.rawValue, base + "/bin/" + interpreter.rawValue]
@@ -546,7 +546,7 @@ public final class BuildPipeline: @unchecked Sendable {
                 path: bundles[product.id] ?? binary,
                 executable: binary,
                 digest: CanonicalJSON.sha256Tag(Data(contentsOf: URL(fileURLWithPath: binary))),
-                uuids: uuids(of: binary)
+                uuids: uuids(of: binary),
             ))
         }
         return BuildProducts(products: products, dsyms: dsyms, log: logURL.path)

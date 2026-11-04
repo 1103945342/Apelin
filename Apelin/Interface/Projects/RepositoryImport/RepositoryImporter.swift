@@ -29,7 +29,7 @@ enum RepositoryImporter {
     static func run(
         _ request: RepositoryImportPlan.Request,
         name: String,
-        update: @escaping @MainActor (ProgressCard.Status) -> Void
+        update: @escaping @MainActor (ProgressCard.Status) -> Void,
     ) async throws -> ProjectSummary {
         let service = ApelinService.app
         // Each request is sent whole, never cut off by a cancel, so what it
@@ -38,7 +38,7 @@ enum RepositoryImporter {
             try await service.projectCreate(ProjectCreateRequest(
                 templateID: workspaceTemplate,
                 name: name,
-                automaticallyName: false
+                automaticallyName: false,
             ))
         }.value
         var clone: TaskHandle?
@@ -49,7 +49,7 @@ enum RepositoryImporter {
                 try await service.gitCloneInto(GitCloneIntoRequest(
                     projectID: created.projectID,
                     url: request.address,
-                    branch: request.branch
+                    branch: request.branch,
                 ))
             }.value
             clone = handle
@@ -64,7 +64,7 @@ enum RepositoryImporter {
             }
             var failure = error as? RepositoryImportFailure ?? RepositoryImportFailure(
                 message: error is CancellationError ? String(localized: "The task was cancelled.") : error.readableMessage,
-                reason: (error as? ApelinError)?.reason?.rawValue
+                reason: (error as? ApelinError)?.reason?.rawValue,
             )
             failure.leftProject = removed ? nil : created.name
             throw failure
@@ -73,7 +73,7 @@ enum RepositoryImporter {
             name: created.name,
             kind: .workspace,
             displayName: created.name,
-            projectID: projectID
+            projectID: projectID,
         )
     }
 
@@ -82,7 +82,7 @@ enum RepositoryImporter {
     /// `apelin-project.json` came with it.
     private static func follow(
         _ handle: TaskHandle,
-        update: @escaping @MainActor (ProgressCard.Status) -> Void
+        update: @escaping @MainActor (ProgressCard.Status) -> Void,
     ) async throws -> String? {
         var progress = EnvironmentTaskProgress(work: .repositoryImport)
         var reason: String?
@@ -97,14 +97,14 @@ enum RepositoryImporter {
             }
             update(ProgressCard.Status(
                 subtitle: progress.stage.map(EnvironmentTaskProgress.activeTitle(of:)) ?? "",
-                fraction: progress.fraction
+                fraction: progress.fraction,
             ))
         }
         try Task.checkCancellation()
         guard progress.state == .succeeded else {
             throw RepositoryImportFailure(
                 message: EnvironmentTaskProgress.readableDetail(progress.outcomeMessage),
-                reason: reason
+                reason: reason,
             )
         }
         return projectID
@@ -145,7 +145,7 @@ enum RepositoryImporter {
         do {
             _ = try await service.projectDelete(ProjectDeleteRequest(
                 projectID: created.projectID,
-                projectName: created.name
+                projectName: created.name,
             ))
             return true
         } catch {

@@ -77,7 +77,7 @@ struct EmptyVariableGuardTests {
             "APELIN_ARCHITECTURE": "iphoneos-arm64e",
             "APELIN_BUILD_ID": "build",
             "APELIN_PREFIX": "",
-            "TMPDIR": temporary.path + "/"
+            "TMPDIR": temporary.path + "/",
         ]
         var emptied = built
         emptied["APELIN_PROJECT_ROOT"] = ""

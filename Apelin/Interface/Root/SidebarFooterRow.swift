@@ -39,7 +39,7 @@ final class SidebarFooterRow: UIView {
             $0.accessibilityLabel = title
             $0.addAction(
                 UIAction { [weak self] _ in self?.action() },
-                for: .touchUpInside
+                for: .touchUpInside,
             )
         }
 

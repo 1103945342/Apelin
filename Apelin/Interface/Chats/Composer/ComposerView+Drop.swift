@@ -10,7 +10,7 @@ extension ComposerView: UIDropInteractionDelegate {
         ComposerDropPolicy.accepts(
             session.items.map(\.itemProvider),
             fromThisApp: session.localDragSession != nil,
-            inputCovered: approvalSection.isPresentingRequest
+            inputCovered: approvalSection.isPresentingRequest,
         )
     }
 

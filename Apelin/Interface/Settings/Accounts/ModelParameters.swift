@@ -33,7 +33,7 @@ enum ModelParameters {
         else { return Values() }
         return Values(
             contextWindow: stored["contextWindow"] as? Int,
-            maxTokens: stored["maxTokens"] as? Int
+            maxTokens: stored["maxTokens"] as? Int,
         )
     }
 

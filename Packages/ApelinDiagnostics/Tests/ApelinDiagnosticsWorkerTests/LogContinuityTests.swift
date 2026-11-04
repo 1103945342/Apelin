@@ -110,7 +110,7 @@ private final class TimelineIcli: IcliSurface, @unchecked Sendable {
         filter: IcliSyslogFilter,
         seconds: Double,
         handler: @escaping @Sendable (LogEntry) -> Bool,
-        onEnd: @escaping @Sendable (String) -> Void
+        onEnd: @escaping @Sendable (String) -> Void,
     ) throws -> any IcliSyslogStream {
         let stream = FakeSyslogStream(seconds: seconds, handler: handler, onEnd: onEnd)
         lock.withLock {
@@ -163,7 +163,7 @@ private final class TimelineIcli: IcliSurface, @unchecked Sendable {
         index _: Int,
         appear _: Bool,
         timeout _: Double,
-        interval _: Double
+        interval _: Double,
     ) throws -> [String: Any] {
         throw unused()
     }

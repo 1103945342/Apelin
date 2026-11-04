@@ -51,12 +51,12 @@ extension SessionHost {
     private func approveBuild(
         _ build: inout BuildStartRequest,
         _ request: HostRequest,
-        session: String?
+        session: String?,
     ) async -> HostReply? {
         let check = HostRequest(
             request: (try? WireRequest(ProjectCheckRequest(projectID: build.projectID))) ?? request.request,
             descriptors: [],
-            caller: .app
+            caller: .app,
         )
         let (reply, _) = await forward(check, to: .build)
         if case let .success(body) = reply.result,
@@ -72,8 +72,8 @@ extension SessionHost {
             return request.fail(
                 ApelinError(
                     .denied,
-                    "approval required: the host could not compute the build description of \(build.projectID), so it cannot tell it matches the template"
-                )
+                    "approval required: the host could not compute the build description of \(build.projectID), so it cannot tell it matches the template",
+                ),
             )
         }
         do {
@@ -81,8 +81,8 @@ extension SessionHost {
                 return request.fail(
                     ApelinError(
                         .denied,
-                        "approval required: the build description \(digest) of project \(build.projectID) changed since the template and was never approved"
-                    )
+                        "approval required: the build description \(digest) of project \(build.projectID) changed since the template and was never approved",
+                    ),
                 )
             }
         } catch {

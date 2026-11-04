@@ -99,7 +99,7 @@ public struct ToolHostAttachment: Codable, Sendable, Equatable {
         name: String? = nil,
         mimeType: String? = nil,
         byteCount: Int,
-        sha256: String
+        sha256: String,
     ) {
         self.descriptor = descriptor
         self.name = name
@@ -130,7 +130,7 @@ public struct ToolHostCallRequest: OperationRequest {
         tool: String,
         arguments: JSONValue = .object([:]),
         timeoutSeconds: Double? = nil,
-        attachments: [ToolHostAttachmentSlot] = []
+        attachments: [ToolHostAttachmentSlot] = [],
     ) {
         self.sessionID = sessionID
         self.tool = tool
@@ -196,7 +196,7 @@ public extension ApelinService {
     /// returned comes back with its read-only descriptor.
     func toolHostCall(
         _ request: ToolHostCallRequest,
-        files: [ToolHostOutgoingFile]
+        files: [ToolHostOutgoingFile],
     ) async throws -> (ToolHostCallResponse, [ToolHostReceivedFile]) {
         var request = request
         request.attachments = files.indices.map {
@@ -204,7 +204,7 @@ public extension ApelinService {
                 descriptor: DescriptorSlot(index: $0),
                 argument: files[$0].argument,
                 mimeType: files[$0].mimeType,
-                name: files[$0].name
+                name: files[$0].name,
             )
         }
         let (response, descriptors) = try await sendReturningDescriptors(request, descriptors: files.map(\.descriptor))

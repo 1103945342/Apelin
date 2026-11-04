@@ -16,7 +16,7 @@ struct JournalReviewTests {
         // file_write of a config file: the content is JSON inside a string
         let summary = redaction.arguments(.object([
             "path": .string("config.json"),
-            "content": .string(#"{"apiKey": "q9w8e7r6t5y4u3i2", "password": "hunter2hunter2"}"#)
+            "content": .string(#"{"apiKey": "q9w8e7r6t5y4u3i2", "password": "hunter2hunter2"}"#),
         ]), tool: "file_write")
         #expect(!summary.contains("q9w8e7r6t5y4u3i2"), "\(summary)")
         #expect(!summary.contains("hunter2hunter2"), "\(summary)")
@@ -47,7 +47,7 @@ struct JournalReviewTests {
     func `a sign-in that is missing is a failure, not a refusal`() {
         let outcome = ToolCallOutcome.of(
             ApelinError(.denied, "sign in", reason: .authenticationRequired),
-            stopped: false
+            stopped: false,
         )
         #expect(outcome.status == .failed, "\(outcome)")
     }
@@ -77,7 +77,7 @@ struct JournalReviewTests {
             try Data("x".utf8).write(to: url)
             try FileManager.default.setAttributes(
                 [.modificationDate: Date(timeIntervalSinceNow: Double(index - 10) * 60)],
-                ofItemAtPath: url.path
+                ofItemAtPath: url.path,
             )
         }
         DiagnosticJournal.prune(folder: folder, keeping: 2)
@@ -102,7 +102,7 @@ struct JournalReviewTests {
             name: "shell_run",
             result: AgentToolResult(content: [.text(TextContent(text: dump))]),
             isError: false,
-            runStopped: false
+            runStopped: false,
         )
         #expect(Date().timeIntervalSince(start) < 0.1, "the caller waits for neither redaction nor the file")
         let ended = await Self.line(in: file, containing: "Ended call=call-1 ")
@@ -128,7 +128,7 @@ struct JournalReviewTests {
                     signal.yield()
                 }
             },
-            journal: journal
+            journal: journal,
         )
         journal.toolStarted(id: "call-1", name: "shell_run", arguments: .object([:]))
         let call = Task {
@@ -137,7 +137,7 @@ struct JournalReviewTests {
                 toolCallID: "call-1",
                 arguments: .object(["argv": .array([.string("make")])]),
                 cancellation: nil,
-                mcp: nil
+                mcp: nil,
             )
         }
         for await _ in asked {
@@ -150,7 +150,7 @@ struct JournalReviewTests {
             name: "shell_run",
             result: AgentToolResult(content: [.text(TextContent(text: "aborted"))]),
             isError: true,
-            runStopped: false
+            runStopped: false,
         )
         let ended = await Self.line(in: file, containing: "Ended call=call-1 ")
         #expect(ended?.contains(" status=cancelled ") == true, "\(ended ?? "no line")")
@@ -167,18 +167,18 @@ struct JournalReviewTests {
             .message(fauxAssistantMessage("First: " + long)),
             .message(fauxAssistantMessage("Second: " + long)),
             .message(fauxAssistantMessage("Third: " + long)),
-            .message(fauxAssistantMessage("The user built a tweak; the hook loads."))
+            .message(fauxAssistantMessage("The user built a tweak; the hook loads.")),
         ])
         let session = try await AgentSession(
             configuration: AgentSessionConfiguration(
                 project: home.project,
                 provider: .registered(faux.getModel()),
                 approval: ApprovalPolicy(mode: .confirm),
-                dataRoot: home.dataRoot
+                dataRoot: home.dataRoot,
             ),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            credentials: DeliveredCredentialSource()
+            credentials: DeliveredCredentialSource(),
         )
         let stream = try await session.events(afterSeq: 0)
         for prompt in ["one", "two", "three"] {
@@ -194,7 +194,7 @@ struct JournalReviewTests {
         await session.close()
         let text = try String(
             contentsOf: home.dataRoot.agentJournals.appendingPathComponent(session.id + ".log"),
-            encoding: .utf8
+            encoding: .utf8,
         )
         #expect(!text.contains("Native compaction"), "\(text)")
         #expect(text.contains("| Ended outcome=compacted trigger=requested ") && text.contains(" summary=local "), "\(text)")

@@ -56,7 +56,7 @@ final class FeedbackTests: XCTestCase {
         let app = URL(fileURLWithPath: installRoot).appendingPathComponent("Applications/Apelin.app", isDirectory: true)
         try FileManager.default.createDirectory(at: app, withIntermediateDirectories: true)
         let plist: [String: Any] = [
-            "CFBundleIdentifier": "wiki.qaq.apelin", "CFBundleShortVersionString": version, "CFBundleVersion": build
+            "CFBundleIdentifier": "wiki.qaq.apelin", "CFBundleShortVersionString": version, "CFBundleVersion": build,
         ]
         try PropertyListSerialization.data(fromPropertyList: plist, format: .binary, options: 0)
             .write(to: app.appendingPathComponent("Info.plist"))
@@ -158,7 +158,7 @@ final class FeedbackTests: XCTestCase {
             FeedbackSendRequest(title: "Title", body: "It is Adas-iPhone that fails"),
             FeedbackSendRequest(title: "Title", body: "UDID 00008030-00112233445566AA"),
             FeedbackSendRequest(title: "Title", body: "token ghp_" + String(repeating: "A1b2", count: 9)),
-            FeedbackSendRequest(title: "Title", body: "the saved one, \(Self.token)")
+            FeedbackSendRequest(title: "Title", body: "the saved one, \(Self.token)"),
         ]
         for request in refused {
             do {
@@ -215,7 +215,7 @@ final class FeedbackTests: XCTestCase {
         let signedOut = try service(home, github: github, signedIn: false)
         for call in [
             { _ = try await signedOut.starState(FeedbackStarStateRequest()) },
-            { _ = try await signedOut.star(FeedbackStarRequest()) }
+            { _ = try await signedOut.star(FeedbackStarRequest()) },
         ] as [() async throws -> Void] {
             do {
                 try await call()
@@ -232,7 +232,7 @@ final class FeedbackTests: XCTestCase {
         let revoked = try service(home, github: github)
         for call in [
             { _ = try await revoked.starState(FeedbackStarStateRequest()) },
-            { _ = try await revoked.star(FeedbackStarRequest()) }
+            { _ = try await revoked.star(FeedbackStarRequest()) },
         ] as [() async throws -> Void] {
             do {
                 try await call()

@@ -92,11 +92,11 @@ actor InstallationStore {
         try FileManager.default.createDirectory(
             at: directory,
             withIntermediateDirectories: true,
-            attributes: [.posixPermissions: 0o700]
+            attributes: [.posixPermissions: 0o700],
         )
         try JSONCoding.encode(record).write(
             to: directory.appendingPathComponent(record.installationID + ".json"),
-            options: .atomic
+            options: .atomic,
         )
         records[record.installationID] = record
     }

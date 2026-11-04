@@ -11,7 +11,7 @@ func checkChatDeletion() {
     pinnedUntitled.isPinned = true
     let named = ChatRecord(
         summary: ChatSummary(title: "Hook the clock", lastInteraction: Date(), projectName: "Clock"),
-        sessionID: UUID().uuidString.lowercased()
+        sessionID: UUID().uuidString.lowercased(),
     )
     // one an agent opened, taken in at launch before its session had a title
     let opened = AgentSessionSummary(
@@ -19,7 +19,7 @@ func checkChatDeletion() {
         task: TaskHandle(taskID: TaskID("opened-task"), kind: .agent),
         state: .running,
         updatedAt: Date(),
-        parentSessionID: named.sessionID
+        parentSessionID: named.sessionID,
     )
     guard let adopted = ChatAdoption.record(session: opened, records: [named])?.summary else {
         preconditionFailure("the conversation an agent opened is taken in")

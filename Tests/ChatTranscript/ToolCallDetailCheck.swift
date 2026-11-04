@@ -12,12 +12,12 @@ func checkToolCallDetail() {
     let arguments = json([
         "reason": .string("Write the program"),
         "path": .string("Sources/main.c"),
-        "content": .string(source)
+        "content": .string(source),
     ])
     precondition(!arguments.contains("\n"), "the relay's arguments are one line, as the trace receives them")
     let written = ToolCallDetail(
         detail: arguments + "\n\n" + "Created Sources/main.c (68 bytes, +4 -0)",
-        title: "Write Sources/main.c"
+        title: "Write Sources/main.c",
     )
     precondition(written.sections.map(\.name) == ["reason", "path", "content", String(localized: "Result")],
                  "the reason, the short values, the long ones, then the result: \(written.sections.map(\.name))")
@@ -35,7 +35,7 @@ func checkToolCallDetail() {
         "recursive": .bool(true),
         "limit": .number(5),
         "filter": .object(["kind": .string("file")]),
-        "missing": .null
+        "missing": .null,
     ]), title: "List files")
     precondition(values.sections.map(\.value) == ["{\"kind\":\"file\"}", "5", "[1,20]", "null", "true"],
                  "anything but a string as compact JSON: \(values.sections.map(\.value))")
@@ -52,7 +52,7 @@ func checkToolCallDetail() {
     // A command's colours are not its words: the escapes go, the text stays.
     let coloured = ToolCallDetail(
         detail: "{\"reason\":\"Build\"}\n\n\u{1B}[31merror\u{1B}[0m: no such file",
-        title: "Build"
+        title: "Build",
     )
     precondition(coloured.sections.last?.value == "error: no such file",
                  "escape sequences are dropped: \(coloured.sections.last?.value ?? "nil")")

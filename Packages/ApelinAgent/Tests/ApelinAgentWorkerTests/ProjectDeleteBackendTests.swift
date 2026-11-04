@@ -14,7 +14,7 @@ struct ProjectDeleteBackendTests {
         let response = try await fixture.backend.deleteProject(ProjectDeleteToolRequest(
             context: fixture.context(),
             projectID: "p-weather",
-            folder: "Weather"
+            folder: "Weather",
         ))
         let sent = try #require(fixture.host.requests(ProjectDeleteRequest.self).first)
         #expect(fixture.host.requests.map(\.operation) == [.projectDelete])
@@ -28,11 +28,11 @@ struct ProjectDeleteBackendTests {
             id: "a", toolCallID: "c", tool: "apelin_project_delete", arguments: "{}", workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Deletes the project Weather.",
             detail: .projectDelete(ProjectDeleteApproval(projectID: "p-weather", folder: "Weather", displayName: "Rain Gauge")),
-            allowsSessionScope: false
+            allowsSessionScope: false,
         )
         let payload = EventRelay.approvalPayload(request)
         let expected: ApelinCore.JSONValue = .object(["projectDelete": .object([
-            "projectID": .string("p-weather"), "folder": .string("Weather"), "displayName": .string("Rain Gauge")
+            "projectID": .string("p-weather"), "folder": .string("Weather"), "displayName": .string("Rain Gauge"),
         ])])
         #expect(payload["detail"] == expected)
         #expect(payload["allowsSessionScope"] == .bool(false))

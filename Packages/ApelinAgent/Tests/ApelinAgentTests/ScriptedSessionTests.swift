@@ -16,7 +16,7 @@ struct ScriptedSessionTests {
         defer { provider.unregister() }
         provider.setResponses([.message(fauxAssistantMessage(#"{"title":"Greeting","projectName":null}"#))])
         let session = try await AgentSession(configuration: AgentSessionConfiguration(
-            project: home.project, provider: .registered(provider.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot
+            project: home.project, provider: .registered(provider.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot,
         ),
         backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
         var events = try await session.events(afterSeq: 0)
@@ -62,7 +62,7 @@ struct ScriptedSessionTests {
             : #"{"title":"Greeting","projectName":null}"#
         provider.setResponses([.message(fauxAssistantMessage(result))])
         let session = try await AgentSession(configuration: AgentSessionConfiguration(
-            project: home.project, provider: .registered(provider.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot
+            project: home.project, provider: .registered(provider.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot,
         ),
         backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
         let events = try await session.events(afterSeq: 0)
@@ -100,7 +100,7 @@ struct ScriptedSessionTests {
         }
         provider.setResponses(Array(repeating: unnamed, count: AgentSession.maximumTitleMisses + 2))
         let session = try await AgentSession(configuration: AgentSessionConfiguration(
-            project: home.project, provider: .registered(provider.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot
+            project: home.project, provider: .registered(provider.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot,
         ),
         backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
         for _ in 0 ..< AgentSession.maximumTitleMisses + 2 {
@@ -111,7 +111,7 @@ struct ScriptedSessionTests {
 
         provider.setResponses([.message(fauxAssistantMessage("```json\n{\"title\":\"Title view\",\"projectName\":null}\n```"))])
         let named = try await AgentSession(configuration: AgentSessionConfiguration(
-            project: home.project, provider: .registered(provider.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot
+            project: home.project, provider: .registered(provider.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot,
         ),
         backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
         await named.generateTitle(for: "Explain the title view")
@@ -137,7 +137,7 @@ struct ScriptedSessionTests {
         defer { original.unregister(); selected.unregister() }
         selected.setResponses([.message(fauxAssistantMessage("\"Inspect the title view\""))])
         let session = try await AgentSession(configuration: AgentSessionConfiguration(
-            project: home.project, provider: .registered(original.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot
+            project: home.project, provider: .registered(original.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot,
         ),
         backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
         try await session.configure(provider: .registered(selected.getModel()), thinking: .off, credentials: DeliveredCredentialSource())
@@ -165,12 +165,12 @@ struct ScriptedSessionTests {
         faux.setResponses([
             .message(fauxAssistantMessage(blocks: [
                 fauxText("Enabling the hook."),
-                fauxToolCall(name: "file_edit", arguments: ["reason": "Turn the hook on", "path": "Sources/Tweak.m", "old_text": "enabled = NO", "new_text": "enabled = YES"])
+                fauxToolCall(name: "file_edit", arguments: ["reason": "Turn the hook on", "path": "Sources/Tweak.m", "old_text": "enabled = NO", "new_text": "enabled = YES"]),
             ], stopReason: .toolUse)),
             .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_project_build", arguments: ["reason": "Build it", "configuration": "debug"])], stopReason: .toolUse)),
             .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_install", arguments: ["reason": "Install it", "artifact_id": "artifact-1", "artifact_digest": "deb-digest-1"])], stopReason: .toolUse)),
             .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_confirm_loaded", arguments: ["reason": "Check it loaded", "build_id": "build-1", "target": "SpringBoard"])], stopReason: .toolUse)),
-            .message(fauxAssistantMessage("Installed and loaded in SpringBoard."))
+            .message(fauxAssistantMessage("Installed and loaded in SpringBoard.")),
         ])
 
         let ledger = MockDigestLedger()
@@ -180,7 +180,7 @@ struct ScriptedSessionTests {
             project: home.project,
             provider: .registered(faux.getModel()),
             approval: ApprovalPolicy(mode: .confirm),
-            dataRoot: home.dataRoot
+            dataRoot: home.dataRoot,
         )
         let session = try await AgentSession(configuration: configuration, backend: backend, digests: ledger, credentials: DeliveredCredentialSource())
 
@@ -250,7 +250,7 @@ struct ScriptedSessionTests {
             "start:file_edit", "end:file_edit",
             "start:apelin_project_build", "end:apelin_project_build",
             "start:apelin_package_install", "ask:apelin_package_install", "resolved", "end:apelin_package_install",
-            "start:apelin_package_confirm_loaded", "end:apelin_package_confirm_loaded"
+            "start:apelin_package_confirm_loaded", "end:apelin_package_confirm_loaded",
         ])
         #expect(events.contains(.messageFinished(text: "Installed and loaded in SpringBoard.")))
         #expect(events.last == .finished(reason: .completed))
@@ -287,14 +287,14 @@ struct ScriptedSessionTests {
         defer { faux.unregister() }
         faux.setResponses([
             .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove it", "installation_id": "inst-1"])], stopReason: .toolUse)),
-            .message(fauxAssistantMessage("never reached"))
+            .message(fauxAssistantMessage("never reached")),
         ])
         let backend = MockBackend()
         let session = try await AgentSession(
             configuration: AgentSessionConfiguration(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot),
             backend: backend,
             digests: MockDigestLedger(),
-            credentials: DeliveredCredentialSource()
+            credentials: DeliveredCredentialSource(),
         )
         let stream = try await session.events(afterSeq: 0)
         try await session.prompt("remove it")
@@ -321,13 +321,13 @@ struct ScriptedSessionTests {
         defer { faux.unregister() }
         faux.setResponses([
             .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove it", "installation_id": "inst-1"])], stopReason: .toolUse)),
-            .message(fauxAssistantMessage("Removed, and noted."))
+            .message(fauxAssistantMessage("Removed, and noted.")),
         ])
         let session = try await AgentSession(
             configuration: AgentSessionConfiguration(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            credentials: DeliveredCredentialSource()
+            credentials: DeliveredCredentialSource(),
         )
         let stream = try await session.events(afterSeq: 0)
         try await session.prompt("remove it")
@@ -379,13 +379,13 @@ struct ScriptedSessionTests {
         defer { faux.unregister() }
         faux.setResponses([
             .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove it", "installation_id": "inst-1"])], stopReason: .toolUse)),
-            .message(fauxAssistantMessage("never reached"))
+            .message(fauxAssistantMessage("never reached")),
         ])
         let session = try await AgentSession(
             configuration: AgentSessionConfiguration(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            credentials: DeliveredCredentialSource()
+            credentials: DeliveredCredentialSource(),
         )
         let stream = try await session.events(afterSeq: 0)
         try await session.prompt("remove it")
@@ -447,13 +447,13 @@ struct ScriptedSessionTests {
                 }.joined(separator: "\n")
                 await seen.set(text)
                 return fauxAssistantMessage("Kept them.")
-            }
+            },
         ])
         let session = try await AgentSession(
             configuration: AgentSessionConfiguration(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            credentials: DeliveredCredentialSource()
+            credentials: DeliveredCredentialSource(),
         )
         let stream = try await session.events(afterSeq: 0)
         try await session.prompt("build it", messageID: UUID())
@@ -510,7 +510,7 @@ struct ScriptedSessionTests {
         defer { faux.unregister() }
         let offline = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet, userInfo: [
             NSLocalizedDescriptionKey: "The Internet connection appears to be offline.",
-            NSUnderlyingErrorKey: NSError(domain: "kCFErrorDomainCFNetwork", code: -1009)
+            NSUnderlyingErrorKey: NSError(domain: "kCFErrorDomainCFNetwork", code: -1009),
         ])
         // kept as kwwk's ProviderFailure.capture keeps it, and not retried,
         // as kwwk would a lost connection, for seconds
@@ -521,7 +521,7 @@ struct ScriptedSessionTests {
             configuration: AgentSessionConfiguration(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            credentials: DeliveredCredentialSource()
+            credentials: DeliveredCredentialSource(),
         )
         let stream = try await session.events(afterSeq: 0)
         try await session.prompt("build it", messageID: UUID())
@@ -547,7 +547,7 @@ struct ScriptedSessionTests {
                 configuration: AgentSessionConfiguration(project: home.project, provider: .githubCopilot(model: "claude-sonnet-5.5"), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot),
                 backend: MockBackend(),
                 digests: MockDigestLedger(),
-                credentials: DeliveredCredentialSource()
+                credentials: DeliveredCredentialSource(),
             )
         }
     }

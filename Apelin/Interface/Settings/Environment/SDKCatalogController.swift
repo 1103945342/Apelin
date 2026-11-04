@@ -28,7 +28,7 @@ final class SDKCatalogController: TableController {
 
     private lazy var dataSource = TableDataSource<String, String, Entry>(
         tableView: tableView,
-        identifier: { $0.sourceID + "\u{1f}" + $0.branch }
+        identifier: { $0.sourceID + "\u{1f}" + $0.branch },
     ) { [weak self] table, indexPath, entry in
         self?.cell(in: table, at: indexPath, entry: entry)
     }
@@ -83,7 +83,7 @@ final class SDKCatalogController: TableController {
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "ellipsis"),
-            menu: importMenu()
+            menu: importMenu(),
         ).then { $0.accessibilityLabel = String(localized: "Other Ways to Import") }
         tableView.register(ColumnTableCell.self, forCellReuseIdentifier: ColumnTableCell.reuseIdentifier)
         tableView.backgroundView = LoadingView()
@@ -125,7 +125,7 @@ final class SDKCatalogController: TableController {
                     source: source,
                     branch: branch,
                     version: version,
-                    installed: installed.contains(name.lowercased())
+                    installed: installed.contains(name.lowercased()),
                 )
             }
             return Section(id: id, source: source, entries: entries.sorted {
@@ -137,7 +137,7 @@ final class SDKCatalogController: TableController {
             : EmptyStateView(
                 symbolName: "tray",
                 title: String(localized: "No SDKs Yet"),
-                text: String(localized: "Use “From Link…” or “From Files…” in the menu to import an SDK.")
+                text: String(localized: "Use “From Link…” or “From Files…” in the menu to import an SDK."),
             )
         updateRows()
     }
@@ -147,7 +147,7 @@ final class SDKCatalogController: TableController {
         tableView.backgroundView = EmptyStateView(
             symbolName: "exclamationmark.triangle",
             title: String(localized: "Error"),
-            text: ToolchainController.unavailableText(error)
+            text: ToolchainController.unavailableText(error),
         )
         updateRows()
     }
@@ -174,7 +174,7 @@ final class SDKCatalogController: TableController {
             columns: [],
             metrics: metrics,
             symbol: entry.installed ? UIImage(systemName: "checkmark") : nil,
-            symbolTint: .secondaryLabel
+            symbolTint: .secondaryLabel,
         )
         cell.accessibilityTraits = entry.installed ? .staticText : .button
         return cell
@@ -203,7 +203,7 @@ final class SDKCatalogController: TableController {
         UIMenu(children: [
             UIDeferredMenuElement.uncached { [weak self] completion in
                 completion(self?.importMenuItems() ?? [])
-            }
+            },
         ])
     }
 
@@ -214,7 +214,7 @@ final class SDKCatalogController: TableController {
             },
             UIAction(title: String(localized: "From Files…"), image: UIImage(systemName: "folder")) { [weak self] _ in
                 self?.pickFile()
-            }
+            },
         ]
         let names = (try? FileManager.default.contentsOfDirectory(atPath: inbox.path))?
             .filter { !$0.hasPrefix(".") }
@@ -225,7 +225,7 @@ final class SDKCatalogController: TableController {
             return [UIMenu(
                 title: String(localized: "Put an SDK in \(folder), then reopen this menu."),
                 options: .displayInline,
-                children: otherSources
+                children: otherSources,
             )]
         }
         let items = names.map { name in
@@ -235,7 +235,7 @@ final class SDKCatalogController: TableController {
         }
         return [
             UIMenu(title: String(localized: "From Inbox"), options: .displayInline, children: items),
-            UIMenu(options: .displayInline, children: otherSources)
+            UIMenu(options: .displayInline, children: otherSources),
         ]
     }
 
@@ -244,7 +244,7 @@ final class SDKCatalogController: TableController {
             title: "Import from Link",
             message: "Enter an HTTPS link to a zip, tar.xz or tar.zst archive containing one iPhoneOS SDK.",
             placeholder: "https://",
-            doneTitle: "Import"
+            doneTitle: "Import",
         ) { [weak self] text in
             let link = text.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !link.isEmpty else { return }
@@ -277,7 +277,7 @@ final class SDKCatalogController: TableController {
             handle: handle,
             work: .sdkImport,
             title: String(localized: "Importing SDK"),
-            doneTitle: String(localized: "SDK Imported")
+            doneTitle: String(localized: "SDK Imported"),
         )
         page.onFinish = { [weak self] in
             self?.onImport?()

@@ -54,7 +54,7 @@ struct ConversationReader {
                 pending.append(ConversationApproval(
                     approvalID: id,
                     tool: Self.currentName(payload?["tool"]?.stringValue ?? ""),
-                    reason: payload?["reason"]?.stringValue ?? ""
+                    reason: payload?["reason"]?.stringValue ?? "",
                 ))
                 if seq > afterSeq {
                     askedAfter = true
@@ -130,7 +130,7 @@ struct ConversationReader {
             pendingApprovals: state == .ended ? [] : pending,
             lastSeq: resumeSeq ?? max(lastSeq.rawValue, afterSeq),
             truncated: truncated,
-            timedOut: timedOut
+            timedOut: timedOut,
         )
     }
 

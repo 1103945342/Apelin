@@ -65,7 +65,7 @@ public extension GitRepository {
         remote name: String,
         branch: String?,
         credentials: GitCredentialLookup? = nil,
-        progress: @escaping (GitCloneProgress) -> Bool = { _ in true }
+        progress: @escaping (GitCloneProgress) -> Bool = { _ in true },
     ) throws -> String {
         if let branch {
             try Self.checkBranchName(branch)
@@ -120,7 +120,7 @@ public extension GitRepository {
         {
             throw GitError(
                 .conflict,
-                "the branch \(branch) is not the one checked out (\(current.branch ?? "HEAD is detached")) and has commits \(remote)/\(branch) does not: they would be lost"
+                "the branch \(branch) is not the one checked out (\(current.branch ?? "HEAD is detached")) and has commits \(remote)/\(branch) does not: they would be lost",
             )
         }
 
@@ -150,7 +150,7 @@ public extension GitRepository {
             lostCommits: lost.shown,
             changedFiles: changed,
             overwrittenFiles: overwritten,
-            upToDate: onBranch && current.commit == remoteCommit && changed.isEmpty && overwritten.isEmpty
+            upToDate: onBranch && current.commit == remoteCommit && changed.isEmpty && overwritten.isEmpty,
         )
     }
 
@@ -176,19 +176,19 @@ public extension GitRepository {
         backupAuthor: GitSignature,
         now: Date = Date(),
         settled: [String: Data] = [:],
-        excluding patterns: [String] = []
+        excluding patterns: [String] = [],
     ) throws -> GitResetResult {
         let plan = try resetPlan(remote: remote, branch: branch)
         guard plan.remoteCommit == expectedRemoteCommit else {
             throw GitError(
                 .conflict,
-                "\(remote)/\(branch) is at \(plan.remoteCommit.prefix(7)) now, not \(expectedRemoteCommit.prefix(7)) as shown: it moved, and nothing was changed"
+                "\(remote)/\(branch) is at \(plan.remoteCommit.prefix(7)) now, not \(expectedRemoteCommit.prefix(7)) as shown: it moved, and nothing was changed",
             )
         }
         guard plan.head == expectedHead else {
             throw GitError(
                 .conflict,
-                "HEAD is at \(plan.head.map { String($0.prefix(7)) } ?? "no commit") now, not \(expectedHead.map { String($0.prefix(7)) } ?? "no commit") as shown: it moved, and nothing was changed"
+                "HEAD is at \(plan.head.map { String($0.prefix(7)) } ?? "no commit") now, not \(expectedHead.map { String($0.prefix(7)) } ?? "no commit") as shown: it moved, and nothing was changed",
             )
         }
         let saved = try backupCommit(plan, author: backupAuthor)
@@ -208,7 +208,7 @@ public extension GitRepository {
         var moved: OpaquePointer?
         try GitError.check(
             git_reference_create(&moved, pointer, "refs/heads/\(branch)", &target, 1, "reset: moving to \(remote)/\(branch)"),
-            "move \(branch)\(kept)"
+            "move \(branch)\(kept)",
         )
         git_reference_free(moved)
         try GitError.check(git_repository_set_head(pointer, "refs/heads/\(branch)"), "point HEAD at \(branch)\(kept)")

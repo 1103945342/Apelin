@@ -21,7 +21,7 @@ public struct ToolchainSetup: Sendable {
         components: Set<ToolchainComponent> = [.base],
         staging: URL,
         output: URL,
-        progress: @escaping ToolchainProgressHandler = { _ in }
+        progress: @escaping ToolchainProgressHandler = { _ in },
     ) async throws -> ToolchainManifest {
         if let reason = CommandLineToolsSupport.refusal(for: source.version, productID: source.productID) {
             throw ToolchainFailure(reason)
@@ -74,7 +74,7 @@ public struct ToolchainSetup: Sendable {
         let digest = try digestFile(package)
         guard release.sources[source.productID] == digest else {
             throw ToolchainFailure(
-                "The downloaded Apple package differs from the reviewed source for Command Line Tools \(source.version)."
+                "The downloaded Apple package differs from the reviewed source for Command Line Tools \(source.version).",
             )
         }
         let id = Self.identity(sourceSHA256: digest, minimumOS: minimumOS, components: components)
@@ -154,7 +154,7 @@ public struct ToolchainSetup: Sendable {
             // A root-owned installed tree must remain traversable by mobile.
             let directories = FileManager.default.enumerator(
                 at: adapted,
-                includingPropertiesForKeys: [.isDirectoryKey]
+                includingPropertiesForKeys: [.isDirectoryKey],
             )!
             try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: adapted.path)
             while let path = directories.nextObject() as? URL {
@@ -179,7 +179,7 @@ public struct ToolchainSetup: Sendable {
                 newestSDK: release.newestSDK,
                 swiftSupport: release.swiftSupport,
                 clangModuleCPUFeatures: release.clangModuleCPUFeatures,
-                compatibility: release.compatibility
+                compatibility: release.compatibility,
             )
             try writeJSON(manifest, to: adapted.appendingPathComponent("manifest.json"))
             let parent = try canonical(output.deletingLastPathComponent())
@@ -211,7 +211,7 @@ public struct ToolchainSetup: Sendable {
             let file = try canonical(root.appendingPathComponent(relative))
             guard contained(file, in: root), try matchesToolchainDigest(file, expected: digest) else {
                 throw ToolchainFailure(
-                    "The toolchain file failed its integrity check: \(relative). Set up the toolchain again."
+                    "The toolchain file failed its integrity check: \(relative). Set up the toolchain again.",
                 )
             }
         }
@@ -241,7 +241,7 @@ public struct ToolchainSetup: Sendable {
               manifest.components.contains(.base), manifest.retargetSchemeVersion == schemeVersion
         else {
             throw ToolchainFailure(
-                "The toolchain manifest is invalid or from another version of Apelin. Set up the toolchain again."
+                "The toolchain manifest is invalid or from another version of Apelin. Set up the toolchain again.",
             )
         }
     }
@@ -286,7 +286,7 @@ public extension ToolchainSetup {
         journal: URL,
         scratch: URL,
         install: @Sendable (URL, ToolchainManifest, URL) async throws -> Void,
-        progress: @escaping ToolchainProgressHandler = { _ in }
+        progress: @escaping ToolchainProgressHandler = { _ in },
     ) async throws -> ToolchainManifest {
         try Self.validateIdentity(manifest)
         let installRoot = try canonical(installRoot)
@@ -309,12 +309,12 @@ public extension ToolchainSetup {
             toolchain: destination,
             sdk: sdk,
             scratch: scratch,
-            progress: progress
+            progress: progress,
         )
         guard !result.selfTests.isEmpty, result.selfTests.allSatisfy(\.passed) else {
             try writeJSON(result, to: record)
             throw ToolchainFailure(
-                "The installed toolchain failed its self-test. The test results are saved with this task."
+                "The installed toolchain failed its self-test. The test results are saved with this task.",
             )
         }
         result.stage = .ready; try writeJSON(result, to: record)

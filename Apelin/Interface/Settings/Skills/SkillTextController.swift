@@ -24,21 +24,21 @@ final class SkillTextController: UIViewController {
         let body = UIFont.preferredFont(forTextStyle: .body)
         let footnote = UIFont.preferredFont(forTextStyle: .footnote)
         let monospaced = UIFontMetrics(forTextStyle: .footnote).scaledFont(
-            for: .monospacedSystemFont(ofSize: footnote.pointSize, weight: .regular)
+            for: .monospacedSystemFont(ofSize: footnote.pointSize, weight: .regular),
         )
         let text = NSMutableAttributedString(string: skill.description + "\n\n", attributes: [
-            .font: body, .foregroundColor: UIColor.secondaryLabel
+            .font: body, .foregroundColor: UIColor.secondaryLabel,
         ])
         text.append(NSAttributedString(string: skill.body, attributes: [
-            .font: monospaced, .foregroundColor: UIColor.label
+            .font: monospaced, .foregroundColor: UIColor.label,
         ]))
         if !skill.files.isEmpty {
             text.append(NSAttributedString(
                 string: "\n\n" + String(localized: "File Count") + "\n",
-                attributes: [.font: UIFont.preferredFont(forTextStyle: .headline), .foregroundColor: UIColor.label]
+                attributes: [.font: UIFont.preferredFont(forTextStyle: .headline), .foregroundColor: UIColor.label],
             ))
             text.append(NSAttributedString(string: skill.files.joined(separator: "\n"), attributes: [
-                .font: monospaced, .foregroundColor: UIColor.secondaryLabel
+                .font: monospaced, .foregroundColor: UIColor.secondaryLabel,
             ]))
         }
 
@@ -55,7 +55,7 @@ final class SkillTextController: UIViewController {
             textView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             textView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             textView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            textView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
+            textView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
         ])
     }
 }

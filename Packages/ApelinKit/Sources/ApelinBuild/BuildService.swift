@@ -18,13 +18,13 @@ public enum BuildService {
         inputs: BuildInputs,
         store: ProjectStore,
         reporter: BuildReporter,
-        cancellation: BuildCancellation
+        cancellation: BuildCancellation,
     ) throws -> Result {
         reporter.stage("check", product: nil)
         let check = ProjectCheck(
             store: store,
             catalog: inputs.catalog,
-            registry: StaticEnvironmentRegistry(toolchains: [inputs.toolchain], sdks: [inputs.sdk])
+            registry: StaticEnvironmentRegistry(toolchains: [inputs.toolchain], sdks: [inputs.sdk]),
         )
         .run(root: inputs.projectRoot)
         for diagnostic in check.diagnostics where diagnostic.severity != .note {
@@ -33,7 +33,7 @@ public enum BuildService {
         guard check.passed, let digests = check.digests else {
             throw BuildFailure(
                 "the project check failed",
-                diagnostics: check.diagnostics.filter { $0.severity == .error }
+                diagnostics: check.diagnostics.filter { $0.severity == .error },
             )
         }
         // The check read apelin-project.json again: the digests describe this
@@ -100,7 +100,7 @@ public enum BuildService {
             log: products.log,
             loadCheck: output.loadCheck,
             createdAt: Date(timeIntervalSince1970: TimeInterval(inputs.timestamp)),
-            packageFiles: ArtifactRecord.packageFiles(of: contents)
+            packageFiles: ArtifactRecord.packageFiles(of: contents),
         )
         try ArtifactStore(store: store).save(record)
         return Result(record: record, products: products)

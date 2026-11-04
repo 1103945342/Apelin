@@ -25,7 +25,7 @@
             filter: IcliSyslogFilter,
             seconds: Double,
             handler: @escaping @Sendable (LogEntry) -> Bool,
-            onEnd: @escaping @Sendable (String) -> Void
+            onEnd: @escaping @Sendable (String) -> Void,
         ) throws -> any IcliSyslogStream {
             try mapped {
                 let stream = try SyslogStream(
@@ -39,10 +39,10 @@
                             subsystem: entry.subsystem,
                             category: entry.category,
                             level: LogLevel(icliName: entry.level),
-                            message: entry.message
+                            message: entry.message,
                         ))
                     },
-                    onEnd: { end in onEnd(end.rawValue) }
+                    onEnd: { end in onEnd(end.rawValue) },
                 )
                 return OpenStream(stream)
             }
@@ -53,7 +53,7 @@
                 process: filter.process,
                 subsystem: filter.subsystem,
                 messageContains: filter.messageContains,
-                level: filter.level
+                level: filter.level,
             )
         }
 
@@ -97,7 +97,7 @@
             identifier: String?,
             role: String?,
             match: String,
-            index: Int
+            index: Int,
         ) throws -> [String: Any] {
             try mapped {
                 let selector = try ElementSelector(
@@ -105,7 +105,7 @@
                     identifier: identifier,
                     role: role,
                     match: match,
-                    index: index
+                    index: index,
                 )
                 return try IcliKit.tapElement(selector)
             }
@@ -119,7 +119,7 @@
             index: Int,
             appear: Bool,
             timeout: Double,
-            interval: Double
+            interval: Double,
         ) throws -> [String: Any] {
             try mapped {
                 let selector = try ElementSelector(
@@ -127,7 +127,7 @@
                     identifier: identifier,
                     role: role,
                     match: match,
-                    index: index
+                    index: index,
                 )
                 do {
                     return try IcliKit.waitForElement(selector, appear: appear, timeout: timeout, interval: interval)

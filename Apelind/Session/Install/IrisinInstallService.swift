@@ -11,7 +11,7 @@ final class IrisinInstallService: InstallService, @unchecked Sendable {
         return InstallServiceInfo(
             externalVersion: info.externalVersion,
             capabilities: info.capabilities,
-            installRoot: info.installRoot
+            installRoot: info.installRoot,
         )
     }
 
@@ -37,7 +37,7 @@ final class IrisinInstallService: InstallService, @unchecked Sendable {
 
     func events(
         of transaction: UUID,
-        after: UInt64
+        after: UInt64,
     ) async throws -> (status: InstallTransactionStatus, events: [InstallTransactionEvent]) {
         let batch = try await map { try await self.client.events(of: transaction, after: after) }
         return (Self.status(batch.status), batch.events.map {
@@ -52,7 +52,7 @@ final class IrisinInstallService: InstallService, @unchecked Sendable {
                 completed: $0.completed,
                 total: $0.total,
                 exitStatus: $0.exitStatus,
-                problem: $0.problem
+                problem: $0.problem,
             )
         })
     }
@@ -68,7 +68,7 @@ final class IrisinInstallService: InstallService, @unchecked Sendable {
             version: status.packageVersion,
             failure: status.failure,
             failureText: status.failureText,
-            duplicate: status.duplicate
+            duplicate: status.duplicate,
         )
     }
 
@@ -84,7 +84,7 @@ final class IrisinInstallService: InstallService, @unchecked Sendable {
             case .serviceTooOld:
                 throw InstallServiceError(
                     .tooOld,
-                    "Installing requires Irisin \(InstallServiceRequirement.minimumIrisin) or later. Update Irisin, then try again."
+                    "Installing requires Irisin \(InstallServiceRequirement.minimumIrisin) or later. Update Irisin, then try again.",
                 )
             case .notFound: throw InstallServiceError(.notFound, "Irisin could not find this request. Try again.")
             case .conflict:

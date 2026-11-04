@@ -26,7 +26,7 @@ class ComposerInputView: ComposerSectionView {
     let iconSpacing: CGFloat = ComposerMetrics.Input.iconSpacing
     let iconSize = CGSize(
         width: ComposerMetrics.Input.iconSize,
-        height: ComposerMetrics.Input.iconSize
+        height: ComposerMetrics.Input.iconSize,
     )
 
     weak var delegate: Delegate?
@@ -96,7 +96,7 @@ class ComposerInputView: ComposerSectionView {
             self,
             selector: #selector(updateReturnKeyType),
             name: .composerBehaviorChanged,
-            object: nil
+            object: nil,
         )
 
         addSubview(elementClipper)
@@ -157,7 +157,7 @@ class ComposerInputView: ComposerSectionView {
                 // in, and the row under it is theirs to read.
                 return max(
                     max(textLayoutHeight(textHeight), iconSize.height) + inset.top + inset.bottom,
-                    ComposerMetrics.Input.minHeight
+                    ComposerMetrics.Input.minHeight,
                 )
             }
             .ensureMainThread()
@@ -175,7 +175,7 @@ class ComposerInputView: ComposerSectionView {
 
         layoutTextBand()
         elementClipper.mirrorForLayoutDirection(
-            [textView, placeholderLabel, rewriteButton]
+            [textView, placeholderLabel, rewriteButton],
         )
 
         updatePlaceholderAlpha()

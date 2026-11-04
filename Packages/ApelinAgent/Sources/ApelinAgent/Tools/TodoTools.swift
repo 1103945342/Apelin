@@ -43,7 +43,7 @@ struct TodoTools {
                 id: id ?? UUID().uuidString.lowercased(),
                 title: title,
                 status: status,
-                sessionID: sessionID
+                sessionID: sessionID,
             ))
         }
         try store.replace(items, for: sessionID)

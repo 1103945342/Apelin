@@ -8,7 +8,7 @@ import Testing
 @Suite("git tools")
 struct GitToolTests {
     static let gitTools: [AgentToolName] = [
-        .gitStatus, .gitDiff, .gitStage, .gitUnstage, .gitCommit, .gitInit, .gitFetch, .gitPull, .gitPush, .gitClone
+        .gitStatus, .gitDiff, .gitStage, .gitUnstage, .gitCommit, .gitInit, .gitFetch, .gitPull, .gitPush, .gitClone,
     ]
 
     private func runner(_ home: TemporaryHome, backend: MockBackend, projectID: String? = nil) throws -> ToolRunner {
@@ -20,7 +20,7 @@ struct GitToolTests {
             policy: ApprovalPolicy(mode: .confirm),
             backend: backend,
             digests: MockDigestLedger(),
-            gate: ApprovalGate { _ in }
+            gate: ApprovalGate { _ in },
         )
     }
 
@@ -30,7 +30,7 @@ struct GitToolTests {
     func `the catalog names the git tools with their risks`() {
         #expect(Self.gitTools.map(\.rawValue) == [
             "git_status", "git_diff", "git_stage", "git_unstage", "git_commit", "git_init", "git_fetch", "git_pull",
-            "git_push", "git_clone"
+            "git_push", "git_clone",
         ])
         #expect(AgentToolName.gitStatus.risk == .readOnly)
         #expect(AgentToolName.gitDiff.risk == .readOnly)
@@ -196,7 +196,7 @@ struct GitToolTests {
             (.gitCommit, ["message": "Save everything", "all": true]),
             (.gitFetch, ["remote": "upstream"]),
             (.gitPull, [:]),
-            (.gitClone, ["url": "https://example.com/hello.git", "branch": "main"])
+            (.gitClone, ["url": "https://example.com/hello.git", "branch": "main"]),
         ]
         for (tool, arguments) in calls {
             asked += try await harness.run(tool, arguments).1
@@ -212,7 +212,7 @@ struct GitToolTests {
             .gitCommit("Save everything", all: true),
             .gitFetch(remote: "upstream"),
             .gitPull(remote: nil),
-            .gitClone(url: "https://example.com/hello.git", branch: "main")
+            .gitClone(url: "https://example.com/hello.git", branch: "main"),
         ])
     }
 

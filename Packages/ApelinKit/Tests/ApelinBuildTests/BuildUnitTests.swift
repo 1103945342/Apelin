@@ -87,13 +87,13 @@ final class PackagerControlTests: XCTestCase {
             digest: "sha256:" + String(repeating: "1", count: 64),
             version: "27.0",
             path: "/nonexistent",
-            components: ["c-family"]
+            components: ["c-family"],
         )
         let sdk = RegisteredSDK(
             id: "iPhoneOS27.0-00000000",
             digest: "sha256:" + String(repeating: "2", count: 64),
             version: "27.0",
-            path: "/nonexistent"
+            path: "/nonexistent",
         )
         let catalog = ExtensionCatalog(directory: Repository.extensions)
         let created = try store.create(
@@ -101,7 +101,7 @@ final class PackagerControlTests: XCTestCase {
             name: "Icon Tweak",
             values: [:],
             catalog: catalog,
-            registry: StaticEnvironmentRegistry(toolchains: [toolchain], sdks: [sdk])
+            registry: StaticEnvironmentRegistry(toolchains: [toolchain], sdks: [sdk]),
         )
         var inputs = try BuildInputs(
             buildID: "control",
@@ -114,7 +114,7 @@ final class PackagerControlTests: XCTestCase {
             catalog: catalog,
             workDirectory: scratch,
             installRoot: "/var/jb",
-            home: home.path
+            home: home.path,
         )
         let products = try JSONDecoder().decode(BuildProducts.self, from: Data(#"{"products": [], "dsyms": [], "log": ""}"#.utf8))
         let icon = "https://owngoal-dev.github.io/Apelin/icons/wiki.qaq.apelin.dev.tweak.png"
@@ -122,7 +122,7 @@ final class PackagerControlTests: XCTestCase {
         let control = try Packager(inputs: inputs, products: products, shell: "/bin/sh").control()
         XCTAssertEqual(control["Icon"], icon, "the template's icon")
         XCTAssertEqual(control.fields.map(\.name), [
-            "Package", "Version", "Architecture", "Description", "Name", "Icon", "Author", "Maintainer", "Section", "Depends"
+            "Package", "Version", "Architecture", "Description", "Name", "Icon", "Author", "Maintainer", "Section", "Depends",
         ])
         XCTAssertTrue(try control.rendered().contains("\nIcon: \(icon)\n"))
 

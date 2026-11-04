@@ -31,7 +31,7 @@ public struct CredentialInbox: Sendable {
     public init(home: String) {
         self.init(
             directory: ApelinCore.DataFolder(home: home).consoleInbox
-                .appendingPathComponent("credentials", isDirectory: true)
+                .appendingPathComponent("credentials", isDirectory: true),
         )
     }
 

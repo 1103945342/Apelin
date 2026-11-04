@@ -18,11 +18,11 @@ enum ChatActions {
         anchor: UIBarButtonItem,
         onPrepareDistribution: @escaping (String) -> Void,
         onDelete: @escaping (UUID) -> Void,
-        completion: @escaping ([UIMenuElement]) -> Void
+        completion: @escaping ([UIMenuElement]) -> Void,
     ) {
         let chatActions = [
             renameAction(for: chat.id, runtime: runtime, from: presenter),
-            compactAction(for: chat.id, runtime: runtime, from: presenter)
+            compactAction(for: chat.id, runtime: runtime, from: presenter),
         ]
         let deletion = UIMenu(options: .displayInline, children: [deleteAction(for: chat.id, onDelete: onDelete)])
         guard let projectName = chat.projectName else {
@@ -32,7 +32,7 @@ enum ChatActions {
             completion([
                 UIMenu(options: .displayInline, children: chatActions),
                 UIMenu(options: .displayInline, children: folders),
-                deletion
+                deletion,
             ])
             return
         }
@@ -50,7 +50,7 @@ enum ChatActions {
                 anchor: anchor,
                 distributionBlocker: (project?.buildMethod ?? .missingDescription).shortBlocker,
                 chatActions: chatActions,
-                onPrepareDistribution: onPrepareDistribution
+                onPrepareDistribution: onPrepareDistribution,
             )
             completion(projectActions.children + [deletion])
         }
@@ -62,7 +62,7 @@ enum ChatActions {
         UIKit.UIAction(
             title: String(localized: "Delete Conversation…"),
             image: UIImage(systemName: "trash"),
-            attributes: .destructive
+            attributes: .destructive,
         ) { _ in onDelete(id) }
     }
 
@@ -72,11 +72,11 @@ enum ChatActions {
     private static func renameAction(
         for id: UUID,
         runtime: ChatRuntime,
-        from presenter: UIViewController
+        from presenter: UIViewController,
     ) -> UIKit.UIAction {
         UIKit.UIAction(
             title: String(localized: "Rename…"),
-            image: UIImage(systemName: "character.cursor.ibeam")
+            image: UIImage(systemName: "character.cursor.ibeam"),
         ) { [weak presenter, weak runtime] _ in
             guard let presenter, let runtime, let chat = runtime.records[id]?.summary else { return }
             presenter.present(AlertInputViewController(
@@ -85,7 +85,7 @@ enum ChatActions {
                 placeholder: "Chat Name",
                 text: chat.displayTitle,
                 doneButtonText: "Rename",
-                onConfirm: { [weak runtime] name in runtime?.rename(id, to: name) }
+                onConfirm: { [weak runtime] name in runtime?.rename(id, to: name) },
             ), animated: true)
         }
     }
@@ -95,12 +95,12 @@ enum ChatActions {
     private static func compactAction(
         for id: UUID,
         runtime: ChatRuntime,
-        from presenter: UIViewController
+        from presenter: UIViewController,
     ) -> UIKit.UIAction {
         UIKit.UIAction(
             title: String(localized: "Compact Context…"),
             image: UIImage(systemName: "doc.text"),
-            attributes: runtime.canCompact(id) ? [] : .disabled
+            attributes: runtime.canCompact(id) ? [] : .disabled,
         ) { [weak presenter, weak runtime] _ in
             guard let presenter, let runtime else { return }
             askToCompact(for: id, runtime: runtime, from: presenter)
@@ -116,7 +116,7 @@ enum ChatActions {
             Your agent will continue from a summary of the earlier messages, which frees room for new work. \
             The messages stay in this chat.
             """,
-            confirmTitle: "Compact Context"
+            confirmTitle: "Compact Context",
         ) { [weak presenter, weak runtime] in
             guard let presenter, let runtime else { return }
             Task { await compact(id, runtime: runtime, from: presenter) }
@@ -130,7 +130,7 @@ enum ChatActions {
                 title: String(localized: "Compacting Chat"),
                 message: String(localized: "Summarizing the earlier messages…"),
                 cancellable: true,
-                from: presenter
+                from: presenter,
             ) { _ in try await runtime.compact(id) }
         } catch is CancellationError {
             return
@@ -145,12 +145,12 @@ enum ChatActions {
         case .tooShort:
             presenter.presentNotice(
                 title: "Nothing to Compact",
-                message: "This chat is still short enough for your agent to read in full."
+                message: "This chat is still short enough for your agent to read in full.",
             )
         case .failed:
             presenter.presentNotice(
                 title: "Unable to Compact Chat",
-                message: result.message ?? String(localized: "Something went wrong. Try again.")
+                message: result.message ?? String(localized: "Something went wrong. Try again."),
             )
         case .cancelled:
             break

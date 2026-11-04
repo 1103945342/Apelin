@@ -46,7 +46,7 @@ struct RepositoryCard {
         let drawn = pixels.withUnsafeMutableBytes { buffer -> Bool in
             guard let context = CGContext(
                 data: buffer.baseAddress, width: width, height: height, bitsPerComponent: 8,
-                bytesPerRow: width, space: CGColorSpaceCreateDeviceGray(), bitmapInfo: 0
+                bytesPerRow: width, space: CGColorSpaceCreateDeviceGray(), bitmapInfo: 0,
             ) else { return false }
             context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
             return true
@@ -95,7 +95,7 @@ struct RepositoryCardStyle: Codable, Equatable {
                 x: (target.width - drawn.width) / 2,
                 y: (target.height - drawn.height) / 2,
                 width: drawn.width,
-                height: drawn.height
+                height: drawn.height,
             ))
         }
     }

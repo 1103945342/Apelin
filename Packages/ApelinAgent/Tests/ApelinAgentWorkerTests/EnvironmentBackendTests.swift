@@ -18,11 +18,11 @@ struct EnvironmentBackendTests {
             components: [ToolchainComponent(kind: .c, selfCheckPassed: true), ToolchainComponent(kind: .swift, selfCheckPassed: false)],
             selfTests: [
                 ToolchainSelfTestResult(language: "c", architecture: "arm64", passed: true),
-                ToolchainSelfTestResult(language: "swift", architecture: "arm64e", passed: false, detail: "dyld: missing symbol")
+                ToolchainSelfTestResult(language: "swift", architecture: "arm64e", passed: false, detail: "dyld: missing symbol"),
             ],
             origin: "\(productID) https://swcdn.apple.com/x.pkg",
             newestSDK: newestSDK,
-            selfTestSDK: "18.2"
+            selfTestSDK: "18.2",
         )
     }
 
@@ -31,7 +31,7 @@ struct EnvironmentBackendTests {
         let fixture = try Fixture(manifest: Self.manifest)
         fixture.host.on(.toolchainStatus, reply: ToolchainStatusResponse(
             toolchains: [Self.toolchain("clt-16.4-c", version: "16.4", newestSDK: "18.5", productID: "082-16")],
-            defaultID: "clt-16.4-c"
+            defaultID: "clt-16.4-c",
         ))
         fixture.host.on(.toolchainCatalog, reply: ToolchainCatalogResponse(products: [
             ToolchainCatalogProduct(
@@ -41,7 +41,7 @@ struct EnvironmentBackendTests {
                 unsupportedReason: "This toolchain requires iOS 26.0 or later.",
                 newestSDK: "27",
                 supportsSwift: false,
-                compatibility: ToolchainCompatibility(minimumHost: "26.0", cpuFeatures: ["FEAT_LRCPC", "FEAT_SHA3"], recommendedSDK: "27.0")
+                compatibility: ToolchainCompatibility(minimumHost: "26.0", cpuFeatures: ["FEAT_LRCPC", "FEAT_SHA3"], recommendedSDK: "27.0"),
             ),
             ToolchainCatalogProduct(
                 productID: "082-16",
@@ -49,8 +49,8 @@ struct EnvironmentBackendTests {
                 size: 800,
                 newestSDK: "18.5",
                 supportsSwift: true,
-                swiftRequirements: SwiftToolchainRequirements(version: "6.1.2", minimumHost: "17.3.1", cpuFeatures: [])
-            )
+                swiftRequirements: SwiftToolchainRequirements(version: "6.1.2", minimumHost: "17.3.1", cpuFeatures: []),
+            ),
         ]))
         let list = try await fixture.backend.toolchains(context: fixture.context())
         #expect(list.project == ProjectEnvironmentSummary(toolchainID: "clt-16.4-c", sdkID: "iPhoneOS18.2-aaaaaaaa"))
@@ -84,12 +84,12 @@ struct EnvironmentBackendTests {
                 sources: [
                     SDKSourceStatus(name: "OwnGoal iOS SDKs", url: "https://github.com/owngoal-dev/iOS-SDKs.git", enabled: true, branches: ["sdk/iPhoneOS17.5", "sdk/iPhoneOS18.2", "sdk/iPhoneOS27.0", "sdk/notes"]),
                     SDKSourceStatus(name: "Off", url: "https://example.com/x.git", enabled: false, branches: ["sdk/iPhoneOS16.0"]),
-                    SDKSourceStatus(name: "Broken", url: "https://example.com/y.git", enabled: true, problem: "timed out")
-                ]
+                    SDKSourceStatus(name: "Broken", url: "https://example.com/y.git", enabled: true, problem: "timed out"),
+                ],
             ), [])
         }
         fixture.host.on(.toolchainStatus, reply: ToolchainStatusResponse(toolchains: [
-            Self.toolchain("clt-16.4-c", version: "16.4", newestSDK: "18.5", productID: "082-16")
+            Self.toolchain("clt-16.4-c", version: "16.4", newestSDK: "18.5", productID: "082-16"),
         ]))
         let list = try await fixture.backend.sdks(context: fixture.context())
         #expect(list.installed.first?.boundByThisProject == true && list.installed.first?.readBy == ["clt-16.4-c"])
@@ -111,7 +111,7 @@ struct EnvironmentBackendTests {
             ("install.irisin", .object(["message": .string("…")])),
             ("warning", .object(["message": .string("1 of 2 self-test cases failed")])),
             ("result", .object(["toolchain": ApelinCore.JSONValue(encoding: Self.toolchain("clt-15.3-c-swift", version: "15.3", newestSDK: "17.4", productID: "082-15"))])),
-            stateEvent(.succeeded)
+            stateEvent(.succeeded),
         ]))
         let result = try await fixture.backend.toolchainSetup(ToolchainSetupToolRequest(context: fixture.context(), productID: "082-15", components: ["c", "swift"]))
         let sent = try #require(fixture.host.requests(ToolchainSetupRequest.self).first)
@@ -138,7 +138,7 @@ struct EnvironmentBackendTests {
         try fixture.host.on(.environmentAttach, reply: batch("import-task", [
             ("stage", .object(["stage": .string("fetching")])),
             ("result", .object(["sdk": ApelinCore.JSONValue(encoding: SDKRecord(id: "iPhoneOS17.5-bbbbbbbb", canonicalName: "iPhoneOS17.5", version: "17.5", path: "/x"))])),
-            stateEvent(.succeeded)
+            stateEvent(.succeeded),
         ]))
         let result = try await fixture.backend.sdkImport(SDKImportToolRequest(context: fixture.context(), url: "https://github.com/owngoal-dev/iOS-SDKs.git", branch: "sdk/iPhoneOS17.5"))
         #expect(fixture.host.requests(SDKImportRequest.self).first?.source == .repository(url: "https://github.com/owngoal-dev/iOS-SDKs.git", branch: "sdk/iPhoneOS17.5"))
@@ -156,12 +156,12 @@ struct EnvironmentBackendTests {
                 passed: false,
                 diagnostics: [
                     ProjectDiagnostic(code: "environment.sdk.tooNewForToolchain", severity: .error, message: "supports iPhoneOS SDKs up to 18.5"),
-                    ProjectDiagnostic(code: "project.file.missing", severity: .error, message: "Sources/x.m")
+                    ProjectDiagnostic(code: "project.file.missing", severity: .error, message: "Sources/x.m"),
                 ],
                 environment: ProjectEnvironmentBinding(
                     toolchain: ProjectComponentBinding(id: "clt-16.4-c", digest: "sha256:1"),
-                    sdk: ProjectComponentBinding(id: "iPhoneOS27.0-cccccccc", digest: "sha256:3")
-                )
+                    sdk: ProjectComponentBinding(id: "iPhoneOS27.0-cccccccc", digest: "sha256:3"),
+                ),
             ), [])
         }
         let checked = try await fixture.backend.checkEnvironment(EnvironmentCheckToolRequest(context: fixture.context(), toolchainID: nil, sdkID: "iPhoneOS27.0-cccccccc"))
@@ -174,7 +174,7 @@ struct EnvironmentBackendTests {
         let fixture = try Fixture()
         fixture.host.on(.projectCheck, reply: ProjectCheckResponse(passed: false, diagnostics: [
             ProjectDiagnostic(code: "project.invalid", severity: .error, message: "missing template", file: "apelin-project.json", field: "/"),
-            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "missing environment", file: "apelin-project.json", field: "/")
+            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "missing environment", file: "apelin-project.json", field: "/"),
         ]))
         let request = EnvironmentCheckToolRequest(context: fixture.context(), toolchainID: nil, sdkID: "iPhoneOS27.0-cccccccc")
         let failure = await #expect(throws: EnvironmentToolFailure.self) { _ = try await fixture.backend.checkEnvironment(request) }
@@ -183,7 +183,7 @@ struct EnvironmentBackendTests {
         #expect(message.contains("not an Apelin build description") && message.contains("apelin-external-build"), "\(message)")
 
         fixture.host.on(.projectCheck, reply: ProjectCheckResponse(passed: false, diagnostics: [
-            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "unknown member", file: "apelin-project.json", field: "/configurations/Debug/linkerFlags")
+            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "unknown member", file: "apelin-project.json", field: "/configurations/Debug/linkerFlags"),
         ]))
         let misspelled = await #expect(throws: EnvironmentToolFailure.self) { _ = try await fixture.backend.checkEnvironment(request) }
         #expect(misspelled?.message.contains("(/configurations/Debug/linkerFlags: unknown member)") == true)
@@ -228,7 +228,7 @@ struct EnvironmentBackendTests {
                 fingerprint: "f",
                 reason: "r",
                 detail: value,
-                allowsSessionScope: false
+                allowsSessionScope: false,
             ))["detail"]
         }
         let setup = detail(.toolchainSetup(ToolchainSetupApproval(productID: "082-15", version: "15.3", components: ["c", "swift"], sizeBytes: 7)))

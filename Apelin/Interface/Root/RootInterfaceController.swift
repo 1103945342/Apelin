@@ -184,25 +184,25 @@ final class RootInterfaceController: UIViewController {
             self,
             selector: #selector(enteredForeground),
             name: UIApplication.willEnterForegroundNotification,
-            object: nil
+            object: nil,
         )
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(enteredBackground),
             name: UIApplication.didEnterBackgroundNotification,
-            object: nil
+            object: nil,
         )
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(syncViewedChat),
             name: UIApplication.didBecomeActiveNotification,
-            object: nil
+            object: nil,
         )
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(resignedActive),
             name: UIApplication.willResignActiveNotification,
-            object: nil
+            object: nil,
         )
 
         // the detail column sits a step above the sidebar: in the dark its
@@ -324,7 +324,7 @@ final class RootInterfaceController: UIViewController {
             place(
                 sidebarNavigation.view,
                 in: view.directionalFrame(CGRect(x: 0, y: 0, width: width, height: bounds.height)),
-                shift: view.directionalOffset(-width * 0.25 * (1 - drawerProgress))
+                shift: view.directionalOffset(-width * 0.25 * (1 - drawerProgress)),
             )
             place(navigator.view, in: bounds, shift: shift)
             place(shade, in: bounds, shift: shift)
@@ -335,14 +335,14 @@ final class RootInterfaceController: UIViewController {
             place(
                 sidebarNavigation.view,
                 in: view.directionalFrame(
-                    CGRect(x: width - Self.sidebarWidth, y: 0, width: Self.sidebarWidth, height: bounds.height)
+                    CGRect(x: width - Self.sidebarWidth, y: 0, width: Self.sidebarWidth, height: bounds.height),
                 ),
-                shift: 0
+                shift: 0,
             )
             place(
                 navigator.view,
                 in: view.directionalFrame(CGRect(x: width, y: 0, width: bounds.width - width, height: bounds.height)),
-                shift: 0
+                shift: 0,
             )
             place(shade, in: bounds, shift: 0)
             shade.alpha = 0
@@ -376,7 +376,7 @@ final class RootInterfaceController: UIViewController {
             delay: 0,
             usingSpringWithDamping: 1,
             initialSpringVelocity: velocity,
-            options: [.allowUserInteraction, .beginFromCurrentState]
+            options: [.allowUserInteraction, .beginFromCurrentState],
         ) {
             self.layoutColumns()
             self.navigator.view.layoutIfNeeded()
@@ -578,13 +578,13 @@ final class RootInterfaceController: UIViewController {
             leading.insert(
                 RootBarItem(
                     image: UIImage(systemName: isDrawer ? "line.3.horizontal" : "sidebar.leading"),
-                    primaryAction: UIAction { [weak self] _ in self?.toggleSidebar() }
+                    primaryAction: UIAction { [weak self] _ in self?.toggleSidebar() },
                 ).then {
                     $0.accessibilityLabel = shown
                         ? String(localized: "Hide Sidebar")
                         : String(localized: "Show Sidebar")
                 },
-                at: 0
+                at: 0,
             )
         }
         if isRoot, !isSidebarShown {
@@ -600,18 +600,18 @@ final class RootInterfaceController: UIViewController {
                 trailing.append(
                     RootBarItem(
                         image: UIImage(systemName: "arrow.triangle.branch"),
-                        primaryAction: git
+                        primaryAction: git,
                     ).then {
                         $0.accessibilityLabel = String(localized: "Git")
-                    }
+                    },
                 )
                 trailing.append(
                     RootBarItem(
                         image: UIImage(systemName: "square.and.pencil"),
-                        primaryAction: newChat
+                        primaryAction: newChat,
                     ).then {
                         $0.accessibilityLabel = String(localized: "New Chat")
-                    }
+                    },
                 )
             } else {
                 // Before it, the bar sets a gap of its own between items, and
@@ -633,7 +633,7 @@ final class RootInterfaceController: UIViewController {
     private func rootToolGroup(git: UIAction, newChat: UIAction) -> UIView {
         RootToolGroup(tools: [
             (symbol: "arrow.triangle.branch", label: String(localized: "Git"), action: git),
-            (symbol: "square.and.pencil", label: String(localized: "New Chat"), action: newChat)
+            (symbol: "square.and.pencil", label: String(localized: "New Chat"), action: newChat),
         ])
     }
 
@@ -644,7 +644,7 @@ final class RootInterfaceController: UIViewController {
         guard let project = chatController.chat?.projectName else {
             presentNotice(
                 title: "No Project",
-                message: String(localized: "This conversation is not in a project, so it has no repository.")
+                message: String(localized: "This conversation is not in a project, so it has no repository."),
             )
             return
         }
@@ -668,7 +668,7 @@ extension RootInterfaceController: UINavigationControllerDelegate {
     func navigationController(
         _: UINavigationController,
         willShow viewController: UIViewController,
-        animated _: Bool
+        animated _: Bool,
     ) {
         syncBarItems(on: viewController)
     }
@@ -729,7 +729,7 @@ private final class RootToolGroup: UIView {
                 x: CGFloat(index) * (Self.buttonSize + Self.gap),
                 y: 0,
                 width: Self.buttonSize,
-                height: Self.buttonSize
+                height: Self.buttonSize,
             )
             button.autoresizingMask = [.flexibleTopMargin, .flexibleBottomMargin]
             button.accessibilityLabel = tool.label
@@ -751,7 +751,7 @@ private final class RootToolGroup: UIView {
         guard count > 0 else { return .zero }
         return CGSize(
             width: CGFloat(count) * buttonSize + CGFloat(count - 1) * gap,
-            height: buttonSize
+            height: buttonSize,
         )
     }
 }

@@ -68,7 +68,7 @@ extension ToolRunner {
                 fromY: number("y"),
                 toX: number("to_x"),
                 toY: number("to_y"),
-                durationMilliseconds: arguments.argInt("duration_ms") ?? UIAction.defaultSwipeMilliseconds
+                durationMilliseconds: arguments.argInt("duration_ms") ?? UIAction.defaultSwipeMilliseconds,
             )
         case "press_button":
             let button = try arguments.requireString("button")

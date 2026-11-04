@@ -65,7 +65,7 @@ final class SchemaFixtureTests: XCTestCase {
             #"{"a": 9007199254740992}"#: "outside",
             #"{"a": "\ud800"}"#: "lone surrogate",
             "{\"a\": \"\u{1}\"}": "control character",
-            #"{"a": NaN}"#: "unexpected"
+            #"{"a": NaN}"#: "unexpected",
         ]
         for (text, expected) in refused {
             XCTAssertThrowsError(try StrictJSON.parse(Data(text.utf8)), text) { error in
@@ -107,7 +107,7 @@ final class SchemaFixtureTests: XCTestCase {
             ("shell", "echo {{projectName}}", false),
             ("deb-control", "Name: {{displayName}}", true),
             ("text", "{{unknownName}}", false),
-            ("copy", "{{anything}}", true)
+            ("copy", "{{anything}}", true),
         ]
         for (format, text, allowed) in rules {
             let errors = TemplateParameters.checkText(text, format: format, types: placeholderTypes, where: "rule")
@@ -123,7 +123,7 @@ final class SchemaFixtureTests: XCTestCase {
             ("objc", "a\"b\\c\nd", #"a\"b\\c\nd"#),
             ("swift", #"say \(x) "hi""#, #"say \\(x) \"hi\""#),
             ("json", "a\"b\\c\u{1}", #"a\"b\\c\u0001"#),
-            ("plist-xml", "<Tom & 'Jerry'>", "&lt;Tom &amp; &apos;Jerry&apos;&gt;")
+            ("plist-xml", "<Tom & 'Jerry'>", "&lt;Tom &amp; &apos;Jerry&apos;&gt;"),
         ]
         for (format, value, expected) in escapes {
             XCTAssertEqual(try TemplateParameters.substitute("{{displayName}}", format: format, types: placeholderTypes, values: ["displayName": .string(value)]), expected, format)
@@ -135,7 +135,7 @@ final class SchemaFixtureTests: XCTestCase {
         XCTAssertEqual(try TemplateParameters.substitute("{{bundles}}", format: "plist-xml", types: placeholderTypes, values: ["bundles": .array([.string("a.b")])]), "<string>a.b</string>")
         XCTAssertEqual(try TemplateParameters.substitute("{{enabled}}", format: "objc", types: placeholderTypes, values: ["enabled": .bool(true)]), "1")
         XCTAssertEqual(try TemplateParameters.substitute("{{architectures}}", format: "json", types: placeholderTypes, values: [
-            "architectures": .object(JSONObject([("roothide", .array([.string("arm64e")])), ("rootless", .array([.string("arm64"), .string("arm64e")]))]))
+            "architectures": .object(JSONObject([("roothide", .array([.string("arm64e")])), ("rootless", .array([.string("arm64"), .string("arm64e")]))])),
         ]), #"{"rootless": ["arm64", "arm64e"], "roothide": ["arm64e"]}"#)
     }
 
@@ -216,7 +216,7 @@ final class SchemaFixtureTests: XCTestCase {
             ("installed data file edited", append("Packaging/apelinhello.conf", "x=1\n"), false, true),
             ("dependency added", editJSON { set(&$0, ["package", "depends"], .array([.string("coreutils")])) }, false, true),
             ("icon set", editJSON { set(&$0, ["package", "icon"], .string("https://example.com/icon.png")) }, false, true),
-            ("install path changed", editJSON { set(&$0, ["package", "layout", "0", "path"], .string("/usr/local/bin/apelinhello")) }, false, true)
+            ("install path changed", editJSON { set(&$0, ["package", "layout", "0", "path"], .string("/usr/local/bin/apelinhello")) }, false, true),
         ]
         for (name, edit, buildMoves, packagingMoves) in edits {
             let scratch = try scratchDirectory()

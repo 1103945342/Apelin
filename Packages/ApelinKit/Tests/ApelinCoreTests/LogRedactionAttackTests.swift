@@ -23,7 +23,7 @@ final class LogRedactionAttackTests: XCTestCase {
             adversarial("key=ab key=ab "),
             adversarial("x:"),
             adversarial("A1B2C3D4E5F6G7H8"),
-            adversarial("fd12:")
+            adversarial("fd12:"),
         ]
         for input in inputs {
             var start = Date()
@@ -42,7 +42,7 @@ final class LogRedactionAttackTests: XCTestCase {
             #"{"apiKey": "q9w8e7r6t5y4u3i2", "password": "hunter2hunter2"}"#,
             #"{\"apiKey\":\"q9w8e7r6t5y4u3i2\",\"password\":\"hunter2hunter2\"}"#,
             #"password = "correct horse battery staple""#,
-            #"PASSWORD='hunter2hunter2'"#
+            #"PASSWORD='hunter2hunter2'"#,
         ]
         for text in texts {
             let kept = redaction.redacted(text)
@@ -72,7 +72,7 @@ final class LogRedactionAttackTests: XCTestCase {
             "a1b2c3d4e5f6", "tok123456789", "sess98765432", "sk123456789", "pk123456789", "as123456789",
             "wJalrXUtnFEMI", "dbpass5551234", "mysql5551234", "gltok5551234", "hunter3hunter3", "curlpass5551234",
             "cookie5551234", "setcookie5551234", "0123456789abcdef0123", "x1x1x1", "g2g2g2", "h3h3h3", "q4q4q4",
-            "s5s5s5", "r6r6r6"
+            "s5s5s5", "r6r6r6",
         ]
         for secret in secrets {
             XCTAssertFalse(kept.contains(secret), "\(secret) survived:\n\(kept)")
@@ -93,7 +93,7 @@ final class LogRedactionAttackTests: XCTestCase {
         let kept = redaction.redacted(text)
         let identifiers = [
             "00008030-00112233445566AA", "a1b2c3d4e5a1b2c3d4e5", "AB12CD34EF56", "02:00:00:00:00:01", "192.168.1.20",
-            "10.0.0.5", "fe80::1c2b", "Adas-iPhone", "router.home.arpa", "someone", "6F8C2E1A9B3D4C5E", "AbCd1234"
+            "10.0.0.5", "fe80::1c2b", "Adas-iPhone", "router.home.arpa", "someone", "6F8C2E1A9B3D4C5E", "AbCd1234",
         ]
         for identifier in identifiers {
             XCTAssertFalse(kept.contains(identifier), "\(identifier) survived:\n\(kept)")

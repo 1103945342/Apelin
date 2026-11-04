@@ -311,7 +311,7 @@ final class ProviderLoginController: UIViewController {
         SPIndicator.present(
             title: isEditingConfiguration ? String(localized: "Configuration Updated") : String(localized: "Signed In"),
             preset: .done,
-            haptic: .success
+            haptic: .success,
         )
         chooseModels()
     }
@@ -331,7 +331,7 @@ final class ProviderLoginController: UIViewController {
                 let page = ModelActivationController(account: account)
                 page.navigationItem.leftBarButtonItem = UIBarButtonItem(
                     image: UIImage(systemName: "xmark"),
-                    primaryAction: UIAction { [weak navigation] _ in navigation?.dismiss(animated: true) }
+                    primaryAction: UIAction { [weak navigation] _ in navigation?.dismiss(animated: true) },
                 )
                 page.navigationItem.leftBarButtonItem?.accessibilityLabel = String(localized: "Close")
                 navigation.isModalInPresentation = false
@@ -402,7 +402,7 @@ final class ProviderLoginController: UIViewController {
             let form = ProviderKeyFormController(
                 keys: keys,
                 alternatives: methods.filter { $0 != method },
-                initialValues: savedValues
+                initialValues: savedValues,
             )
             form.onSubmit = { [weak self] values in self?.send(values) }
             form.onSwitchMethod = { [weak self] method in self?.switchMethod(to: method) }
@@ -474,7 +474,7 @@ final class ProviderLoginController: UIViewController {
         configuration.baseForegroundColor = .secondaryLabel
         configuration.attributedTitle = AttributedString(title, attributes: AttributeContainer([
             .font: UIFont.preferredFont(forTextStyle: .footnote),
-            .underlineStyle: NSUnderlineStyle.single.rawValue
+            .underlineStyle: NSUnderlineStyle.single.rawValue,
         ]))
         links.addArrangedSubview(UIButton(configuration: configuration, primaryAction: UIAction { _ in action() }))
     }
@@ -540,7 +540,7 @@ final class ProviderLoginController: UIViewController {
                     try await ApelinService.app.agentSignInRespond(
                         taskID: handle.taskID,
                         fields: values,
-                        verifyModel: false
+                        verifyModel: false,
                     )
                     for try await event in ApelinService.app.events(of: handle) {
                         self.receive(event)

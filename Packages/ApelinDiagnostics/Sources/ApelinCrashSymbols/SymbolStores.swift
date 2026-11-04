@@ -110,7 +110,7 @@ public final class DSYMStore: DSYMLookup, @unchecked Sendable {
                     binaryName: candidate.lastPathComponent,
                     arch: slice.arch,
                     byteCount: slice.byteCount,
-                    imported: Date()
+                    imported: Date(),
                 ))
             }
         }

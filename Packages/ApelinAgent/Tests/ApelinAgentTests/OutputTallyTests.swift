@@ -58,21 +58,21 @@ struct OutputTallyTests {
             .message(fauxAssistantMessage(blocks: [
                 fauxThinking("Read the readme first."),
                 fauxText("Reading it."),
-                fauxToolCall(name: "file_read", arguments: ["reason": "Read the readme", "path": "README.md"])
+                fauxToolCall(name: "file_read", arguments: ["reason": "Read the readme", "path": "README.md"]),
             ], stopReason: .toolUse)),
             .message(fauxAssistantMessage("It says hello.")),
-            .message(fauxAssistantMessage("Still hello."))
+            .message(fauxAssistantMessage("Still hello.")),
         ])
         let session = try await AgentSession(
             configuration: AgentSessionConfiguration(
                 project: home.project,
                 provider: .registered(faux.getModel()),
                 approval: ApprovalPolicy(mode: .relaxed),
-                dataRoot: home.dataRoot
+                dataRoot: home.dataRoot,
             ),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            credentials: DeliveredCredentialSource()
+            credentials: DeliveredCredentialSource(),
         )
 
         func run(_ prompt: String, after seq: UInt64) async throws -> [AgentSessionEvent] {

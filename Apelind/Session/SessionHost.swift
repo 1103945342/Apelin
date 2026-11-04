@@ -46,7 +46,7 @@ final class SessionHost: @unchecked Sendable {
         home = RoothideRoot.containing(ownPath) != nil ? installRoot + "/var/mobile" : "/var/mobile"
         stateDirectory = URL(
             fileURLWithPath: installRoot == "/" ? "/var/lib/apelin" : installRoot + "/var/lib/apelin",
-            isDirectory: true
+            isDirectory: true,
         )
         registry = TaskRegistry(directory: stateDirectory.appendingPathComponent("tasks", isDirectory: true))
         workers = WorkerSupervisor(installRoot: installRoot, home: home)
@@ -54,13 +54,13 @@ final class SessionHost: @unchecked Sendable {
         approvals = ApprovalLedger(directory: stateDirectory.appendingPathComponent("approvals", isDirectory: true))
         artifacts = ArtifactRegistry(file: stateDirectory.appendingPathComponent("artifacts.json"))
         installations = InstallationStore(
-            directory: stateDirectory.appendingPathComponent("installations", isDirectory: true)
+            directory: stateDirectory.appendingPathComponent("installations", isDirectory: true),
         )
         install = InstallBridge(
             paths: InstallBridge.Paths(
                 installRoot: installRoot,
                 dataFolder: dataFolder.root.path,
-                staging: stateDirectory.appendingPathComponent("staging", isDirectory: true)
+                staging: stateDirectory.appendingPathComponent("staging", isDirectory: true),
             ),
             service: IrisinInstallService(),
             registry: registry,
@@ -68,7 +68,7 @@ final class SessionHost: @unchecked Sendable {
             installations: installations,
             packages: DpkgStatusDatabase(installRoot: installRoot),
             fileLists: DpkgFileLists(installRoot: installRoot),
-            approvals: approvals
+            approvals: approvals,
         )
         scopes = FileScopes(installRoot: installRoot, dataFolder: dataFolder)
         editor = ProtectedEditor(installRoot: installRoot, backups: BackupStore(home: home))
@@ -76,7 +76,7 @@ final class SessionHost: @unchecked Sendable {
         toolHosts = ToolHostSessions(
             installRoot: installRoot,
             home: home,
-            attachments: stateDirectory.appendingPathComponent("attachments", isDirectory: true)
+            attachments: stateDirectory.appendingPathComponent("attachments", isDirectory: true),
         )
         notices = AgentNotices(stateDirectory: stateDirectory, sessions: dataFolder.sessions)
         proxy = WorkerChannel(adopting: WorkerMain.channelDescriptor)
@@ -105,7 +105,7 @@ final class SessionHost: @unchecked Sendable {
                     return error
                 }
                 return ApelinError(.denied, "\(request.operation.rawValue) was refused")
-            }
+            },
         )
         resumers[.build] = { record in await restart.resume(record) }
         resumers[.environment] = { record in await restart.resume(record) }
@@ -121,7 +121,7 @@ final class SessionHost: @unchecked Sendable {
         try? FileManager.default.createDirectory(
             at: stateDirectory,
             withIntermediateDirectories: true,
-            attributes: [.posixPermissions: 0o700]
+            attributes: [.posixPermissions: 0o700],
         )
         // The host's process name is apelind's, as the kernel takes it from
         // the executable, so `killall` cannot tell the two apart; this file
@@ -165,9 +165,9 @@ final class SessionHost: @unchecked Sendable {
                         HostRequest(
                             request: request.request,
                             descriptors: request.descriptors,
-                            caller: .worker(worker.role, instance: worker.key)
+                            caller: .worker(worker.role, instance: worker.key),
                         ),
-                        host: self
+                        host: self,
                     )
                 },
                 onEvent: { worker, frame in
@@ -180,7 +180,7 @@ final class SessionHost: @unchecked Sendable {
                 },
                 isBusy: { [self] role, key in
                     await registry.hasActiveTask(owner: role, key: key)
-                }
+                },
             )
             // Resume what the previous host left running, before anything
             // new can start (the workers are configured first: a resumed
@@ -202,7 +202,7 @@ final class SessionHost: @unchecked Sendable {
         proxy.onRequest { [self] request in
             await Dispatcher.handle(
                 HostRequest(request: request.request, descriptors: request.descriptors, caller: .app),
-                host: self
+                host: self,
             )
         }
         proxy.onControl { [self] frame in
@@ -232,7 +232,7 @@ final class SessionHost: @unchecked Sendable {
             activeTasks: registry.activeCount,
             workers: workers.count,
             toolHosts: toolHosts.count,
-            tasksByKind: registry.activeByKind
+            tasksByKind: registry.activeByKind,
         )
         guard report != lastReport else { return }
         lastReport = report
@@ -276,7 +276,7 @@ final class SessionHost: @unchecked Sendable {
         kind: TaskKind,
         role: WorkerRole,
         instance: String? = nil,
-        resumable: Bool = false
+        resumable: Bool = false,
     ) async -> HostReply {
         let handle = await registry.create(kind: kind, owner: role, ownerKey: instance)
         // An agent reads back only the tasks its session started.
@@ -286,7 +286,7 @@ final class SessionHost: @unchecked Sendable {
         if resumable {
             await registry.setResume(
                 handle.taskID,
-                TaskResume.plan(request.request, descriptorCount: request.descriptors.count, caller: request.caller)
+                TaskResume.plan(request.request, descriptorCount: request.descriptors.count, caller: request.caller),
             )
         }
         do {
@@ -294,7 +294,7 @@ final class SessionHost: @unchecked Sendable {
             let (reply, descriptors) = try await worker.call(
                 request.request,
                 descriptors: request.descriptors,
-                taskID: handle.taskID
+                taskID: handle.taskID,
             )
             if case let .failure(error) = reply.result {
                 await registry.finish(handle.taskID, .failed, message: error.description)
@@ -315,7 +315,7 @@ final class SessionHost: @unchecked Sendable {
                 attach.taskID,
                 as: R.operation,
                 afterSeq: attach.afterSeq,
-                waitMilliseconds: attach.waitMilliseconds
+                waitMilliseconds: attach.waitMilliseconds,
             )
         }
     }

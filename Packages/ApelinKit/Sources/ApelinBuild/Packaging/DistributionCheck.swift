@@ -23,7 +23,7 @@ public struct DistributionCheck: Sendable {
         "CFBundleIcons~ipad",
         "CFBundleIconFiles",
         "CFBundleIconFile",
-        "CFBundleIconName"
+        "CFBundleIconName",
     ]
 
     public init(store: ProjectStore, catalog: ExtensionCatalog) {
@@ -48,7 +48,7 @@ public struct DistributionCheck: Sendable {
         for (code, field, value, purpose) in [
             ("distribution.package.name.template", "/package/name", package.name, "the name people see in their package manager"),
             ("distribution.package.description.template", "/package/description", package.description, "what the package does"),
-            ("distribution.package.author.template", "/package/author", package.author, "who made it")
+            ("distribution.package.author.template", "/package/author", package.author, "who made it"),
         ] where template.placeholders.contains(value) {
             warn(code, field, "\(field) is still the template's “\(value)”; write \(purpose)")
         }
@@ -56,14 +56,14 @@ public struct DistributionCheck: Sendable {
             warn(
                 "distribution.package.version.template",
                 "/package/version",
-                "/package/version is still the template's \(initial); give the first release its own version"
+                "/package/version is still the template's \(initial); give the first release its own version",
             )
         }
         if package.id.hasPrefix(Self.localPrefix) {
             warn(
                 "distribution.package.id.local",
                 "/package/id",
-                "/package/id \(package.id) is the local identifier Apelin made up; use a reverse-DNS identifier you own"
+                "/package/id \(package.id) is the local identifier Apelin made up; use a reverse-DNS identifier you own",
             )
         }
 
@@ -77,7 +77,7 @@ public struct DistributionCheck: Sendable {
                     "distribution.bundleID.local",
                     "/products/\(index)/infoPlist",
                     "\(path) gives the app the local bundle identifier \(identifier); use a reverse-DNS identifier you own",
-                    file: path
+                    file: path,
                 )
             }
             if !Self.iconKeys.contains(where: { plist[$0] != nil }) {
@@ -85,7 +85,7 @@ public struct DistributionCheck: Sendable {
                     "distribution.icon.missing",
                     "/products/\(index)/infoPlist",
                     "\(path) names no app icon (CFBundleIcons); the home screen and package managers show a blank one",
-                    file: path
+                    file: path,
                 )
             }
         }
@@ -103,7 +103,7 @@ public struct DistributionCheck: Sendable {
                 "distribution.version.packaged",
                 "/package/version",
                 "version \(package.version) was already packaged for \(packaged.bootstrap) on \(date): publish or share that "
-                    + "package as it is; raise /package/version only to ship a change, so package managers offer it as an update"
+                    + "package as it is; raise /package/version only to ship a change, so package managers offer it as an update",
             )
         }
         return out
@@ -124,7 +124,7 @@ public struct DistributionCheck: Sendable {
         if record.packageID.hasPrefix(localPrefix) {
             warn(
                 "distribution.package.id.local",
-                "the package's identifier \(record.packageID) is the local one Apelin makes up; have the build script use a reverse-DNS identifier you own"
+                "the package's identifier \(record.packageID) is the local one Apelin makes up; have the build script use a reverse-DNS identifier you own",
             )
         }
         let releases = ArtifactStore(store: store).all().filter {
@@ -142,7 +142,7 @@ public struct DistributionCheck: Sendable {
             warn(
                 "distribution.version.packaged",
                 "version \(record.packageVersion) was already packaged for \(record.bootstrap) on \(date): publish or share that "
-                    + "package as it is; raise the version the build script writes only to ship a change, so package managers offer it as an update"
+                    + "package as it is; raise the version the build script writes only to ship a change, so package managers offer it as an update",
             )
         }
         let other = releases.filter { $0.bootstrap != record.bootstrap }.max { $0.createdAt < $1.createdAt }
@@ -150,7 +150,7 @@ public struct DistributionCheck: Sendable {
             warn(
                 "distribution.package.id.differs",
                 "this \(record.bootstrap) package is \(record.packageID), but the latest \(other.bootstrap) release was \(other.packageID); "
-                    + "both targets should ship the same package"
+                    + "both targets should ship the same package",
             )
         }
         return out
@@ -159,13 +159,13 @@ public struct DistributionCheck: Sendable {
     /// The template's string parameter defaults and the version its project
     /// file starts with; nothing when the template is no longer installed.
     private func templateDefaults(
-        _ source: ProjectDocument.TemplateSource
+        _ source: ProjectDocument.TemplateSource,
     ) -> (placeholders: Set<String>, version: String?) {
         guard let (found, _, template) = catalog.template("\(source.extensionID)/\(source.templateID)") else {
             return ([], nil)
         }
         let placeholders = Set(
-            template.parameters.filter { $0.type == "string" }.compactMap { $0.default?.value.stringValue }
+            template.parameters.filter { $0.type == "string" }.compactMap { $0.default?.value.stringValue },
         )
         let file = found.root.appendingPathComponent(template.directory).appendingPathComponent(template.project)
         // The project file is not JSON until it is filled in; its one

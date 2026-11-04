@@ -36,7 +36,7 @@ public struct GitBranchRow: Codable, Sendable, Equatable, Hashable {
         behind: Int = 0,
         isCurrent: Bool = false,
         commit: String,
-        isGone: Bool = false
+        isGone: Bool = false,
     ) {
         self.name = name
         self.isRemote = isRemote
@@ -86,7 +86,7 @@ public struct GitBranchesResponse: Codable, Sendable, Equatable {
         remote: [GitBranchRow] = [],
         tags: [GitTagRow] = [],
         current: String? = nil,
-        isDetached: Bool = false
+        isDetached: Bool = false,
     ) {
         self.local = local
         self.remote = remote

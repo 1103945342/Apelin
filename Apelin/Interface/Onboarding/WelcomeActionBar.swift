@@ -44,7 +44,7 @@ final class WelcomeActionBar: UIView {
         title: String,
         secondaryTitle: String? = nil,
         action: @escaping () -> Void,
-        secondaryAction: @escaping () -> Void = {}
+        secondaryAction: @escaping () -> Void = {},
     ) {
         super.init(frame: .zero)
         let blur = UIVisualEffectView(effect: UIBlurEffect(style: .regular))

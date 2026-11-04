@@ -29,7 +29,7 @@ public extension ChannelHostBackend {
             name: summary.name,
             url: summary.url,
             pushURL: summary.pushURL,
-            hidesCredential: summary.hidesCredential
+            hidesCredential: summary.hidesCredential,
         )
     }
 }

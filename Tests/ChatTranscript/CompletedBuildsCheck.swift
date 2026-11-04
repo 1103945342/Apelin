@@ -8,7 +8,7 @@ import Foundation
 func checkCompletedBuilds() {
     func result(_ seq: UInt64, tool: String, output: String, isError: Bool = false) -> TaskEvent {
         TaskEvent(seq: EventSeq(seq), kind: "toolResult", time: Date(timeIntervalSince1970: Double(seq)), payload: .object([
-            "id": .string("b\(seq)"), "tool": .string(tool), "output": .string(output), "isError": .bool(isError)
+            "id": .string("b\(seq)"), "tool": .string(tool), "output": .string(output), "isError": .bool(isError),
         ]))
     }
     let build = AgentToolName.projectBuild.rawValue
@@ -25,7 +25,7 @@ func checkCompletedBuilds() {
     let failed = succeeded.replacingOccurrences(of: "\"succeeded\" : true", with: "\"succeeded\" : false")
     let events = [
         TaskEvent(seq: EventSeq(1), kind: "toolCall", time: Date(timeIntervalSince1970: 1), payload: .object([
-            "id": .string("b1"), "tool": .string(build), "arguments": .string("{}")
+            "id": .string("b1"), "tool": .string(build), "arguments": .string("{}"),
         ])),
         result(2, tool: build, output: succeeded),
         result(3, tool: build, output: failed),
@@ -34,7 +34,7 @@ func checkCompletedBuilds() {
         result(6, tool: AgentToolName.shellRun.rawValue, output: succeeded),
         result(7, tool: "build", output: succeeded),
         result(8, tool: build, output: "{\"succeeded\" : tr"),
-        result(9, tool: build, output: succeeded)
+        result(9, tool: build, output: succeeded),
     ]
     precondition(CompletedBuilds.isCompletedBuild(events[1]), "a build that succeeded")
     precondition(!CompletedBuilds.isCompletedBuild(events[0]), "the call is no result")

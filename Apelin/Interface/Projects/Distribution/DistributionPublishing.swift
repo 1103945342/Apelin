@@ -29,7 +29,7 @@ enum DistributionPublishing {
         _ item: Item,
         from presenter: UIViewController,
         anchor: any UIPopoverPresentationControllerSourceItem,
-        onShared: @escaping () -> Void = {}
+        onShared: @escaping () -> Void = {},
     ) async {
         do {
             let file = try await Task.detached {
@@ -70,7 +70,7 @@ enum DistributionPublishing {
             presenter.presentConfirmation(
                 title: "Publish to \(linked.fullName)?",
                 message: "\(packages)\n\nEach package goes into the repository’s debs folder as it was built, in one commit that is pushed. Devices with \(linked.sourceURL) see the update within a few minutes.",
-                confirmTitle: "Publish"
+                confirmTitle: "Publish",
             ) { [weak presenter] in
                 guard let presenter else { return }
                 start(files, to: linked.fullName, from: presenter)
@@ -87,20 +87,20 @@ enum DistributionPublishing {
     private static func start(
         _ files: [(path: String, digest: String)],
         to repository: String,
-        from presenter: UIViewController
+        from presenter: UIViewController,
     ) {
         Task { [weak presenter] in
             do {
                 let handle = try await ApelinService.app.distributionPublish(
                     files: files.map(\.path),
                     digests: files.map(\.digest),
-                    repository: repository
+                    repository: repository,
                 )
                 let page = EnvironmentTaskController(
                     handle: handle,
                     work: .distributionPublish,
                     title: String(localized: "Publishing Package"),
-                    doneTitle: String(localized: "Published")
+                    doneTitle: String(localized: "Published"),
                 )
                 presenter?.navigationController?.pushViewController(page, animated: true)
             } catch {

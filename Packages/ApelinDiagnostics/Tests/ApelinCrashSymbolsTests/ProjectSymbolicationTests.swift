@@ -40,7 +40,7 @@ final class ProjectSymbolicationTests: XCTestCase {
 
         let symbolicator = Symbolicator(
             dsyms: ProjectDSYMs(directories: [Fixture.directory]),
-            openImage: { [self] in try plainOpen($0) }
+            openImage: { [self] in try plainOpen($0) },
         )
         let symbolicated = await symbolicator.symbolicate(crash)
         let frames = try XCTUnwrap(symbolicated.threads.first?.frames)
@@ -61,7 +61,7 @@ final class ProjectSymbolicationTests: XCTestCase {
         crash.images[1].uuid = UUID().uuidString
         let symbolicated = await Symbolicator(
             dsyms: ProjectDSYMs(directories: [Fixture.directory]),
-            openImage: { [self] in try plainOpen($0) }
+            openImage: { [self] in try plainOpen($0) },
         ).symbolicate(crash)
         XCTAssertNil(symbolicated.threads.first?.frames.first?.symbol)
     }
@@ -72,7 +72,7 @@ final class ProjectSymbolicationTests: XCTestCase {
         owner.version = "0.0.1"
         let owners = StaticPackageOwners(
             ownerByPath: ["/usr/lib/TweakInject/ApelinHello.dylib": owner],
-            installRoot: "/var/jb"
+            installRoot: "/var/jb",
         )
         let suspects = Blame.suspects(in: crash, packages: owners)
         let first = try XCTUnwrap(suspects.first)
@@ -85,16 +85,16 @@ final class ProjectSymbolicationTests: XCTestCase {
     func testOwnerSpellingsCoverRootlessRoothideAndPrivate() {
         XCTAssertEqual(
             PackageOwnerPaths.spellings(of: "/var/jb/usr/lib/X.dylib", installRoot: nil),
-            ["/var/jb/usr/lib/X.dylib", "/usr/lib/X.dylib", "/private/var/jb/usr/lib/X.dylib"]
+            ["/var/jb/usr/lib/X.dylib", "/usr/lib/X.dylib", "/private/var/jb/usr/lib/X.dylib"],
         )
         let root = "/private/var/containers/Bundle/Application/.jbroot-0123456789ABCDEF"
         XCTAssertTrue(
             PackageOwnerPaths.spellings(of: root + "/usr/lib/X.dylib", installRoot: root + "/")
-                .contains("/usr/lib/X.dylib")
+                .contains("/usr/lib/X.dylib"),
         )
         XCTAssertTrue(
             PackageOwnerPaths.spellings(of: "/var/containers/Bundle/Application/.jbroot-0123456789ABCDEF/usr/lib/X.dylib", installRoot: root)
-                .contains("/usr/lib/X.dylib")
+                .contains("/usr/lib/X.dylib"),
         )
     }
 }

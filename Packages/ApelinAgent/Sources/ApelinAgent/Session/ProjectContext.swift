@@ -26,7 +26,7 @@ enum ProjectContext {
     static func make(project: ProjectIdentity, root: ScopedRoot, repository: GitStatusToolResponse? = nil) -> String {
         var lines = [
             openingTag,
-            "Apelin added this to the first message: the project when the conversation began. It is context, not the user's request, and files change after it."
+            "Apelin added this to the first message: the project when the conversation began. It is context, not the user's request, and files change after it.",
         ]
         let manifest = manifest(in: root)
         let displayName = text(manifest?["displayName"]).flatMap { $0.isEmpty ? nil : $0 }

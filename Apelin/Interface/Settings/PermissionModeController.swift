@@ -23,7 +23,7 @@ final class PermissionModeController: TableController {
 
     private lazy var dataSource = TableDataSource<Section, RowID, Row>(
         tableView: tableView,
-        identifier: { $0.id }
+        identifier: { $0.id },
     ) { [weak self] table, _, row in
         self?.cell(in: table, row: row)
     }
@@ -37,7 +37,7 @@ final class PermissionModeController: TableController {
         }
         dataSource.update([
             (.modes, modes.map { Row(id: .mode($0), selected: $0 == AgentPermissions.mode) }),
-            (.screen, [Row(id: .asksBeforeScreen, selected: AgentPermissions.asksBeforeScreen)])
+            (.screen, [Row(id: .asksBeforeScreen, selected: AgentPermissions.asksBeforeScreen)]),
         ], reconfigure: true)
     }
 
@@ -105,11 +105,11 @@ final class PermissionModeController: TableController {
                 title: "Enable Full Mode?",
                 message: "The agent can run commands as root without asking, with full control of this device. Each chat switches when you send its next message.",
                 confirmTitle: "Enable Full Mode",
-                destructive: true
+                destructive: true,
             ) { [weak self] in
                 Task { @MainActor in
                     guard await DeviceOwnerCheck.confirm(
-                        reason: String(localized: "Let the agent run commands as root without asking.")
+                        reason: String(localized: "Let the agent run commands as root without asking."),
                     ) else { return }
                     self?.save(mode)
                 }
@@ -118,7 +118,7 @@ final class PermissionModeController: TableController {
             presentConfirmation(
                 title: "Enable Relaxed Mode?",
                 message: "The agent can run commands and make changes without asking, within the app’s permissions. Each chat switches when you send its next message.",
-                confirmTitle: "Enable Relaxed Mode"
+                confirmTitle: "Enable Relaxed Mode",
             ) { [weak self] in self?.save(mode) }
         default:
             save(mode)

@@ -73,7 +73,7 @@ final class ColumnTableMetrics {
                 x: trailing - trailingSymbolWidth,
                 y: content.minY,
                 width: trailingSymbolWidth,
-                height: content.height
+                height: content.height,
             )
             trailing -= trailingSymbolWidth + columnSpacing
         }
@@ -96,7 +96,7 @@ final class ColumnTableMetrics {
             x: content.minX,
             y: content.minY,
             width: max(0, trailing - content.minX),
-            height: content.height
+            height: content.height,
         )
         if isRightToLeft {
             name = name.mirrored(across: content)
@@ -217,7 +217,7 @@ final class ColumnTableCell: UITableViewCell {
         columns: [TableColumn],
         metrics: ColumnTableMetrics,
         symbol: UIImage? = nil,
-        symbolTint: UIColor = .tintColor
+        symbolTint: UIColor = .tintColor,
     ) {
         self.metrics = metrics
         symbolView.image = symbol
@@ -265,7 +265,7 @@ final class ColumnTableCell: UITableViewCell {
                 x: isRightToLeft ? content.minX : content.maxX - metrics.trailingSymbolWidth,
                 y: content.minY,
                 width: metrics.trailingSymbolWidth,
-                height: metrics.symbolSize
+                height: metrics.symbolSize,
             )
             let textWidth = content.width - metrics.trailingSymbolWidth - metrics.columnSpacing
             let textX = isRightToLeft ? content.minX + metrics.trailingSymbolWidth + metrics.columnSpacing : content.minX
@@ -291,13 +291,13 @@ final class ColumnTableCell: UITableViewCell {
             x: layout.name.minX,
             y: pixelAligned(contentView.bounds.midY - nameHeight / 2),
             width: layout.name.width,
-            height: nameLineHeight
+            height: nameLineHeight,
         )
         subtitleLabel.frame = CGRect(
             x: nameLabel.frame.minX,
             y: nameLabel.frame.maxY + ColumnTableMetrics.lineSpacing,
             width: nameLabel.frame.width,
-            height: nameLineHeight
+            height: nameLineHeight,
         )
         // The version and figures share a baseline.
         let baseline = nameLabel.frame.minY + metrics.nameFont.ascender

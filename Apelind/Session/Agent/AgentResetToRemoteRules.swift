@@ -42,7 +42,7 @@ enum AgentResetToRemoteRules {
         else {
             return ApelinError(
                 .denied,
-                "approval required: the user has not approved making this project exactly \(reset.remote)/\(reset.branch) at \(reset.expectedRemoteCommit.prefix(7)); a reset discards local work and asks in every mode"
+                "approval required: the user has not approved making this project exactly \(reset.remote)/\(reset.branch) at \(reset.expectedRemoteCommit.prefix(7)); a reset discards local work and asks in every mode",
             )
         }
         return nil

@@ -38,7 +38,7 @@ final class ChatWidgetPublisher {
         NotificationCenter.default.addObserver(
             forName: .apelinProjectsChanged,
             object: nil,
-            queue: .main
+            queue: .main,
         ) { _ in
             MainActor.assumeIsolated { ChatWidgetPublisher.shared.reloadProjectNames() }
         }

@@ -18,12 +18,12 @@ let package = Package(
     name: "ApelinToolHost",
     platforms: [
         .iOS(.v16),
-        .macOS(.v13)
+        .macOS(.v13),
     ],
     products: [
         .library(name: "ApelinToolCore", targets: ["ApelinToolCore"]),
         .library(name: "ApelinToolHost", targets: ["ApelinToolHost"]),
-        .library(name: "ApelinToolExtension", targets: ["ApelinToolExtension"])
+        .library(name: "ApelinToolExtension", targets: ["ApelinToolExtension"]),
     ],
     targets: [
         .target(name: "ApelinToolCore"),
@@ -34,7 +34,7 @@ let package = Package(
         .executableTarget(name: "FakeToolExtension", dependencies: ["ApelinToolExtension"]),
         .testTarget(
             name: "ApelinToolHostTests",
-            dependencies: ["ApelinToolHost", "ApelinToolExtension", "FakeToolExtension"]
-        )
-    ]
+            dependencies: ["ApelinToolHost", "ApelinToolExtension", "FakeToolExtension"],
+        ),
+    ],
 )

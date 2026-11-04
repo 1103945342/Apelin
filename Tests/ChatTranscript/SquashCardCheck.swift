@@ -17,9 +17,9 @@ func checkSquashCard() {
             "message": .string("Add the clock\n\nThe hand and the face."), "count": .number(3), "published": .number(0),
             "commits": .array([
                 .object(["commit": .string(head), "subject": .string("Fix the hand")]),
-                .object(["commit": .string(String(repeating: "c", count: 40)), "subject": .string("Draw the face")])
-            ])
-        ])])
+                .object(["commit": .string(String(repeating: "c", count: 40)), "subject": .string("Draw the face")]),
+            ]),
+        ])]),
     ])
     precondition(ApprovalCardText.title(payload) == nil, "the call's own title, Squash commits")
     let sections = ApprovalCardText.sections(payload, title: "Squash commits", callReason: nil)

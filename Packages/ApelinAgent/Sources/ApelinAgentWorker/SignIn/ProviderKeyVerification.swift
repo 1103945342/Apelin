@@ -9,7 +9,7 @@ public enum ProviderKeyVerification {
     public static func verify(
         _ provider: AgentProvider,
         _ credentials: OAuthCredentials,
-        modelOverride: String? = nil
+        modelOverride: String? = nil,
     ) async throws {
         let source = DeliveredCredentialSource([provider.storeID: credentials])
         let cancellation = CancellationHandle()
@@ -33,8 +33,8 @@ public enum ProviderKeyVerification {
                             maxRetryDelayMs: 0,
                             resolvedAuth: auth,
                             cancellation: cancellation,
-                            verbose: false
-                        )
+                            verbose: false,
+                        ),
                     )
                     try Task.checkCancellation()
                     guard response.stopReason == .stop || response.stopReason == .length,
@@ -57,7 +57,7 @@ public enum ProviderKeyVerification {
             // body, key, or request header crosses back to the app.
             throw ApelinError(
                 .unavailable,
-                "Unable to verify this provider. Check the API key, endpoint and model, then try again."
+                "Unable to verify this provider. Check the API key, endpoint and model, then try again.",
             )
         }
     }

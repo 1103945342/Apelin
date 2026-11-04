@@ -42,7 +42,7 @@ public enum CommandClassifier {
         var inWord = false
         var index = text.startIndex
         let metacharacters: Set<Character> = [
-            ";", "&", "|", "<", ">", "(", ")", "$", "`", "*", "?", "[", "]", "{", "}", "~", "#", "!", "\\", "\n", "\r"
+            ";", "&", "|", "<", ">", "(", ")", "$", "`", "*", "?", "[", "]", "{", "}", "~", "#", "!", "\\", "\n", "\r",
         ]
 
         while index < text.endIndex {
@@ -107,7 +107,7 @@ public struct CommandPreset: Sendable, Hashable, Codable {
         executable: String,
         argumentPrefix: [String] = [],
         allowsFurtherArguments: Bool = true,
-        pathArgumentsStayInProject: Bool = true
+        pathArgumentsStayInProject: Bool = true,
     ) {
         self.name = name
         self.executable = executable
@@ -146,7 +146,7 @@ public struct CommandPreset: Sendable, Hashable, Codable {
         guard let paths = RunCodePresetRule.pathArguments(
             Array(further),
             executable: executable,
-            subcommand: executable == "git" ? argumentPrefix.first : nil
+            subcommand: executable == "git" ? argumentPrefix.first : nil,
         ) else {
             return false
         }

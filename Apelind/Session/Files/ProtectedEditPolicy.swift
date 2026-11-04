@@ -21,7 +21,7 @@ enum ProtectedEditPolicy {
     /// Relative to the install root; every file below each is refused.
     static let refusedTrees = [
         "var/lib/dpkg", "var/lib/apt", "var/cache/apt", "var/lib/irisin", "var/lib/apelin",
-        "Library/dpkg", "etc/apt/trusted.gpg.d"
+        "Library/dpkg", "etc/apt/trusted.gpg.d",
     ]
 
     struct Target: Equatable {
@@ -72,7 +72,7 @@ enum ProtectedEditPolicy {
         guard metadata.st_nlink <= 1 else {
             throw ApelinError(
                 .denied,
-                "\(canonical) has \(metadata.st_nlink) hard links; replacing it would split them"
+                "\(canonical) has \(metadata.st_nlink) hard links; replacing it would split them",
             )
         }
         guard metadata.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH) == 0 else {
@@ -92,14 +92,14 @@ enum ProtectedEditPolicy {
         return Target(
             path: canonical,
             version: version(metadata, sha256: digest),
-            needsConfirmation: needsConfirmation
+            needsConfirmation: needsConfirmation,
         )
     }
 
     static func isMachO(_ magic: [UInt8]) -> Bool {
         let known: [[UInt8]] = [
             [0xFE, 0xED, 0xFA, 0xCE], [0xCE, 0xFA, 0xED, 0xFE], [0xFE, 0xED, 0xFA, 0xCF], [0xCF, 0xFA, 0xED, 0xFE],
-            [0xCA, 0xFE, 0xBA, 0xBE], [0xBE, 0xBA, 0xFE, 0xCA], [0xCA, 0xFE, 0xBA, 0xBF], [0xBF, 0xBA, 0xFE, 0xCA]
+            [0xCA, 0xFE, 0xBA, 0xBE], [0xBE, 0xBA, 0xFE, 0xCA], [0xCA, 0xFE, 0xBA, 0xBF], [0xBF, 0xBA, 0xFE, 0xCA],
         ]
         return known.contains(magic)
     }
@@ -110,7 +110,7 @@ enum ProtectedEditPolicy {
             inode: UInt64(metadata.st_ino),
             size: Int64(metadata.st_size),
             modified: Double(metadata.st_mtimespec.tv_sec) + Double(metadata.st_mtimespec.tv_nsec) / 1_000_000_000,
-            sha256: sha256
+            sha256: sha256,
         )
     }
 

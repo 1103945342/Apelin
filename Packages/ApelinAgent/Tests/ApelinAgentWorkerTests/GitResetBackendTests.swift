@@ -23,14 +23,14 @@ struct GitResetBackendTests {
         lostCommits: (1 ... 12).map { GitCommitLine(commit: String(repeating: "c", count: 40), subject: "Mine \($0)") },
         changedFileCount: 1,
         changedFiles: [GitStatusEntry(path: "Sources/Tweak.m", index: " ", worktree: "M")],
-        projectFile: .repositoryWithProjectID
+        projectFile: .repositoryWithProjectID,
     )
 
     @Test
     func `the preview is read to its end, and the reset carries what it showed`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.gitRemoteList, reply: GitRemoteListResponse(remotes: [
-            GitRemoteSummary(name: "origin", url: "https://github.com/owngoal-dev/Pineora.git")
+            GitRemoteSummary(name: "origin", url: "https://github.com/owngoal-dev/Pineora.git"),
         ]))
         fixture.host.on(.gitResetPreview, reply: TaskHandle(taskID: TaskID("preview"), kind: .environment))
         fixture.host.on(.gitResetToRemote, reply: TaskHandle(taskID: TaskID("reset"), kind: .environment))
@@ -43,9 +43,9 @@ struct GitResetBackendTests {
                 ("result", .object([
                     "remote": .string("origin"), "branch": .string("main"), "commit": .string(Self.remoteCommit),
                     "previousHead": .string(Self.head), "backupBranch": .string("apelin-backup/20261031-120000"),
-                    "projectFile": .string("repositoryWithProjectID")
+                    "projectFile": .string("repositoryWithProjectID"),
                 ])),
-                stateEvent(.succeeded)
+                stateEvent(.succeeded),
             ]), [])
         }
 
@@ -75,7 +75,7 @@ struct GitResetBackendTests {
         let request = ApprovalRequest(
             id: "a", toolCallID: "c", tool: "git_reset_to_remote", arguments: "{}", workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Makes this project exactly origin/main.", detail: .resetToRemote(card),
-            allowsSessionScope: false
+            allowsSessionScope: false,
         )
         let payload = EventRelay.approvalPayload(request)
         let detail = try #require(payload["detail"]?["resetToRemote"])

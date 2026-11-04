@@ -15,7 +15,7 @@ struct PlaceholderIdentifierBackendTests {
         _ fixture: Fixture,
         name: String = "Banana",
         manifest: String?,
-        bundleID: String? = nil
+        bundleID: String? = nil,
     ) async throws -> ProjectCreateToolResponse {
         let folder = fixture.dataFolder.appendingPathComponent(name, isDirectory: true)
         try FileManager.default.createDirectory(at: folder.appendingPathComponent("Resources"), withIntermediateDirectories: true)
@@ -30,7 +30,7 @@ struct PlaceholderIdentifierBackendTests {
         return try await fixture.backend.createProject(ProjectCreateToolRequest(
             context: fixture.context(),
             templateID: "wiki.qaq.apelin.dev.app/uikit-objc",
-            name: name
+            name: name,
         ))
     }
 

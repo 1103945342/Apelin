@@ -26,7 +26,7 @@ enum ProjectMenuOrder {
         _ projects: [String],
         created: [String: Date],
         chats: [ChatSummary],
-        open: String?
+        open: String?,
     ) -> Split {
         var latest = created
         for chat in chats {

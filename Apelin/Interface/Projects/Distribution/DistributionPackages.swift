@@ -81,7 +81,7 @@ enum DistributionPackages {
         projectID: String,
         package: (id: String, version: String)?,
         isWorkspace: Bool,
-        repository: DistributionRepository?
+        repository: DistributionRepository?,
     ) async -> [BuildBootstrap: DistributionPackage] {
         guard isWorkspace || package != nil else { return [:] }
         return await Task.detached { () -> [BuildBootstrap: DistributionPackage] in
@@ -108,7 +108,7 @@ enum DistributionPackages {
                         version: record.packageVersion,
                         file: file,
                         digest: record.digest,
-                        isPublished: record.digest == published
+                        isPublished: record.digest == published,
                     )
                     break
                 }

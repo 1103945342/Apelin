@@ -62,7 +62,7 @@ enum AgentFeedbackRules {
             session: session,
             registry: registry,
             covers: { covers(feedback, asked: $0) },
-            refusal: "approval required: the user has not approved posting this issue on \(FeedbackRules.repository)"
+            refusal: "approval required: the user has not approved posting this issue on \(FeedbackRules.repository)",
         )
     }
 
@@ -73,7 +73,7 @@ enum AgentFeedbackRules {
             session: session,
             registry: registry,
             covers: { covers(edit, asked: $0) },
-            refusal: "approval required: the user has not approved this edit of issue #\(edit.number) on \(FeedbackRules.repository)"
+            refusal: "approval required: the user has not approved this edit of issue #\(edit.number) on \(FeedbackRules.repository)",
         )
     }
 
@@ -81,7 +81,7 @@ enum AgentFeedbackRules {
         session: String?,
         registry: TaskRegistry,
         covers: (JSONValue) -> Bool,
-        refusal: String
+        refusal: String,
     ) async -> ApelinError? {
         guard let session, let entry = await AgentSessionTable.shared.entry(session) else {
             return ApelinError(.denied, "no agent session for this worker")

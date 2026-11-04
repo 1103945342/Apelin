@@ -25,7 +25,7 @@ final class ComposerMentionMenu: UIView {
         tableView.delegate = self
         tableView.backgroundColor = .clear
         tableView.separatorInset = UIEdgeInsets(
-            top: 0, left: ComposerMetrics.Spacing.md, bottom: 0, right: 0
+            top: 0, left: ComposerMetrics.Spacing.md, bottom: 0, right: 0,
         )
         tableView.rowHeight = rowHeight
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "mention")

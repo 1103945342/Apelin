@@ -20,9 +20,9 @@ struct ToolExtensionBackendTests {
                     name: "symbols.txt",
                     mimeType: "text/plain",
                     byteCount: listing.count,
-                    sha256: "sha256:00"
+                    sha256: "sha256:00",
                 )]),
-                [descriptor(holding: listing)]
+                [descriptor(holding: listing)],
             )
         }
         fixture.host.on(.toolHostClose, reply: Acknowledged())
@@ -32,7 +32,7 @@ struct ToolExtensionBackendTests {
             sessionID: "tool-session",
             tool: "symbols",
             arguments: ["binary": "/usr/lib/dyld", "limit": 10],
-            timeoutSeconds: 30
+            timeoutSeconds: 30,
         ))
         try await fixture.backend.closeToolExtension(sessionID: "tool-session")
 
@@ -56,17 +56,17 @@ struct ToolExtensionBackendTests {
         let fixture = try Fixture()
         fixture.host.on(.toolHostCall, reply: ToolHostCallResponse(
             text: "",
-            error: .object(["code": .string("extensionCrashed"), "message": .string("exited with status 1")])
+            error: .object(["code": .string("extensionCrashed"), "message": .string("exited with status 1")]),
         ))
         let response = try await fixture.backend.callToolExtension(ToolExtensionCallRequest(
-            sessionID: "tool-session", tool: "disassemble", arguments: [:], timeoutSeconds: nil
+            sessionID: "tool-session", tool: "disassemble", arguments: [:], timeoutSeconds: nil,
         ))
         #expect(response.failure == ToolExtensionFailure(code: "extensionCrashed", message: "exited with status 1"))
 
         fixture.host.on(.toolHostCall) { _ in throw ApelinError(.notFound, "no tool session tool-session") }
         let gone = await #expect(throws: ApelinError.self) {
             _ = try await fixture.backend.callToolExtension(ToolExtensionCallRequest(
-                sessionID: "tool-session", tool: "disassemble", arguments: [:], timeoutSeconds: nil
+                sessionID: "tool-session", tool: "disassemble", arguments: [:], timeoutSeconds: nil,
             ))
         }
         #expect(gone?.code == .notFound, "the session's caller opens it again")

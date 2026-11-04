@@ -87,7 +87,7 @@ final class ComposerCommandCatalog {
                     name: action.name,
                     summary: action.summary,
                     kind: .action,
-                    acceptsArguments: action.acceptsArguments
+                    acceptsArguments: action.acceptsArguments,
                 )
             }
         built += skills.values
@@ -97,7 +97,7 @@ final class ComposerCommandCatalog {
                     name: skill.name,
                     summary: skill.description,
                     kind: .skill,
-                    acceptsArguments: true
+                    acceptsArguments: true,
                 )
             }
         commands = built
@@ -106,7 +106,7 @@ final class ComposerCommandCatalog {
     func setSkills(_ listed: [AgentSkill]) {
         let byName: [String: AgentSkill] = Dictionary(
             listed.map { ($0.name, $0) },
-            uniquingKeysWith: { first, _ in first }
+            uniquingKeysWith: { first, _ in first },
         )
         skills = byName
         rebuild()

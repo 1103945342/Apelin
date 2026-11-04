@@ -99,7 +99,7 @@ public extension GitRepository {
         comparing branch: String? = nil,
         listing: Int = 10,
         credentials: GitCredentialLookup? = nil,
-        progress: @escaping (GitCloneProgress) -> Bool = { _ in true }
+        progress: @escaping (GitCloneProgress) -> Bool = { _ in true },
     ) throws -> GitFetchResult {
         var local: String?
         if let branch {
@@ -123,7 +123,7 @@ public extension GitRepository {
                 local: local,
                 remote: Self.advertised("refs/heads/" + branch, by: remote),
                 remoteName: name,
-                listing: listing
+                listing: listing,
             )
         }
         return result
@@ -160,7 +160,7 @@ public extension GitRepository {
         local: String,
         remote: String?,
         remoteName: String,
-        listing: Int
+        listing: Int,
     ) throws -> GitRemoteComparison {
         var base = git_oid()
         try GitError.check(git_oid_fromstr(&base, local), "read \(branch)")
@@ -168,7 +168,7 @@ public extension GitRepository {
             branch: branch,
             local: local,
             localSubject: summary(of: &base).subject,
-            remote: remote
+            remote: remote,
         )
         guard let remote, remote != local else { return comparison }
         var walk: OpaquePointer?
@@ -176,7 +176,7 @@ public extension GitRepository {
         defer { git_revwalk_free(walk) }
         try GitError.check(
             git_revwalk_sorting(walk, GIT_SORT_TOPOLOGICAL.rawValue | GIT_SORT_TIME.rawValue),
-            "walk the history"
+            "walk the history",
         )
         var tip = git_oid()
         try GitError.check(git_oid_fromstr(&tip, remote), "read \(remoteName)'s \(branch)")
@@ -203,7 +203,7 @@ public extension GitRepository {
         let subject = git_commit_summary(commit).map { String(cString: $0) } ?? ""
         return GitLogEntry(
             commit: Self.hex(&oid),
-            subject: subject.count > 200 ? String(subject.prefix(200)) + "…" : subject
+            subject: subject.count > 200 ? String(subject.prefix(200)) + "…" : subject,
         )
     }
 
@@ -220,7 +220,7 @@ public extension GitRepository {
     func pull(
         remote: String? = nil,
         credentials: GitCredentialLookup? = nil,
-        progress: @escaping (GitCloneProgress) -> Bool = { _ in true }
+        progress: @escaping (GitCloneProgress) -> Bool = { _ in true },
     ) throws -> GitPullResult {
         guard let branch = head().branch else { throw GitError(.invalid, "HEAD is not on a branch") }
         let local = "refs/heads/" + branch
@@ -256,7 +256,7 @@ public extension GitRepository {
         var heads: [OpaquePointer?] = [annotated]
         try GitError.check(
             git_merge_analysis(&analysis, &preference, pointer, &heads, 1),
-            "compare \(branch) with \(upstream)"
+            "compare \(branch) with \(upstream)",
         )
         if analysis.rawValue & GIT_MERGE_ANALYSIS_UP_TO_DATE.rawValue != 0 {
             return GitPullResult(branch: branch, from: from, to: from ?? to, upToDate: true)
@@ -265,7 +265,7 @@ public extension GitRepository {
         guard analysis.rawValue & fastForward != 0 else {
             throw GitError(
                 .notFastForward,
-                "\(branch) and \(upstream) have diverged: a pull only fast-forwards, so merge or rebase them first"
+                "\(branch) and \(upstream) have diverged: a pull only fast-forwards, so merge or rebase them first",
             )
         }
 
@@ -284,7 +284,7 @@ public extension GitRepository {
             try GitError.check(git_oid_fromstr(&current, from), "read \(branch)")
             try GitError.check(
                 git_reference_create_matching(&moved, pointer, local, &target, 1, &current, message),
-                "move \(branch)"
+                "move \(branch)",
             )
         } else {
             try GitError.check(git_reference_create(&moved, pointer, local, &target, 0, message), "make \(branch)")
@@ -316,7 +316,7 @@ public extension GitRepository {
         lease: GitLease? = nil,
         credentials: GitCredentialLookup? = nil,
         remoteCommit: @escaping (String?) -> Void = { _ in },
-        progress: @escaping (GitPushProgress) -> Bool = { _ in true }
+        progress: @escaping (GitPushProgress) -> Bool = { _ in true },
     ) throws -> GitPushResult {
         guard let branch = branch ?? head().branch else {
             throw GitError(.invalid, "HEAD is not on a branch: name the branch to push")
@@ -333,7 +333,7 @@ public extension GitRepository {
             if let approved = lease.localCommit, approved != commit {
                 throw GitError(
                     .localChanged,
-                    "\(branch) is at \(commit) now, not \(approved), the commit this push was to send: nothing was pushed"
+                    "\(branch) is at \(commit) now, not \(approved), the commit this push was to send: nothing was pushed",
                 )
             }
         }
@@ -362,7 +362,7 @@ public extension GitRepository {
                 ?? "is gone, so it is not at \(lease.expectedCommit)"
             throw GitError(
                 .remoteChanged,
-                "\(name)'s \(branch) \(state), the commit this push was to replace: it changed since, so nothing was pushed"
+                "\(name)'s \(branch) \(state), the commit this push was to replace: it changed since, so nothing was pushed",
             )
         }
         if code == GIT_ENONFASTFORWARD.rawValue {

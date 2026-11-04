@@ -52,7 +52,7 @@ struct GitRemoteToolTests {
         #expect(await harness.backend.calls == [
             .other("gitRemoteList"),
             .other("gitRemoteSet origin https://github.com/owngoal-dev/Pineora.git"),
-            .other("gitRemoteRemove upstream")
+            .other("gitRemoteRemove upstream"),
         ])
     }
 
@@ -86,7 +86,7 @@ struct GitRemoteToolTests {
             ["name": "origin", "url": "git@github.com:a/b.git"],
             ["name": "-x", "url": "https://github.com/a/b.git"],
             ["name": "../x", "url": "https://github.com/a/b.git"],
-            ["name": "https://github.com/a/b.git", "url": "https://github.com/a/b.git"]
+            ["name": "https://github.com/a/b.git", "url": "https://github.com/a/b.git"],
         ]
         for arguments in refused {
             await #expect(throws: ToolArgumentError.self, "\(arguments)") {

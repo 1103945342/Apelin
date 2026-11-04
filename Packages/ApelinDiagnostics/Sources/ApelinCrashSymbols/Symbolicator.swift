@@ -56,7 +56,7 @@ public actor Symbolicator {
 
     public func symbolicate(
         _ crash: CrashReport,
-        progress: (@Sendable (SymbolicationProgress) -> Void)? = nil
+        progress: (@Sendable (SymbolicationProgress) -> Void)? = nil,
     ) async -> CrashReport {
         let revisions = dsyms.revision
         if let previous = storeRevisions, previous != revisions {
@@ -75,7 +75,7 @@ public actor Symbolicator {
             progress?(SymbolicationProgress(
                 completedImages: completed,
                 totalImages: indices.count,
-                currentImage: image.name
+                currentImage: image.name,
             ))
             if let resolver = await resolver(for: image) {
                 resolved[index] = resolver
@@ -84,7 +84,7 @@ public actor Symbolicator {
         progress?(SymbolicationProgress(
             completedImages: indices.count,
             totalImages: indices.count,
-            currentImage: ""
+            currentImage: "",
         ))
 
         var crash = crash
@@ -153,7 +153,7 @@ public actor Symbolicator {
                 symbols: slice.symbolTable(),
                 lines: Self.lineTable(of: slice),
                 textVMAddress: slice.textVMAddress,
-                source: .dsym
+                source: .dsym,
             )
         }
 
@@ -169,7 +169,7 @@ public actor Symbolicator {
                 symbols: slice.symbolTable(),
                 lines: nil,
                 textVMAddress: slice.textVMAddress,
-                source: .binary
+                source: .binary,
             )
         }
 
@@ -181,7 +181,7 @@ public actor Symbolicator {
         let table = DWARFLineTable(
             debugLine: debugLine,
             debugLineStr: slice.section(segment: "__DWARF", name: "__debug_line_str"),
-            debugStr: slice.section(segment: "__DWARF", name: "__debug_str")
+            debugStr: slice.section(segment: "__DWARF", name: "__debug_str"),
         )
         return table.isEmpty ? nil : table
     }

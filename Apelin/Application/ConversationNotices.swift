@@ -50,7 +50,7 @@ final class ConversationNotices: NSObject, UNUserNotificationCenterDelegate {
     nonisolated func userNotificationCenter(
         _: UNUserNotificationCenter,
         willPresent _: UNNotification,
-        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void,
     ) {
         DispatchQueue.main.async {
             let active = UIApplication.shared.applicationState == .active
@@ -61,7 +61,7 @@ final class ConversationNotices: NSObject, UNUserNotificationCenterDelegate {
     nonisolated func userNotificationCenter(
         _: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
-        withCompletionHandler completionHandler: @escaping () -> Void
+        withCompletionHandler completionHandler: @escaping () -> Void,
     ) {
         let link = response.notification.request.content.userInfo[Self.linkKey] as? String
         DispatchQueue.main.async {

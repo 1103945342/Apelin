@@ -23,7 +23,7 @@ public struct ApelinService: Sendable {
     /// Sends a request and decodes its reply. Throws `ApelinError`.
     public func send<R: OperationRequest>(
         _ request: R,
-        descriptors: [OwnedDescriptor] = []
+        descriptors: [OwnedDescriptor] = [],
     ) async throws -> R.Response {
         try await sendReturningDescriptors(request, descriptors: descriptors).0
     }
@@ -31,7 +31,7 @@ public struct ApelinService: Sendable {
     /// Sends a request; the reply's descriptors come back owned by the caller.
     public func sendReturningDescriptors<R: OperationRequest>(
         _ request: R,
-        descriptors: [OwnedDescriptor] = []
+        descriptors: [OwnedDescriptor] = [],
     ) async throws -> (R.Response, [OwnedDescriptor]) {
         let wire = try WireRequest(request)
         let (reply, returned) = try await transport.call(wire, descriptors: descriptors)
@@ -52,7 +52,7 @@ public struct ApelinService: Sendable {
     public func sendUntyped(
         _ operation: AppOperation,
         request: JSONValue,
-        descriptors: [OwnedDescriptor] = []
+        descriptors: [OwnedDescriptor] = [],
     ) async throws -> (JSONValue, [OwnedDescriptor]) {
         try await sendUntyped(operation.requestType, request: request, descriptors: descriptors)
     }
@@ -60,7 +60,7 @@ public struct ApelinService: Sendable {
     private func sendUntyped<R: OperationRequest>(
         _: R.Type,
         request: JSONValue,
-        descriptors: [OwnedDescriptor]
+        descriptors: [OwnedDescriptor],
     ) async throws -> (JSONValue, [OwnedDescriptor]) {
         let typed: R
         do {
@@ -77,7 +77,7 @@ public struct ApelinService: Sendable {
     public func attach(
         _ handle: TaskHandle,
         afterSeq: EventSeq,
-        waitMilliseconds: Int = 20000
+        waitMilliseconds: Int = 20000,
     ) async throws -> TaskEventBatch {
         guard let type = handle.attachOperation.requestType as? any TaskAttachRequest.Type else {
             throw ApelinError(.badRequest, "\(handle.attachOperation.rawValue) is not an attach")
@@ -89,7 +89,7 @@ public struct ApelinService: Sendable {
         _: R.Type,
         taskID: TaskID,
         afterSeq: EventSeq,
-        waitMilliseconds: Int
+        waitMilliseconds: Int,
     ) async throws -> TaskEventBatch {
         try await send(R(taskID: taskID, afterSeq: afterSeq, waitMilliseconds: waitMilliseconds))
     }

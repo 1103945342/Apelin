@@ -27,7 +27,7 @@ public struct TaskReporter: Sendable {
 
     public init(
         cancellation: CancellationFlag = CancellationFlag(),
-        emit: @escaping @Sendable (String, JSONValue?) -> Void
+        emit: @escaping @Sendable (String, JSONValue?) -> Void,
     ) {
         emitter = emit
         self.cancellation = cancellation

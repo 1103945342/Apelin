@@ -30,7 +30,7 @@ public struct SessionMetadata: Sendable, Hashable, Codable {
         project: ProjectIdentity,
         provider: ProviderConfiguration,
         mode: ApprovalMode,
-        created: Date
+        created: Date,
     ) {
         self.id = id
         self.project = project
@@ -188,7 +188,7 @@ public actor SessionEventLog {
     /// test can append while one is under way; nil in the worker.
     func attach(
         afterSeq: UInt64,
-        pausing pause: (@Sendable () async -> Void)?
+        pausing pause: (@Sendable () async -> Void)?,
     ) throws -> AsyncStream<SessionEventRecord> {
         guard handle != nil else { throw SessionStoreError.io("the session's event log is closed") }
         let (stream, continuation) = AsyncStream<SessionEventRecord>.makeStream(bufferingPolicy: .unbounded)
@@ -210,7 +210,7 @@ public actor SessionEventLog {
                     afterSeq: afterSeq,
                     lastSeq: lastSeq,
                     to: continuation,
-                    pausing: pause
+                    pausing: pause,
                 )
                 await self.replayEnded(id, decodes: decodes)
             }
@@ -362,7 +362,7 @@ public actor SessionEventLog {
         try FileManager.default.createDirectory(
             at: url,
             withIntermediateDirectories: true,
-            attributes: [.posixPermissions: 0o700]
+            attributes: [.posixPermissions: 0o700],
         )
     }
 }

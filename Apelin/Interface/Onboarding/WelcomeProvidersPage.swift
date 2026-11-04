@@ -8,7 +8,7 @@ final class WelcomeProvidersPage: WelcomeListPage {
         (String(localized: "Claude Code"), .anthropicOAuth),
         (String(localized: "Codex"), .openAICodex),
         (String(localized: "Cursor"), .cursor),
-        (String(localized: "GitHub Copilot"), .githubCopilot)
+        (String(localized: "GitHub Copilot"), .githubCopilot),
     ]
     private enum Item: Hashable { case introduction, provider(AgentProvider) }
     private enum Row: Equatable {
@@ -24,7 +24,7 @@ final class WelcomeProvidersPage: WelcomeListPage {
 
     private lazy var dataSource = TableDataSource<Int, Item, Row>(
         tableView: tableView,
-        identifier: { $0.id }
+        identifier: { $0.id },
     ) { [weak self] _, _, row in
         self?.cell(for: row)
     }
@@ -34,7 +34,7 @@ final class WelcomeProvidersPage: WelcomeListPage {
             Row.provider(
                 entry.1,
                 name: entry.0,
-                connected: accounts.contains { $0.provider == entry.1 && $0.signedIn }
+                connected: accounts.contains { $0.provider == entry.1 && $0.signedIn },
             )
         })])
     }
@@ -113,7 +113,7 @@ final class WelcomeProvidersPage: WelcomeListPage {
                 guard let account = accounts.first(where: { $0.provider == provider }) else {
                     throw ApelinError(
                         .unimplemented,
-                        String(localized: "This provider is not available. You can add another provider in Settings.")
+                        String(localized: "This provider is not available. You can add another provider in Settings."),
                     )
                 }
                 guard presentedViewController == nil, view.window != nil else { return }

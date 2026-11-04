@@ -201,7 +201,7 @@ actor ApprovalLedger {
     func state(
         of digest: String,
         kind: ApprovalDescriptionKind,
-        project: String
+        project: String,
     ) throws -> ApprovalDigestStateResponse {
         let ledger = try load(project)
         let digest = try Self.normalized(digest)
@@ -217,7 +217,7 @@ actor ApprovalLedger {
         return ApprovalDigestStateResponse(
             baseline: baseline,
             templateDigest: template,
-            lastApprovedDigest: approved.last
+            lastApprovedDigest: approved.last,
         )
     }
 
@@ -234,7 +234,7 @@ actor ApprovalLedger {
         guard hex.count == 64, hex.utf8.allSatisfy({ (48 ... 57).contains($0) || (97 ... 102).contains($0) }) else {
             throw ApelinError(
                 .badRequest,
-                "a description digest is 64 lowercase hex digits, optionally prefixed with sha256:"
+                "a description digest is 64 lowercase hex digits, optionally prefixed with sha256:",
             )
         }
         return "sha256:" + hex
@@ -284,7 +284,7 @@ actor ApprovalLedger {
         try FileManager.default.createDirectory(
             at: directory,
             withIntermediateDirectories: true,
-            attributes: [.posixPermissions: 0o700]
+            attributes: [.posixPermissions: 0o700],
         )
         try JSONCoding.encode(ledger).write(to: file, options: .atomic)
         cache[project] = ledger

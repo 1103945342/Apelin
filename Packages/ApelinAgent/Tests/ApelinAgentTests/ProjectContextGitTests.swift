@@ -18,7 +18,7 @@ struct ProjectContextGitTests {
         let root = try folder(config: nil)
         defer { try? FileManager.default.removeItem(atPath: root) }
         let status = GitStatusToolResponse(branch: "main", head: nil, entries: [
-            GitStatusToolEntry(path: "apelin-project.json", index: "", worktree: "?")
+            GitStatusToolEntry(path: "apelin-project.json", index: "", worktree: "?"),
         ])
         #expect(ProjectContext.gitState(status, root: root)
             == "on branch main, no commits yet; 1 changed:  ? apelin-project.json.")
@@ -37,7 +37,7 @@ struct ProjectContextGitTests {
         let entries = (0 ..< 14).map { GitStatusToolEntry(path: "Sources/\($0).m", index: "M", worktree: "") }
         let line = ProjectContext.gitState(
             GitStatusToolResponse(branch: "main", head: "0123456789abcdef", entries: entries),
-            root: root
+            root: root,
         )
         #expect(line.hasPrefix("on branch main at 0123456; 14 changed: M  Sources/0.m, M  Sources/1.m"))
         #expect(line.contains("and 2 more"))

@@ -32,7 +32,7 @@ public struct GitHubIssueService: Sendable {
         let issue = try await api.createIssue(
             request.repository,
             title: title,
-            body: FeedbackRules.issueBody(request.body, footer: report.footer())
+            body: FeedbackRules.issueBody(request.body, footer: report.footer()),
         )
         return GitIssueCreateResponse(number: issue.number, url: issue.htmlURL, repository: request.repository)
     }

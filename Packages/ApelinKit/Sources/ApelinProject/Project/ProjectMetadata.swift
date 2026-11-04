@@ -27,7 +27,7 @@ public enum ProjectMetadata {
         guard ProjectDisplayName.isValid(request.displayName) else {
             throw ApelinError(
                 .badRequest,
-                "Use a project name of 1–\(ProjectDisplayName.maximumLength) characters on one line, without leading or trailing spaces."
+                "Use a project name of 1–\(ProjectDisplayName.maximumLength) characters on one line, without leading or trailing spaces.",
             )
         }
         ProjectManifestFile.lock.lock()

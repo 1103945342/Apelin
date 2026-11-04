@@ -88,7 +88,7 @@ final class DistributionBuildController: TableController {
         menu: UIMenu(children: [UIDeferredMenuElement.uncached { [weak self] completion in
             guard let self else { completion([]); return }
             completion(distributionActions(anchor: distributeButton))
-        }])
+        }]),
     ).then {
         // iOS 26's prominent style (the same value), a bold title before it
         $0.style = .done
@@ -98,7 +98,7 @@ final class DistributionBuildController: TableController {
         image: UIImage(systemName: "ellipsis"),
         menu: UIMenu(children: [UIDeferredMenuElement.uncached { [weak self] completion in
             completion(self?.moreMenuElements() ?? [])
-        }])
+        }]),
     ).then { $0.accessibilityLabel = String(localized: "More") }
 
     /// Distribute's choices once there is a package, then the log.
@@ -121,7 +121,7 @@ final class DistributionBuildController: TableController {
             UIAction(
                 title: String(localized: "Share Package"),
                 image: UIImage(systemName: "square.and.arrow.up"),
-                attributes: attributes
+                attributes: attributes,
             ) { [weak self, weak anchor] _ in
                 guard let anchor else { return }
                 self?.sharePackage(from: anchor)
@@ -129,10 +129,10 @@ final class DistributionBuildController: TableController {
             UIAction(
                 title: String(localized: "Publish to Repository"),
                 image: UIImage(systemName: "shippingbox"),
-                attributes: attributes
+                attributes: attributes,
             ) { [weak self] _ in
                 self?.publish()
-            }
+            },
         ]
     }
 
@@ -155,7 +155,7 @@ final class DistributionBuildController: TableController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Build")
         dataSource = TableDataSource(
             tableView: tableView,
-            identifier: { $0.row }
+            identifier: { $0.row },
         ) { [weak self] tableView, indexPath, content in
             if case let .stage(stage) = content.row {
                 return self?.stepCells[stage]
@@ -226,9 +226,9 @@ final class DistributionBuildController: TableController {
             (.progress, Stage.stages(for: method).map { item in
                 RowContent(
                     row: .stage(item),
-                    text: item.title
+                    text: item.title,
                 )
-            })
+            }),
         ]
         if let outcome {
             let title = switch finishedState {
@@ -241,7 +241,7 @@ final class DistributionBuildController: TableController {
                 RowContent(
                     row: .finding(index),
                     text: DistributionAdvice.title(of: findings[index]),
-                    secondaryText: DistributionAdvice.advice(for: findings[index])
+                    secondaryText: DistributionAdvice.advice(for: findings[index]),
                 )
             }
             if !rows.isEmpty {
@@ -258,14 +258,14 @@ final class DistributionBuildController: TableController {
         let primary: UIBarButtonItem = if running {
             UIBarButtonItem(
                 title: String(localized: "Stop"),
-                primaryAction: UIAction { [weak self] _ in self?.work?.cancel() }
+                primaryAction: UIAction { [weak self] _ in self?.work?.cancel() },
             )
         } else if artifact != nil {
             distributeButton
         } else {
             UIBarButtonItem(
                 title: String(localized: "Retry"),
-                primaryAction: UIAction { [weak self] _ in self?.start() }
+                primaryAction: UIAction { [weak self] _ in self?.start() },
             )
         }
         // the right bar's items run from the trailing edge in
@@ -311,7 +311,7 @@ final class DistributionBuildController: TableController {
         let handle = try await ApelinService.app.buildStart(
             projectID: projectID,
             configuration: .release,
-            bootstrap: target
+            bootstrap: target,
         )
         return try await withTaskCancellationHandler {
             var artifact: BuildArtifact?
@@ -345,7 +345,7 @@ final class DistributionBuildController: TableController {
                     .internal,
                     failure ?? (method == .script
                         ? String(localized: "The package could not be built. Check the build script’s log and try again.")
-                        : String(localized: "The package could not be built. Check the project’s build description and try again."))
+                        : String(localized: "The package could not be built. Check the project’s build description and try again.")),
                 )
             }
             return artifact
@@ -385,7 +385,7 @@ final class DistributionBuildController: TableController {
             digest: artifact.digest,
             packageID: artifact.packageID,
             version: artifact.version,
-            bootstrap: target
+            bootstrap: target,
         )
     }
 

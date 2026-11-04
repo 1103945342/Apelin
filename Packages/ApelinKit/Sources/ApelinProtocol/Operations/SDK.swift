@@ -35,7 +35,7 @@ public struct SDKRecord: Codable, Sendable, Equatable {
         warnings: [String] = [],
         digest: String? = nil,
         swiftCompilerVersion: String? = nil,
-        origin: String? = nil
+        origin: String? = nil,
     ) {
         self.id = id
         self.canonicalName = canonicalName
@@ -69,7 +69,7 @@ public struct SDKSourceStatus: Codable, Sendable, Equatable {
         branchPrefix: String = "sdk/",
         note: String? = nil,
         branches: [String]? = nil,
-        problem: String? = nil
+        problem: String? = nil,
     ) {
         self.name = name
         self.url = url
@@ -142,7 +142,7 @@ public extension ApelinService {
     func sdkList(includeSources: Bool = false, readSources: Bool = false) async throws -> SDKListResponse {
         try await send(SDKListRequest(
             includeSources: includeSources ? true : nil,
-            readSources: readSources ? true : nil
+            readSources: readSources ? true : nil,
         ))
     }
 

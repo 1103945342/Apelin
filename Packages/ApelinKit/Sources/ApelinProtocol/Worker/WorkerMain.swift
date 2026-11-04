@@ -55,7 +55,7 @@ public enum WorkerMain {
         role: WorkerRole,
         onCancel: (@Sendable (TaskID, WorkerContext) -> Void)? = nil,
         onClose: (@Sendable () -> Void)? = nil,
-        handler: @escaping Handler
+        handler: @escaping Handler,
     ) -> Never {
         signal(SIGPIPE, SIG_IGN)
         var metadata = stat()
@@ -93,7 +93,7 @@ public enum WorkerMain {
         guard assignment.role == role, assignment.protocolVersion == Wire.protocolVersion else {
             fputs(
                 "\(role.executableName): assigned \(assignment.role.rawValue) v\(assignment.protocolVersion)\n",
-                stderr
+                stderr,
             )
             exit(EX_PROTOCOL)
         }
@@ -118,7 +118,7 @@ public enum WorkerMain {
     public static func serve<R: OperationRequest>(
         _: R.Type,
         _ request: ChannelRequest,
-        _ body: (R) async throws -> R.Response
+        _ body: (R) async throws -> R.Response,
     ) async -> (WireReply, [OwnedDescriptor]) {
         do {
             let typed = try request.request.decode(R.self)

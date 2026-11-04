@@ -31,7 +31,7 @@ public enum DiagnosticsWorker {
                 host: context.host,
                 home: context.assignment.home,
                 installRoot: context.assignment.installRoot,
-                emit: { taskID, kind, payload in context.emit(taskID, kind, payload) }
+                emit: { taskID, kind, payload in context.emit(taskID, kind, payload) },
             )
             if request.request.operation == .logStream {
                 return LogReaderWorker.serve(request, context: context, pump: pump)
@@ -56,7 +56,7 @@ public struct DiagnosticsService: Sendable {
         host: ApelinService,
         home: String,
         installRoot: String,
-        emit: @escaping @Sendable (TaskID, String, JSONValue?) -> Void = { _, _, _ in }
+        emit: @escaping @Sendable (TaskID, String, JSONValue?) -> Void = { _, _, _ in },
     ) {
         self.diagnostics = diagnostics
         self.host = host
@@ -89,9 +89,9 @@ public struct DiagnosticsService: Sendable {
                     ApelinProtocol.CaptureScreenResponse(
                         image: DescriptorSlot(index: 0),
                         width: shot.width,
-                        height: shot.height
+                        height: shot.height,
                     ),
-                    [descriptor]
+                    [descriptor],
                 )
             }
         case .readUITree:
@@ -107,7 +107,7 @@ public struct DiagnosticsService: Sendable {
 
     private func reply(
         _ request: ChannelRequest,
-        _ body: () async throws -> (Encodable & Sendable, [OwnedDescriptor])
+        _ body: () async throws -> (Encodable & Sendable, [OwnedDescriptor]),
     ) async -> (WireReply, [OwnedDescriptor]) {
         do {
             let (value, descriptors) = try await body()

@@ -24,7 +24,7 @@ final class RendererTests: XCTestCase {
             "Thread 0 Crashed::  Dispatch queue: com.apple.uikit.datasource.diffing",
             "Thread 2::  com.apple.uikit.eventfetch-thread",
             "Thread 0 crashed with ARM Thread State (64-bit):",
-            "Binary Images:"
+            "Binary Images:",
         ] {
             XCTAssertTrue(text.contains(expected), "missing: \(expected)")
         }
@@ -204,7 +204,7 @@ final class RendererTests: XCTestCase {
         namespace: String? = nil,
         code: UInt64? = nil,
         info: [String] = [],
-        reasons: [String] = []
+        reasons: [String] = [],
     ) -> String {
         var crash = CrashReport()
         var exception = ExceptionDetails(type: type)

@@ -15,7 +15,7 @@ final class EnvironmentStoresTests: XCTestCase {
         let record = ToolchainRecord(
             id: "legacy-swift", version: "14.2", components: [.init(kind: .c, selfCheckPassed: true), .init(kind: .swift, selfCheckPassed: true)],
             path: "/installed", contentDigest: String(repeating: "a", count: 64), newestSDK: "16.2",
-            swiftRequirements: requirements, clangModuleCPUFeatures: [], compatibility: compatibility
+            swiftRequirements: requirements, clangModuleCPUFeatures: [], compatibility: compatibility,
         )
         try FileManager.default.createDirectory(at: data.toolchainRegistry.deletingLastPathComponent(), withIntermediateDirectories: true)
         struct Registry: Encodable { let toolchains: [ToolchainRecord] }
@@ -37,12 +37,12 @@ final class EnvironmentStoresTests: XCTestCase {
 
         let installed = ToolchainRecord(id: "clt-27.0-abcdef01", version: "27.0", components: [
             ToolchainComponent(kind: .c, selfCheckPassed: true),
-            ToolchainComponent(kind: .swift, selfCheckPassed: false, problem: "Swift did not pass its self-test")
+            ToolchainComponent(kind: .swift, selfCheckPassed: false, problem: "Swift did not pass its self-test"),
         ], path: "/var/jb/usr/lib/apelin/toolchains/clt-27.0-abcdef01", contentDigest: String(repeating: "c", count: 64))
         let unfinished = ToolchainRecord(id: "clt-26.0", version: "26.0", components: [ToolchainComponent(kind: .c)])
         let registry: JSONValue = try .object([
             "toolchains": .array([JSONValue(encoding: installed), JSONValue(encoding: unfinished)]),
-            "defaultID": .string(installed.id)
+            "defaultID": .string(installed.id),
         ])
         try JSONCoding.encode(registry).write(to: toolchains.appendingPathComponent("registry.json"))
         for (version, hex) in [("26.0", "d"), ("27.0", "e")] {
@@ -98,14 +98,14 @@ final class EnvironmentStoresTests: XCTestCase {
 
         let toolchain = ToolchainRecord(
             id: toolchainID, version: "27.0", components: [ToolchainComponent(kind: .c, selfCheckPassed: true)],
-            path: old + "/usr/lib/apelin/toolchains/" + toolchainID, contentDigest: String(repeating: "c", count: 64)
+            path: old + "/usr/lib/apelin/toolchains/" + toolchainID, contentDigest: String(repeating: "c", count: 64),
         )
         struct Registry: Encodable { let toolchains: [ToolchainRecord] }
         try JSONEncoder().encode(Registry(toolchains: [toolchain])).write(to: data.toolchainRegistry)
         let sdk = SDKRecord(
             id: sdkID, canonicalName: "iphoneos27.0", version: "27.0",
             path: old + "/var/mobile/Documents/wiki.qaq.apelin/SDKs/" + sdkID,
-            targets: ["arm64e-ios"], digest: String(repeating: "e", count: 64)
+            targets: ["arm64e-ios"], digest: String(repeating: "e", count: 64),
         )
         try JSONCoding.encode(sdk).write(to: data.sdkRegistry.appendingPathComponent(sdkID + ".json"))
 

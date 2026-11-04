@@ -114,7 +114,7 @@ extension ToolRunner {
     func runExtension(
         _ tool: ExtensionTool,
         arguments: JSONValue,
-        cancellation: CancellationHandle?
+        cancellation: CancellationHandle?,
     ) async throws -> AgentToolResult {
         let sessions = toolExtensions
         let response = try await Self.untilCancelled(cancellation) {

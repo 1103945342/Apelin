@@ -30,7 +30,7 @@ public enum ProjectValidation {
     }
 
     private static let stepOrder = [
-        "compile": 0, "link": 1, "bundle-resources": 2, "lipo": 3, "dsym": 4, "strip": 5, "sign": 6
+        "compile": 0, "link": 1, "bundle-resources": 2, "lipo": 3, "dsym": 4, "strip": 5, "sign": 6,
     ]
 
     public static func semanticErrors(_ project: ProjectDocument) -> [String] {

@@ -10,7 +10,7 @@ final class DWARFLineTableTests: XCTestCase {
         return try DWARFLineTable(
             debugLine: XCTUnwrap(slice.section(segment: "__DWARF", name: "__debug_line")),
             debugLineStr: slice.section(segment: "__DWARF", name: "__debug_line_str"),
-            debugStr: slice.section(segment: "__DWARF", name: "__debug_str")
+            debugStr: slice.section(segment: "__DWARF", name: "__debug_str"),
         )
     }
 
@@ -21,7 +21,7 @@ final class DWARFLineTableTests: XCTestCase {
             (Fixture.insideGamma, Fixture.gammaLine),
             (Fixture.insideBeta, Fixture.betaLine),
             (Fixture.insideStripped, Fixture.strippedLine),
-            (Fixture.insideAlpha, Fixture.alphaLine)
+            (Fixture.insideAlpha, Fixture.alphaLine),
         ] {
             let location = try XCTUnwrap(table.lookup(address: address), "no line for \(address)")
             XCTAssertEqual(location.line, line)
@@ -102,11 +102,11 @@ final class DWARFLineTableTests: XCTestCase {
 
         XCTAssertEqual(
             DWARFLineTable(debugLine: dwarf4Section(setFile: 1)).lookup(address: 0x1000),
-            .init(file: "src/one.c", line: 42)
+            .init(file: "src/one.c", line: 42),
         )
         XCTAssertEqual(
             DWARFLineTable(debugLine: dwarf4Section(setFile: 2)).lookup(address: 0x1000),
-            .init(file: "two.c", line: 42)
+            .init(file: "two.c", line: 42),
         )
         // File 0 is the unit's own file, which this table does not carry.
         XCTAssertNil(DWARFLineTable(debugLine: dwarf4Section(setFile: 0)).lookup(address: 0x1000))

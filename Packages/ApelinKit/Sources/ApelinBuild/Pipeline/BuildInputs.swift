@@ -57,7 +57,7 @@ public struct BuildInputs: Sendable {
         workDirectory: URL,
         installRoot: String,
         home: String,
-        timestamp: Int64 = Int64(Date().timeIntervalSince1970)
+        timestamp: Int64 = Int64(Date().timeIntervalSince1970),
     ) {
         self.buildID = buildID
         self.projectRoot = projectRoot
@@ -95,7 +95,7 @@ public struct BuildInputs: Sendable {
         registry: EnvironmentRegistry,
         installRoot: String,
         home: String,
-        bootstrap: Bootstrap? = nil
+        bootstrap: Bootstrap? = nil,
     ) throws -> BuildInputs {
         let located = try store.locate(projectID)
         let project = located.project
@@ -105,7 +105,7 @@ public struct BuildInputs: Sendable {
         guard toolchain.digest == project.environment.toolchain.digest else {
             throw ApelinError(
                 .conflict,
-                "toolchain \(toolchain.id) was registered again with other contents; rebind the project"
+                "toolchain \(toolchain.id) was registered again with other contents; rebind the project",
             )
         }
         guard let sdk = try registry.sdk(project.environment.sdk.id) else {
@@ -118,7 +118,7 @@ public struct BuildInputs: Sendable {
         guard project.architectures[target] != nil else {
             throw ApelinError(
                 .badRequest,
-                "the project does not build for \(target.rawValue), which was requested; add \(target.rawValue) to the project's architectures"
+                "the project does not build for \(target.rawValue), which was requested; add \(target.rawValue) to the project's architectures",
             )
         }
         let work = store.buildsDirectory
@@ -135,7 +135,7 @@ public struct BuildInputs: Sendable {
             catalog: catalog,
             workDirectory: work,
             installRoot: installRoot,
-            home: home
+            home: home,
         )
     }
 }

@@ -295,7 +295,7 @@ struct GitPointers: Sendable {
 
     private static func withCPath<Result>(
         _ path: [UInt8],
-        _ body: (UnsafePointer<CChar>) -> Result
+        _ body: (UnsafePointer<CChar>) -> Result,
     ) -> Result {
         (path + [0]).withUnsafeBufferPointer { buffer in
             buffer.withMemoryRebound(to: CChar.self) { body($0.baseAddress!) }

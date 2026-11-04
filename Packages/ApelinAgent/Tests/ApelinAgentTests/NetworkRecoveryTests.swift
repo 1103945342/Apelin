@@ -84,7 +84,7 @@ struct NetworkRecoveryTests {
         pathWait: 5000,
         pathPoll: 10,
         secureConnectionPause: 10,
-        secureConnectionRetries: 2
+        secureConnectionRetries: 2,
     )
 
     private static func message(_ content: [AssistantBlock], stopReason: StopReason = .stop) -> AssistantMessage {
@@ -111,7 +111,7 @@ struct NetworkRecoveryTests {
         return Attempt(events: [
             .start(partial: message([])),
             .textDelta(contentIndex: 0, delta: text, partial: done),
-            .done(reason: .stop, message: done)
+            .done(reason: .stop, message: done),
         ], final: done)
     }
 
@@ -121,7 +121,7 @@ struct NetworkRecoveryTests {
         path: NetworkPath = NetworkPath { true },
         patience: NetworkRecovery.Patience = quick,
         cancellation: CancellationHandle? = nil,
-        waits: Counter
+        waits: Counter,
     ) async throws -> (events: [String], final: AssistantMessage) {
         let stream = NetworkRecovery.stream(path: path, patience: patience, inner: script.stream) { waits.add() }
         let response = try await stream(model, Context(), StreamOptions(cancellation: cancellation))
@@ -222,7 +222,7 @@ struct NetworkRecoveryTests {
             cancellation.cancel()
         }
         let (events, final) = try await Self.run(
-            script, path: NetworkPath { false }, patience: patience, cancellation: cancellation, waits: waits
+            script, path: NetworkPath { false }, patience: patience, cancellation: cancellation, waits: waits,
         )
         _ = try await stop.value
         #expect(final.stopReason == .aborted)
@@ -238,11 +238,11 @@ struct NetworkRecoveryTests {
                 provider: .registered(faux.getModel()),
                 approval: ApprovalPolicy(mode: .relaxed),
                 dataRoot: home.dataRoot,
-                network: NetworkPath { true }
+                network: NetworkPath { true },
             ),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            credentials: DeliveredCredentialSource()
+            credentials: DeliveredCredentialSource(),
         )
     }
 
@@ -251,7 +251,7 @@ struct NetworkRecoveryTests {
         var failed = fauxAssistantMessage(
             blocks: text.map { [fauxText($0)] } ?? [],
             stopReason: .error,
-            errorMessage: "Error Domain=NSURLErrorDomain Code=\(code)"
+            errorMessage: "Error Domain=NSURLErrorDomain Code=\(code)",
         )
         failed.failure = ProviderFailure(message: "failed", transportDomain: NSURLErrorDomain, transportCode: code)
         return .message(failed)
@@ -303,11 +303,11 @@ struct NetworkRecoveryTests {
         defer { faux.unregister() }
         faux.setResponses([
             .message(fauxAssistantMessage(blocks: [
-                fauxToolCall(name: "file_read", arguments: ["reason": "Read the readme", "path": "README.md"])
+                fauxToolCall(name: "file_read", arguments: ["reason": "Read the readme", "path": "README.md"]),
             ], stopReason: .toolUse)),
             Self.fauxFailure(NSURLErrorNotConnectedToInternet),
             Self.fauxFailure(NSURLErrorNotConnectedToInternet),
-            .message(fauxAssistantMessage("It says hello."))
+            .message(fauxAssistantMessage("It says hello.")),
         ])
         let session = try await Self.session(home, faux)
         let events = try await Self.events(of: session, prompt: "What does the readme say?")
@@ -327,7 +327,7 @@ struct NetworkRecoveryTests {
         defer { faux.unregister() }
         faux.setResponses([
             Self.fauxFailure(NSURLErrorSecureConnectionFailed),
-            .message(fauxAssistantMessage("Hello."))
+            .message(fauxAssistantMessage("Hello.")),
         ])
         let session = try await Self.session(home, faux)
         let events = try await Self.events(of: session, prompt: "Hi")
@@ -349,7 +349,7 @@ struct NetworkRecoveryTests {
         defer { faux.unregister() }
         faux.setResponses([
             Self.fauxFailure(NSURLErrorNetworkConnectionLost, text: "Partial ans"),
-            .message(fauxAssistantMessage("Full answer."))
+            .message(fauxAssistantMessage("Full answer.")),
         ])
         let session = try await Self.session(home, faux)
         let events = try await Self.events(of: session, prompt: "Hi")

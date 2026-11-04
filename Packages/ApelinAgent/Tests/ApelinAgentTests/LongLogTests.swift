@@ -25,7 +25,7 @@ struct LongLogTests {
             20000: .approvalRequested(answered),
             20010: .approvalResolved(requestID: answered.id, decision: .approve(.once)),
             35000: .userMessage(id: second, text: "Go on.", attachments: []),
-            45000: .approvalRequested(abandoned)
+            45000: .approvalRequested(abandoned),
         ]
         // The open's bound does not grow with the log, while a debug
         // build's replay pays some 14 µs a line: this many keep it quick.
@@ -40,14 +40,14 @@ struct LongLogTests {
             project: home.project,
             provider: .registered(faux.getModel()),
             approval: ApprovalPolicy(mode: .confirm),
-            dataRoot: home.dataRoot
+            dataRoot: home.dataRoot,
         )
         func open() async throws -> AgentSession {
             try await AgentSession(
                 configuration: configuration,
                 backend: MockBackend(),
                 digests: MockDigestLedger(),
-                credentials: DeliveredCredentialSource()
+                credentials: DeliveredCredentialSource(),
             )
         }
 
@@ -166,7 +166,7 @@ struct LongLogTests {
         var unsorted = try SyntheticLog(home: home, sessionID: UUID().uuidString)
         // valid, with its keys in another order: its kind cannot be read
         unsorted.appendRaw(
-            #"{"seq":1,"event":{"userMessage":{"id":"\#(message.uuidString)","text":"Hi","attachments":[]}},"date":"2027-01-15T08:00:00Z"}"#
+            #"{"seq":1,"event":{"userMessage":{"id":"\#(message.uuidString)","text":"Hi","attachments":[]}},"date":"2027-01-15T08:00:00Z"}"#,
         )
         try unsorted.append(.thinkingDelta("a"))
         try unsorted.write()
@@ -202,11 +202,11 @@ struct LongLogTests {
             .userMessage(id: UUID(), text: "Hi", attachments: []),
             .titleUpdated("A title"),
             .approvalRequested(Self.approval("asked")),
-            .approvalResolved(requestID: "asked", decision: .deny(reason: "no"))
+            .approvalResolved(requestID: "asked", decision: .deny(reason: "no")),
         ]
         let others: [AgentSessionEvent] = [
             .thinkingDelta("a"), .textDelta("b"), .received(tokens: 3), .messageStarted,
-            .userMessageQueued(id: UUID(), text: "Hi", attachments: []), .finished(reason: .completed)
+            .userMessageQueued(id: UUID(), text: "Hi", attachments: []), .finished(reason: .completed),
         ]
         func kind(_ event: AgentSessionEvent) throws -> String? {
             let line = try SyntheticLog.encoder.encode(SessionEventRecord(seq: 7, date: Date(), event: event))
@@ -246,7 +246,7 @@ struct LongLogTests {
             fingerprint: id,
             reason: "Remove it",
             detail: .none,
-            allowsSessionScope: false
+            allowsSessionScope: false,
         )
     }
 }

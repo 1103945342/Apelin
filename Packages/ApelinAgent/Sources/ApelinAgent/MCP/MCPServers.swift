@@ -38,13 +38,13 @@ public struct MCPServerConfiguration: Sendable, Hashable {
 enum MCPBridge {
     static func connect(
         _ servers: [MCPServerConfiguration],
-        timeout: TimeInterval = 15
+        timeout: TimeInterval = 15,
     ) async -> (MCPManager?, [AgentTool]) {
         guard !servers.isEmpty else { return (nil, []) }
         let manager = MCPManager(
             configs: servers.map(\.kwwkConfig),
             clientName: "Apelin",
-            clientVersion: "1"
+            clientVersion: "1",
         )
         await manager.start()
         _ = await manager.waitForStartup(timeout: timeout)

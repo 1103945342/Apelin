@@ -18,7 +18,7 @@ public struct HelloResponse: Codable, Sendable, Equatable {
     public init(
         installRoot: String,
         protocolVersion: Int64 = Wire.protocolVersion,
-        operations: [AppOperation] = AppOperation.allCases
+        operations: [AppOperation] = AppOperation.allCases,
     ) {
         self.installRoot = installRoot
         self.protocolVersion = protocolVersion

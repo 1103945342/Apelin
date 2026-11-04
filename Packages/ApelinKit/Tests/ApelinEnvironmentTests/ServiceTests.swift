@@ -192,7 +192,7 @@ final class EnvironmentWorkerTests: XCTestCase {
         let request = GitCloneRequest(
             url: "https://github.com/libgit2/TestGitRepository.git",
             branch: "first-merge",
-            projectName: "Cloned"
+            projectName: "Cloned",
         )
         let taskID = TaskID("clone-task")
         let git = GitService(layout: home.layout)
@@ -202,7 +202,7 @@ final class EnvironmentWorkerTests: XCTestCase {
         let worker = EnvironmentWorker(
             layout: home.layout,
             backend: UnavailableToolchainBackend(),
-            installer: FakeInstaller()
+            installer: FakeInstaller(),
         ) { _, kind, payload in
             log.append(kind, payload)
         }
@@ -247,13 +247,13 @@ final class EnvironmentWorkerTests: XCTestCase {
         let worker = EnvironmentWorker(
             layout: home.layout,
             backend: UnavailableToolchainBackend(),
-            installer: FakeInstaller()
+            installer: FakeInstaller(),
         ) { _, _, _ in }
         let mine = try ChannelRequest(
             request: WireRequest(request),
             descriptors: [],
             taskID: TaskID("my-task"),
-            resumed: true
+            resumed: true,
         )
         let refused = await worker.handle(mine).0
         XCTAssertThrowsError(try refused.result.get(), "another task's folder is in the way")
@@ -261,7 +261,7 @@ final class EnvironmentWorkerTests: XCTestCase {
             request: WireRequest(request),
             descriptors: [],
             taskID: TaskID("other-task"),
-            resumed: true
+            resumed: true,
         )
         let answered = await worker.handle(theirs).0
         XCTAssertNoThrow(try answered.result.get())
@@ -315,7 +315,7 @@ final class ConsoleScriptTests: XCTestCase {
         XCTAssertEqual(Set(names), [
             "i2-sdk-import.json", "i2-git.json", "i2-git-commit.json", "i2-git-remote.json",
             "r1-resume-build.json", "r1-resume-sdk-import.json",
-            "t1-toolchain-setup.json", "t2-toolchain-remove.json"
+            "t1-toolchain-setup.json", "t2-toolchain-remove.json",
         ])
         for name in names {
             let script = try JSONCoding.decode(JSONValue.self, from: Data(contentsOf: scripts.appendingPathComponent(name)))

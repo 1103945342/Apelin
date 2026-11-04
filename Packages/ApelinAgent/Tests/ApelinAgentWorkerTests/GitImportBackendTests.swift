@@ -14,9 +14,9 @@ struct GitImportBackendTests {
         fixture.host.on(.environmentAttach, reply: batch("clone-task", [
             ("result", .object([
                 "branch": .string("main"), "commit": .string("abc"),
-                "projectID": .string(fixture.project.id), "projectFile": .string("repositoryWithProjectID")
+                "projectID": .string(fixture.project.id), "projectFile": .string("repositoryWithProjectID"),
             ])),
-            stateEvent(.succeeded)
+            stateEvent(.succeeded),
         ]))
         let response = try await fixture.backend.gitClone(GitCloneToolRequest(context: fixture.context(), url: "https://github.com/owngoal-dev/Pineora.git"))
         let note = try #require(response.projectFile)

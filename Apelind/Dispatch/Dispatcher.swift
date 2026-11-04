@@ -28,7 +28,7 @@ struct HostRequest: Sendable {
                 """
                 Apelin could not read this request. Reinstall Apelin with your preferred package manager, \
                 then try again.
-                """
+                """,
             )
         }
     }

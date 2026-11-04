@@ -101,7 +101,7 @@ func agentOpenChecks() async {
         let meanwhile = await log.lines
         check(
             meanwhile == ["first began", "other session opened"],
-            "the second has not begun while the first is under way: \(meanwhile)"
+            "the second has not begun while the first is under way: \(meanwhile)",
         )
         await worker.open()
         await first.value
@@ -109,7 +109,7 @@ func agentOpenChecks() async {
         let lines = await log.lines
         check(
             lines == ["first began", "other session opened", "first answered", "second began"],
-            "the second open begins only once the first has answered: \(lines)"
+            "the second open begins only once the first has answered: \(lines)",
         )
         let again = await turns.run(for: session) { "opened" }
         let left = await turns.waiting(session)
@@ -181,7 +181,7 @@ func agentOpenChecks() async {
         let lines = await log.lines
         check(
             lines == ["holder"] + (1 ... 5).map { "open \($0)" },
-            "the waiting opens run one after another, in the order they came: \(lines)"
+            "the waiting opens run one after another, in the order they came: \(lines)",
         )
     }
 

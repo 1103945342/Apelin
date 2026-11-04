@@ -20,7 +20,7 @@ struct CompactionTests {
             .message(fauxAssistantMessage("Second: " + long)),
             .message(fauxAssistantMessage("Third: " + long)),
             .message(fauxAssistantMessage("The user built a tweak; the hook loads.")),
-            .message(fauxAssistantMessage("Carrying on from the summary."))
+            .message(fauxAssistantMessage("Carrying on from the summary.")),
         ])
         let session = try await openSession(home, faux: faux)
         let stream = try await session.events(afterSeq: 0)
@@ -88,11 +88,11 @@ struct CompactionTests {
             .message(fauxAssistantMessage(
                 blocks: [fauxToolCall(
                     name: "apelin_package_remove",
-                    arguments: ["reason": "Remove it", "installation_id": "inst-1"]
+                    arguments: ["reason": "Remove it", "installation_id": "inst-1"],
                 )],
-                stopReason: .toolUse
+                stopReason: .toolUse,
             )),
-            .message(fauxAssistantMessage("never reached"))
+            .message(fauxAssistantMessage("never reached")),
         ])
         let session = try await openSession(home, faux: faux)
         let stream = try await session.events(afterSeq: 0)
@@ -112,17 +112,17 @@ struct CompactionTests {
                 project: home.project,
                 provider: .registered(faux.getModel()),
                 approval: ApprovalPolicy(mode: .confirm),
-                dataRoot: home.dataRoot
+                dataRoot: home.dataRoot,
             ),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            credentials: DeliveredCredentialSource()
+            credentials: DeliveredCredentialSource(),
         )
     }
 
     /// The outcome the next `compactionFinished` reports, after its start.
     private static func compaction(
-        from events: inout AsyncStream<SessionEventRecord>.Iterator
+        from events: inout AsyncStream<SessionEventRecord>.Iterator,
     ) async -> AgentCompactionResult? {
         var started = false
         while let record = await events.next() {

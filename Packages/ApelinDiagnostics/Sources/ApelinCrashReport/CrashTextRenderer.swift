@@ -57,7 +57,7 @@ enum CrashTextRenderer {
             field("Code Type", crash.process.cpuType),
             field("Role", crash.process.role),
             field("Parent Process", withPID(crash.process.parentName, crash.process.parentPID)),
-            field("Coalition", crash.process.coalitionName)
+            field("Coalition", crash.process.coalitionName),
         ].compactMap(\.self).joined(separator: "\n")
     }
 
@@ -65,7 +65,7 @@ enum CrashTextRenderer {
         [
             field("Date/Time", stamp(crash.device.captureDate ?? header.timestamp)),
             field("Launch Time", stamp(crash.process.launchDate)),
-            field("OS Version", osVersion(crash) ?? header.osVersion)
+            field("OS Version", osVersion(crash) ?? header.osVersion),
         ].compactMap(\.self).joined(separator: "\n")
     }
 
@@ -166,7 +166,7 @@ enum CrashTextRenderer {
                 column(process.name, 32)
                     + column(process.pid.map(String.init) ?? "", 8)
                     + column("\(megabytes) MB", 12)
-                    + (process.reason ?? process.states.joined(separator: ", "))
+                    + (process.reason ?? process.states.joined(separator: ", ")),
             )
         }
         return lines.joined(separator: "\n") + "\n"

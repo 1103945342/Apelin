@@ -69,7 +69,7 @@ struct SkillAndPromptTests {
         try "outside-marker".write(to: home.dataRoot.skills.appendingPathComponent("outside.txt"), atomically: true, encoding: .utf8)
         try FileManager.default.createSymbolicLink(
             atPath: home.dataRoot.skills.appendingPathComponent("theme/link.md").path,
-            withDestinationPath: home.dataRoot.skills.appendingPathComponent("outside.txt").path
+            withDestinationPath: home.dataRoot.skills.appendingPathComponent("outside.txt").path,
         )
         let runner = try runner(home)
         func call(_ arguments: JSONValue) async throws -> String {
@@ -202,12 +202,12 @@ struct SkillAndPromptTests {
         let entitlements = try plist(Data(file.utf8))
         let templates = Self.repository.appendingPathComponent("Extensions/Development", isDirectory: true)
         let app = try plist(Data(contentsOf: templates.appendingPathComponent(
-            "wiki.qaq.apelin.dev.app/templates/uikit-objc/Packaging/App.entitlements"
+            "wiki.qaq.apelin.dev.app/templates/uikit-objc/Packaging/App.entitlements",
         )))
         let gpuKeys = ["com.apple.security.iokit-user-client-class", "com.apple.security.exception.iokit-user-client-class"]
         for template in ["c", "objc"] {
             let tool = try plist(Data(contentsOf: templates.appendingPathComponent(
-                "wiki.qaq.apelin.dev.cli/templates/\(template)/Packaging/Tool.entitlements"
+                "wiki.qaq.apelin.dev.cli/templates/\(template)/Packaging/Tool.entitlements",
             )))
             #expect(Set(entitlements.keys) == Set(tool.keys), "the keys are not the \(template) template's")
             for (key, value) in tool {
@@ -391,7 +391,7 @@ struct SkillAndPromptTests {
         }
         // The file the prompt names is the tweak template's.
         let template = Self.repository.appendingPathComponent(
-            "Extensions/Development/wiki.qaq.apelin.dev.tweak/templates/objc-hook/Sources/Tweak.m"
+            "Extensions/Development/wiki.qaq.apelin.dev.tweak/templates/objc-hook/Sources/Tweak.m",
         )
         let source = try String(contentsOf: template, encoding: .utf8)
         #expect(source.contains("MSHookMessageEx"))

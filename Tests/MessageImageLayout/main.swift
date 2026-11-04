@@ -7,7 +7,7 @@ func require(_ condition: Bool, _ message: String, line: Int = #line) {
 let albums: [[CGFloat]] = [
     [], [1], [16 / 9], [9 / 16], [1, 1], [2, 2],
     [0.6, 1.7, 1], [1.7, 0.6, 1], [1, 1, 1, 1], [1.7, 1, 0.7, 1.3],
-    [0, .nan, .infinity, -1]
+    [0, .nan, .infinity, -1],
 ] + (5 ... 20).map { count in (0 ..< count).map { [CGFloat(0.6), 1, 1.7][$0 % 3] } }
 
 for width: CGFloat in [1, 60, 320, 540] {
@@ -60,28 +60,28 @@ require(near(fitted([CGSize(width: 10, height: 100)], maximumHeight: 200)[0].siz
 let screenshot = CGSize(width: 1290 / 3, height: 2796 / 3)
 require(
     fitted([screenshot], maximumHeight: 280) == MessageImageLayout.frames(aspectRatios: [screenshot.width / screenshot.height], width: 320, maximumHeight: 280),
-    "A large image is drawn as large as the limits allow"
+    "A large image is drawn as large as the limits allow",
 )
 require(fitted([nil]) == MessageImageLayout.frames(aspectRatios: [1], width: 320), "An image of unknown size keeps the album as it was")
 require(
     fitted([CGSize(width: 40, height: 40), nil]) == MessageImageLayout.frames(aspectRatios: [1, 1], width: 320),
-    "One image of unknown size keeps the whole album"
+    "One image of unknown size keeps the whole album",
 )
 require(
     fitted([CGSize(width: 2000, height: 1500), CGSize(width: 40, height: 40)]) == MessageImageLayout.frames(aspectRatios: [2000 / 1500, 1], width: 320),
-    "A large image keeps its album as large, a small one beside it too"
+    "A large image keeps its album as large, a small one beside it too",
 )
 let icons = fitted([CGSize(width: 40, height: 40), CGSize(width: 40, height: 40)])
 require(
     icons.allSatisfy { $0.width <= 40.001 && $0.width >= 40 - MessageImageLayout.spacing && abs($0.width - $0.height) < 0.001 },
-    "An album of small images is drawn near their own size, its gutter kept"
+    "An album of small images is drawn near their own size, its gutter kept",
 )
 for count in 2 ... 9 {
     for side: CGFloat in [4, 8, 16, 31] {
         let album = fitted(Array(repeating: CGSize(width: side, height: side), count: count))
         require(
             album.allSatisfy { min($0.width, $0.height) >= MessageImageLayout.minimumSide - 0.001 },
-            "Every tile of an album of tiny images reaches the minimum, its gutters kept"
+            "Every tile of an album of tiny images reaches the minimum, its gutters kept",
         )
     }
 }
@@ -89,7 +89,7 @@ for count in 2 ... 9 {
 for naturals: [CGSize?] in [
     [CGSize(width: 12, height: 300)], [CGSize(width: 300, height: 12)], [CGSize(width: 3000, height: 20)],
     [CGSize(width: 8, height: 8), CGSize(width: 900, height: 600), CGSize(width: 20, height: 50)],
-    (0 ..< 7).map { CGSize(width: 24 + CGFloat($0) * 30, height: 64) }
+    (0 ..< 7).map { CGSize(width: 24 + CGFloat($0) * 30, height: 64) },
 ] {
     for (width, height): (CGFloat, CGFloat) in [(320, 280), (60, 40), (540, .greatestFiniteMagnitude)] {
         let ratios = naturals.map { $0.map { $0.width / $0.height } ?? 1 }
@@ -99,7 +99,7 @@ for naturals: [CGSize?] in [
         let fullWidth = full.map(\.maxX).max() ?? 0, fullHeight = full.map(\.maxY).max() ?? 0
         require(
             small.allSatisfy { $0.maxX <= fullWidth + 0.001 && $0.maxY <= fullHeight + 0.001 && $0.width > 0 && $0.height > 0 },
-            "A fitted album is never larger than the limits allow"
+            "A fitted album is never larger than the limits allow",
         )
     }
 }

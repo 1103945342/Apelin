@@ -25,7 +25,7 @@ struct JournalLine: Hashable, Sendable {
             level: level,
             category: category,
             message: message + "\n" + line,
-            fullText: fullText + "\n" + line
+            fullText: fullText + "\n" + line,
         )
     }
 }
@@ -69,7 +69,7 @@ enum JournalLines {
                     level: .info,
                     category: currentCategory,
                     message: line,
-                    fullText: line
+                    fullText: line,
                 )
             }
         }
@@ -109,7 +109,7 @@ enum JournalLines {
             level: level,
             category: category,
             message: String(message),
-            fullText: "[\(category)] \(line)"
+            fullText: "[\(category)] \(line)",
         )
     }
 }

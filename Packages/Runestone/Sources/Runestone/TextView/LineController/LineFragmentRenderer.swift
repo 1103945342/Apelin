@@ -125,7 +125,7 @@ private extension LineFragmentRenderer {
     private func draw(_ symbol: String, at horizontalPosition: HorizontalPosition) {
         let attrs: [NSAttributedString.Key: Any] = [
             .foregroundColor: invisibleCharacterConfiguration.textColor,
-            .font: invisibleCharacterConfiguration.font
+            .font: invisibleCharacterConfiguration.font,
         ]
         let size = symbol.size(withAttributes: attrs)
         let xPosition = xPosition(for: horizontalPosition)

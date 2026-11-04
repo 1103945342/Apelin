@@ -9,7 +9,7 @@ final class LogRedactionTests: XCTestCase {
     func testCredentialsAddressesAndThisDevicesPathsAreTakenOut() {
         let redaction = LogRedaction(
             home: "/private/var/containers/Bundle/Application/.jbroot-1A2B3C4D5E6F/var/mobile",
-            installRoot: "/private/var/containers/Bundle/Application/.jbroot-1A2B3C4D5E6F"
+            installRoot: "/private/var/containers/Bundle/Application/.jbroot-1A2B3C4D5E6F",
         )
         let keys = [
             "ghp_" + String(repeating: "a1", count: 18),
@@ -18,7 +18,7 @@ final class LogRedactionTests: XCTestCase {
             "sk-ant-api03-" + String(repeating: "d4", count: 20),
             "oc_sk_" + String(repeating: "e5", count: 10),
             "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.c2lnbmF0dXJl",
-            "sk-proj-" + String(repeating: "f6", count: 16)
+            "sk-proj-" + String(repeating: "f6", count: 16),
         ]
         let text = """
         Authorization: Bearer abcdefghijklmnopqrstuvwxyz0123

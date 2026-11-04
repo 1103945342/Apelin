@@ -24,7 +24,7 @@ final class WelcomeGitHubPage: WelcomeListPage {
 
     private lazy var dataSource = TableDataSource<Section, Row, Row>(
         tableView: tableView,
-        identifier: { $0 }
+        identifier: { $0 },
     ) { [weak self] _, _, row in
         self?.cell(for: row)
     }
@@ -127,7 +127,7 @@ final class WelcomeGitHubPage: WelcomeListPage {
         guard dataSource.sectionIdentifier(for: section) == .publishing else { return nil }
         return text(
             .groupedFooter(),
-            String(localized: "A package repository is an APT source on GitHub Pages that your release builds are published to. You can set it up later in Settings ▸ Git.")
+            String(localized: "A package repository is an APT source on GitHub Pages that your release builds are published to. You can set it up later in Settings ▸ Git."),
         )
     }
 

@@ -90,7 +90,7 @@ enum CallerPolicy {
         // The project's other conversations (AgentConversations): AgentHandler
         // keeps an agent to its own project, and to the sessions it opened
         // for abort and close. Approving, steering and compacting stay the app's.
-        .agentOpen, .agentPrompt, .agentList, .agentAttach, .agentAbort, .agentClose
+        .agentOpen, .agentPrompt, .agentList, .agentAttach, .agentAbort, .agentClose,
     ]
 
     /// The diagnostics worker asks the host for a protected crash report by
@@ -101,7 +101,7 @@ enum CallerPolicy {
     /// package it built — through the host's own install bridge, which
     /// stages and checks the artifact like any other — and reads that task.
     static let environmentOperations: Set<AppOperation> = [
-        .installPackage, .removePackage, .buildAttach
+        .installPackage, .removePackage, .buildAttach,
     ]
 
     static func allows(_ caller: Caller, _ operation: AppOperation) -> Bool {

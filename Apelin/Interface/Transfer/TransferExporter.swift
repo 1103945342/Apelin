@@ -16,7 +16,7 @@ enum TransferExporter {
         id: String,
         name: String,
         from presenter: UIViewController,
-        anchor: UIBarButtonItem
+        anchor: UIBarButtonItem,
     ) {
         presentConfirmation(on: presenter, kind: kind) { [weak presenter, weak anchor] in
             guard let presenter, let anchor else { return }
@@ -29,7 +29,7 @@ enum TransferExporter {
     private static func presentConfirmation(
         on presenter: UIViewController,
         kind: TransferKind,
-        start: @escaping () -> Void
+        start: @escaping () -> Void,
     ) {
         switch kind {
         case .toolchain:
@@ -37,21 +37,21 @@ enum TransferExporter {
                 title: "Export the Toolchain?",
                 message: "This file contains Apple’s Command Line Tools adapted for your own devices. Apelin does not upload it.",
                 confirmTitle: "Export",
-                onConfirm: start
+                onConfirm: start,
             )
         case .sdk:
             presenter.presentConfirmation(
                 title: "Export the SDK?",
                 message: "This file contains Apple’s iPhoneOS SDK for your own devices. Apelin does not upload it.",
                 confirmTitle: "Export",
-                onConfirm: start
+                onConfirm: start,
             )
         case .project:
             presenter.presentConfirmation(
                 title: "Export the Project?",
                 message: "Includes project files and Git history, if available. Files ignored by Git are excluded.",
                 confirmTitle: "Export",
-                onConfirm: start
+                onConfirm: start,
             )
         }
     }
@@ -69,7 +69,7 @@ enum TransferExporter {
         id: String,
         name: String,
         from presenter: UIViewController,
-        anchor: UIBarButtonItem
+        anchor: UIBarButtonItem,
     ) {
         Task { [weak presenter] in
             guard let presenter else { return }
@@ -78,7 +78,7 @@ enum TransferExporter {
                     title: title(kind),
                     message: name,
                     cancellable: true,
-                    from: presenter
+                    from: presenter,
                 ) { update in
                     try await run(kind: kind, id: id, update: update)
                 }
@@ -104,7 +104,7 @@ enum TransferExporter {
     private static func run(
         kind: TransferKind,
         id: String,
-        update: @escaping @MainActor (ProgressCard.Status) -> Void
+        update: @escaping @MainActor (ProgressCard.Status) -> Void,
     ) async throws -> TransferExport {
         let handle = try await ApelinService.app.transferExport(kind: kind, id: id, createdBy: createdBy)
         var progress = EnvironmentTaskProgress(work: .transferExport)

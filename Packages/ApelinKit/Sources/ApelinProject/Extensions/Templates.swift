@@ -42,7 +42,7 @@ public enum TemplateParameters {
         "toolchainID": "registrationID",
         "toolchainDigest": "digest",
         "sdkID": "registrationID",
-        "sdkDigest": "digest"
+        "sdkDigest": "digest",
     ]
 
     static let typePatterns: [String: String] = [
@@ -56,17 +56,17 @@ public enum TemplateParameters {
         "uuid": #"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"#,
         "digest": #"^sha256:[0-9a-f]{64}$"#,
         "registrationID": #"^[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$"#,
-        "string": #"^[^\x00-\x08\x0b\x0c\x0e-\x1f\x7f]*$"#
+        "string": #"^[^\x00-\x08\x0b\x0c\x0e-\x1f\x7f]*$"#,
     ]
 
     static let listItemPatterns: [String: String] = [
         "bundleIDList": typePatterns["bundleID"]!,
-        "executableList": #"^[A-Za-z0-9_][A-Za-z0-9_.+ -]{0,63}$"#
+        "executableList": #"^[A-Za-z0-9_][A-Za-z0-9_.+ -]{0,63}$"#,
     ]
 
     static let safeTypes: Set<String> = [
         "identifier", "identifierDashed", "bundleID", "packageID", "version", "deploymentTarget", "uuid", "digest",
-        "registrationID", "enum"
+        "registrationID", "enum",
     ]
     static let pathTypes: Set<String> = ["identifier", "identifierDashed", "bundleID", "packageID", "version"]
     static let textTypes: Set<String> = ["projectName", "string"]
@@ -82,7 +82,7 @@ public enum TemplateParameters {
                 type: parameter.type,
                 values: parameter.values,
                 maxLength: parameter.maxLength,
-                defaultValue: parameter.default?.value
+                defaultValue: parameter.default?.value,
             )
         }
         return types
@@ -138,7 +138,7 @@ public enum TemplateParameters {
         _ text: String,
         format: String,
         types: [String: ParameterType],
-        where location: String
+        where location: String,
     ) -> [String] {
         var errors: [String] = []
         guard format != "copy" else { return errors }
@@ -317,7 +317,7 @@ public enum TemplateParameters {
         _ text: String,
         format: String,
         types: [String: ParameterType],
-        values: [String: JSONDocument]
+        values: [String: JSONDocument],
     ) throws -> String {
         var out = ""
         var cursor = text.startIndex
@@ -361,7 +361,7 @@ public enum TemplateDigest {
             var item = JSONObject([
                 ("path", .string(file.path)),
                 ("format", .string(file.format)),
-                ("sha256", .string(CanonicalJSON.sha256Hex(data)))
+                ("sha256", .string(CanonicalJSON.sha256Hex(data))),
             ])
             if let mode = file.mode {
                 item["mode"] = .string(mode)
@@ -371,7 +371,7 @@ public enum TemplateDigest {
         return CanonicalJSON.digest(.object(JSONObject([
             ("description", .string("apelin.template")),
             ("version", .integer(1)),
-            ("files", .array(entries))
+            ("files", .array(entries)),
         ])))
     }
 }

@@ -8,23 +8,23 @@ final class ErrorDescriptionTests: XCTestCase {
     func testATransportFailureIsItsLocalizedDescription() {
         let underlying = NSError(domain: "kCFErrorDomainCFNetwork", code: -1009, userInfo: [
             "_kCFStreamErrorCodeKey": 50,
-            "_kCFStreamErrorDomainKey": 1
+            "_kCFStreamErrorDomainKey": 1,
         ])
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet, userInfo: [
             NSLocalizedDescriptionKey: "The Internet connection appears to be offline.",
             NSUnderlyingErrorKey: underlying,
-            NSURLErrorFailingURLStringErrorKey: "https://example.com/v1/messages"
+            NSURLErrorFailingURLStringErrorKey: "https://example.com/v1/messages",
         ])
         XCTAssertEqual(
             ErrorDescription.localized(String(describing: error)),
-            "The Internet connection appears to be offline."
+            "The Internet connection appears to be offline.",
         )
     }
 
     func testAnErrorWithNoUserInfo() {
         XCTAssertEqual(
             ErrorDescription.localized(#"Error Domain=NSURLErrorDomain Code=-1001 "The request timed out.""#),
-            "The request timed out."
+            "The request timed out.",
         )
     }
 
@@ -39,7 +39,7 @@ final class ErrorDescriptionTests: XCTestCase {
             "Error Domain=",
             #"Error Domain=X Code=one "Words""#,
             #"Error Domain=X Code=1 "Unclosed"#,
-            ""
+            "",
         ] {
             XCTAssertEqual(ErrorDescription.localized(text), text)
         }

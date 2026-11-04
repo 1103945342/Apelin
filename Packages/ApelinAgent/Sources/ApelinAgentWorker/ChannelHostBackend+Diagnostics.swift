@@ -12,7 +12,7 @@ public extension ChannelHostBackend {
             subsystem: request.subsystem,
             process: request.process,
             limit: limit,
-            windowSeconds: Double(min(ReadLogsRequest.maximumListenSeconds, max(1, request.listenSeconds)))
+            windowSeconds: Double(min(ReadLogsRequest.maximumListenSeconds, max(1, request.listenSeconds))),
         )
         let first = try await service.logStream(LogStreamRequest(filter: filter, waitMilliseconds: 0))
         var entries: [ApelinAgent.LogEntry] = []
@@ -48,7 +48,7 @@ public extension ChannelHostBackend {
             process: payload["process"]?.stringValue ?? "",
             subsystem: subsystem?.isEmpty == true ? nil : subsystem,
             level: payload["level"]?.stringValue ?? "default",
-            message: message
+            message: message,
         )
     }
 
@@ -68,7 +68,7 @@ public extension ChannelHostBackend {
         return ReadCrashResponse(
             reportID: request.reportID,
             text: String(decoding: data, as: UTF8.self),
-            truncated: Int64(data.count) < response.size
+            truncated: Int64(data.count) < response.size,
         )
     }
 
@@ -84,17 +84,17 @@ public extension ChannelHostBackend {
                     address: $0.address,
                     symbol: $0.symbol,
                     file: $0.file,
-                    line: $0.line
+                    line: $0.line,
                 )
             },
-            suspects: response.suspects
+            suspects: response.suspects,
         )
     }
 
     // MARK: UI
 
     func captureScreen(
-        _ request: ApelinAgent.CaptureScreenRequest
+        _ request: ApelinAgent.CaptureScreenRequest,
     ) async throws -> ApelinAgent.CaptureScreenResponse {
         let (response, descriptor) = try await service.captureScreen(targetID: request.targetID)
         guard let descriptor else { throw ApelinError(.internal, "the host returned no file for the screenshot") }
@@ -105,7 +105,7 @@ public extension ChannelHostBackend {
             mimeType: data.starts(with: [0x89, 0x50, 0x4E, 0x47]) ? "image/png" : "image/jpeg",
             width: response.width,
             height: response.height,
-            imageData: data
+            imageData: data,
         )
     }
 
@@ -128,7 +128,7 @@ public extension ChannelHostBackend {
                     role: element["role"]?.stringValue ?? "",
                     label: label.isEmpty ? nil : label,
                     value: element["value"]?.stringValue.flatMap { $0.isEmpty ? nil : $0 },
-                    frame: ["x", "y", "width", "height"].map { frame?[$0]?.doubleValue ?? 0 }
+                    frame: ["x", "y", "width", "height"].map { frame?[$0]?.doubleValue ?? 0 },
                 ))
             }
         }
@@ -145,7 +145,7 @@ public extension ChannelHostBackend {
             performed: true,
             message: message.joined(separator: " "),
             typedTextMatches: response.typedTextMatches,
-            fieldValues: response.fieldValues
+            fieldValues: response.fieldValues,
         )
     }
 
@@ -183,7 +183,7 @@ public extension ChannelHostBackend {
             if id.hasPrefix("index:") {
                 throw ApelinError(
                     .badRequest,
-                    "that element has no identifier or text to tap it by; tap its frame instead"
+                    "that element has no identifier or text to tap it by; tap its frame instead",
                 )
             }
             return .tapElement(text: nil, identifier: id)

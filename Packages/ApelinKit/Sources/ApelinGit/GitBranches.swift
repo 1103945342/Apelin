@@ -28,7 +28,7 @@ public struct GitBranch: Sendable, Equatable {
         behind: Int = 0,
         isCurrent: Bool = false,
         commit: String,
-        isGone: Bool = false
+        isGone: Bool = false,
     ) {
         self.name = name
         self.isRemote = isRemote
@@ -71,7 +71,7 @@ public struct GitBranches: Sendable, Equatable {
         remote: [GitBranch] = [],
         tags: [GitTag] = [],
         current: String? = nil,
-        isDetached: Bool = false
+        isDetached: Bool = false,
     ) {
         self.local = local
         self.remote = remote
@@ -168,7 +168,7 @@ public extension GitRepository {
                     name: name,
                     isRemote: false,
                     isCurrent: git_branch_is_head(reference) != 0,
-                    commit: Self.hex(target)
+                    commit: Self.hex(target),
                 )
                 if let upstream = try upstream(of: name) {
                     branch.upstream = upstream.name
@@ -184,7 +184,7 @@ public extension GitRepository {
             remote: remote.sorted { $0.name < $1.name },
             tags: try tags(),
             current: current.commit == nil ? nil : current.branch,
-            isDetached: git_repository_head_detached(pointer) == 1
+            isDetached: git_repository_head_detached(pointer) == 1,
         )
     }
 
@@ -435,7 +435,7 @@ public extension GitRepository {
         var heads: [OpaquePointer?] = [annotated]
         try GitError.check(
             git_merge_analysis(&analysis, &preference, pointer, &heads, 1),
-            "compare HEAD with \(branch)"
+            "compare HEAD with \(branch)",
         )
         if analysis.rawValue & GIT_MERGE_ANALYSIS_UP_TO_DATE.rawValue != 0 {
             return GitMergeResult(outcome: .upToDate)
@@ -463,14 +463,14 @@ public extension GitRepository {
                             &theirsOID,
                             1,
                             &fromOID,
-                            "merge \(branch): fast-forward"
+                            "merge \(branch): fast-forward",
                         ),
-                        "move \(name)"
+                        "move \(name)",
                     )
                 } else {
                     try GitError.check(
                         git_reference_create(&moved, pointer, "refs/heads/" + name, &theirsOID, 0, "merge \(branch)"),
-                        "make \(name)"
+                        "make \(name)",
                     )
                 }
                 git_reference_free(moved)
@@ -581,12 +581,12 @@ public extension GitRepository {
             defer { git_signature_free(signature) }
             try GitError.check(
                 git_tag_create(&tagID, pointer, name, object, signature, message, 0),
-                "make the tag \(name)"
+                "make the tag \(name)",
             )
         } else {
             try GitError.check(
                 git_tag_create_lightweight(&tagID, pointer, name, object, 0),
-                "make the tag \(name)"
+                "make the tag \(name)",
             )
         }
         return name
@@ -657,7 +657,7 @@ public extension GitRepository {
     private func mergeCommit(
         branch: String,
         parents: [String?],
-        signature: UnsafeMutablePointer<git_signature>?
+        signature: UnsafeMutablePointer<git_signature>?,
     ) throws -> GitMergeResult {
         var index: OpaquePointer?
         try GitError.check(git_repository_index(&index, pointer), "read the index")
@@ -695,7 +695,7 @@ public extension GitRepository {
                 message,
                 tree,
                 buffer.count,
-                buffer.baseAddress
+                buffer.baseAddress,
             )
         }
         try GitError.check(code, "commit the merge")
@@ -743,7 +743,7 @@ public extension GitRepository {
         var local: OpaquePointer?
         try GitError.check(
             git_config_open_level(&local, config, GIT_CONFIG_LEVEL_LOCAL),
-            "read the local configuration"
+            "read the local configuration",
         )
         guard let local else { return }
         defer { git_config_free(local) }

@@ -46,7 +46,7 @@ final class ModelProvidersController: TableController, UISearchResultsUpdating {
 
     private lazy var dataSource = TableDataSource<Section, String, Row>(
         tableView: tableView,
-        identifier: { $0.id }
+        identifier: { $0.id },
     ) { [weak self] _, _, row in
         guard let self else { return nil }
         switch row {
@@ -144,7 +144,7 @@ final class ModelProvidersController: TableController, UISearchResultsUpdating {
             let groups: [(Group, [AgentAccount])] = [
                 (.signedIn, shown.filter(\.signedIn)),
                 (.accounts, shown.filter { !$0.signedIn && $0.method != .apiKey }),
-                (.keys, shown.filter { !$0.signedIn && $0.method == .apiKey })
+                (.keys, shown.filter { !$0.signedIn && $0.method == .apiKey }),
             ]
             sections = groups.filter { !$0.1.isEmpty }.map { (.group($0.0), $0.1.map(Row.account)) }
             if sections.isEmpty {
@@ -239,19 +239,19 @@ final class ModelProvidersController: TableController, UISearchResultsUpdating {
         [
             UIAction(
                 title: String(localized: "Edit"),
-                image: UIImage(systemName: account.isAPIKeyAccount ? "pencil" : "arrow.clockwise")
+                image: UIImage(systemName: account.isAPIKeyAccount ? "pencil" : "arrow.clockwise"),
             ) { [weak self] _ in
                 self?.signIn(account)
             },
             UIAction(
                 title: String(localized: "Models"),
-                image: UIImage(systemName: "checklist")
+                image: UIImage(systemName: "checklist"),
             ) { [weak self] _ in
                 self?.presentPageAsFormSheet(ModelActivationController(account: account))
             },
             UIAction(
                 title: String(localized: "Model Parameters"),
-                image: UIImage(systemName: "slider.horizontal.3")
+                image: UIImage(systemName: "slider.horizontal.3"),
             ) { [weak self] _ in
                 self?.presentPageAsFormSheet(ModelParametersController(account: account))
             },
@@ -259,11 +259,11 @@ final class ModelProvidersController: TableController, UISearchResultsUpdating {
                 UIAction(
                     title: String(localized: "Sign Out"),
                     image: UIImage(systemName: "rectangle.portrait.and.arrow.right"),
-                    attributes: .destructive
+                    attributes: .destructive,
                 ) { [weak self] _ in
                     self?.confirmSignOut(account.provider)
-                }
-            ])
+                },
+            ]),
         ]
     }
 
@@ -274,7 +274,7 @@ final class ModelProvidersController: TableController, UISearchResultsUpdating {
     override func tableView(
         _: UITableView,
         contextMenuConfigurationForRowAt indexPath: IndexPath,
-        point _: CGPoint
+        point _: CGPoint,
     ) -> UIContextMenuConfiguration? {
         guard let account = account(at: indexPath), account.signedIn else { return nil }
         return UIContextMenuConfiguration(actionProvider: { [weak self] _ in
@@ -304,7 +304,7 @@ final class ModelProvidersController: TableController, UISearchResultsUpdating {
             title: "Sign Out of \(provider.displayName)?",
             message: "Agent sessions that use it stop working until you sign in again.",
             confirmTitle: "Sign Out",
-            destructive: true
+            destructive: true,
         ) { [weak self] in
             self?.signOut(provider)
         }

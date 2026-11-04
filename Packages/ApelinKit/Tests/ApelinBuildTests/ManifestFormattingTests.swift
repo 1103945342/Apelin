@@ -16,7 +16,7 @@ final class ManifestFormattingTests: XCTestCase {
         try oneLine.write(to: manifest)
         try FileManager.default.createSymbolicLink(
             atPath: root.appendingPathComponent("self.json").path,
-            withDestinationPath: ProjectStore.projectFileName
+            withDestinationPath: ProjectStore.projectFileName,
         )
 
         for checked in [[ProjectStore.projectFileName: "sha256:x"], ["self.json": "sha256:x"]] {

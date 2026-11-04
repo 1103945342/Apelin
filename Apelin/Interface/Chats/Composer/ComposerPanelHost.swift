@@ -153,26 +153,26 @@ class ComposerPanel: UIView {
             x: inset,
             y: ComposerMetrics.Spacing.sm,
             width: bounds.width - inset * 2,
-            height: headerHeight
+            height: headerHeight,
         )
         titleLabel.frame = CGRect(
             x: 0,
             y: (header.bounds.height - titleLabel.font.lineHeight) / 2,
             width: max(0, header.bounds.width - chevronRoom),
-            height: titleLabel.font.lineHeight
+            height: titleLabel.font.lineHeight,
         )
         chevron.frame = directionalFrame(CGRect(
             x: header.bounds.width - chevronSize,
             y: (header.bounds.height - chevron.intrinsicContentSize.height) / 2,
             width: chevronSize,
-            height: chevron.intrinsicContentSize.height
+            height: chevron.intrinsicContentSize.height,
         ))
 
         body.frame = CGRect(
             x: inset,
             y: header.frame.maxY,
             width: bounds.width - inset * 2,
-            height: max(0, bounds.height - header.frame.maxY - ComposerMetrics.Spacing.sm)
+            height: max(0, bounds.height - header.frame.maxY - ComposerMetrics.Spacing.sm),
         )
     }
 }

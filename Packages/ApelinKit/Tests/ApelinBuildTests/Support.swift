@@ -52,7 +52,7 @@ func macRegistry() -> StaticEnvironmentRegistry? {
     let sdkVersion = version.output.trimmingCharacters(in: .whitespacesAndNewlines)
     return StaticEnvironmentRegistry(
         toolchains: [RegisteredToolchain(id: "xcode-default", digest: "sha256:" + String(repeating: "a", count: 64), version: "xcode", path: toolchain, components: ["c-family", "swift"])],
-        sdks: [RegisteredSDK(id: "iPhoneOS\(sdkVersion)-xcode", digest: "sha256:" + String(repeating: "b", count: 64), version: sdkVersion, path: sdk.output.trimmingCharacters(in: .whitespacesAndNewlines))]
+        sdks: [RegisteredSDK(id: "iPhoneOS\(sdkVersion)-xcode", digest: "sha256:" + String(repeating: "b", count: 64), version: sdkVersion, path: sdk.output.trimmingCharacters(in: .whitespacesAndNewlines))],
     )
 }
 

@@ -126,7 +126,7 @@ public struct SkillFolder {
     private static func copyContents(
         of source: URL,
         into destination: URL,
-        budget: inout (entries: Int, bytes: Int)
+        budget: inout (entries: Int, bytes: Int),
     ) throws {
         let manager = FileManager.default
         for name in try manager.contentsOfDirectory(atPath: source.path).sorted() where !name.hasPrefix(".") {

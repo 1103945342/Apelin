@@ -19,7 +19,7 @@ struct LegacySwiftInvestigationTests {
             let source = try #require(sources.first { $0.version == version })
             let manifest = try await ToolchainSetup().run(
                 source: source, components: [.base, .swift],
-                staging: workspace.appendingPathComponent("staging"), output: output
+                staging: workspace.appendingPathComponent("staging"), output: output,
             )
             try ToolchainSetup.verify(manifest, at: output)
             print("RESEARCH_TREE_READY \(source.version) \(manifest.files.count) files")

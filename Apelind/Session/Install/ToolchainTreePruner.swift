@@ -93,7 +93,7 @@ enum ToolchainTreePruner {
         path: String,
         depth: Int,
         entries: inout Int,
-        removing: Bool
+        removing: Bool,
     ) -> String? {
         guard depth < maximumDepth else { return "\(path) is more than \(maximumDepth) folders deep" }
         let descriptor = openat(parent, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
@@ -112,7 +112,7 @@ enum ToolchainTreePruner {
         path: String,
         depth: Int,
         entries: inout Int,
-        removing: Bool
+        removing: Bool,
     ) -> String? {
         guard let names = names(in: descriptor) else {
             return "\(path) could not be read or holds more than \(maximumNamesPerFolder) names"
@@ -131,7 +131,7 @@ enum ToolchainTreePruner {
                     path: child,
                     depth: depth + 1,
                     entries: &entries,
-                    removing: removing
+                    removing: removing,
                 ) {
                     return reason
                 }

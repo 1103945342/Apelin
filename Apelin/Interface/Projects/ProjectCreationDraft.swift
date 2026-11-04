@@ -42,7 +42,7 @@ struct ProjectCreationDraft {
     private static let fruits = [
         "Apple", "Apricot", "Avocado", "Banana", "Cherry", "Coconut", "Fig", "Grape",
         "Guava", "Kiwi", "Lemon", "Lime", "Lychee", "Mango", "Melon", "Nectarine",
-        "Orange", "Papaya", "Peach", "Pear", "Pineapple", "Plum", "Raspberry", "Strawberry"
+        "Orange", "Papaya", "Peach", "Pear", "Pineapple", "Plum", "Raspberry", "Strawberry",
     ]
 
     private static func suggestion(avoiding existing: [String]) -> String {

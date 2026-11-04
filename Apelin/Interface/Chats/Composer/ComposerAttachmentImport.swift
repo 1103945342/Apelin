@@ -27,7 +27,7 @@ final class ComposerAttachmentImport: NSObject, UIImagePickerControllerDelegate,
         guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
             presenter?.presentNotice(
                 title: "Camera Unavailable",
-                message: String(localized: "This device does not have an available camera.")
+                message: String(localized: "This device does not have an available camera."),
             )
             return
         }
@@ -56,7 +56,7 @@ final class ComposerAttachmentImport: NSObject, UIImagePickerControllerDelegate,
 
     func imagePickerController(
         _ picker: UIImagePickerController,
-        didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
+        didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any],
     ) {
         picker.dismiss(animated: true)
         if let image = info[.originalImage] as? UIImage {
@@ -113,7 +113,7 @@ final class ComposerAttachmentImport: NSObject, UIImagePickerControllerDelegate,
                     guard let url else {
                         throw error ?? ApelinError(
                             .badRequest,
-                            String(localized: "The dropped item could not be read.")
+                            String(localized: "The dropped item could not be read."),
                         )
                     }
                     return try Self.readAttachment(at: url, name: url.lastPathComponent)
@@ -145,7 +145,7 @@ final class ComposerAttachmentImport: NSObject, UIImagePickerControllerDelegate,
         guard values.isRegularFile == true, let size = values.fileSize, size <= 32 * 1024 * 1024 else {
             throw ApelinError(
                 .badRequest,
-                String(localized: "Choose a regular file smaller than 32 MB.")
+                String(localized: "Choose a regular file smaller than 32 MB."),
             )
         }
         let data = try Data(contentsOf: source)
@@ -160,7 +160,7 @@ final class ComposerAttachmentImport: NSObject, UIImagePickerControllerDelegate,
             name: name,
             data: data,
             text: image ? nil : text,
-            isImage: image
+            isImage: image,
         )
     }
 
@@ -168,7 +168,7 @@ final class ComposerAttachmentImport: NSObject, UIImagePickerControllerDelegate,
         guard let data = image.jpegData(compressionQuality: 0.85), data.count <= 32 * 1024 * 1024 else {
             presenter?.presentNotice(
                 title: "Unable to Import Image",
-                message: String(localized: "Choose an image smaller than 32 MB.")
+                message: String(localized: "Choose an image smaller than 32 MB."),
             )
             return
         }
@@ -193,7 +193,7 @@ final class ComposerAttachmentImport: NSObject, UIImagePickerControllerDelegate,
         let alert = UIAlertController(
             title: String(localized: "Capture Web Content"),
             message: String(localized: "Enter the webpage address to attach its text."),
-            preferredStyle: .alert
+            preferredStyle: .alert,
         )
         alert.addTextField {
             $0.placeholder = "https://"
@@ -210,7 +210,7 @@ final class ComposerAttachmentImport: NSObject, UIImagePickerControllerDelegate,
             else {
                 presenter?.presentNotice(
                     title: "Invalid Web Address",
-                    message: String(localized: "Enter a complete http or https address.")
+                    message: String(localized: "Enter a complete http or https address."),
                 )
                 return
             }
@@ -221,7 +221,7 @@ final class ComposerAttachmentImport: NSObject, UIImagePickerControllerDelegate,
                         title: String(localized: "Fetching Content"),
                         message: value,
                         cancellable: false,
-                        from: presenter
+                        from: presenter,
                     ) { _ in
                         await withCheckedContinuation { continuation in
                             Scrubber.document(for: url) { continuation.resume(returning: $0) }
@@ -230,7 +230,7 @@ final class ComposerAttachmentImport: NSObject, UIImagePickerControllerDelegate,
                     guard let document, !document.textDocument.isEmpty else {
                         throw ApelinError(
                             .unavailable,
-                            String(localized: "The webpage did not return readable content.")
+                            String(localized: "The webpage did not return readable content."),
                         )
                     }
                     importText(document.textDocument, name: document.title)

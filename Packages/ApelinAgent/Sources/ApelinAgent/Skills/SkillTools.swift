@@ -54,7 +54,7 @@ struct SkillTools {
             skills: listing.skills.map {
                 Listing.Skill(name: $0.name, description: $0.description, source: $0.source.rawValue, location: $0.location, files: $0.files)
             },
-            problems: listing.problems.map { Listing.Problem(location: $0.location, message: $0.message) }
+            problems: listing.problems.map { Listing.Problem(location: $0.location, message: $0.message) },
         )
     }
 
@@ -90,7 +90,7 @@ struct SkillTools {
             name: name,
             location: name,
             replacing: occupied,
-            text: "---\nname: \(name)\ndescription: \(description)\n---\n\n\(instructions)\n"
+            text: "---\nname: \(name)\ndescription: \(description)\n---\n\n\(instructions)\n",
         )
     }
 

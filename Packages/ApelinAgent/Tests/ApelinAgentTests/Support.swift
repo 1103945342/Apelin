@@ -155,9 +155,9 @@ actor MockBackend: AgentHostBackend {
         commits: [
             GitCommitSummary(commit: String(repeating: "d", count: 40), subject: "Fix the hand"),
             GitCommitSummary(commit: String(repeating: "c", count: 40), subject: "Draw the face"),
-            GitCommitSummary(commit: String(repeating: "b", count: 40), subject: "Hook the clock")
+            GitCommitSummary(commit: String(repeating: "b", count: 40), subject: "Hook the clock"),
         ],
-        count: 3
+        count: 3,
     )
 
     var squashPreview = MockBackend.defaultSquashPreview
@@ -175,7 +175,7 @@ actor MockBackend: AgentHostBackend {
             base: request.base,
             expectedHead: request.expectedHead,
             message: request.message,
-            evidence: request.context.approval
+            evidence: request.context.approval,
         ))
         var done = squashPreview
         done.commit = String(repeating: "e", count: 40)
@@ -186,7 +186,7 @@ actor MockBackend: AgentHostBackend {
     /// repository, a sign-in, and the builds a test records.
     var publishRepository: PackagePublication.Repository? = .init(
         fullName: "someone/packages",
-        sourceURL: "https://someone.github.io/packages/"
+        sourceURL: "https://someone.github.io/packages/",
     )
     var publishSignedIn: Bool? = true
     var buildRecords: [String: PackageBuildRecord] = [:]
@@ -204,7 +204,7 @@ actor MockBackend: AgentHostBackend {
         PackagePublication(
             repository: publishRepository,
             signedIn: publishSignedIn,
-            builds: request.buildIDs.map { buildRecords[$0] }
+            builds: request.buildIDs.map { buildRecords[$0] },
         )
     }
 
@@ -217,7 +217,7 @@ actor MockBackend: AgentHostBackend {
             published: files,
             alreadyPublished: [],
             commit: "abc123",
-            next: "Package managers see them once the repository's workflow on GitHub has indexed debs/."
+            next: "Package managers see them once the repository's workflow on GitHub has indexed debs/.",
         )
     }
 
@@ -227,14 +227,14 @@ actor MockBackend: AgentHostBackend {
         available: [
             AvailableToolchain(productID: "082-27", version: "27.0", sizeBytes: 900_000_000, newestSDK: "27", unavailable: "This toolchain requires iOS 26.0 or later."),
             AvailableToolchain(productID: "082-16", version: "16.4", sizeBytes: 800_000_000, newestSDK: "18.5", installedAs: ["clt-16.4-c"]),
-            AvailableToolchain(productID: "082-15", version: "15.3", sizeBytes: 700_000_000, newestSDK: "17.4", swift: "Swift 5.10")
-        ]
+            AvailableToolchain(productID: "082-15", version: "15.3", sizeBytes: 700_000_000, newestSDK: "17.4", swift: "Swift 5.10"),
+        ],
     )
     var sdkList = SDKListToolResponse(
         installed: [InstalledSDK(id: "iPhoneOS18.2-aaaaaaaa", version: "18.2", readBy: ["clt-16.4-c"], boundByThisProject: true)],
         available: [
-            AvailableSDK(version: "17.5", branch: "sdk/iPhoneOS17.5", source: "OwnGoal iOS SDKs", sourceURL: "https://github.com/owngoal-dev/iOS-SDKs.git", readBy: ["clt-16.4-c"])
-        ]
+            AvailableSDK(version: "17.5", branch: "sdk/iPhoneOS17.5", source: "OwnGoal iOS SDKs", sourceURL: "https://github.com/owngoal-dev/iOS-SDKs.git", readBy: ["clt-16.4-c"]),
+        ],
     )
     /// What apelin_project_set_environment's check answers, by SDK id.
     var environmentFindings: [String: [EnvironmentDiagnostic]] = [:]
@@ -300,7 +300,7 @@ actor MockBackend: AgentHostBackend {
         return BuildResponse(
             buildID: "build-1",
             succeeded: true,
-            artifacts: [BuildArtifact(id: "artifact-1", kind: .package, name: "hello.deb", digest: "deb-digest-1")]
+            artifacts: [BuildArtifact(id: "artifact-1", kind: .package, name: "hello.deb", digest: "deb-digest-1")],
         )
     }
 
@@ -318,7 +318,7 @@ actor MockBackend: AgentHostBackend {
             installationID: installSucceeds ? "inst-1" : nil,
             packageID: "wiki.qaq.hello",
             version: "1.0",
-            succeeded: installSucceeds
+            succeeded: installSucceeds,
         )
     }
 
@@ -416,8 +416,8 @@ actor MockBackend: AgentHostBackend {
     func projectTemplates() -> ProjectTemplateListResponse {
         ProjectTemplateListResponse(templates: [
             ProjectTemplate(id: "wiki.qaq.apelin.dev.tweak/tweak", name: "Tweak", kind: "tweak", parameters: [
-                ProjectTemplate.Parameter(name: "filter", kind: "string", defaultValue: .string("com.apple.springboard"))
-            ])
+                ProjectTemplate.Parameter(name: "filter", kind: "string", defaultValue: .string("com.apple.springboard")),
+            ]),
         ])
     }
 
@@ -478,21 +478,21 @@ actor MockBackend: AgentHostBackend {
                 branch: request.branch,
                 url: request.url,
                 lease: lease,
-                evidence: request.context.approval
+                evidence: request.context.approval,
             ))
             return GitTaskToolResponse(
                 remote: request.remote ?? "origin",
                 branch: request.branch,
                 commit: lease.localCommit,
                 from: lease.expectedCommit,
-                forced: true
+                forced: true,
             )
         }
         calls.append(.gitPush(
             remote: request.remote,
             branch: request.branch,
             url: request.url,
-            evidence: request.context.approval
+            evidence: request.context.approval,
         ))
         return GitTaskToolResponse(remote: request.remote ?? "origin", branch: request.branch, commit: "abc123")
     }
@@ -533,7 +533,7 @@ actor MockBackend: AgentHostBackend {
             owner: request.owner,
             name: request.name,
             visibility: request.visibility,
-            description: request.description
+            description: request.description,
         )
         calls.append(.createRepository(repository, evidence: request.context.approval))
         let fullName = (request.owner ?? "someone") + "/" + request.name
@@ -541,7 +541,7 @@ actor MockBackend: AgentHostBackend {
             fullName: fullName,
             cloneURL: "https://github.com/\(fullName).git",
             url: "https://github.com/\(fullName)",
-            next: "git_push with url https://github.com/\(fullName).git"
+            next: "git_push with url https://github.com/\(fullName).git",
         )
     }
 
@@ -642,7 +642,7 @@ actor MockBackend: AgentHostBackend {
         author: "someone",
         openedByUser: true,
         body: "It ends before the link step.",
-        footer: "Sent with Apelin 0.2.7 (18) · iOS 17.3.1 · rootless"
+        footer: "Sent with Apelin 0.2.7 (18) · iOS 17.3.1 · rootless",
     )]
 
     func setFeedbackIssue(_ issue: FeedbackReadToolResponse) {
@@ -670,7 +670,7 @@ actor MockBackend: AgentHostBackend {
                 author: issue.author,
                 openedByUser: issue.openedByUser,
                 body: request.body ?? issue.body,
-                footer: issue.footer
+                footer: issue.footer,
             )
         }
         let changed: [String] = [request.title.map { _ in "title" }, request.body.map { _ in "body" }].compactMap(\.self)
@@ -680,7 +680,7 @@ actor MockBackend: AgentHostBackend {
             url: "https://github.com/owngoal-dev/Apelin/issues/\(request.number)",
             changed: changed,
             title: request.title ?? request.expectedTitle,
-            body: request.body ?? request.expectedBody
+            body: request.body ?? request.expectedBody,
         )
     }
 
@@ -691,7 +691,7 @@ actor MockBackend: AgentHostBackend {
         return EnvironmentCheckToolResponse(
             toolchain: ComponentBinding(id: toolchain, digest: "sha256:" + toolchain),
             sdk: ComponentBinding(id: sdk, digest: "sha256:" + sdk),
-            diagnostics: environmentFindings[sdk] ?? []
+            diagnostics: environmentFindings[sdk] ?? [],
         )
     }
 

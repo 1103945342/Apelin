@@ -69,13 +69,13 @@ final class ToolchainController: TableController {
             menu: UIMenu(children: [
                 UIAction(
                     title: String(localized: "From Apple…"),
-                    image: UIImage(systemName: "arrow.down.circle")
+                    image: UIImage(systemName: "arrow.down.circle"),
                 ) { [weak self] _ in self?.setUp() },
                 UIAction(
                     title: String(localized: "From File…"),
-                    image: UIImage(systemName: "doc")
-                ) { [weak self] _ in self?.pickFile() }
-            ])
+                    image: UIImage(systemName: "doc"),
+                ) { [weak self] _ in self?.pickFile() },
+            ]),
         ).then { $0.accessibilityLabel = String(localized: "Add Toolchain") }
         tableView.backgroundView = LoadingView()
         updateRows()
@@ -86,7 +86,7 @@ final class ToolchainController: TableController {
             self,
             selector: #selector(transferImported),
             name: TransferOpener.environmentChanged,
-            object: nil
+            object: nil,
         )
     }
 
@@ -122,7 +122,7 @@ final class ToolchainController: TableController {
             sections.append(Section(
                 id: "tasks",
                 header: String(localized: "In Progress"),
-                rows: status.activeTasks.map(Row.task)
+                rows: status.activeTasks.map(Row.task),
             ))
         }
         if !status.toolchains.isEmpty {
@@ -133,7 +133,7 @@ final class ToolchainController: TableController {
             sections.append(Section(
                 id: "installed",
                 header: String(localized: "Installed"),
-                rows: toolchains.map { .toolchain($0, isDefault: $0.id == status.defaultID) }
+                rows: toolchains.map { .toolchain($0, isDefault: $0.id == status.defaultID) },
             ))
         }
         self.sections = sections
@@ -141,7 +141,7 @@ final class ToolchainController: TableController {
             ? EmptyStateView(
                 symbolName: "hammer",
                 title: String(localized: "No Toolchains Yet"),
-                text: String(localized: "Tap “+” to download Apple’s Command Line Tools or import a toolchain from a file.")
+                text: String(localized: "Tap “+” to download Apple’s Command Line Tools or import a toolchain from a file."),
             )
             : nil
         updateRows()
@@ -153,7 +153,7 @@ final class ToolchainController: TableController {
         tableView.backgroundView = EmptyStateView(
             symbolName: "exclamationmark.triangle",
             title: String(localized: "Error"),
-            text: Self.unavailableText(error)
+            text: Self.unavailableText(error),
         )
         updateRows()
     }
@@ -226,7 +226,7 @@ final class ToolchainController: TableController {
     private func pickFile() {
         let picker = UIDocumentPickerViewController(
             forOpeningContentTypes: [TransferOpener.contentType(.toolchain)],
-            asCopy: false
+            asCopy: false,
         )
         picker.delegate = self
         present(picker, animated: true)
@@ -237,7 +237,7 @@ final class ToolchainController: TableController {
             handle: handle,
             work: .toolchainSetup,
             title: Self.taskTitle(handle),
-            doneTitle: String(localized: "Toolchain Ready")
+            doneTitle: String(localized: "Toolchain Ready"),
         )
         page.onFinish = { [weak self] in self?.reload() }
         return page

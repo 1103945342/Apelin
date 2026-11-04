@@ -44,7 +44,7 @@ public struct ToolProtocolLimits: Hashable, Sendable {
         maxPendingAttachments: Int = 32,
         attachmentWait: TimeInterval = 2,
         maxLogLineBytes: Int = 4096,
-        logTailLines: Int = 40
+        logTailLines: Int = 40,
     ) {
         self.maxFrameBytes = maxFrameBytes
         self.maxConcurrentCalls = maxConcurrentCalls

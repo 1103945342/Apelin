@@ -52,7 +52,7 @@ extension ToolRunner {
                     projectID: project.id,
                     script: script,
                     configuration: arguments.argNonEmptyString("configuration") ?? "debug",
-                    bootstrap: arguments.argNonEmptyString("bootstrap")
+                    bootstrap: arguments.argNonEmptyString("bootstrap"),
                 )
             } else {
                 facts.description = try? await digests.state(of: .build, for: project)
@@ -92,14 +92,14 @@ extension ToolRunner {
                     sessionID: sessionID,
                     project: project,
                     toolCallID: "",
-                    approval: .notRequired
+                    approval: .notRequired,
                 )))
                 branch = status?.branch
             }
             var target = GitPushTarget(
                 remote: arguments.argNonEmptyString("remote") ?? "origin",
                 branch: branch,
-                url: arguments.argNonEmptyString("url")
+                url: arguments.argNonEmptyString("url"),
             )
             // A forced push asks what the remote has first, and is one only
             // when the remote's branch would lose commits to it.
@@ -138,7 +138,7 @@ extension ToolRunner {
                 name: arguments.requireString("name").trimmingCharacters(in: .whitespaces),
                 visibility: visibility,
                 owner: arguments.argNonEmptyString("owner"),
-                description: arguments.argNonEmptyString("description")
+                description: arguments.argNonEmptyString("description"),
             )
             if let problem = request.problem {
                 throw ToolArgumentError("Not created: \(problem)")
@@ -147,7 +147,7 @@ extension ToolRunner {
                 owner: request.owner,
                 name: request.name,
                 visibility: request.visibility,
-                description: request.description
+                description: request.description,
             )
         case .gitCreateIssue:
             // Checked before anyone is asked, and again by apelin-environment;
@@ -156,7 +156,7 @@ extension ToolRunner {
             let request = try GitIssueCreateRequest(
                 repository: arguments.requireString("repository").trimmingCharacters(in: .whitespaces),
                 title: arguments.requireString("title").trimmingCharacters(in: .whitespaces),
-                body: arguments.requireString("body")
+                body: arguments.requireString("body"),
             )
             if let problem = request.problem {
                 throw ToolArgumentError("Nothing was posted: \(problem)")
@@ -227,7 +227,7 @@ extension ToolRunner {
     private func gatherProjectReach(
         _ name: AgentToolName,
         arguments: JSONValue,
-        into facts: inout InvocationFacts
+        into facts: inout InvocationFacts,
     ) async throws {
         guard let reference = arguments.argNonEmptyString("project") else {
             if project.isTemporary, name != .conversationList {
@@ -251,7 +251,7 @@ extension ToolRunner {
             projectName: target.name.rawValue,
             sessionID: arguments.argNonEmptyString("session_id"),
             text: name == .conversationCreate ? arguments.argString("prompt")
-                : name == .conversationSend ? arguments.argString("text") : nil
+                : name == .conversationSend ? arguments.argString("text") : nil,
         )
     }
 
@@ -282,7 +282,7 @@ extension ToolRunner {
             projectID: target.id,
             folder: target.name.rawValue,
             currentName: listed?.displayName ?? target.name.rawValue,
-            displayName: name
+            displayName: name,
         )
     }
 
@@ -300,7 +300,7 @@ extension ToolRunner {
         return ProjectDeleteApproval(
             projectID: target.id,
             folder: target.name.rawValue,
-            displayName: listed?.displayName ?? target.name.rawValue
+            displayName: listed?.displayName ?? target.name.rawValue,
         )
     }
 
@@ -348,7 +348,7 @@ extension ToolRunner {
             productID: product.productID,
             version: product.version,
             components: components,
-            sizeBytes: product.sizeBytes > 0 ? product.sizeBytes : nil
+            sizeBytes: product.sizeBytes > 0 ? product.sizeBytes : nil,
         )
     }
 

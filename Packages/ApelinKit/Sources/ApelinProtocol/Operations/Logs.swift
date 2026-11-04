@@ -30,7 +30,7 @@ public struct LogFilter: Codable, Sendable, Equatable {
         level: String? = nil,
         limit: Int? = nil,
         messageContains: String? = nil,
-        windowSeconds: Double? = nil
+        windowSeconds: Double? = nil,
     ) {
         self.subsystem = subsystem
         self.process = process
@@ -141,7 +141,7 @@ public struct SymbolicatedFrame: Codable, Sendable, Equatable {
         address: String,
         symbol: String? = nil,
         file: String? = nil,
-        line: Int? = nil
+        line: Int? = nil,
     ) {
         self.index = index
         self.image = image
@@ -187,7 +187,7 @@ public struct CrashSymbolicateResponse: Codable, Sendable, Equatable {
         exceptionType: String? = nil,
         matchedImageUUIDs: [String] = [],
         crashedThread: [SymbolicatedFrame] = [],
-        suspects: [String] = []
+        suspects: [String] = [],
     ) {
         self.id = id
         self.process = process
@@ -219,7 +219,7 @@ public extension ApelinService {
         let (response, descriptors) = try await sendReturningDescriptors(CrashOpenRequest(id: id))
         return (
             response,
-            descriptors.indices.contains(response.descriptor.index) ? descriptors[response.descriptor.index] : nil
+            descriptors.indices.contains(response.descriptor.index) ? descriptors[response.descriptor.index] : nil,
         )
     }
 }

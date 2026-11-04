@@ -47,7 +47,7 @@ enum FileShow {
     static func result(_ copies: [AgentAttachment], paths: [String]) -> AgentToolResult {
         AgentToolResult(
             content: [.text(TextContent(text: "Shown to the user in this conversation: \(paths.joined(separator: ", "))."))],
-            details: details(copies)
+            details: details(copies),
         )
     }
 

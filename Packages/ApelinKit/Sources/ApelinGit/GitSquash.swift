@@ -78,7 +78,7 @@ public extension GitRepository {
         let (upstream, published) = try publishedCount(branch: branch, base: &parent, range: range)
         return GitSquashPlan(
             branch: branch, head: headID, base: baseID, commits: commits, count: range.count,
-            upstream: upstream, published: published
+            upstream: upstream, published: published,
         )
     }
 
@@ -131,7 +131,7 @@ public extension GitRepository {
         defer { git_reference_free(moved) }
         let log = "squash: \(plan.count) commits after \(String(plan.base.prefix(7))) into one"
         let update = git_reference_create_matching(
-            &moved, pointer, "refs/heads/" + plan.branch, &commitID, 1, &tip, log
+            &moved, pointer, "refs/heads/" + plan.branch, &commitID, 1, &tip, log,
         )
         if update == GIT_EMODIFIED.rawValue {
             throw GitError(.headChanged, "\(plan.branch) moved while it was squashed: nothing was squashed")

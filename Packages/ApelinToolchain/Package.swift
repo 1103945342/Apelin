@@ -19,11 +19,11 @@ let package = Package(
     name: "ApelinToolchain",
     platforms: [
         .iOS(deploymentTarget("IPHONEOS_DEPLOYMENT_TARGET")),
-        .macOS(deploymentTarget("MACOSX_DEPLOYMENT_TARGET"))
+        .macOS(deploymentTarget("MACOSX_DEPLOYMENT_TARGET")),
     ],
     products: [
         .library(name: "ApelinToolchain", targets: ["ApelinToolchain"]),
-        .executable(name: "apelin-toolchain-probe", targets: ["ToolchainProbe"])
+        .executable(name: "apelin-toolchain-probe", targets: ["ToolchainProbe"]),
     ],
     // The one signer, apelin-build's too (Irisin's, MIT). Only the
     // CryptoKit-only ApelinCodeSign links; ApelinFormats' libarchive pin
@@ -33,14 +33,14 @@ let package = Package(
         .target(name: "CToolchainSystem", linkerSettings: [.linkedLibrary("z")]),
         .target(
             name: "ApelinToolchain",
-            dependencies: ["CToolchainSystem", .product(name: "ApelinCodeSign", package: "ApelinFormats")]
+            dependencies: ["CToolchainSystem", .product(name: "ApelinCodeSign", package: "ApelinFormats")],
         ),
         .executableTarget(name: "ToolchainProbe", dependencies: ["ApelinToolchain"]),
         .testTarget(
             name: "ApelinToolchainTests",
             dependencies: ["ApelinToolchain", .product(name: "ApelinCodeSign", package: "ApelinFormats")],
-            resources: [.copy("Fixtures")]
-        )
+            resources: [.copy("Fixtures")],
+        ),
     ],
-    swiftLanguageModes: [.v5]
+    swiftLanguageModes: [.v5],
 )

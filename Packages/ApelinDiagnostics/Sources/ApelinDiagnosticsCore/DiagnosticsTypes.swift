@@ -98,7 +98,7 @@ public struct UIElement: Codable, Hashable, Sendable {
         clickable: Bool,
         visible: Bool,
         frame: UIRect,
-        tapPoint: UIPoint
+        tapPoint: UIPoint,
     ) {
         self.label = label
         self.identifier = identifier
@@ -170,7 +170,7 @@ public struct UIElementSelector: Codable, Hashable, Sendable {
         identifier: String? = nil,
         role: String? = nil,
         match: Match = .contains,
-        index: Int = 0
+        index: Int = 0,
     ) {
         self.text = text
         self.identifier = identifier
@@ -223,7 +223,7 @@ public enum UIAction: Codable, Hashable, Sendable {
             else {
                 let range = Self.coordinateRange
                 throw DiagnosticsError.invalidParameter(
-                    String(format: "coordinates must be %g–%g points", range.lowerBound, range.upperBound)
+                    String(format: "coordinates must be %g–%g points", range.lowerBound, range.upperBound),
                 )
             }
         }
@@ -242,7 +242,7 @@ public enum UIAction: Codable, Hashable, Sendable {
             for value in [selector.text, selector.identifier, selector.role].compactMap(\.self) {
                 guard value.utf8.count <= maximumFieldBytes, !value.contains("\0") else {
                     throw DiagnosticsError.invalidParameter(
-                        "selector fields must be at most \(maximumFieldBytes) bytes with no NUL"
+                        "selector fields must be at most \(maximumFieldBytes) bytes with no NUL",
                     )
                 }
             }
@@ -252,7 +252,7 @@ public enum UIAction: Codable, Hashable, Sendable {
             guard seconds.isFinite, Self.swipeSecondsRange.contains(seconds) else {
                 let range = Self.swipeSecondsRange
                 throw DiagnosticsError.invalidParameter(
-                    String(format: "swipe must take %g–%g seconds", range.lowerBound, range.upperBound)
+                    String(format: "swipe must take %g–%g seconds", range.lowerBound, range.upperBound),
                 )
             }
         case let .type(text, delay):
@@ -262,7 +262,7 @@ public enum UIAction: Codable, Hashable, Sendable {
             guard delay.isFinite, Self.typeDelayRange.contains(delay) else {
                 let range = Self.typeDelayRange
                 throw DiagnosticsError.invalidParameter(
-                    String(format: "delay must be %g–%g ms", range.lowerBound, range.upperBound)
+                    String(format: "delay must be %g–%g ms", range.lowerBound, range.upperBound),
                 )
             }
         case .press:
@@ -339,7 +339,7 @@ public struct TypedText: Codable, Hashable, Sendable {
         }
         self.init(
             matches: changed.contains { $0.contains(text) },
-            fieldValues: changed.prefix(Self.maximumValues).map { String($0.prefix(Self.maximumValueCharacters)) }
+            fieldValues: changed.prefix(Self.maximumValues).map { String($0.prefix(Self.maximumValueCharacters)) },
         )
     }
 }

@@ -32,7 +32,7 @@ final class ToolchainDetailController: TableController {
 
     private lazy var dataSource = TableDataSource<Section, Field, Row>(
         tableView: tableView,
-        identifier: { $0.id }
+        identifier: { $0.id },
     ) { [weak self] _, _, row in
         self?.cell(for: row)
     }
@@ -46,7 +46,7 @@ final class ToolchainDetailController: TableController {
         image: UIImage(systemName: "ellipsis"),
         menu: UIMenu(children: [UIDeferredMenuElement.uncached { [weak self] completion in
             completion(self?.menuItems() ?? [])
-        }])
+        }]),
     ).then { $0.accessibilityLabel = String(localized: "More") }
 
     private func menuItems() -> [UIMenuElement] {
@@ -56,20 +56,20 @@ final class ToolchainDetailController: TableController {
             },
             UIAction(
                 title: String(localized: "Export…"),
-                image: UIImage(systemName: "square.and.arrow.up")
+                image: UIImage(systemName: "square.and.arrow.up"),
             ) { [weak self] _ in
                 self?.export()
             },
             UIAction(
                 title: String(localized: "Remove"),
                 image: UIImage(systemName: "trash"),
-                attributes: .destructive
-            ) { [weak self] _ in self?.confirmRemoval() }
+                attributes: .destructive,
+            ) { [weak self] _ in self?.confirmRemoval() },
         ]
         if !isDefault {
             items.insert(UIAction(
                 title: String(localized: "Set as Default…"),
-                image: UIImage(systemName: "checkmark.circle")
+                image: UIImage(systemName: "checkmark.circle"),
             ) { [weak self] _ in self?.confirmSetDefault() }, at: 0)
         }
         return items
@@ -124,7 +124,7 @@ final class ToolchainDetailController: TableController {
     private func updateRows() {
         var overview: [Row] = [
             .value(.version, String(localized: "Version"), record.version),
-            .value(.isDefault, String(localized: "Default"), isDefault ? String(localized: "Yes") : String(localized: "No"))
+            .value(.isDefault, String(localized: "Default"), isDefault ? String(localized: "Yes") : String(localized: "No")),
         ]
         if let swift = record.swiftRequirements, record.components.contains(where: { $0.kind == .swift }) {
             overview.append(.value(.swiftVersion, String(localized: "Swift Version"), swift.version))
@@ -206,7 +206,7 @@ final class ToolchainDetailController: TableController {
     override func tableView(
         _: UITableView,
         contextMenuConfigurationForRowAt indexPath: IndexPath,
-        point _: CGPoint
+        point _: CGPoint,
     ) -> UIContextMenuConfiguration? {
         let text: String
         guard let row = dataSource.value(at: indexPath) else { return nil }
@@ -217,7 +217,7 @@ final class ToolchainDetailController: TableController {
         return UIContextMenuConfiguration(actionProvider: { _ in
             UIMenu(children: [UIAction(
                 title: String(localized: "Copy"),
-                image: UIImage(systemName: "doc.on.doc")
+                image: UIImage(systemName: "doc.on.doc"),
             ) { _ in
                 UIPasteboard.general.string = text
             }])
@@ -228,7 +228,7 @@ final class ToolchainDetailController: TableController {
         presentConfirmation(
             title: "Set as Default?",
             message: "New projects will use this toolchain. To switch an existing project’s toolchain, ask the model in that project.",
-            confirmTitle: "Set as Default"
+            confirmTitle: "Set as Default",
         ) { [weak self] in self?.setDefault() }
     }
 
@@ -258,7 +258,7 @@ final class ToolchainDetailController: TableController {
             title: "Remove the Toolchain?",
             message: "Projects using this toolchain cannot build until you download and set it up again.",
             confirmTitle: "Remove",
-            destructive: true
+            destructive: true,
         ) { [weak self] in
             self?.remove()
         }
@@ -271,7 +271,7 @@ final class ToolchainDetailController: TableController {
             id: record.id,
             name: Self.name(of: record),
             from: self,
-            anchor: moreItem
+            anchor: moreItem,
         )
     }
 
@@ -284,7 +284,7 @@ final class ToolchainDetailController: TableController {
                     title: String(localized: "Removing Toolchain"),
                     message: Self.name(of: record),
                     cancellable: false,
-                    from: self
+                    from: self,
                 ) { update in
                     let handle = try await ApelinService.app.toolchainRemove(id: record.id)
                     var progress = EnvironmentTaskProgress(work: .toolchainRemoval)
@@ -331,7 +331,7 @@ private final class SelfTestsController: TableController {
 
     private lazy var dataSource = TableDataSource<Section, String, Row>(
         tableView: tableView,
-        identifier: { $0.id }
+        identifier: { $0.id },
     ) { [weak self] _, _, row in
         switch row {
         case .explanation: self?.explanationCell()
@@ -381,9 +381,9 @@ private final class SelfTestsController: TableController {
             menu: UIMenu(children: [
                 UIAction(
                     title: String(localized: "Run Again"),
-                    image: UIImage(systemName: "arrow.clockwise")
-                ) { [weak self] _ in self?.runAgain() }
-            ])
+                    image: UIImage(systemName: "arrow.clockwise"),
+                ) { [weak self] _ in self?.runAgain() },
+            ]),
         ).then { $0.accessibilityLabel = String(localized: "More") }
     }
 
@@ -398,7 +398,7 @@ private final class SelfTestsController: TableController {
                     handle: handle,
                     work: .toolchainSelfTest,
                     title: String(localized: "Running Self-Tests"),
-                    doneTitle: String(localized: "Self-Tests Done")
+                    doneTitle: String(localized: "Self-Tests Done"),
                 )
                 page.onFinish = { [weak self] in self?.reload() }
                 navigationController?.pushViewController(page, animated: true)

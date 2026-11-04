@@ -14,7 +14,7 @@ private func toolSpawnSetGroups(
     _ attributes: UnsafeMutablePointer<posix_spawnattr_t?>,
     _ count: Int32,
     _ groups: UnsafeMutablePointer<gid_t>,
-    _ membershipUID: uid_t
+    _ membershipUID: uid_t,
 ) -> Int32
 @_silgen_name("proc_pidinfo")
 private func toolProcPIDInfo(
@@ -22,7 +22,7 @@ private func toolProcPIDInfo(
     _ flavor: Int32,
     _ argument: UInt64,
     _ buffer: UnsafeMutableRawPointer?,
-    _ size: Int32
+    _ size: Int32,
 ) -> Int32
 
 /// Who a root caller spawns an extension as (mobile: 501/501).
@@ -85,7 +85,7 @@ struct ExtensionProcess {
         arguments: [String],
         environment: [String: String],
         allowRoot: Bool,
-        runAs: ToolProcessIdentity?
+        runAs: ToolProcessIdentity?,
     ) throws -> ExtensionProcess {
         let dropTo = runAs.flatMap { $0.uid != 0 && geteuid() == 0 ? $0 : nil }
         guard allowRoot || dropTo != nil || geteuid() != 0 else { throw Failure.refusedAsRoot }
@@ -168,7 +168,7 @@ struct ExtensionProcess {
                 stdinWrite: input.write,
                 stdoutRead: output.read,
                 stderrRead: errors.read,
-                attachmentSocket: sockets.0
+                attachmentSocket: sockets.0,
             )
         } catch {
             opened.forEach { close($0) }

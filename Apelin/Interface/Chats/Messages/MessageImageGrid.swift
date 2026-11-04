@@ -83,14 +83,14 @@ final class MessageImageGrid: UIView {
             x: Self.contentInset,
             y: Self.contentInset,
             width: max(0, bounds.width - Self.contentInset * 2),
-            height: max(0, bounds.height - Self.contentInset * 2)
+            height: max(0, bounds.height - Self.contentInset * 2),
         )
         let frames = Self.contentFrames(
             aspectRatios: aspectRatios,
             pixelSizes: pixelSizes,
             displayScale: displayScale,
             width: maximumSize.width,
-            maximumHeight: maximumSize.height
+            maximumHeight: maximumSize.height,
         )
         // the album reads from the leading edge: right to left, its first
         // image on the right
@@ -105,7 +105,7 @@ final class MessageImageGrid: UIView {
         for images: [ComposerAttachment],
         width: CGFloat,
         maximumHeight: CGFloat,
-        displayScale: CGFloat
+        displayScale: CGFloat,
     ) -> CGSize {
         let previews = MessageAttachmentPreviews.shared
         let ratios = images.map { attachment -> CGFloat in
@@ -117,12 +117,12 @@ final class MessageImageGrid: UIView {
             pixelSizes: images.map { previews.pixelSize(for: $0) },
             displayScale: displayScale,
             width: width,
-            maximumHeight: maximumHeight
+            maximumHeight: maximumHeight,
         )
         guard !frames.isEmpty else { return .zero }
         return CGSize(
             width: (frames.map(\.maxX).max() ?? 0) + contentInset * 2,
-            height: (frames.map(\.maxY).max() ?? 0) + contentInset * 2
+            height: (frames.map(\.maxY).max() ?? 0) + contentInset * 2,
         )
     }
 
@@ -131,7 +131,7 @@ final class MessageImageGrid: UIView {
         pixelSizes: [CGSize?],
         displayScale: CGFloat,
         width: CGFloat,
-        maximumHeight: CGFloat
+        maximumHeight: CGFloat,
     ) -> [CGRect] {
         MessageImageLayout.frames(
             aspectRatios: aspectRatios,
@@ -141,7 +141,7 @@ final class MessageImageGrid: UIView {
                 return CGSize(width: pixels.width / displayScale, height: pixels.height / displayScale)
             },
             width: max(0, min(540, width) - contentInset * 2),
-            maximumHeight: max(0, maximumHeight - contentInset * 2)
+            maximumHeight: max(0, maximumHeight - contentInset * 2),
         )
     }
 }

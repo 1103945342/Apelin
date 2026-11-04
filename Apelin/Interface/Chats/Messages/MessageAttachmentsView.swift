@@ -107,10 +107,10 @@ final class MessageAttachmentsView: UIView {
             for: images,
             width: bounds.width,
             maximumHeight: previewHeightLimit,
-            displayScale: displayScale
+            displayScale: displayScale,
         )
         grid.frame = directionalFrame(
-            CGRect(x: trailing ? bounds.width - size.width : 0, y: 0, width: size.width, height: size.height)
+            CGRect(x: trailing ? bounds.width - size.width : 0, y: 0, width: size.width, height: size.height),
         )
         var y = size.height
         for card in cards {
@@ -120,7 +120,7 @@ final class MessageAttachmentsView: UIView {
             let width = MessageDocumentCard.width(for: card.item, maximum: min(bounds.width, documentWidthLimit))
             let height = min(previewHeightLimit, MessageDocumentCard.height(for: card.item, width: width))
             card.frame = directionalFrame(
-                CGRect(x: trailing ? bounds.width - width : 0, y: y, width: width, height: height)
+                CGRect(x: trailing ? bounds.width - width : 0, y: y, width: width, height: height),
             )
             y += height
         }
@@ -131,13 +131,13 @@ final class MessageAttachmentsView: UIView {
         width: CGFloat,
         documentWidthLimit: CGFloat,
         maximumPreviewHeight: CGFloat,
-        displayScale: CGFloat
+        displayScale: CGFloat,
     ) -> CGFloat {
         var height = MessageImageGrid.size(
             for: images(in: attachments),
             width: width,
             maximumHeight: maximumPreviewHeight,
-            displayScale: displayScale
+            displayScale: displayScale,
         ).height
         for item in files(in: attachments) {
             if height > 0 {
@@ -217,7 +217,7 @@ private final class MessageDocumentCard: UIControl {
             x: content.minX,
             y: content.minY + headerHeight + 8,
             width: content.width,
-            height: max(0, content.height - headerHeight - 8)
+            height: max(0, content.height - headerHeight - 8),
         )
     }
 
@@ -228,7 +228,7 @@ private final class MessageDocumentCard: UIControl {
         sizingExcerpt.numberOfLines = previewLines
         sizingExcerpt.text = text
         let size = sizingExcerpt.sizeThatFits(
-            CGSize(width: max(1, width - padding * 2), height: .greatestFiniteMagnitude)
+            CGSize(width: max(1, width - padding * 2), height: .greatestFiniteMagnitude),
         )
         return padding * 2 + header + 8 + ceil(size.height)
     }

@@ -35,7 +35,7 @@ private final class FakeIcli: IcliSurface, @unchecked Sendable {
         filter _: IcliSyslogFilter,
         seconds: Double,
         handler: @escaping @Sendable (LogEntry) -> Bool,
-        onEnd: @escaping @Sendable (String) -> Void
+        onEnd: @escaping @Sendable (String) -> Void,
     ) throws -> any IcliSyslogStream {
         let lines = lock.withLock { batches.flatMap(\.self) }
         let entries = lines.map { row in
@@ -46,7 +46,7 @@ private final class FakeIcli: IcliSurface, @unchecked Sendable {
                 subsystem: row["subsystem"] as? String ?? "",
                 category: row["category"] as? String ?? "",
                 level: LogLevel(icliName: row["level"] as? String ?? ""),
-                message: row["message"] as? String ?? ""
+                message: row["message"] as? String ?? "",
             )
         }
         let stream = FakeSyslogStream(seconds: seconds, handler: handler, onEnd: onEnd)
@@ -86,7 +86,7 @@ private final class FakeIcli: IcliSurface, @unchecked Sendable {
         index _: Int,
         appear: Bool,
         timeout _: Double,
-        interval _: Double
+        interval _: Double,
     ) throws -> [String: Any] {
         ["found": appear]
     }
@@ -187,7 +187,7 @@ final class DiagnosticsWorkerTests: XCTestCase {
             LogStreamRequest(filter: ApelinProtocol.LogFilter(subsystem: "wiki.qaq.hello", windowSeconds: 1)),
             taskID: TaskID("t"),
             emit: events.emit,
-            finish: events.finish
+            finish: events.finish,
         )
         XCTAssertEqual(events.done.wait(timeout: .now() + 10), .success)
         XCTAssertEqual(events.end?.0, .succeeded)
@@ -268,14 +268,14 @@ final class DiagnosticsWorkerTests: XCTestCase {
             host: ApelinService(transport: NoHost()),
             home: home.path,
             installRoot: root.path,
-            emit: events.emit
+            emit: events.emit,
         )
         let request = ApelinProtocol.ConfirmLoadedRequest(
             buildID: "B-1",
             targetID: "SpringBoard",
             projectID: "proj-1",
             logWindowSeconds: 1,
-            imageCheck: .regionPaths
+            imageCheck: .regionPaths,
         )
         do {
             try await service.startConfirmLoaded(request, taskID: TaskID("confirm-refused"))
@@ -296,7 +296,7 @@ final class DiagnosticsWorkerTests: XCTestCase {
             diagnostics: Diagnostics(icli: icli),
             host: ApelinService(transport: NoHost()),
             home: home.path,
-            installRoot: root.path
+            installRoot: root.path,
         )
         let response = try await service.confirmLoaded(ApelinProtocol.ConfirmLoadedRequest(buildID: "B-1", targetID: "SpringBoard", projectID: "proj-1", logWindowSeconds: 1))
         XCTAssertFalse(response.loaded)
@@ -320,7 +320,7 @@ final class DiagnosticsWorkerTests: XCTestCase {
             host: ApelinService(transport: host),
             home: home.path,
             installRoot: root.path,
-            emit: events.emit
+            emit: events.emit,
         )
         let taskID = TaskID("confirm-1")
         try await service.startConfirmLoaded(ApelinProtocol.ConfirmLoadedRequest(buildID: "B-1", targetID: "SpringBoard", projectID: "proj-1", trigger: .respring, logWindowSeconds: 1), taskID: taskID)
@@ -344,7 +344,7 @@ final class DiagnosticsWorkerTests: XCTestCase {
         for bad in [
             ApelinProtocol.ConfirmLoadedRequest(buildID: "", targetID: "SpringBoard"),
             ApelinProtocol.ConfirmLoadedRequest(buildID: "B-1", targetID: "SpringBoard", logWindowSeconds: 0),
-            ApelinProtocol.ConfirmLoadedRequest(buildID: "B-1", targetID: "../SpringBoard")
+            ApelinProtocol.ConfirmLoadedRequest(buildID: "B-1", targetID: "../SpringBoard"),
         ] {
             do {
                 try await service.startConfirmLoaded(bad, taskID: TaskID("t"))
@@ -376,7 +376,7 @@ final class DiagnosticsWorkerTests: XCTestCase {
         XCTAssertThrowsError(try service.requireTarget("com.apple.Preferences")) { error in
             XCTAssertEqual(
                 error as? ApelinError,
-                ApelinError(.conflict, "com.apple.Preferences is not the verified foreground app after 0 s (com.apple.springboard)")
+                ApelinError(.conflict, "com.apple.Preferences is not the verified foreground app after 0 s (com.apple.springboard)"),
             )
         }
     }
@@ -422,16 +422,16 @@ final class DiagnosticsWorkerTests: XCTestCase {
             diagnostics: diagnostics,
             host: ApelinService(transport: NoHost()),
             home: "/nonexistent",
-            installRoot: "/"
+            installRoot: "/",
         )
         let requests: [(String, () async throws -> Void)] = [
             ("readUITree", { _ = try await service.readUITree(.init(targetID: "com.apple.springboard")) }),
             ("tapElement", {
                 _ = try await service.uiAction(.init(
                     targetID: "com.apple.springboard",
-                    action: .tapElement(text: "OK", identifier: nil)
+                    action: .tapElement(text: "OK", identifier: nil),
                 ))
-            })
+            }),
         ]
         for (name, request) in requests {
             icli.lock.withLock { icli.frontQueues = [] }
@@ -484,7 +484,7 @@ final class DiagnosticsWorkerTests: XCTestCase {
             diagnostics: diagnostics,
             host: ApelinService(transport: NoHost()),
             home: "/nonexistent",
-            installRoot: "/"
+            installRoot: "/",
         )
         let refused = ["wiki.qaq.apelin"]
         func expectRefused(_ request: ApelinProtocol.UIActionRequest, _ what: String) async {
@@ -502,7 +502,7 @@ final class DiagnosticsWorkerTests: XCTestCase {
             .tap(x: 200, y: 4),
             .tapElement(text: "Delete", identifier: nil),
             .type(text: "yes"),
-            .swipe(fromX: 300, fromY: 100, toX: 20, toY: 100, durationMilliseconds: 200)
+            .swipe(fromX: 300, fromY: 100, toX: 20, toY: 100, durationMilliseconds: 200),
         ]
         for action in actions {
             await expectRefused(.init(action: action, refusedBundleIDs: refused), "Apelin in front, \(action)")
@@ -525,7 +525,7 @@ final class DiagnosticsWorkerTests: XCTestCase {
         let icli = FakeIcli()
         icli.crashes = [
             "/var/mobile/Library/Logs/CrashReporter/SpringBoard-2026-10-17-100000.ips",
-            "/var/mobile/Library/Logs/CrashReporter/../../etc/passwd"
+            "/var/mobile/Library/Logs/CrashReporter/../../etc/passwd",
         ]
         let service = DiagnosticsService(diagnostics: Diagnostics(icli: icli), host: ApelinService(transport: NoHost()), home: "/nonexistent", installRoot: "/")
         let list = try service.crashList(CrashListRequest())

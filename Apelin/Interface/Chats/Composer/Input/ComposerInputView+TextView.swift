@@ -22,7 +22,7 @@ extension ComposerInputView {
             [
                 UIKeyCommand(input: "\r", modifierFlags: .alternate, action: #selector(insertNewLine)),
                 UIKeyCommand(input: "\r", modifierFlags: [], action: #selector(returnPressed)),
-                UIKeyCommand(input: "\r", modifierFlags: .command, action: #selector(commandReturnPressed))
+                UIKeyCommand(input: "\r", modifierFlags: .command, action: #selector(commandReturnPressed)),
             ]
         }
 
@@ -99,7 +99,7 @@ extension ComposerInputView: UITextViewDelegate {
     func textView(
         _ textView: UITextView,
         editMenuForTextIn _: NSRange,
-        suggestedActions: [UIMenuElement]
+        suggestedActions: [UIMenuElement],
     ) -> UIMenu? {
         let pasteboard = UIPasteboard.general
         let canPasteAttachment = pasteboard.hasStrings
@@ -110,13 +110,13 @@ extension ComposerInputView: UITextViewDelegate {
             },
             UIAction(
                 title: String(localized: "Paste as Attachment"),
-                attributes: canPasteAttachment ? [] : [.disabled]
+                attributes: canPasteAttachment ? [] : [.disabled],
             ) { [weak self] _ in
                 self?.delegate?.onComposerInputPasteAsAttachmentTapped()
             },
             UIAction(title: String(localized: "More")) { [weak self] _ in
                 self?.delegate?.onComposerInputMoreButtonTapped()
-            }
+            },
         ]
         return UIMenu(children: suggestedActions + actions)
     }
@@ -138,7 +138,7 @@ extension ComposerInputView: UITextViewDelegate {
         let attrText = textView.attributedText ?? .init()
         let textHeight = TextMeasurement.shared.measureSize(
             of: attrText,
-            usingWidth: textView.frame.width
+            usingWidth: textView.frame.width,
         ).height
         let decision = ceil(max(textHeight, font.lineHeight))
         doWithAnimation { self.textHeight.send(decision) }
@@ -151,8 +151,8 @@ extension ComposerInputView: UITextViewDelegate {
             string: currentText ?? "",
             attributes: [
                 .font: UIFont.preferredFont(forTextStyle: .body),
-                .foregroundColor: UIColor.label
-            ]
+                .foregroundColor: UIColor.label,
+            ],
         )
     }
 }

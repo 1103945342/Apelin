@@ -24,35 +24,35 @@ public enum AssemblerTools {
                 "arch": [
                     "type": "string",
                     "enum": ["arm64", "x86_64", "x86", "arm", "thumb"],
-                    "description": "Target architecture."
+                    "description": "Target architecture.",
                 ],
                 "source": [
                     "type": "string",
                     "minLength": 1,
                     "maxLength": .number(Double(maxSourceLength)),
-                    "description": "Assembly source."
+                    "description": "Assembly source.",
                 ],
                 "address": [
                     "type": "string",
-                    "description": "Address the code will run at, in hex (0x…) or decimal, for PC-relative operands. Default 0."
+                    "description": "Address the code will run at, in hex (0x…) or decimal, for PC-relative operands. Default 0.",
                 ],
                 "syntax": [
                     "type": "string",
                     "enum": ["intel", "att"],
-                    "description": "x86 syntax. Default intel."
-                ]
+                    "description": "x86 syntax. Default intel.",
+                ],
             ],
             "required": ["arch", "source"],
-            "additionalProperties": false
+            "additionalProperties": false,
         ],
         risk: .readOnly,
-        timeoutSeconds: 30
+        timeoutSeconds: 30,
     )
 
     public static func server() -> ToolExtensionServer {
         ToolExtensionServer(
             peer: ToolPeer(name: id, version: version),
-            tools: [ToolHandler(assembleDescriptor) { call in try assemble(call) }]
+            tools: [ToolHandler(assembleDescriptor) { call in try assemble(call) }],
         )
     }
 
@@ -92,7 +92,7 @@ public enum AssemblerTools {
         var lines = [
             "\(arch), \(bytes.count) bytes from \(result.statementCount) statements, at "
                 + String(format: "0x%llx", address),
-            "bytes: " + bytes.map { String(format: "%02x", $0) }.joined(separator: " ")
+            "bytes: " + bytes.map { String(format: "%02x", $0) }.joined(separator: " "),
         ]
         if ["arm64", "arm"].contains(arch), bytes.count % 4 == 0 {
             let words = stride(from: 0, to: bytes.count, by: 4).map { index -> String in

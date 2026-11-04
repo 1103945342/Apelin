@@ -40,7 +40,7 @@ enum AgentPublishRules {
         _ publish: DistributionPublishRequest,
         session: String?,
         registry: TaskRegistry,
-        artifacts: ArtifactRegistry
+        artifacts: ArtifactRegistry,
     ) async -> ApelinError? {
         guard let session, let entry = await AgentSessionTable.shared.entry(session) else {
             return ApelinError(.denied, "no agent session for this worker")
@@ -54,7 +54,7 @@ enum AgentPublishRules {
             guard let built = await artifacts.artifact(path: file), InstallDigest.normalized(digest) == built.digest else {
                 return ApelinError(
                     .denied,
-                    "an agent publishes only packages Apelin's builds made, as they made them: \((file as NSString).lastPathComponent) is not one with that digest; build it again with apelin_project_build"
+                    "an agent publishes only packages Apelin's builds made, as they made them: \((file as NSString).lastPathComponent) is not one with that digest; build it again with apelin_project_build",
                 )
             }
         }

@@ -44,7 +44,7 @@ public extension GitService {
             count: plan.count,
             upstream: plan.upstream,
             published: plan.published,
-            commit: commit
+            commit: commit,
         )
     }
 }

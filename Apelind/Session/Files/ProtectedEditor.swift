@@ -47,7 +47,7 @@ actor ProtectedEditor {
             path: target.path,
             version: target.version,
             needsConfirmation: target.needsConfirmation,
-            backups: backups.list(for: target.path)
+            backups: backups.list(for: target.path),
         )
         return (response, owned)
     }
@@ -61,7 +61,7 @@ actor ProtectedEditor {
 
     func commit(
         _ request: ProtectedEditCommitRequest,
-        descriptors: [OwnedDescriptor]
+        descriptors: [OwnedDescriptor],
     ) throws -> ProtectedEditCommitResponse {
         sweep()
         // One save per grant, whatever happens next.
@@ -79,7 +79,7 @@ actor ProtectedEditor {
         if target.needsConfirmation, !request.confirmed {
             throw ApelinError(
                 .denied,
-                "\(target.path) is a LaunchDaemons plist: confirm the change (confirmed: true); it is saved only, never loaded"
+                "\(target.path) is a LaunchDaemons plist: confirm the change (confirmed: true); it is saved only, never loaded",
             )
         }
         let contents = try Self.contents(of: request, descriptors: descriptors)
@@ -102,7 +102,7 @@ actor ProtectedEditor {
 
     private static func contents(
         of request: ProtectedEditCommitRequest,
-        descriptors: [OwnedDescriptor]
+        descriptors: [OwnedDescriptor],
     ) throws -> Data {
         if let base64 = request.contentsBase64 {
             guard request.contents == nil else {

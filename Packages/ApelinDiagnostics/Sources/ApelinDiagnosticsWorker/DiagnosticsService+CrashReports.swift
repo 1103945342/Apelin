@@ -19,7 +19,7 @@ extension DiagnosticsService {
         let references = try mapped {
             try diagnostics.listCrashReports(CrashReportListRequest(
                 processName: request.process,
-                limit: CrashReportListRequest.limitRange.upperBound
+                limit: CrashReportListRequest.limitRange.upperBound,
             ))
         }
         var reports: [CrashReportSummary] = []
@@ -32,7 +32,7 @@ extension DiagnosticsService {
             let summary = ReportDecoder.summary(
                 path: reference.path,
                 byteCount: found ? UInt64(metadata.st_size) : 0,
-                modified: modified
+                modified: modified,
             )
             if let since = request.since, summary.date < since {
                 continue
@@ -42,7 +42,7 @@ extension DiagnosticsService {
                 process: summary.processName,
                 bundleID: summary.bundleID,
                 date: summary.date,
-                exceptionType: summary.bugType
+                exceptionType: summary.bugType,
             ))
         }
         reports.sort { $0.date > $1.date }
@@ -82,7 +82,7 @@ extension DiagnosticsService {
         let dsyms = try ProjectDSYMs(
             directories: request.projectID.map { try ProjectFolders.dsymDirectories(projectID: $0, home: home) }
                 ?? [],
-            depth: 8
+            depth: 8,
         )
         let symbolicator = Symbolicator(dsyms: dsyms) { path in
             // Symbols come from the project's dSYMs; no image is opened by a
@@ -99,7 +99,7 @@ extension DiagnosticsService {
                 address: "0x" + String(frame.address, radix: 16),
                 symbol: frame.symbol,
                 file: frame.sourceFile,
-                line: frame.sourceLine
+                line: frame.sourceLine,
             )
         }
         return CrashSymbolicateResponse(
@@ -108,7 +108,7 @@ extension DiagnosticsService {
             exceptionType: crash.exception?.type,
             matchedImageUUIDs: matched,
             crashedThread: Array(frames),
-            suspects: Blame.suspects(in: crash, packages: nil).map(\.imageName)
+            suspects: Blame.suspects(in: crash, packages: nil).map(\.imageName),
         )
     }
 }

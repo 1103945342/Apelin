@@ -27,7 +27,7 @@ public struct SwiftToolchainSupport: Codable, Sendable, Equatable {
         minimumHost: String,
         cpuFeatures: [String],
         minimumHostBasis: String = "verified-policy",
-        verifiedHosts: [String] = []
+        verifiedHosts: [String] = [],
     ) {
         self.version = version
         self.minimumHost = minimumHost
@@ -115,7 +115,7 @@ public struct CommandLineToolsRelease: Sendable, Equatable {
         staticInstructionFeatures: [String] = [],
         requiredLibcxxSymbols: [String] = [],
         systemSymbolSDK: String? = nil,
-        systemSymbolCount: Int? = nil
+        systemSymbolCount: Int? = nil,
     ) {
         self.version = version
         self.newestSDK = newestSDK
@@ -155,7 +155,7 @@ public enum CommandLineToolsSupport {
         libxar: "ld64 reads and writes bitcode bundles with libxar; Apelin never embeds or links bitcode",
         libcodedirectory: "ld writes a linker ad-hoc signature with libcodedirectory, which it does for macOS "
             + "and simulator outputs or when asked with -adhoc_codesign; Apelin links for iOS devices, never asks, "
-            + "and signs with ApelinCodeSign"
+            + "and signs with ApelinCodeSign",
     ]
 
     /// Imports the Swift tools make that iOS's Swift runtime does not export,
@@ -172,7 +172,7 @@ public enum CommandLineToolsSupport {
     /// iOS 26 or later host. Only CLT 27.0 uses this rename.
     public static let swiftImportRenames: [String: String] = [
         "_$ss042_stdlib_isOSVersionAtLeastOrVariantVersiondE0yBi1_Bw_BwBwBwBwBwtF":
-            "_$ss26_stdlib_isOSVersionAtLeastyBi1_Bw_BwBwtF"
+            "_$ss26_stdlib_isOSVersionAtLeastyBi1_Bw_BwBwtF",
     ]
 
     /// The reviewed releases, newest first.
@@ -186,7 +186,7 @@ public enum CommandLineToolsSupport {
                 minimumHost: "26.0",
                 cpuFeatures: ["FEAT_LRCPC", "FEAT_SHA3", "FEAT_DotProd"],
                 minimumHostBasis: "runtime-semantics",
-                verifiedHosts: ["26.6.2", "27.0.1"]
+                verifiedHosts: ["26.6.2", "27.0.1"],
             ),
             swiftImportRenames: swiftImportRenames,
             recommendedSDK: "27.0",
@@ -194,7 +194,7 @@ public enum CommandLineToolsSupport {
             verifiedSwiftSDKs: ["27.0", "27.1"],
             sources: ["082-83364": "d1a517e663d7ba169296683255bcf5b498802b843603cee40ec4b6fb7c991bea"],
             staticInstructionFeatures: ["FEAT_LRCPC", "FEAT_SHA3", "FEAT_DotProd"],
-            requiredLibcxxSymbols: ["_ZNSt3__122__libcpp_verbose_abortEPKcz"]
+            requiredLibcxxSymbols: ["_ZNSt3__122__libcpp_verbose_abortEPKcz"],
         ),
         .init(
             version: "16.4",
@@ -209,7 +209,7 @@ public enum CommandLineToolsSupport {
             verifiedSDKs: ["18.4", "18.5"],
             sources: ["082-41241": "43c15c1f952c7a4c1a8f67c6b46350b83e217c610d7d3c14aa09e88bb251a4b6"],
             staticInstructionFeatures: ["FEAT_LRCPC", "FEAT_SHA3", "FEAT_DotProd"],
-            requiredLibcxxSymbols: ["_ZNSt3__122__libcpp_verbose_abortEPKcz"]
+            requiredLibcxxSymbols: ["_ZNSt3__122__libcpp_verbose_abortEPKcz"],
         ),
         .init(
             version: "15.3",
@@ -222,13 +222,13 @@ public enum CommandLineToolsSupport {
                 version: "5.10",
                 minimumHost: "17.3.1",
                 cpuFeatures: ["FEAT_LRCPC"],
-                verifiedHosts: ["17.3.1", "26.0.1"]
+                verifiedHosts: ["17.3.1", "26.0.1"],
             ),
             verifiedSDKs: ["17.2", "17.4"],
             sources: ["052-59890": "3812e6cce85d90f2a142440628a56ececd90d7fcb2ebfb35cc2faee3d81bd6ab"],
             staticInstructionFeatures: ["FEAT_LRCPC", "FEAT_SHA3"],
             systemSymbolSDK: "16.1",
-            systemSymbolCount: 1667
+            systemSymbolCount: 1667,
         ),
         .init(
             version: "15.0",
@@ -241,13 +241,13 @@ public enum CommandLineToolsSupport {
                 version: "5.9",
                 minimumHost: "17.3.1",
                 cpuFeatures: ["FEAT_LRCPC"],
-                verifiedHosts: ["17.3.1", "26.0.1", "26.6.2", "27.0.1"]
+                verifiedHosts: ["17.3.1", "26.0.1", "26.6.2", "27.0.1"],
             ),
             verifiedSDKs: ["17.0"],
             sources: ["042-32697": "a5ec585bf89ce2e43aca1583b8a315b88725d53bc66dd0f2ba3fcf4580ec7b8f"],
             staticInstructionFeatures: ["FEAT_LRCPC", "FEAT_SHA3"],
             systemSymbolSDK: "16.1",
-            systemSymbolCount: 1682
+            systemSymbolCount: 1682,
         ),
         .init(
             version: "14.2",
@@ -257,20 +257,20 @@ public enum CommandLineToolsSupport {
                 version: "5.7.2",
                 minimumHost: "17.3.1",
                 cpuFeatures: ["FEAT_LRCPC"],
-                verifiedHosts: ["17.3.1", "26.0.1", "26.6.2", "27.0.1"]
+                verifiedHosts: ["17.3.1", "26.0.1", "26.6.2", "27.0.1"],
             ),
             clangModuleCPUFeatures: [],
             verifiedSDKs: ["16.1", "16.2"],
             sources: ["012-92431": "81c4ed35ac9a2dcce106c9d26696653ceb9337b949206802886e25d13f9b3f1a"],
             staticInstructionFeatures: ["FEAT_LRCPC"],
             systemSymbolSDK: "16.1",
-            systemSymbolCount: 949
-        )
+            systemSymbolCount: 949,
+        ),
     ]
 
     /// Releases looked at and refused, with the reason a user reads.
     static let refused: [String: String] = [
-        "12.4": "C++ programs it builds for arm64e stop on iOS as soon as they print output"
+        "12.4": "C++ programs it builds for arm64e stop on iOS as soon as they print output",
     ].merging(retired.map { ($0, retiredReason) }) { first, _ in first }
 
     /// Releases that passed on a device and were dropped (owner, 2026-10-21):

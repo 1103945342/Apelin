@@ -58,14 +58,14 @@ final class GitHubRepositoryTests: XCTestCase {
                 guard taken.insert("\(owner)/\(name)").inserted else {
                     return reply(422, [
                         "message": "Repository creation failed.",
-                        "errors": [["resource": "Repository", "field": "name", "message": "name already exists on this account"]]
+                        "errors": [["resource": "Repository", "field": "name", "message": "name already exists on this account"]],
                     ])
                 }
                 return reply(201, [
                     "name": name, "full_name": "\(owner)/\(name)", "owner": ["login": owner],
                     "private": body?["private"] as? Bool ?? false, "description": body?["description"] ?? NSNull(),
                     "html_url": "https://github.com/\(owner)/\(name)", "clone_url": "https://github.com/\(owner)/\(name).git",
-                    "default_branch": "main", "permissions": ["push": true]
+                    "default_branch": "main", "permissions": ["push": true],
                 ])
             }
         }
@@ -90,7 +90,7 @@ final class GitHubRepositoryTests: XCTestCase {
         XCTAssertEqual(response, GitRepositoryCreateResponse(
             fullName: "someone/clock-tweak",
             cloneURL: "https://github.com/someone/clock-tweak.git",
-            url: "https://github.com/someone/clock-tweak"
+            url: "https://github.com/someone/clock-tweak",
         ))
         XCTAssertEqual(github.requests.map { "\($0.method) \($0.path)" }, ["POST /user/repos"], "no owner named: nothing to tell apart")
         let body = try XCTUnwrap(github.requests.first?.body)
@@ -121,7 +121,7 @@ final class GitHubRepositoryTests: XCTestCase {
         let refused: [(GitRepositoryCreateRequest, ApelinError.Code, String)] = [
             (GitRepositoryCreateRequest(name: "clock-tweak", visibility: .public), .conflict, "name already exists on this account"),
             (GitRepositoryCreateRequest(name: "tools", visibility: .private, owner: "Nowhere"), .notFound, "no organization Nowhere"),
-            (GitRepositoryCreateRequest(name: "tools", visibility: .private, owner: "ReadOnly"), .denied, "admin access to the organization")
+            (GitRepositoryCreateRequest(name: "tools", visibility: .private, owner: "ReadOnly"), .denied, "admin access to the organization"),
         ]
         for (request, code, words) in refused {
             do {
@@ -158,7 +158,7 @@ final class GitHubRepositoryTests: XCTestCase {
             GitRepositoryCreateRequest(name: "tools.git", visibility: .private),
             GitRepositoryCreateRequest(name: "tools", visibility: .private, owner: "-OwnGoal"),
             GitRepositoryCreateRequest(name: "tools", visibility: .private, description: "Two\nlines"),
-            GitRepositoryCreateRequest(name: "tools", visibility: .private, description: String(repeating: "a", count: 351))
+            GitRepositoryCreateRequest(name: "tools", visibility: .private, description: String(repeating: "a", count: 351)),
         ]
         for request in refused {
             do {

@@ -179,7 +179,7 @@ public struct MachOSlice: Sendable {
                 let field = try body.bytes(16)
                 uuid = UUID(uuid: (
                     field[0], field[1], field[2], field[3], field[4], field[5], field[6], field[7],
-                    field[8], field[9], field[10], field[11], field[12], field[13], field[14], field[15]
+                    field[8], field[9], field[10], field[11], field[12], field[13], field[14], field[15],
                 ))
 
             case loadCommandSegment64:
@@ -208,7 +208,7 @@ public struct MachOSlice: Sendable {
                     symbolOffset: body.integer(),
                     symbolCount: body.integer(),
                     stringOffset: body.integer(),
-                    stringSize: body.integer()
+                    stringSize: body.integer(),
                 )
 
             case loadCommandFunctionStarts:
@@ -246,7 +246,7 @@ public struct MachOSlice: Sendable {
                 name: sectionName,
                 offset: offset,
                 size: size,
-                hasContents: flags & sectionTypeMask != sectionTypeZeroFill
+                hasContents: flags & sectionTypeMask != sectionTypeZeroFill,
             ))
         }
         return sections
@@ -296,12 +296,12 @@ public struct MachOSlice: Sendable {
               var symbols = try? ByteReader(
                   data,
                   start: range.lowerBound + Int(symbolTableCommand.symbolOffset),
-                  count: symbolBytes
+                  count: symbolBytes,
               ),
               let strings = try? ByteReader(
                   data,
                   start: range.lowerBound + Int(symbolTableCommand.stringOffset),
-                  count: Int(symbolTableCommand.stringSize)
+                  count: Int(symbolTableCommand.stringSize),
               )
         else { return }
 
@@ -333,7 +333,7 @@ public struct MachOSlice: Sendable {
               var reader = try? ByteReader(
                   data,
                   start: range.lowerBound + Int(functionStartsCommand.offset),
-                  count: Int(functionStartsCommand.size)
+                  count: Int(functionStartsCommand.size),
               )
         else { return }
 

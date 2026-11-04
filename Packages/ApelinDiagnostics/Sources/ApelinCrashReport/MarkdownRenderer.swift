@@ -63,7 +63,7 @@ enum MarkdownRenderer {
             ("OS", report.crash.flatMap(CrashTextRenderer.osVersion) ?? report.header.osVersion),
             ("Device", report.crash?.device.model),
             ("Date", CrashTextRenderer.stamp(report.crash?.device.captureDate ?? report.header.timestamp)),
-            ("Incident", report.crash?.device.incidentID ?? report.header.incidentID)
+            ("Incident", report.crash?.device.incidentID ?? report.header.incidentID),
         ].compactMap { label, value -> String? in
             guard let value, !value.isEmpty else { return nil }
             return "| \(label) | \(value) |"

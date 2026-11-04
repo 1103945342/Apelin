@@ -64,7 +64,7 @@ extension DistributionService {
         files: [URL],
         digests: [String]? = nil,
         staging: URL,
-        reporter: TaskReporter
+        reporter: TaskReporter,
     ) async throws -> JSONValue {
         let project = try git.projects.locate(linked.projectID)
         let repository = try GitRepository(at: project.root)
@@ -93,7 +93,7 @@ extension DistributionService {
             else {
                 throw ApelinError(
                     .conflict,
-                    "debs/\(package.name) is already published with other contents. Raise the version and build again."
+                    "debs/\(package.name) is already published with other contents. Raise the version and build again.",
                 )
             }
             skipped.append(package.name)
@@ -109,14 +109,14 @@ extension DistributionService {
             "published": .array(added.map { .string($0.name) }),
             "skipped": .array(skipped.map(JSONValue.string)),
             "sourceURL": .string(linked.sourceURL),
-            "repository": .string(linked.fullName)
+            "repository": .string(linked.fullName),
         ]
         if !added.isEmpty {
             try repository.stage(added.map { "debs/" + $0.name })
             let login = (try? credentials.credential(forHost: GitHubHost.name))?.username ?? "apelin"
             result["commit"] = try .string(repository.commit(
                 message: "Publish " + titles.joined(separator: ", "),
-                author: author(repository, login: login)
+                author: author(repository, login: login),
             ))
         }
         // Pushed even when every package was there already: an earlier
@@ -144,7 +144,7 @@ extension DistributionService {
         _ files: [URL],
         digests: [String]?,
         in staging: URL,
-        reporter: TaskReporter
+        reporter: TaskReporter,
     ) throws -> [StagedPackage] {
         let builds = CanonicalPath.resolve(layout.data.root.appendingPathComponent("Builds").path)
         var packages: [StagedPackage] = []
@@ -154,7 +154,7 @@ extension DistributionService {
             if let expected = digests?[index], digest != expected {
                 throw ApelinError(
                     .conflict,
-                    "\(file.lastPathComponent) is \(digest), not \(expected), the digest its build recorded: it changed since, so none of the packages went in. Build it again."
+                    "\(file.lastPathComponent) is \(digest), not \(expected), the digest its build recorded: it changed since, so none of the packages went in. Build it again.",
                 )
             }
             let control = try DebianControlFile(parsing: DebArchiveReader.control(of: .path(staged.path)))
@@ -178,7 +178,7 @@ extension DistributionService {
         _ source: URL,
         inside root: String?,
         to destination: URL,
-        reporter: TaskReporter
+        reporter: TaskReporter,
     ) throws -> String {
         let name = source.lastPathComponent
         let input = open(source.path, O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC)

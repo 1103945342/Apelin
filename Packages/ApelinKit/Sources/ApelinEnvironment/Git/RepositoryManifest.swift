@@ -64,7 +64,7 @@ final class RepositoryManifest {
         guard let theirID = ProjectManifestIdentity.projectID(in: theirs) else {
             throw ApelinError(
                 .badRequest,
-                "The repository's \(Self.fileName) does not read as a project's: it is not a JSON object with a projectID. Fix it in the repository, or use a branch without it."
+                "The repository's \(Self.fileName) does not read as a project's: it is not a JSON object with a projectID. Fix it in the repository, or use a branch without it.",
             )
         }
         if theirID == ownID || mayTakeTheirs && isFree(theirID) {
@@ -76,7 +76,7 @@ final class RepositoryManifest {
         guard let ours = ProjectManifestIdentity.replacing(theirID, with: id, in: theirs) else {
             throw ApelinError(
                 .badRequest,
-                "The repository's \(Self.fileName) has its projectID in more than one place, so it cannot be given this project's."
+                "The repository's \(Self.fileName) has its projectID in more than one place, so it cannot be given this project's.",
             )
         }
         file = .repositoryWithProjectID

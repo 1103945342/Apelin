@@ -27,7 +27,7 @@ struct PromptCacheTests {
                 systemPrompt: context.systemPrompt,
                 tools: context.tools,
                 messages: context.messages,
-                sessionID: options?.sessionId
+                sessionID: options?.sessionId,
             ))
         }
     }
@@ -126,7 +126,7 @@ struct PromptCacheTests {
             // The first run: two calls, one of them a notice, then an answer.
             reply(fauxAssistantMessage(blocks: [
                 fauxToolCall(name: "file_list", arguments: ["reason": "Look at the project", "path": "."], id: "call-1"),
-                fauxToolCall(name: "apelin_notification_send", arguments: ["reason": "Say it is done", "body": "The list is ready."], id: "call-2")
+                fauxToolCall(name: "apelin_notification_send", arguments: ["reason": "Say it is done", "body": "The list is ready."], id: "call-2"),
             ], stopReason: .toolUse)),
             reply(fauxAssistantMessage("Listed.")),
             // The second run, past midnight, in another mode, after
@@ -136,12 +136,12 @@ struct PromptCacheTests {
             reply(fauxAssistantMessage("Still.")),
             // The fourth, from the session opened again as a new process
             // opens it.
-            reply(fauxAssistantMessage("Reopened."))
+            reply(fauxAssistantMessage("Reopened.")),
         ])
         let configuration = AgentSessionConfiguration(
             project: home.project, provider: .registered(provider.getModel()),
             approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot,
-            systemState: Self.source(clock)
+            systemState: Self.source(clock),
         )
         var session = try await AgentSession(configuration: configuration, backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
         try await session.prompt("List the project.", messageID: UUID())
@@ -272,7 +272,7 @@ struct PromptCacheTests {
             .factory { _, _, _, _ in
                 try fauxAssistantMessage(blocks: [
                     fauxToolCall(name: "apelin_memory_save", arguments: ["reason": "Remember it", "revision": .string(store.read().revision), "title": "Editor", "body": "Prefers tabs.", "scope": "global"], id: "save"),
-                    fauxToolCall(name: "apelin_skill_save", arguments: ["reason": "Keep it", "name": "release-notes", "description": "Use for release notes.", "instructions": "Write them."], id: "skill")
+                    fauxToolCall(name: "apelin_skill_save", arguments: ["reason": "Keep it", "name": "release-notes", "description": "Use for release notes.", "instructions": "Write them."], id: "skill"),
                 ], stopReason: .toolUse)
             },
             .factory { _, _, _, _ in
@@ -283,14 +283,14 @@ struct PromptCacheTests {
             .factory { context, options, _, _ in
                 await requests.add(context, options)
                 return fauxAssistantMessage("Next.")
-            }
+            },
         ])
         let session = try await AgentSession(
             configuration: AgentSessionConfiguration(
                 project: home.project, provider: .registered(provider.getModel()),
-                approval: ApprovalPolicy(mode: .relaxed), dataRoot: home.dataRoot
+                approval: ApprovalPolicy(mode: .relaxed), dataRoot: home.dataRoot,
             ),
-            backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource()
+            backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource(),
         )
         try await session.prompt("Remember that I prefer tabs.")
         await session.waitForIdle()
@@ -320,21 +320,21 @@ struct PromptCacheTests {
                 // the user, in Settings, for this project
                 try store.save(MemoryRecord(title: "Build", body: "Runs make.", projectID: home.project.id), revision: store.read().revision)
                 return try fauxAssistantMessage(blocks: [
-                    fauxToolCall(name: "apelin_memory_save", arguments: ["reason": "Note it there", "revision": .string(store.read().revision), "title": "Build", "body": "Runs cmake.", "project": "Weather"], id: "save")
+                    fauxToolCall(name: "apelin_memory_save", arguments: ["reason": "Note it there", "revision": .string(store.read().revision), "title": "Build", "body": "Runs cmake.", "project": "Weather"], id: "save"),
                 ], stopReason: .toolUse)
             },
             .message(fauxAssistantMessage("Saved.")),
             .factory { context, options, _, _ in
                 await requests.add(context, options)
                 return fauxAssistantMessage("Next.")
-            }
+            },
         ])
         let session = try await AgentSession(
             configuration: AgentSessionConfiguration(
                 project: home.project, provider: .registered(provider.getModel()),
-                approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot
+                approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot,
             ),
-            backend: backend, digests: MockDigestLedger(), credentials: DeliveredCredentialSource()
+            backend: backend, digests: MockDigestLedger(), credentials: DeliveredCredentialSource(),
         )
         try await session.prompt("Note Weather's build.")
         await session.waitForIdle()
@@ -370,14 +370,14 @@ struct PromptCacheTests {
             .factory { context, options, _, _ in
                 await requests.add(context, options)
                 return fauxAssistantMessage("Carrying on from the summary.")
-            }
+            },
         ])
         let session = try await AgentSession(
             configuration: AgentSessionConfiguration(
                 project: home.project, provider: .registered(provider.getModel()),
-                approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot
+                approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot,
             ),
-            backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource()
+            backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource(),
         )
         let stream = try await session.events(afterSeq: 0)
         try await session.prompt("remove it")
@@ -439,15 +439,15 @@ struct PromptCacheTests {
             reply(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove it", "installation_id": "inst-1"])], stopReason: .toolUse)),
             reply(fauxAssistantMessage("Removed, and the logs kept.")),
             reply(fauxAssistantMessage("It was inst-1.")),
-            reply(fauxAssistantMessage("Reviewed."))
+            reply(fauxAssistantMessage("Reviewed.")),
         ])
         let session = try await AgentSession(
             configuration: AgentSessionConfiguration(
                 project: home.project, provider: .registered(provider.getModel()),
                 approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot,
-                systemState: Self.source(clock)
+                systemState: Self.source(clock),
             ),
-            backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource()
+            backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource(),
         )
         let stream = try await session.events(afterSeq: 0)
         try await session.prompt("remove it")
@@ -531,7 +531,7 @@ struct PromptCacheTests {
         defer { home.remove() }
         let configuration = AgentSessionConfiguration(
             project: home.project, provider: .githubCopilot(model: "m"),
-            approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot
+            approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot,
         )
         let root = try ScopedRoot(home.projectURL)
         let skills = SkillCatalog.load(userDirectory: home.dataRoot.skills).skills
@@ -544,7 +544,7 @@ struct PromptCacheTests {
         let store = MemoryStore(root: home.dataRoot.url)
         var snapshot = try store.save(
             MemoryRecord(title: "Other", body: "Another project's fact.", projectID: "another-project"),
-            revision: store.read().revision
+            revision: store.read().revision,
         )
         #expect(prompt() == before, "another project's memory changed this chat's prompt")
         #expect(!before.contains(snapshot.revision))

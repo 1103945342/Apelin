@@ -60,7 +60,7 @@ extension ChatRecord {
             title: String(summary.displayTitle.prefix(80)),
             project: projectName,
             status: status,
-            approvalTool: status == .waiting ? waiting.last?.tool : nil
+            approvalTool: status == .waiting ? waiting.last?.tool : nil,
         )
     }
 }

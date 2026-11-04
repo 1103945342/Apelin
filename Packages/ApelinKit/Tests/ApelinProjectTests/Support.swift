@@ -48,6 +48,6 @@ func runReference(_ script: String, arguments: [String] = []) throws -> String {
 func sampleRegistry() -> StaticEnvironmentRegistry {
     StaticEnvironmentRegistry(
         toolchains: [RegisteredToolchain(id: "clt-27.0-sample", digest: "sha256:" + String(repeating: "1", count: 64), version: "27.0", path: "/nonexistent", components: ["c-family"])],
-        sdks: [RegisteredSDK(id: "iPhoneOS27.0-00000000", digest: "sha256:" + String(repeating: "2", count: 64), version: "27.0", path: "/nonexistent")]
+        sdks: [RegisteredSDK(id: "iPhoneOS27.0-00000000", digest: "sha256:" + String(repeating: "2", count: 64), version: "27.0", path: "/nonexistent")],
     )
 }

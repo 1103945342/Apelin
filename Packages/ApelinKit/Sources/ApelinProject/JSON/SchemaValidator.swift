@@ -11,7 +11,7 @@ public final class SchemaValidator: @unchecked Sendable {
     private let lock = NSLock()
 
     private static let annotations: Set<String> = [
-        "$schema", "$id", "title", "description", "default", "$comment", "examples", "then", "else", "$defs"
+        "$schema", "$id", "title", "description", "default", "$comment", "examples", "then", "else", "$defs",
     ]
 
     public init(schema: JSONDocument) {
@@ -64,7 +64,7 @@ public final class SchemaValidator: @unchecked Sendable {
         _ schema: JSONObject,
         _ value: JSONDocument,
         _ where: String,
-        _ out: inout [String]
+        _ out: inout [String],
     ) {
         switch keyword {
         case "$ref":

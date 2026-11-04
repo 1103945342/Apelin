@@ -58,7 +58,7 @@ public struct AgentSessionConfiguration: Sendable {
         systemState: SystemStateSource = .device,
         network: NetworkPath = .system,
         hostRestarted: Bool = false,
-        toolExtensionPolicy: ToolManifestPolicy = ToolManifestPolicy()
+        toolExtensionPolicy: ToolManifestPolicy = ToolManifestPolicy(),
     ) {
         self.id = id
         self.project = project

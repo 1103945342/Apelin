@@ -147,7 +147,7 @@ public struct ProjectDocument: Codable, Sendable, Equatable {
             file: String,
             arguments: [String],
             inputs: [String],
-            outputs: [String]
+            outputs: [String],
         )
 
         public var typeName: String {
@@ -188,7 +188,7 @@ public struct ProjectDocument: Codable, Sendable, Equatable {
             case "compile":
                 self = try .compile(
                     product: product(),
-                    flags: c.decodeIfPresent([String].self, forKey: .flags) ?? []
+                    flags: c.decodeIfPresent([String].self, forKey: .flags) ?? [],
                 )
             case "link":
                 self = try .link(product: product(), flags: c.decodeIfPresent([String].self, forKey: .flags) ?? [])
@@ -198,7 +198,7 @@ public struct ProjectDocument: Codable, Sendable, Equatable {
             case "strip":
                 self = try .strip(
                     product: product(),
-                    style: c.decodeIfPresent(StripStyle.self, forKey: .style) ?? .nonGlobal
+                    style: c.decodeIfPresent(StripStyle.self, forKey: .style) ?? .nonGlobal,
                 )
             case "sign": self = try .sign(product: product())
             case "script":
@@ -208,7 +208,7 @@ public struct ProjectDocument: Codable, Sendable, Equatable {
                     file: c.decode(String.self, forKey: .file),
                     arguments: c.decodeIfPresent([String].self, forKey: .arguments) ?? [],
                     inputs: c.decodeIfPresent([String].self, forKey: .inputs) ?? [],
-                    outputs: c.decodeIfPresent([String].self, forKey: .outputs) ?? []
+                    outputs: c.decodeIfPresent([String].self, forKey: .outputs) ?? [],
                 )
             default:
                 throw DecodingError.dataCorruptedError(forKey: .type, in: c, debugDescription: "unknown step \(type)")

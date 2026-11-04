@@ -21,7 +21,7 @@ struct PublishBackendTests {
             let repository = projects.appendingPathComponent("packages", isDirectory: true)
             try FileManager.default.createDirectory(at: repository, withIntermediateDirectories: true)
             try #"{"projectID": "p-repo", "kind": "workspace"}"#.write(
-                to: repository.appendingPathComponent("apelin-project.json"), atomically: true, encoding: .utf8
+                to: repository.appendingPathComponent("apelin-project.json"), atomically: true, encoding: .utf8,
             )
             let settings = root.appendingPathComponent("Settings", isDirectory: true)
             try FileManager.default.createDirectory(at: settings, withIntermediateDirectories: true)
@@ -37,7 +37,7 @@ struct PublishBackendTests {
                 sessionID: "11111111-2222-4333-8444-555555555555",
                 project: project,
                 projectURL: projects.appendingPathComponent("Clock", isDirectory: true),
-                projectsURL: projects
+                projectsURL: projects,
             )
         }
 
@@ -57,7 +57,7 @@ struct PublishBackendTests {
                 "configuration": .string(configuration), "bootstrap": .string(bootstrap), "path": .string(deb),
                 "digest": .string("sha256:" + String(repeating: "c", count: 64)), "packageID": .string("com.example.clock"),
                 "packageVersion": .string("1.0"),
-                "architecture": .string(bootstrap == "roothide" ? "iphoneos-arm64e" : "iphoneos-arm64")
+                "architecture": .string(bootstrap == "roothide" ? "iphoneos-arm64e" : "iphoneos-arm64"),
             ])
             try JSONCoding.encode(record).write(to: artifacts.appendingPathComponent("\(id).json"))
             return deb
@@ -79,8 +79,8 @@ struct PublishBackendTests {
             .init(buildID: "b-hide", packageID: "com.example.clock", version: "1.0", architecture: "iphoneos-arm64e",
                   bootstrap: "roothide", file: "/data/Builds/p-clock/b-hide/a.deb", digest: "sha256:" + String(repeating: "a", count: 64)),
             .init(buildID: "b-less", packageID: "com.example.clock", version: "1.0", architecture: "iphoneos-arm64",
-                  bootstrap: "rootless", file: "/data/Builds/p-clock/b-less/b.deb", digest: "sha256:" + String(repeating: "b", count: 64))
-        ]
+                  bootstrap: "rootless", file: "/data/Builds/p-clock/b-less/b.deb", digest: "sha256:" + String(repeating: "b", count: 64)),
+        ],
     )
 
     @Test
@@ -94,7 +94,7 @@ struct PublishBackendTests {
 
         let read = try await data.backend.packagePublication(PackagePublicationRequest(
             context: data.context(),
-            buildIDs: ["b-hide", "b-debug", "b-gone", "b-nothing", "../escape"]
+            buildIDs: ["b-hide", "b-debug", "b-gone", "b-nothing", "../escape"],
         ))
         #expect(read.repository == PackagePublication.Repository(fullName: "someone/packages", sourceURL: "https://someone.github.io/packages/"))
         #expect(read.signedIn == true)
@@ -102,7 +102,7 @@ struct PublishBackendTests {
         #expect(read.builds[0] == PackageBuildRecord(
             buildID: "b-hide", projectID: "p-clock", configuration: "Release", bootstrap: "roothide",
             packageID: "com.example.clock", version: "1.0", architecture: "iphoneos-arm64e", file: deb,
-            digest: "sha256:" + String(repeating: "c", count: 64), present: true
+            digest: "sha256:" + String(repeating: "c", count: 64), present: true,
         ))
         #expect(read.builds[1]?.configuration == "Debug")
         #expect(read.builds[2]?.present == false, "a record whose package is gone")
@@ -128,9 +128,9 @@ struct PublishBackendTests {
                 "skipped": .array([.string("com.example.clock_1.0_iphoneos-arm64.deb")]),
                 "sourceURL": .string("https://someone.github.io/packages/"),
                 "repository": .string("someone/packages"),
-                "commit": .string("abc123")
+                "commit": .string("abc123"),
             ])),
-            stateEvent(.succeeded)
+            stateEvent(.succeeded),
         ]))
         let response = try await data.backend.publishPackages(PackagePublishToolRequest(context: data.context(), publication: Self.publication))
 
@@ -161,7 +161,7 @@ struct PublishBackendTests {
 
         data.host.on(.distributionPublish, reply: TaskHandle(taskID: TaskID("publish-task"), kind: .environment))
         data.host.on(.environmentAttach, reply: batch("publish-task", [
-            stateEvent(.failed, "conflict: debs/com.example.clock_1.0_iphoneos-arm64e.deb is already published with other contents. Raise the version and build again.")
+            stateEvent(.failed, "conflict: debs/com.example.clock_1.0_iphoneos-arm64e.deb is already published with other contents. Raise the version and build again."),
         ]))
         await #expect {
             _ = try await data.backend.publishPackages(PackagePublishToolRequest(context: data.context(), publication: Self.publication))
@@ -176,7 +176,7 @@ struct PublishBackendTests {
         let request = ApprovalRequest(
             id: "a", toolCallID: "c", tool: "apelin_package_publish", arguments: "{}", workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Publishes these 2 packages.",
-            detail: .packagePublish(Self.publication), allowsSessionScope: false
+            detail: .packagePublish(Self.publication), allowsSessionScope: false,
         )
         let payload = EventRelay.approvalPayload(request)
         let detail = try #require(payload["detail"]?["packagePublish"])

@@ -67,7 +67,7 @@ public struct SwiftToolchainRequirements: Codable, Sendable, Equatable {
         minimumHost: String,
         cpuFeatures: [String],
         minimumHostBasis: String? = nil,
-        verifiedHosts: [String]? = nil
+        verifiedHosts: [String]? = nil,
     ) {
         self.version = version
         self.minimumHost = minimumHost
@@ -136,7 +136,7 @@ public struct ToolchainRecord: Codable, Sendable, Equatable {
         selfTestSDK: String? = nil,
         swiftRequirements: SwiftToolchainRequirements? = nil,
         clangModuleCPUFeatures: [String]? = nil,
-        compatibility: ToolchainCompatibility? = nil
+        compatibility: ToolchainCompatibility? = nil,
     ) {
         self.newestSDK = newestSDK
         self.selfTestSDK = selfTestSDK
@@ -223,7 +223,7 @@ public struct ToolchainCatalogProduct: Codable, Sendable, Equatable {
         swiftRequirements: SwiftToolchainRequirements? = nil,
         swiftUnavailableReason: String? = nil,
         clangModuleCPUFeatures: [String]? = nil,
-        compatibility: ToolchainCompatibility? = nil
+        compatibility: ToolchainCompatibility? = nil,
     ) {
         self.productID = productID
         self.version = version
@@ -323,7 +323,7 @@ public extension ApelinService {
     /// Starts setup; follow it with `events(of:)`.
     func toolchainSetup(
         _ request: ToolchainSetupRequest,
-        descriptors: [OwnedDescriptor] = []
+        descriptors: [OwnedDescriptor] = [],
     ) async throws -> TaskHandle {
         try await send(request, descriptors: descriptors)
     }

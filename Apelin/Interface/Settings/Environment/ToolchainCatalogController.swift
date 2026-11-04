@@ -15,7 +15,7 @@ final class ToolchainCatalogController: TableController {
 
     private lazy var dataSource = TableDataSource<Int, String, ToolchainCatalogProduct>(
         tableView: tableView,
-        identifier: { $0.productID }
+        identifier: { $0.productID },
     ) { [weak self] table, indexPath, product in
         self?.cell(in: table, at: indexPath, product: product)
     }
@@ -42,14 +42,14 @@ final class ToolchainCatalogController: TableController {
         // "SDK" is the English word, an acronym, not a key: spelled as a
         // LocalizationValue so the all-capitals check does not take it for one
         TableColumn(title: String(localized: String.LocalizationValue("SDK")), samples: ["88.8", "88.x", "—"]),
-        TableColumn(title: String(localized: "Size"), samples: ["888.8M", "8.8G"])
+        TableColumn(title: String(localized: "Size"), samples: ["888.8M", "8.8G"]),
     ]
     private var metrics: ColumnTableMetrics {
         ColumnTableMetrics(
             columns: columns,
             category: traitCollection.preferredContentSizeCategory,
             trailingSymbol: !installedToolchains.isEmpty,
-            availableWidth: tableView.bounds.width > 0 ? tableView.bounds.width - 72 : nil
+            availableWidth: tableView.bounds.width > 0 ? tableView.bounds.width - 72 : nil,
         )
     }
 
@@ -69,7 +69,7 @@ final class ToolchainCatalogController: TableController {
         navigationItem.backButtonDisplayMode = .minimal
         tableView.register(
             ColumnTableHeaderView.self,
-            forHeaderFooterViewReuseIdentifier: ColumnTableHeaderView.reuseIdentifier
+            forHeaderFooterViewReuseIdentifier: ColumnTableHeaderView.reuseIdentifier,
         )
         tableView.register(ColumnTableCell.self, forCellReuseIdentifier: ColumnTableCell.reuseIdentifier)
         refreshControl = UIRefreshControl().then {
@@ -126,7 +126,7 @@ final class ToolchainCatalogController: TableController {
                 tableView.backgroundView = EmptyStateView(
                     symbolName: "exclamationmark.triangle",
                     title: String(localized: "Error"),
-                    text: ToolchainController.unavailableText(error)
+                    text: ToolchainController.unavailableText(error),
                 )
                 updateRows()
             }
@@ -170,7 +170,7 @@ final class ToolchainCatalogController: TableController {
     override func tableView(_ tableView: UITableView, viewForHeaderInSection _: Int) -> UIView? {
         guard !metrics.isStacked,
               let header = tableView.dequeueReusableHeaderFooterView(
-                  withIdentifier: ColumnTableHeaderView.reuseIdentifier
+                  withIdentifier: ColumnTableHeaderView.reuseIdentifier,
               ) as? ColumnTableHeaderView
         else { return nil }
         header.configure(columns: columns, metrics: metrics, nameTitle: String(localized: "Version"))
@@ -188,7 +188,7 @@ final class ToolchainCatalogController: TableController {
     private func cell(
         in tableView: UITableView,
         at indexPath: IndexPath,
-        product: ToolchainCatalogProduct
+        product: ToolchainCatalogProduct,
     ) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: ColumnTableCell.reuseIdentifier, for: indexPath)
         guard let cell = cell as? ColumnTableCell else { return cell }
@@ -199,7 +199,7 @@ final class ToolchainCatalogController: TableController {
             ?? String(localized: "Swift")
         // a release Apelin cannot set up is struck through; the reason is a tap away
         var attributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: supported ? UIColor.label : UIColor.tertiaryLabel
+            .foregroundColor: supported ? UIColor.label : UIColor.tertiaryLabel,
         ]
         if !supported {
             attributes[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
@@ -224,12 +224,12 @@ final class ToolchainCatalogController: TableController {
             values: [
                 product.supportsSwift == true ? product.swiftRequirements?.version ?? "—" : "—",
                 product.newestSDK.map { $0.contains(".") ? $0 : $0 + ".x" } ?? "—",
-                Self.compactSize(product.size)
+                Self.compactSize(product.size),
             ],
             columns: columns,
             metrics: metrics,
             symbol: symbol,
-            symbolTint: installed ? .secondaryLabel : .tintColor
+            symbolTint: installed ? .secondaryLabel : .tintColor,
         )
         cell.accessibilityTraits = .button
         return cell
@@ -270,7 +270,7 @@ final class ToolchainCatalogController: TableController {
         presenter.presentConfirmation(
             title: "Install Command Line Tools \(product.version)?",
             message: String.LocalizationValue("\(Self.details(of: product))\n\nDownload: \(size)\nA compatible iOS SDK is downloaded automatically when needed."),
-            confirmTitle: "Install"
+            confirmTitle: "Install",
         ) { [weak self] in
             self?.setUp(product, from: presenter)
         }
@@ -282,7 +282,7 @@ final class ToolchainCatalogController: TableController {
             do {
                 let handle = try await ApelinService.app.toolchainSetup(ToolchainSetupRequest(
                     source: .appleCatalog(productID: product.productID),
-                    components: product.supportsSwift == true ? [.c, .swift] : [.c]
+                    components: product.supportsSwift == true ? [.c, .swift] : [.c],
                 ))
                 presenter.view.isUserInteractionEnabled = true
                 ToolchainController.remember(version: product.version, for: handle)

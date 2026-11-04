@@ -39,7 +39,7 @@ public final class LogStreamPump: @unchecked Sendable {
     public static func filter(
         _ wire: ApelinProtocol.LogFilter,
         duration: Double,
-        maxEntries: Int
+        maxEntries: Int,
     ) throws -> ApelinDiagnosticsCore.LogFilter {
         let level: LogLevel
         switch wire.level {
@@ -57,7 +57,7 @@ public final class LogStreamPump: @unchecked Sendable {
             minimumLevel: level,
             duration: duration,
             since: wire.since,
-            maxEntries: maxEntries
+            maxEntries: maxEntries,
         )
         do {
             try filter.validate()
@@ -72,7 +72,7 @@ public final class LogStreamPump: @unchecked Sendable {
         guard window.isFinite, windowRange.contains(window) else {
             throw ApelinError(
                 .badRequest,
-                String(format: "windowSeconds must be %g–%g", windowRange.lowerBound, windowRange.upperBound)
+                String(format: "windowSeconds must be %g–%g", windowRange.lowerBound, windowRange.upperBound),
             )
         }
         return window
@@ -95,7 +95,7 @@ public final class LogStreamPump: @unchecked Sendable {
         _ request: LogStreamRequest,
         taskID: TaskID,
         emit: @escaping @Sendable (String, JSONValue?) -> Void,
-        finish: @escaping @Sendable (TaskState, String?) -> Void
+        finish: @escaping @Sendable (TaskState, String?) -> Void,
     ) throws {
         guard let wire = request.filter else { throw ApelinError(.badRequest, "logStream needs a filter") }
         let window = try Self.window(wire)
@@ -103,7 +103,7 @@ public final class LogStreamPump: @unchecked Sendable {
         let filter = try Self.filter(
             wire,
             duration: min(window, ApelinDiagnosticsCore.LogFilter.durationRange.upperBound),
-            maxEntries: limit
+            maxEntries: limit,
         )
 
         let sent = Counter()
@@ -178,7 +178,7 @@ public final class LogStreamPump: @unchecked Sendable {
             "subsystem": .string(entry.subsystem),
             "category": .string(entry.category),
             "level": .string(entry.level.rawValue),
-            "message": .string(entry.message)
+            "message": .string(entry.message),
         ]
         if let date = entry.date {
             object["time"] = .string(ISO8601DateFormatter().string(from: date))

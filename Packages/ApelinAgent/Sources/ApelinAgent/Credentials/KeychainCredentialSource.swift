@@ -87,7 +87,7 @@ public struct KeychainCredentialSource: CredentialSource {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: Self.service,
             kSecAttrSynchronizable as String: kCFBooleanFalse as Any,
-            kSecUseDataProtectionKeychain as String: true
+            kSecUseDataProtectionKeychain as String: true,
         ]
         if let accessGroup {
             query[kSecAttrAccessGroup as String] = accessGroup
@@ -100,7 +100,7 @@ public struct KeychainCredentialSource: CredentialSource {
     func writeAttributes(_ data: Data) -> [String: Any] {
         [
             kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
         ]
     }
 

@@ -27,7 +27,7 @@ extension TransferService {
     static let repositoryLeftOut: Set<String> = [
         ".git/hooks", ".git/config", ".git/modules", ".git/worktrees", ".git/commondir",
         ".git/gitdir", ".git/fsmonitor--daemon", ".git/fsmonitor--daemon.ipc", ".git/index.lock",
-        ".git/HEAD.lock", ".git/config.lock", ".git/shallow.lock"
+        ".git/HEAD.lock", ".git/config.lock", ".git/shallow.lock",
     ]
 
     func projectContents(_ project: ProjectLocator.Project, staging: URL, reporter: TaskReporter) throws -> Collected {
@@ -62,7 +62,7 @@ extension TransferService {
         let ignores = try GitIgnoreRules(
             root: root,
             repository: repository,
-            scratch: staging.appendingPathComponent("ignore-rules")
+            scratch: staging.appendingPathComponent("ignore-rules"),
         )
         var nested: [String] = []
 
@@ -96,7 +96,7 @@ extension TransferService {
                 }
                 return false
             },
-            lenient: true
+            lenient: true,
         )
         let tree = try TransferTree.collect(root, rules: rules, reporter: reporter)
         warnings += nested.map { "left out \($0): a repository inside the project" }
@@ -113,7 +113,7 @@ extension TransferService {
             sdkID: project.sdkID,
             includesRepository: includesRepository,
             remoteURL: remote,
-            ignoredCount: ignoredCount == 0 ? nil : ignoredCount
+            ignoredCount: ignoredCount == 0 ? nil : ignoredCount,
         )
         return Collected(
             manifest: TransferManifest(
@@ -121,11 +121,11 @@ extension TransferService {
                 id: identity.projectID,
                 name: project.name,
                 createdBy: "",
-                project: identity
+                project: identity,
             ),
             tree: tree,
             fileStem: project.name,
-            warnings: warnings
+            warnings: warnings,
         )
     }
 
@@ -134,7 +134,7 @@ extension TransferService {
         inspection.suggestedName = freeName(for: project.name)
         if inspection.suggestedName != project.name {
             inspection.notes.append(
-                "A project named \(project.name) is already here; this one can be added under another name."
+                "A project named \(project.name) is already here; this one can be added under another name.",
             )
         }
         inspection.notes.append("It gets a new project ID, and nothing in it counts as approved: in Strict mode, its first build and install ask again.")
@@ -142,7 +142,7 @@ extension TransferService {
            !ToolchainRegistry.load(layout).toolchains.contains(where: { $0.id == toolchain })
         {
             inspection.notes.append(
-                "It builds with a toolchain that is not set up here; its check will say so until you pick another."
+                "It builds with a toolchain that is not set up here; its check will say so until you pick another.",
             )
         }
         if let sdkID = project.sdkID, sdk.store.record(sdkID) == nil {
@@ -172,7 +172,7 @@ extension TransferService {
         _ tree: URL,
         manifest: TransferManifest,
         name: String?,
-        reporter: TaskReporter
+        reporter: TaskReporter,
     ) throws -> TransferProjectResult {
         reporter.stage("placing")
         guard let project = manifest.project else {
@@ -211,14 +211,14 @@ extension TransferService {
         guard let oldID = document["projectID"]?.stringValue, oldID == project.projectID else {
             throw ApelinError(
                 .badRequest,
-                "its \(ProjectStore.projectFileName) does not carry the project ID the file names"
+                "its \(ProjectStore.projectFileName) does not carry the project ID the file names",
             )
         }
         let newID = UUID().uuidString.lowercased()
         guard let replaced = ProjectManifestIdentity.replacing(oldID, with: newID, in: original) else {
             throw ApelinError(
                 .badRequest,
-                "its project ID appears more than once in \(ProjectStore.projectFileName), so it cannot be given a new one"
+                "its project ID appears more than once in \(ProjectStore.projectFileName), so it cannot be given a new one",
             )
         }
         let rewritten = ProjectManifestFormat.formatted(replaced) ?? replaced
@@ -253,7 +253,7 @@ extension TransferService {
                     name: chosen,
                     path: destination.path,
                     previousProjectID: oldID,
-                    includesRepository: hasRepository
+                    includesRepository: hasRepository,
                 )
             }
             guard errno == EEXIST, name == nil, attempt < 49 else {

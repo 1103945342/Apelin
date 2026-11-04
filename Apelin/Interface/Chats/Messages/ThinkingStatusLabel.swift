@@ -51,7 +51,7 @@ final class ThinkingStatusLabel: LTXAnimatableLabel {
             self,
             selector: #selector(updateShimmer),
             name: UIAccessibility.reduceMotionStatusDidChangeNotification,
-            object: nil
+            object: nil,
         )
     }
 

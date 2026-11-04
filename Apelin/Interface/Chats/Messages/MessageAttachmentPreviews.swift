@@ -46,7 +46,7 @@ final class MessageAttachmentPreviews {
            let thumbnail = CGImageSourceCreateThumbnailAtIndex(source, 0, [
                kCGImageSourceCreateThumbnailFromImageAlways: true,
                kCGImageSourceThumbnailMaxPixelSize: 1080,
-               kCGImageSourceCreateThumbnailWithTransform: true
+               kCGImageSourceCreateThumbnailWithTransform: true,
            ] as CFDictionary)
         {
             result = Result(UIImage(cgImage: thumbnail), pixelSize: Self.uprightPixelSize(source))
@@ -101,7 +101,7 @@ final class MessageAttachmentPreviews {
             fileAt: file,
             size: CGSize(width: 540, height: 540),
             scale: 2,
-            representationTypes: .thumbnail
+            representationTypes: .thumbnail,
         )
         QLThumbnailGenerator.shared.generateBestRepresentation(for: request) { representation, _ in
             let image = representation?.type == .thumbnail ? representation?.uiImage : nil

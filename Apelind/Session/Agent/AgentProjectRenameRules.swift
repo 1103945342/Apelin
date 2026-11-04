@@ -47,7 +47,7 @@ enum AgentProjectRenameRules {
         guard approved else {
             return ApelinError(
                 .denied,
-                "approval required: the user has not approved renaming the project \(target.name) to “\(rename.displayName)”"
+                "approval required: the user has not approved renaming the project \(target.name) to “\(rename.displayName)”",
             )
         }
         return nil

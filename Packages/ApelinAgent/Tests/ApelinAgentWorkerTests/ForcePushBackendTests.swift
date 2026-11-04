@@ -19,15 +19,15 @@ struct ForcePushBackendTests {
         let comparison = GitBranchComparison(
             branch: "main", local: Self.mine, localSubject: "Mine", remote: Self.theirs,
             pushURL: "https://github.com/owner/clock.git",
-            remoteOnly: [GitCommitSummary(commit: Self.theirs, subject: "Theirs")], remoteOnlyCount: 1
+            remoteOnly: [GitCommitSummary(commit: Self.theirs, subject: "Theirs")], remoteOnlyCount: 1,
         )
         fixture.host.on(.gitFetch, reply: TaskHandle(taskID: TaskID("fetch-task"), kind: .environment))
         try fixture.host.on(.environmentAttach, reply: batch("fetch-task", [
             ("result", .object([
                 "remote": .string("origin"), "updated": .array([]),
-                "comparison": ApelinCore.JSONValue(encoding: comparison)
+                "comparison": ApelinCore.JSONValue(encoding: comparison),
             ])),
-            stateEvent(.succeeded)
+            stateEvent(.succeeded),
         ]))
         let fetched = try await fixture.backend.gitFetch(GitRemoteToolRequest(context: fixture.context(), branch: "main"))
         let sent = try #require(fixture.host.requests(GitFetchRequest.self).first)
@@ -43,23 +43,23 @@ struct ForcePushBackendTests {
         fixture.host.on(.environmentAttach, reply: batch("push-task", [
             ("lease", .object([
                 "branch": .string("main"), "expectedCommit": .string(Self.theirs), "found": .string(Self.theirs),
-                "held": .bool(true)
+                "held": .bool(true),
             ])),
             ("result", .object([
                 "remote": .string("origin"), "branch": .string("main"), "commit": .string(Self.mine),
-                "from": .string(Self.theirs), "forced": .bool(true)
+                "from": .string(Self.theirs), "forced": .bool(true),
             ])),
-            stateEvent(.succeeded)
+            stateEvent(.succeeded),
         ]))
         let lease = GitPushLease(expectedCommit: Self.theirs, localCommit: Self.mine)
         let pushed = try await fixture.backend.gitPush(GitRemoteToolRequest(
-            context: fixture.context(), branch: "main", url: "https://github.com/owner/clock.git", lease: lease
+            context: fixture.context(), branch: "main", url: "https://github.com/owner/clock.git", lease: lease,
         ))
         let sent = try #require(fixture.host.requests(GitPushRequest.self).first)
         #expect(sent.forceWithLease == lease)
         #expect(sent.branch == "main" && sent.url == "https://github.com/owner/clock.git")
         #expect(pushed == GitTaskToolResponse(
-            remote: "origin", branch: "main", commit: Self.mine, from: Self.theirs, forced: true
+            remote: "origin", branch: "main", commit: Self.mine, from: Self.theirs, forced: true,
         ))
     }
 
@@ -71,8 +71,8 @@ struct ForcePushBackendTests {
             (TaskEvent.stateKind, .object([
                 "state": .string("failed"),
                 "message": .string("conflict: origin's main is at \(Self.mine) now, not \(Self.theirs)"),
-                "reason": .string("remoteChanged")
-            ]))
+                "reason": .string("remoteChanged"),
+            ])),
         ]))
         let lease = GitPushLease(expectedCommit: Self.theirs, localCommit: Self.mine)
         await #expect {
@@ -93,8 +93,8 @@ struct ForcePushBackendTests {
             (TaskEvent.stateKind, .object([
                 "state": .string("failed"),
                 "message": .string("conflict: origin refused refs/heads/main: protected branch hook declined"),
-                "reason": .string("rejected")
-            ]))
+                "reason": .string("rejected"),
+            ])),
         ]))
         let lease = GitPushLease(expectedCommit: Self.theirs, localCommit: Self.mine)
         await #expect {
@@ -113,12 +113,12 @@ struct ForcePushBackendTests {
         let force = ForcePushApproval(
             projectID: "p", remote: "origin", url: "https://github.com/owner/clock.git", branch: "main",
             expectedCommit: Self.theirs, localCommit: Self.mine, localSubject: "Mine",
-            overwritten: [GitCommitSummary(commit: Self.theirs, subject: "Theirs")], overwrittenCount: 1
+            overwritten: [GitCommitSummary(commit: Self.theirs, subject: "Theirs")], overwrittenCount: 1,
         )
         let request = ApprovalRequest(
             id: "a", toolCallID: "c", tool: "git_push", arguments: #"{"force_with_lease":true}"#, workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Force-pushes main to origin, overwriting its history there.",
-            detail: .forcePush(force), allowsSessionScope: false
+            detail: .forcePush(force), allowsSessionScope: false,
         )
         let payload = EventRelay.approvalPayload(request)
         let detail = try #require(payload["detail"]?["forcePush"])

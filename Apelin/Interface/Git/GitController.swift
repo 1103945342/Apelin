@@ -57,7 +57,7 @@ final class GitController: UIViewController {
 
     private let topBar = UIView()
     private let backButton = GitGlassButton.icon(
-        GitIcon.Name.back, label: String(localized: "Back")
+        GitIcon.Name.back, label: String(localized: "Back"),
     )
     private let titleLabel = UILabel().then {
         $0.text = String(localized: "Git")
@@ -74,7 +74,7 @@ final class GitController: UIViewController {
     }
 
     private let repoChevron = UIImageView(image: GitIcon.image(
-        GitIcon.Name.chevronDown, pointSize: 16
+        GitIcon.Name.chevronDown, pointSize: 16,
     )).then {
         $0.tintColor = GitTheme.onSurfaceVariant
         $0.contentMode = .scaleAspectFit
@@ -89,10 +89,10 @@ final class GitController: UIViewController {
     }
 
     private let keyButton = GitGlassButton.icon(
-        GitIcon.Name.key, label: String(localized: "Credentials & Identity")
+        GitIcon.Name.key, label: String(localized: "Credentials & Identity"),
     )
     private let refreshButton = GitGlassButton.icon(
-        GitIcon.Name.refresh, label: String(localized: "Refresh")
+        GitIcon.Name.refresh, label: String(localized: "Refresh"),
     )
 
     private let scroll = UIScrollView().then {
@@ -113,7 +113,7 @@ final class GitController: UIViewController {
     private let tabs = GitGlassTabs(titles: [
         String(localized: "Status"),
         String(localized: "Branches"),
-        String(localized: "Commits")
+        String(localized: "Commits"),
     ])
 
     private let spinner = UIActivityIndicatorView(style: .medium)
@@ -336,11 +336,11 @@ final class GitController: UIViewController {
             $0.numberOfLines = 0
         }
         let initButton = GitButtons.tonal(
-            title: String(localized: "Initialize New Repository"), symbol: GitIcon.Name.branch
+            title: String(localized: "Initialize New Repository"), symbol: GitIcon.Name.branch,
         )
         initButton.addAction(UIAction { [weak self] _ in self?.initialise() }, for: .touchUpInside)
         let cloneButton = GitButtons.tonal(
-            title: String(localized: "Clone Remote Repository"), symbol: GitIcon.Name.download
+            title: String(localized: "Clone Remote Repository"), symbol: GitIcon.Name.download,
         )
         cloneButton.addAction(UIAction { [weak self] _ in self?.showCloneDialog() }, for: .touchUpInside)
         let row = UIStackView(arrangedSubviews: [initButton, cloneButton]).then {
@@ -349,7 +349,7 @@ final class GitController: UIViewController {
             $0.distribution = .fillEqually
         }
         let pickButton = GitButtons.outlined(
-            title: String(localized: "Choose Existing Repository"), symbol: GitIcon.Name.folder
+            title: String(localized: "Choose Existing Repository"), symbol: GitIcon.Name.folder,
         )
         pickButton.addAction(UIAction { [weak self] _ in self?.showRepoPicker() }, for: .touchUpInside)
 
@@ -439,7 +439,7 @@ final class GitController: UIViewController {
         let root = DataFolder.app.projects.appendingPathComponent(session.projectName, isDirectory: true)
         let entries = (try? FileManager.default.contentsOfDirectory(
             at: root, includingPropertiesForKeys: [.isDirectoryKey],
-            options: [.skipsHiddenFiles]
+            options: [.skipsHiddenFiles],
         ))?.filter {
             (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
         }.sorted { $0.lastPathComponent.localizedStandardCompare($1.lastPathComponent) == .orderedAscending } ?? []
@@ -448,16 +448,16 @@ final class GitController: UIViewController {
         let rootIsRepo = current == nil && !isNotARepository
         stack.addArrangedSubview(makeRepoRow(
             repository: nil, isRepo: rootIsRepo, isSelected: current == nil,
-            label: session.projectName
+            label: session.projectName,
         ))
         for entry in entries {
             let name = entry.lastPathComponent
             let isRepo = FileManager.default.fileExists(
-                atPath: entry.appendingPathComponent(".git").path
+                atPath: entry.appendingPathComponent(".git").path,
             )
             stack.addArrangedSubview(makeRepoRow(
                 repository: name, isRepo: isRepo, isSelected: current == name,
-                label: "\(session.projectName)/\(name)"
+                label: "\(session.projectName)/\(name)",
             ))
         }
         if entries.isEmpty, isNotARepository {
@@ -479,7 +479,7 @@ final class GitController: UIViewController {
     }
 
     private func makeRepoRow(
-        repository: String?, isRepo: Bool, isSelected: Bool, label: String
+        repository: String?, isRepo: Bool, isSelected: Bool, label: String,
     ) -> UIView {
         let control = UIControl()
         control.isEnabled = isRepo
@@ -559,7 +559,7 @@ final class GitController: UIViewController {
     private func showCloneDialog() {
         let field = GitTextField(
             label: String(localized: "Repository URL"),
-            placeholder: "https://github.com/user/repo.git"
+            placeholder: "https://github.com/user/repo.git",
         )
         field.field.keyboardType = .URL
         field.field.autocapitalizationType = .none
@@ -572,8 +572,8 @@ final class GitController: UIViewController {
                 .init(title: String(localized: "Clone")) { [weak self] in
                     guard let self, !field.text.isEmpty else { return }
                     self.clone(from: field.text)
-                }
-            ]
+                },
+            ],
         )
     }
 

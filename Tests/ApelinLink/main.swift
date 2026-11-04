@@ -29,7 +29,7 @@ for unknown in [
     "apelin://conversation/..", "apelin://project/.", "apelin://conversation/a%00b",
     "apelin://conversation/a%2Fb", "apelin://project/" + String(repeating: "x", count: 256),
     "apelin://chat?prompt=a%00b", "apelin://chat?prompt=a%1Bb", "apelin://chat/x?prompt=a",
-    "apelin://chat?prompt=" + String(repeating: "x", count: ApelinLink.maximumPromptLength + 1)
+    "apelin://chat?prompt=" + String(repeating: "x", count: ApelinLink.maximumPromptLength + 1),
 ] {
     require(link(unknown) == .unknown, "Unknown or malformed: \(unknown)")
 }
@@ -72,7 +72,7 @@ require(link("apelin://import?prompt=Run%20it&url=\(escapedRepository)&token=x&c
 for address in [
     "https://gitlab.example.com:8443/group/sub/project.git", "https://GitHub.com/Owner/Repo/",
     "https://github.com/owner/%E7%9B%B8%E6%9C%BA", "https://host.example/@scope/name",
-    "https://codeberg.org./owner/repo"
+    "https://codeberg.org./owner/repo",
 ] {
     require(ApelinLink.isRepositoryAddress(address), "An address the host clones: \(address)")
     let built = ApelinLink.importRepository(url: address, branch: "main")
@@ -100,7 +100,7 @@ for refused in [
     "https://localhost:22/repo", "https://gitea/repo", "https://nas.local/repo", "https://git.lan/repo",
     "https://git.home.arpa/repo", "https://git.internal/repo", "https://%00/x", "https://a%2Fb/x",
     "https://github.com%40evil.com/x", "https://git%68ub.com/owner/repo", "https://github.com:99999/owner/repo",
-    "https://github.com:0/owner/repo", "https://github.com:/owner/repo", "https://-github.com/owner/repo"
+    "https://github.com:0/owner/repo", "https://github.com:/owner/repo", "https://-github.com/owner/repo",
 ] {
     require(!ApelinLink.isRepositoryAddress(refused), "Not an address to import: \(refused.debugDescription)")
 }
@@ -114,7 +114,7 @@ for branch in [
     "a//b", "a.", ".hidden", "a/.b", "a b", "a~1", "a^", "a:b", "a?", "a*", "a[b", "a\\b", "a\u{7F}",
     "a\u{0}b", "a\u{202E}b", "a\u{200B}b", "a\u{00A0}b", "a\nb", String(repeating: "b", count: ApelinLink.maximumBranchLength + 1),
     // drawn blank, so the sheet would show no branch at all
-    "\u{3164}", "\u{2800}", "\u{115F}", "\u{FFA0}", "a\u{FFFE}", "a\u{2060}b", "a\u{E000}"
+    "\u{3164}", "\u{2800}", "\u{115F}", "\u{FFA0}", "a\u{FFFE}", "a\u{2060}b", "a\u{E000}",
 ] {
     require(!ApelinLink.isBranchName(branch), "Not a branch: \(branch.debugDescription)")
 }
@@ -133,7 +133,7 @@ for invalid in [
     "apelin://import?url=\(escapedRepository)%0A",
     // escapes that decode to no text are no value, not the default branch
     "apelin://import?url=\(escapedRepository)&branch=%FF",
-    "apelin://import?url=https%3A%2F%2Fgithub.com%2Fowner%2Frepo%FF"
+    "apelin://import?url=https%3A%2F%2Fgithub.com%2Fowner%2Frepo%FF",
 ] {
     require(link(invalid) == .invalidImport, "An import naming nothing Apelin imports: \(invalid)")
 }
@@ -158,7 +158,7 @@ require(long.utf8.count == Plan.maximumSuggestionLength, "A long name is cut to 
 
 let same = [
     "https://github.com/owner/repo", "https://GitHub.com/Owner/Repo.git", "https://github.com/owner/repo/",
-    "https://github.com:443/owner/repo", "https://token@github.com/owner/repo.git", "http://github.com/owner/repo"
+    "https://github.com:443/owner/repo", "https://token@github.com/owner/repo.git", "http://github.com/owner/repo",
 ]
 for spelling in same {
     require(Plan.comparable(spelling) == "github.com/owner/repo", "One repository: \(spelling)")
@@ -211,7 +211,7 @@ let snapshot = ChatWidgetSnapshot(chats: [
     chat("failed", .failed, 10),
     chat("waiting", .waiting, 400),
     chat("working-new", .working, 20),
-    chat("new-done", .done, 1)
+    chat("new-done", .done, 1),
 ])
 require(snapshot.chats.map(\.id) == ["waiting", "working-new", "working-old", "new-done", "failed", "old-done"],
         "Waiting first, then working, then the rest, newest first within each")

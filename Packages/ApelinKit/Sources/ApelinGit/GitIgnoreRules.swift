@@ -17,7 +17,7 @@ public final class GitIgnoreRules {
         if repository.workdir != root {
             try GitError.check(
                 git_repository_set_workdir(repository.pointer, root.path, 0),
-                "read the project's ignore rules"
+                "read the project's ignore rules",
             )
         }
         var index: OpaquePointer?
@@ -46,7 +46,7 @@ public final class GitIgnoreRules {
         var ignored: Int32 = 0
         try GitError.check(
             git_ignore_path_is_ignored(&ignored, repository.pointer, path),
-            "read the ignore rules for \(path)"
+            "read the ignore rules for \(path)",
         )
         return ignored != 0
     }

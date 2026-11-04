@@ -29,18 +29,18 @@ class WelcomeController: UIViewController {
         .init(
             symbol: "text.bubble",
             title: "Describe What You Want",
-            detail: "Work with an agent to write and understand your code."
+            detail: "Work with an agent to write and understand your code.",
         ),
         .init(
             symbol: "hammer",
             title: "Build Apps and Tweaks",
-            detail: "Set up a compiler and SDK, then start from a project template."
+            detail: "Set up a compiler and SDK, then start from a project template.",
         ),
         .init(
             symbol: "hand.raised",
             title: "Stay in Control",
-            detail: "Review changes, test results, and approve actions that affect your device."
-        )
+            detail: "Review changes, test results, and approve actions that affect your device.",
+        ),
     ]
 
     private let contentInsets = UIEdgeInsets(top: 28, left: 24, bottom: 28, right: 24)
@@ -96,7 +96,7 @@ class WelcomeController: UIViewController {
                 delay: 0.1 * Double(index),
                 usingSpringWithDamping: 0.9,
                 initialSpringVelocity: 0.4,
-                options: [.curveEaseInOut]
+                options: [.curveEaseInOut],
             ) {
                 row.alpha = 1
             }
@@ -160,12 +160,12 @@ class WelcomeController: UIViewController {
         let title = String(localized: "Welcome to\nApelin")
         let titleText = NSMutableAttributedString(string: title, attributes: [
             .font: WelcomeStyle.titleFont,
-            .foregroundColor: WelcomeStyle.titleColor
+            .foregroundColor: WelcomeStyle.titleColor,
         ])
         titleText.addAttribute(
             .foregroundColor,
             value: WelcomeStyle.accent,
-            range: (title as NSString).range(of: "Apelin")
+            range: (title as NSString).range(of: "Apelin"),
         )
         stackView.addArrangedSubview(UILabel().then {
             $0.numberOfLines = 0

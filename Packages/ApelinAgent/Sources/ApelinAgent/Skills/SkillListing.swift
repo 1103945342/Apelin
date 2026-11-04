@@ -15,10 +15,10 @@ public extension SkillCatalog {
                     source: skill.isUserSkill ? .user : .builtIn,
                     body: SkillReader.bounded(Data(skill.body.utf8), SkillReader.maxBodyBytes),
                     files: skill.files.keys.sorted() + (skill.directory.map(SkillReader.files(in:)) ?? []),
-                    location: skill.location
+                    location: skill.location,
                 )
             },
-            problems: catalog.diagnostics.map { AgentSkillProblem(location: $0.location, message: $0.message) }
+            problems: catalog.diagnostics.map { AgentSkillProblem(location: $0.location, message: $0.message) },
         )
     }
 }

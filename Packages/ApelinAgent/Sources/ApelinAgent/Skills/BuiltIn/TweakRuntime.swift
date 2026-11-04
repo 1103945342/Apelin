@@ -93,6 +93,6 @@ extension BuiltInSkills {
           is replaced atomically (write a temporary beside it, `rename`),
           which changes the inode, so a watcher watches the **directory**, not
           the file.
-        """
+        """,
     )
 }

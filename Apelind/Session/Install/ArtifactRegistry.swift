@@ -65,7 +65,7 @@ actor ArtifactRegistry {
             buildID: buildID.rawValue,
             packagingDigest: payload["packagingDigest"]?.stringValue,
             recordedAt: Date(),
-            packageFiles: Self.packageFiles(payload["packageFiles"])
+            packageFiles: Self.packageFiles(payload["packageFiles"]),
         )
         artifacts.removeAll { $0.artifactID == artifactID }
         artifacts.append(artifact)
@@ -132,7 +132,7 @@ actor ArtifactRegistry {
         try? FileManager.default.createDirectory(
             at: file.deletingLastPathComponent(),
             withIntermediateDirectories: true,
-            attributes: [.posixPermissions: 0o700]
+            attributes: [.posixPermissions: 0o700],
         )
         try? JSONCoding.encode(PreservedList(artifacts, unreadable: unreadable)).write(to: file, options: .atomic)
     }

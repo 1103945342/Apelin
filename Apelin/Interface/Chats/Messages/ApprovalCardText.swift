@@ -62,7 +62,7 @@ enum ApprovalCardText {
             callReason,
             root ? nil : payload?["reason"]?.stringValue,
             payload?["detail"]?["descriptionChanged"]?["diff"]?.stringValue,
-            arguments
+            arguments,
         ].compactMap(\.self).filter { !$0.isEmpty }.joined(separator: "\n\n")
     }
 
@@ -176,7 +176,7 @@ enum ApprovalCardText {
             "expected_commit": .string(expected),
             "local_commit": .string(local + subject),
             "overwritten": .string(commits.joined(separator: "\n")),
-            "overwritten_count": .string(String(Int(count)))
+            "overwritten_count": .string(String(Int(count))),
         ]
         shown["url"] = detail["url"]?.stringValue.map { .string($0) }
         return (try? JSONCoding.encode(JSONValue.object(shown))).map { String(decoding: $0, as: UTF8.self) }
@@ -202,7 +202,7 @@ enum ApprovalCardText {
             "head": .string(head),
             "message": .string(message),
             "commits": .string(lines.joined(separator: "\n")),
-            "count": .string(String(Int(count)))
+            "count": .string(String(Int(count))),
         ]
         return (try? JSONCoding.encode(JSONValue.object(shown))).map { String(decoding: $0, as: UTF8.self) }
     }

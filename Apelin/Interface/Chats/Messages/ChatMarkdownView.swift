@@ -27,7 +27,7 @@ final class ChatMarkdownView: MarkdownStreamView {
         curve: .linear,
         // Enough for every chunk still fading at 30 rebuilds a second; past
         // the cap the oldest would show at once.
-        maxBatches: 32
+        maxBatches: 32,
     )
 
     convenience init() {
@@ -58,7 +58,7 @@ final class ChatMarkdownView: MarkdownStreamView {
     override func textLabelView(
         _ label: TextLabelView,
         editMenuForSelection selection: NSRange,
-        suggestedActions: [UIMenuElement]
+        suggestedActions: [UIMenuElement],
     ) -> UIMenu? {
         ChatSelectionMenu.menu(for: label, selection: selection, suggestedActions: suggestedActions)
     }
@@ -99,7 +99,7 @@ final class ChatMarkdownView: MarkdownStreamView {
                         // reserve their actual width so the label cannot cut them off.
                         let font = UIFont.monospacedDigitSystemFont(
                             ofSize: theme.fonts.footnote.pointSize,
-                            weight: .regular
+                            weight: .regular,
                         )
                         let requiredIndent = ceil((marker as NSString).size(withAttributes: [.font: font]).width) + 8
                         let extra = max(0, requiredIndent - style.firstLineHeadIndent)
@@ -181,16 +181,16 @@ enum ChatSelectionMenu {
         var actions = [
             UIAction(
                 title: String(localized: "Look Up"),
-                image: UIImage(systemName: "text.book.closed")
+                image: UIImage(systemName: "text.book.closed"),
             ) { [weak label] _ in
                 guard let label else { return }
                 present(UIReferenceLibraryViewController(term: selected), from: label)
-            }
+            },
         ]
         if #available(iOS 17.4, *) {
             actions.append(UIAction(
                 title: String(localized: "Translate"),
-                image: UIImage(systemName: "character.bubble")
+                image: UIImage(systemName: "character.bubble"),
             ) { [weak label] _ in
                 guard let label, let window = label.window else { return }
                 let rect = label.convert(anchor(for: selection, in: label), to: window)
@@ -203,14 +203,14 @@ enum ChatSelectionMenu {
         actions.append(
             UIAction(
                 title: String(localized: "Share…"),
-                image: UIImage(systemName: "square.and.arrow.up")
+                image: UIImage(systemName: "square.and.arrow.up"),
             ) { [weak label] _ in
                 guard let label else { return }
                 let page = UIActivityViewController(activityItems: [selected], applicationActivities: nil)
                 page.popoverPresentationController?.sourceView = label
                 page.popoverPresentationController?.sourceRect = anchor(for: selection, in: label)
                 present(page, from: label)
-            }
+            },
         )
         return UIMenu(children: suggestedActions + [UIMenu(options: .displayInline, children: actions)])
     }

@@ -45,7 +45,7 @@ enum GitTheme {
 
     /// The eight lanes' colours, cycled.
     static let lanes: [UIColor] = [
-        0x2563EB, 0x16A34A, 0xF59E0B, 0x8B5CF6, 0x06B6D4, 0xEF4444, 0xEC4899, 0xEAB308
+        0x2563EB, 0x16A34A, 0xF59E0B, 0x8B5CF6, 0x06B6D4, 0xEF4444, 0xEC4899, 0xEAB308,
     ].map { UIColor(rgb: $0) }
 
     static func laneColor(_ lane: Int) -> UIColor {
@@ -126,7 +126,7 @@ extension UIColor {
             red: CGFloat((rgb >> 16) & 0xFF) / 255,
             green: CGFloat((rgb >> 8) & 0xFF) / 255,
             blue: CGFloat(rgb & 0xFF) / 255,
-            alpha: alpha
+            alpha: alpha,
         )
     }
 
@@ -146,7 +146,7 @@ enum GitIcon {
     static func image(_ name: String, pointSize: CGFloat = 17, weight: UIImage.SymbolWeight = .regular) -> UIImage? {
         UIImage(
             systemName: name,
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: pointSize, weight: weight)
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: pointSize, weight: weight),
         )
     }
 

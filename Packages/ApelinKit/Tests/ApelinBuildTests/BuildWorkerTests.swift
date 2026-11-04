@@ -51,7 +51,7 @@ final class BuildWorkerTests: XCTestCase {
         XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: created.path).sorted(), [".git", "apelin-project.json"])
         XCTAssertEqual(
             try String(contentsOfFile: created.path + "/.git/HEAD", encoding: .utf8),
-            "ref: refs/heads/main\n"
+            "ref: refs/heads/main\n",
         )
         XCTAssertThrowsError(try worker.projectCreate(request))
         XCTAssertThrowsError(try worker.projectCreate(ProjectCreateRequest(templateID: template.id, name: "../outside")))
@@ -119,7 +119,7 @@ final class BuildWorkerTests: XCTestCase {
         XCTAssertEqual(events.payloads("stage").compactMap { $0["stage"]?.stringValue }, ["check", "compile", "link", "lipo", "dsym", "strip", "sign", "package", "verify"])
         XCTAssertFalse(
             events.payloads("log").contains { $0["line"]?.stringValue?.contains("apelin-project.json") == true },
-            "a manifest already in the written form is left alone"
+            "a manifest already in the written form is left alone",
         )
         let artifact = try XCTUnwrap(events.payloads("artifact").first).decode(BuildArtifact.self)
         XCTAssertEqual(artifact.digest, last["digest"]?.stringValue)
@@ -212,11 +212,11 @@ final class BuildWorkerTests: XCTestCase {
         XCTAssertEqual(try codes(), [
             "distribution.package.name.template", "distribution.package.description.template",
             "distribution.package.author.template", "distribution.package.version.template",
-            "distribution.package.id.local", "distribution.bundleID.local", "distribution.icon.missing"
+            "distribution.package.id.local", "distribution.bundleID.local", "distribution.icon.missing",
         ])
         XCTAssertFalse(
             try worker.projectCheck(ProjectCheckRequest(projectID: created.projectID)).diagnostics.contains { $0.code.hasPrefix("distribution.") },
-            "an ordinary check stays as it was"
+            "an ordinary check stays as it was",
         )
 
         let root = URL(fileURLWithPath: created.path)
@@ -224,7 +224,7 @@ final class BuildWorkerTests: XCTestCase {
         var text = try String(contentsOf: manifest, encoding: .utf8)
         for (old, new) in [
             ("\"Apelin App\"", "\"Shipping Notes\""), ("Built on this device with Apelin.", "Notes that ship."),
-            ("\"Apelin User\"", "\"Ada\""), ("\"0.0.1\"", "\"1.0.0\""), ("local.apelin.shipping", "wiki.example.shipping")
+            ("\"Apelin User\"", "\"Ada\""), ("\"0.0.1\"", "\"1.0.0\""), ("local.apelin.shipping", "wiki.example.shipping"),
         ] {
             XCTAssertTrue(text.contains(old), old)
             text = text.replacingOccurrences(of: old, with: new)

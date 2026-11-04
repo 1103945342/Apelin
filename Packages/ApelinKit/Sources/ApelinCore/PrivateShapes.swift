@@ -20,7 +20,7 @@ public enum PrivateShapes {
             + #"|sk-[A-Za-z0-9_-]{12,255}|[sr]k_(?:live|test)_[A-Za-z0-9]{16,255}|oc_sk_[A-Za-z0-9_-]{8,255}"#
             + #"|xai-[A-Za-z0-9]{20,255}|glpat-[A-Za-z0-9_-]{20,255}|hf_[A-Za-z0-9]{20,255}|gsk_[A-Za-z0-9]{20,255}"#
             + #"|npm_[A-Za-z0-9]{30,255}|AKIA[0-9A-Z]{16}|xox[abprs]-[A-Za-z0-9-]{10,255}|AIza[0-9A-Za-z_-]{35}"#
-            + #"|eyJ[A-Za-z0-9_-]{10,4096}\.[A-Za-z0-9_-]{10,4096}\.[A-Za-z0-9_-]{0,4096})"#
+            + #"|eyJ[A-Za-z0-9_-]{10,4096}\.[A-Za-z0-9_-]{10,4096}\.[A-Za-z0-9_-]{0,4096})"#,
     )
 
     /// A Bearer or Basic credential after the word that names it: `$1`
@@ -30,24 +30,24 @@ public enum PrivateShapes {
     /// A private key, from its first line to its last, or to the end of a
     /// text cut short.
     public static let privateKey = pattern(
-        #"-----BEGIN [A-Z ]{0,32}PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z ]{0,32}PRIVATE KEY-----|$)"#
+        #"-----BEGIN [A-Z ]{0,32}PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z ]{0,32}PRIVATE KEY-----|$)"#,
     )
 
     /// Mobile's and root's homes, an app's container, roothide's jbroot
     /// (named for its install), the preboot volume rootless lives in, a
     /// Mac's or Linux's home.
     public static let homePath = pattern(
-        #"/var/(?:mobile|root)(?![\w.-])|/var/containers/|\.jbroot-|/private/preboot/|/Users/[^/\s]{1,255}|/home/[^/\s]{1,255}"#
+        #"/var/(?:mobile|root)(?![\w.-])|/var/containers/|\.jbroot-|/private/preboot/|/Users/[^/\s]{1,255}|/home/[^/\s]{1,255}"#,
     )
 
     /// A name on the local network, as mDNS and home routers spell them.
     public static let localName = pattern(
-        #"(?i)(?<![A-Za-z0-9.-])[a-z0-9-]{1,63}(?:\.[a-z0-9-]{1,63}){0,8}\.(?:local|lan|home\.arpa)(?![\w-]|\.[\w-])"#
+        #"(?i)(?<![A-Za-z0-9.-])[a-z0-9-]{1,63}(?:\.[a-z0-9-]{1,63}){0,8}\.(?:local|lan|home\.arpa)(?![\w-]|\.[\w-])"#,
     )
 
     /// A link-local or unique local IPv6 address, with its zone.
     public static let localIPv6 = pattern(
-        #"(?i)(?<![0-9a-f:])(?:fe80|f[cd][0-9a-f]{2})(?::{1,2}[0-9a-f]{0,4}){1,8}(?:%[A-Za-z0-9]{1,16})?"#
+        #"(?i)(?<![0-9a-f:])(?:fe80|f[cd][0-9a-f]{2})(?::{1,2}[0-9a-f]{0,4}){1,8}(?:%[A-Za-z0-9]{1,16})?"#,
     )
 
     /// Any dotted IPv4 address; `localIPv4` says which are local.
@@ -59,7 +59,7 @@ public enum PrivateShapes {
     public static let deviceIdentifier = pattern(
         #"(?<![0-9A-Fa-f])[0-9A-Fa-f]{40}(?![0-9A-Fa-f])|(?<![0-9A-Fa-f-])[0-9A-Fa-f]{8}-[0-9A-Fa-f]{16}(?![0-9A-Fa-f-])"#
             + #"|(?<![A-Za-z0-9_-])(?=(?:[A-Z]{0,12}[0-9]){2})(?=(?:[0-9]{0,12}[A-Z]){2})[A-Z0-9]{10,12}(?![A-Za-z0-9_-])"#
-            + #"|(?<![0-9A-Fa-f:])(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}(?![0-9A-Fa-f:])"#
+            + #"|(?<![0-9A-Fa-f:])(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}(?![0-9A-Fa-f:])"#,
     )
 
     /// The ranges of `text` that are IPv4 addresses of a local network:

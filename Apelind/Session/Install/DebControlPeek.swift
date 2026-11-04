@@ -102,7 +102,7 @@ enum DebControlPeek {
             architecture: fields["architecture"],
             conflicts: relations(fields["conflicts"]),
             breaks: relations(fields["breaks"]),
-            replaces: relations(fields["replaces"])
+            replaces: relations(fields["replaces"]),
         )
     }
 
@@ -215,7 +215,7 @@ enum DebControlPeek {
                 streamPointer.pointee.dst_size = chunk
                 let status = compression_stream_process(streamPointer, Int32(COMPRESSION_STREAM_FINALIZE.rawValue))
                 result.append(
-                    contentsOf: UnsafeBufferPointer(start: output, count: chunk - streamPointer.pointee.dst_size)
+                    contentsOf: UnsafeBufferPointer(start: output, count: chunk - streamPointer.pointee.dst_size),
                 )
                 guard result.count <= maximumControlMember * 4 else {
                     throw Failure.unreadable

@@ -157,7 +157,7 @@ extension MachOImage {
             result.loadCommands.append(LoadCommandSummary(
                 command: command,
                 name: Self.loadCommandNames[command] ?? String(format: "0x%08X", command),
-                byteCount: UInt32(size)
+                byteCount: UInt32(size),
             ))
             if let minimum = Self.decodedCommandSizes[command] {
                 guard size >= minimum else { throw FormatFailure.damaged("a load command is truncated") }
@@ -207,7 +207,7 @@ extension MachOImage {
                 sectionCount: u32(64),
                 headerSize: 72,
                 sectionSize: 80,
-                slice: slice
+                slice: slice,
             ))
         case 0x1:
             try result.segments.append(segment(
@@ -221,7 +221,7 @@ extension MachOImage {
                 sectionCount: u32(48),
                 headerSize: 56,
                 sectionSize: 68,
-                slice: slice
+                slice: slice,
             ))
         case 0x32:
             let tools = try u32(20)
@@ -282,7 +282,7 @@ extension MachOImage {
                 rebaseByteCount: u32(12),
                 bindOffset: u32(16),
                 bindByteCount: u32(20),
-                lazyBindByteCount: u32(36)
+                lazyBindByteCount: u32(36),
             )
         default:
             break
@@ -300,7 +300,7 @@ extension MachOImage {
         sectionCount: UInt32,
         headerSize: Int,
         sectionSize: Int,
-        slice: Slice
+        slice: Slice,
     ) throws -> Segment {
         let limit = UInt64(slice.byteCount)
         guard offset <= limit, fileSize <= limit - offset,
@@ -322,7 +322,7 @@ extension MachOImage {
             protections: permissions,
             initialProtection: initialProtection,
             maximumProtection: maximumProtection,
-            sections: names
+            sections: names,
         )
     }
 
@@ -382,7 +382,7 @@ extension MachOImage {
                 }
                 let bytes = try reader.read(
                     at: signature.offset + offset + relative,
-                    count: Int(min(4096, blobLength - relative))
+                    count: Int(min(4096, blobLength - relative)),
                 )
                 return try Self.terminatedString(bytes, at: 0)
             }
@@ -406,7 +406,7 @@ extension MachOImage {
         (0x200000, "PIE"), (0x400000, "DEAD_STRIPPABLE_DYLIB"), (0x800000, "HAS_TLV_DESCRIPTORS"),
         (0x1000000, "NO_HEAP_EXECUTION"), (0x2000000, "APP_EXTENSION_SAFE"),
         (0x4000000, "NLIST_OUTOFSYNC_WITH_DYLDINFO"), (0x8000000, "SIM_SUPPORT"),
-        (0x8000_0000, "DYLIB_IN_CACHE")
+        (0x8000_0000, "DYLIB_IN_CACHE"),
     ]
 
     /// `<mach-o/loader.h>`'s names, spelled out for the reason the header
@@ -428,6 +428,6 @@ extension MachOImage {
         0x2F: "LC_VERSION_MIN_TVOS", 0x30: "LC_VERSION_MIN_WATCHOS", 0x31: "LC_NOTE", 0x32: "LC_BUILD_VERSION",
         0x8000_0033: "LC_DYLD_EXPORTS_TRIE", 0x8000_0034: "LC_DYLD_CHAINED_FIXUPS",
         0x8000_0035: "LC_FILESET_ENTRY", 0x36: "LC_ATOM_INFO", 0x37: "LC_FUNCTION_VARIANTS",
-        0x38: "LC_FUNCTION_VARIANT_FIXUPS", 0x39: "LC_TARGET_TRIPLE"
+        0x38: "LC_FUNCTION_VARIANT_FIXUPS", 0x39: "LC_TARGET_TRIPLE",
     ]
 }

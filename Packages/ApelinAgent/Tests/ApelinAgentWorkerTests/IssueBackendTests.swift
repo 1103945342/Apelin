@@ -12,7 +12,7 @@ struct IssueBackendTests {
             context: fixture.context(),
             repository: "Lakr233/Irisin",
             title: "The installer stops at 90%",
-            body: "Installing a package from the inbox stops at 90%."
+            body: "Installing a package from the inbox stops at 90%.",
         )
     }
 
@@ -20,7 +20,7 @@ struct IssueBackendTests {
     func `the issue goes as gitIssueCreate to the repository named, its text alone`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.gitIssueCreate, reply: GitIssueCreateResponse(
-            number: 7, url: "https://github.com/Lakr233/Irisin/issues/7", repository: "Lakr233/Irisin"
+            number: 7, url: "https://github.com/Lakr233/Irisin/issues/7", repository: "Lakr233/Irisin",
         ))
         let response = try await fixture.backend.createIssue(request(fixture))
         let sent = try #require(fixture.host.requests(GitIssueCreateRequest.self).first)
@@ -64,11 +64,11 @@ struct IssueBackendTests {
             id: "a", toolCallID: "c", tool: "apelin_git_create_issue", arguments: "{}", workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Opens this issue on Lakr233/Irisin.",
             detail: .issueCreate(IssueCreateApproval(repository: "Lakr233/Irisin", title: "T", body: "B")),
-            allowsSessionScope: false
+            allowsSessionScope: false,
         )
         let payload = EventRelay.approvalPayload(request)
         let expected: ApelinCore.JSONValue = .object(["issueCreate": .object([
-            "repository": .string("Lakr233/Irisin"), "title": .string("T"), "body": .string("B")
+            "repository": .string("Lakr233/Irisin"), "title": .string("T"), "body": .string("B"),
         ])])
         #expect(payload["detail"] == expected)
         #expect(payload["allowsSessionScope"] == .bool(false))

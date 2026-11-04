@@ -59,7 +59,7 @@ final class TarWriter {
             size: size,
             modificationTime: modificationTime,
             typeflag: typeflag,
-            linkName: linkBytes
+            linkName: linkBytes,
         ))
     }
 
@@ -88,7 +88,7 @@ final class TarWriter {
             size: Int64(payload.count),
             modificationTime: 0,
             typeflag: typeflag,
-            linkName: []
+            linkName: [],
         ))
         try sink.write(payload)
         try finishContents(size: Int64(payload.count))
@@ -102,7 +102,7 @@ final class TarWriter {
         size: Int64,
         modificationTime: Int64,
         typeflag: UInt8,
-        linkName: [UInt8]
+        linkName: [UInt8],
     ) -> [UInt8] {
         var block = [UInt8](repeating: 0, count: 512)
         func put(_ bytes: [UInt8], at offset: Int, width: Int) {

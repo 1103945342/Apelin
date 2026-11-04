@@ -75,7 +75,7 @@ public struct KeychainGitCredentialStore: GitCredentialStore {
         let data = try JSONEncoder().encode(Item(username: credential.username, token: credential.token))
         let update: [String: Any] = [
             kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
         ]
         let status = SecItemUpdate(itemQuery(host) as CFDictionary, update as CFDictionary)
         if status == errSecSuccess {
@@ -109,7 +109,7 @@ public struct KeychainGitCredentialStore: GitCredentialStore {
             kSecAttrService as String: Self.service,
             kSecAttrAccessGroup as String: Self.accessGroup,
             kSecAttrSynchronizable as String: kCFBooleanFalse as Any,
-            kSecUseDataProtectionKeychain as String: true
+            kSecUseDataProtectionKeychain as String: true,
         ]
     }
 

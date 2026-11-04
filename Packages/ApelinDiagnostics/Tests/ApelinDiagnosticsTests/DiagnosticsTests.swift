@@ -34,7 +34,7 @@ final class FakeIcli: IcliSurface, @unchecked Sendable {
     func captureSyslog(seconds: Double, filter: IcliSyslogFilter, maxLines: Int) throws -> [String: Any] {
         let fields = [
             "process=\(filter.process ?? "-")", "subsystem=\(filter.subsystem ?? "-")",
-            "message=\(filter.messageContains ?? "-")", "level=\(filter.level)"
+            "message=\(filter.messageContains ?? "-")", "level=\(filter.level)",
         ]
         return answer("captureSyslog", "seconds=\(seconds) \(fields.joined(separator: " ")) maxLines=\(maxLines)")
     }
@@ -43,7 +43,7 @@ final class FakeIcli: IcliSurface, @unchecked Sendable {
         filter _: IcliSyslogFilter,
         seconds _: Double,
         handler _: @escaping @Sendable (LogEntry) -> Bool,
-        onEnd _: @escaping @Sendable (String) -> Void
+        onEnd _: @escaping @Sendable (String) -> Void,
     ) throws -> any IcliSyslogStream {
         _ = answer("openSyslogStream")
         throw DiagnosticsError.unavailable("not in this fake")
@@ -82,7 +82,7 @@ final class FakeIcli: IcliSurface, @unchecked Sendable {
         index: Int,
         appear: Bool,
         timeout: Double,
-        interval: Double
+        interval: Double,
     ) throws -> [String: Any] {
         _ = answer("waitForElement", "\(identifier ?? text ?? "-") \(match) \(index) appear=\(appear) \(timeout)s every \(interval)s")
         return waitAnswer
@@ -181,7 +181,7 @@ final class DiagnosticsTests: XCTestCase {
             LogFilter(maxEntries: 5001),
             LogFilter(subsystem: ""),
             LogFilter(messageContains: "a\0b"),
-            LogFilter(process: String(repeating: "x", count: 257))
+            LogFilter(process: String(repeating: "x", count: 257)),
         ] {
             XCTAssertThrowsError(try diagnostics.readLogs(filter)) { error in
                 guard case DiagnosticsError.invalidParameter = error else { return XCTFail("\(error)") }
@@ -276,7 +276,7 @@ final class DiagnosticsTests: XCTestCase {
             "uiElements max=2000",
             "uiElements max=2000",
             "pressButton home",
-            "pressButton power"
+            "pressButton power",
         ])
 
         for bad in [
@@ -287,7 +287,7 @@ final class DiagnosticsTests: XCTestCase {
             .swipe(from: UIPoint(x: 0, y: 0), to: UIPoint(x: 1, y: 1), seconds: 10),
             .type(text: "", delayMilliseconds: 0),
             .type(text: String(repeating: "a", count: 4097), delayMilliseconds: 0),
-            .type(text: "a", delayMilliseconds: 501)
+            .type(text: "a", delayMilliseconds: 501),
         ] {
             XCTAssertThrowsError(try diagnostics.perform(bad), "\(bad)")
         }
@@ -310,7 +310,7 @@ final class DiagnosticsTests: XCTestCase {
         XCTAssertEqual(asked, Array(repeating: "frontmostApp", count: 5) + ["uiElements max=250"])
         XCTAssertEqual(
             diagnostics.settledForegroundApp(),
-            ForegroundApp(bundleIdentifier: "wiki.qaq.apelin", verified: true, source: "runningboard")
+            ForegroundApp(bundleIdentifier: "wiki.qaq.apelin", verified: true, source: "runningboard"),
         )
     }
 
@@ -337,7 +337,7 @@ final class DiagnosticsTests: XCTestCase {
         XCTAssertEqual(
             diagnostics.settledForegroundApp(expecting: "wiki.qaq.fila").bundleIdentifier,
             "wiki.qaq.apelin",
-            "an app that never comes answers the last read once the time is up"
+            "an app that never comes answers the last read once the time is up",
         )
     }
 
@@ -352,7 +352,7 @@ final class DiagnosticsTests: XCTestCase {
         try diagnostics.perform(.tapElement(UIElementSelector(text: "Rename", match: .exact)))
         XCTAssertEqual(icli.calls.filter { $0.hasPrefix("waitForElement") || $0.hasPrefix("tapElement") }, [
             "waitForElement Rename exact 0 appear=true 2.0s every 0.5s",
-            "tapElement Rename exact 0"
+            "tapElement Rename exact 0",
         ])
 
         let missing = try FakeIcli()
@@ -362,7 +362,7 @@ final class DiagnosticsTests: XCTestCase {
         XCTAssertThrowsError(try waiting.perform(.tapElement(UIElementSelector(text: "Rename")))) { error in
             XCTAssertEqual(
                 error as? DiagnosticsError,
-                .failed("element \"Rename\" did not appear within 3 s; read the UI tree again")
+                .failed("element \"Rename\" did not appear within 3 s; read the UI tree again"),
             )
         }
         XCTAssertFalse(missing.calls.contains { $0.hasPrefix("tapElement") }, "nothing is tapped")
@@ -373,7 +373,7 @@ final class DiagnosticsTests: XCTestCase {
         func tree(_ field: String, pid: Int = 800) -> [String: Any] {
             ["pid": pid, "elements": [
                 ["label": "Name", "value": field, "role": "element", "visible": true],
-                ["label": "Volume", "value": 0.5, "role": "element", "visible": true]
+                ["label": "Volume", "value": 0.5, "role": "element", "visible": true],
             ]]
         }
         let icli = try FakeIcli()
@@ -382,21 +382,21 @@ final class DiagnosticsTests: XCTestCase {
         diagnostics.settleInterval = 0
         XCTAssertEqual(
             try diagnostics.perform(.type(text: "Hello world", delayMilliseconds: 30))?.typed,
-            TypedText(matches: false, fieldValues: ["Hello wrd"])
+            TypedText(matches: false, fieldValues: ["Hello wrd"]),
         )
         XCTAssertEqual(icli.calls.filter { $0.hasPrefix("uiElements") }.count, 3, "a read before, and after until two agree")
 
         icli.elementAnswers = [tree(""), tree("Hello world")]
         XCTAssertEqual(
             try diagnostics.perform(.type(text: "Hello world", delayMilliseconds: 30))?.typed,
-            TypedText(matches: true, fieldValues: ["Hello world"])
+            TypedText(matches: true, fieldValues: ["Hello world"]),
         )
 
         icli.elementAnswers = [tree(""), tree("Hello wor"), tree("Hello world")]
         XCTAssertEqual(
             try diagnostics.perform(.type(text: "Hello world", delayMilliseconds: 30))?.typed?.matches,
             true,
-            "a read while the last characters go in is read again"
+            "a read while the last characters go in is read again",
         )
 
         icli.elementAnswers = [tree(""), tree("Hello world", pid: 900)]
@@ -408,7 +408,7 @@ final class DiagnosticsTests: XCTestCase {
         XCTAssertEqual(
             TypedText(typed: "b", before: ["x", "", "x", "0.5"], after: ["0.5", "x", "xb", "x"]),
             TypedText(matches: true, fieldValues: ["xb"]),
-            "values that moved are not changes; a field that grew is"
+            "values that moved are not changes; a field that grew is",
         )
         XCTAssertEqual(TypedText(typed: "a", before: ["a"], after: ["a"]), TypedText(matches: false, fieldValues: []))
         let long = String(repeating: "a", count: TypedText.maximumValueCharacters + 5)

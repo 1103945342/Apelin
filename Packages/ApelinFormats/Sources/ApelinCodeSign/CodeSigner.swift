@@ -62,7 +62,7 @@ public enum CodeSigner {
                     cpusubtype: data.bigEndianInteger(at: base + 4),
                     offset: data.bigEndianInteger(at: base + 8),
                     size: data.bigEndianInteger(at: base + 12),
-                    align: data.bigEndianInteger(at: base + 16)
+                    align: data.bigEndianInteger(at: base + 16),
                 )
                 guard arch.align <= 15, Int(arch.offset) + Int(arch.size) <= data.count else {
                     throw CodeSignFailure.malformed
@@ -79,7 +79,7 @@ public enum CodeSigner {
                 try signSlice(
                     data[Int(arch.offset) ..< Int(arch.offset) + Int(arch.size)],
                     fatAlignment: arch.align,
-                    options: options
+                    options: options,
                 )
             }
             // ldid lays the slices out again, each on its own alignment
@@ -178,14 +178,14 @@ public enum CodeSigner {
                     fileoff: image.integer(at: start + 40),
                     filesize: image.integer(at: start + 48),
                     initprot: image.integer(at: start + 60),
-                    sections: []
+                    sections: [],
                 )
                 let count = Int(image.integer(at: start + 64) as UInt32)
                 for index in 0 ..< count {
                     let section = start + 72 + index * 80
                     let sectionName = String(
                         decoding: image[section ..< section + 16].prefix { $0 != 0 },
-                        as: UTF8.self
+                        as: UTF8.self,
                     )
                     let offset: UInt32 = image.integer(at: section + 48)
                     segment.sections.append((sectionName, offset, image.integer(at: section + 40)))
@@ -197,7 +197,7 @@ public enum CodeSigner {
                 if segment.initprot & 0x4 != 0 {
                     executable = (
                         min(executable.start, segment.fileoff),
-                        max(executable.end, segment.fileoff &+ segment.filesize)
+                        max(executable.end, segment.fileoff &+ segment.filesize),
                     )
                 }
                 if segment.name == "__TEXT" {

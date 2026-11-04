@@ -71,7 +71,7 @@ public struct SDKInspector: Sendable {
         guard found.count == 1 else {
             throw ApelinError(
                 .badRequest,
-                "Multiple SDKs found: \(found.map(\.lastPathComponent).joined(separator: ", ")). Import one SDK at a time."
+                "Multiple SDKs found: \(found.map(\.lastPathComponent).joined(separator: ", ")). Import one SDK at a time.",
             )
         }
         return root
@@ -117,7 +117,7 @@ public struct SDKInspector: Sendable {
             version: version,
             targets: targets,
             swiftCompilerVersion: swiftCompilerVersion(root),
-            warnings: warnings
+            warnings: warnings,
         )
     }
 
@@ -203,7 +203,7 @@ public struct SDKInspector: Sendable {
             digest: TransferDigest.hex(hash.finalize()),
             fileCount: walk.files.count,
             byteCount: walk.byteCount,
-            warnings: warnings
+            warnings: warnings,
         )
     }
 
@@ -437,12 +437,12 @@ enum MachOPolicy {
         case .executable?:
             throw ApelinError(
                 .denied,
-                "\(relative) is an executable (MH_EXECUTE, \(architecture)); an SDK holds link inputs only"
+                "\(relative) is an executable (MH_EXECUTE, \(architecture)); an SDK holds link inputs only",
             )
         case .bundle?:
             throw ApelinError(
                 .denied,
-                "\(relative) is a loadable bundle (MH_BUNDLE, \(architecture)); an SDK holds link inputs only"
+                "\(relative) is a loadable bundle (MH_BUNDLE, \(architecture)); an SDK holds link inputs only",
             )
         case let other?:
             throw ApelinError(.denied, "\(relative) is a Mach-O type an SDK does not carry (\(other), \(architecture))")
@@ -552,12 +552,12 @@ enum MachOPolicy {
                         if slice.fileType == .executable {
                             throw ApelinError(
                                 .denied,
-                                "\(relative)(\(memberName)) is an executable (MH_EXECUTE) inside a static archive"
+                                "\(relative)(\(memberName)) is an executable (MH_EXECUTE) inside a static archive",
                             )
                         }
                         throw ApelinError(
                             .denied,
-                            "\(relative)(\(memberName)) is not an object file inside a static archive"
+                            "\(relative)(\(memberName)) is not an object file inside a static archive",
                         )
                     }
                 }

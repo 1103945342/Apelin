@@ -9,7 +9,7 @@ import Testing
 @Suite("toolchain and SDK tools")
 struct EnvironmentToolTests {
     static let tools: [AgentToolName] = [
-        .toolchainList, .sdkList, .toolchainSetup, .sdkImport, .toolchainSelfTest, .projectSetEnvironment
+        .toolchainList, .sdkList, .toolchainSetup, .sdkImport, .toolchainSelfTest, .projectSetEnvironment,
     ]
 
     func text(_ result: AgentToolResult) -> String {
@@ -27,7 +27,7 @@ struct EnvironmentToolTests {
     @Test
     func `the catalog names them with their risks`() {
         #expect(Self.tools.map(\.rawValue) == [
-            "apelin_toolchain_list", "apelin_sdk_list", "apelin_toolchain_setup", "apelin_sdk_import", "apelin_toolchain_self_test", "apelin_project_set_environment"
+            "apelin_toolchain_list", "apelin_sdk_list", "apelin_toolchain_setup", "apelin_sdk_import", "apelin_toolchain_self_test", "apelin_project_set_environment",
         ])
         #expect(AgentToolName.toolchainList.risk == .readOnly && AgentToolName.sdkList.risk == .readOnly)
         for tool in [AgentToolName.toolchainSetup, .sdkImport, .toolchainSelfTest] {
@@ -52,7 +52,7 @@ struct EnvironmentToolTests {
             policy: ApprovalPolicy(mode: .confirm),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            gate: ApprovalGate { _ in }
+            gate: ApprovalGate { _ in },
         )
         let offered = Set(runner.agentTools(mcp: []).map(\.name))
         for tool in [AgentToolName.toolchainList, .sdkList, .toolchainSetup, .sdkImport, .toolchainSelfTest] {
@@ -170,7 +170,7 @@ struct EnvironmentToolTests {
         #expect(sent == .sdkImport(
             url: "https://github.com/owngoal-dev/iOS-SDKs.git",
             branch: "sdk/iPhoneOS17.5",
-            evidence: .user(requestID: asked[0].id, fingerprint: asked[0].fingerprint)
+            evidence: .user(requestID: asked[0].id, fingerprint: asked[0].fingerprint),
         ))
         await #expect(throws: ToolArgumentError.self) { _ = try await harness.run(.sdkImport, ["version": "18.2"]) }
         await #expect(throws: ToolArgumentError.self) { _ = try await harness.run(.sdkImport, ["version": "16.0"]) }
@@ -258,7 +258,7 @@ struct EnvironmentToolTests {
         try harness.home.write("apelin-project.json", Self.manifest)
         let reason = "toolchain clt-16.4-c (Command Line Tools 16.4) supports iPhoneOS SDKs up to 18.5; SDK 27.0 is outside that supported range"
         await harness.backend.setFindings([
-            EnvironmentDiagnostic(code: "environment.sdk.tooNewForToolchain", severity: "error", message: reason)
+            EnvironmentDiagnostic(code: "environment.sdk.tooNewForToolchain", severity: "error", message: reason),
         ], forSDK: "iPhoneOS27.0-cccccccc")
         do {
             _ = try await harness.run(.projectSetEnvironment, ["sdk_id": "iPhoneOS27.0-cccccccc"])

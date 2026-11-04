@@ -51,7 +51,7 @@ enum AgentForcePushRules {
             let remote = push.remote ?? "origin"
             return ApelinError(
                 .denied,
-                "approval required, in every mode: the user has not approved overwriting \(remote)'s \(push.branch ?? "") at \(lease.expectedCommit) with \(lease.localCommit ?? "")"
+                "approval required, in every mode: the user has not approved overwriting \(remote)'s \(push.branch ?? "") at \(lease.expectedCommit) with \(lease.localCommit ?? "")",
             )
         }
         return nil

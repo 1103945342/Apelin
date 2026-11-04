@@ -18,12 +18,12 @@ struct SquashBackendTests {
         let fixture = try Fixture()
         let answer = GitSquashResponse(
             branch: "main", previousHead: Self.head, base: Self.base,
-            commits: [GitCommitSummary(commit: Self.head, subject: "Fix the hand")], count: 2
+            commits: [GitCommitSummary(commit: Self.head, subject: "Fix the hand")], count: 2,
         )
         fixture.host.on(.gitSquash, reply: answer)
         let preview = try await fixture.backend.gitSquash(GitSquashToolRequest(context: fixture.context(), count: 2, preview: true))
         _ = try await fixture.backend.gitSquash(GitSquashToolRequest(
-            context: fixture.context(), base: Self.base, message: "Add the clock", expectedHead: Self.head, preview: false
+            context: fixture.context(), base: Self.base, message: "Add the clock", expectedHead: Self.head, preview: false,
         ))
         let sent = fixture.host.requests(GitSquashRequest.self)
         #expect(sent.count == 2)
@@ -42,7 +42,7 @@ struct SquashBackendTests {
         }
         await #expect {
             _ = try await fixture.backend.gitSquash(GitSquashToolRequest(
-                context: fixture.context(), base: Self.base, message: "x", expectedHead: Self.head, preview: false
+                context: fixture.context(), base: Self.base, message: "x", expectedHead: Self.head, preview: false,
             ))
         } throws: { error in
             let message = (error as? GitToolFailure)?.message ?? ""
@@ -58,12 +58,12 @@ struct SquashBackendTests {
         let squash = SquashApproval(
             projectID: "p", branch: "main", base: Self.base, expectedHead: Self.head, message: "Add the clock",
             commits: [GitCommitSummary(commit: Self.head, subject: "Fix the hand")], count: 2,
-            upstream: "origin/main", published: 1
+            upstream: "origin/main", published: 1,
         )
         let request = ApprovalRequest(
             id: "a", toolCallID: "c", tool: "git_squash", arguments: #"{"count":2}"#, workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Squashes 2 commits on main into one.",
-            detail: .squash(squash), allowsSessionScope: false
+            detail: .squash(squash), allowsSessionScope: false,
         )
         let payload = EventRelay.approvalPayload(request)
         let detail = try #require(payload["detail"]?["squash"])

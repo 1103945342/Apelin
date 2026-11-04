@@ -118,7 +118,7 @@ struct ChannelHostBackendTests {
             ("log", .object(["line": .string("clang Tweak.m")])),
             ("diagnostic", ApelinCore.JSONValue(encoding: ProjectDiagnostic(code: "clang", severity: .warning, message: "unused", file: "Sources/Tweak.m", line: 3))),
             ("artifact", ApelinCore.JSONValue(encoding: ApelinProtocol.BuildArtifact(artifactID: "art-1", digest: "sha256:ab", packageID: "wiki.qaq.hello", version: "0.0.1"))),
-            stateEvent(.succeeded)
+            stateEvent(.succeeded),
         ]))
 
         let response = try await fixture.backend.build(BuildRequest(context: fixture.context(), configuration: .release, buildDescriptionDigest: "sha256:00", bootstrap: "roothide"))
@@ -145,9 +145,9 @@ struct ChannelHostBackendTests {
                 severity: .error,
                 message: "unknown member",
                 file: "apelin-project.json",
-                field: "/configurations/Debug/linkerFlags"
+                field: "/configurations/Debug/linkerFlags",
             ))),
-            stateEvent(.failed, "the project check failed")
+            stateEvent(.failed, "the project check failed"),
         ]))
         let response = try await fixture.backend.build(BuildRequest(context: fixture.context(), configuration: .debug, buildDescriptionDigest: "d"))
         #expect(response.diagnostics.map(\.field) == ["/configurations/Debug/linkerFlags", nil])
@@ -164,7 +164,7 @@ struct ChannelHostBackendTests {
         }
         fixture.host.on(.projectCheck, reply: ProjectCheckResponse(passed: false, diagnostics: [
             ProjectDiagnostic(code: "project.invalid", severity: .error, message: "unknown member", file: "apelin-project.json", field: "/configurations/Debug/linkerFlags"),
-            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "missing optimization", file: "apelin-project.json", field: "/configurations/Release")
+            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "missing optimization", file: "apelin-project.json", field: "/configurations/Release"),
         ]))
         let request = BuildRequest(context: fixture.context(), configuration: .debug, buildDescriptionDigest: "d")
         let refusal = await #expect(throws: ApelinError.self) { _ = try await fixture.backend.build(request) }
@@ -175,7 +175,7 @@ struct ChannelHostBackendTests {
         // A refusal over anything else stands as it came.
         fixture.host.on(.buildStart) { _ in throw ApelinError(.notFound, "toolchain clt-16.4-c is not registered") }
         fixture.host.on(.projectCheck, reply: ProjectCheckResponse(passed: false, diagnostics: [
-            ProjectDiagnostic(code: "environment.device.toolchain", severity: .error, message: "not registered", field: "/environment/toolchain")
+            ProjectDiagnostic(code: "environment.device.toolchain", severity: .error, message: "not registered", field: "/environment/toolchain"),
         ]))
         await #expect(throws: ApelinError(.notFound, "toolchain clt-16.4-c is not registered")) {
             _ = try await fixture.backend.build(request)
@@ -188,7 +188,7 @@ struct ChannelHostBackendTests {
         fixture.host.on(.projectCheck, reply: ProjectCheckResponse(
             passed: false,
             diagnostics: [ProjectDiagnostic(code: "external.build", severity: .error, message: "/external/script is not a regular file", field: "/external")],
-            buildSystem: .external
+            buildSystem: .external,
         ))
         let broken = try await fixture.backend.checkDistribution(DistributionCheckRequest(project: fixture.project, bootstrap: "rootless"))
         #expect(fixture.host.requests(ProjectCheckRequest.self).last?.purpose == .distribution)
@@ -201,7 +201,7 @@ struct ChannelHostBackendTests {
 
         fixture.host.on(.projectCheck, reply: ProjectCheckResponse(passed: true, diagnostics: [
             ProjectDiagnostic(code: "project.flag.unusual", severity: .warning, message: "unusual flag"),
-            ProjectDiagnostic(code: "distribution.package.id.local", severity: .warning, message: "local identifier")
+            ProjectDiagnostic(code: "distribution.package.id.local", severity: .warning, message: "local identifier"),
         ]))
         let described = try await fixture.backend.checkDistribution(DistributionCheckRequest(project: fixture.project))
         #expect(!described.ready && described.issues.map(\.message) == ["local identifier"] && described.note == nil)
@@ -211,7 +211,7 @@ struct ChannelHostBackendTests {
     func `apelin_project_check_distribution names each issue's field, and where the schema is`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.projectCheck, reply: ProjectCheckResponse(passed: false, diagnostics: [
-            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "unknown member", file: "apelin-project.json", field: "/configurations/Debug/linkerFlags")
+            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "unknown member", file: "apelin-project.json", field: "/configurations/Debug/linkerFlags"),
         ]))
         let check = try await fixture.backend.checkDistribution(DistributionCheckRequest(project: fixture.project))
         #expect(!check.ready && check.issues.map(\.field) == ["/configurations/Debug/linkerFlags", nil])
@@ -224,7 +224,7 @@ struct ChannelHostBackendTests {
         fixture.host.on(.buildStart, reply: TaskHandle(taskID: TaskID("build-task"), kind: .build))
         fixture.host.on(.buildAttach, reply: batch("build-task", [
             ("stage", .object(["stage": .string("compile"), "buildID": .string("B-42")])),
-            stateEvent(.failed, "link failed")
+            stateEvent(.failed, "link failed"),
         ]))
         let response = try await fixture.backend.build(BuildRequest(context: fixture.context(), configuration: .debug, buildDescriptionDigest: "d"))
         #expect(response.buildID == "B-42")
@@ -238,7 +238,7 @@ struct ChannelHostBackendTests {
         fixture.host.on(.installPackage, reply: TaskHandle(taskID: TaskID("install-task"), kind: .install))
         try fixture.host.on(.buildAttach, reply: batch("install-task", [
             ("result", ApelinCore.JSONValue(encoding: InstallResult(installationID: "inst-1", transactionID: "tx-1", packageID: "wiki.qaq.hello", version: "0.0.1"))),
-            stateEvent(.succeeded)
+            stateEvent(.succeeded),
         ]))
         let response = try await fixture.backend.install(InstallRequest(context: fixture.context(), artifactID: "art-1", artifactDigest: "sha256:ab", packagingDescriptionDigest: "p"))
         let sent = try #require(fixture.host.requests(InstallPackageRequest.self).first)
@@ -259,7 +259,7 @@ struct ChannelHostBackendTests {
             packageID: "local.apelin.dockflip",
             version: "0.1",
             installationID: "0b6f3c2e-0000-4000-8000-000000000001",
-            projectID: "p-1"
+            projectID: "p-1",
         )
         let declared = InstallConflict(relation: .conflicts, packageID: "com.example.old", version: "1.0")
         fixture.host.on(.installPackage, reply: TaskHandle(taskID: TaskID("install-task"), kind: .install))
@@ -267,7 +267,7 @@ struct ChannelHostBackendTests {
             ("irisin", .object(["seq": .number(1), "kind": .string("failure"), "text": .string("owned")])),
             ("conflict", ApelinCore.JSONValue(encoding: renamed)),
             ("conflict", ApelinCore.JSONValue(encoding: declared)),
-            stateEvent(.failed, "…already belongs to local.apelin.dockflip 0.1…")
+            stateEvent(.failed, "…already belongs to local.apelin.dockflip 0.1…"),
         ]))
         let response = try await fixture.backend.install(InstallRequest(context: fixture.context(), artifactID: "art-2", artifactDigest: "sha256:cd", packagingDescriptionDigest: "p"))
         #expect(!response.succeeded)
@@ -285,9 +285,9 @@ struct ChannelHostBackendTests {
             DevelopmentExtension(id: "wiki.qaq.apelin.dev.tweak", version: "0.1.0", kind: .tweak, displayName: "Tweak Development", templates: [
                 TemplateSummary(id: "wiki.qaq.apelin.dev.tweak/objc-hook", displayName: "Objective-C Tweak", parameters: [
                     TemplateParameter(name: "filterBundles", kind: "bundleIDList", defaultValue: .array([.string("com.apple.springboard")])),
-                    TemplateParameter(name: "mixed", kind: "bundleIDList", defaultValue: .array([.string("a.b"), .number(1)]))
-                ])
-            ])
+                    TemplateParameter(name: "mixed", kind: "bundleIDList", defaultValue: .array([.string("a.b"), .number(1)])),
+                ]),
+            ]),
         ]))
         let templates = try await fixture.backend.projectTemplates().templates
         #expect(templates.first?.parameters.map(\.defaultValue) == [.list(["com.apple.springboard"]), nil])
@@ -297,12 +297,12 @@ struct ChannelHostBackendTests {
             context: fixture.context(),
             templateID: "wiki.qaq.apelin.dev.tweak/objc-hook",
             name: "Settings Tweak",
-            values: ["filterBundles": .list(["com.apple.springboard", "com.apple.Preferences"]), "displayName": .string("X")]
+            values: ["filterBundles": .list(["com.apple.springboard", "com.apple.Preferences"]), "displayName": .string("X")],
         ))
         let sent = try #require(fixture.host.requests(ProjectCreateRequest.self).first)
         #expect(sent.values == [
             "filterBundles": .array([.string("com.apple.springboard"), .string("com.apple.Preferences")]),
-            "displayName": .string("X")
+            "displayName": .string("X"),
         ])
     }
 
@@ -313,7 +313,7 @@ struct ChannelHostBackendTests {
         let installedAt = Date(timeIntervalSince1970: 1_790_000_000)
         fixture.host.on(.installationList, reply: InstallationListResponse(installations: [
             InstallationSummary(installationID: "inst-2", packageID: "wiki.qaq.hello", version: "0.0.2", projectID: fixture.project.id, buildID: "B-2", installedAt: installedAt, removable: true),
-            InstallationSummary(installationID: "inst-1", packageID: "local.apelin.gone", version: "1", projectID: "deleted-project", installedAt: installedAt, removable: false, reason: "local.apelin.gone is now version 2")
+            InstallationSummary(installationID: "inst-1", packageID: "local.apelin.gone", version: "1", projectID: "deleted-project", installedAt: installedAt, removable: false, reason: "local.apelin.gone is now version 2"),
         ]))
         let listed = try await fixture.backend.installations(InstallationListToolRequest(packageID: "wiki.qaq.hello"))
         let sent = try #require(fixture.host.requests(InstallationListRequest.self).first)
@@ -338,13 +338,13 @@ struct ChannelHostBackendTests {
         let answer = ApelinProtocol.ConfirmLoadedResponse(loaded: true, evidence: [
             LoadEvidence(kind: "log", passed: true, detail: "confirmed: Marker logged by pid 55."),
             LoadEvidence(kind: "image", passed: false, detail: "notRead: The image list was not read."),
-            LoadEvidence(kind: "filter", passed: true, detail: "confirmed: com.apple.springboard")
+            LoadEvidence(kind: "filter", passed: true, detail: "confirmed: com.apple.springboard"),
         ])
         fixture.host.on(.confirmLoaded, reply: TaskHandle(taskID: TaskID("confirm-task"), kind: .confirmLoaded))
         try fixture.host.on(.confirmLoadedAttach, reply: batch("confirm-task", [
             ("stage", .object(["stage": .string("listening")])),
             ("stage", .object(["stage": .string("trigger")])),
-            (TaskEvent.stateKind, .object(["state": .string("succeeded"), ApelinProtocol.ConfirmLoadedResponse.stateMember: JSONValue(encoding: answer)]))
+            (TaskEvent.stateKind, .object(["state": .string("succeeded"), ApelinProtocol.ConfirmLoadedResponse.stateMember: JSONValue(encoding: answer)])),
         ]))
         let response = try await fixture.backend.confirmLoaded(ApelinAgent.ConfirmLoadedRequest(context: fixture.context(), buildID: "B-42", target: "SpringBoard", respring: true))
         let sent = try #require(fixture.host.requests(ApelinProtocol.ConfirmLoadedRequest.self).first)
@@ -368,11 +368,11 @@ struct ChannelHostBackendTests {
             LoadEvidence(kind: "log", passed: false, detail: "absent: No line containing \"ApelinLoaded B-42\" from SpringBoard in 30 s."),
             LoadEvidence(kind: "image", passed: false, detail: "notRead: The image list was not read."),
             LoadEvidence(kind: "filter", passed: false, detail: "absent: com.apple.Preferences only"),
-            LoadEvidence(kind: "trigger", passed: false, detail: "the respring failed")
+            LoadEvidence(kind: "trigger", passed: false, detail: "the respring failed"),
         ])
         fixture.host.on(.confirmLoaded, reply: TaskHandle(taskID: TaskID("confirm-task"), kind: .confirmLoaded))
         try fixture.host.on(.confirmLoadedAttach, reply: batch("confirm-task", [
-            (TaskEvent.stateKind, .object(["state": .string("succeeded"), ApelinProtocol.ConfirmLoadedResponse.stateMember: JSONValue(encoding: answer)]))
+            (TaskEvent.stateKind, .object(["state": .string("succeeded"), ApelinProtocol.ConfirmLoadedResponse.stateMember: JSONValue(encoding: answer)])),
         ]))
         let response = try await fixture.backend.confirmLoaded(ApelinAgent.ConfirmLoadedRequest(context: fixture.context(), buildID: "B-42", target: "SpringBoard", respring: true))
         #expect(!response.loaded)
@@ -400,7 +400,7 @@ struct ChannelHostBackendTests {
         let entry: ApelinCore.JSONValue = .object([
             "time": .string("2026-10-17T10:00:00Z"), "process": .string("SpringBoard"),
             "subsystem": .string("wiki.qaq.hello"), "category": .string("tweak"),
-            "level": .string("default"), "message": .string("ApelinLoaded B-42 in SpringBoard")
+            "level": .string("default"), "message": .string("ApelinLoaded B-42 in SpringBoard"),
         ])
         fixture.host.on(.logStream) { request in
             let poll = try request.decode(LogStreamRequest.self)
@@ -409,7 +409,7 @@ struct ChannelHostBackendTests {
             }
             return (TaskEventBatch(taskID: TaskID("logs"), events: [
                 TaskEvent(seq: EventSeq(2), kind: "log", payload: entry),
-                TaskEvent(seq: EventSeq(3), kind: TaskEvent.stateKind, payload: .object(["state": .string("succeeded")]))
+                TaskEvent(seq: EventSeq(3), kind: TaskEvent.stateKind, payload: .object(["state": .string("succeeded")])),
             ], state: .succeeded, lastSeq: EventSeq(3), finished: true), [])
         }
         let response = try await fixture.backend.readLogs(ReadLogsRequest(context: fixture.context(), process: "SpringBoard", subsystem: "wiki.qaq.hello", listenSeconds: 300, limit: 1))
@@ -437,7 +437,7 @@ struct ChannelHostBackendTests {
     func `apelin_crash_symbolicate asks the diagnostics worker with the project`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.crashSymbolicate, reply: CrashSymbolicateResponse(id: "r.ips", process: "SpringBoard", matchedImageUUIDs: ["UUID-1"], crashedThread: [
-            ApelinProtocol.SymbolicatedFrame(index: 0, image: "Hello.dylib", address: "0x1000", symbol: "HookedDidFinishLaunching", file: "Tweak.m", line: 30)
+            ApelinProtocol.SymbolicatedFrame(index: 0, image: "Hello.dylib", address: "0x1000", symbol: "HookedDidFinishLaunching", file: "Tweak.m", line: 30),
         ], suspects: ["Hello.dylib"]))
         let response = try await fixture.backend.symbolicateCrash(SymbolicateCrashRequest(context: fixture.context(), reportID: "r.ips", buildID: nil))
         #expect(fixture.host.requests(CrashSymbolicateRequest.self).first?.projectID == fixture.project.id)
@@ -464,8 +464,8 @@ struct ChannelHostBackendTests {
             "pid": .number(42),
             "elements": .array([
                 .object(["identifier": .string("ok-button"), "label": .string("OK"), "role": .string("button"), "frame": .object(["x": .number(1), "y": .number(2), "width": .number(3), "height": .number(4)])]),
-                .object(["identifier": .string(""), "label": .string("Cancel"), "role": .string("button")])
-            ])
+                .object(["identifier": .string(""), "label": .string("Cancel"), "role": .string("button")]),
+            ]),
         ])))
         fixture.host.on(.uiAction, reply: ApelinProtocol.UIActionResponse())
         let tree = try await fixture.backend.readUITree(ApelinAgent.ReadUITreeRequest(context: fixture.context(), targetID: nil, maxDepth: 4))
@@ -506,10 +506,10 @@ struct ChannelHostBackendTests {
         _ = try await fixture.backend.uiAction(ApelinAgent.UIActionRequest(
             context: fixture.context(),
             targetID: nil,
-            action: .swipe(fromX: 1, fromY: 2, toX: 3, toY: 4, durationMilliseconds: 1200)
+            action: .swipe(fromX: 1, fromY: 2, toX: 3, toY: 4, durationMilliseconds: 1200),
         ))
         #expect(fixture.host.requests(ApelinProtocol.UIActionRequest.self).map(\.action) == [
-            .swipe(fromX: 1, fromY: 2, toX: 3, toY: 4, durationMilliseconds: 1200)
+            .swipe(fromX: 1, fromY: 2, toX: 3, toY: 4, durationMilliseconds: 1200),
         ])
 
         fixture.host.on(.uiAction, reply: ApelinProtocol.UIActionResponse(typedTextMatches: false, fieldValues: ["Hello wrd"]))
@@ -532,7 +532,7 @@ struct ChannelHostBackendTests {
             context: fixture.context(.user(requestID: "approval-7", fingerprint: "f")),
             invocation: .shell("ls | wc -l"),
             workingDirectory: "Sources",
-            timeoutSeconds: 30
+            timeoutSeconds: 30,
         ))
         let sent = try #require(fixture.host.requests(AgentRunCodeRequest.self).first)
         #expect(sent.sessionID == fixture.backend.sessionID)
@@ -585,13 +585,13 @@ struct ChannelHostBackendTests {
             service: ApelinService(transport: ChannelTransport(channel: worker)),
             sessionID: fixture.backend.sessionID,
             project: fixture.project,
-            projectURL: fixture.projectURL
+            projectURL: fixture.projectURL,
         )
         let request = RunCodeRequest(
             context: fixture.context(.preset("cat")),
             invocation: .argv(["cat", "x"]),
             workingDirectory: ".",
-            timeoutSeconds: 5
+            timeoutSeconds: 5,
         )
         await #expect(throws: HostRefusedPresetError.self) { _ = try await backend.runCode(request) }
 
@@ -613,7 +613,7 @@ struct ChannelHostBackendTests {
         let fixture = try Fixture(manifest: #"{"projectID": "x", "environment": {"sdk": {"id": "iPhoneOS16.5-bbbbbbbb", "digest": "sha256:00"}}}"#)
         fixture.host.on(.sdkList, reply: SDKListResponse(sdks: [
             SDKRecord(id: "iPhoneOS17.0-aaaaaaaa", canonicalName: "iphoneos17.0", version: "17.0", path: "/sdk/17"),
-            SDKRecord(id: "iPhoneOS16.5-bbbbbbbb", canonicalName: "iphoneos16.5", version: "16.5", path: "/sdk/16.5")
+            SDKRecord(id: "iPhoneOS16.5-bbbbbbbb", canonicalName: "iphoneos16.5", version: "16.5", path: "/sdk/16.5"),
         ]))
         let pinned = try await fixture.backend.registeredSDK(RegisteredSDKRequest(sdkID: nil, project: fixture.project))
         #expect(pinned.rootPath == "/sdk/16.5")
@@ -700,9 +700,9 @@ struct ChannelHostBackendTests {
             ("artifact", ApelinCore.JSONValue(encoding: ApelinProtocol.BuildArtifact(
                 artifactID: "art-1", digest: "sha256:ab", packageID: "wiki.qaq.hello", version: "0.0.1",
                 buildID: "B-7", bootstrap: "rootless", packagingDigest: "sha256:cd",
-                path: "/var/mobile/Documents/wiki.qaq.apelin/Builds/p/B-7/wiki.qaq.hello_0.0.1_iphoneos-arm64.deb", projectID: "p"
+                path: "/var/mobile/Documents/wiki.qaq.apelin/Builds/p/B-7/wiki.qaq.hello_0.0.1_iphoneos-arm64.deb", projectID: "p",
             ))),
-            stateEvent(.succeeded)
+            stateEvent(.succeeded),
         ]))
         let response = try await fixture.backend.build(BuildRequest(context: fixture.context(), configuration: .debug, buildDescriptionDigest: "d"))
         #expect(response.buildID == "B-7")

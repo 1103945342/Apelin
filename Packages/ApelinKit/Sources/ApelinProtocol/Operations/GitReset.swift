@@ -89,7 +89,7 @@ public struct GitResetPreview: Codable, Sendable, Equatable {
         overwrittenFileCount: Int = 0,
         overwrittenFiles: [String] = [],
         projectFile: GitProjectFile = .project,
-        upToDate: Bool = false
+        upToDate: Bool = false,
     ) {
         self.remote = remote
         self.url = url
@@ -141,7 +141,7 @@ public struct GitResetToRemoteRequest: OperationRequest {
         branch: String,
         expectedRemoteCommit: String,
         expectedHead: String?,
-        expectedURL: String? = nil
+        expectedURL: String? = nil,
     ) {
         self.projectID = projectID
         self.remote = remote

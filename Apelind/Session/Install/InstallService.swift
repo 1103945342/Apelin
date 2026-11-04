@@ -13,7 +13,7 @@ protocol InstallService: Sendable {
     func status(of transaction: UUID) async throws -> InstallTransactionStatus
     func events(
         of transaction: UUID,
-        after: UInt64
+        after: UInt64,
     ) async throws -> (status: InstallTransactionStatus, events: [InstallTransactionEvent])
 }
 
@@ -97,6 +97,6 @@ enum InstallServiceRequirement {
         "transactionStatus",
         "transactionEvents",
         "removePackage",
-        "respring"
+        "respring",
     ]
 }

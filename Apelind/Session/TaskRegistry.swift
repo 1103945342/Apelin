@@ -48,7 +48,7 @@ actor TaskRegistry {
         try? FileManager.default.createDirectory(
             at: directory,
             withIntermediateDirectories: true,
-            attributes: [.posixPermissions: 0o700]
+            attributes: [.posixPermissions: 0o700],
         )
         let decoder = JSONCoding.decoder()
         let files = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
@@ -137,7 +137,7 @@ actor TaskRegistry {
             owner: owner,
             ownerKey: ownerKey,
             cancelRequested: false,
-            resume: nil
+            resume: nil,
         )
         events[id] = []
         persist(id)
@@ -197,7 +197,7 @@ actor TaskRegistry {
         _ id: TaskID,
         as operation: AppOperation,
         afterSeq: EventSeq,
-        waitMilliseconds: Int
+        waitMilliseconds: Int,
     ) async throws -> TaskEventBatch {
         guard let record = records[id] else { throw ApelinError(.notFound, "This task could not be found.") }
         guard record.kind.attachOperation == operation else {
@@ -222,7 +222,7 @@ actor TaskRegistry {
             events: batch,
             state: current.state,
             lastSeq: last,
-            finished: current.state.isTerminal && last >= current.lastSeq
+            finished: current.state.isTerminal && last >= current.lastSeq,
         )
     }
 
@@ -369,8 +369,8 @@ actor TaskRegistry {
             time: record.updatedAt,
             payload: .object([
                 "state": .string(record.state.rawValue),
-                "message": .string("The task ended, but its final details could not be read.")
-            ])
+                "message": .string("The task ended, but its final details could not be read."),
+            ]),
         )
         appendEventToDisk(record.id, state)
         closing.append(state)
@@ -382,7 +382,7 @@ actor TaskRegistry {
             seq: seq,
             kind: unreadableKind,
             time: time,
-            payload: .object(["message": .string("this line of the task's log could not be read")])
+            payload: .object(["message": .string("this line of the task's log could not be read")]),
         )
     }
 

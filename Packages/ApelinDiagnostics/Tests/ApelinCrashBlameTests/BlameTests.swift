@@ -16,9 +16,9 @@ final class BlameTests: XCTestCase {
             images: [
                 image("/usr/lib/libsystem_c.dylib"),
                 image("/System/Library/Frameworks/UIKit.framework/UIKit", source: "S"),
-                image("/var/containers/Bundle/Application/00000000/Fila.app/Frameworks/SnapKit.framework/SnapKit")
+                image("/var/containers/Bundle/Application/00000000/Fila.app/Frameworks/SnapKit.framework/SnapKit"),
             ],
-            faultingFrames: [0, 1, 2]
+            faultingFrames: [0, 1, 2],
         )
         XCTAssertEqual(Blame.suspects(in: report, packages: nil), [])
     }
@@ -32,7 +32,7 @@ final class BlameTests: XCTestCase {
             let onStack = crash(
                 images: [unknown, image(tweak)],
                 faultingFrames: [0, 1],
-                exceptionFrames: [0]
+                exceptionFrames: [0],
             )
             XCTAssertEqual(Blame.suspects(in: onStack, packages: nil).map(\.id), [tweak])
         }
@@ -100,7 +100,7 @@ final class BlameTests: XCTestCase {
         let report = crash(
             processPath: "/usr/libexec/backboardd",
             images: [image(path)],
-            captureDate: Date()
+            captureDate: Date(),
         )
         let suspect = try XCTUnwrap(Blame.suspects(in: report, packages: packages).first)
         XCTAssertEqual(suspect.reasons, [.thirdPartyImage, .recentlyInstalled])
@@ -116,7 +116,7 @@ final class BlameTests: XCTestCase {
         let report = crash(
             processPath: "/usr/libexec/backboardd",
             images: [image(path)],
-            captureDate: Date().addingTimeInterval(100 * 60 * 60)
+            captureDate: Date().addingTimeInterval(100 * 60 * 60),
         )
         let suspect = try XCTUnwrap(Blame.suspects(in: report, packages: packages).first)
         XCTAssertEqual(suspect.reasons, [.thirdPartyImage])
@@ -128,13 +128,13 @@ final class BlameTests: XCTestCase {
             images: [
                 image("/var/jb/usr/lib/libz-bystander.dylib"),
                 image("/var/jb/usr/lib/liba-bystander.dylib"),
-                image(tweak)
+                image(tweak),
             ],
-            faultingFrames: [2]
+            faultingFrames: [2],
         )
         XCTAssertEqual(
             Blame.suspects(in: report, packages: nil).map(\.imageName),
-            ["Zebra.dylib", "liba-bystander.dylib", "libz-bystander.dylib"]
+            ["Zebra.dylib", "liba-bystander.dylib", "libz-bystander.dylib"],
         )
     }
 
@@ -146,7 +146,7 @@ final class BlameTests: XCTestCase {
             path: path,
             uuid: "00000000-0000-0000-0000-000000000000",
             base: 0x10000,
-            size: 0x4000
+            size: 0x4000,
         )
         image.source = source
         return image
@@ -159,7 +159,7 @@ final class BlameTests: XCTestCase {
         images: [BinaryImage],
         faultingFrames: [Int?] = [],
         exceptionFrames: [Int?] = [],
-        captureDate: Date? = nil
+        captureDate: Date? = nil,
     ) -> CrashReport {
         var report = CrashReport()
         report.process.name = "Fila"

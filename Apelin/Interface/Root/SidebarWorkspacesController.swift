@@ -36,7 +36,7 @@ final class SidebarWorkspacesController: UIViewController {
         $0.setContentHuggingPriority(.required, for: .horizontal)
         $0.addAction(
             UIAction { [weak self] _ in self?.onCreate?() },
-            for: .touchUpInside
+            for: .touchUpInside,
         )
     }
 
@@ -49,7 +49,7 @@ final class SidebarWorkspacesController: UIViewController {
     }
 
     private lazy var dataSource = SwipeableTableDataSource<Int, Row>(
-        tableView: tableView
+        tableView: tableView,
     ) { [unowned self] tableView, indexPath, row in
         let cell = tableView.dequeueReusableCell(withIdentifier: "workspace", for: indexPath)
         configure(cell, for: row)
@@ -171,7 +171,7 @@ final class SidebarWorkspacesController: UIViewController {
     /// page draws it.
     private static let selectionColor = UIColor(
         light: UIColor.black.withAlphaComponent(0.1),
-        dark: UIColor.white.withAlphaComponent(0.1)
+        dark: UIColor.white.withAlphaComponent(0.1),
     )
 
     /// How many of the workspace's conversations are working, as aimini's
@@ -216,14 +216,14 @@ extension SidebarWorkspacesController: UITableViewDelegate {
     /// thing away, which asks first.
     func tableView(
         _: UITableView,
-        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath,
     ) -> UISwipeActionsConfiguration? {
         guard let row = dataSource.itemIdentifier(for: indexPath), let summary = project(for: row) else {
             return UISwipeActionsConfiguration(actions: [])
         }
         let delete = UIContextualAction(
             style: .destructive,
-            title: String(localized: "Delete")
+            title: String(localized: "Delete"),
         ) { [weak self] _, _, completion in
             completion(false)
             self?.onDelete?(summary)
@@ -235,7 +235,7 @@ extension SidebarWorkspacesController: UITableViewDelegate {
     func tableView(
         _: UITableView,
         contextMenuConfigurationForRowAt indexPath: IndexPath,
-        point _: CGPoint
+        point _: CGPoint,
     ) -> UIContextMenuConfiguration? {
         guard let row = dataSource.itemIdentifier(for: indexPath), let summary = project(for: row) else {
             return nil
@@ -248,10 +248,10 @@ extension SidebarWorkspacesController: UITableViewDelegate {
                 UIAction(
                     title: String(localized: "Delete"),
                     image: UIImage(systemName: "trash"),
-                    attributes: .destructive
+                    attributes: .destructive,
                 ) { [weak self] _ in
                     self?.onDelete?(summary)
-                }
+                },
             ])
         }
     }

@@ -71,7 +71,7 @@ public enum PackagePublish {
                 architecture: record.architecture,
                 bootstrap: record.bootstrap,
                 file: record.file,
-                digest: record.digest
+                digest: record.digest,
             ))
         }
         guard problems.isEmpty else {

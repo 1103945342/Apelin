@@ -52,7 +52,7 @@ try write("in/release-notes/templates/short.md", "# Short")
 try write("in/release-notes/.git/config", "[core]")
 try manager.createSymbolicLink(
     at: base.appendingPathComponent("in/release-notes/leak.txt"),
-    withDestinationURL: base.appendingPathComponent("secret.txt")
+    withDestinationURL: base.appendingPathComponent("secret.txt"),
 )
 let notes = try folder.add(base.appendingPathComponent("in/release-notes"), replacing: false)
 let copied = folder.root.appendingPathComponent(notes)

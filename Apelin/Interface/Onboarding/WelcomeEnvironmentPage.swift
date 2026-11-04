@@ -13,7 +13,7 @@ final class WelcomeEnvironmentPage: WelcomeListPage {
     private enum Primary { case install, next, retry }
     private lazy var dataSource = TableDataSource<Section, Row, Row>(
         tableView: tableView,
-        identifier: { $0 }
+        identifier: { $0 },
     ) { [weak self] _, _, row in
         switch row {
         case .introduction:
@@ -72,7 +72,7 @@ final class WelcomeEnvironmentPage: WelcomeListPage {
                 recommendation = WelcomeEnvironmentRecommendation.resolve(
                     catalog: values.0.products,
                     status: values.1,
-                    sdks: values.2
+                    sdks: values.2,
                 )
                 activeInstallation = !values.1.activeTasks.isEmpty || !values.2.activeTasks.isEmpty
                 if recommendation == nil {
@@ -132,13 +132,13 @@ final class WelcomeEnvironmentPage: WelcomeListPage {
             title: toolTitle,
             detail: toolDetail,
             loading: resolving,
-            installed: recommendation?.installedToolchain != nil
+            installed: recommendation?.installedToolchain != nil,
         )
         sdkRow.configure(
             title: sdkTitle,
             detail: sdkDetail,
             loading: resolving,
-            installed: recommendation?.sdk.installed == true
+            installed: recommendation?.sdk.installed == true,
         )
         recommendedHeader.configure(title: String(localized: "Recommended"), showsButton: false)
         let primary = primary
@@ -196,13 +196,13 @@ final class WelcomeEnvironmentPage: WelcomeListPage {
                     let components: [ToolchainComponentKind] = recommendation.includesSwift ? [.c, .swift] : [.c]
                     let handle = try await ApelinService.app.toolchainSetup(.init(
                         source: .appleCatalog(productID: recommendation.toolchain.productID),
-                        components: components
+                        components: components,
                     ))
                     page = EnvironmentTaskController(
                         handle: handle,
                         work: .toolchainSetup,
                         title: String(localized: "Setting Up Toolchain"),
-                        doneTitle: String(localized: "Toolchain Ready")
+                        doneTitle: String(localized: "Toolchain Ready"),
                     )
                 } else if let source = recommendation.sdk.source {
                     let handle = try await ApelinService.app.sdkImport(source)
@@ -210,7 +210,7 @@ final class WelcomeEnvironmentPage: WelcomeListPage {
                         handle: handle,
                         work: .sdkImport,
                         title: String(localized: "Importing SDK"),
-                        doneTitle: String(localized: "SDK Imported")
+                        doneTitle: String(localized: "SDK Imported"),
                     )
                 } else {
                     installing = false

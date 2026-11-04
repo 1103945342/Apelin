@@ -50,7 +50,7 @@ public final class EnvironmentWorker: @unchecked Sendable {
         backend: any ToolchainBackend,
         installer: any PackageInstaller,
         credentials: any GitCredentialStore = MemoryGitCredentialStore(),
-        emit: @escaping Emit
+        emit: @escaping Emit,
     ) {
         self.layout = layout
         self.installer = installer
@@ -81,7 +81,7 @@ public final class EnvironmentWorker: @unchecked Sendable {
             backend: ToolchainBackends.linked,
             installer: HostPackageInstaller(host: context.host),
             credentials: KeychainGitCredentialStore(),
-            emit: { taskID, kind, payload in context.emit(taskID, kind, payload) }
+            emit: { taskID, kind, payload in context.emit(taskID, kind, payload) },
         )
     }
 
@@ -103,7 +103,7 @@ public final class EnvironmentWorker: @unchecked Sendable {
                         prepared,
                         staging: staging,
                         hasSwiftToolchain: self.toolchains.hasSwift,
-                        reporter: reporter
+                        reporter: reporter,
                     )
                     try reporter.emit("result", .object(["sdk": JSONValue(encoding: record)]))
                 }
@@ -129,7 +129,7 @@ public final class EnvironmentWorker: @unchecked Sendable {
                         prepared,
                         taskID: taskID,
                         installer: self.installer,
-                        reporter: reporter
+                        reporter: reporter,
                     )
                     try reporter.emit("result", .object(["toolchain": JSONValue(encoding: record)]))
                 }
@@ -245,7 +245,7 @@ public final class EnvironmentWorker: @unchecked Sendable {
                         files: files,
                         digests: typed.digests,
                         staging: staging,
-                        reporter: reporter
+                        reporter: reporter,
                     )
                     reporter.emit("result", result)
                 }
@@ -337,7 +337,7 @@ public final class EnvironmentWorker: @unchecked Sendable {
                         staging: staging,
                         taskID: taskID,
                         installer: self.installer,
-                        reporter: reporter
+                        reporter: reporter,
                     )
                     reporter.emit("result", result)
                 }
@@ -375,7 +375,7 @@ public final class EnvironmentWorker: @unchecked Sendable {
         _: R.Type,
         _ request: ChannelRequest,
         resultInState: Bool = false,
-        _ accept: (R, TaskID) throws -> Body
+        _ accept: (R, TaskID) throws -> Body,
     ) async -> (WireReply, [OwnedDescriptor]) {
         let requestID = request.request.requestID
         guard let taskID = request.taskID else {

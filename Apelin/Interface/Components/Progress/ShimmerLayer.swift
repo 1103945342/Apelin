@@ -12,7 +12,7 @@ final class ShimmerLayer: CAGradientLayer {
         colors = [
             UIColor.white.withAlphaComponent(0.5).cgColor,
             UIColor.white.cgColor,
-            UIColor.white.withAlphaComponent(0.5).cgColor
+            UIColor.white.withAlphaComponent(0.5).cgColor,
         ]
         locations = [0, 0, 0]
     }
@@ -52,7 +52,7 @@ final class ShimmerLayer: CAGradientLayer {
             x: bounds.minX,
             y: bounds.minY,
             width: min(bounds.width, ceil(width)),
-            height: bounds.height
+            height: bounds.height,
         )
         frame = rightToLeft ? leading.mirrored(across: bounds) : leading
         startPoint = CGPoint(x: rightToLeft ? 1 : 0, y: 0.5)

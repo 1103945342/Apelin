@@ -48,7 +48,7 @@ public struct BuildArtifact: Codable, Sendable, Equatable {
         packagingDigest: String? = nil,
         path: String? = nil,
         projectID: String? = nil,
-        packageFiles: [String]? = nil
+        packageFiles: [String]? = nil,
     ) {
         self.artifactID = artifactID
         self.digest = digest
@@ -99,7 +99,7 @@ public struct BuildLoadCheck: Codable, Sendable, Equatable {
         filterPlistInstalledPath: String,
         bundles: [String],
         executables: [String],
-        classes: [String]
+        classes: [String],
     ) {
         self.buildID = buildID
         self.marker = marker
@@ -140,7 +140,7 @@ public struct BuildStartRequest: OperationRequest {
         projectID: String,
         configuration: BuildConfiguration = .debug,
         bootstrap: BuildBootstrap? = nil,
-        approvedBuildDigest: String? = nil
+        approvedBuildDigest: String? = nil,
     ) {
         self.projectID = projectID
         self.configuration = configuration
@@ -176,7 +176,7 @@ public extension ApelinService {
     func buildStart(
         projectID: String,
         configuration: BuildConfiguration = .debug,
-        bootstrap: BuildBootstrap? = nil
+        bootstrap: BuildBootstrap? = nil,
     ) async throws -> TaskHandle {
         try await send(BuildStartRequest(projectID: projectID, configuration: configuration, bootstrap: bootstrap))
     }

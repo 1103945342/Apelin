@@ -58,7 +58,7 @@ struct ReadOnlyRoots: Sendable {
     var described: String? {
         let named = [
             developmentExtensions.map { "Apelin's development extensions (\($0))" },
-            sdks.map { "the registered SDKs (\($0))" }
+            sdks.map { "the registered SDKs (\($0))" },
         ].compactMap(\.self)
         return named.isEmpty ? nil : named.joined(separator: " or ")
     }

@@ -43,7 +43,7 @@ public struct ToolchainProduct: Codable, Sendable, Equatable {
         swiftUnavailableReason: String? = nil,
         clangModuleCPUFeatures: [String]? = nil,
         compatibility: ToolchainCompatibility? = nil,
-        reviewed: Bool? = nil
+        reviewed: Bool? = nil,
     ) {
         self.reviewed = reviewed
         self.productID = productID
@@ -104,7 +104,7 @@ public struct PreparedToolchain: Sendable {
         tree: URL,
         files: [String: String],
         installRelativePath: String,
-        manifest: Data
+        manifest: Data,
     ) {
         self.id = id
         self.product = product
@@ -143,7 +143,7 @@ public protocol ToolchainBackend: Sendable {
         components: [ToolchainComponentKind],
         staging: URL,
         output: URL,
-        progress: @escaping @Sendable (ToolchainBackendProgress) -> Void
+        progress: @escaping @Sendable (ToolchainBackendProgress) -> Void,
     ) async throws -> PreparedToolchain
 
     /// Runs `install` unless the installed bytes already match, verifies them
@@ -156,7 +156,7 @@ public protocol ToolchainBackend: Sendable {
         journal: URL,
         scratch: URL,
         install: @escaping ToolchainInstallStep,
-        progress: @escaping @Sendable (ToolchainBackendProgress) -> Void
+        progress: @escaping @Sendable (ToolchainBackendProgress) -> Void,
     ) async throws -> [ToolchainSelfTestResult]
 
     /// Self-tests the toolchain installed at `installed` against `sdk`, as
@@ -165,7 +165,7 @@ public protocol ToolchainBackend: Sendable {
         installed: URL,
         sdk: URL,
         scratch: URL,
-        progress: @escaping @Sendable (ToolchainBackendProgress) -> Void
+        progress: @escaping @Sendable (ToolchainBackendProgress) -> Void,
     ) async throws -> [ToolchainSelfTestResult]
 
     // Transfer files; defaults below.
@@ -179,7 +179,7 @@ public extension ToolchainBackend {
         installed _: URL,
         sdk _: URL,
         scratch _: URL,
-        progress _: @escaping @Sendable (ToolchainBackendProgress) -> Void
+        progress _: @escaping @Sendable (ToolchainBackendProgress) -> Void,
     ) async throws -> [ToolchainSelfTestResult] {
         throw ApelinError(.unavailable, UnavailableToolchainBackend.selfTestUnavailable)
     }
@@ -236,7 +236,7 @@ public struct UnavailableToolchainBackend: ToolchainBackend {
         components _: [ToolchainComponentKind],
         staging _: URL,
         output _: URL,
-        progress _: @escaping @Sendable (ToolchainBackendProgress) -> Void
+        progress _: @escaping @Sendable (ToolchainBackendProgress) -> Void,
     ) async throws -> PreparedToolchain {
         throw failure
     }
@@ -248,7 +248,7 @@ public struct UnavailableToolchainBackend: ToolchainBackend {
         journal _: URL,
         scratch _: URL,
         install _: @escaping ToolchainInstallStep,
-        progress _: @escaping @Sendable (ToolchainBackendProgress) -> Void
+        progress _: @escaping @Sendable (ToolchainBackendProgress) -> Void,
     ) async throws -> [ToolchainSelfTestResult] {
         throw failure
     }

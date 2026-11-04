@@ -14,7 +14,7 @@ struct ProjectDeleteToolTests {
 
     private static func listing() -> ProjectListToolResponse {
         ProjectListToolResponse(projects: [
-            ListedProject(folder: "Weather", projectID: other.id, displayName: "Rain Gauge", buildSystem: "apelin", isThisProject: false)
+            ListedProject(folder: "Weather", projectID: other.id, displayName: "Rain Gauge", buildSystem: "apelin", isThisProject: false),
         ], truncated: false)
     }
 
@@ -48,7 +48,7 @@ struct ProjectDeleteToolTests {
             policy: ApprovalPolicy(mode: .confirm),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            gate: ApprovalGate { _ in }
+            gate: ApprovalGate { _ in },
         ).agentTools(mcp: []).map(\.name)
         #expect(general.contains("apelin_project_delete"), "General Chat too")
     }

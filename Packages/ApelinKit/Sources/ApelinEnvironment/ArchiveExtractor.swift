@@ -105,7 +105,7 @@ public struct ArchiveExtractor: Sendable {
             if let hardlink = archive_entry_hardlink_utf8(entry) ?? archive_entry_hardlink(entry) {
                 let linkComponents = try Self.components(
                     of: String(cString: hardlink),
-                    maximumDepth: limits.maximumDepth
+                    maximumDepth: limits.maximumDepth,
                 )
                 let linked = linkComponents.joined(separator: "/")
                 guard seen.contains(linked) else {
@@ -141,7 +141,7 @@ public struct ArchiveExtractor: Sendable {
                 let descriptor = open(
                     target.path,
                     O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC,
-                    executable ? 0o755 : 0o644
+                    executable ? 0o755 : 0o644,
                 )
                 guard descriptor >= 0 else { throw Self.posix("create \(relative)") }
                 defer { close(descriptor) }
@@ -187,7 +187,7 @@ public struct ArchiveExtractor: Sendable {
                 guard metadata.st_mode & S_IFMT == S_IFDIR else {
                     throw ApelinError(
                         .badRequest,
-                        "\(component) in the archive is a link or file where a folder is needed"
+                        "\(component) in the archive is a link or file where a folder is needed",
                     )
                 }
                 continue

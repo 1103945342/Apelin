@@ -74,14 +74,14 @@ final class FileEditorController: UIViewController {
     /// again before anything is typed.
     private lazy var editItem = UIBarButtonItem(
         image: UIImage(systemName: "pencil"),
-        primaryAction: UIAction { [weak self] _ in self?.beginEditing() }
+        primaryAction: UIAction { [weak self] _ in self?.beginEditing() },
     ).then {
         $0.accessibilityLabel = String(localized: "Edit")
     }
 
     private lazy var saveItem = UIBarButtonItem(
         title: String(localized: "Save"),
-        primaryAction: UIAction { [weak self] _ in self?.save() }
+        primaryAction: UIAction { [weak self] _ in self?.save() },
     ).then {
         $0.style = .done
     }
@@ -117,7 +117,7 @@ final class FileEditorController: UIViewController {
         // one asks first.
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "xmark"),
-            primaryAction: UIAction { [weak self] _ in self?.close() }
+            primaryAction: UIAction { [weak self] _ in self?.close() },
         ).then { $0.accessibilityLabel = String(localized: "Close") }
 
         // Keyboard toolbar with Done button
@@ -317,7 +317,7 @@ final class FileEditorController: UIViewController {
         }
         let alert = AlertViewController(
             title: "Save Changes?",
-            message: "“\((relativePath as NSString).lastPathComponent)” has changes that are not saved."
+            message: "“\((relativePath as NSString).lastPathComponent)” has changes that are not saved.",
         ) { [weak self] context in
             guard let self else { return }
             context.addAction(title: "Cancel") { context.dispose() }

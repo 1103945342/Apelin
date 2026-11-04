@@ -23,9 +23,9 @@ extension ComposerInputView {
         let measured = TextMeasurement.shared.measureSize(
             of: NSAttributedString(
                 string: text,
-                attributes: [.font: font]
+                attributes: [.font: font],
             ),
-            usingWidth: width
+            usingWidth: width,
         ).height
         return ceil(max(measured, font.lineHeight))
     }
@@ -53,7 +53,7 @@ extension ComposerInputView {
             x: inset.left,
             y: inset.top,
             width: max(0, width),
-            height: height
+            height: height,
         )
     }
 
@@ -70,7 +70,7 @@ extension ComposerInputView {
             x: x,
             y: inset.top,
             width: rewriteSize,
-            height: rewriteSize
+            height: rewriteSize,
         )
     }
 

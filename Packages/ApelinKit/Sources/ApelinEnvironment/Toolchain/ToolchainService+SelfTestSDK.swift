@@ -13,7 +13,7 @@ extension ToolchainService {
         staging: URL,
         journal: JobJournal,
         reporter: TaskReporter,
-        resumeStage: String = "downloading"
+        resumeStage: String = "downloading",
     ) async throws -> SDKRecord {
         do {
             return try Self.selfTestSDK(for: product, among: sdks.list(), swift: swift)
@@ -47,13 +47,13 @@ extension ToolchainService {
         for product: ToolchainProduct,
         swift: Bool,
         staging: URL,
-        reporter: TaskReporter
+        reporter: TaskReporter,
     ) async throws -> SDKRecord {
         reporter.emit("sdkSource", .object([
             "source": .string(offer.source),
             "url": .string(offer.url),
             "branch": .string(offer.branch),
-            "version": .string(offer.version)
+            "version": .string(offer.version),
         ]))
         try? FileManager.default.removeItem(at: staging)
         try layout.make(staging)
@@ -63,7 +63,7 @@ extension ToolchainService {
             offer,
             staging: staging,
             hasSwiftToolchain: hasSwift,
-            reporter: Self.sdkStageReporter(reporter)
+            reporter: Self.sdkStageReporter(reporter),
         )
         try reporter.checkCancelled()
         try reporter.emit("sdkImported", .object(["sdk": JSONValue(encoding: record)]))
@@ -74,7 +74,7 @@ extension ToolchainService {
                 .badRequest,
                 "\(offer.source) \(offer.branch) holds iPhoneOS \(record.version), which Command Line Tools "
                     + "\(product.version) cannot self-test against (it reads up to \(product.newestSDK ?? "any version")); "
-                    + "the SDK stays registered as \(record.id)"
+                    + "the SDK stays registered as \(record.id)",
             )
         }
     }
@@ -92,7 +92,7 @@ extension ToolchainService {
                 reporter.emit("progress", .object([
                     "stage": .string("sdk"),
                     "phase": .string(phase),
-                    "completed": .number(0)
+                    "completed": .number(0),
                 ]))
             case "progress":
                 guard case var .object(fields)? = payload else { return }
@@ -115,7 +115,7 @@ extension ToolchainService {
             return ApelinError(
                 .unavailable,
                 refusal.message + " The SDK sources could not be read to fetch one: "
-                    + offers.problems.joined(separator: "; ")
+                    + offers.problems.joined(separator: "; "),
             )
         }
         let versions = Array(Set(offers.offers.map(\.version))).sorted(by: versionOrder)
@@ -134,7 +134,7 @@ extension ToolchainService {
         _ items: [Item],
         version: (Item) -> String,
         for product: ToolchainProduct,
-        swift: Bool
+        swift: Bool,
     ) -> Item? {
         var readable = items.filter { product.reads(sdkVersion: version($0)) }
         if swift, let newest = product.newestSDK {
@@ -157,7 +157,7 @@ extension ToolchainService {
         _ items: [Item],
         version: (Item) -> String,
         for product: ToolchainProduct,
-        swift: Bool
+        swift: Bool,
     ) -> Item? {
         let recommendation = swift ? product.compatibility?.recommendedSwiftSDK : product.compatibility?.recommendedSDK
         if let recommendation, let match = items.first(where: { version($0) == recommendation }),
@@ -176,7 +176,7 @@ extension ToolchainService {
     static func selfTestSDK(
         for product: ToolchainProduct,
         among sdks: [SDKRecord],
-        swift: Bool = false
+        swift: Bool = false,
     ) throws -> SDKRecord {
         if let sdk = preferredSDK(sdks, version: \.version, for: product, swift: swift) {
             return sdk
@@ -188,7 +188,7 @@ extension ToolchainService {
                 "Swift with Command Line Tools \(product.version) needs an iPhoneOS \(major) SDK its tools read "
                     + "(up to \(newest)), whose macros match its compiler; the registered SDKs are "
                     + (sdks.isEmpty ? "none" : sdks.map(\.version).sorted(by: versionOrder).joined(separator: ", "))
-                    + ". Import one first, or set the toolchain up without Swift."
+                    + ". Import one first, or set the toolchain up without Swift.",
             )
         }
         let registered = sdks.map(\.version).sorted(by: versionOrder).joined(separator: ", ")
@@ -197,7 +197,7 @@ extension ToolchainService {
             .badRequest,
             "Command Line Tools \(product.version) reads iPhoneOS SDKs up to \(newest), and the registered "
                 + (sdks.isEmpty ? "list is empty" : "ones are \(registered)")
-                + ". Import an iPhoneOS \(newest) SDK or an older one first: its self-test compiles against it."
+                + ". Import an iPhoneOS \(newest) SDK or an older one first: its self-test compiles against it.",
         )
     }
 }

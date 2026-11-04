@@ -17,30 +17,30 @@ struct ScreenRequestWireTests {
         (.readTree(targetID: nil), #"{"screenControl":{"operation":"readUITree","request":{}}}"#),
         (
             .readTree(targetID: "com.apple.Preferences"),
-            #"{"screenControl":{"operation":"readUITree","request":{"targetID":"com.apple.Preferences"}}}"#
+            #"{"screenControl":{"operation":"readUITree","request":{"targetID":"com.apple.Preferences"}}}"#,
         ),
         (
             .interact(targetID: nil, action: .tap(x: 10, y: 20.5)),
-            #"{"screenControl":{"operation":"uiAction","request":{"action":{"tap":{"x":10,"y":20.5}}}}}"#
+            #"{"screenControl":{"operation":"uiAction","request":{"action":{"tap":{"x":10,"y":20.5}}}}}"#,
         ),
         (
             .interact(targetID: "com.apple.mobilesafari", action: .tapElement(id: "text:Done")),
-            #"{"screenControl":{"operation":"uiAction","request":{"action":{"tapElement":{"text":"Done"}},"targetID":"com.apple.mobilesafari"}}}"#
+            #"{"screenControl":{"operation":"uiAction","request":{"action":{"tapElement":{"text":"Done"}},"targetID":"com.apple.mobilesafari"}}}"#,
         ),
         (
             .command(.argv(["icli", "url", "open", "https://example.com"]), asRoot: false),
-            #"{"command":{"argv":{"_0":["icli","url","open","https://example.com"]}},"screenControl":{"operation":"agentRunCode"}}"#
+            #"{"command":{"argv":{"_0":["icli","url","open","https://example.com"]}},"screenControl":{"operation":"agentRunCode"}}"#,
         ),
         (
             .command(.shell("icli screen info | head"), asRoot: true),
-            #"{"rootCommand":{"shell":{"_0":"icli screen info | head"}},"screenControl":{"operation":"agentRunCode"}}"#
-        )
+            #"{"rootCommand":{"shell":{"_0":"icli screen info | head"}},"screenControl":{"operation":"agentRunCode"}}"#,
+        ),
     ]
 
     private static func request(_ detail: ApprovalDetail, tool: String) -> ApprovalRequest {
         ApprovalRequest(
             id: "a", toolCallID: "c", tool: tool, arguments: "{}", workingDirectory: ".",
-            projectID: "p", fingerprint: "f", reason: "screen", detail: detail, allowsSessionScope: false
+            projectID: "p", fingerprint: "f", reason: "screen", detail: detail, allowsSessionScope: false,
         )
     }
 
@@ -69,12 +69,12 @@ struct ScreenRequestWireTests {
         _ = try await fixture.backend.uiAction(ApelinAgent.UIActionRequest(
             context: fixture.context(.user(requestID: "r", fingerprint: "f")),
             targetID: "com.apple.mobilesafari",
-            action: action
+            action: action,
         ))
         let sent = try #require(fixture.host.requests(ApelinProtocol.UIActionRequest.self).first)
         let payload = EventRelay.approvalPayload(Self.request(
             .screenControl(.interact(targetID: "com.apple.mobilesafari", action: action)),
-            tool: "apelin_screen_interact"
+            tool: "apelin_screen_interact",
         ))
         let shown = try #require(payload["detail"]?[ScreenConsent.detailKey]?["request"])
             .decode(ApelinProtocol.UIActionRequest.self)

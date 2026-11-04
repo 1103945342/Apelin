@@ -19,21 +19,21 @@ enum ProjectActions {
         anchor: UIBarButtonItem,
         distributionBlocker: String? = nil,
         chatActions: [UIKit.UIAction] = [],
-        onPrepareDistribution: ((String) -> Void)? = nil
+        onPrepareDistribution: ((String) -> Void)? = nil,
     ) -> UIMenu {
         let folders = folderActions(from: presenter, failureTitle: "Unable to Open Project") {
             try directory(named: projectName)
         }
         let renameAction = UIAction(
             title: String(localized: "Rename…"),
-            image: UIImage(systemName: "pencil")
+            image: UIImage(systemName: "pencil"),
         ) { [weak presenter] _ in
             guard let presenter else { return }
             rename(projectName, from: presenter)
         }
         let export = UIAction(
             title: String(localized: "Export…"),
-            image: UIImage(systemName: "square.and.arrow.up")
+            image: UIImage(systemName: "square.and.arrow.up"),
         ) { [weak presenter, weak anchor] _ in
             guard let presenter, let anchor else { return }
             TransferExporter.confirmAndExport(
@@ -41,23 +41,23 @@ enum ProjectActions {
                 id: projectName,
                 name: projectName,
                 from: presenter,
-                anchor: anchor
+                anchor: anchor,
             )
         }
         let distribute = UIAction(
             title: String(localized: "Distribute…"),
             subtitle: distributionBlocker,
             image: UIImage(systemName: "shippingbox"),
-            attributes: distributionBlocker == nil ? [] : .disabled
+            attributes: distributionBlocker == nil ? [] : .disabled,
         ) { [weak presenter] _ in
             presenter?.presentPageAsFormSheet(
-                ProjectDistributionController(projectName: projectName, onPrepare: onPrepareDistribution)
+                ProjectDistributionController(projectName: projectName, onPrepare: onPrepareDistribution),
             )
         }
         return UIMenu(children: [
             UIMenu(options: .displayInline, children: chatActions),
             UIMenu(options: .displayInline, children: folders),
-            UIMenu(title: String(localized: "Project"), options: .displayInline, children: [renameAction, export, distribute])
+            UIMenu(title: String(localized: "Project"), options: .displayInline, children: [renameAction, export, distribute]),
         ])
     }
 
@@ -68,7 +68,7 @@ enum ProjectActions {
     static func folderActions(
         from presenter: UIViewController,
         failureTitle: String.LocalizationValue,
-        folder: @escaping () throws -> String
+        folder: @escaping () throws -> String,
     ) -> [UIKit.UIAction] {
         let openFolder = { [weak presenter] (scheme: String) in
             guard let presenter else { return }
@@ -84,7 +84,7 @@ enum ProjectActions {
             },
             UIAction(title: String(localized: "Open in Fila"), image: UIImage(systemName: "folder")) { _ in
                 openFolder("fila")
-            }
+            },
         ]
     }
 
@@ -103,14 +103,14 @@ enum ProjectActions {
                         do {
                             _ = try await ApelinService.app.projectRename(.init(
                                 projectID: current?.projectID ?? projectName,
-                                displayName: name
+                                displayName: name,
                             ))
                             NotificationCenter.default.post(name: .apelinProjectsChanged, object: nil)
                         } catch {
                             presenter?.presentNotice(title: "Unable to Rename Project", message: error.readableMessage)
                         }
                     }
-                }
+                },
             ), animated: true)
         }
     }

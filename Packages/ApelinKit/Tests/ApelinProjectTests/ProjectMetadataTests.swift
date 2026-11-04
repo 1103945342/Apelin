@@ -14,7 +14,7 @@ final class ProjectMetadataTests: XCTestCase {
         XCTAssertEqual(
             String(decoding: automatic, as: UTF8.self),
             "{\n  \"displayName\": \"Apple\",\n  \"autoName\": true,\n  \"projectID\": \"stable\",\n  \"section\": \"Tweaks\"\n}\n",
-            "the generated name first"
+            "the generated name first",
         )
         let parsed = try StrictJSON.parse(automatic)
         XCTAssertEqual(parsed["displayName"]?.stringValue, "Apple")

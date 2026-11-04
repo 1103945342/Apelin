@@ -11,7 +11,7 @@ struct GitBackendTests {
     func `status, diff, stage, unstage and commit are one request each on the session's project`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.gitStatus, reply: GitStatusResponse(branch: "main", head: "abc", entries: [
-            GitStatusEntry(path: "Sources/Tweak.m", index: " ", worktree: "M")
+            GitStatusEntry(path: "Sources/Tweak.m", index: " ", worktree: "M"),
         ]))
         fixture.host.on(.gitDiff, reply: GitDiffResponse(diff: "--- a\n+++ b\n"))
         fixture.host.on(.gitStage, reply: Acknowledged())
@@ -65,7 +65,7 @@ struct GitBackendTests {
         fixture.host.on(.environmentAttach, reply: batch("push-task", [
             ("progress", .object(["stage": .string("pushing"), "completed": .number(1), "total": .number(1)])),
             ("result", .object(["remote": .string("origin"), "branch": .string("main"), "commit": .string("abc")])),
-            stateEvent(.succeeded)
+            stateEvent(.succeeded),
         ]))
         let response = try await fixture.backend.gitPush(GitRemoteToolRequest(context: fixture.context(), remote: nil, branch: "main"))
         let sent = try #require(fixture.host.requests(GitPushRequest.self).first)
@@ -88,22 +88,22 @@ struct GitBackendTests {
             case "fetch-task":
                 return (batch("fetch-task", [
                     ("result", .object(["remote": .string("upstream"), "updated": .array([
-                        .object(["ref": .string("refs/remotes/upstream/main"), "from": .string("a"), "to": .string("b")])
+                        .object(["ref": .string("refs/remotes/upstream/main"), "from": .string("a"), "to": .string("b")]),
                     ])])),
-                    stateEvent(.succeeded)
+                    stateEvent(.succeeded),
                 ]), [])
             case "pull-task":
                 // The result rides on the final state only.
                 return (batch("pull-task", [
                     (TaskEvent.stateKind, .object([
                         "state": .string("succeeded"),
-                        "result": .object(["branch": .string("main"), "from": .string("a"), "to": .string("b"), "upToDate": .bool(false)])
-                    ]))
+                        "result": .object(["branch": .string("main"), "from": .string("a"), "to": .string("b"), "upToDate": .bool(false)]),
+                    ])),
                 ]), [])
             default:
                 return (batch("clone-task", [
                     ("result", .object(["branch": .string("trunk"), "commit": .string("c")])),
-                    stateEvent(.succeeded)
+                    stateEvent(.succeeded),
                 ]), [])
             }
         }
@@ -131,7 +131,7 @@ struct GitBackendTests {
         let fixture = try Fixture()
         fixture.host.on(.gitCloneInto, reply: TaskHandle(taskID: TaskID("clone-task"), kind: .environment))
         fixture.host.on(.environmentAttach, reply: batch("clone-task", [
-            stateEvent(.failed, "denied: authentication required for https://github.com/owner/private.git")
+            stateEvent(.failed, "denied: authentication required for https://github.com/owner/private.git"),
         ]))
         do {
             _ = try await fixture.backend.gitClone(GitCloneToolRequest(context: fixture.context(), url: "https://github.com/owner/private.git"))
@@ -149,7 +149,7 @@ struct GitBackendTests {
         fixture.host.on(.gitCloneInto) { _ in throw ApelinError(.conflict, "the project already holds a repository") }
         fixture.host.on(.gitPush, reply: TaskHandle(taskID: TaskID("push-task"), kind: .environment))
         fixture.host.on(.environmentAttach, reply: batch("push-task", [
-            stateEvent(.failed, "conflict: the remote rejected the update to refs/heads/main")
+            stateEvent(.failed, "conflict: the remote rejected the update to refs/heads/main"),
         ]))
         fixture.host.on(.gitCommit) { _ in
             throw ApelinError(.badRequest, "no commit author: pass authorName and authorEmail, or set them in Settings/git.json")
@@ -180,11 +180,11 @@ struct GitBackendTests {
         let fixture = try Fixture()
         fixture.host.on(.gitPush, reply: TaskHandle(taskID: TaskID("push-task"), kind: .environment))
         fixture.host.on(.environmentAttach, reply: batch("push-task", [
-            stateEvent(.failed, "denied: authentication required for https://github.com/owner/fresh.git")
+            stateEvent(.failed, "denied: authentication required for https://github.com/owner/fresh.git"),
         ]))
         await #expect {
             _ = try await fixture.backend.gitPush(GitRemoteToolRequest(
-                context: fixture.context(), branch: "main", url: "https://github.com/owner/fresh.git"
+                context: fixture.context(), branch: "main", url: "https://github.com/owner/fresh.git",
             ))
         } throws: { error in
             let message = (error as? GitToolFailure)?.message ?? ""
@@ -233,7 +233,7 @@ struct GitBackendTests {
             throw ApelinError(
                 .conflict,
                 "origin already points to https://example.com/a.git. Push to it without a URL, or name another remote.",
-                reason: .remoteURLDiffers
+                reason: .remoteURLDiffers,
             )
         }
         await #expect {
@@ -249,7 +249,7 @@ struct GitBackendTests {
         let request = ApprovalRequest(
             id: "a", toolCallID: "c", tool: "git_push", arguments: "{}", workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Pushing main to origin publishes its commits.",
-            detail: .gitPush(remote: "origin", branch: "main"), allowsSessionScope: false
+            detail: .gitPush(remote: "origin", branch: "main"), allowsSessionScope: false,
         )
         let payload = EventRelay.approvalPayload(request)
         let expected: ApelinCore.JSONValue = .object(["gitPush": .object(["remote": .string("origin"), "branch": .string("main")])])

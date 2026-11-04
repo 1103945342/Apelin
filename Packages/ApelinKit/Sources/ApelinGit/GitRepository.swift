@@ -111,7 +111,7 @@ public final class GitRepository: @unchecked Sendable {
                 let name = String(cString: target)
                 return GitHead(
                     branch: name.hasPrefix("refs/heads/") ? String(name.dropFirst("refs/heads/".count)) : name,
-                    commit: nil
+                    commit: nil,
                 )
             }
         }
@@ -162,7 +162,7 @@ public final class GitRepository: @unchecked Sendable {
             items.append(GitStatusItem(
                 path: String(cString: path),
                 index: Self.indexLetter(flags),
-                worktree: Self.worktreeLetter(flags)
+                worktree: Self.worktreeLetter(flags),
             ))
         }
         return items
@@ -281,7 +281,7 @@ public final class GitRepository: @unchecked Sendable {
         defer { git_index_free(index) }
         try GitError.check(
             git_index_add_all(index, nil, GIT_INDEX_ADD_DEFAULT.rawValue, nil, nil),
-            "stage every change"
+            "stage every change",
         )
         try GitError.check(git_index_update_all(index, nil, nil, nil), "stage the removed files")
         try GitError.check(git_index_write(index), "write the index")
@@ -354,7 +354,7 @@ public final class GitRepository: @unchecked Sendable {
                 author: author,
                 tree: tree,
                 parents: rewritten,
-                amend: true
+                amend: true,
             )
         }
         if let parent, git_oid_equal(git_commit_tree_id(parent), &treeID) != 0 {
@@ -368,7 +368,7 @@ public final class GitRepository: @unchecked Sendable {
             author: author,
             tree: tree,
             parents: parent.map { [$0] } ?? [],
-            amend: false
+            amend: false,
         )
     }
 
@@ -379,7 +379,7 @@ public final class GitRepository: @unchecked Sendable {
         author: GitSignature,
         tree: OpaquePointer?,
         parents: [OpaquePointer?],
-        amend: Bool
+        amend: Bool,
     ) throws -> String {
         var signature: UnsafeMutablePointer<git_signature>?
         try GitError.check(git_signature_now(&signature, author.name, author.email), "make the signature")
@@ -398,7 +398,7 @@ public final class GitRepository: @unchecked Sendable {
                 message + "\n",
                 tree,
                 buffer.count,
-                buffer.baseAddress
+                buffer.baseAddress,
             )
         }
         try GitError.check(code, amend ? "amend the commit" : "commit")
@@ -413,7 +413,7 @@ public final class GitRepository: @unchecked Sendable {
         defer { git_signature_free(signature) }
         return GitSignature(
             name: String(cString: signature.pointee.name),
-            email: String(cString: signature.pointee.email)
+            email: String(cString: signature.pointee.email),
         )
     }
 
@@ -465,7 +465,7 @@ public final class GitRepository: @unchecked Sendable {
         var local: OpaquePointer?
         try GitError.check(
             git_config_open_level(&local, config, GIT_CONFIG_LEVEL_LOCAL),
-            "read the local configuration"
+            "read the local configuration",
         )
         guard let local else { throw GitError(.notFound, "no local configuration") }
         return local

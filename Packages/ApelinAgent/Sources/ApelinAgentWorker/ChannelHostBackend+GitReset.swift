@@ -13,7 +13,7 @@ public extension ChannelHostBackend {
             try await service.gitResetPreview(GitResetPreviewRequest(
                 projectID: project.id,
                 remote: request.remote,
-                branch: request.branch
+                branch: request.branch,
             ))
         }
         guard let preview = try? json?.decode(GitResetPreview.self) else {
@@ -31,7 +31,7 @@ public extension ChannelHostBackend {
                 branch: card.branch,
                 expectedRemoteCommit: card.remoteCommit,
                 expectedHead: card.head,
-                expectedURL: card.url
+                expectedURL: card.url,
             ))
         }
         let file = json?["projectFile"]?.stringValue.flatMap(GitProjectFile.init(rawValue:))
@@ -41,7 +41,7 @@ public extension ChannelHostBackend {
             commit: json?["commit"]?.stringValue ?? card.remoteCommit,
             previousHead: json?["previousHead"]?.stringValue,
             backupBranch: json?["backupBranch"]?.stringValue,
-            projectFile: file.flatMap(Self.projectFileNote)
+            projectFile: file.flatMap(Self.projectFileNote),
         )
     }
 
@@ -64,7 +64,7 @@ public extension ChannelHostBackend {
             changedFiles: preview.changedFiles.prefix(shown).map(\.path),
             overwrittenFileCount: preview.overwrittenFileCount,
             overwrittenFiles: Array(preview.overwrittenFiles.prefix(shown)),
-            projectFile: preview.projectFile.rawValue
+            projectFile: preview.projectFile.rawValue,
         )
     }
 

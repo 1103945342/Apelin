@@ -30,7 +30,7 @@ public extension ChannelHostBackend {
             available: available,
             catalogProblem: problem,
             runningTasks: status.activeTasks.count,
-            project: bound
+            project: bound,
         )
     }
 
@@ -56,7 +56,7 @@ public extension ChannelHostBackend {
                     branch: branch,
                     source: source.name,
                     sourceURL: source.url,
-                    readBy: readers(version)
+                    readBy: readers(version),
                 ))
             }
         }
@@ -65,7 +65,7 @@ public extension ChannelHostBackend {
             installed: list.sdks.map { Self.installed($0, readBy: readers($0.version), boundID: bound?.sdkID) },
             available: available,
             sourceProblems: problems,
-            project: bound
+            project: bound,
         )
     }
 
@@ -74,7 +74,7 @@ public extension ChannelHostBackend {
         let handle = try await environment("apelin_toolchain_setup") {
             try await service.toolchainSetup(ToolchainSetupRequest(
                 source: .appleCatalog(productID: request.productID),
-                components: components
+                components: components,
             ))
         }
         return try await toolchainTask(handle, operation: "apelin_toolchain_setup")
@@ -105,7 +105,7 @@ public extension ChannelHostBackend {
             sdk: record.map { Self.installed($0, readBy: [], boundID: nil) },
             stages: stages,
             warnings: warnings,
-            message: Self.endMessage(end, operation: "apelin_sdk_import")
+            message: Self.endMessage(end, operation: "apelin_sdk_import"),
         )
     }
 
@@ -113,7 +113,7 @@ public extension ChannelHostBackend {
         let check = try await environment("apelin_project_set_environment") {
             try await service.projectCheck(
                 projectID: project.id,
-                environment: ProjectEnvironmentChoice(toolchainID: request.toolchainID, sdkID: request.sdkID)
+                environment: ProjectEnvironmentChoice(toolchainID: request.toolchainID, sdkID: request.sdkID),
             )
         }
         guard let binding = check.environment else {
@@ -124,7 +124,7 @@ public extension ChannelHostBackend {
             sdk: ComponentBinding(id: binding.sdk.id, digest: binding.sdk.digest),
             diagnostics: check.diagnostics.filter { $0.code.hasPrefix("environment.") }.map {
                 EnvironmentDiagnostic(code: $0.code, severity: $0.severity.rawValue, message: $0.message)
-            }
+            },
         )
     }
 
@@ -170,7 +170,7 @@ public extension ChannelHostBackend {
             stages: stages,
             failedTests: failed,
             warnings: warnings,
-            message: Self.endMessage(end, operation: operation)
+            message: Self.endMessage(end, operation: operation),
         )
     }
 
@@ -210,7 +210,7 @@ public extension ChannelHostBackend {
             return try await body()
         } catch let error as ApelinError {
             throw EnvironmentToolFailure(
-                message: "\(operation) failed: \(error.message.isEmpty ? error.code.rawValue : error.message)"
+                message: "\(operation) failed: \(error.message.isEmpty ? error.code.rawValue : error.message)",
             )
         }
     }
@@ -228,7 +228,7 @@ public extension ChannelHostBackend {
             selfTests: tests,
             isDefault: record.id == defaultID,
             problem: record.components.compactMap(\.problem).first ?? record.compatibility?.unavailableReason,
-            boundByThisProject: record.id == boundID
+            boundByThisProject: record.id == boundID,
         )
     }
 
@@ -239,7 +239,7 @@ public extension ChannelHostBackend {
             targets: record.targets,
             swiftCompilerVersion: record.swiftCompilerVersion,
             readBy: readBy,
-            boundByThisProject: record.id == boundID
+            boundByThisProject: record.id == boundID,
         )
     }
 
@@ -260,7 +260,7 @@ public extension ChannelHostBackend {
             unavailable: product.unsupportedReason,
             installedAs: installed.filter { record in
                 record.origin?.split(separator: " ").first.map(String.init) == product.productID
-            }.map(\.id)
+            }.map(\.id),
         )
     }
 
@@ -273,7 +273,7 @@ public extension ChannelHostBackend {
         else { return nil }
         return ProjectEnvironmentSummary(
             toolchainID: json.value(at: "environment.toolchain.id")?.stringValue,
-            sdkID: json.value(at: "environment.sdk.id")?.stringValue
+            sdkID: json.value(at: "environment.sdk.id")?.stringValue,
         )
     }
 

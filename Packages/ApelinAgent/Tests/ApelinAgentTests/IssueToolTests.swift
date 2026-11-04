@@ -12,12 +12,12 @@ struct IssueToolTests {
     private static let arguments: JSONValue = [
         "repository": " Lakr233/Irisin ",
         "title": "  The installer stops at 90% ",
-        "body": "Installing a package from the inbox stops at 90%."
+        "body": "Installing a package from the inbox stops at 90%.",
     ]
     private static let issue = IssueCreateApproval(
         repository: "Lakr233/Irisin",
         title: "The installer stops at 90%",
-        body: "Installing a package from the inbox stops at 90%."
+        body: "Installing a package from the inbox stops at 90%.",
     )
 
     @Test
@@ -46,7 +46,7 @@ struct IssueToolTests {
             policy: ApprovalPolicy(mode: .confirm),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            gate: ApprovalGate { _ in }
+            gate: ApprovalGate { _ in },
         ).agentTools(mcp: []).map(\.name)
         #expect(general.contains("apelin_git_create_issue"), "General Chat too")
     }
@@ -133,7 +133,7 @@ struct IssueToolTests {
             (["repository": "Lakr233/Irisin", "title": "Two\nlines", "body": "Body"], "one line"),
             (["repository": "Lakr233/Irisin", "title": "Title", "body": "From 192.168.1.20"], "local network"),
             (["repository": "Lakr233/Irisin", "title": "Title", "body": "Saved in /var/mobile/Documents/wiki.qaq.apelin/Projects/Secret"], "home or install path"),
-            (["repository": "Lakr233/Irisin", "title": "Title", "body": .string("token ghp_" + String(repeating: "A1b2", count: 9))], "token or key")
+            (["repository": "Lakr233/Irisin", "title": "Title", "body": .string("token ghp_" + String(repeating: "A1b2", count: 9))], "token or key"),
         ]
         for (arguments, words) in refused {
             await #expect {

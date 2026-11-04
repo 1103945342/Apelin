@@ -18,7 +18,7 @@ public struct SystemStateSource: Sendable {
         languages: @escaping @Sendable () -> [String],
         region: @escaping @Sendable () -> String?,
         now: @escaping @Sendable () -> Date = { Date() },
-        timeZone: @escaping @Sendable () -> TimeZone = SystemStateSource.systemTimeZone
+        timeZone: @escaping @Sendable () -> TimeZone = SystemStateSource.systemTimeZone,
     ) {
         self.languages = languages
         self.region = region
@@ -42,7 +42,7 @@ public struct SystemStateSource: Sendable {
             key as CFString,
             kCFPreferencesAnyApplication,
             kCFPreferencesCurrentUser,
-            kCFPreferencesAnyHost
+            kCFPreferencesAnyHost,
         )
     }
 
@@ -56,7 +56,7 @@ public struct SystemStateSource: Sendable {
             region: {
                 SystemState.region(locale: value("AppleLocale") as? String)
                     ?? SystemState.region(language: (value("AppleLanguages") as? [String])?.first)
-            }
+            },
         )
     }
 }
@@ -121,7 +121,7 @@ enum SystemState {
         asksBeforeScreen: Bool = true,
         changes: [String] = [],
         hostRestarted: Bool = false,
-        installRoot: String? = nil
+        installRoot: String? = nil,
     ) -> Facts {
         Facts(
             languages: source.languages(),
@@ -133,7 +133,7 @@ enum SystemState {
             asksBeforeScreen: asksBeforeScreen,
             changes: changes,
             hostRestarted: hostRestarted,
-            installRoot: installRoot
+            installRoot: installRoot,
         )
     }
 
@@ -158,7 +158,7 @@ enum SystemState {
             reply,
             "- Local time: \(time(facts.date, in: facts.timeZone)).",
             "- Approval mode: \(modeName(facts.mode)).",
-            "- Ask Before Using the Screen: \(facts.asksBeforeScreen ? "on" : "off")."
+            "- Ask Before Using the Screen: \(facts.asksBeforeScreen ? "on" : "off").",
         ]
         if let runMode = facts.runMode {
             // Beside the approval mode rather than in the system prompt: the
@@ -189,7 +189,7 @@ enum SystemState {
         let sentences: [String] = [
             "- Apelin's background service has restarted since this conversation last ran: the device may have rebooted, and the jailbreak, Apelin or the bootstrap's root path may have changed\(root).",
             "Paths, toolchains, SDKs, processes and files named earlier in this conversation may be stale; \(current).",
-            "Check an earlier path before relying on it, and set up, install or import nothing again before checking what is registered now."
+            "Check an earlier path before relying on it, and set up, install or import nothing again before checking what is registered now.",
         ]
         return sentences.joined(separator: " ")
     }

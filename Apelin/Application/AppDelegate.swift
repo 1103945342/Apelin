@@ -5,13 +5,13 @@ import UIKit
 final class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(
         _ application: UIApplication,
-        didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?
+        didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?,
     ) -> Bool {
         ExecutableWatch.start {
             let alert = UIAlertController(
                 title: String(localized: "Apelin Updated or Removed"),
                 message: String(localized: "Quit to apply the change, or keep using this version for now."),
-                preferredStyle: .alert
+                preferredStyle: .alert,
             )
             alert.addAction(UIAlertAction(title: String(localized: "Later"), style: .cancel))
             alert.addAction(UIAlertAction(title: String(localized: "Quit"), style: .destructive) { _ in
@@ -40,7 +40,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(
         _: UIApplication,
         configurationForConnecting connectingSceneSession: UISceneSession,
-        options _: UIScene.ConnectionOptions
+        options _: UIScene.ConnectionOptions,
     ) -> UISceneConfiguration {
         let configuration = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
         configuration.delegateClass = SceneDelegate.self
@@ -57,7 +57,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             observer = NotificationCenter.default.addObserver(
                 forName: UIScene.didActivateNotification,
                 object: nil,
-                queue: .main
+                queue: .main,
             ) { _ in
                 MainActor.assumeIsolated {
                     if let observer {
@@ -84,7 +84,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(
         _ scene: UIScene,
         willConnectTo _: UISceneSession,
-        options connectionOptions: UIScene.ConnectionOptions
+        options connectionOptions: UIScene.ConnectionOptions,
     ) {
         guard let scene = scene as? UIWindowScene else { return }
         let window = UIWindow(windowScene: scene)

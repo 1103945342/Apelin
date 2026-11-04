@@ -28,7 +28,7 @@ extension MockBackend {
             changedFiles: ["Sources/Tweak.m", "apelin-project.json"],
             overwrittenFileCount: 1,
             overwrittenFiles: ["notes.txt"],
-            projectFile: "repositoryWithProjectID"
+            projectFile: "repositoryWithProjectID",
         )
     }
 
@@ -47,7 +47,7 @@ extension MockBackend {
             commit: card.remoteCommit,
             previousHead: card.head,
             backupBranch: "apelin-backup/20261031-120000",
-            projectFile: nil
+            projectFile: nil,
         )
     }
 }

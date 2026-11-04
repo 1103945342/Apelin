@@ -29,7 +29,7 @@ enum AgentConversationList {
         table: AgentSessionTable,
         registry: TaskRegistry,
         home: String,
-        state: URL
+        state: URL,
     ) async throws -> AgentListResponse {
         let (projects, unreached) = try await scope(request, caller: caller, table: table, home: home)
         let running = await table.summaries(registry: registry)
@@ -39,7 +39,7 @@ enum AgentConversationList {
             home: home,
             state: state,
             live: Set(running.map(\.sessionID)),
-            projects: projects
+            projects: projects,
         )
         return AgentListResponse(sessions: stored + listed, unreachedProjects: unreached > 0 ? unreached : nil)
     }
@@ -52,7 +52,7 @@ enum AgentConversationList {
         caller: AgentSessionTable.Entry,
         table: AgentSessionTable,
         registry: TaskRegistry,
-        home: String
+        home: String,
     ) async throws {
         if let target = await table.entry(task: taskID) {
             let reachable = await table.mayReach(target.project.id, session: caller.sessionID)
@@ -74,7 +74,7 @@ enum AgentConversationList {
         _ request: AgentListRequest,
         caller: AgentSessionTable.Entry,
         table: AgentSessionTable,
-        home: String
+        home: String,
     ) async throws -> (projects: [String: ResolvedProject], unreached: Int) {
         if request.projectID != nil || request.projectName != nil {
             let named = try AgentProjects.resolve(home: home, projectID: request.projectID, projectName: request.projectName)
@@ -106,7 +106,7 @@ enum AgentConversationList {
         home: String,
         state: URL,
         live: Set<String>,
-        projects: [String: ResolvedProject]
+        projects: [String: ResolvedProject],
     ) async -> [AgentSessionSummary] {
         guard !projects.isEmpty, let sessions = CanonicalPath.resolve(DataFolder(home: home).sessions.path) else {
             return []
@@ -132,7 +132,7 @@ enum AgentConversationList {
                 title: AgentConversationRules.title(title),
                 state: record.state,
                 updatedAt: record.updatedAt,
-                parentSessionID: AgentSessionLineage.load(session: session, state: state)?.parentSessionID
+                parentSessionID: AgentSessionLineage.load(session: session, state: state)?.parentSessionID,
             ))
         }
         return listed.reversed()
@@ -144,7 +144,7 @@ enum AgentConversationList {
         of taskID: TaskID,
         table: AgentSessionTable,
         registry: TaskRegistry,
-        home: String
+        home: String,
     ) async -> ResolvedProject? {
         guard let record = await registry.record(taskID), let session = sessionID(of: record),
               await table.entry(session) == nil,

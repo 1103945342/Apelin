@@ -25,20 +25,20 @@ public extension ChannelHostBackend {
                 sessionID: request.sessionID,
                 tool: request.tool,
                 arguments: arguments,
-                timeoutSeconds: request.timeoutSeconds
+                timeoutSeconds: request.timeoutSeconds,
             ),
-            files: []
+            files: [],
         )
         let failure = response.error.map { error in
             ToolExtensionFailure(
                 code: error["code"]?.stringValue ?? "unknown",
-                message: error["message"]?.stringValue ?? "the extension gave no message"
+                message: error["message"]?.stringValue ?? "the extension gave no message",
             )
         }
         return ToolExtensionCallResponse(
             text: response.text,
             files: files.map { ToolExtensionFile(name: $0.attachment.name, mimeType: $0.attachment.mimeType, descriptor: $0.descriptor) },
-            failure: failure
+            failure: failure,
         )
     }
 

@@ -20,7 +20,7 @@ public extension GitService {
             remote: branches.remote.map { Self.row($0) },
             tags: branches.tags.map { GitTagRow(name: $0.name, commit: $0.commit, isAnnotated: $0.isAnnotated) },
             current: branches.current,
-            isDetached: branches.isDetached
+            isDetached: branches.isDetached,
         )
     }
 
@@ -146,7 +146,7 @@ public extension GitService {
             authorName: detail.authorName,
             authorEmail: detail.authorEmail,
             authoredAt: detail.authoredAt,
-            files: detail.files.map { GitChangedFile(path: $0.path, status: $0.status, oldPath: $0.oldPath) }
+            files: detail.files.map { GitChangedFile(path: $0.path, status: $0.status, oldPath: $0.oldPath) },
         )
     }
 
@@ -164,7 +164,7 @@ public extension GitService {
             old: versions.old,
             new: versions.new,
             isBinary: versions.isBinary,
-            truncated: versions.truncated
+            truncated: versions.truncated,
         )
     }
 
@@ -265,7 +265,7 @@ public extension GitService {
             behind: branch.behind,
             isCurrent: branch.isCurrent,
             commit: branch.commit,
-            isGone: branch.isGone
+            isGone: branch.isGone,
         )
     }
 
@@ -278,7 +278,7 @@ public extension GitService {
             authorName: commit.authorName,
             authorEmail: commit.authorEmail,
             authoredAt: commit.authoredAt,
-            refs: commit.refs.map { GitRefRow(name: $0.name, kind: kind($0.kind)) }
+            refs: commit.refs.map { GitRefRow(name: $0.name, kind: kind($0.kind)) },
         )
     }
 

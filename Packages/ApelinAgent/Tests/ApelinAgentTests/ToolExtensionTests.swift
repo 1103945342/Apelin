@@ -43,7 +43,7 @@ struct InstalledToolExtensions {
     static func manifest(
         _ id: String,
         name: String,
-        tools: [(name: String, parameters: [String: Any])]
+        tools: [(name: String, parameters: [String: Any])],
     ) throws -> Data {
         let declared: [[String: Any]] = tools.map { tool in
             let parameters: [String: Any] = tool.parameters.isEmpty ? ["type": "object"] : tool.parameters
@@ -52,7 +52,7 @@ struct InstalledToolExtensions {
                 "description": "Does \(tool.name).",
                 "parameters": parameters,
                 "risk": "readOnly",
-                "timeoutSeconds": 30
+                "timeoutSeconds": 30,
             ]
         }
         let manifest: [String: Any] = [
@@ -63,7 +63,7 @@ struct InstalledToolExtensions {
             "license": "MIT",
             "executable": "usr/libexec/apelin/agent-tools/\(id)",
             "protocolVersions": [1],
-            "tools": declared
+            "tools": declared,
         ]
         return try JSONSerialization.data(withJSONObject: manifest)
     }
@@ -127,7 +127,7 @@ struct ToolExtensionTests {
             policy: ApprovalPolicy(mode: .relaxed),
             backend: backend,
             digests: MockDigestLedger(),
-            gate: ApprovalGate { _ in }
+            gate: ApprovalGate { _ in },
         )
     }
 
@@ -172,10 +172,10 @@ struct ToolExtensionTests {
         let reason: [String: Any] = ["type": "object", "properties": ["reason": ["type": "string"]]]
         try installed.install("example.first", manifest: InstalledToolExtensions.manifest("example.first", name: "First", tools: [
             ("shell_run", [:]), ("build", [:]), ("Upper", [:]), ("two__parts", [:]), ("trailing_", [:]),
-            ("with-dash", [:]), ("kept", [:]), ("shared", [:])
+            ("with-dash", [:]), ("kept", [:]), ("shared", [:]),
         ]))
         try installed.install("example.second", manifest: InstalledToolExtensions.manifest("example.second", name: "Second", tools: [
-            ("shared", [:]), ("explains", reason)
+            ("shared", [:]), ("explains", reason),
         ]))
         let offer = installed.offer()
         #expect(offer.extensions.map(\.id) == ["example.first"], "an extension with nothing left is not listed")
@@ -190,7 +190,7 @@ struct ToolExtensionTests {
             "example.first: tool with-dash is not a name",
             "example.first: tool shared is declared by example.second as well",
             "example.second: tool shared is declared by example.first as well",
-            "example.second: tool explains takes an argument named reason"
+            "example.second: tool explains takes an argument named reason",
         ] {
             #expect(leftOut.contains(line), "no \(line) in \(leftOut)")
         }
@@ -225,14 +225,14 @@ struct ToolExtensionTests {
         try installed.installShipped()
         let configuration = AgentSessionConfiguration(
             project: home.project, provider: .githubCopilot(model: "m"), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot,
-            installRoot: installed.path, toolExtensionPolicy: InstalledToolExtensions.policy
+            installRoot: installed.path, toolExtensionPolicy: InstalledToolExtensions.policy,
         )
         let root = try ScopedRoot(home.projectURL)
         let section = EnvironmentPrompt.section(EnvironmentPrompt.inputs(
             configuration,
             root: root,
             device: .current,
-            toolExtensions: installed.offer().extensions
+            toolExtensions: installed.offer().extensions,
         ))
         #expect(section.contains("\n- Agent tool extensions, packages the user installs and removes with their package manager, whose tools are among yours. Each runs in its own process as mobile, outside the project, so give it absolute paths; their tools ask in Strict mode:\n  - Assembler 1.0.0 (wiki.qaq.apelin.agent-tools.assembler): assemble.\n  - Disassembler 1.1.0 (wiki.qaq.apelin.agent-tools.disassembler): disassemble, symbols."))
         let none = EnvironmentPrompt.section(EnvironmentPrompt.inputs(configuration, root: root, device: .current))
@@ -256,7 +256,7 @@ struct ToolExtensionTests {
         #expect(ApprovalPolicy(mode: .full).evaluate(facts, root: root) == .allow(.relaxed))
         #expect(ApprovalPolicy(mode: .confirm).evaluate(facts, root: root) == .ask(
             reason: "symbols is a tool of Disassembler 1.1.0, an agent tool extension that runs in its own process. Review it before running.",
-            detail: .none
+            detail: .none,
         ))
         #expect(ToolRunner.allowsSessionScope(.toolExtension(symbols), detail: .none), "as an MCP tool's")
     }
@@ -273,7 +273,7 @@ struct ToolExtensionTests {
         let gate = ApprovalGate { await requests.add($0) }
         let runner = try ToolRunner(
             sessionID: UUID().uuidString, project: home.project, root: ScopedRoot(home.projectURL),
-            policy: ApprovalPolicy(mode: .confirm), backend: backend, digests: MockDigestLedger(), gate: gate
+            policy: ApprovalPolicy(mode: .confirm), backend: backend, digests: MockDigestLedger(), gate: gate,
         )
         let assemble = try Self.tool("assemble", of: runner, offer: offer)
         let arguments: JSONValue = ["reason": "Encode a return", "arch": "arm64", "source": "ret"]
@@ -335,7 +335,7 @@ struct ToolExtensionTests {
             "binary": "/usr/lib/dyld",
             "filter": "",
             "arch": .null,
-            "kind": "defined"
+            "kind": "defined",
         ], nil, nil)
         #expect(Self.text(result) == "symbols ran")
         _ = try await disassemble.execute("call-2", ["reason": "Look", "binary": "", "address": "_main"], nil, nil)
@@ -393,7 +393,7 @@ struct ToolExtensionTests {
         let space = try #require(CGColorSpace(name: CGColorSpace.sRGB))
         let context = try #require(CGContext(
             data: nil, width: 4, height: 4, bitsPerComponent: 8, bytesPerRow: 16,
-            space: space, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+            space: space, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue,
         ))
         context.setFillColor(red: 1, green: 0, blue: 0, alpha: 1)
         context.fill(CGRect(x: 0, y: 0, width: 4, height: 4))
@@ -406,7 +406,7 @@ struct ToolExtensionTests {
         await backend.setToolAnswer { _ in
             ToolExtensionCallResponse(text: "1 symbol", files: [
                 ToolExtensionFile(name: "symbols.txt", mimeType: "text/plain", descriptor: descriptor(holding: listing)),
-                ToolExtensionFile(name: "graph.png", mimeType: nil, descriptor: descriptor(holding: image))
+                ToolExtensionFile(name: "graph.png", mimeType: nil, descriptor: descriptor(holding: image)),
             ])
         }
         let runner = try Self.runner(home, backend: backend)
@@ -437,7 +437,7 @@ struct ToolExtensionTests {
         // A file and no text; neither.
         await backend.setToolAnswer { _ in
             ToolExtensionCallResponse(text: "", files: [
-                ToolExtensionFile(name: "symbols.txt", mimeType: "text/plain", descriptor: descriptor(holding: listing))
+                ToolExtensionFile(name: "symbols.txt", mimeType: "text/plain", descriptor: descriptor(holding: listing)),
             ])
         }
         let fileOnly = try await symbols.execute("call-2", ["reason": "List them", "binary": "/usr/lib/dyld", "output": "file"], nil, nil)
@@ -492,24 +492,24 @@ struct ToolExtensionTests {
         provider.setResponses([
             reply(fauxAssistantMessage("Nothing to disassemble with.")),
             reply(fauxAssistantMessage(blocks: [fauxToolCall(name: "symbols", arguments: [
-                "reason": "List the symbols", "binary": "/usr/lib/dyld", "output": "file"
+                "reason": "List the symbols", "binary": "/usr/lib/dyld", "output": "file",
             ], id: "call-1")], stopReason: .toolUse)),
-            reply(fauxAssistantMessage("Listed."))
+            reply(fauxAssistantMessage("Listed.")),
         ])
         let backend = MockBackend()
         await backend.setToolAnswer { _ in
             ToolExtensionCallResponse(text: "1 symbol", files: [
-                ToolExtensionFile(name: "symbols.txt", mimeType: "text/plain", descriptor: descriptor(holding: Data("T _main\n".utf8)))
+                ToolExtensionFile(name: "symbols.txt", mimeType: "text/plain", descriptor: descriptor(holding: Data("T _main\n".utf8))),
             ])
         }
         let session = try await AgentSession(
             configuration: AgentSessionConfiguration(
                 project: home.project, provider: .registered(provider.getModel()), approval: ApprovalPolicy(mode: .relaxed),
-                dataRoot: home.dataRoot, installRoot: installed.path, toolExtensionPolicy: InstalledToolExtensions.policy
+                dataRoot: home.dataRoot, installRoot: installed.path, toolExtensionPolicy: InstalledToolExtensions.policy,
             ),
             backend: backend,
             digests: MockDigestLedger(),
-            credentials: DeliveredCredentialSource()
+            credentials: DeliveredCredentialSource(),
         )
         try await session.prompt("Disassemble dyld.", messageID: UUID())
         await session.waitForIdle()

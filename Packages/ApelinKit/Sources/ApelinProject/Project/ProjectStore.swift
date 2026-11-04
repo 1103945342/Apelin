@@ -81,7 +81,7 @@ public struct ProjectStore: Sendable {
             ("kind", .string("workspace")),
             ("buildSystem", .string("external")),
             ("displayName", .string(name)),
-            ("autoName", .bool(automaticallyName))
+            ("autoName", .bool(automaticallyName)),
         ])
         try ProjectManifestFormat.data(.object(document))
             .write(to: staging.appendingPathComponent(Self.projectFileName), options: .atomic)
@@ -103,7 +103,7 @@ public struct ProjectStore: Sendable {
 
     /// Built-ins the IDE supplies and a caller may not set.
     static let reservedValues: Set<String> = [
-        "projectName", "projectID", "templateExtensionID", "templateID", "templateVersion", "templateDigest"
+        "projectName", "projectID", "templateExtensionID", "templateID", "templateVersion", "templateDigest",
     ]
 
     /// `projectCreate`: the template's files, substituted with typed and
@@ -121,7 +121,7 @@ public struct ProjectStore: Sendable {
         catalog: ExtensionCatalog,
         registry: EnvironmentRegistry,
         projectID: String = UUID().uuidString.lowercased(),
-        automaticallyName: Bool = false
+        automaticallyName: Bool = false,
     ) throws -> Created {
         if let problem = ProjectName.validate(name) {
             throw ApelinError(.badRequest, problem.reason)
@@ -145,7 +145,7 @@ public struct ProjectStore: Sendable {
             "templateExtensionID": .string(manifest.id),
             "templateID": .string(template.id),
             "templateVersion": .string(manifest.version),
-            "templateDigest": .string(template.digest)
+            "templateDigest": .string(template.digest),
         ]
         let slug = Self.slug(name)
         resolved["bundleID"] = values["bundleID"] ?? .string("local.apelin.\(slug)")
@@ -173,7 +173,7 @@ public struct ProjectStore: Sendable {
                 throw ApelinError(
                     .conflict,
                     "Toolchain \(toolchainRecord.id) (Command Line Tools \(toolchainRecord.version)) supports iPhoneOS "
-                        + "SDKs up to \(newest). Import a supported SDK first."
+                        + "SDKs up to \(newest). Import a supported SDK first.",
                 )
             }
             throw ApelinError(.conflict, "No SDK is available. Import an SDK first.")
@@ -219,7 +219,7 @@ public struct ProjectStore: Sendable {
         }
         let staging = projectsDirectory.appendingPathComponent(
             ".\(name).creating-\(UUID().uuidString.prefix(8).lowercased())",
-            isDirectory: true
+            isDirectory: true,
         )
         guard mkdir(staging.path, 0o755) == 0 else {
             throw ApelinError(.internal, "could not make a staging folder: \(String(cString: strerror(errno)))")
@@ -241,7 +241,7 @@ public struct ProjectStore: Sendable {
                         text,
                         format: file.format,
                         types: types,
-                        values: resolved
+                        values: resolved,
                     ).utf8)
                 }
                 try Self.writeNew(data, to: relative, in: staging, mode: file.mode == "0755" ? 0o755 : 0o644)
@@ -249,7 +249,7 @@ public struct ProjectStore: Sendable {
             let generated = try ProjectMetadata.initial(
                 ProjectFiles.read(Self.projectFileName, in: staging),
                 name: name,
-                automaticallyName: automaticallyName
+                automaticallyName: automaticallyName,
             )
             try generated.write(to: staging.appendingPathComponent(Self.projectFileName), options: .atomic)
             let document: JSONDocument
@@ -266,7 +266,7 @@ public struct ProjectStore: Sendable {
                 }
                 throw ApelinError(
                     .internal,
-                    "could not move the project into place: \(String(cString: strerror(errno)))"
+                    "could not move the project into place: \(String(cString: strerror(errno)))",
                 )
             }
             let baseline = ProjectBaseline(
@@ -276,7 +276,7 @@ public struct ProjectStore: Sendable {
                 templateVersion: manifest.version,
                 templateDigest: template.digest,
                 build: .init(canonical: digests.build.canonical, digest: digests.build.digest),
-                packaging: .init(canonical: digests.packaging.canonical, digest: digests.packaging.digest)
+                packaging: .init(canonical: digests.packaging.canonical, digest: digests.packaging.digest),
             )
             return Created(projectID: projectID, name: name, root: destination, baseline: baseline)
         } catch {
@@ -390,7 +390,7 @@ public extension JSONDocument {
         case let .object(object):
             .object(Dictionary(
                 object.entries.map { ($0.key, $0.value.jsonValue) },
-                uniquingKeysWith: { a, _ in a }
+                uniquingKeysWith: { a, _ in a },
             ))
         }
     }

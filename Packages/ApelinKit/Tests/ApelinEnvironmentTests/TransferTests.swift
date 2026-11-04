@@ -21,7 +21,7 @@ extension FakeBackend {
             id: Self.id, product: product, components: [.c], tree: tree,
             files: ["usr/bin/clang": "digest"],
             installRelativePath: "usr/lib/apelin/toolchains/\(Self.id)",
-            manifest: Data(facts.utf8)
+            manifest: Data(facts.utf8),
         )
     }
 
@@ -89,13 +89,13 @@ final class TransferTests: XCTestCase {
         named fileName: String? = nil,
         projectName: String? = nil,
         installer: FakeInstaller? = nil,
-        log: EventLog = EventLog()
+        log: EventLog = EventLog(),
     ) async throws -> JSONValue {
         let transfers = service(home)
         let request = TransferImportRequest(
             source: .file(DescriptorSlot(index: 0)),
             fileName: fileName ?? (path as NSString).lastPathComponent,
-            projectName: projectName
+            projectName: projectName,
         )
         let prepared = try transfers.prepareImport(request, descriptors: [descriptor(path)])
         return try await transfers.runImport(
@@ -103,14 +103,14 @@ final class TransferTests: XCTestCase {
             staging: home.layout.makeStaging("import-\(UUID().uuidString)"),
             taskID: TaskID("import"),
             installer: installer ?? FakeInstaller(installRoot: home.layout.installRoot),
-            reporter: log.reporter
+            reporter: log.reporter,
         )
     }
 
     private func inspect(_ path: String, on home: TemporaryHome, named fileName: String? = nil) throws -> TransferInspection {
         try service(home).inspect(
             TransferInspectRequest(source: .file(DescriptorSlot(index: 0)), fileName: fileName ?? (path as NSString).lastPathComponent),
-            descriptors: [descriptor(path)]
+            descriptors: [descriptor(path)],
         )
     }
 
@@ -177,7 +177,7 @@ final class TransferTests: XCTestCase {
         let transfers = service(second)
         XCTAssertThrowsError(try transfers.prepareImport(
             TransferImportRequest(source: .file(DescriptorSlot(index: 0)), fileName: export.fileName, kind: .toolchain),
-            descriptors: [descriptor(export.path)]
+            descriptors: [descriptor(export.path)],
         )) { XCTAssertEqual(($0 as? ApelinError)?.code, .badRequest) }
         // Read where an export left it.
         let fromExports = try service(first).inspect(TransferInspectRequest(source: .exported(path: export.exportedPath)), descriptors: [])
@@ -196,7 +196,7 @@ final class TransferTests: XCTestCase {
             toolchains.prepare(ToolchainSetupRequest()),
             taskID: TaskID("setup"),
             installer: FakeInstaller(installRoot: home.layout.installRoot),
-            reporter: .silent
+            reporter: .silent,
         )
     }
 
@@ -244,12 +244,12 @@ final class TransferTests: XCTestCase {
         let transfers = TransferService(
             layout: second.layout,
             toolchains: ToolchainService(layout: second.layout, backend: FakeBackend(failSelfTest: true)),
-            sdk: SDKManager(layout: second.layout)
+            sdk: SDKManager(layout: second.layout),
         )
         let installer = FakeInstaller(installRoot: second.layout.installRoot)
         let prepared = try transfers.prepareImport(
             TransferImportRequest(source: .file(DescriptorSlot(index: 0)), fileName: export.fileName),
-            descriptors: [descriptor(export.path)]
+            descriptors: [descriptor(export.path)],
         )
         do {
             _ = try await transfers.runImport(prepared, staging: second.layout.makeStaging("i"), taskID: TaskID("i"), installer: installer, reporter: .silent)
@@ -278,19 +278,19 @@ final class TransferTests: XCTestCase {
         let manager = SDKManager(layout: layout)
         _ = try await manager.run(
             manager.prepare(SDKImportRequest(source: .inbox(path: "iPhoneOS99.0.sdk")), descriptors: []),
-            staging: layout.makeStaging("sdk"), hasSwiftToolchain: false, reporter: .silent
+            staging: layout.makeStaging("sdk"), hasSwiftToolchain: false, reporter: .silent,
         )
         let transfers = TransferService(layout: layout, toolchains: ToolchainService(layout: layout, backend: FakeBackend()), sdk: manager)
         let inspection = try transfers.inspect(
             TransferInspectRequest(source: .file(DescriptorSlot(index: 0)), fileName: export.fileName),
-            descriptors: [descriptor(export.path)]
+            descriptors: [descriptor(export.path)],
         )
         XCTAssertTrue(inspection.importable, "\(inspection.problems)")
         XCTAssertTrue(inspection.notes.contains { $0.contains("packaged again for this roothide one") }, "\(inspection.notes)")
         let installer = FakeInstaller(installRoot: root.path)
         let prepared = try transfers.prepareImport(
             TransferImportRequest(source: .file(DescriptorSlot(index: 0)), fileName: export.fileName),
-            descriptors: [descriptor(export.path)]
+            descriptors: [descriptor(export.path)],
         )
         let log = EventLog()
         _ = try await transfers.runImport(prepared, staging: layout.makeStaging("i"), taskID: TaskID("i"), installer: installer, reporter: log.reporter)
@@ -306,7 +306,7 @@ final class TransferTests: XCTestCase {
         let manifest = TransferManifest(
             kind: .toolchain, id: FakeBackend.id, name: "Command Line Tools 9.9", createdBy: "test",
             members: [TransferMember(path: "usr", kind: .directory)],
-            toolchain: TransferToolchain(record: record, retargetScheme: 2, productID: "001", sourceSHA256: "ab", bootstrap: "rootless", architecture: "iphoneos-arm64", minimumOS: "16.0")
+            toolchain: TransferToolchain(record: record, retargetScheme: 2, productID: "001", sourceSHA256: "ab", bootstrap: "rootless", architecture: "iphoneos-arm64", minimumOS: "16.0"),
         )
         let file = try craft(manifest, payload: [("payload/usr", nil)], on: second, named: "Old.apetc")
         let inspection = try inspect(file.path, on: second)
@@ -324,7 +324,7 @@ final class TransferTests: XCTestCase {
         _ manifest: TransferManifest,
         payload: [(String, Data?)],
         on home: TemporaryHome,
-        named name: String
+        named name: String,
     ) throws -> URL {
         var entries = try [ArchiveFixture.Entry(name: TransferManifest.fileName, data: JSONCoding.encode(manifest))]
         for (path, data) in payload {
@@ -338,7 +338,7 @@ final class TransferTests: XCTestCase {
     private func sdkManifest(_ members: [TransferMember]) -> TransferManifest {
         TransferManifest(
             kind: .sdk, id: "iphoneos99.0-00000000", name: "iPhoneOS 99.0", createdBy: "test", members: members,
-            sdk: TransferSDK(record: SDKRecord(id: "iphoneos99.0-00000000", canonicalName: "iphoneos99.0", version: "99.0", path: ""))
+            sdk: TransferSDK(record: SDKRecord(id: "iphoneos99.0-00000000", canonicalName: "iphoneos99.0", version: "99.0", path: "")),
         )
     }
 
@@ -466,7 +466,7 @@ final class TransferTests: XCTestCase {
         XCTAssertEqual(
             description,
             ProjectManifestFormat.formatted(Data(sent.replacingOccurrences(of: oldID, with: imported.projectID).utf8)),
-            "only the ID changed, in the written form"
+            "only the ID changed, in the written form",
         )
         XCTAssertFalse(String(decoding: description, as: UTF8.self).contains(oldID))
         XCTAssertEqual(try String(contentsOf: placed.appendingPathComponent("new.c"), encoding: .utf8), "// new\n")
@@ -656,12 +656,12 @@ final class TransferTests: XCTestCase {
                 TransferMember(path: "apelin-project.json", kind: .file, size: Int64(description.count), sha256: Self.sha(description)),
                 TransferMember(path: "vendor", kind: .directory),
                 TransferMember(path: "vendor/.GIT", kind: .directory),
-                TransferMember(path: "vendor/.GIT/config", kind: .file, size: Int64(config.count), sha256: Self.sha(config))
+                TransferMember(path: "vendor/.GIT/config", kind: .file, size: Int64(config.count), sha256: Self.sha(config)),
             ],
-            project: TransferProject(projectID: "p-1", name: "Nested")
+            project: TransferProject(projectID: "p-1", name: "Nested"),
         )
         let file = try craft(manifest, payload: [
-            ("payload/apelin-project.json", description), ("payload/vendor", nil), ("payload/vendor/.GIT", nil), ("payload/vendor/.GIT/config", config)
+            ("payload/apelin-project.json", description), ("payload/vendor", nil), ("payload/vendor/.GIT", nil), ("payload/vendor/.GIT/config", config),
         ], on: home, named: "Nested.apeproj")
         let refusal = await code { _ = try await self.importFile(file.path, on: home) }
         XCTAssertEqual(refusal, .badRequest)

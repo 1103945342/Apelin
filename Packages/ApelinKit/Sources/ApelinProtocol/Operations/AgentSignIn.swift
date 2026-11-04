@@ -104,7 +104,7 @@ public struct AgentAccount: Codable, Sendable, Equatable {
         models: [String]? = nil,
         usesAPIKey: Bool? = nil,
         reasoningEfforts: [String: [AgentReasoningEffort]]? = nil,
-        serviceTiers: [String: [AgentServiceTier]]? = nil
+        serviceTiers: [String: [AgentServiceTier]]? = nil,
     ) {
         self.provider = provider
         self.method = method
@@ -228,7 +228,7 @@ public struct AgentSignInRespondRequest: OperationRequest {
         self.init(
             taskID: taskID,
             values: Dictionary(uniqueKeysWithValues: fields.map { ($0.key.rawValue, $0.value) }),
-            verifyModel: verifyModel
+            verifyModel: verifyModel,
         )
     }
 }

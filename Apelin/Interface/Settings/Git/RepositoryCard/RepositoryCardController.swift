@@ -21,7 +21,7 @@ final class RepositoryCardController: UIViewController, PHPickerViewControllerDe
 
     private lazy var saveItem = UIBarButtonItem(
         title: String(localized: "Save"),
-        primaryAction: UIAction { [weak self] _ in self?.saveToPhotos() }
+        primaryAction: UIAction { [weak self] _ in self?.saveToPhotos() },
     )
 
     /// Remove Icon only while the card has an icon of the user's own.
@@ -29,33 +29,33 @@ final class RepositoryCardController: UIViewController, PHPickerViewControllerDe
         image: UIImage(systemName: "ellipsis"),
         menu: UIMenu(children: [UIDeferredMenuElement.uncached { [weak self] completion in
             completion(self?.menuActions() ?? [])
-        }])
+        }]),
     ).then { $0.accessibilityLabel = String(localized: "More") }
 
     private func menuActions() -> [UIMenuElement] {
         let open = UIAction(
             title: String(localized: "Open in Irisin…"),
-            image: UIImage(systemName: "arrow.up.forward.app")
+            image: UIImage(systemName: "arrow.up.forward.app"),
         ) { [weak self] _ in
             self?.openInIrisin()
         }
         var actions: [UIMenuElement] = [
             UIAction(title: String(localized: "Choose Icon…"), image: UIImage(systemName: "photo")) { [weak self] _ in
                 self?.chooseIcon()
-            }
+            },
         ]
         if style.icon != nil {
             actions.append(UIAction(
                 title: String(localized: "Remove Icon"),
                 image: UIImage(systemName: "trash"),
-                attributes: .destructive
+                attributes: .destructive,
             ) { [weak self] _ in
                 self?.change { $0.icon = nil }
             })
         }
         actions.append(UIAction(
             title: String(localized: "Edit Title…"),
-            image: UIImage(systemName: "character.cursor.ibeam")
+            image: UIImage(systemName: "character.cursor.ibeam"),
         ) { [weak self] _ in
             self?.editTitle()
         })
@@ -122,7 +122,7 @@ final class RepositoryCardController: UIViewController, PHPickerViewControllerDe
             onConfirm: { [weak self] text in
                 let title = text.trimmingCharacters(in: .whitespacesAndNewlines)
                 self?.change { $0.title = title.isEmpty ? nil : title }
-            }
+            },
         ), animated: true)
     }
 

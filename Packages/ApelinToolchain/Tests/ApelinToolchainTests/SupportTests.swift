@@ -117,7 +117,7 @@ struct SupportTests {
         ("15.0", "26.0.1", [], false),
         ("15.0", "17.3.1", ["FEAT_LRCPC", "FEAT_SHA3"], true),
         ("27.0", "17.3.1", ["FEAT_LRCPC", "FEAT_SHA3", "FEAT_DotProd"], false),
-        ("27.0", "26.0.1", ["FEAT_LRCPC", "FEAT_SHA3", "FEAT_DotProd"], true)
+        ("27.0", "26.0.1", ["FEAT_LRCPC", "FEAT_SHA3", "FEAT_DotProd"], true),
     ])
     func `swift requirements follow the release`(version: String, host: String, features: [String], allowed: Bool) throws {
         let support = try #require(CommandLineToolsSupport.release(version)?.swiftSupport)
@@ -275,7 +275,7 @@ struct SupportTests {
             "usr/bin/clang": image(loading: ["@rpath/libL.dylib"], rpaths: ["@loader_path/../b"]),
             "usr/lib/libL.dylib": image(loading: ["@rpath/libM.dylib"]),
             "usr/lib/libM.dylib": image(),
-            "usr/b/libM.dylib": image()
+            "usr/b/libM.dylib": image(),
         ]) { _, new in new }
         for (relative, data) in files {
             let url = root.appendingPathComponent(relative)

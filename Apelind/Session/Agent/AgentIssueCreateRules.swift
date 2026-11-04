@@ -35,7 +35,7 @@ enum AgentIssueCreateRules {
         guard await AgentApprovals.spend(entry: entry, registry: registry, covers: { covers(issue, asked: $0) }) else {
             return ApelinError(
                 .denied,
-                "approval required: the user has not approved opening this issue on \(issue.repository)"
+                "approval required: the user has not approved opening this issue on \(issue.repository)",
             )
         }
         return nil

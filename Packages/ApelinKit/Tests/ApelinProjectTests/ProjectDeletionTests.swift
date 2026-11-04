@@ -20,7 +20,7 @@ final class ProjectDeletionTests: XCTestCase {
         try Data("keep".utf8).write(to: outside)
         try FileManager.default.createSymbolicLink(
             at: URL(fileURLWithPath: doomed.path).appendingPathComponent("link"),
-            withDestinationURL: outside
+            withDestinationURL: outside,
         )
 
         let deleted = try ProjectDeletion.delete(ProjectDeleteRequest(projectID: doomed.projectID, projectName: "Weather"), in: folder)

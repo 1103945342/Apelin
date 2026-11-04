@@ -31,7 +31,7 @@ struct MemoryTools {
                 projectID: record.projectID,
                 folder: project?.folder,
                 displayName: project?.displayName,
-                missing: record.projectID != nil && project == nil ? true : nil
+                missing: record.projectID != nil && project == nil ? true : nil,
             )
         })
     }
@@ -63,7 +63,7 @@ struct MemoryTools {
             id: id ?? UUID().uuidString.lowercased(),
             title: arguments.requireString("title"),
             body: arguments.requireString("body"),
-            projectID: scope
+            projectID: scope,
         )
         return try store.save(record, replacing: id, revision: revision).forProject(projectID)
     }

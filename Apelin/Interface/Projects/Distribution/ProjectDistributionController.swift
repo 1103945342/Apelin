@@ -84,12 +84,12 @@ final class ProjectDistributionController: TableController {
         title = String(localized: "Distribute Project")
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: String(localized: "Build"),
-            primaryAction: UIAction { [weak self] _ in self?.build() }
+            primaryAction: UIAction { [weak self] _ in self?.build() },
         )
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Distribution")
         dataSource = TableDataSource(
             tableView: tableView,
-            identifier: { $0.row }
+            identifier: { $0.row },
         ) { [weak self] tableView, indexPath, content in
             let cell = tableView.dequeueReusableCell(withIdentifier: "Distribution", for: indexPath)
             self?.configure(cell, value: content)
@@ -191,7 +191,7 @@ final class ProjectDistributionController: TableController {
                     guard let self, let cell else { return false }
                     share(target, from: cell)
                     return true
-                }
+                },
             ]
         case .publish:
             content.textProperties.color = value.enabled ? .tintColor : .tertiaryLabel
@@ -261,7 +261,7 @@ final class ProjectDistributionController: TableController {
                 text: String(localized: "Ready to distribute"),
                 secondaryText: method == .script
                     ? String(localized: "The package is checked after the build script writes it.")
-                    : nil
+                    : nil,
             )]
         } else {
             readiness = blockers.indices.map { index in
@@ -271,7 +271,7 @@ final class ProjectDistributionController: TableController {
                 RowContent(
                     row: .issue(index),
                     text: DistributionAdvice.title(of: issues[index]),
-                    secondaryText: DistributionAdvice.advice(for: issues[index])
+                    secondaryText: DistributionAdvice.advice(for: issues[index]),
                 )
             }
             if onPrepare != nil {
@@ -279,7 +279,7 @@ final class ProjectDistributionController: TableController {
             }
         }
         var sections: [(Section, [RowContent])] = [
-            (.project, [RowContent(row: .project, text: String(localized: "Project"), secondaryText: displayName ?? projectName)])
+            (.project, [RowContent(row: .project, text: String(localized: "Project"), secondaryText: displayName ?? projectName)]),
         ]
         let listed = BuildBootstrap.allCases.compactMap { packages[$0] }
         if !listed.isEmpty {
@@ -291,7 +291,7 @@ final class ProjectDistributionController: TableController {
                     secondaryText: "\(package.version) · \(state)",
                     spokenText: "\(package.bootstrap.rawValue), \(package.version)",
                     spokenValue: state,
-                    selected: selectedPackages.contains(package.artifactID)
+                    selected: selectedPackages.contains(package.artifactID),
                 )
             }
             let canPublish = !isPreparingPackage && listed.contains { selectedPackages.contains($0.artifactID) }
@@ -353,7 +353,7 @@ final class ProjectDistributionController: TableController {
                 let response = try await ApelinService.app.projectCheck(
                     projectID: project.id,
                     purpose: .distribution,
-                    bootstrap: target
+                    bootstrap: target,
                 )
                 guard !Task.isCancelled else { return }
                 checkFailure = nil
@@ -387,7 +387,7 @@ final class ProjectDistributionController: TableController {
                     projectID: project.id,
                     package: project.package,
                     isWorkspace: project.method == .script,
-                    repository: linked
+                    repository: linked,
                 )
             }
             guard !Task.isCancelled else { return }
@@ -442,7 +442,7 @@ final class ProjectDistributionController: TableController {
             guard let self else { return }
             navigationController?.pushViewController(
                 DistributionBuildController(projectName: projectName, target: target, method: method),
-                animated: true
+                animated: true,
             )
         }
         // a version packaged before needs no question when its package is listed above
@@ -455,7 +455,7 @@ final class ProjectDistributionController: TableController {
             title: "Build Anyway?",
             message: "Some details still need attention before other people install this package.",
             confirmTitle: "Build",
-            onConfirm: open
+            onConfirm: open,
         )
     }
 

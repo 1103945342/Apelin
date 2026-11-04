@@ -66,7 +66,7 @@ final class ChatCompactionRow: ListRowView {
             with: CGSize(width: width, height: .greatestFiniteMagnitude),
             options: [.usesLineFragmentOrigin, .usesFontLeading],
             attributes: [.font: UIFont.preferredFont(forTextStyle: .body)],
-            context: nil
+            context: nil,
         )
         return insets.top + ceil(rect.height) + insets.bottom
     }

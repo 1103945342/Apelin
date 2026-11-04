@@ -16,7 +16,7 @@ final class DistributionRepositoryPickerController: TableController {
 
     private lazy var dataSource = TableDataSource<Int, Row, Row>(
         tableView: tableView,
-        identifier: { $0 }
+        identifier: { $0 },
     ) { [weak self] _, _, row in
         self?.cell(for: row)
     }
@@ -154,7 +154,7 @@ private final class RepositoryCandidateCell: UITableViewCell {
                 badges.leadingAnchor.constraint(equalTo: badgeContainer.leadingAnchor),
                 badges.trailingAnchor.constraint(lessThanOrEqualTo: badgeContainer.trailingAnchor),
                 badges.topAnchor.constraint(equalTo: badgeContainer.topAnchor),
-                badges.bottomAnchor.constraint(equalTo: badgeContainer.bottomAnchor)
+                badges.bottomAnchor.constraint(equalTo: badgeContainer.bottomAnchor),
             ])
             stack.addArrangedSubview(badgeContainer)
         }
@@ -165,7 +165,7 @@ private final class RepositoryCandidateCell: UITableViewCell {
             stack.leadingAnchor.constraint(equalTo: margins.leadingAnchor),
             stack.trailingAnchor.constraint(equalTo: margins.trailingAnchor),
             stack.topAnchor.constraint(equalTo: margins.topAnchor),
-            stack.bottomAnchor.constraint(equalTo: margins.bottomAnchor)
+            stack.bottomAnchor.constraint(equalTo: margins.bottomAnchor),
         ])
         isAccessibilityElement = true
         accessibilityTraits = .button

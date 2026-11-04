@@ -55,7 +55,7 @@ public struct WorkerAssignment: Codable, Sendable, Equatable {
         protocolVersion: Int64 = Wire.protocolVersion,
         installRoot: String,
         home: String,
-        sessionID: String? = nil
+        sessionID: String? = nil,
     ) {
         self.role = role
         self.protocolVersion = protocolVersion

@@ -37,7 +37,7 @@ enum ProviderModels {
 
     static func reasoningEfforts(
         _ provider: AgentProvider,
-        credentials: OAuthCredentials
+        credentials: OAuthCredentials,
     ) -> [String: [AgentReasoningEffort]] {
         guard let catalog = catalogKey(provider, credentials: credentials) else { return [:] }
         return Dictionary(uniqueKeysWithValues: ModelsCatalog.models(for: catalog).filter(\.reasoning).map { model in
@@ -50,7 +50,7 @@ enum ProviderModels {
     /// left out.
     static func serviceTiers(
         _ provider: AgentProvider,
-        credentials: OAuthCredentials
+        credentials: OAuthCredentials,
     ) -> [String: [AgentServiceTier]] {
         guard let catalog = catalogKey(provider, credentials: credentials) else { return [:] }
         return Dictionary(uniqueKeysWithValues: ModelsCatalog.models(for: catalog).compactMap { model in

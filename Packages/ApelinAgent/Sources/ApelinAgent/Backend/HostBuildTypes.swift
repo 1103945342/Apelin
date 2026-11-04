@@ -19,7 +19,7 @@ public struct BuildRequest: Sendable, Hashable, Codable {
         context: HostCallContext,
         configuration: BuildConfiguration,
         buildDescriptionDigest: String,
-        bootstrap: String? = nil
+        bootstrap: String? = nil,
     ) {
         self.context = context
         self.configuration = configuration
@@ -46,7 +46,7 @@ public struct BuildDiagnostic: Sendable, Hashable, Codable {
         line: Int? = nil,
         column: Int? = nil,
         field: String? = nil,
-        message: String
+        message: String,
     ) {
         self.severity = severity
         self.file = file
@@ -90,7 +90,7 @@ public struct BuildResponse: Sendable, Hashable, Codable {
         succeeded: Bool,
         diagnostics: [BuildDiagnostic] = [],
         artifacts: [BuildArtifact] = [],
-        logExcerpt: String = ""
+        logExcerpt: String = "",
     ) {
         self.buildID = buildID
         self.succeeded = succeeded

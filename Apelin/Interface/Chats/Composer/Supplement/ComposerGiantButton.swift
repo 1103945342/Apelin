@@ -59,7 +59,7 @@ final class ComposerGiantButton: UIButton {
             x: (backgroundView.bounds.width - 28) / 2,
             y: (backgroundView.bounds.height - 28) / 2,
             width: 28,
-            height: 28
+            height: 28,
         )
         labelView.frame = CGRect(x: 0, y: backgroundView.frame.maxY, width: bounds.width, height: labelHeight)
     }

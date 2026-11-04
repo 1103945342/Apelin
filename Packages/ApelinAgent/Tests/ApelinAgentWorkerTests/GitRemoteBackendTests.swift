@@ -19,7 +19,7 @@ struct GitRemoteBackendTests {
         let set = try await fixture.backend.gitRemoteSet(GitRemoteSetToolRequest(
             context: fixture.context(),
             name: "origin",
-            url: "https://github.com/owngoal-dev/Pineora.git"
+            url: "https://github.com/owngoal-dev/Pineora.git",
         ))
         _ = try await fixture.backend.gitRemoteRemove(GitRemoteRemoveToolRequest(context: fixture.context(), name: "upstream"))
 

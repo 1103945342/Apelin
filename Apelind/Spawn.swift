@@ -18,7 +18,7 @@ func spawnSetGroups(
     _ attributes: UnsafeMutablePointer<posix_spawnattr_t?>,
     _ count: Int32,
     _ groups: UnsafeMutablePointer<gid_t>,
-    _ membershipUID: uid_t
+    _ membershipUID: uid_t,
 ) -> Int32
 
 @_silgen_name("proc_pidinfo")
@@ -27,7 +27,7 @@ private func spawnProcPIDInfo(
     _ flavor: Int32,
     _ argument: UInt64,
     _ buffer: UnsafeMutableRawPointer?,
-    _ size: Int32
+    _ size: Int32,
 ) -> Int32
 
 /// Who a spawned process runs as.
@@ -103,7 +103,7 @@ func spawnProcess(
     arguments: [String],
     environment: [String],
     channel: Int32,
-    identity: SpawnIdentity?
+    identity: SpawnIdentity?,
 ) throws -> pid_t {
     guard let canonical = canonicalPath(path), isRootOwnedExecutable(canonical) else {
         throw SpawnError.untrustedExecutable(path)

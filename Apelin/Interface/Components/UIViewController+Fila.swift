@@ -17,7 +17,7 @@ extension UIViewController {
             self?.presentConfirmation(
                 title: "Install Fila",
                 message: "Open files and folders with Fila. Install it from the OwnGoal Studio repository in Irisin.",
-                confirmTitle: "Open Irisin"
+                confirmTitle: "Open Irisin",
             ) {
                 guard let irisin = URL(string: "irisin://package/wiki.qaq.fila") else { return }
                 UIApplication.shared.open(irisin)

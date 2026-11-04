@@ -158,12 +158,12 @@ private struct Reader {
     /// What a head holds; any other element ends it, as a browser's parser
     /// ends a head left open.
     private static let headElements: Set = [
-        "html", "head", "title", "meta", "link", "base", "script", "style", "noscript", "template"
+        "html", "head", "title", "meta", "link", "base", "script", "style", "noscript", "template",
     ]
     private static let blocks: Set = [
         "address", "article", "aside", "blockquote", "caption", "dd", "details", "dialog", "div", "dl", "dt",
         "fieldset", "figcaption", "figure", "footer", "form", "header", "hgroup", "hr", "main", "nav", "p",
-        "section", "summary", "table", "tbody", "tfoot", "thead", "tr"
+        "section", "summary", "table", "tbody", "tfoot", "thead", "tr",
     ]
     /// Blocks set off by an empty line.
     private static let paragraphs: Set = ["blockquote", "figure", "hr", "p", "table"]
@@ -636,6 +636,6 @@ private enum HTMLEntity {
         "times": "×", "divide": "÷", "deg": "°", "plusmn": "±", "micro": "µ", "para": "¶", "sect": "§",
         "cent": "¢", "pound": "£", "euro": "€", "yen": "¥",
         "larr": "←", "rarr": "→", "uarr": "↑", "darr": "↓", "harr": "↔", "rArr": "⇒",
-        "le": "≤", "ge": "≥", "ne": "≠", "infin": "∞", "check": "✓"
+        "le": "≤", "ge": "≥", "ne": "≠", "infin": "∞", "check": "✓",
     ]
 }

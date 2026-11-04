@@ -59,7 +59,7 @@ public final class ReplayTransport: ApelinTransport, @unchecked Sendable {
     public init(
         fixtures: ReplayFixtures,
         pacing: Pacing = .recorded(),
-        clock: @escaping @Sendable () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }
+        clock: @escaping @Sendable () -> TimeInterval = { ProcessInfo.processInfo.systemUptime },
     ) {
         self.fixtures = fixtures
         self.clock = clock
@@ -67,14 +67,14 @@ public final class ReplayTransport: ApelinTransport, @unchecked Sendable {
             playbacks[recording.taskID] = Playback(
                 recording: recording,
                 offsets: Self.offsets(of: recording.events, pacing: pacing),
-                gates: recording.events.indices.filter { Self.state(of: recording.events[$0]) == .waitingForApproval }
+                gates: recording.events.indices.filter { Self.state(of: recording.events[$0]) == .waitingForApproval },
             )
         }
     }
 
     public func call(
         _ request: WireRequest,
-        descriptors _: [OwnedDescriptor]
+        descriptors _: [OwnedDescriptor],
     ) async throws -> (WireReply, [OwnedDescriptor]) {
         let payload = (try? JSONCoding.decode(JSONValue.self, from: request.payload)) ?? .object([:])
         do {
@@ -188,7 +188,7 @@ public final class ReplayTransport: ApelinTransport, @unchecked Sendable {
                 events: out.filter { $0.seq.rawValue > after },
                 state: state,
                 lastSeq: out.last?.seq ?? .start,
-                finished: released == events.count && state.isTerminal
+                finished: released == events.count && state.isTerminal,
             )
         }
     }
@@ -237,7 +237,7 @@ public extension ApelinService {
     /// An `ApelinService` that answers from the captured fixtures.
     static func replay(
         _ fixtures: ReplayFixtures,
-        pacing: ReplayTransport.Pacing = .recorded()
+        pacing: ReplayTransport.Pacing = .recorded(),
     ) -> ApelinService {
         ApelinService(transport: ReplayTransport(fixtures: fixtures, pacing: pacing))
     }

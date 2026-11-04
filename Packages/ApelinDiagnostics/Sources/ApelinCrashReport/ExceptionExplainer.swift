@@ -130,7 +130,7 @@ enum ExceptionExplainer {
         }),
         Rule(matches: { $0.signal == "SIGKILL" }, sentence: { signals in
             "The system killed the app outright\(signals.namespace.isEmpty ? "" : " (\(signals.namespace))")."
-        })
+        }),
     ]
 
     private static func fallback(_ signals: Signals) -> String {

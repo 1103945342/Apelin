@@ -56,7 +56,7 @@ public struct ResetToRemoteApproval: Sendable, Hashable, Codable {
         changedFiles: [String],
         overwrittenFileCount: Int,
         overwrittenFiles: [String],
-        projectFile: String
+        projectFile: String,
     ) {
         self.projectID = projectID
         self.remote = remote

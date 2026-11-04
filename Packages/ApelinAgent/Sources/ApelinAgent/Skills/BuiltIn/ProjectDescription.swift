@@ -169,6 +169,6 @@ extension BuiltInSkills {
         }
         ```
         """,
-        files: ["apelin-project.schema.json": ProjectValidation.schemaText]
+        files: ["apelin-project.schema.json": ProjectValidation.schemaText],
     )
 }

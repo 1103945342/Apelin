@@ -22,25 +22,25 @@ let laDomain = LAError.errorDomain
 // passcodeNotSet, and the user is let through with no owner to check.
 check(
     DeviceOwnerCheck.passes(.cannotEvaluate(code: LAError.Code.passcodeNotSet.rawValue, domain: laDomain)),
-    "a device with no passcode passes"
+    "a device with no passcode passes",
 )
 
 /// Every other reason canEvaluatePolicy can refuse fails: it is not the
 /// no-passcode case, so there is an owner to check and the check did not run.
 let cannotEvaluateFailures: [LAError.Code] = [
-    .biometryNotAvailable, .biometryNotEnrolled, .biometryLockout, .passcodeNotSet
+    .biometryNotAvailable, .biometryNotEnrolled, .biometryLockout, .passcodeNotSet,
 ]
 for code in cannotEvaluateFailures where code != .passcodeNotSet {
     check(
         !DeviceOwnerCheck.passes(.cannotEvaluate(code: code.rawValue, domain: laDomain)),
-        "canEvaluate false with \(code.rawValue) fails"
+        "canEvaluate false with \(code.rawValue) fails",
     )
 }
 
 // passcodeNotSet reported under another domain is not the no-passcode case.
 check(
     !DeviceOwnerCheck.passes(.cannotEvaluate(code: LAError.Code.passcodeNotSet.rawValue, domain: "com.example")),
-    "passcodeNotSet under a foreign domain does not pass"
+    "passcodeNotSet under a foreign domain does not pass",
 )
 check(!DeviceOwnerCheck.passes(.cannotEvaluate(code: nil, domain: nil)), "canEvaluate false with no error fails")
 
@@ -53,7 +53,7 @@ check(!DeviceOwnerCheck.passes(.evaluated(false)), "an unsuccessful authenticati
 let thrownFailures: [LAError.Code] = [
     .userCancel, .appCancel, .systemCancel, .authenticationFailed,
     .userFallback, .biometryLockout, .biometryNotAvailable, .biometryNotEnrolled,
-    .notInteractive, .invalidContext, .passcodeNotSet
+    .notInteractive, .invalidContext, .passcodeNotSet,
 ]
 for code in thrownFailures {
     check(!DeviceOwnerCheck.passes(.threw(code: code.rawValue, domain: laDomain)), "a thrown \(code.rawValue) fails")

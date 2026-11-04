@@ -102,7 +102,7 @@ struct EnvironmentContextTests {
         _ faux: FauxProviderRegistration,
         id: String = UUID().uuidString,
         project: ProjectIdentity? = nil,
-        temporaryID: String? = nil
+        temporaryID: String? = nil,
     ) async throws -> AgentSession {
         try await AgentSession(
             configuration: AgentSessionConfiguration(
@@ -111,11 +111,11 @@ struct EnvironmentContextTests {
                 temporaryID: temporaryID,
                 provider: .registered(faux.getModel()),
                 approval: ApprovalPolicy(mode: .relaxed),
-                dataRoot: home.dataRoot
+                dataRoot: home.dataRoot,
             ),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            credentials: DeliveredCredentialSource()
+            credentials: DeliveredCredentialSource(),
         )
     }
 

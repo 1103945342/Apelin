@@ -142,7 +142,7 @@ final class GitStatusPage: UIViewController, GitPage {
             return GitDirectoryItem(
                 path: path,
                 children: children.sorted { $0.path < $1.path },
-                expanded: expandedDirs.contains(path)
+                expanded: expandedDirs.contains(path),
             )
         }
         return (files, dirs)
@@ -168,7 +168,7 @@ final class GitStatusPage: UIViewController, GitPage {
                 items.append(.header(GitHeader(
                     title: String(localized: "Conflicts (\(conflictedFiles.count))"),
                     action: isMerging ? String(localized: "Abort Merge") : nil,
-                    actionEnabled: !busy
+                    actionEnabled: !busy,
                 )))
                 appendFiles(conflictedFiles, to: &items)
             } else if isMerging {
@@ -178,7 +178,7 @@ final class GitStatusPage: UIViewController, GitPage {
                 items.append(.header(GitHeader(
                     title: String(localized: "Staged (\(stagedFiles.count))"),
                     action: String(localized: "Unstage all"),
-                    actionEnabled: !busy
+                    actionEnabled: !busy,
                 )))
                 appendFiles(stagedFiles, to: &items)
             }
@@ -186,14 +186,14 @@ final class GitStatusPage: UIViewController, GitPage {
                 items.append(.header(GitHeader(
                     title: String(localized: "Modified (\(modifiedFiles.count))"),
                     action: String(localized: "Revert all"),
-                    actionEnabled: !busy
+                    actionEnabled: !busy,
                 )))
                 appendFiles(modifiedFiles, to: &items)
             }
             let (untrackedFiles, untrackedDirs) = untrackedSections
             if !untrackedFiles.isEmpty || !untrackedDirs.isEmpty {
                 items.append(.header(GitHeader(
-                    title: String(localized: "Untracked (\(untrackedFiles.count + untrackedDirs.count))")
+                    title: String(localized: "Untracked (\(untrackedFiles.count + untrackedDirs.count))"),
                 )))
                 for file in untrackedFiles {
                     items.append(.file(file, position: .single))
@@ -233,7 +233,7 @@ final class GitStatusPage: UIViewController, GitPage {
                     }
                     self.busy = false
                 }
-            }
+            },
         )
         present(dialog, animated: true)
     }
@@ -278,8 +278,8 @@ final class GitStatusPage: UIViewController, GitPage {
                         await self.session.unstageAll()
                         self.busy = false
                     }
-                }
-            ]
+                },
+            ],
         )
     }
 
@@ -297,8 +297,8 @@ final class GitStatusPage: UIViewController, GitPage {
                         await self.session.restore(paths, source: .index)
                         self.busy = false
                     }
-                }
-            ]
+                },
+            ],
         )
     }
 
@@ -324,12 +324,12 @@ final class GitStatusPage: UIViewController, GitPage {
                     Task { @MainActor in
                         await self.session.restore(
                             [file.entry.path],
-                            source: file.staged ? .head : .index
+                            source: file.staged ? .head : .index,
                         )
                         self.busy = false
                     }
-                }
-            ]
+                },
+            ],
         )
     }
 
@@ -347,8 +347,8 @@ final class GitStatusPage: UIViewController, GitPage {
                         await self.session.deleteUntracked(paths)
                         self.busy = false
                     }
-                }
-            ]
+                },
+            ],
         )
     }
 
@@ -383,8 +383,8 @@ final class GitStatusPage: UIViewController, GitPage {
                 message: String(localized: "The working tree has uncommitted changes. Pulling may cause conflicts. Commit or stage them first if possible. Continue pulling?"),
                 actions: [
                     .init(title: String(localized: "Cancel")) {},
-                    .init(title: String(localized: "Continue Pull")) { [weak self] in self?.startPull() }
-                ]
+                    .init(title: String(localized: "Continue Pull")) { [weak self] in self?.startPull() },
+                ],
             )
             return
         }
@@ -430,8 +430,8 @@ final class GitStatusPage: UIViewController, GitPage {
                             }
                             self.busy = false
                         }
-                    }
-                ]
+                    },
+                ],
             )
             return
         }
@@ -467,8 +467,8 @@ final class GitStatusPage: UIViewController, GitPage {
                         }
                         self.busy = false
                     }
-                }
-            ]
+                },
+            ],
         )
     }
 
@@ -494,7 +494,7 @@ final class GitStatusPage: UIViewController, GitPage {
             onPop: { [weak self] stash in self?.applyStash(stash, pop: true) },
             onApply: { [weak self] stash in self?.applyStash(stash, pop: false) },
             onDrop: { [weak self] stash in self?.confirmDrop(stash) },
-            onClear: { [weak self] in self?.confirmClear() }
+            onClear: { [weak self] in self?.confirmClear() },
         )
         presentGitSheet(content: content)
     }
@@ -529,8 +529,8 @@ final class GitStatusPage: UIViewController, GitPage {
                         }
                         self.busy = false
                     }
-                }
-            ]
+                },
+            ],
         )
     }
 
@@ -549,8 +549,8 @@ final class GitStatusPage: UIViewController, GitPage {
                         }
                         self.busy = false
                     }
-                }
-            ]
+                },
+            ],
         )
     }
 
@@ -575,7 +575,7 @@ final class GitStatusPage: UIViewController, GitPage {
         var rows: [GitBottomSheetController.Row] = [
             .init(title: String(localized: "View diff"), symbol: GitIcon.Name.fileText) { [weak self] in
                 self?.openDiff(path: path, staged: file.staged)
-            }
+            },
         ]
         if file.conflicted {
             rows.append(.init(title: String(localized: "Stage"), symbol: GitIcon.Name.plus) { [weak self] in
@@ -627,7 +627,7 @@ final class GitStatusPage: UIViewController, GitPage {
             },
             .init(title: String(localized: "Copy path"), symbol: GitIcon.Name.copy) { [weak self] in
                 self?.copyPath(directory.path)
-            }
+            },
         ])
     }
 }
@@ -662,7 +662,7 @@ extension GitStatusPage: UITableViewDataSource, UITableViewDelegate {
                 onStageAll: { [weak self] in self?.stageAll() },
                 onStash: { [weak self] in self?.showStashSheet() },
                 onPull: { [weak self] in self?.pull() },
-                onPush: { [weak self] in self?.push() }
+                onPush: { [weak self] in self?.push() },
             )
             return cell
         case .clean:
@@ -696,7 +696,7 @@ extension GitStatusPage: UITableViewDataSource, UITableViewDelegate {
                 },
                 onOpen: { [weak self] in
                     self?.openDiff(path: file.entry.path, staged: file.staged)
-                }
+                },
             )
             return cell
         case let .directory(directory, position):
@@ -716,7 +716,7 @@ extension GitStatusPage: UITableViewDataSource, UITableViewDelegate {
                 },
                 onStage: { [weak self] in
                     self?.stage(directory.children.map(\.path))
-                }
+                },
             )
             return cell
         case .mergeBanner:
@@ -873,23 +873,23 @@ private final class GitOverviewCell: UITableViewCell {
             metrics.addArrangedSubview(GitMetricView(
                 title: String(localized: "Conflicts"),
                 count: entries.filter(\.isConflicted).count,
-                color: GitTheme.error
+                color: GitTheme.error,
             ))
         }
         metrics.addArrangedSubview(GitMetricView(
             title: String(localized: "Staged"),
             count: status?.entries.filter(\.isStaged).count ?? 0,
-            color: GitTheme.success
+            color: GitTheme.success,
         ))
         metrics.addArrangedSubview(GitMetricView(
             title: String(localized: "Modified"),
             count: status?.entries.filter(\.isModified).count ?? 0,
-            color: GitTheme.warning
+            color: GitTheme.warning,
         ))
         metrics.addArrangedSubview(GitMetricView(
             title: String(localized: "Untracked"),
             count: status?.entries.filter(\.isUntracked).count ?? 0,
-            color: GitTheme.onSurfaceVariant
+            color: GitTheme.onSurfaceVariant,
         ))
     }
 }
@@ -975,7 +975,7 @@ private final class GitActionsCell: UITableViewCell {
         onStageAll: @escaping () -> Void,
         onStash: @escaping () -> Void,
         onPull: @escaping () -> Void,
-        onPush: @escaping () -> Void
+        onPush: @escaping () -> Void,
     ) {
         stage.isEnabled = stageAllEnabled
         stash.isEnabled = stashEnabled
@@ -1139,7 +1139,7 @@ private final class GitFileCell: UITableViewCell {
         position: GitGroupPosition,
         busy: Bool,
         onAction: @escaping () -> Void,
-        onOpen: @escaping () -> Void
+        onOpen: @escaping () -> Void,
     ) {
         self.onAction = onAction
         self.onOpen = onOpen
@@ -1265,7 +1265,7 @@ private final class GitDirCell: UITableViewCell {
         position: GitGroupPosition,
         busy: Bool,
         onToggle: @escaping () -> Void,
-        onStage: @escaping () -> Void
+        onStage: @escaping () -> Void,
     ) {
         self.onToggle = onToggle
         self.onStage = onStage
@@ -1276,7 +1276,7 @@ private final class GitDirCell: UITableViewCell {
         pathLabel.text = directory.path
         count.text = directory.expanded ? "\(directory.children.count)" : nil
         chevron.image = GitIcon.image(
-            directory.expanded ? GitIcon.Name.chevronDown : GitIcon.Name.chevronRight, pointSize: 16
+            directory.expanded ? GitIcon.Name.chevronDown : GitIcon.Name.chevronRight, pointSize: 16,
         )
         action.isEnabled = !busy
         separator.isHidden = position == .last || position == .single

@@ -112,7 +112,7 @@ final class ChatActivityRow: ListRowView {
             x: pixel(content.minX),
             y: pixel(content.minY),
             width: pixel(textWidth),
-            height: pixel(height)
+            height: pixel(height),
         )
         header.frame = titleView.bounds
         layoutReceived(in: content)
@@ -124,13 +124,13 @@ final class ChatActivityRow: ListRowView {
                 x: content.minX - padding,
                 y: titleView.frame.maxY + Self.bannerSpacing,
                 width: content.width + padding * 2,
-                height: ToolCallBannerView.height
+                height: ToolCallBannerView.height,
             )
             bannerView.groundBleed = UIEdgeInsets(
                 top: 0,
                 left: max(0, bannerView.frame.minX),
                 bottom: 0,
-                right: max(0, bounds.width - bannerView.frame.maxX)
+                right: max(0, bounds.width - bannerView.frame.maxX),
             )
         }
     }
@@ -145,7 +145,7 @@ final class ChatActivityRow: ListRowView {
             x: content.minX,
             y: titleView.frame.minY + ((line - height) / 2).rounded(),
             width: content.width,
-            height: height
+            height: height,
         )
         CATransaction.begin()
         CATransaction.setDisableActions(true)
@@ -231,7 +231,7 @@ final class ChatActivityRow: ListRowView {
         sizingHeader.font = .preferredFont(forTextStyle: .body)
         sizingHeader.text = message.activityTitle
         let headerHeight = ceil(
-            sizingHeader.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height
+            sizingHeader.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height,
         )
         var height = headerHeight + insets.top + insets.bottom
         if banner(of: message) != nil {

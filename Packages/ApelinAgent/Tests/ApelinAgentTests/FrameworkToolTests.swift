@@ -29,11 +29,11 @@ struct FrameworkToolTests {
         try write("System/Library/Frameworks/UIKit.framework/UIKit.tbd", Self.stub(for: "Frameworks/UIKit"))
         try write(
             "System/Library/PrivateFrameworks/SpringBoardHome.framework/SpringBoardHome.tbd",
-            Self.stub(for: "PrivateFrameworks/SpringBoardHome")
+            Self.stub(for: "PrivateFrameworks/SpringBoardHome"),
         )
         try FileManager.default.createDirectory(
             at: sdkURL.appendingPathComponent("System/Library/PrivateFrameworks/SpringBoardFoundation.framework"),
-            withIntermediateDirectories: true
+            withIntermediateDirectories: true,
         )
 
         let outside = base.appendingPathComponent("outside", isDirectory: true)
@@ -42,7 +42,7 @@ struct FrameworkToolTests {
             .write(to: outside.appendingPathComponent("Secret.h"), atomically: true, encoding: .utf8)
         try FileManager.default.createSymbolicLink(
             atPath: sdkURL.appendingPathComponent("System/Library/Frameworks/Vision.framework/Headers/VNSecret.h").path,
-            withDestinationPath: outside.appendingPathComponent("Secret.h").path
+            withDestinationPath: outside.appendingPathComponent("Secret.h").path,
         )
 
         tools = try FrameworkTools(sdk: ScopedRoot(sdkURL))
@@ -173,7 +173,7 @@ struct FrameworkToolTests {
         try many.write(
             to: sdkURL.appendingPathComponent("System/Library/Frameworks/Vision.framework/Headers/VNMany.h"),
             atomically: true,
-            encoding: .utf8
+            encoding: .utf8,
         )
         let output = try tools.header(["framework": "Vision", "symbol": "VNMany"])
         #expect(output.contains("VNMany is declared in VNMany.h:\n  1: typedef int VNMany;\n"))

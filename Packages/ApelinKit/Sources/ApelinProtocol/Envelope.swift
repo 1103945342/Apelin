@@ -35,7 +35,7 @@ public struct WireRequest: Sendable, Equatable {
         operation: AppOperation,
         protocolVersion: Int64 = Wire.protocolVersion,
         requestID: String = UUID().uuidString,
-        payload: Data
+        payload: Data,
     ) {
         self.operation = operation
         self.protocolVersion = protocolVersion
@@ -75,7 +75,7 @@ public struct WireReply: Sendable, Equatable {
         } catch {
             return WireReply(
                 requestID: requestID,
-                result: .failure(ApelinError(.internal, "encoding the reply: \(error)"))
+                result: .failure(ApelinError(.internal, "encoding the reply: \(error)")),
             )
         }
     }

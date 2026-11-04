@@ -40,7 +40,7 @@ extension DiagnosticsService {
             } catch {
                 final = [
                     "state": .string(TaskState.failed.rawValue),
-                    "message": .string("the answer does not encode: \(error)")
+                    "message": .string("the answer does not encode: \(error)"),
                 ]
             }
             emit(taskID, TaskEvent.stateKind, .object(final))
@@ -49,7 +49,7 @@ extension DiagnosticsService {
 
     /// The whole check in one call, for tests: checked, run, answered.
     func confirmLoaded(
-        _ request: ApelinProtocol.ConfirmLoadedRequest
+        _ request: ApelinProtocol.ConfirmLoadedRequest,
     ) async throws -> ApelinProtocol.ConfirmLoadedResponse {
         let check = try await prepareConfirmLoaded(request)
         return await blocking { runConfirmLoaded(check, stage: nil) }
@@ -68,7 +68,7 @@ extension DiagnosticsService {
         if request.imageCheck != nil {
             throw ApelinError(
                 .badRequest,
-                "imageCheck is disabled on every iOS version: reading another process's image list panicked the kernel on a test device."
+                "imageCheck is disabled on every iOS version: reading another process's image list panicked the kernel on a test device.",
             )
         }
         // A respring has to bring SpringBoard back inside the window.
@@ -77,7 +77,7 @@ extension DiagnosticsService {
             let range = Self.logWindowRange
             throw ApelinError(
                 .badRequest,
-                String(format: "logWindowSeconds must be %g–%g", range.lowerBound, range.upperBound)
+                String(format: "logWindowSeconds must be %g–%g", range.lowerBound, range.upperBound),
             )
         }
         let target = try await resolveTarget(request.targetID)
@@ -85,7 +85,7 @@ extension DiagnosticsService {
             marker: BuildLoadCheck.marker(buildID: buildID),
             subsystem: nil,
             dylibPath: "",
-            filterPlist: nil
+            filterPlist: nil,
         )
         if let projectID = request.projectID {
             let manifest = try ProjectFolders.manifest(projectID: projectID, home: home)
@@ -105,7 +105,7 @@ extension DiagnosticsService {
             dylibPath: plan.dylibPath,
             filterPlist: plan.filterPlist,
             coreFoundationVersion: kCFCoreFoundationVersionNumber,
-            logWindow: window
+            logWindow: window,
         )
         return LoadCheck(confirmation: confirmation, trigger: request.trigger)
     }
@@ -113,7 +113,7 @@ extension DiagnosticsService {
     /// Blocks for the window. The target's image list is never read.
     func runConfirmLoaded(
         _ check: LoadCheck,
-        stage: (@Sendable (ConfirmLoaded.Stage) -> Void)?
+        stage: (@Sendable (ConfirmLoaded.Stage) -> Void)?,
     ) -> ApelinProtocol.ConfirmLoadedResponse {
         var trigger: (@Sendable () throws -> Void)?
         if check.trigger == .respring {
@@ -127,18 +127,18 @@ extension DiagnosticsService {
             LoadEvidence(
                 kind: "log",
                 passed: result.marker.status == .confirmed,
-                detail: "\(result.marker.status.rawValue): \(result.marker.detail)"
+                detail: "\(result.marker.status.rawValue): \(result.marker.detail)",
             ),
             LoadEvidence(
                 kind: "image",
                 passed: false,
-                detail: "\(result.image.status.rawValue): \(result.image.detail)"
+                detail: "\(result.image.status.rawValue): \(result.image.detail)",
             ),
             LoadEvidence(
                 kind: "filter",
                 passed: result.filter.status == .confirmed,
-                detail: "\(result.filter.status.rawValue): \(result.filter.detail)"
-            )
+                detail: "\(result.filter.status.rawValue): \(result.filter.detail)",
+            ),
         ]
         if let failure = result.triggerFailure {
             evidence.append(LoadEvidence(kind: "trigger", passed: false, detail: failure))
@@ -175,7 +175,7 @@ extension DiagnosticsService {
         else {
             throw ApelinError(
                 .badRequest,
-                "targetID must be an executable name or a bundle ID of 1–\(Self.maximumTargetIDBytes) bytes, with no slash or NUL."
+                "targetID must be an executable name or a bundle ID of 1–\(Self.maximumTargetIDBytes) bytes, with no slash or NUL.",
             )
         }
         if targetID == "SpringBoard" || targetID == "com.apple.springboard" {

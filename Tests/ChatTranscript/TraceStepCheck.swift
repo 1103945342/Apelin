@@ -64,7 +64,7 @@ func checkTraceStep() {
         event(6, "approvalRequested", ["approvalID": .string("a1"), "tool": .string("shell_run"),
                                        "arguments": .string(json(["argv": .array([.string("make")])]))]),
         event(7, "approvalResolved", ["approvalID": .string("a1"), "decision": .string("approve")]),
-        event(8, "message", ["text": .string("Done")]), event(9, "finished")
+        event(8, "message", ["text": .string("Done")]), event(9, "finished"),
     ]
     guard let summary = ChatTranscript(events: events, attachment: { _ in nil }).messages.first(where: { $0.role.isActivity })
     else { preconditionFailure("the turn has a summary") }

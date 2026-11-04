@@ -50,7 +50,7 @@ enum LogsHandler: DomainHandler {
                 handle.taskID,
                 as: .logStream,
                 afterSeq: .start,
-                waitMilliseconds: poll.waitMilliseconds
+                waitMilliseconds: poll.waitMilliseconds,
             )
             return (.success(request.requestID, batch), [])
         } catch {
@@ -67,7 +67,7 @@ enum CrashReports {
     private static let directories = [
         "/var/mobile/Library/Logs/CrashReporter",
         "/var/mobile/Library/Logs/DiagnosticReports",
-        "/var/mobile/Library/Logs/CrashReporter/Retired"
+        "/var/mobile/Library/Logs/CrashReporter/Retired",
     ]
     private static let maximumBytes: Int64 = 16 * 1024 * 1024
 
@@ -106,7 +106,7 @@ enum CrashReports {
         guard descriptor >= 0 else {
             return request.fail(ApelinError(
                 .notFound,
-                "\(crash.id) cannot be opened: \(String(cString: strerror(errno)))"
+                "\(crash.id) cannot be opened: \(String(cString: strerror(errno)))",
             ))
         }
         let owned = OwnedDescriptor(adopting: descriptor)
@@ -117,15 +117,15 @@ enum CrashReports {
         guard metadata.st_size <= maximumBytes else {
             return request.fail(ApelinError(
                 .badRequest,
-                "\(crash.id) is larger than \(maximumBytes / (1024 * 1024)) MB"
+                "\(crash.id) is larger than \(maximumBytes / (1024 * 1024)) MB",
             ))
         }
         return (
             .success(
                 request.requestID,
-                CrashOpenResponse(descriptor: DescriptorSlot(index: 0), size: Int64(metadata.st_size))
+                CrashOpenResponse(descriptor: DescriptorSlot(index: 0), size: Int64(metadata.st_size)),
             ),
-            [owned]
+            [owned],
         )
     }
 }

@@ -21,7 +21,7 @@ public protocol IcliSurface: Sendable {
         filter: IcliSyslogFilter,
         seconds: Double,
         handler: @escaping @Sendable (LogEntry) -> Bool,
-        onEnd: @escaping @Sendable (String) -> Void
+        onEnd: @escaping @Sendable (String) -> Void,
     ) throws -> any IcliSyslogStream
     func crashLogs(bundleID: String?) throws -> [String: Any]
     func readCrashLog(_ path: String, maxBytes: Int) throws -> [String: Any]
@@ -33,7 +33,7 @@ public protocol IcliSurface: Sendable {
         identifier: String?,
         role: String?,
         match: String,
-        index: Int
+        index: Int,
     ) throws -> [String: Any]
     /// icli's `waitForElement`: polls the tree every `interval` until the
     /// selected element is present (`appear`) or gone, and answers its
@@ -47,7 +47,7 @@ public protocol IcliSurface: Sendable {
         index: Int,
         appear: Bool,
         timeout: Double,
-        interval: Double
+        interval: Double,
     ) throws -> [String: Any]
     func swipe(x1: Double, y1: Double, x2: Double, y2: Double, seconds: Double) throws -> [String: Any]
     func typeText(_ text: String, delayMS: Double) throws -> [String: Any]
@@ -78,7 +78,7 @@ public struct IcliSyslogFilter: Sendable, Hashable {
         process: String? = nil,
         subsystem: String? = nil,
         messageContains: String? = nil,
-        level: String = "all"
+        level: String = "all",
     ) {
         self.process = process
         self.subsystem = subsystem

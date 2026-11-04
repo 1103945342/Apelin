@@ -72,7 +72,7 @@ public final class ToolCallContext: @unchecked Sendable {
         arguments: JSONValue,
         attachments: [ToolAttachmentReference],
         channel: ToolAttachmentChannel?,
-        attachmentWait: TimeInterval
+        attachmentWait: TimeInterval,
     ) {
         self.requestID = requestID
         self.tool = tool
@@ -170,7 +170,7 @@ public final class ToolExtensionServer: @unchecked Sendable {
         peer: ToolPeer,
         tools: [ToolHandler],
         limits: ToolProtocolLimits = .init(),
-        supportedVersions: [Int] = ToolProtocol.supportedVersions
+        supportedVersions: [Int] = ToolProtocol.supportedVersions,
     ) {
         self.peer = peer
         descriptors = tools.map(\.descriptor)
@@ -208,7 +208,7 @@ public final class ToolExtensionServer: @unchecked Sendable {
                     .frameTooLarge,
                     "frame longer than \(limits.maxFrameBytes) bytes",
                     requestID: nil,
-                    protocolVersion: currentVersion
+                    protocolVersion: currentVersion,
                 ))
             case .endOfFile:
                 break loop
@@ -240,7 +240,7 @@ public final class ToolExtensionServer: @unchecked Sendable {
                 .badFrame,
                 "frame does not parse",
                 requestID: Self.salvageRequestID(line),
-                protocolVersion: currentVersion
+                protocolVersion: currentVersion,
             ))
             return
         }
@@ -256,7 +256,7 @@ public final class ToolExtensionServer: @unchecked Sendable {
                 .notNegotiated,
                 "the host must send hello before any other frame",
                 requestID: frame.requestID,
-                protocolVersion: currentVersion
+                protocolVersion: currentVersion,
             ))
             return
         }
@@ -265,7 +265,7 @@ public final class ToolExtensionServer: @unchecked Sendable {
                 .protocolVersionMismatch,
                 "the frame uses protocol version \(frame.protocolVersion), but version \(version) was negotiated",
                 requestID: frame.requestID,
-                protocolVersion: version
+                protocolVersion: version,
             ))
             return
         }
@@ -281,7 +281,7 @@ public final class ToolExtensionServer: @unchecked Sendable {
                 .badFrame,
                 "the host does not send \(frame.type.rawValue)",
                 requestID: requestID,
-                protocolVersion: version
+                protocolVersion: version,
             ))
         }
     }
@@ -296,7 +296,7 @@ public final class ToolExtensionServer: @unchecked Sendable {
                 .badFrame,
                 "hello was already exchanged",
                 requestID: frame.requestID,
-                protocolVersion: currentVersion
+                protocolVersion: currentVersion,
             ))
             return
         }
@@ -305,7 +305,7 @@ public final class ToolExtensionServer: @unchecked Sendable {
                 .protocolVersionMismatch,
                 "no shared protocol version: the host supports \(offered), this extension supports \(supportedVersions)",
                 requestID: frame.requestID,
-                protocolVersion: currentVersion
+                protocolVersion: currentVersion,
             ))
             return
         }
@@ -349,7 +349,7 @@ public final class ToolExtensionServer: @unchecked Sendable {
             arguments: arguments,
             attachments: attachments,
             channel: channel,
-            attachmentWait: limits.attachmentWait
+            attachmentWait: limits.attachmentWait,
         )
         lock.lock()
         if inFlight[requestID] != nil {
@@ -393,9 +393,9 @@ public final class ToolExtensionServer: @unchecked Sendable {
                     context.isCancelled ? .cancelled : failure.code,
                     failure.message,
                     requestID: requestID,
-                    protocolVersion: version
+                    protocolVersion: version,
                 ),
-                ending: requestID
+                ending: requestID,
             )
         } catch {
             send(
@@ -403,9 +403,9 @@ public final class ToolExtensionServer: @unchecked Sendable {
                     context.isCancelled ? .cancelled : .toolFailed,
                     String(describing: error),
                     requestID: requestID,
-                    protocolVersion: version
+                    protocolVersion: version,
                 ),
-                ending: requestID
+                ending: requestID,
             )
         }
     }
@@ -427,9 +427,9 @@ public final class ToolExtensionServer: @unchecked Sendable {
                             .attachmentRejected,
                             "a result file is not a regular file under \(limits.maxAttachmentBytes) bytes",
                             requestID: requestID,
-                            protocolVersion: version
+                            protocolVersion: version,
                         ),
-                        ending: requestID
+                        ending: requestID,
                     )
                     return
                 }
@@ -442,7 +442,7 @@ public final class ToolExtensionServer: @unchecked Sendable {
                     id: id,
                     mimeType: attachment.mimeType,
                     name: attachment.name,
-                    byteCount: Int(info.st_size)
+                    byteCount: Int(info.st_size),
                 )))
             }
         }
@@ -452,9 +452,9 @@ public final class ToolExtensionServer: @unchecked Sendable {
                     .attachmentRejected,
                     "more than \(limits.maxAttachmentsPerFrame) result files",
                     requestID: requestID,
-                    protocolVersion: version
+                    protocolVersion: version,
                 ),
-                ending: requestID
+                ending: requestID,
             )
             return
         }
@@ -463,7 +463,7 @@ public final class ToolExtensionServer: @unchecked Sendable {
         guard let data = try? ToolFrameCodec.encode(frame) else {
             send(
                 .error(.toolFailed, "the result does not encode", requestID: requestID, protocolVersion: version),
-                ending: requestID
+                ending: requestID,
             )
             return
         }
@@ -476,9 +476,9 @@ public final class ToolExtensionServer: @unchecked Sendable {
                     .resultTooLarge,
                     "the result is \(data.count - 1) bytes, over the \(frameLimit)-byte frame limit",
                     requestID: requestID,
-                    protocolVersion: version
+                    protocolVersion: version,
                 ),
-                ending: requestID
+                ending: requestID,
             )
             return
         }
@@ -489,9 +489,9 @@ public final class ToolExtensionServer: @unchecked Sendable {
                         .attachmentRejected,
                         "this process has no attachment socket",
                         requestID: requestID,
-                        protocolVersion: version
+                        protocolVersion: version,
                     ),
-                    ending: requestID
+                    ending: requestID,
                 )
                 return
             }
@@ -501,7 +501,7 @@ public final class ToolExtensionServer: @unchecked Sendable {
                 } catch {
                     send(
                         .error(.attachmentRejected, "\(error)", requestID: requestID, protocolVersion: version),
-                        ending: requestID
+                        ending: requestID,
                     )
                     return
                 }
@@ -575,7 +575,7 @@ public final class ToolExtensionServer: @unchecked Sendable {
             id: peer.name,
             version: peer.version,
             protocolVersions: supportedVersions,
-            tools: descriptors
+            tools: descriptors,
         )
         if var data = try? encoder.encode(description) {
             data.append(0x0A)
@@ -592,7 +592,7 @@ public final class ToolExtensionServer: @unchecked Sendable {
         return ToolAttachmentChannel(
             socket: descriptor,
             maxAttachmentBytes: limits.maxAttachmentBytes,
-            maxPending: limits.maxPendingAttachments
+            maxPending: limits.maxPendingAttachments,
         )
     }
 

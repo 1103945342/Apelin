@@ -81,7 +81,7 @@ public struct GitBranchComparison: Codable, Sendable, Hashable {
         remote: String?,
         pushURL: String? = nil,
         remoteOnly: [GitCommitSummary] = [],
-        remoteOnlyCount: Int = 0
+        remoteOnlyCount: Int = 0,
     ) {
         self.branch = branch
         self.local = local
@@ -127,7 +127,7 @@ public struct GitSquashRequest: OperationRequest {
         count: Int? = nil,
         message: String? = nil,
         expectedHead: String? = nil,
-        preview: Bool? = nil
+        preview: Bool? = nil,
     ) {
         self.projectID = projectID
         self.base = base
@@ -163,7 +163,7 @@ public struct GitSquashResponse: Codable, Sendable, Hashable {
         count: Int,
         upstream: String? = nil,
         published: Int = 0,
-        commit: String? = nil
+        commit: String? = nil,
     ) {
         self.branch = branch
         self.previousHead = previousHead

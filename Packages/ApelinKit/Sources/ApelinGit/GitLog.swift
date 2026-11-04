@@ -44,7 +44,7 @@ public struct GitCommit: Sendable, Equatable {
         authorName: String,
         authorEmail: String,
         authoredAt: Double,
-        refs: [GitCommitRef] = []
+        refs: [GitCommitRef] = [],
     ) {
         self.id = id
         self.shortID = shortID
@@ -101,7 +101,7 @@ public struct GitCommitDetail: Sendable, Equatable {
         authorName: String,
         authorEmail: String,
         authoredAt: Double,
-        files: [GitChangedPath] = []
+        files: [GitChangedPath] = [],
     ) {
         self.id = id
         self.message = message
@@ -154,7 +154,7 @@ public extension GitRepository {
         defer { git_revwalk_free(walk) }
         try GitError.check(
             git_revwalk_sorting(walk, GIT_SORT_TOPOLOGICAL.rawValue | GIT_SORT_TIME.rawValue),
-            "walk the history"
+            "walk the history",
         )
         try GitError.check(git_revwalk_push_head(walk), "walk HEAD")
         var commits: [GitCommit] = []
@@ -191,7 +191,7 @@ public extension GitRepository {
             authorName: author.map { String(cString: $0.pointee.name) } ?? "",
             authorEmail: author.map { String(cString: $0.pointee.email) } ?? "",
             authoredAt: Double(git_commit_time(object)),
-            files: try changedFiles(of: object)
+            files: try changedFiles(of: object),
         )
     }
 
@@ -232,7 +232,7 @@ public extension GitRepository {
             old: String(decoding: old.bytes, as: UTF8.self),
             new: String(decoding: new.bytes, as: UTF8.self),
             isBinary: Self.isBinary(old.bytes) || Self.isBinary(new.bytes),
-            truncated: old.truncated || new.truncated
+            truncated: old.truncated || new.truncated,
         )
     }
 
@@ -263,7 +263,7 @@ public extension GitRepository {
             authorName: author.map { String(cString: $0.pointee.name) } ?? "",
             authorEmail: author.map { String(cString: $0.pointee.email) } ?? "",
             authoredAt: Double(git_commit_time(object)),
-            refs: refs[id] ?? []
+            refs: refs[id] ?? [],
         )
     }
 
@@ -337,7 +337,7 @@ public extension GitRepository {
             files.append(GitChangedPath(
                 path: path,
                 status: Self.statusLetter(delta.pointee.status),
-                oldPath: oldPath == path ? nil : oldPath
+                oldPath: oldPath == path ? nil : oldPath,
             ))
         }
         return files

@@ -106,7 +106,7 @@ public struct ConversationSummary: Sendable, Hashable, Codable {
         state: String,
         openedBy: String? = nil,
         updatedAt: Date,
-        isThisConversation: Bool = false
+        isThisConversation: Bool = false,
     ) {
         self.sessionID = sessionID
         link = ApelinLink.conversation(sessionID)
@@ -151,7 +151,7 @@ public struct ConversationReadToolRequest: Sendable, Hashable, Codable {
         sessionID: String,
         afterSeq: UInt64? = nil,
         waitSeconds: Int = 0,
-        target: ProjectIdentity? = nil
+        target: ProjectIdentity? = nil,
     ) {
         self.context = context
         self.sessionID = sessionID
@@ -220,7 +220,7 @@ public struct ConversationReadToolResponse: Sendable, Hashable, Codable {
         pendingApprovals: [ConversationApproval] = [],
         lastSeq: UInt64,
         truncated: Bool = false,
-        timedOut: Bool = false
+        timedOut: Bool = false,
     ) {
         self.sessionID = sessionID
         link = ApelinLink.conversation(sessionID)

@@ -201,7 +201,7 @@ final class SDKImportTests: XCTestCase {
             XCTAssertEqual(record.canonicalName, "iphoneos99.0", "\(kind)")
             XCTAssertEqual(
                 try FileManager.default.destinationOfSymbolicLink(atPath: record.path + "/usr/lib/libfixture.1.dylib"),
-                "libfixture.dylib"
+                "libfixture.dylib",
             )
         }
     }
@@ -243,7 +243,7 @@ final class SDKImportTests: XCTestCase {
             [ArchiveFixture.Entry(name: "sdk/../../escape", data: Data("x".utf8))],
             // A link first, then a file through it.
             [ArchiveFixture.Entry(name: "link", symlink: "/tmp"), ArchiveFixture.Entry(name: "link/escape", data: Data("x".utf8))],
-            [ArchiveFixture.Entry(name: "twice", data: Data("a".utf8)), ArchiveFixture.Entry(name: "twice", data: Data("b".utf8))]
+            [ArchiveFixture.Entry(name: "twice", data: Data("a".utf8)), ArchiveFixture.Entry(name: "twice", data: Data("b".utf8))],
         ]
         for (index, entries) in cases.enumerated() {
             let home = try TemporaryHome(self)

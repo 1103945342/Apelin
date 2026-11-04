@@ -69,7 +69,7 @@ final class GitForcePushServiceTests: XCTestCase {
             remote: diverged.theirs,
             pushURL: diverged.url,
             remoteOnly: [GitCommitSummary(commit: diverged.theirs, subject: "Theirs")],
-            remoteOnlyCount: 1
+            remoteOnlyCount: 1,
         ))
         XCTAssertNil(try git.fetch(git.prepareFetch(GitFetchRequest(projectID: id)), reporter: .silent)["comparison"])
 
@@ -110,17 +110,17 @@ final class GitForcePushServiceTests: XCTestCase {
         let pushed = try git.push(git.preparePush(GitPushRequest(projectID: id, forceWithLease: lease)), reporter: log.reporter)
         XCTAssertEqual(pushed, .object([
             "remote": .string("origin"), "branch": .string("main"), "commit": .string(diverged.mine),
-            "from": .string(diverged.theirs), "forced": .bool(true)
+            "from": .string(diverged.theirs), "forced": .bool(true),
         ]))
         XCTAssertEqual(log.last("lease"), .object([
             "branch": .string("main"), "expectedCommit": .string(diverged.theirs), "localCommit": .string(diverged.mine),
-            "found": .string(diverged.theirs), "held": .bool(true)
+            "found": .string(diverged.theirs), "held": .bool(true),
         ]))
         XCTAssertEqual(log.kinds.firstIndex(of: "lease"), 1, "after the stage, before anything is sent")
         XCTAssertEqual(
             try diverged.seed.fetch(comparing: "main").comparison?.remote,
             diverged.mine,
-            "the remote's main is the workspace's now"
+            "the remote's main is the workspace's now",
         )
 
         // Someone pushes after a new lease was taken: nothing is pushed.

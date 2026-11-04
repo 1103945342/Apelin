@@ -37,7 +37,7 @@ struct ToolCallDetail: Equatable {
             sections.append(Section(
                 name: String(localized: "Result"),
                 value: Self.plain(String(detail[separator.upperBound...])),
-                isResult: true
+                isResult: true,
             ))
         }
         self.sections = sections
@@ -65,12 +65,12 @@ struct ToolCallDetail: Equatable {
         var result = text.replacingOccurrences(
             of: "\u{1B}\\][^\u{07}\u{1B}]*(\u{07}|\u{1B}\\\\)",
             with: "",
-            options: .regularExpression
+            options: .regularExpression,
         )
         result = result.replacingOccurrences(
             of: "\u{1B}\\[[0-9;?]*[A-Za-z]",
             with: "",
-            options: .regularExpression
+            options: .regularExpression,
         )
         return result.replacingOccurrences(of: "\u{1B}", with: "")
     }

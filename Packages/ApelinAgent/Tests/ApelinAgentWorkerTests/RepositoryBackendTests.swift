@@ -10,7 +10,7 @@ struct RepositoryBackendTests {
     private static let created = GitRepositoryCreateResponse(
         fullName: "someone/clock-tweak",
         cloneURL: "https://github.com/someone/clock-tweak.git",
-        url: "https://github.com/someone/clock-tweak"
+        url: "https://github.com/someone/clock-tweak",
     )
 
     private func request(_ fixture: Fixture) -> RepositoryCreateToolRequest {
@@ -19,7 +19,7 @@ struct RepositoryBackendTests {
             owner: nil,
             name: "clock-tweak",
             visibility: .private,
-            description: "A clock"
+            description: "A clock",
         )
     }
 
@@ -65,11 +65,11 @@ struct RepositoryBackendTests {
             id: "a", toolCallID: "c", tool: "apelin_git_create_repository", arguments: "{}", workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Creates the empty private repository clock-tweak.",
             detail: .repositoryCreate(RepositoryCreateApproval(owner: nil, name: "clock-tweak", visibility: .private, description: nil)),
-            allowsSessionScope: false
+            allowsSessionScope: false,
         )
         let payload = EventRelay.approvalPayload(request)
         let expected: ApelinCore.JSONValue = .object(["repositoryCreate": .object([
-            "name": .string("clock-tweak"), "visibility": .string("private")
+            "name": .string("clock-tweak"), "visibility": .string("private"),
         ])])
         #expect(payload["detail"] == expected, "no owner: the account; what is not asked for is not there")
         #expect(payload["allowsSessionScope"] == .bool(false))

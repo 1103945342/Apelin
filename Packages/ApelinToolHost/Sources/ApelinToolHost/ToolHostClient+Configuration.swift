@@ -29,7 +29,7 @@ public extension ToolHostClient {
             manifest: ToolManifest? = nil,
             allowRoot: Bool = false,
             runAs: ToolProcessIdentity? = nil,
-            logHandler: (@Sendable (String) -> Void)? = nil
+            logHandler: (@Sendable (String) -> Void)? = nil,
         ) {
             self.runAs = runAs
             self.executable = executable

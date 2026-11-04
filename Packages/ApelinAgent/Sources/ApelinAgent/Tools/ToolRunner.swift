@@ -59,7 +59,7 @@ actor ToolRunner {
         readOnlyRoots: ReadOnlyRoots = .none,
         record: (@Sendable (AgentSessionEvent) async throws -> Void)? = nil,
         webFetch: WebFetch = .shared,
-        journal: SessionJournal? = nil
+        journal: SessionJournal? = nil,
     ) {
         self.sessionID = sessionID
         self.project = project
@@ -149,14 +149,14 @@ actor ToolRunner {
                 name: name.rawValue,
                 label: name.rawValue,
                 description: name.summary,
-                parameters: ToolReason.adding(to: name.parameters)
+                parameters: ToolReason.adding(to: name.parameters),
             ) { id, args, cancellation, _ in
                 try await self.run(
                     .local(name),
                     toolCallID: id,
                     arguments: ToolReason.removing(from: args),
                     cancellation: cancellation,
-                    mcp: nil
+                    mcp: nil,
                 )
             }
         }
@@ -170,7 +170,7 @@ actor ToolRunner {
                     .mcp(name),
                     toolCallID: id,
                     arguments: ToolReason.removing(from: args),
-                    cancellation: cancellation
+                    cancellation: cancellation,
                 ) { args in
                     try await inner(id, args, cancellation, update)
                 }
@@ -183,14 +183,14 @@ actor ToolRunner {
                 name: extensionTool.name,
                 label: extensionTool.name,
                 description: definition.description,
-                parameters: definition.parameters
+                parameters: definition.parameters,
             ) { id, args, cancellation, _ in
                 try await self.run(
                     .toolExtension(extensionTool),
                     toolCallID: id,
                     arguments: ToolReason.removing(from: args),
                     cancellation: cancellation,
-                    mcp: nil
+                    mcp: nil,
                 )
             }
             // A blank optional argument is dropped before kwwk holds the
@@ -210,7 +210,7 @@ actor ToolRunner {
         toolCallID: String,
         arguments: JSONValue,
         cancellation: CancellationHandle?,
-        mcp: (@Sendable (JSONValue) async throws -> AgentToolResult)?
+        mcp: (@Sendable (JSONValue) async throws -> AgentToolResult)?,
     ) async throws -> AgentToolResult {
         do {
             return try await gated(tool, toolCallID: toolCallID, arguments: arguments, cancellation: cancellation, mcp: mcp)
@@ -226,7 +226,7 @@ actor ToolRunner {
         toolCallID: String,
         arguments: JSONValue,
         cancellation: CancellationHandle?,
-        mcp: (@Sendable (JSONValue) async throws -> AgentToolResult)?
+        mcp: (@Sendable (JSONValue) async throws -> AgentToolResult)?,
     ) async throws -> AgentToolResult {
         let arguments = switch tool {
         case let .local(name): ToolArguments.normalized(arguments, for: name)
@@ -268,7 +268,7 @@ actor ToolRunner {
             arguments: arguments,
             workingDirectory: workingDirectory,
             projectID: project.id,
-            digest: bound
+            digest: bound,
         )
 
         let ask = { (reason: String, detail: ApprovalDetail) async throws -> ApprovalEvidence in
@@ -281,7 +281,7 @@ actor ToolRunner {
                 fingerprint: fingerprint,
                 reason: reason,
                 detail: detail,
-                cancellation: cancellation
+                cancellation: cancellation,
             )
         }
         let hostRefusal = "Apelin could not confirm that this command is one of your approved presets. Review it before running."
@@ -308,7 +308,7 @@ actor ToolRunner {
             sessionID: sessionID,
             project: project,
             toolCallID: toolCallID,
-            approval: evidence
+            approval: evidence,
         )
         do {
             return try await execute(
@@ -316,7 +316,7 @@ actor ToolRunner {
                 arguments: arguments,
                 facts: facts,
                 context: context,
-                cancellation: cancellation
+                cancellation: cancellation,
             )
         } catch let refusal as HostRefusedPresetError {
             // The host's preset rule is the one that counts: where it does
@@ -333,7 +333,7 @@ actor ToolRunner {
                 arguments: arguments,
                 facts: facts,
                 context: context,
-                cancellation: cancellation
+                cancellation: cancellation,
             )
         }
     }
@@ -350,7 +350,7 @@ actor ToolRunner {
         fingerprint: String,
         reason: String,
         detail: ApprovalDetail,
-        cancellation: CancellationHandle?
+        cancellation: CancellationHandle?,
     ) async throws -> ApprovalEvidence {
         let sessionScope = Self.allowsSessionScope(tool, detail: detail)
         if sessionScope, await gate.isRemembered(fingerprint) {
@@ -366,7 +366,7 @@ actor ToolRunner {
             fingerprint: fingerprint,
             reason: reason,
             detail: detail,
-            allowsSessionScope: sessionScope
+            allowsSessionScope: sessionScope,
         )
         switch await gate.request(request, cancellation: cancellation) {
         case .approve:
@@ -421,7 +421,7 @@ actor ToolRunner {
         arguments: JSONValue,
         facts: InvocationFacts,
         context: HostCallContext,
-        cancellation: CancellationHandle?
+        cancellation: CancellationHandle?,
     ) async throws -> AgentToolResult {
         let files = ProjectFileTools(root: root)
         switch name {
@@ -498,7 +498,7 @@ actor ToolRunner {
             if let image = try reader.readImage(arguments) {
                 return AgentToolResult(content: [
                     .text(TextContent(text: image.summary)),
-                    .image(ImageContent(data: image.data.base64EncodedString(), mimeType: image.mimeType))
+                    .image(ImageContent(data: image.data.base64EncodedString(), mimeType: image.mimeType)),
                 ])
             }
             return try text(reader.readFile(arguments))
@@ -515,7 +515,7 @@ actor ToolRunner {
             let bootstrap = try Self.bootstrap(arguments)
             return try await json(backend.checkDistribution(DistributionCheckRequest(
                 project: project,
-                bootstrap: bootstrap
+                bootstrap: bootstrap,
             )))
 
         case .templateList:
@@ -536,7 +536,7 @@ actor ToolRunner {
                 projectID: target.id,
                 folder: target.name.rawValue,
                 displayName: arguments.requireString("display_name").trimmingCharacters(in: .whitespaces),
-                automatic: automatic
+                automatic: automatic,
             ))
             // A new project named for its goal: the moment to settle the
             // identifiers Apelin made up for it.
@@ -553,7 +553,7 @@ actor ToolRunner {
             return try await json(backend.deleteProject(ProjectDeleteToolRequest(
                 context: context,
                 projectID: deletion.projectID,
-                folder: deletion.folder
+                folder: deletion.folder,
             )))
 
         case .projectCreate:
@@ -561,13 +561,13 @@ actor ToolRunner {
                 context: context,
                 templateID: arguments.requireString("template"),
                 name: arguments.requireString("name"),
-                values: Self.templateValues(arguments)
+                values: Self.templateValues(arguments),
             )))
 
         case .sdkAnalyzeFramework, .sdkReadHeader:
             let sdk = try await backend.registeredSDK(RegisteredSDKRequest(
                 sdkID: arguments.argString("sdk_id"),
-                project: project
+                project: project,
             ))
             let tools = try FrameworkTools(sdk: ScopedRoot(URL(fileURLWithPath: sdk.rootPath, isDirectory: true)))
             let output = name == .sdkAnalyzeFramework ? try tools.analyze(arguments) : try tools.header(arguments)
@@ -583,7 +583,7 @@ actor ToolRunner {
                 invocation: invocation,
                 workingDirectory: facts.workingDirectory,
                 timeoutSeconds: timeout,
-                asRoot: facts.runsAsRoot
+                asRoot: facts.runsAsRoot,
             ))
             if ran.timedOut == true {
                 journal?.note(ToolCallOutcome(.timedOut, "killed after \(timeout) s"), for: context.toolCallID)
@@ -606,7 +606,7 @@ actor ToolRunner {
                 context: context,
                 configuration: configuration,
                 buildDescriptionDigest: digest,
-                bootstrap: Self.bootstrap(arguments)
+                bootstrap: Self.bootstrap(arguments),
             ))
             if built.succeeded, configuration == .debug, facts.externalBuild == nil {
                 built.identifierHint = await firstInstallIdentifierHint()
@@ -621,7 +621,7 @@ actor ToolRunner {
                 context: context,
                 artifactID: arguments.requireString("artifact_id"),
                 artifactDigest: arguments.requireString("artifact_digest"),
-                packagingDescriptionDigest: state.digest
+                packagingDescriptionDigest: state.digest,
             ))
             if installed.succeeded {
                 installed.relaunchHint = AppRelaunch.hint(in: root)
@@ -636,7 +636,7 @@ actor ToolRunner {
             do {
                 return try await json(backend.removePackage(RemovePackageRequest(
                     context: context,
-                    installationID: installationID
+                    installationID: installationID,
                 )))
             } catch let refusal as ApelinError where [.badRequest, .notFound, .conflict].contains(refusal.code) {
                 let instead = await removableInstead()
@@ -657,7 +657,7 @@ actor ToolRunner {
             }
             return try await json(backend.installations(InstallationListToolRequest(
                 packageID: arguments.argNonEmptyString("package_id"),
-                projectID: projectID
+                projectID: projectID,
             )))
 
         case .deviceRespring:
@@ -668,7 +668,7 @@ actor ToolRunner {
                 context: context,
                 buildID: arguments.requireString("build_id"),
                 target: arguments.requireString("target"),
-                respring: arguments.argBool("respring") ?? false
+                respring: arguments.argBool("respring") ?? false,
             )))
 
         case .logRead:
@@ -678,36 +678,36 @@ actor ToolRunner {
                 subsystem: arguments.argString("subsystem"),
                 listenSeconds: min(
                     ReadLogsRequest.maximumListenSeconds,
-                    max(1, arguments.argInt("listen_seconds") ?? ReadLogsRequest.maximumListenSeconds)
+                    max(1, arguments.argInt("listen_seconds") ?? ReadLogsRequest.maximumListenSeconds),
                 ),
-                limit: min(1000, max(1, arguments.argInt("limit") ?? 200))
+                limit: min(1000, max(1, arguments.argInt("limit") ?? 200)),
             )))
 
         case .crashList:
             return try await json(backend.listCrashes(ListCrashesRequest(
                 context: context,
                 process: arguments.argString("process"),
-                limit: min(200, max(1, arguments.argInt("limit") ?? 20))
+                limit: min(200, max(1, arguments.argInt("limit") ?? 20)),
             )))
 
         case .crashRead:
             return try await json(backend.readCrash(ReadCrashRequest(
                 context: context,
                 reportID: arguments.requireString("report_id"),
-                maxBytes: 256 * 1024
+                maxBytes: 256 * 1024,
             )))
 
         case .crashSymbolicate:
             return try await json(backend.symbolicateCrash(SymbolicateCrashRequest(
                 context: context,
                 reportID: arguments.requireString("report_id"),
-                buildID: arguments.argString("build_id")
+                buildID: arguments.argString("build_id"),
             )))
 
         case .screenCapture:
             var response = try await backend.captureScreen(CaptureScreenRequest(
                 context: context,
-                targetID: arguments.argString("target_id")
+                targetID: arguments.argString("target_id"),
             ))
             let image = response.imageData.flatMap { $0.count <= Self.maxImageBytes ? $0 : nil }
             response.imageData = nil
@@ -715,7 +715,7 @@ actor ToolRunner {
             if let image {
                 result.content.append(.image(ImageContent(
                     data: image.base64EncodedString(),
-                    mimeType: response.mimeType
+                    mimeType: response.mimeType,
                 )))
             }
             return result
@@ -724,14 +724,14 @@ actor ToolRunner {
             return try await json(backend.readUITree(ReadUITreeRequest(
                 context: context,
                 targetID: arguments.argString("target_id"),
-                maxDepth: min(40, max(1, arguments.argInt("max_depth") ?? 12))
+                maxDepth: min(40, max(1, arguments.argInt("max_depth") ?? 12)),
             )))
 
         case .screenInteract:
             return try await json(backend.uiAction(UIActionRequest(
                 context: context,
                 targetID: arguments.argString("target_id"),
-                action: Self.uiAction(arguments)
+                action: Self.uiAction(arguments),
             )))
 
         case .gitStatus:
@@ -741,7 +741,7 @@ actor ToolRunner {
             return try await json(backend.gitDiff(GitDiffToolRequest(
                 context: context,
                 path: arguments.argNonEmptyString("path"),
-                staged: arguments.argBool("staged") ?? false
+                staged: arguments.argBool("staged") ?? false,
             )))
 
         case .gitStage, .gitUnstage:
@@ -759,7 +759,7 @@ actor ToolRunner {
             return try await json(backend.gitCommit(GitCommitToolRequest(
                 context: context,
                 message: message,
-                all: arguments.argBool("all") ?? false
+                all: arguments.argBool("all") ?? false,
             )))
 
         case .gitInit:
@@ -779,7 +779,7 @@ actor ToolRunner {
                 remote: arguments.argNonEmptyString("remote"),
                 branch: facts.push?.branch,
                 url: force?.url ?? facts.push?.url,
-                lease: force.map { GitPushLease(expectedCommit: $0.expectedCommit, localCommit: $0.localCommit) }
+                lease: force.map { GitPushLease(expectedCommit: $0.expectedCommit, localCommit: $0.localCommit) },
             ))
             pushed.note = facts.push?.unforced ?? force.map(Self.forcedPushNote)
             return json(pushed)
@@ -791,7 +791,7 @@ actor ToolRunner {
             return try await json(backend.gitClone(GitCloneToolRequest(
                 context: context,
                 url: arguments.requireString("url"),
-                branch: arguments.argNonEmptyString("branch")
+                branch: arguments.argNonEmptyString("branch"),
             )))
 
         case .gitRemoteList:
@@ -801,13 +801,13 @@ actor ToolRunner {
             return try await json(backend.gitRemoteSet(GitRemoteSetToolRequest(
                 context: context,
                 name: arguments.requireString("name"),
-                url: arguments.requireString("url")
+                url: arguments.requireString("url"),
             )))
 
         case .gitRemoteRemove:
             return try await json(backend.gitRemoteRemove(GitRemoteRemoveToolRequest(
                 context: context,
-                name: arguments.requireString("name")
+                name: arguments.requireString("name"),
             )))
 
         case .gitResetToRemote:
@@ -824,7 +824,7 @@ actor ToolRunner {
             return try await json(backend.gitSetAuthor(GitAuthorToolRequest(
                 context: context,
                 name: arguments.argString("name"),
-                email: arguments.argString("email")
+                email: arguments.argString("email"),
             )))
 
         case .gitSaveCredential:
@@ -832,13 +832,13 @@ actor ToolRunner {
                 context: context,
                 host: arguments.requireString("host"),
                 username: arguments.requireString("username"),
-                token: arguments.requireString("token")
+                token: arguments.requireString("token"),
             )))
 
         case .gitRemoveCredential:
             return try await json(backend.gitRemoveCredential(GitCredentialRemoveToolRequest(
                 context: context,
-                host: arguments.requireString("host")
+                host: arguments.requireString("host"),
             )))
 
         case .gitCreateRepository:
@@ -851,7 +851,7 @@ actor ToolRunner {
                 owner: repository.owner,
                 name: repository.name,
                 visibility: repository.visibility,
-                description: repository.description
+                description: repository.description,
             )))
 
         case .gitCreateIssue:
@@ -863,7 +863,7 @@ actor ToolRunner {
                 context: context,
                 repository: issue.repository,
                 title: issue.title,
-                body: issue.body
+                body: issue.body,
             )))
 
         case .conversationCreate:
@@ -875,7 +875,7 @@ actor ToolRunner {
                 context: context,
                 prompt: prompt,
                 title: arguments.argNonEmptyString("title"),
-                target: facts.targetProject
+                target: facts.targetProject,
             )))
 
         case .conversationSend:
@@ -891,13 +891,13 @@ actor ToolRunner {
                 context: context,
                 sessionID: target,
                 text: text,
-                target: facts.targetProject
+                target: facts.targetProject,
             )))
 
         case .conversationList:
             return try await json(backend.conversationList(ConversationListToolRequest(
                 context: context,
-                target: facts.targetProject
+                target: facts.targetProject,
             )))
 
         case .conversationRead:
@@ -906,7 +906,7 @@ actor ToolRunner {
                 sessionID: Self.conversation(arguments),
                 afterSeq: arguments.argInt("after_seq").map { UInt64(max(0, $0)) },
                 waitSeconds: Self.conversationWait(arguments),
-                target: facts.targetProject
+                target: facts.targetProject,
             )
             let backend = backend
             return try await json(Self.untilCancelled(cancellation) { try await backend.conversationRead(request) })
@@ -915,7 +915,7 @@ actor ToolRunner {
             return try await json(backend.conversationStop(ConversationStopToolRequest(
                 context: context,
                 sessionID: Self.conversation(arguments),
-                close: arguments.argBool("close") ?? false
+                close: arguments.argBool("close") ?? false,
             )))
 
         case .toolchainList:
@@ -932,7 +932,7 @@ actor ToolRunner {
             return try await json(backend.toolchainSetup(ToolchainSetupToolRequest(
                 context: context,
                 productID: setup.productID,
-                components: setup.components
+                components: setup.components,
             )))
 
         case .sdkImport:
@@ -942,13 +942,13 @@ actor ToolRunner {
             return try await json(backend.sdkImport(SDKImportToolRequest(
                 context: context,
                 url: sdkImport.url,
-                branch: sdkImport.branch
+                branch: sdkImport.branch,
             )))
 
         case .toolchainSelfTest:
             return try await json(backend.toolchainSelfTest(ToolchainSelfTestToolRequest(
                 context: context,
-                toolchainID: arguments.requireString("toolchain_id")
+                toolchainID: arguments.requireString("toolchain_id"),
             )))
 
         case .projectSetEnvironment:
@@ -962,13 +962,13 @@ actor ToolRunner {
             return try await json(backend.sendFeedback(FeedbackToolRequest(
                 context: context,
                 title: feedback.title,
-                body: feedback.body
+                body: feedback.body,
             )))
 
         case .feedbackRead:
             return try await json(backend.readFeedback(FeedbackReadToolRequest(
                 context: context,
-                number: FeedbackEdit.number(arguments)
+                number: FeedbackEdit.number(arguments),
             )))
 
         case .feedbackEdit:
@@ -982,7 +982,7 @@ actor ToolRunner {
                 title: edit.title,
                 body: edit.body,
                 expectedTitle: edit.currentTitle,
-                expectedBody: edit.currentBody
+                expectedBody: edit.currentBody,
             )))
         }
     }
@@ -993,7 +993,7 @@ actor ToolRunner {
     /// the file tools' writer with the registry's digests.
     private func setEnvironment(
         _ arguments: JSONValue,
-        context: HostCallContext
+        context: HostCallContext,
     ) async throws -> ProjectEnvironmentSetToolResponse {
         let toolchainID = arguments.argNonEmptyString("toolchain_id")
         let sdkID = arguments.argNonEmptyString("sdk_id")
@@ -1006,7 +1006,7 @@ actor ToolRunner {
         let checked = try await backend.checkEnvironment(EnvironmentCheckToolRequest(
             context: context,
             toolchainID: toolchainID,
-            sdkID: sdkID
+            sdkID: sdkID,
         ))
         let errors = checked.diagnostics.filter { $0.severity == "error" }
         guard errors.isEmpty else {
@@ -1023,7 +1023,7 @@ actor ToolRunner {
             toolchain: checked.toolchain,
             sdk: checked.sdk,
             changed: edit.changed,
-            warnings: checked.diagnostics.filter { $0.severity == "warning" }.map(\.message)
+            warnings: checked.diagnostics.filter { $0.severity == "warning" }.map(\.message),
         )
     }
 
@@ -1063,7 +1063,7 @@ actor ToolRunner {
             return MemoryTools(
                 store: store,
                 projectID: reference,
-                newRecordRefusal: "No project has the id \(reference) now: its memories can be changed or deleted, not added to."
+                newRecordRefusal: "No project has the id \(reference) now: its memories can be changed or deleted, not added to.",
             )
         }
         guard !target.isTemporary else { throw ToolDeniedError(message: "a temporary chat keeps no memories of its own") }
@@ -1113,7 +1113,7 @@ actor ToolRunner {
     /// not wait for a long wait on another conversation to run out.
     static func untilCancelled<T: Sendable>(
         _ cancellation: CancellationHandle?,
-        _ body: @escaping @Sendable () async throws -> T
+        _ body: @escaping @Sendable () async throws -> T,
     ) async throws -> T {
         let task = Task { try await body() }
         let registration = cancellation?.onCancel { _ in task.cancel() }

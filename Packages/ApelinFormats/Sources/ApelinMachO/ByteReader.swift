@@ -98,7 +98,7 @@ public struct ByteReader: Sendable {
                     descriptor,
                     raw.baseAddress!.advanced(by: filled),
                     count - filled,
-                    off_t(offset) + off_t(filled)
+                    off_t(offset) + off_t(filled),
                 )
             }
             if got < 0 {

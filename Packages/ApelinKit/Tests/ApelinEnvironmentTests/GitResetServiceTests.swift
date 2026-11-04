@@ -73,7 +73,7 @@ final class GitResetServiceTests: XCTestCase {
             branch: shown.branch,
             expectedRemoteCommit: shown.remoteCommit,
             expectedHead: shown.head,
-            expectedURL: url ?? shown.url
+            expectedURL: url ?? shown.url,
         )
         return try git.reset(git.prepareReset(request), request, reporter: .silent)
     }
@@ -147,7 +147,7 @@ final class GitResetServiceTests: XCTestCase {
             GitResetToRemoteRequest(projectID: localID, remote: "origin", branch: "main", expectedRemoteCommit: "HEAD", expectedHead: nil),
             GitResetToRemoteRequest(projectID: localID, remote: "origin", branch: "-x", expectedRemoteCommit: shown.remoteCommit, expectedHead: nil),
             GitResetToRemoteRequest(projectID: localID, remote: "https://example.com/a.git", branch: "main", expectedRemoteCommit: shown.remoteCommit, expectedHead: nil),
-            GitResetToRemoteRequest(projectID: localID, remote: "--all", branch: "main", expectedRemoteCommit: shown.remoteCommit, expectedHead: nil)
+            GitResetToRemoteRequest(projectID: localID, remote: "--all", branch: "main", expectedRemoteCommit: shown.remoteCommit, expectedHead: nil),
         ] {
             XCTAssertThrowsError(try git.prepareReset(bad)) { XCTAssertEqual(($0 as? ApelinError)?.code, .badRequest, "\($0)") }
         }
@@ -176,7 +176,7 @@ final class GitResetServiceTests: XCTestCase {
         let request = try ChannelRequest(
             request: WireRequest(GitResetPreviewRequest(projectID: localID, remote: "origin")),
             descriptors: [],
-            taskID: TaskID("preview")
+            taskID: TaskID("preview"),
         )
         let (reply, _) = await worker.handle(request)
         XCTAssertNoThrow(try reply.result.get())
@@ -191,7 +191,7 @@ final class GitResetServiceTests: XCTestCase {
         let refused = try ChannelRequest(
             request: WireRequest(GitResetToRemoteRequest(projectID: localID, remote: "nope", branch: "main", expectedRemoteCommit: String(repeating: "a", count: 40), expectedHead: nil)),
             descriptors: [],
-            taskID: TaskID("reset")
+            taskID: TaskID("reset"),
         )
         let (refusal, _) = await worker.handle(refused)
         XCTAssertThrowsError(try refusal.result.get()) { XCTAssertEqual(($0 as? ApelinError)?.reason, .noSuchRemote) }

@@ -23,7 +23,7 @@ enum GitFailure {
         message: String,
         reason: String?,
         host: String?,
-        forced: Bool = false
+        forced: Bool = false,
     ) -> GitToolFailure {
         let detail = message.isEmpty ? (code?.rawValue ?? "no reason given") : message
         var text = "\(forced ? "forced " : "")\(operation) failed: \(detail)"
@@ -51,7 +51,7 @@ enum GitFailure {
         code: ApelinError.Code?,
         message: String,
         reason: String?,
-        host: String?
+        host: String?,
     ) -> String? {
         // A reason the host named comes before any guess from the words,
         // which a project's name or a URL could set off.

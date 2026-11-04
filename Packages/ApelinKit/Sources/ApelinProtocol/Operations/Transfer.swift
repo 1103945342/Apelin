@@ -82,7 +82,7 @@ public struct TransferMember: Codable, Sendable, Equatable {
         size: Int64? = nil,
         sha256: String? = nil,
         executable: Bool? = nil,
-        target: String? = nil
+        target: String? = nil,
     ) {
         self.path = path
         self.kind = kind
@@ -120,7 +120,7 @@ public struct TransferToolchain: Codable, Sendable, Equatable {
         sourceSHA256: String,
         bootstrap: String,
         architecture: String,
-        minimumOS: String
+        minimumOS: String,
     ) {
         self.record = record
         self.retargetScheme = retargetScheme
@@ -175,7 +175,7 @@ public struct TransferProject: Codable, Sendable, Equatable {
         sdkID: String? = nil,
         includesRepository: Bool = false,
         remoteURL: String? = nil,
-        ignoredCount: Int? = nil
+        ignoredCount: Int? = nil,
     ) {
         self.projectID = projectID
         self.name = name
@@ -223,7 +223,7 @@ public struct TransferManifest: Codable, Sendable, Equatable {
         members: [TransferMember] = [],
         toolchain: TransferToolchain? = nil,
         sdk: TransferSDK? = nil,
-        project: TransferProject? = nil
+        project: TransferProject? = nil,
     ) {
         self.formatVersion = formatVersion
         self.kind = kind
@@ -255,7 +255,7 @@ public struct TransferManifest: Codable, Sendable, Equatable {
             payloadBytes: payloadBytes,
             toolchain: toolchain,
             sdk: sdk,
-            project: project
+            project: project,
         )
     }
 }
@@ -285,7 +285,7 @@ public struct TransferSummary: Codable, Sendable, Equatable {
         payloadBytes: Int64,
         toolchain: TransferToolchain? = nil,
         sdk: TransferSDK? = nil,
-        project: TransferProject? = nil
+        project: TransferProject? = nil,
     ) {
         self.formatVersion = formatVersion
         self.kind = kind
@@ -352,7 +352,7 @@ public struct TransferExport: Codable, Sendable, Equatable {
         fileName: String,
         size: Int64,
         sha256: String,
-        summary: TransferSummary
+        summary: TransferSummary,
     ) {
         self.path = path
         self.exportedPath = exportedPath
@@ -404,7 +404,7 @@ public struct TransferInspection: Codable, Sendable, Equatable {
         problems: [String] = [],
         notes: [String] = [],
         existingID: String? = nil,
-        suggestedName: String? = nil
+        suggestedName: String? = nil,
     ) {
         self.summary = summary
         self.fileSize = fileSize
@@ -438,7 +438,7 @@ public struct TransferImportRequest: OperationRequest {
         source: TransferSource,
         fileName: String? = nil,
         kind: TransferKind? = nil,
-        projectName: String? = nil
+        projectName: String? = nil,
     ) {
         self.source = source
         self.fileName = fileName
@@ -461,7 +461,7 @@ public struct TransferProjectResult: Codable, Sendable, Equatable {
         name: String,
         path: String,
         previousProjectID: String? = nil,
-        includesRepository: Bool = false
+        includesRepository: Bool = false,
     ) {
         self.projectID = projectID
         self.name = name
@@ -481,7 +481,7 @@ public extension ApelinService {
     func transferInspect(
         _ source: TransferSource,
         fileName: String? = nil,
-        descriptors: [OwnedDescriptor] = []
+        descriptors: [OwnedDescriptor] = [],
     ) async throws -> TransferInspection {
         try await send(TransferInspectRequest(source: source, fileName: fileName), descriptors: descriptors)
     }
@@ -489,7 +489,7 @@ public extension ApelinService {
     /// Starts an import; follow it with `events(of:)`.
     func transferImport(
         _ request: TransferImportRequest,
-        descriptors: [OwnedDescriptor] = []
+        descriptors: [OwnedDescriptor] = [],
     ) async throws -> TaskHandle {
         try await send(request, descriptors: descriptors)
     }

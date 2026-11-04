@@ -8,7 +8,7 @@ import Foundation
 private func appCreateMachServiceConnection(
     _ name: UnsafePointer<CChar>,
     _ queue: DispatchQueue?,
-    _ flags: UInt64
+    _ flags: UInt64,
 ) -> xpc_connection_t?
 
 /// The app's connection to apelind, and the `ApelinTransport` under
@@ -63,8 +63,8 @@ final class DaemonClient: ApelinTransport, @unchecked Sendable {
                     continuation.resume(
                         throwing: ApelinError(
                             .unavailable,
-                            String(localized: "The connection to Apelin’s background service closed. Try again.")
-                        )
+                            String(localized: "The connection to Apelin’s background service closed. Try again."),
+                        ),
                     )
                     return
                 }
@@ -76,8 +76,8 @@ final class DaemonClient: ApelinTransport, @unchecked Sendable {
                 continuation.resume(
                     throwing: ApelinError(
                         .timeout,
-                        String(localized: "Apelin’s background service did not answer within \(waited). Try again.")
-                    )
+                        String(localized: "Apelin’s background service did not answer within \(waited). Try again."),
+                    ),
                 )
             }
         }
@@ -135,7 +135,7 @@ final class DaemonClient: ApelinTransport, @unchecked Sendable {
         xpc_connection_send_message_with_reply(
             connection,
             XPCEnvelope.message(for: request, descriptors: []),
-            queue
+            queue,
         ) { reply in
             guard once.claim() else { return }
             let (wireReply, _) = XPCEnvelope.reply(from: reply, requestID: request.requestID)

@@ -80,7 +80,7 @@ public struct DistributionRepositoryListResponse: Codable, Sendable, Equatable {
         account: String? = nil,
         linked: DistributionRepository? = nil,
         repositories: [DistributionRepositoryCandidate] = [],
-        organizations: [String] = []
+        organizations: [String] = [],
     ) {
         self.account = account
         self.linked = linked
@@ -271,7 +271,7 @@ public struct FeedbackReadResponse: Codable, Sendable, Equatable {
         footer: String?,
         author: String,
         state: String,
-        isAuthor: Bool
+        isAuthor: Bool,
     ) {
         self.number = number
         self.url = url

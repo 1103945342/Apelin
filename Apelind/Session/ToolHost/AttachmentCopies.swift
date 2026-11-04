@@ -45,7 +45,7 @@ struct AttachmentCopies: Sendable {
         guard info.st_size <= off_t(maximumBytes) else {
             throw ApelinError(
                 .badRequest,
-                "an attachment is \(info.st_size) bytes, over the \(maximumBytes)-byte limit"
+                "an attachment is \(info.st_size) bytes, over the \(maximumBytes)-byte limit",
             )
         }
 
@@ -69,7 +69,7 @@ struct AttachmentCopies: Sendable {
                 guard offset + count <= maximumBytes else {
                     throw ApelinError(
                         .badRequest,
-                        "an attachment grew past the \(maximumBytes)-byte limit while it was read"
+                        "an attachment grew past the \(maximumBytes)-byte limit while it was read",
                     )
                 }
                 try buffer.withUnsafeBytes { raw in
@@ -84,7 +84,7 @@ struct AttachmentCopies: Sendable {
                             }
                             throw ApelinError(
                                 .unavailable,
-                                "the attachment copy cannot be written: \(String(cString: strerror(errno)))"
+                                "the attachment copy cannot be written: \(String(cString: strerror(errno)))",
                             )
                         }
                         written += result

@@ -98,8 +98,8 @@ struct LoadPlan: Equatable {
             filterPlist: dictionary.isEmpty ? nil : try? PropertyListSerialization.data(
                 fromPropertyList: ["Filter": dictionary],
                 format: .xml,
-                options: 0
-            )
+                options: 0,
+            ),
         )
     }
 
@@ -109,7 +109,7 @@ struct LoadPlan: Equatable {
             marker: BuildLoadCheck.marker(buildID: buildID),
             subsystem: package?["id"]?.stringValue,
             dylibPath: "",
-            filterPlist: nil
+            filterPlist: nil,
         )
         guard let filter = package?["tweakFilter"], let product = filter["dylib"]?.stringValue else { return plan }
         if case let .array(layout)? = package?["layout"],
@@ -129,7 +129,7 @@ struct LoadPlan: Equatable {
             plan.filterPlist = try? PropertyListSerialization.data(
                 fromPropertyList: ["Filter": dictionary],
                 format: .xml,
-                options: 0
+                options: 0,
             )
         }
         return plan

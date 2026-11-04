@@ -44,7 +44,7 @@ enum DistributionHandler: DomainHandler {
                 publish,
                 session: instance,
                 registry: host.registry,
-                artifacts: host.artifacts
+                artifacts: host.artifacts,
             ) {
                 return request.fail(refusal)
             }

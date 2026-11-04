@@ -53,7 +53,7 @@ struct DpkgStatusDatabase: InstalledPackageSource {
                 version: fields["version"] ?? "",
                 status: fields["status"] ?? "",
                 essential: fields["essential"]?.lowercased() == "yes",
-                priority: fields["priority"]?.lowercased()
+                priority: fields["priority"]?.lowercased(),
             )
             // A package with more than one stanza (architectures): an installed one wins.
             if let existing = result[package], existing.isInstalled, !entry.isInstalled {
@@ -97,7 +97,7 @@ enum ManagedPackagePolicy {
         "ellekit", "com.opa334.dopamine", "com.opa334.dopamine-roothide", "com.roothide.bootstrap",
         "mobilesubstrate", "com.saurik.substrate.safemode", "libhooker", "org.coolstar.libhooker",
         "trustcache", "jbctl", "libjailbreak", "nathanlr", "palera1n", "bootstrap", "libkrw0", "libkernrw0",
-        "xinamine", "serotonin"
+        "xinamine", "serotonin",
     ]
 
     /// The one family under Apelin's own prefix a source other than the
@@ -108,7 +108,7 @@ enum ManagedPackagePolicy {
     static func isReserved(
         _ packageID: String,
         installed: InstalledPackage?,
-        origin: InstallationRecord.Origin
+        origin: InstallationRecord.Origin,
     ) -> Bool {
         let id = packageID.lowercased()
         if origin == .environment {
@@ -144,7 +144,7 @@ enum ManagedPackagePolicy {
         packageID: String,
         origin: InstallationRecord.Origin = .build,
         installed: [String: InstalledPackage],
-        records: [InstallationRecord]
+        records: [InstallationRecord],
     ) throws {
         guard isValidPackageID(packageID) else {
             throw ApelinError(.badRequest, "\(packageID) is not a valid package ID")
@@ -155,7 +155,7 @@ enum ManagedPackagePolicy {
                 .denied,
                 origin == .environment
                     ? "a toolchain package is \(toolchainPrefix)<id>, not \(packageID)"
-                    : "\(packageID) is a protected system package, so a project cannot install it."
+                    : "\(packageID) is a protected system package, so a project cannot install it.",
             )
         }
         guard let current, current.isInstalled else { return }
@@ -165,7 +165,7 @@ enum ManagedPackagePolicy {
         guard ours else {
             throw ApelinError(
                 .conflict,
-                "\(packageID) \(current.version) is already installed from another source. Remove it with your preferred package manager, then try again."
+                "\(packageID) \(current.version) is already installed from another source. Remove it with your preferred package manager, then try again.",
             )
         }
     }
@@ -174,18 +174,18 @@ enum ManagedPackagePolicy {
     static func checkRemoval(
         _ record: InstallationRecord?,
         installed: [String: InstalledPackage],
-        records: [InstallationRecord]
+        records: [InstallationRecord],
     ) throws {
         guard let record else {
             throw ApelinError(
                 .notFound,
-                "Apelin did not install this package. Remove it with your preferred package manager."
+                "Apelin did not install this package. Remove it with your preferred package manager.",
             )
         }
         guard record.status == .installed, record.receipt?.state == "succeeded" else {
             throw ApelinError(
                 .denied,
-                "This package is not installed, or it is still being installed or removed."
+                "This package is not installed, or it is still being installed or removed.",
             )
         }
         let current = installed[record.packageID]
@@ -194,7 +194,7 @@ enum ManagedPackagePolicy {
                 .denied,
                 record.origin == .environment
                     ? "\(record.packageID) is not a toolchain package, so the environment cannot remove it."
-                    : "\(record.packageID) is a protected system package, so Apelin cannot remove it."
+                    : "\(record.packageID) is a protected system package, so Apelin cannot remove it.",
             )
         }
         guard let current, current.isInstalled else {
@@ -203,7 +203,7 @@ enum ManagedPackagePolicy {
         guard current.version == record.version else {
             throw ApelinError(
                 .conflict,
-                "\(record.packageID) is now version \(current.version), not version \(record.version) that Apelin installed. Remove it with your preferred package manager."
+                "\(record.packageID) is now version \(current.version), not version \(record.version) that Apelin installed. Remove it with your preferred package manager.",
             )
         }
         // A later install of the same package supersedes this record.
@@ -212,7 +212,7 @@ enum ManagedPackagePolicy {
         }).max(by: { $0.createdAt < $1.createdAt }) {
             throw ApelinError(
                 .conflict,
-                "A newer installation of \(record.packageID) exists: \(newer.installationID). Remove that installation instead."
+                "A newer installation of \(record.packageID) exists: \(newer.installationID). Remove that installation instead.",
             )
         }
     }
@@ -223,7 +223,7 @@ enum ManagedPackagePolicy {
     static func removableRecord(
         of packageID: String,
         installed: [String: InstalledPackage],
-        records: [InstallationRecord]
+        records: [InstallationRecord],
     ) -> InstallationRecord? {
         let newest = records.filter { $0.packageID == packageID && $0.status == .installed }
             .max { $0.createdAt < $1.createdAt }

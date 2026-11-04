@@ -34,7 +34,7 @@ final class DevelopmentEnvironmentTests: XCTestCase {
             path: path.path,
             installationID: "installation-\(id)",
             origin: "082-00000 https://user:token@example.invalid/pkg",
-            newestSDK: newestSDK
+            newestSDK: newestSDK,
         )
     }
 
@@ -85,7 +85,7 @@ final class DevelopmentEnvironmentTests: XCTestCase {
             "PATH": "\(bin):/jb/usr/bin:/usr/bin",
             "SDKROOT": bound.path,
             "IPHONEOS_DEPLOYMENT_TARGET": "15.0",
-            "APELIN_TOOLCHAIN_BIN": bin
+            "APELIN_TOOLCHAIN_BIN": bin,
         ], "the toolchain once, first; nothing else")
         XCTAssertFalse(environment.entries(basePath: []).joined().contains("token"), "no record field beyond paths reaches the environment")
         XCTAssertEqual(environment.entries(basePath: []).first, "APELIN_TOOLCHAIN_BIN=\(bin)", "entries are sorted")

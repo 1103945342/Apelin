@@ -20,7 +20,7 @@ struct ProjectRenameToolTests {
         #expect(asked.isEmpty && automatic.isEmpty)
         #expect(await harness.backend.calls == [
             .renameProject(projectID: harness.home.project.id, displayName: "Lock Screen Clock", automatic: false),
-            .renameProject(projectID: harness.home.project.id, displayName: "Clock", automatic: true)
+            .renameProject(projectID: harness.home.project.id, displayName: "Clock", automatic: true),
         ])
     }
 
@@ -72,7 +72,7 @@ struct ProjectRenameToolTests {
             policy: ApprovalPolicy(mode: .relaxed),
             backend: harness.backend,
             digests: harness.ledger,
-            gate: ApprovalGate { _ in }
+            gate: ApprovalGate { _ in },
         )
         await #expect(throws: ToolArgumentError.self) {
             _ = try await general.run(.local(.projectRename), toolCallID: "c", arguments: ["display_name": "Clock"], cancellation: nil, mcp: nil)

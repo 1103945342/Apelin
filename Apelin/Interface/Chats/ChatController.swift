@@ -115,7 +115,7 @@ final class ChatController: UIViewController {
                 anchor: more,
                 onPrepareDistribution: { [weak self] prompt in self?.sendPrompt(prompt) },
                 onDelete: { [weak self] id in self?.onDelete?(id) },
-                completion: completion
+                completion: completion,
             )
         }])
         more.accessibilityLabel = String(localized: "More")
@@ -174,25 +174,25 @@ final class ChatController: UIViewController {
             self,
             selector: #selector(updateModelSelection),
             name: .composerModelSelectionChanged,
-            object: nil
+            object: nil,
         )
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(enabledModelsChanged),
             name: .enabledModelsChanged,
-            object: nil
+            object: nil,
         )
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(withdrawNotifications),
             name: UIApplication.didBecomeActiveNotification,
-            object: nil
+            object: nil,
         )
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(sayUnsent),
             name: UIApplication.didBecomeActiveNotification,
-            object: nil
+            object: nil,
         )
         updateModelSelection()
         modelButton.showsMenuAsPrimaryAction = true
@@ -228,13 +228,13 @@ final class ChatController: UIViewController {
         } else {
             latestConfiguration = .plain()
             latestConfiguration.background.customView = UIVisualEffectView(
-                effect: UIBlurEffect(style: .systemMaterial)
+                effect: UIBlurEffect(style: .systemMaterial),
             )
         }
         latestConfiguration.image = UIImage(systemName: "chevron.down")
         latestConfiguration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
             pointSize: 17,
-            weight: .semibold
+            weight: .semibold,
         )
         latestConfiguration.baseForegroundColor = .label
         latestConfiguration.cornerStyle = .capsule
@@ -296,7 +296,7 @@ final class ChatController: UIViewController {
                         for: message,
                         width: context.width,
                         maximumAttachmentHeight: self?.attachmentHeightLimit ?? 0,
-                        displayScale: self?.displayScale ?? 0
+                        displayScale: self?.displayScale ?? 0,
                     )
                 }
                 .configure { [weak self] row, message, _ in
@@ -314,7 +314,7 @@ final class ChatController: UIViewController {
                         do {
                             try self?.present(
                                 ComposerAttachmentPreview(attachments: images, selectedID: selectedID),
-                                animated: true
+                                animated: true,
                             )
                         } catch {
                             self?.presentNotice(title: "Unable to Preview Attachment", message: error.readableMessage)
@@ -395,7 +395,7 @@ final class ChatController: UIViewController {
         let line = frame.minY + place.fraction * frame.height
         let target = min(
             max(line - messageList.adjustedContentInset.top, messageList.minimumContentOffset.y),
-            messageList.maximumContentOffset.y
+            messageList.maximumContentOffset.y,
         )
         guard abs(target - messageList.contentOffset.y) > 0.5 else { return }
         // inside the sidebar's animation the list rides it, as the latest
@@ -447,7 +447,7 @@ final class ChatController: UIViewController {
             x: 0,
             y: 0,
             width: view.bounds.width,
-            height: min(view.bounds.height, view.safeAreaInsets.top + 20)
+            height: min(view.bounds.height, view.safeAreaInsets.top + 20),
         )
     }
 
@@ -505,7 +505,7 @@ final class ChatController: UIViewController {
         _ id: UUID,
         usage: ChatContextUsage?,
         isWorking: Bool,
-        isCompacting: Bool
+        isCompacting: Bool,
     ) {
         guard let usage, usage.window > 0,
               usage.fraction >= Preferences.compressionThreshold,
@@ -551,13 +551,13 @@ final class ChatController: UIViewController {
                 usedTokens: transcript.contextUsage?.tokens ?? 0,
                 limitTokens: transcript.contextUsage?.window ?? 0,
                 compactable: runtime.canCompact(chat.id) && !summary.isWorking,
-                compacting: transcript.isCompacting
+                compacting: transcript.isCompacting,
             )
             compactIfFull(
                 chat.id,
                 usage: transcript.contextUsage,
                 isWorking: summary.isWorking,
-                isCompacting: transcript.isCompacting
+                isCompacting: transcript.isCompacting,
             )
             quietWatch.wake(at: transcript.quietDeadline) { [weak self] in self?.refreshRuntime() }
             if summary.isWorking != chat.isWorking {
@@ -569,7 +569,7 @@ final class ChatController: UIViewController {
                 stoppableChat = stoppable
                 composer.modelBar.setSendState(
                     isBusy: summary.isWorking,
-                    hasContent: !composer.draft.text.isEmpty || !composer.draft.attachments.isEmpty
+                    hasContent: !composer.draft.text.isEmpty || !composer.draft.attachments.isEmpty,
                 )
             }
         }
@@ -584,7 +584,7 @@ final class ChatController: UIViewController {
             guard checkingOwner == nil else { return }
             checkingOwner = request.id
             let confirmed = await DeviceOwnerCheck.confirm(
-                reason: String(localized: "Approve a command that runs as root on this device.")
+                reason: String(localized: "Approve a command that runs as root on this device."),
             )
             checkingOwner = nil
             guard confirmed else {
@@ -592,7 +592,7 @@ final class ChatController: UIViewController {
                     title: String(localized: "Not Approved"),
                     message: String(localized: "The request is still waiting."),
                     preset: .error,
-                    haptic: .error
+                    haptic: .error,
                 )
                 return
             }
@@ -650,7 +650,7 @@ final class ChatController: UIViewController {
             offset: messageList.contentOffset.y,
             latest: messageList.maximumContentOffset.y,
             messageTop: messageList.rectForRow(with: followed).minY,
-            topInset: max(messageList.adjustedContentInset.top, topBlur.frame.maxY)
+            topInset: max(messageList.adjustedContentInset.top, topBlur.frame.maxY),
         )
         switch move {
         case .latest:
@@ -767,7 +767,7 @@ extension ChatController {
             provider: account.provider,
             model: model,
             supportedEfforts: (account.reasoningEfforts?[model] ?? []).filter { [.low, .high, .max].contains($0) },
-            supportedTiers: account.serviceTiers?[model] ?? []
+            supportedTiers: account.serviceTiers?[model] ?? [],
         )
     }
 
@@ -860,7 +860,7 @@ extension ChatController: ComposerCommandContext {
         guard let usage = runtime.transcript(chat.id).contextUsage else {
             presentNotice(
                 title: "No Usage Yet",
-                message: "This conversation has not made a request yet."
+                message: "This conversation has not made a request yet.",
             )
             return
         }
@@ -869,7 +869,7 @@ extension ChatController: ComposerCommandContext {
         // already-formed sentence.
         presentNotice(
             title: "Context Usage",
-            message: "\(usage.tokens.formatted()) of \(usage.window.formatted()) tokens used (\(percent))."
+            message: "\(usage.tokens.formatted()) of \(usage.window.formatted()) tokens used (\(percent)).",
         )
     }
 
@@ -944,7 +944,7 @@ extension ChatController: ComposerView.Delegate {
         guard let selection = ComposerModelSelection.current else {
             presentNotice(
                 title: "Unable to Rewrite",
-                message: String(localized: "Choose a model before rewriting.")
+                message: String(localized: "Choose a model before rewriting."),
             )
             return
         }
@@ -955,7 +955,7 @@ extension ChatController: ComposerView.Delegate {
                 let answer = try await ApelinService.app.agentRewritePrompt(
                     text: draft,
                     provider: selection.provider,
-                    model: selection.model
+                    model: selection.model,
                 )
                 try Task.checkCancellation()
                 composer.applyRewrite(original: draft, rewritten: answer.text)
@@ -977,7 +977,7 @@ extension ChatController: ComposerView.Delegate {
     func onComposerExpandTapped() {
         let editor = ComposerFullScreenEditor(
             text: composer.draft.text,
-            placeholderText: String(localized: "Ask anything")
+            placeholderText: String(localized: "Ask anything"),
         ) { [weak self] text in
             guard let self, self.composer.draft.text != text else { return }
             // Written back through the composer so the draft it reports is the
@@ -1112,7 +1112,7 @@ extension ChatController: UIScrollViewDelegate {
         UIView.animate(
             withDuration: 0.2,
             delay: 0,
-            options: [.allowUserInteraction, .beginFromCurrentState]
+            options: [.allowUserInteraction, .beginFromCurrentState],
         ) {
             self.composer.alpha = alpha
         }
@@ -1150,7 +1150,7 @@ extension ChatController: UIScrollViewDelegate {
         UIView.animate(
             withDuration: UIAccessibility.isReduceMotionEnabled ? 0 : 0.18,
             delay: 0,
-            options: [.beginFromCurrentState, .allowUserInteraction]
+            options: [.beginFromCurrentState, .allowUserInteraction],
         ) {
             self.latestMessageButton.alpha = alpha
         } completion: { _ in

@@ -35,7 +35,7 @@ class ComposerView: ComposerSectionView {
     /// What the menus list, filled by the conversation once it knows which
     /// project it is in.
     let commands = ComposerCommandCatalog(
-        actions: [CompactCommand(), UsageCommand(), InitProjectCommand()]
+        actions: [CompactCommand(), UsageCommand(), InitProjectCommand()],
     )
     /// The project's file paths, relative to its root; nil until read.
     private var projectFiles: [String]?
@@ -64,7 +64,7 @@ class ComposerView: ComposerSectionView {
         attachmentsBar,
         inputEditor,
         modelBar,
-        controlPanel
+        controlPanel,
     ]
 
     /// What the context panel's button asks for.
@@ -212,7 +212,7 @@ class ComposerView: ComposerSectionView {
                 x: spacing,
                 y: bandsTop,
                 width: bounds.width - spacing * 2,
-                height: height
+                height: height,
             )
             bandsTop = rewriteBar.frame.maxY + spacing
         }
@@ -232,7 +232,7 @@ class ComposerView: ComposerSectionView {
                 x: inputEditor.frame.minX + inputEditor.inset.left,
                 y: inputFrame.maxY - inputEditor.inset.bottom,
                 width: inputEditor.frame.width - inputEditor.inset.left - inputEditor.inset.right,
-                height: modelHeight
+                height: modelHeight,
             )
             inputFrame.size.height += modelHeight
         }
@@ -243,7 +243,7 @@ class ComposerView: ComposerSectionView {
         place(
             approvalSection,
             at: spacing,
-            height: presentingRequest ? approvalSection.heightPublisher.value : inputFrame.height
+            height: presentingRequest ? approvalSection.heightPublisher.value : inputFrame.height,
         )
         shadowContainer.frame = presentingRequest
             ? approvalSection.frame.insetBy(dx: approvalSection.horizontalAdjustment, dy: 0)
@@ -283,7 +283,7 @@ class ComposerView: ComposerSectionView {
             x: spacing,
             y: y,
             width: bounds.width - spacing * 2,
-            height: height
+            height: height,
         )
         return panel.frame.maxY + spacing
     }
@@ -309,7 +309,7 @@ class ComposerView: ComposerSectionView {
             x: spacing,
             y: y,
             width: bounds.width - spacing * 2,
-            height: height
+            height: height,
         )
         return menu.frame.maxY + spacing
     }
@@ -324,7 +324,7 @@ class ComposerView: ComposerSectionView {
             x: spacing - horizontalAdjustment,
             y: y,
             width: bounds.width - spacing * 2 + horizontalAdjustment * 2,
-            height: height
+            height: height,
         )
         return height > 0 ? band.frame.maxY + spacing : y
     }
@@ -397,13 +397,13 @@ class ComposerView: ComposerSectionView {
         usedTokens: Int,
         limitTokens: Int,
         compactable: Bool,
-        compacting: Bool
+        compacting: Bool,
     ) {
         contextPanel.set(
             usedTokens: usedTokens,
             limitTokens: limitTokens,
             compactable: compactable,
-            compacting: compacting
+            compacting: compacting,
         )
     }
 
@@ -533,7 +533,7 @@ class ComposerView: ComposerSectionView {
         } else {
             shadowContainer.layer.shadowPath = UIBezierPath(
                 roundedRect: CGRect(origin: .zero, size: shadowContainer.frame.size),
-                cornerRadius: shadowContainer.layer.cornerRadius
+                cornerRadius: shadowContainer.layer.cornerRadius,
             ).cgPath
         }
     }

@@ -51,7 +51,7 @@ public struct GitResetToolResponse: Sendable, Hashable, Codable {
         commit: String,
         previousHead: String?,
         backupBranch: String?,
-        projectFile: String?
+        projectFile: String?,
     ) {
         self.remote = remote
         self.branch = branch

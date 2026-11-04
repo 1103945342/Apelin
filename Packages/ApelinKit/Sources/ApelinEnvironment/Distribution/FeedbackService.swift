@@ -33,7 +33,7 @@ public struct FeedbackService: Sendable {
         let issue = try await api.createIssue(
             FeedbackRules.repository,
             title: title,
-            body: FeedbackRules.issueBody(request.body, footer: report.footer())
+            body: FeedbackRules.issueBody(request.body, footer: report.footer()),
         )
         return FeedbackSendResponse(number: issue.number, url: issue.htmlURL)
     }
@@ -54,7 +54,7 @@ public struct FeedbackService: Sendable {
             footer: body.footer,
             author: Self.author(of: issue),
             state: issue.state,
-            isAuthor: Self.author(of: issue).lowercased() == login.lowercased()
+            isAuthor: Self.author(of: issue).lowercased() == login.lowercased(),
         )
     }
 
@@ -76,27 +76,27 @@ public struct FeedbackService: Sendable {
         guard author.lowercased() == login.lowercased() else {
             throw ApelinError(
                 .denied,
-                "#\(request.number) on \(FeedbackRules.repository) was opened by \(author), not by the signed-in account \(login): only an issue the account opened is edited."
+                "#\(request.number) on \(FeedbackRules.repository) was opened by \(author), not by the signed-in account \(login): only an issue the account opened is edited.",
             )
         }
         let current = FeedbackRules.split(issueBody: issue.body ?? "")
         guard issue.title == request.expectedTitle, current.text == request.expectedBody else {
             throw ApelinError(
                 .conflict,
-                "#\(request.number) on \(FeedbackRules.repository) changed on GitHub since it was read, so nothing was written: read it again and make the edit against what it says now."
+                "#\(request.number) on \(FeedbackRules.repository) changed on GitHub since it was read, so nothing was written: read it again and make the edit against what it says now.",
             )
         }
         let edited = try await api.editIssue(
             FeedbackRules.repository,
             number: request.number,
             title: newTitle,
-            body: newBody.map(current.replacingText)
+            body: newBody.map(current.replacingText),
         )
         return FeedbackEditResponse(
             number: edited.number,
             url: edited.htmlURL,
             title: edited.title,
-            body: FeedbackRules.split(issueBody: edited.body ?? "").text
+            body: FeedbackRules.split(issueBody: edited.body ?? "").text,
         )
     }
 

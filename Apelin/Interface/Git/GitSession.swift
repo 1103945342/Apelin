@@ -151,7 +151,7 @@ final class GitSession {
     func reloadCommits() async {
         do {
             let page = try await ApelinService.app.gitLog(
-                projectID: scopeID, limit: Self.commitPageSize, skip: 0
+                projectID: scopeID, limit: Self.commitPageSize, skip: 0,
             )
             commits = page.commits
             hasMoreCommits = page.hasMore
@@ -168,7 +168,7 @@ final class GitSession {
         guard hasMoreCommits else { return false }
         do {
             let page = try await ApelinService.app.gitLog(
-                projectID: scopeID, limit: Self.commitPageSize, skip: commits.count
+                projectID: scopeID, limit: Self.commitPageSize, skip: commits.count,
             )
             let known = Set(commits.map(\.id))
             commits.append(contentsOf: page.commits.filter { !known.contains($0.id) })
@@ -195,7 +195,7 @@ final class GitSession {
 
     func commitFileVersions(commit: String, path: String) async throws -> GitFileVersionsResponse {
         let detail = try await ApelinService.app.gitCommitFileDiff(
-            projectID: scopeID, commit: commit, path: path
+            projectID: scopeID, commit: commit, path: path,
         )
         return Self.versions(fromPatch: detail.diff)
     }
@@ -245,7 +245,7 @@ final class GitSession {
             projectID: scopeID,
             message: message,
             all: all ? true : nil,
-            amend: amend ? true : nil
+            amend: amend ? true : nil,
         ))
         await reload()
         await reloadCommits()
@@ -255,7 +255,7 @@ final class GitSession {
 
     func createBranch(name: String, startPoint: String?, checkout: Bool) async throws {
         _ = try await ApelinService.app.gitBranchCreate(GitBranchCreateRequest(
-            projectID: scopeID, name: name, startPoint: startPoint, checkout: checkout
+            projectID: scopeID, name: name, startPoint: startPoint, checkout: checkout,
         ))
         await reload()
         await reloadCommits()
@@ -264,7 +264,7 @@ final class GitSession {
     func checkout(_ branch: GitBranchRow) async throws {
         let (remote, name) = Self.split(branch)
         _ = try await ApelinService.app.gitBranchCheckout(GitBranchCheckoutRequest(
-            projectID: scopeID, name: name, remote: remote
+            projectID: scopeID, name: name, remote: remote,
         ))
         await reload()
         await reloadCommits()
@@ -276,7 +276,7 @@ final class GitSession {
             ? name.split(separator: "/").dropFirst().joined(separator: "/")
             : name
         _ = try await ApelinService.app.gitBranchCheckout(GitBranchCheckoutRequest(
-            projectID: scopeID, name: short, remote: remoteName
+            projectID: scopeID, name: short, remote: remoteName,
         ))
         await reload()
         await reloadCommits()
@@ -285,21 +285,21 @@ final class GitSession {
     func deleteBranch(_ branch: GitBranchRow) async throws {
         let (remote, name) = Self.split(branch)
         _ = try await ApelinService.app.gitBranchDelete(GitBranchDeleteRequest(
-            projectID: scopeID, name: name, remote: remote
+            projectID: scopeID, name: name, remote: remote,
         ))
         await reload()
     }
 
     func renameBranch(from: String, to: String) async throws {
         _ = try await ApelinService.app.gitBranchRename(GitBranchRenameRequest(
-            projectID: scopeID, from: from, to: to
+            projectID: scopeID, from: from, to: to,
         ))
         await reload()
     }
 
     func merge(_ branch: String, noFastForward: Bool) async throws -> GitMergeResponse {
         let answer = try await ApelinService.app.gitMerge(GitMergeRequest(
-            projectID: scopeID, branch: branch, noFastForward: noFastForward
+            projectID: scopeID, branch: branch, noFastForward: noFastForward,
         ))
         await reload()
         await reloadCommits()
@@ -313,7 +313,7 @@ final class GitSession {
 
     func createTag(name: String, commit: String?, message: String?) async throws {
         _ = try await ApelinService.app.gitTagCreate(GitTagCreateRequest(
-            projectID: scopeID, name: name, commit: commit, message: message
+            projectID: scopeID, name: name, commit: commit, message: message,
         ))
         await reload()
         await reloadCommits()
@@ -335,7 +335,7 @@ final class GitSession {
 
     func saveStash(message: String?, includeUntracked: Bool) async throws -> Bool {
         let saved = try await ApelinService.app.gitStashSave(
-            projectID: scopeID, message: message, includeUntracked: includeUntracked
+            projectID: scopeID, message: message, includeUntracked: includeUntracked,
         ).saved
         await reload()
         return saved
@@ -343,7 +343,7 @@ final class GitSession {
 
     func applyStash(_ stash: GitStashRow, pop: Bool) async throws -> [String] {
         let conflicts = try await ApelinService.app.gitStashApply(
-            projectID: scopeID, index: stash.index, pop: pop
+            projectID: scopeID, index: stash.index, pop: pop,
         ).conflicts
         await reload()
         return conflicts
@@ -368,7 +368,7 @@ final class GitSession {
 
     func push(branch: String, url: String? = nil) async throws -> TaskHandle {
         try await ApelinService.app.gitPush(GitPushRequest(
-            projectID: scopeID, branch: branch, url: url
+            projectID: scopeID, branch: branch, url: url,
         ))
     }
 
@@ -407,7 +407,7 @@ final class GitSession {
     /// which fills the folder that is there rather than making a new one.
     func cloneInto(url: String) async throws {
         let handle = try await ApelinService.app.gitCloneInto(GitCloneIntoRequest(
-            projectID: projectName, url: url, branch: nil
+            projectID: projectName, url: url, branch: nil,
         ))
         try await follow(handle)
         isNotARepository = false

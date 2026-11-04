@@ -13,13 +13,13 @@ enum AgentApprovals {
     static func requested(
         _ approvalID: String,
         entry: AgentSessionTable.Entry,
-        registry: TaskRegistry
+        registry: TaskRegistry,
     ) async -> JSONValue? {
         await registry.lastEvent(
             entry.task.taskID,
             kind: "approvalRequested",
             field: "approvalID",
-            equals: approvalID
+            equals: approvalID,
         )?.payload
     }
 
@@ -35,7 +35,7 @@ enum AgentApprovals {
         registry: TaskRegistry,
         ledger: ApprovalLedger,
         forward: () async -> Reply,
-        accepted: (Reply) -> Bool
+        accepted: (Reply) -> Bool,
     ) async throws -> Reply {
         let sessions = AgentSessionTable.shared
         // A command as root is approved only where the app checked the
@@ -47,7 +47,7 @@ enum AgentApprovals {
         {
             throw ApelinError(
                 .denied,
-                "a command that runs as root is approved only in the conversation, with Face ID, Touch ID or the passcode"
+                "a command that runs as root is approved only in the conversation, with Face ID, Touch ID or the passcode",
             )
         }
         let previous = await sessions.entry(approve.sessionID)?.approvals[approve.approvalID]
@@ -97,7 +97,7 @@ enum AgentApprovals {
     private static func recordSessionGrant(
         _ approve: AgentApproveRequest,
         entry: AgentSessionTable.Entry,
-        registry: TaskRegistry
+        registry: TaskRegistry,
     ) async -> RunCodeGrant? {
         guard approve.scope == .session,
               let asked = await requested(approve.approvalID, entry: entry, registry: registry),
@@ -115,7 +115,7 @@ enum AgentApprovals {
     private static func recordProjectReach(
         _ approve: AgentApproveRequest,
         entry: AgentSessionTable.Entry,
-        registry: TaskRegistry
+        registry: TaskRegistry,
     ) async -> String? {
         guard let asked = await requested(approve.approvalID, entry: entry, registry: registry),
               let projectID = asked["detail"]?[AgentConversationRules.otherProjectDetail]?["projectID"]?.stringValue,
@@ -130,7 +130,7 @@ enum AgentApprovals {
     static func spend(
         entry: AgentSessionTable.Entry,
         registry: TaskRegistry,
-        covers: (JSONValue) -> Bool
+        covers: (JSONValue) -> Bool,
     ) async -> Bool {
         for approvalID in await AgentSessionTable.shared.approvedIDs(entry.sessionID) {
             guard let asked = await requested(approvalID, entry: entry, registry: registry), covers(asked) else {
@@ -156,7 +156,7 @@ enum AgentApprovals {
         _ approve: AgentApproveRequest,
         entry: AgentSessionTable.Entry,
         registry: TaskRegistry,
-        ledger: ApprovalLedger
+        ledger: ApprovalLedger,
     ) async throws -> LedgerGrant? {
         let asked = await requested(approve.approvalID, entry: entry, registry: registry)
         guard let detail = asked?["detail"] else { return nil }
@@ -189,7 +189,7 @@ enum AgentApprovals {
         entry: AgentSessionTable.Entry,
         registry: TaskRegistry,
         ledger: ApprovalLedger,
-        installRoot: String
+        installRoot: String,
     ) async throws -> AgentRunCode.Identity {
         if entry.asksBeforeScreen, ScreenConsent.usesScreen(run.spec) {
             if run.asRoot == true {
@@ -215,7 +215,7 @@ enum AgentApprovals {
                 run.spec,
                 directory: directory,
                 project: project,
-                installRoot: installRoot
+                installRoot: installRoot,
             ) else {
                 throw RunCodeApproval.presetRefusal
             }
@@ -259,7 +259,7 @@ enum AgentApprovals {
         _ run: AgentRunCodeRequest,
         entry: AgentSessionTable.Entry,
         registry: TaskRegistry,
-        ledger: ApprovalLedger
+        ledger: ApprovalLedger,
     ) async throws {
         try await requireLive(entry, registry: registry)
         if entry.mode == .full, await ledger.mode(session: entry.sessionID) == .full {
@@ -518,7 +518,7 @@ actor AgentSessionTable {
                 title: entry.title,
                 state: record?.state ?? .interrupted,
                 updatedAt: record?.updatedAt ?? entry.createdAt,
-                parentSessionID: entry.parentSessionID
+                parentSessionID: entry.parentSessionID,
             ))
         }
         return result
@@ -541,7 +541,7 @@ enum AgentSessionLineage {
         try? FileManager.default.createDirectory(
             at: file.deletingLastPathComponent(),
             withIntermediateDirectories: true,
-            attributes: [.posixPermissions: 0o700]
+            attributes: [.posixPermissions: 0o700],
         )
         try? JSONCoding.encode(record).write(to: file, options: .atomic)
     }

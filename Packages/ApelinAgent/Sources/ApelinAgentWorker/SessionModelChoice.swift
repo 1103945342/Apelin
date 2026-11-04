@@ -19,14 +19,14 @@ public actor SessionModelChoice {
         model: String? = nil,
         reasoningEffort: AgentReasoningEffort? = nil,
         serviceTier: AgentServiceTier? = nil,
-        modelParameters: AgentModelParameters? = nil
+        modelParameters: AgentModelParameters? = nil,
     ) {
         current = Choice(
             provider: provider,
             model: model,
             reasoningEffort: reasoningEffort,
             serviceTier: serviceTier,
-            modelParameters: modelParameters
+            modelParameters: modelParameters,
         )
     }
 
@@ -35,14 +35,14 @@ public actor SessionModelChoice {
         model: String?,
         reasoningEffort: AgentReasoningEffort?,
         serviceTier: AgentServiceTier?,
-        modelParameters: AgentModelParameters? = nil
+        modelParameters: AgentModelParameters? = nil,
     ) {
         current = Choice(
             provider: provider,
             model: model,
             reasoningEffort: reasoningEffort,
             serviceTier: serviceTier,
-            modelParameters: modelParameters
+            modelParameters: modelParameters,
         )
     }
 }

@@ -67,7 +67,7 @@ final class DescriptorSink: PatchableSink {
                 descriptor,
                 base.advanced(by: written),
                 bytes.count - written,
-                off_t(offset) + off_t(written)
+                off_t(offset) + off_t(written),
             )
             if put < 0 {
                 if errno == EINTR {

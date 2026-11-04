@@ -15,18 +15,18 @@ struct CompactionFallbackTests {
         #expect(NativeCompactionFallback.returnedNoSummary(Self.noSummary))
         #expect(NativeCompactionFallback.returnedNoSummary(ProviderFailure(
             message: "Invalid Anthropic compaction completion: expected compaction stop reason",
-            rawStopReason: "end_turn"
+            rawStopReason: "end_turn",
         )))
         #expect(!NativeCompactionFallback.returnedNoSummary(ProviderFailure(message: "invalid x-api-key", httpStatus: 401)))
         #expect(!NativeCompactionFallback.returnedNoSummary(ProviderFailure(message: "Overloaded", httpStatus: 529)))
         #expect(!NativeCompactionFallback.returnedNoSummary(ProviderFailure(
             message: "The Internet connection appears to be offline.",
             transportDomain: NSURLErrorDomain,
-            transportCode: NSURLErrorNotConnectedToInternet
+            transportCode: NSURLErrorNotConnectedToInternet,
         )))
         #expect(!NativeCompactionFallback.returnedNoSummary(ProviderFailure(
             message: "Invalid Anthropic compaction completion: expected compaction stop reason",
-            rawStopReason: "refusal"
+            rawStopReason: "refusal",
         )))
         #expect(!NativeCompactionFallback.returnedNoSummary(CancellationError()))
     }
@@ -85,7 +85,7 @@ struct CompactionFallbackTests {
         """
         let messages: [Message] = [
             .user(UserMessage(text: recap, source: .compaction)),
-            .user(UserMessage(text: "Carry on"))
+            .user(UserMessage(text: "Carry on")),
         ]
         #expect(CompactionRecap.summary(of: messages) == """
         Hooked <SpringBoard> & logged "loaded"; it's &lt;fine&gt;.
@@ -103,7 +103,7 @@ struct CompactionFallbackTests {
     /// keeps as they are, compacted with `native` in front.
     private static func compact(
         model: Model,
-        native: @escaping NativeCompactionFn
+        native: @escaping NativeCompactionFn,
     ) async -> Result<AgentContextCompactionResult, AgentContextCompactionFailure> {
         let long = String(repeating: "The build log says the hook loaded. ", count: 1200)
         let messages: [Message] = ["one", "two", "three"].flatMap { prompt -> [Message] in
@@ -113,7 +113,7 @@ struct CompactionFallbackTests {
             messages: messages,
             model: model,
             sessionId: "fallback",
-            config: AgentContextCompactionConfig(nativeCompaction: native)
+            config: AgentContextCompactionConfig(nativeCompaction: native),
         )
     }
 }

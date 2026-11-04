@@ -293,11 +293,11 @@ final class DecoderTests: XCTestCase {
         let crash = CrashBodyDecoder.decode(["termination": [
             "namespace": "DYLD",
             "reasons": ["Library not loaded: /usr/lib/libfoo.dylib"],
-            "details": ["(terminated at launch; ignore backtrace)"]
+            "details": ["(terminated at launch; ignore backtrace)"],
         ]])
         XCTAssertEqual(crash.termination?.reasons, [
             "Library not loaded: /usr/lib/libfoo.dylib",
-            "(terminated at launch; ignore backtrace)"
+            "(terminated at launch; ignore backtrace)",
         ])
     }
 
@@ -308,7 +308,7 @@ final class DecoderTests: XCTestCase {
     func testNegativeNumbersAreNotAddresses() throws {
         let json = #"{"base": -1, "wide": 18446726482597246976, "size": 4096, "half": 40.5}"#
         let body = try XCTUnwrap(
-            JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any]
+            JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any],
         )
         XCTAssertNil(body.uint64("base"))
         XCTAssertEqual(body.uint64("wide"), 18_446_726_482_597_246_976)

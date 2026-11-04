@@ -15,7 +15,7 @@ struct FeedbackEditToolTests {
         "number": 12,
         "revision": .string(revision),
         "title": "  The build log stops early ",
-        "body": "It ends before the link step, on roothide and rootless."
+        "body": "It ends before the link step, on roothide and rootless.",
     ]
     private static let edit = FeedbackEditApproval(
         repository: "owngoal-dev/Apelin",
@@ -24,7 +24,7 @@ struct FeedbackEditToolTests {
         title: nil,
         body: "It ends before the link step, on roothide and rootless.",
         currentTitle: "The build log stops early",
-        currentBody: "It ends before the link step."
+        currentBody: "It ends before the link step.",
     )
     /// #12 as MockBackend keeps it before an edit.
     private static let filed = FeedbackReadToolResponse(
@@ -36,7 +36,7 @@ struct FeedbackEditToolTests {
         author: "someone",
         openedByUser: true,
         body: "It ends before the link step.",
-        footer: "Sent with Apelin 0.2.7 (18) · iOS 17.3.1 · rootless"
+        footer: "Sent with Apelin 0.2.7 (18) · iOS 17.3.1 · rootless",
     )
 
     private static func required(_ tool: AgentToolName) -> Set<String> {
@@ -71,7 +71,7 @@ struct FeedbackEditToolTests {
             policy: ApprovalPolicy(mode: .confirm),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            gate: ApprovalGate { _ in }
+            gate: ApprovalGate { _ in },
         ).agentTools(mcp: []).map(\.name)
         #expect(general.contains("apelin_feedback_read") && general.contains("apelin_feedback_edit"), "General Chat too")
     }
@@ -151,7 +151,7 @@ struct FeedbackEditToolTests {
             #expect(edit.number == 12 && edit.title == nil && edit.body == Self.edit.body)
             #expect(
                 edit.expectedTitle == "The build log stops early" && edit.expectedBody == "It ends before the link step.",
-                "made against the text read"
+                "made against the text read",
             )
             guard case .user = edit.context.approval else {
                 Issue.record("not the user's: \(edit.context.approval)"); continue
@@ -223,7 +223,7 @@ struct FeedbackEditToolTests {
             author: "other",
             openedByUser: false,
             body: "It crashes.",
-            footer: nil
+            footer: nil,
         ))
         let theirs = FeedbackEdit.revision(title: "Crash on launch", body: "It crashes.")
         let stale = FeedbackEdit.revision(title: "The build log stops early", body: "What it said before the user edited it.")
@@ -235,7 +235,7 @@ struct FeedbackEditToolTests {
             (["number": 12, "revision": .string(Self.revision)], "neither the title nor the body"),
             (["number": 12, "revision": .string(Self.revision), "body": "From 192.168.1.20"], "local network"),
             (["number": 12, "revision": .string(Self.revision), "body": "Body\n\n---\nSent with Apelin 0.3.0 (23) · iOS 26.0 · roothide"], "leave it out"),
-            (["number": 0, "revision": .string(Self.revision), "body": "Broadened."], "by its number")
+            (["number": 0, "revision": .string(Self.revision), "body": "Broadened."], "by its number"),
         ]
         for (arguments, words) in refused {
             await #expect {

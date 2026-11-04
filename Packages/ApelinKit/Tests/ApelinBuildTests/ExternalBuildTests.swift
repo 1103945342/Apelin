@@ -50,14 +50,14 @@ final class ExternalBuildTests: XCTestCase {
         id: String = "com.example.imported",
         version: String = "1.0.1",
         depends: String = "mobilesubstrate",
-        name: String = "sample.deb"
+        name: String = "sample.deb",
     ) throws -> URL {
         var control = DebianControlFile(package: id, version: version, architecture: layout.architecture, description: "Imported")
         control["Depends"] = depends
         var writer = DebPackageWriter(control: control)
         writer.entries = try [
             .file(layout.tweakLibrary(named: "Imported"), contents: Data(repeating: 0xCF, count: 64), mode: 0o755),
-            .file(layout.tweakFilter(named: "Imported"), contents: Data("{ Filter = { Bundles = ( \"com.apple.springboard\" ); }; }\n".utf8))
+            .file(layout.tweakFilter(named: "Imported"), contents: Data("{ Filter = { Bundles = ( \"com.apple.springboard\" ); }; }\n".utf8)),
         ]
         let url = scratch.appendingPathComponent(UUID().uuidString + "-" + name)
         try writer.write(toPath: url.path)
@@ -67,7 +67,7 @@ final class ExternalBuildTests: XCTestCase {
     private func build(
         _ projectID: String,
         configuration: BuildConfiguration = .debug,
-        bootstrap: BuildBootstrap = .roothide
+        bootstrap: BuildBootstrap = .roothide,
     ) throws -> (TaskID, Events) {
         let events = Events()
         let taskID = TaskID.make()
@@ -87,7 +87,7 @@ final class ExternalBuildTests: XCTestCase {
         }
         XCTAssertEqual(
             try read(#"{"script": "scripts/build.sh", "interpreter": "bash", "arguments": ["--fast"]}"#),
-            ExternalBuildDeclaration(script: "scripts/build.sh", interpreter: .bash, arguments: ["--fast"])
+            ExternalBuildDeclaration(script: "scripts/build.sh", interpreter: .bash, arguments: ["--fast"]),
         )
         XCTAssertEqual(try read(#"{"script": "scripts/build.sh"}"#)?.interpreter, .sh, "sh by default")
         XCTAssertNil(try ExternalBuildDeclaration.read(StrictJSON.parse(Data(#"{"kind": "workspace"}"#.utf8)), root: root))
@@ -102,7 +102,7 @@ final class ExternalBuildTests: XCTestCase {
             (#"{"script": "scripts/build.sh", "command": "make"}"#, "/external/command"),
             (#"{"script": "scripts/build.sh", "interpreter": "ruby"}"#, "/external/interpreter"),
             (#"{"script": "scripts/build.sh", "arguments": "--fast"}"#, "/external/arguments"),
-            (#"{"script": "scripts/build.sh", "arguments": ["a\nb"]}"#, "/external/arguments/0")
+            (#"{"script": "scripts/build.sh", "arguments": ["a\nb"]}"#, "/external/arguments/0"),
         ] {
             XCTAssertThrowsError(try read(external), external) { error in
                 XCTAssertTrue("\(error)".contains(field), "\(external): \(error)")
@@ -146,7 +146,7 @@ final class ExternalBuildTests: XCTestCase {
 
         let check = try worker.projectCheck(ProjectCheckRequest(
             projectID: imported.id,
-            environment: ProjectEnvironmentChoice(sdkID: "iPhoneOS18.2-aaaaaaaa")
+            environment: ProjectEnvironmentChoice(sdkID: "iPhoneOS18.2-aaaaaaaa"),
         ))
         XCTAssertFalse(check.passed)
         XCTAssertNil(check.environment, "the project file did not read")
@@ -161,7 +161,7 @@ final class ExternalBuildTests: XCTestCase {
         let deb = try package(.roothide)
         let project = try workspace(
             script: "env > \"$APELIN_PROJECT_ROOT/env.txt\"\necho building\ncp \"$1\" \"$APELIN_PACKAGE_DIR/\"\n",
-            external: #"{"script": "apelin/build.sh", "arguments": ["\#(deb.path)"]}"#
+            external: #"{"script": "apelin/build.sh", "arguments": ["\#(deb.path)"]}"#,
         )
         let (taskID, events) = try build(project.id)
         let last = try XCTUnwrap(events.last)
@@ -182,7 +182,7 @@ final class ExternalBuildTests: XCTestCase {
         XCTAssertEqual(
             artifact.packageFiles,
             ["/Library/MobileSubstrate/DynamicLibraries/Imported.dylib", "/Library/MobileSubstrate/DynamicLibraries/Imported.plist"],
-            "the workspace's own package is listed for the host, folders left out"
+            "the workspace's own package is listed for the host, folders left out",
         )
 
         let record = try ArtifactStore(store: worker.store).load(taskID.rawValue)
@@ -200,7 +200,7 @@ final class ExternalBuildTests: XCTestCase {
         let environment = try String(contentsOf: project.root.appendingPathComponent("env.txt"), encoding: .utf8)
         for line in [
             "APELIN_BUILD_ID=\(taskID.rawValue)", "APELIN_BOOTSTRAP=roothide", "APELIN_ARCHITECTURE=iphoneos-arm64e",
-            "APELIN_PREFIX=", "APELIN_CONFIGURATION=debug", "APELIN_PACKAGE_DIR=\(work.appendingPathComponent("package").path)"
+            "APELIN_PREFIX=", "APELIN_CONFIGURATION=debug", "APELIN_PACKAGE_DIR=\(work.appendingPathComponent("package").path)",
         ] {
             XCTAssertTrue(environment.split(separator: "\n").contains(Substring(line)), "\(line) in\n\(environment)")
         }
@@ -214,7 +214,7 @@ final class ExternalBuildTests: XCTestCase {
         let deb = try package(.roothide)
         let project = try workspace(
             script: "cp apelin-project.json \"$APELIN_PACKAGE_DIR/../seen.json\"\ncp \"$1\" \"$APELIN_PACKAGE_DIR/\"\n",
-            external: #"{"script": "apelin/build.sh", "arguments": ["\#(deb.path)"]}"#
+            external: #"{"script": "apelin/build.sh", "arguments": ["\#(deb.path)"]}"#,
         )
         let manifest = project.root.appendingPathComponent("apelin-project.json")
         XCTAssertEqual(chmod(manifest.path, 0o640), 0)
@@ -266,7 +266,7 @@ final class ExternalBuildTests: XCTestCase {
         let rootless = try package(.rootless, id: "com.example.other")
         let project = try workspace(
             script: "if [ \"$APELIN_BOOTSTRAP\" = rootless ]; then cp \"$2\" \"$APELIN_PACKAGE_DIR/\"; else cp \"$1\" \"$APELIN_PACKAGE_DIR/\"; fi\n",
-            external: #"{"script": "apelin/build.sh", "arguments": ["\#(local.path)", "\#(rootless.path)"]}"#
+            external: #"{"script": "apelin/build.sh", "arguments": ["\#(local.path)", "\#(rootless.path)"]}"#,
         )
         func findings(_ events: Events) -> [String] {
             XCTAssertEqual(events.last?["state"]?.stringValue, "succeeded", "\(events.payloads("log"))")
@@ -276,7 +276,7 @@ final class ExternalBuildTests: XCTestCase {
         XCTAssertEqual(try findings(build(project.id, configuration: .release).1), ["distribution.package.id.local"])
         XCTAssertEqual(
             try findings(build(project.id, configuration: .release).1),
-            ["distribution.package.id.local", "distribution.version.packaged"]
+            ["distribution.package.id.local", "distribution.version.packaged"],
         )
         let other = try build(project.id, configuration: .release, bootstrap: .rootless).1
         XCTAssertEqual(findings(other), ["distribution.package.id.differs"])
@@ -302,7 +302,7 @@ final class ExternalBuildTests: XCTestCase {
             ("exit 0\n", "[]", "wrote no package"),
             ("cp \"$1\" \"$APELIN_PACKAGE_DIR/a.deb\"\ncp \"$1\" \"$APELIN_PACKAGE_DIR/b.deb\"\n", #"["\#(roothide.path)"]"#, "wrote 2 packages"),
             ("cp \"$1\" \"$APELIN_PACKAGE_DIR/\"\n", #"["\#(rootless.path)"]"#, "is for iphoneos-arm64, not iphoneos-arm64e"),
-            ("echo not a package > \"$APELIN_PACKAGE_DIR/x.deb\"\n", "[]", "is not a package Apelin can read")
+            ("echo not a package > \"$APELIN_PACKAGE_DIR/x.deb\"\n", "[]", "is not a package Apelin can read"),
         ] {
             let project = try workspace(script: script, external: #"{"script": "apelin/build.sh", "arguments": \#(arguments)}"#)
             let (_, events) = try build(project.id)
@@ -324,7 +324,7 @@ final class ExternalBuildTests: XCTestCase {
             workDirectory: scratch.appendingPathComponent("timeout-work"),
             installRoot: "/",
             home: scratch.appendingPathComponent("home").path,
-            timeout: 1
+            timeout: 1,
         )
         let started = Date()
         XCTAssertThrowsError(try ExternalBuild.run(inputs: inputs, store: worker.store, reporter: Collector(), cancellation: BuildCancellation())) { error in

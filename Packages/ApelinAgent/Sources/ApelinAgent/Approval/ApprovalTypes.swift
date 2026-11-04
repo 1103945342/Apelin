@@ -48,7 +48,7 @@ public struct ApprovalRequest: Sendable, Hashable, Codable {
         fingerprint: String,
         reason: String,
         detail: ApprovalDetail,
-        allowsSessionScope: Bool
+        allowsSessionScope: Bool,
     ) {
         self.id = id
         self.toolCallID = toolCallID
@@ -178,7 +178,7 @@ public struct PackagePublishApproval: Sendable, Hashable, Codable {
             architecture: String,
             bootstrap: String,
             file: String,
-            digest: String
+            digest: String,
         ) {
             self.buildID = buildID
             self.packageID = packageID
@@ -280,7 +280,7 @@ public struct FeedbackEditApproval: Sendable, Hashable, Codable {
         title: String?,
         body: String?,
         currentTitle: String,
-        currentBody: String
+        currentBody: String,
     ) {
         self.repository = repository
         self.number = number

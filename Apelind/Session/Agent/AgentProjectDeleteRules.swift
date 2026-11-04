@@ -44,7 +44,7 @@ enum AgentProjectDeleteRules {
         guard target.id != entry.project.id else {
             return ApelinError(
                 .denied,
-                "a conversation cannot delete its own project, which it runs in: delete it from General Chat or another project's conversation, or in Projects ▸ All Projects…"
+                "a conversation cannot delete its own project, which it runs in: delete it from General Chat or another project's conversation, or in Projects ▸ All Projects…",
             )
         }
         guard entry.mode.asks else { return nil }

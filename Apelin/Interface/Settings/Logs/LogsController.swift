@@ -25,7 +25,7 @@ final class LogsController: TableController {
 
     private lazy var dataSource = TableDataSource<Section, URL, Row>(
         tableView: tableView,
-        identifier: { $0.file.url }
+        identifier: { $0.file.url },
     ) { [weak self] table, _, row in
         self?.cell(in: table, row: row)
     }
@@ -112,7 +112,7 @@ final class LogsController: TableController {
             tableView.backgroundView = rows.isEmpty && chats.isEmpty ? EmptyStateView(
                 symbolName: "doc.text",
                 title: String(localized: "No Logs"),
-                text: String(localized: "Logs appear here when Apelin starts.")
+                text: String(localized: "Logs appear here when Apelin starts."),
             ) : nil
         }
     }
@@ -138,9 +138,9 @@ final class LogsController: TableController {
             LogViewerController(
                 file: row.file,
                 isCurrent: row.isCurrent,
-                title: row.conversation ?? Self.title(of: row.file)
+                title: row.conversation ?? Self.title(of: row.file),
             ),
-            animated: true
+            animated: true,
         )
     }
 
@@ -153,12 +153,12 @@ final class LogsController: TableController {
 
     override func tableView(
         _: UITableView,
-        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath,
     ) -> UISwipeActionsConfiguration? {
         guard let row = dataSource.value(at: indexPath), !row.isCurrent else { return nil }
         let delete = UIContextualAction(
             style: .destructive,
-            title: String(localized: "Delete")
+            title: String(localized: "Delete"),
         ) { [weak self] _, _, complete in
             let file = row.file
             Task { [weak self] in

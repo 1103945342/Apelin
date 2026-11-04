@@ -56,7 +56,7 @@ extension ConsoleRunner {
                 var result = ConsoleStepResult(
                     ok: line["ok"] == .bool(true),
                     response: line["response"],
-                    error: line["error"]
+                    error: line["error"],
                 )
                 result.events = events[index] ?? []
                 result.state = line["state"]?.stringValue
@@ -73,7 +73,7 @@ extension ConsoleRunner {
                 index: index,
                 handle: handle,
                 response: response,
-                events: events[index] ?? []
+                events: events[index] ?? [],
             )
         }
         return replay

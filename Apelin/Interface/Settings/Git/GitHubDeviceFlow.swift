@@ -59,14 +59,14 @@ struct GitHubDeviceFlow: Sendable {
             guard let response = response as? HTTPURLResponse else { throw Failure.unreadable }
             return (data, response)
         },
-        wait: { seconds in try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000)) }
+        wait: { seconds in try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000)) },
     )
 
     /// Asks GitHub for a code.
     func requestCode() async throws -> Code {
         let answer = try await post(Self.codeURL, [
             "client_id": Self.clientID,
-            "scope": Self.scopes.joined(separator: " ")
+            "scope": Self.scopes.joined(separator: " "),
         ])
         if let error = answer.object["error"] as? String {
             throw Failure.refused(answer.object["error_description"] as? String ?? error)
@@ -84,7 +84,7 @@ struct GitHubDeviceFlow: Sendable {
             verificationURL: page,
             deviceCode: deviceCode,
             expiresIn: expiresIn,
-            interval: max(interval, 1)
+            interval: max(interval, 1),
         )
     }
 
@@ -101,7 +101,7 @@ struct GitHubDeviceFlow: Sendable {
             let answer = try await post(Self.tokenURL, [
                 "client_id": Self.clientID,
                 "device_code": code.deviceCode,
-                "grant_type": Self.grantType
+                "grant_type": Self.grantType,
             ])
             if let token = answer.object["access_token"] as? String, !token.isEmpty {
                 return token
