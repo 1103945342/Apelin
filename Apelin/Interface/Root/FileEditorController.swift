@@ -198,7 +198,17 @@ final class FileEditorController: UIViewController {
         }
         UIView.animate(withDuration: 0.25) {
             self.view.layoutIfNeeded()
+        } completion: { [weak self] _ in
+            self?.revealCaret()
         }
+    }
+
+    /// Brings the insertion point into the part of the page the keyboard leaves
+    /// visible: tapping a line near the foot of a file would otherwise put the
+    /// caret behind the keyboard, where nothing typed there can be read.
+    private func revealCaret() {
+        guard textView.isFirstResponder else { return }
+        textView.scrollRangeToVisible(textView.selectedRange)
     }
 
     private func load() {
@@ -254,6 +264,9 @@ final class FileEditorController: UIViewController {
         let item = isDirty ? saveItem : editItem
         // Nothing to write before the file is on screen, or while a save runs.
         item.isEnabled = openedText != nil && !isSaving
+        // The pencil takes the accent colour once the file is writable, so the
+        // bar says which of its two states the sheet is in without a word.
+        editItem.tintColor = isWriting ? .systemBlue : .label
         navigationItem.rightBarButtonItem = item
     }
 
@@ -340,6 +353,16 @@ extension FileEditorController: TextViewDelegate {
     func textViewDidChange(_ textView: TextView) {
         guard let openedText else { return }
         isDirty = textView.text != openedText
+    }
+
+    /// The caret moved, by a tap or by typing: keep it above the keyboard. The
+    /// keyboard is already up in this case, so nothing waits on its animation —
+    /// only on the next layout pass, which puts the text where it will stay.
+    func textViewDidChangeSelection(_ textView: TextView) {
+        guard textView.isFirstResponder else { return }
+        DispatchQueue.main.async { [weak self] in
+            self?.revealCaret()
+        }
     }
 }
 
