@@ -27,6 +27,9 @@ final class ChatController: UIViewController {
     private var messageList = ListView<ChatMessage>()
     private let composer = ComposerView()
     private let topBlur = ChatTopBlurView()
+    /// A tap on the page, anywhere the composer is not, puts the keyboard
+    /// away; the tap still reaches what it landed on.
+    private let keyboardDismissTap = UITapGestureRecognizer()
     private let latestMessageButton = UIButton(type: .system)
     private weak var tracePage: TraceController?
     /// Builds the rows again once a running turn has gone quiet.
@@ -127,6 +130,14 @@ final class ChatController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .pageBackground
+
+        // The keyboard goes when the page is tapped anywhere but on the
+        // composer. `cancelsTouchesInView` stays false, so the tap still
+        // does what it was aimed at — a row, a button, a link.
+        keyboardDismissTap.cancelsTouchesInView = false
+        keyboardDismissTap.delegate = self
+        keyboardDismissTap.addTarget(self, action: #selector(dismissKeyboardOnTap))
+        view.addGestureRecognizer(keyboardDismissTap)
 
         replaceMessageList()
         view.addSubview(topBlur)
@@ -666,6 +677,11 @@ final class ChatController: UIViewController {
         showApproval(chat?.isWorking == true ? items.first { $0.role.needsApproval } : nil)
     }
 
+    /// A tap outside the composer: the keyboard is done with this page.
+    @objc private func dismissKeyboardOnTap() {
+        view.endEditing(true)
+    }
+
     @objc private func updateModelSelection() {
         let selection = ComposerModelSelection.current
         composer.modelBar.setProvider(selection?.provider)
@@ -1140,5 +1156,15 @@ extension ChatController: UIScrollViewDelegate {
         } completion: { _ in
             self.latestMessageButton.isHidden = self.latestMessageButton.alpha == 0
         }
+    }
+}
+
+extension ChatController: UIGestureRecognizerDelegate {
+    /// A tap that lands on the composer is the composer's: its field, its
+    /// buttons and the panels it opens over them keep the keyboard they
+    /// asked for.
+    func gestureRecognizer(_: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        guard let touched = touch.view else { return true }
+        return !(touched === composer || touched.isDescendant(of: composer))
     }
 }
