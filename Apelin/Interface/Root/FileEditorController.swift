@@ -10,8 +10,10 @@ import UIKit
 ///
 /// Runestone draws it, so a Swift file is highlighted as Swift and a
 /// `Makefile` as make; a file the editor has no grammar for opens as plain
-/// text rather than not at all. Closing asks before an edit is thrown away,
-/// because a sheet that vanishes takes the typing with it.
+/// text rather than not at all. A file opens to be read: no keyboard, and
+/// nothing to type on, until the pencil on the bar is tapped. Closing asks
+/// before an edit is thrown away, because a sheet that vanishes takes the
+/// typing with it.
 final class FileEditorController: UIViewController {
     /// Called after a save, so the page behind can show the new size.
     var onSaved: (() -> Void)?
@@ -20,6 +22,8 @@ final class FileEditorController: UIViewController {
     private let relativePath: String
     private let textView = TextView().then {
         $0.showLineNumbers = true
+        // opened to be read: the pencil on the bar makes it writable
+        $0.isEditable = false
         $0.autocorrectionType = .no
         $0.autocapitalizationType = .none
         $0.smartQuotesType = .no
@@ -32,24 +36,38 @@ final class FileEditorController: UIViewController {
 
     private let theme = ApelinEditorTheme()
     /// What the file held when it was opened, to tell an edit from a redraw.
+    /// `nil` until the file is on screen, and for a file that failed to load.
     private var openedText: String?
+
+    /// Whether the file is open for writing.
+    private var isEditing = false
 
     private var isDirty = false {
         didSet {
             guard isDirty != oldValue else { return }
-            saveItem.isEnabled = isDirty
+            applyBarItem()
         }
     }
 
     /// Whether a save is running, so a second tap does not write twice.
-    private var isSaving = false
+    private var isSaving = false {
+        didSet { applyBarItem() }
+    }
+
+    /// The bar while nothing is unsaved: the way into writing, and out of it
+    /// again before anything is typed.
+    private lazy var editItem = UIBarButtonItem(
+        image: UIImage(systemName: "pencil"),
+        primaryAction: UIAction { [weak self] _ in self?.beginEditing() },
+    ).then {
+        $0.accessibilityLabel = String(localized: "Edit")
+    }
 
     private lazy var saveItem = UIBarButtonItem(
         title: String(localized: "Save"),
         primaryAction: UIAction { [weak self] _ in self?.save() },
     ).then {
         $0.style = .done
-        $0.isEnabled = false
     }
 
     private lazy var spinner = UIActivityIndicatorView(style: .medium).then {
@@ -78,7 +96,7 @@ final class FileEditorController: UIViewController {
         view.backgroundColor = theme.backgroundColor
         title = (relativePath as NSString).lastPathComponent
         navigationItem.largeTitleDisplayMode = .never
-        navigationItem.rightBarButtonItem = saveItem
+        applyBarItem()
         // The sheet helper puts a cross here that would drop the edit; this
         // one asks first.
         navigationItem.leftBarButtonItem = UIBarButtonItem(
@@ -134,7 +152,9 @@ final class FileEditorController: UIViewController {
             textView.backgroundColor = theme.backgroundColor
             textView.setState(state)
             textView.editorDelegate = self
-            textView.becomeFirstResponder()
+            // shown to be read: the keyboard is the pencil's, not the file's
+            textView.isEditable = isEditing
+            applyBarItem()
         }
     }
 
@@ -143,8 +163,41 @@ final class FileEditorController: UIViewController {
         failureLabel.isHidden = false
         failureLabel.text = error.readableMessage
         // A file the editor cannot show is still a file the reader may want
-        // to know about; nothing here writes it.
-        saveItem.isEnabled = false
+        // to know about; nothing here writes it, so there is nothing to edit.
+        applyBarItem()
+    }
+
+    /// The bar's one action: the pencil while the file is only read, and
+    /// Save once something was actually typed.
+    private func applyBarItem() {
+        let item = isDirty ? saveItem : editItem
+        // Nothing to write before the file is on screen, or while a save runs.
+        item.isEnabled = openedText != nil && !isSaving
+        navigationItem.rightBarButtonItem = item
+    }
+
+    /// The pencil: the file becomes writable and the keyboard comes up.
+    /// Tapped again before anything is typed, it puts both away, which is
+    /// the way out of a file opened by mistake.
+    private func beginEditing() {
+        guard openedText != nil, !isSaving else { return }
+        guard !isEditing else {
+            stopEditing()
+            return
+        }
+        isEditing = true
+        textView.isEditable = true
+        textView.becomeFirstResponder()
+        applyBarItem()
+    }
+
+    /// Back to reading: the keyboard away, the file no longer writable, and
+    /// the bar showing the pencil again.
+    private func stopEditing() {
+        isEditing = false
+        textView.isEditable = false
+        textView.resignFirstResponder()
+        applyBarItem()
     }
 
     private func save() {
@@ -161,6 +214,8 @@ final class FileEditorController: UIViewController {
                 isSaving = false
                 openedText = text
                 isDirty = false
+                // Saved: back to reading the file as it is on disk now.
+                stopEditing()
                 onSaved?()
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
             } catch {
