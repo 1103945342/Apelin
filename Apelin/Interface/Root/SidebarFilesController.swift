@@ -19,6 +19,10 @@ final class SidebarFilesController: UIViewController {
     private var files: ProjectFiles?
     private var rows: [ProjectFile] = []
     private var query = ""
+    /// For each row that sits inside a folder, one flag per folder above it:
+    /// whether that folder has another row under it, which decides where its
+    /// line stops.
+    private var guideColumns: [String: [Bool]] = [:]
     /// What Copy or Cut put aside, and the file it came from.
     private var clipboard: (file: ProjectFile, moving: Bool)?
     /// The sentence the empty list is showing, so it is not made again on
@@ -66,6 +70,7 @@ final class SidebarFilesController: UIViewController {
             file: file,
             depth: query.isEmpty ? (file?.depth ?? 0) : 0,
             expanded: files?.isExpanded(path) ?? false,
+            columns: query.isEmpty ? (guideColumns[path] ?? []) : [],
         )
         return cell
     }
@@ -124,6 +129,7 @@ final class SidebarFilesController: UIViewController {
     private func rebuild() {
         guard let files else {
             rows = []
+            guideColumns = [:]
             applyRows()
             setEmptyState(symbol: "folder", text: String(localized: "Pick a workspace to browse its files."))
             tableView.backgroundView?.isHidden = false
@@ -132,6 +138,7 @@ final class SidebarFilesController: UIViewController {
         }
         searchField.isUserInteractionEnabled = true
         rows = query.isEmpty ? files.rows() : files.search(query)
+        guideColumns = query.isEmpty ? makeGuideColumns() : [:]
         applyRows()
         tableView.backgroundView?.isHidden = !rows.isEmpty
         // The empty state is the reader's only cue: an empty folder and a
@@ -142,6 +149,21 @@ final class SidebarFilesController: UIViewController {
                 ? String(localized: "No files yet. Long press to make one.")
                 : String(localized: "No files match."),
         )
+    }
+
+    /// Which folders have more under them, for each row that sits inside
+    /// one. The rows come in the order the list shows them, so the row after
+    /// this one says whether a folder goes on: a row deeper than a folder's
+    /// level is still under it.
+    private func makeGuideColumns() -> [String: [Bool]] {
+        var columns: [String: [Bool]] = [:]
+        for (index, row) in rows.enumerated() where row.depth > 1 {
+            let next = index + 1 < rows.count ? rows[index + 1].depth : 0
+            columns[row.relativePath] = (0 ..< (row.depth - 1)).map { level in
+                next > level + 1
+            }
+        }
+        return columns
     }
 
     /// What the list says instead of rows, made again only when the sentence
@@ -388,9 +410,12 @@ private extension ProjectFiles.NameProblem {
     }
 }
 
-/// One row of the file list: the icon, the name indented by how deep it
-/// sits, and — for a folder — whether it is open.
+/// One row of the file list: the icon and the name indented by how deep the
+/// row sits, a line for every folder above it, and — for a folder — whether
+/// it is open.
 final class SidebarFileCell: UITableViewCell {
+    private let guides = FileGuideLinesView()
+
     private let icon = UIImageView().then {
         $0.contentMode = .scaleAspectFit
         $0.setContentHuggingPriority(.required, for: .horizontal)
@@ -408,18 +433,25 @@ final class SidebarFileCell: UITableViewCell {
         $0.setContentHuggingPriority(.required, for: .horizontal)
     }
 
-    private var nameLeading: Constraint?
+    private var iconLeading: Constraint?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         backgroundColor = .clear
         selectionStyle = .default
+        // The lines go under everything the row shows.
+        contentView.addSubview(guides)
         contentView.addSubview(chevron)
         contentView.addSubview(icon)
         contentView.addSubview(name)
 
+        guides.snp.makeConstraints { x in x.edges.equalToSuperview() }
         icon.snp.makeConstraints { x in
-            x.leading.equalToSuperview().offset(16)
+            // the whole row, icon and name alike, moves down a level
+            iconLeading = x.leading
+                .equalToSuperview()
+                .offset(FileGuideLinesView.contentLeading(forDepth: 1))
+                .constraint
             x.centerY.equalToSuperview()
             x.size.equalTo(18)
         }
@@ -427,7 +459,7 @@ final class SidebarFileCell: UITableViewCell {
         // only a centre is a label of no height, and every row collapses to
         // the icon's.
         name.snp.makeConstraints { x in
-            nameLeading = x.leading.equalTo(icon.snp.trailing).offset(8).constraint
+            x.leading.equalTo(icon.snp.trailing).offset(8)
             x.top.equalToSuperview().offset(10)
             x.bottom.equalToSuperview().offset(-10)
             x.trailing.lessThanOrEqualTo(chevron.snp.leading).offset(-8)
@@ -442,12 +474,20 @@ final class SidebarFileCell: UITableViewCell {
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
-    func configure(file: ProjectFile?, depth: Int, expanded: Bool) {
+    func configure(file: ProjectFile?, depth: Int, expanded: Bool, columns: [Bool]) {
         guard let file else {
             name.text = nil
+            guides.depth = 1
+            guides.continues = []
             isAccessibilityElement = false
             return
         }
+        // The list's own rows start at the first level; a search result sits
+        // flat, whatever its path says.
+        let level = max(depth, 1)
+        iconLeading?.update(offset: FileGuideLinesView.contentLeading(forDepth: level))
+        guides.depth = level
+        guides.continues = columns
         name.text = file.name
         icon.image = UIImage(systemName: file.isDirectory
             ? (expanded ? "folder.fill" : "folder")
@@ -456,12 +496,74 @@ final class SidebarFileCell: UITableViewCell {
         icon.isHidden = false
         chevron.isHidden = !file.isDirectory
         chevron.transform = expanded ? CGAffineTransform(rotationAngle: .pi / 2) : .identity
-        nameLeading?.update(offset: 8 + CGFloat(depth) * 14)
         isAccessibilityElement = true
         accessibilityLabel = file.name
         accessibilityValue = file.isDirectory
             ? String(localized: expanded ? "Folder, open" : "Folder, closed")
             : nil
         accessibilityTraits = file.isDirectory ? .button : []
+    }
+}
+
+/// The lines a deep row is drawn beside: one for every folder above it,
+/// standing under that folder's icon, and a corner into the row's own
+/// folder. A column stops at the last of its children, so the list reads as
+/// a tree rather than as a set of indented names.
+private final class FileGuideLinesView: UIView {
+    /// Where the first level starts, and how far each level after it does.
+    private static let base: CGFloat = 16
+    private static let step: CGFloat = 20
+    /// How far into a level the icon's centre is, which is where its line
+    /// stands.
+    private static let iconCentre: CGFloat = 9
+    /// What the corner leaves before the icon it points at.
+    private static let cornerGap: CGFloat = 4
+
+    /// Where a row at `depth` starts: the leading edge of its icon.
+    static func contentLeading(forDepth depth: Int) -> CGFloat {
+        base + CGFloat(max(depth, 1) - 1) * step
+    }
+
+    /// The row's depth, one for what the project holds.
+    var depth = 1 {
+        didSet { setNeedsDisplay() }
+    }
+
+    /// For each folder above the row, whether it has another row under it:
+    /// a column that does runs on past this row, one that does not ends at
+    /// its middle, where the corner takes over.
+    var continues: [Bool] = [] {
+        didSet { setNeedsDisplay() }
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = .clear
+        isOpaque = false
+        isUserInteractionEnabled = false
+        contentMode = .redraw
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override func draw(_: CGRect) {
+        guard !continues.isEmpty else { return }
+        let path = UIBezierPath()
+        path.lineWidth = 1 / UIScreen.main.scale
+        let middle = bounds.midY
+        for (level, carriesOn) in continues.enumerated() {
+            let x = Self.base + CGFloat(level) * Self.step + Self.iconCentre
+            let isOwnFolder = level == continues.count - 1
+            path.move(to: CGPoint(x: x, y: 0))
+            path.addLine(to: CGPoint(x: x, y: isOwnFolder && !carriesOn ? middle : bounds.maxY))
+            if isOwnFolder {
+                let corner = Self.contentLeading(forDepth: depth) - Self.cornerGap
+                path.move(to: CGPoint(x: x, y: middle))
+                path.addLine(to: CGPoint(x: corner, y: middle))
+            }
+        }
+        UIColor.separator.setStroke()
+        path.stroke()
     }
 }
