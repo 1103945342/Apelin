@@ -3,10 +3,13 @@ import SnapKit
 import UIKit
 
 /// What a step's page in the trace shows (`TraceStepController`): a thought's
-/// text, or a call's arguments and its result, each as a card of its own.
+/// text, or a call's arguments and its result.
 ///
-/// Decoded once for each text and size, not again on every layout pass: a call
-/// that writes a whole file is a string the size of the file.
+/// The page is a document, not a stack of boxes: a thought is prose on the
+/// ground, an argument is a line of label and value, and only the things that
+/// are content — a command's output, a file's text, a diff — rise into a
+/// panel of their own. Decoded once for each text and size, not again on
+/// every layout pass.
 @MainActor
 enum TraceBody {
     struct Key: Hashable {
@@ -22,7 +25,7 @@ enum TraceBody {
     enum Block: Equatable {
         /// A thought, or what an approval asked: prose, on the page itself.
         case text(String)
-        /// One argument or the result, on a card of its own.
+        /// One argument or the result, drawn as a line of the document.
         case section(ToolCallDetail.Section)
     }
 
@@ -76,56 +79,101 @@ enum TraceBody {
         }
         return ToolCallDetail(detail: key.source, title: title).sections.map(Block.section)
     }
+
+    // MARK: - The page's measures
+
+    /// What the page and the lines on it are drawn with. The scale is aimini's
+    /// message document: one ground the whole page shares, hairlines between
+    /// things, and a panel for content that is more than a line.
+    enum Style {
+        /// Between one section and the next.
+        static let sectionSpacing: CGFloat = 14
+        /// The label above a value, and the value under it.
+        static let labelSpacing: CGFloat = 3
+        /// A block value: its label, and then the panel's own room.
+        static let blockSpacing: CGFloat = 6
+        /// Inside a block panel.
+        static let panelPadding: CGFloat = 10
+        static let panelCorner: CGFloat = 8
+        /// Between a rule and what follows it.
+        static let ruleSpacing: CGFloat = 10
+
+        static var hairline: CGFloat { 1 / max(UIScreen.main.scale, 1) }
+
+        /// The label above a value: small, quiet, and never the point.
+        static var labelFont: UIFont {
+            UIFontMetrics(forTextStyle: .caption1).scaledFont(
+                for: .systemFont(ofSize: 11, weight: .semibold),
+            )
+        }
+
+        /// A value that is a word or a line.
+        static var valueFont: UIFont { UIFont.preferredFont(forTextStyle: .subheadline) }
+
+        /// A value that is a path or a command.
+        static var monospacedValueFont: UIFont {
+            UIFontMetrics(forTextStyle: .subheadline).scaledFont(
+                for: .monospacedSystemFont(ofSize: 13, weight: .regular),
+            )
+        }
+
+        /// A block: the output of a command, a file's text, a diff.
+        static var blockFont: UIFont {
+            UIFontMetrics(forTextStyle: .footnote).scaledFont(
+                for: .monospacedSystemFont(ofSize: 12, weight: .regular),
+            )
+        }
+
+        /// The ground a block sits on: a shade off the page, never a card's
+        /// white lifted above it.
+        static var panelColor: UIColor { .secondarySystemFill }
+        static var ruleColor: UIColor { .separator }
+    }
 }
 
-/// One argument or result of a tool call, on a card of its own.
-///
-/// A page of a call is a set of unlike things — a path, a command, a file's
-/// content, the lines a diff added — and a wall of text made all of them look
-/// alike. The card separates one from the next, and its value is set in the
-/// face its kind asks for.
+/// One argument or result of a tool call, as a line of the document: a quiet
+/// label, then its value. A value that is more than a line — a command's
+/// output, a file's text, a diff — drops into a panel of its own, so the page
+/// reads as a document with blocks in it rather than a stack of cards.
 final class ToolCallSectionView: UIView {
-    private let card = UIView()
+    private let stack = UIStackView()
+    private let rule = UIView()
     private let nameLabel = UILabel()
     private let valueLabel = UILabel()
-
-    private var valueTopToName: Constraint?
-    private var valueTopToCard: Constraint?
+    private let panel = UIView()
+    private let panelLabel = UILabel()
 
     init(section: ToolCallDetail.Section) {
         super.init(frame: .zero)
 
-        card.backgroundColor = .secondarySystemGroupedBackground
-        card.layer.cornerRadius = 12
-        card.layer.cornerCurve = .continuous
-        addSubview(card)
+        stack.axis = .vertical
+        stack.spacing = TraceBody.Style.labelSpacing
+        addSubview(stack)
+        stack.snp.makeConstraints { x in x.edges.equalToSuperview() }
 
-        nameLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
+        rule.backgroundColor = TraceBody.Style.ruleColor
+        rule.snp.makeConstraints { x in x.height.equalTo(TraceBody.Style.hairline) }
+
+        nameLabel.font = TraceBody.Style.labelFont
         nameLabel.adjustsFontForContentSizeCategory = true
-        nameLabel.textColor = .secondaryLabel
+        nameLabel.textColor = .tertiaryLabel
         nameLabel.numberOfLines = 1
         nameLabel.lineBreakMode = .byTruncatingTail
-        card.addSubview(nameLabel)
 
         valueLabel.numberOfLines = 0
-        card.addSubview(valueLabel)
 
-        card.snp.makeConstraints { x in x.edges.equalToSuperview() }
-        nameLabel.snp.makeConstraints { x in
-            x.top.equalToSuperview().offset(10)
-            x.leading.trailing.equalToSuperview().inset(12)
+        panel.backgroundColor = TraceBody.Style.panelColor
+        panel.layer.cornerRadius = TraceBody.Style.panelCorner
+        panel.layer.cornerCurve = .continuous
+        panelLabel.numberOfLines = 0
+        panel.addSubview(panelLabel)
+        panelLabel.snp.makeConstraints { x in
+            x.edges.equalToSuperview().inset(TraceBody.Style.panelPadding)
         }
-        valueLabel.snp.makeConstraints { x in
-            // Two places the value can sit; `configure` turns one of them on.
-            // Both start off, or the pair would contradict each other before
-            // there is a section to decide with.
-            valueTopToName = x.top.equalTo(nameLabel.snp.bottom).offset(4).constraint
-            valueTopToCard = x.top.equalToSuperview().offset(11).constraint
-            x.leading.trailing.equalToSuperview().inset(12)
-            x.bottom.equalToSuperview().offset(-11)
+
+        for view in [rule as UIView, nameLabel, valueLabel, panel] {
+            stack.addArrangedSubview(view)
         }
-        valueTopToName?.deactivate()
-        valueTopToCard?.deactivate()
 
         configure(section)
     }
@@ -139,53 +187,61 @@ final class ToolCallSectionView: UIView {
         let hasName = section.name?.isEmpty == false
         nameLabel.text = section.name
         nameLabel.isHidden = !hasName
-        // The value takes the card's own padding when there is no name above
-        // it, and hangs under the name when there is.
-        valueTopToName?.isActive = hasName
-        valueTopToCard?.isActive = !hasName
 
-        // The result of a call is what the call was for; its name says so in
-        // the same colour as the values rather than the quiet grey of a label.
-        nameLabel.textColor = section.isResult ? .label : .secondaryLabel
+        let kind = section.kind
+        // Blocks are the things that are content; everything else is a line.
+        let isBlock = kind == .code || kind == .diff || kind == .result
+        valueLabel.isHidden = isBlock
+        panel.isHidden = !isBlock
+        if isBlock {
+            panelLabel.attributedText = Self.blockText(section, kind: kind)
+        } else {
+            valueLabel.attributedText = Self.lineText(section, kind: kind)
+        }
 
-        valueLabel.attributedText = Self.value(section)
+        // A result is what the call was for: it gets a hairline above it, so
+        // the page says where the arguments end and the answer begins.
+        rule.isHidden = !section.isResult
+        stack.setCustomSpacing(TraceBody.Style.ruleSpacing, after: rule)
+        // A block wants a little more air under its label than a single line.
+        stack.setCustomSpacing(
+            isBlock ? TraceBody.Style.blockSpacing : TraceBody.Style.labelSpacing,
+            after: nameLabel,
+        )
 
-        // Read as one thing: the name, then what stands under it.
         isAccessibilityElement = true
         accessibilityTraits = .staticText
         accessibilityLabel = hasName ? section.name : String(localized: "Details")
         accessibilityValue = section.value
     }
 
-    /// The value in the face its kind asks for, and — for a diff — each line
-    /// in the colour it means.
-    private static func value(_ section: ToolCallDetail.Section) -> NSAttributedString {
-        let prose = UIFont.preferredFont(forTextStyle: .subheadline)
-        let mono = UIFontMetrics(forTextStyle: .subheadline).scaledFont(
-            for: UIFont.monospacedSystemFont(ofSize: 13, weight: .regular),
+    /// A value that is a word or a line, in the face its kind asks for.
+    private static func lineText(_ section: ToolCallDetail.Section, kind: ToolCallDetail.Section.Kind) -> NSAttributedString {
+        let isMonospaced = kind == .path || kind == .command
+        return NSAttributedString(
+            string: section.value,
+            attributes: [
+                .font: isMonospaced ? TraceBody.Style.monospacedValueFont : TraceBody.Style.valueFont,
+                .foregroundColor: isMonospaced ? UIColor.secondaryLabel : UIColor.label,
+            ],
         )
-
-        switch section.kind {
-        case .text:
-            return NSAttributedString(
-                string: section.value,
-                attributes: [.font: prose, .foregroundColor: UIColor.label],
-            )
-        case .diff:
-            return diff(section.value, font: mono)
-        case .path, .command, .code, .result:
-            return NSAttributedString(
-                string: section.value,
-                attributes: [.font: mono, .foregroundColor: UIColor.label],
-            )
-        }
     }
 
-    /// Added lines green, removed lines red, hunk headers quiet: the colours
-    /// a diff is read in everywhere else.
-    private static func diff(_ text: String, font: UIFont) -> NSAttributedString {
+    /// A value that is a block of text: monospaced, and — for a diff — each
+    /// line in the colour it means.
+    private static func blockText(
+        _ section: ToolCallDetail.Section,
+        kind: ToolCallDetail.Section.Kind,
+    ) -> NSAttributedString {
+        let font = TraceBody.Style.blockFont
+        guard kind == .diff else {
+            return NSAttributedString(
+                string: section.value,
+                attributes: [.font: font, .foregroundColor: UIColor.label],
+            )
+        }
         let result = NSMutableAttributedString()
-        let lines = text.split(separator: "\n", omittingEmptySubsequences: false)
+        let lines = section.value.split(separator: "\n", omittingEmptySubsequences: false)
         for (index, line) in lines.enumerated() {
             let string = String(line)
             let colour: UIColor

@@ -23,6 +23,10 @@ final class FileEditorController: UIViewController {
     /// The line to put the caret on once the file is on screen: a content
     /// search opens a file where its text is, not at its first line.
     private let line: Int?
+    /// The word a content search found the file by: marked everywhere it
+    /// appears, with the hit's own line in view.
+    private let highlight: String?
+
     private let textView = TextView().then {
         $0.showLineNumbers = true
         // opened to be read: the pencil on the bar makes it writable
@@ -78,6 +82,14 @@ final class FileEditorController: UIViewController {
     /// Whether case-sensitive search is on.
     private var isCaseSensitive = false
 
+    /// Every place the search found, and which of them is on screen. The
+    /// reader steps through them rather than being shown only the first.
+    private var matches: [NSRange] = []
+    private var matchIndex = 0
+    /// Past this many matches the rest are left out: a page of highlights is
+    /// as much as anyone steps through, and the count stops growing.
+    private static let matchLimit = 2000
+
     /// The bar while nothing is unsaved: the way into writing, and out of it
     /// again before anything is typed.
     private lazy var editItem = UIBarButtonItem(
@@ -106,10 +118,76 @@ final class FileEditorController: UIViewController {
         $0.isHidden = true
     }
 
-    init(url: URL, relativePath: String, line: Int? = nil) {
+    /// "3 / 12": how far through the matches the reader is.
+    private lazy var matchCountLabel = UILabel().then {
+        $0.font = UIFont.monospacedDigitSystemFont(ofSize: 13, weight: .medium)
+        $0.textColor = .secondaryLabel
+        $0.textAlignment = .center
+        $0.isAccessibilityElement = true
+    }
+
+    private lazy var previousMatchItem = UIBarButtonItem(
+        image: UIImage(systemName: "chevron.up"),
+        style: .plain,
+        target: self,
+        action: #selector(goToPreviousMatch),
+    ).then {
+        $0.accessibilityLabel = String(localized: "Previous Match")
+        $0.isEnabled = false
+    }
+
+    private lazy var nextMatchItem = UIBarButtonItem(
+        image: UIImage(systemName: "chevron.down"),
+        style: .plain,
+        target: self,
+        action: #selector(goToNextMatch),
+    ).then {
+        $0.accessibilityLabel = String(localized: "Next Match")
+        $0.isEnabled = false
+    }
+
+    /// The keyboard's own bar over the text: one way out of it.
+    private lazy var textToolbar: UIToolbar = {
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        toolbar.items = [
+            UIBarButtonItem.flexibleSpace(),
+            UIBarButtonItem(
+                title: String(localized: "Done"),
+                style: .done,
+                target: self,
+                action: #selector(dismissKeyboard),
+            ),
+        ]
+        return toolbar
+    }()
+
+    /// The bar over the search field: step through the matches, see how many
+    /// there are, and leave.
+    private lazy var searchToolbar: UIToolbar = {
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        toolbar.items = [
+            previousMatchItem,
+            nextMatchItem,
+            UIBarButtonItem.flexibleSpace(),
+            UIBarButtonItem(customView: matchCountLabel),
+            UIBarButtonItem.flexibleSpace(),
+            UIBarButtonItem(
+                title: String(localized: "Done"),
+                style: .done,
+                target: self,
+                action: #selector(dismissKeyboard),
+            ),
+        ]
+        return toolbar
+    }()
+
+    init(url: URL, relativePath: String, line: Int? = nil, highlight: String? = nil) {
         self.url = url
         self.relativePath = relativePath
         self.line = line
+        self.highlight = highlight
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -119,7 +197,14 @@ final class FileEditorController: UIViewController {
     /// Reads the file and builds its highlighted state before there is a sheet
     /// to put them in. The page then has its text on the first frame it draws,
     /// instead of a blank one that fills in a moment later.
-    static func prepare(url: URL, relativePath: String, line: Int?) async -> FileEditorController? {
+    static func prepare(
+        url: URL,
+        relativePath: String,
+        line: Int?,
+        highlight: String? = nil,
+    ) async -> FileEditorController? {
+        // A trailing closure inside a `guard` condition does not parse under
+        // Swift 6.4: the task is made first, and its value asked for after.
         let reading = Task.detached(priority: .userInitiated) {
             try ProjectFileContent.read(at: url)
         }
@@ -128,7 +213,12 @@ final class FileEditorController: UIViewController {
         let state = await Task.detached(priority: .userInitiated) {
             highlightedState(for: text, theme: theme, fileName: relativePath)
         }.value
-        let controller = FileEditorController(url: url, relativePath: relativePath, line: line)
+        let controller = FileEditorController(
+            url: url,
+            relativePath: relativePath,
+            line: line,
+            highlight: highlight,
+        )
         controller.preloaded = (text, state)
         return controller
     }
@@ -160,26 +250,15 @@ final class FileEditorController: UIViewController {
             primaryAction: UIAction { [weak self] _ in self?.close() },
         ).then { $0.accessibilityLabel = String(localized: "Close") }
 
-        // Keyboard toolbar with Done button
-        let toolbar = UIToolbar()
-        toolbar.sizeToFit()
-        let doneButton = UIBarButtonItem(
-            title: String(localized: "Done"),
-            style: .done,
-            target: self,
-            action: #selector(dismissKeyboard)
-        )
-        toolbar.items = [UIBarButtonItem.flexibleSpace(), doneButton]
-        textView.inputAccessoryView = toolbar
-
-        // Search bar setup
+        textView.inputAccessoryView = textToolbar
         searchBar.delegate = self
+        searchBar.searchTextField.inputAccessoryView = searchToolbar
         view.addSubview(searchBar)
 
         view.addSubview(textView)
         view.addSubview(spinner)
         view.addSubview(failureLabel)
-        
+
         searchBar.snp.makeConstraints { x in
             x.top.equalTo(view.safeAreaLayoutGuide)
             x.leading.trailing.equalTo(view.safeAreaLayoutGuide)
@@ -198,18 +277,18 @@ final class FileEditorController: UIViewController {
             x.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(24)
         }
 
-        // Keyboard notifications for avoiding obstruction
+        // The keyboard takes the bottom of the page with it.
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(keyboardWillShow),
             name: UIResponder.keyboardWillShowNotification,
-            object: nil
+            object: nil,
         )
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(keyboardWillHide),
             name: UIResponder.keyboardWillHideNotification,
-            object: nil
+            object: nil,
         )
 
         // A white text view under a dark page is the flash the sheet opens
@@ -229,16 +308,21 @@ final class FileEditorController: UIViewController {
     }
 
     @objc private func dismissKeyboard() {
-        textView.resignFirstResponder()
+        if textView.isFirstResponder { textView.resignFirstResponder() }
+        if searchBar.searchTextField.isFirstResponder { searchBar.resignFirstResponder() }
     }
 
     @objc private func keyboardWillShow(_ notification: Notification) {
         guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+        // Only the text view moves: the search bar sits at the top and keeps
+        // its place while the reader steps through matches.
+        guard textView.isFirstResponder else { return }
         keyboardHeight = frame.height
         updateTextViewInsets()
     }
 
     @objc private func keyboardWillHide(_ notification: Notification) {
+        guard keyboardHeight != 0 else { return }
         keyboardHeight = 0
         updateTextViewInsets()
     }
@@ -254,12 +338,17 @@ final class FileEditorController: UIViewController {
         }
     }
 
+    /// Brings a range into view, as little scrolling as gets it there.
+    private func scrollToVisible(_ range: NSRange) {
+        textView.scrollRangeToVisible(range)
+    }
+
     /// Brings the insertion point into the part of the page the keyboard leaves
     /// visible: tapping a line near the foot of a file would otherwise put the
     /// caret behind the keyboard, where nothing typed there can be read.
     private func revealCaret() {
         guard textView.isFirstResponder else { return }
-        textView.scrollRangeToVisible(textView.selectedRange)
+        scrollToVisible(textView.selectedRange)
     }
 
     private func load() {
@@ -300,27 +389,35 @@ final class FileEditorController: UIViewController {
         // shown to be read: the keyboard is the pencil's, not the file's
         textView.isEditable = isWriting
         applyBarItem()
-        if let line { reveal(line: line) }
+        if let highlight, !highlight.isEmpty {
+            // Opened from a content search: the word is marked everywhere it
+            // appears, and the hit's own line is the one on screen.
+            mark(needle: highlight, caseSensitive: false, focusAt: line)
+        } else if let line {
+            reveal(line: line)
+        }
     }
 
     /// Puts the caret on a line and brings it into view: what a content search
     /// opens a file for.
     private func reveal(line: Int) {
-        let text = textView.text as NSString
+        guard let location = Self.location(ofLine: line, in: textView.text) else { return }
+        let range = NSRange(location: location, length: 0)
+        textView.selectedRange = range
+        scrollToVisible(range)
+    }
+
+    /// Where a 1-based line starts, or nil past the end of the text.
+    private static func location(ofLine line: Int, in text: String) -> Int? {
+        guard line > 1 else { return 0 }
         var number = 1
-        var location = 0
-        while number < line, location < text.length {
-            let found = text.range(
-                of: "\n",
-                range: NSRange(location: location, length: text.length - location),
-            )
-            guard found.location != NSNotFound else { break }
-            location = found.location + 1
+        var index = text.startIndex
+        while number < line, index < text.endIndex {
+            guard let newline = text[index...].firstIndex(of: "\n") else { return nil }
+            index = text.index(after: newline)
             number += 1
         }
-        let range = NSRange(location: min(location, text.length), length: 0)
-        textView.selectedRange = range
-        textView.scrollRangeToVisible(range)
+        return number == line ? text.distance(from: text.startIndex, to: index) : nil
     }
 
     private func show(_ error: Error) {
@@ -421,12 +518,117 @@ final class FileEditorController: UIViewController {
         }
         present(alert, animated: true)
     }
+
+    // MARK: - Search
+
+    /// Finds every place `needle` appears, marks them all, and puts the one
+    /// asked for on screen.
+    @discardableResult
+    private func mark(needle: String, caseSensitive: Bool, focusAt line: Int?) -> Int {
+        let text = textView.text
+        let options: String.CompareOptions = caseSensitive ? [] : [.caseInsensitive]
+        var found: [NSRange] = []
+        var cursor = text.startIndex
+        while found.count < Self.matchLimit,
+              let range = text.range(of: needle, options: options, range: cursor ..< text.endIndex)
+        {
+            found.append(NSRange(range, in: text))
+            cursor = range.upperBound
+            if cursor >= text.endIndex { break }
+        }
+        matches = found
+        if let line, let start = Self.location(ofLine: line, in: text) {
+            // The hit the file was opened for, not merely the first one.
+            matchIndex = found.firstIndex { $0.location >= start } ?? 0
+        } else {
+            matchIndex = 0
+        }
+        paintMatches()
+        focusCurrentMatch()
+        updateMatchCount()
+        return found.count
+    }
+
+    /// Every match in yellow, the one on screen in a deeper shade: the reader
+    /// sees both where they are and what else there is.
+    private func paintMatches() {
+        guard !matches.isEmpty else {
+            textView.highlightedRanges = []
+            return
+        }
+        textView.highlightedRanges = matches.enumerated().map { index, range in
+            HighlightedRange(
+                id: "match-\(index)",
+                range: range,
+                color: index == matchIndex
+                    ? UIColor.systemYellow.withAlphaComponent(0.55)
+                    : UIColor.systemYellow.withAlphaComponent(0.22),
+                cornerRadius: 2,
+            )
+        }
+    }
+
+    private func focusCurrentMatch() {
+        guard matches.indices.contains(matchIndex) else { return }
+        let range = matches[matchIndex]
+        textView.selectedRange = range
+        scrollToVisible(range)
+    }
+
+    private func updateMatchCount() {
+        let hasMatches = !matches.isEmpty
+        previousMatchItem.isEnabled = hasMatches
+        nextMatchItem.isEnabled = hasMatches
+        if hasMatches {
+            let text = "\(matchIndex + 1) / \(matches.count)"
+            matchCountLabel.text = text
+            matchCountLabel.accessibilityLabel = String(localized: "Match") + " " + text
+        } else {
+            matchCountLabel.text = searchBar.text?.isEmpty == false ? String(localized: "None") : nil
+            matchCountLabel.accessibilityLabel = matchCountLabel.text
+        }
+    }
+
+    @objc private func goToNextMatch() {
+        guard !matches.isEmpty else { return }
+        matchIndex = (matchIndex + 1) % matches.count
+        paintMatches()
+        focusCurrentMatch()
+        updateMatchCount()
+    }
+
+    @objc private func goToPreviousMatch() {
+        guard !matches.isEmpty else { return }
+        matchIndex = (matchIndex + matches.count - 1) % matches.count
+        paintMatches()
+        focusCurrentMatch()
+        updateMatchCount()
+    }
+
+    /// What the search field holds now: every match marked, the first on
+    /// screen. Empty clears what the last search left.
+    private func performSearch() {
+        let needle = searchBar.text ?? ""
+        guard !needle.isEmpty else {
+            matches = []
+            matchIndex = 0
+            textView.highlightedRanges = []
+            updateMatchCount()
+            return
+        }
+        mark(needle: needle, caseSensitive: isCaseSensitive, focusAt: nil)
+    }
 }
 
 extension FileEditorController: TextViewDelegate {
     func textViewDidChange(_ textView: TextView) {
         guard let openedText else { return }
         isDirty = textView.text != openedText
+        // The text moved under the search: what was marked is no longer where
+        // it was marked. Ask again, but only when there is a search to keep.
+        if searchBar.text?.isEmpty == false {
+            performSearch()
+        }
     }
 
     /// The caret moved, by a tap or by typing: keep it above the keyboard. The
@@ -456,27 +658,6 @@ extension FileEditorController: UISearchBarDelegate {
         isCaseSensitive.toggle()
         let iconName = isCaseSensitive ? "textformat.abc" : "textformat"
         searchBar.setImage(UIImage(systemName: iconName), for: .bookmark, state: .normal)
-        if let text = searchBar.text, !text.isEmpty {
-            performSearch()
-        }
-    }
-
-    private func performSearch() {
-        guard let searchText = searchBar.text, !searchText.isEmpty else {
-            clearSearch()
-            return
-        }
-        let text = textView.text
-        let options: String.CompareOptions = isCaseSensitive ? [] : [.caseInsensitive]
-
-        if let range = text.range(of: searchText, options: options) {
-            let nsRange = NSRange(range, in: text)
-            textView.selectedRange = nsRange
-            textView.scrollRangeToVisible(nsRange)
-        }
-    }
-
-    private func clearSearch() {
-        textView.selectedRange = NSRange(location: 0, length: 0)
+        performSearch()
     }
 }

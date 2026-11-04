@@ -182,7 +182,6 @@ final class SidebarFilesController: UIViewController {
             rows = contentHits.map(\.file)
             guideColumns = [:]
             applyRows()
-            tableView.backgroundView?.isHidden = !rows.isEmpty
             setEmptyState(
                 symbol: isSearchingContent ? "magnifyingglass" : "text.magnifyingglass",
                 text: isSearchingContent
@@ -191,12 +190,14 @@ final class SidebarFilesController: UIViewController {
                         ? String(localized: "Type what to look for after #.")
                         : String(localized: "No files contain that text.")),
             )
+            // After the state is set, not before: a new background view comes
+            // in visible, and asking the old one to hide does nothing.
+            tableView.backgroundView?.isHidden = !rows.isEmpty
             return
         }
         rows = query.isEmpty ? files.rows() : files.search(query)
         guideColumns = query.isEmpty ? makeGuideColumns() : [:]
         applyRows()
-        tableView.backgroundView?.isHidden = !rows.isEmpty
         // The empty state is the reader's only cue: an empty folder and a
         // search that found nothing are two different sentences.
         setEmptyState(
@@ -205,6 +206,7 @@ final class SidebarFilesController: UIViewController {
                 ? String(localized: "No files yet. Long press to make one.")
                 : String(localized: "No files match."),
         )
+        tableView.backgroundView?.isHidden = !rows.isEmpty
     }
 
     /// Walks the project off the main actor for a `#` search, once the reader
@@ -271,6 +273,9 @@ final class SidebarFilesController: UIViewController {
         let relativePath = file.relativePath
         let folder = parent(of: relativePath)
         let line = contentHitsByPath[relativePath]?.line
+        // A file opened from a content search opens on the word it was found
+        // by, marked wherever it appears.
+        let highlight = contentHitsByPath[relativePath] == nil ? nil : contentNeedle
         // The page is read before it is shown: a sheet that opens before its
         // text is ready flashes a blank page, which at night is a white one.
         Task { [weak self] in
@@ -279,6 +284,7 @@ final class SidebarFilesController: UIViewController {
                 url: url,
                 relativePath: relativePath,
                 line: line,
+                highlight: highlight,
             ) else {
                 presentNotice(
                     title: "Unable to Open File",

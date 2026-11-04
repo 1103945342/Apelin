@@ -9,7 +9,7 @@ final class TraceStepController: UIViewController {
     private let stack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.spacing = 10
+        stack.spacing = TraceBody.Style.sectionSpacing
         return stack
     }()
 
