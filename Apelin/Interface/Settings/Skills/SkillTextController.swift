@@ -34,7 +34,7 @@ final class SkillTextController: UIViewController {
         ]))
         if !skill.files.isEmpty {
             text.append(NSAttributedString(
-                string: "\n\n" + String(localized: "Files") + "\n",
+                string: "\n\n" + String(localized: "File Count") + "\n",
                 attributes: [.font: UIFont.preferredFont(forTextStyle: .headline), .foregroundColor: UIColor.label],
             ))
             text.append(NSAttributedString(string: skill.files.joined(separator: "\n"), attributes: [

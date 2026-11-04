@@ -8,7 +8,11 @@ PROJECT             := $(ROOT_DIR)/Apelin.xcodeproj
 # The app scheme builds apelind too: the app target depends on the daemon.
 SCHEME              := Apelin
 CONFIGURATION       ?= Release
-DERIVED_DATA        ?= /private/tmp/apelin-deriveddata
+# Inside the repository, which .gitignore covers. A copy under /private/tmp is
+# a clean build after every reboot and every periodic clean-up — minutes here —
+# so the incremental build the loop relies on never survived the night. CI
+# passes its own path, so a runner still starts clean.
+DERIVED_DATA        ?= $(ROOT_DIR)/build/DerivedData
 
 DEVICE_DESTINATION  := generic/platform=iOS
 PRODUCTS_DIR        := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-iphoneos
@@ -181,7 +185,7 @@ endif
 
 shell_word = '$(subst ','\'',$(1))'
 
-.PHONY: checklist sdk-tier all help print-version print-build-number print-deb-path set-version check format harness build _package deb deb-roothide deb-rootless deb-all deb-extensions deb-agent-tools template-archive install vphone install-app vphone-app device-status device-install device-test device-run clean
+.PHONY: checklist sdk-tier all help print-version print-build-number print-deb-path set-version check format harness build _package deb fast deb-roothide deb-rootless deb-all deb-extensions deb-agent-tools template-archive install vphone install-app vphone-app device-status device-install device-test device-run clean
 
 all: deb
 
@@ -194,11 +198,13 @@ help:
 	@echo "  deb-roothide  Package for roothide (unprefixed, iphoneos-arm64e)"
 	@echo "  deb-rootless  Package for a rootless bootstrap (/var/jb, iphoneos-arm64)"
 	@echo "  deb-all       Both packages from one build, then every extension package"
+	@echo "  fast          Build the app per file and put it on the vphone (make vphone-app INCREMENTAL=1): the local loop"
 	@echo "  deb-extensions  The four development extensions, roothide and rootless"
 	@echo "  deb-agent-tools The agent tool extensions and the assembler's source archive"
 	@echo "  install       Package for FLAVOR and update the installation on DEVICE_HOST:DEVICE_PORT"
 	@echo "  vphone        Package roothide and update the installation on the vphone (VPHONE=<name>, or the one running)"
 	@echo "  vphone-app    Build and put only Apelin.app over the vphone's installed one (no gates, harness or package)"
+	@echo "  vphone-app INCREMENTAL=1  The same with per-file incremental Swift instead of Release's whole-module: the fast loop"
 	@echo "  install-app   The same onto DEVICE_HOST:DEVICE_PORT"
 	@echo "  device-status   What the vphone or device has installed, registered and running"
 	@echo "  device-install  Install every built package (Apelin and its extensions) without building"
@@ -523,6 +529,17 @@ harness:
 			|| { echo "error: $${worker#$(ROOT_DIR)/} does not typecheck for macOS" >&2; exit 1; }; \
 	done && echo "ok: the workers typecheck for macOS"
 
+# The loop's compile mode. Release builds whole-module: one edited Swift file
+# recompiles the app's every file, a minute at a time. INCREMENTAL=1 asks
+# xcodebuild for per-file compilation instead, still in Release and still
+# against the dependencies already built there, so a change rewrites only what
+# it touched — the fast loop while working on the app:
+#
+#   make vphone-app INCREMENTAL=1
+ifeq ($(INCREMENTAL),1)
+SWIFT_COMPILATION_MODE_SETTING = SWIFT_COMPILATION_MODE=incremental
+endif
+
 # The iPhoneOS build every package is made from, and the app's inner loop.
 IOS_BUILD = XCBUILD_LABEL=build-ios $(XCODEBUILD) \
 	-configuration "$(CONFIGURATION)" \
@@ -530,19 +547,32 @@ IOS_BUILD = XCBUILD_LABEL=build-ios $(XCODEBUILD) \
 	ARCHS=arm64 \
 	ONLY_ACTIVE_ARCH=YES \
 	ENABLE_DEBUG_DYLIB=NO \
+	$(SWIFT_COMPILATION_MODE_SETTING) \
+	$(if $(filter 1,$(FAST)),COMPILER_INDEX_STORE_ENABLE=NO) \
 	build
 
-ifeq ($(SKIP_HARNESS),1)
+# FAST=1 is the local loop with every gate and test taken out: the same build
+# and the same packager, and nothing else. The checklist, the greps and the
+# catalog gate stay commit-time work — CI runs `check` and `harness` on every
+# commit, and a release ships what CI built, never a second local build.
+ifeq ($(FAST),1)
+build: sdk-tier
+else ifeq ($(SKIP_HARNESS),1)
 build: sdk-tier check
 else
 build: sdk-tier check harness
 endif
 	$(IOS_BUILD)
+ifeq ($(FAST),1)
+	@# No catalog gate either: a string added mid-edit may not be in the
+	@# catalog yet, and that is a question for the commit, not the loop.
+else
 	@# xcodebuild never merges what the compiler extracted into a catalog, so a
 	@# new string is only there if someone put it there.
 	@"$(CATALOG_KEYS_CHECK)" \
 		"$(ROOT_DIR)/Apelin/Resources/Localizable.xcstrings" "$(TARGET_INTERMEDIATES)/Apelin.build" \
 		"$(ROOT_DIR)/Widgets/Extension/Resources/Localizable.xcstrings" "$(TARGET_INTERMEDIATES)/ApelinWidgets.build"
+endif
 
 # The packaging half of `deb`, without a build: CI and deb-all package one
 # build twice through it.
@@ -569,6 +599,18 @@ _package:
 
 deb: build
 	@$(MAKE) --no-print-directory _package FLAVOR="$(FLAVOR)" BUILD_NUMBER="$(BUILD_NUMBER)"
+
+# The fastest way from a source change to an installable package: build and
+# package with FAST=1, nothing else. `make vphone FAST=1` is the same straight
+# onto the vphone. Do not tag what this produces — CI builds and verifies what
+# a release ships.
+# The loop: the app built with per-file incremental Swift and put over the one
+# installed on the vphone. The same as `make vphone-app INCREMENTAL=1`, and the
+# one command to remember while working on the app. A package still takes
+# `make vphone FAST=1`, which skips the gates the same way and ships the daemon
+# and the workers with it.
+fast:
+	@$(MAKE) --no-print-directory vphone-app INCREMENTAL=1
 
 deb-roothide:
 	@$(MAKE) --no-print-directory FLAVOR=roothide deb

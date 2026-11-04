@@ -14,6 +14,10 @@
 // a folder that has none yet (a fresh clone), the project's folder name.
 // The worker resolves it to `~/Documents/wiki.qaq.apelin/Projects/<name>/`
 // with realpath and a component compare, and every path is relative to it.
+// A workspace may keep a repository in a subdirectory rather than at its
+// root; `projectID` then names it as `<project>/<folder>[/<folder>…]`, and
+// the same checks hold for each part, so the page opens that repository and
+// uses it as it uses the root's.
 // A commit's author is the request's, else Settings/git.json in the data
 // folder ({"authorName", "authorEmail"}), else the repository's own config.
 
@@ -43,11 +47,42 @@ public struct GitStatusResponse: Codable, Sendable, Equatable {
     public var branch: String?
     public var head: String?
     public var entries: [GitStatusEntry]
+    /// HEAD is on no branch; `branch` carries the abbreviated commit.
+    public var isDetached: Bool?
+    /// The upstream the branch tracks, `origin/main`; nil when it tracks
+    /// nothing.
+    public var upstream: String?
+    /// Commits this branch has that its upstream lacks, and the other way
+    /// round. Zero when there is no upstream.
+    public var ahead: Int?
+    public var behind: Int?
+    /// A commit needs an author, and the repository, the settings and the
+    /// app all lack one: the page says so instead of failing at the button.
+    public var hasIdentity: Bool?
+    /// A merge, revert or cherry-pick is in progress and its conflicts are
+    /// in the index.
+    public var mergeInProgress: Bool?
 
-    public init(branch: String? = nil, head: String? = nil, entries: [GitStatusEntry] = []) {
+    public init(
+        branch: String? = nil,
+        head: String? = nil,
+        entries: [GitStatusEntry] = [],
+        isDetached: Bool? = nil,
+        upstream: String? = nil,
+        ahead: Int? = nil,
+        behind: Int? = nil,
+        hasIdentity: Bool? = nil,
+        mergeInProgress: Bool? = nil,
+    ) {
         self.branch = branch
         self.head = head
         self.entries = entries
+        self.isDetached = isDetached
+        self.upstream = upstream
+        self.ahead = ahead
+        self.behind = behind
+        self.hasIdentity = hasIdentity
+        self.mergeInProgress = mergeInProgress
     }
 }
 
@@ -117,6 +152,9 @@ public struct GitCommitRequest: OperationRequest {
     /// Stages every change first, as `git add --all` does: new, changed and
     /// deleted files, ignored ones left out. Absent is false.
     public var all: Bool?
+    /// Rewrites HEAD's commit instead of making one, keeping its parents.
+    /// Absent is false.
+    public var amend: Bool?
 
     public init(
         projectID: String,
@@ -124,12 +162,14 @@ public struct GitCommitRequest: OperationRequest {
         authorName: String? = nil,
         authorEmail: String? = nil,
         all: Bool? = nil,
+        amend: Bool? = nil,
     ) {
         self.projectID = projectID
         self.message = message
         self.authorName = authorName
         self.authorEmail = authorEmail
         self.all = all
+        self.amend = amend
     }
 }
 

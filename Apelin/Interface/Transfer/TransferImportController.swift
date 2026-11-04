@@ -291,7 +291,7 @@ final class TransferImportController: TableController {
         var rows: [Row] = [
             .value(.fileSize, String(localized: "File Size"), size),
             .value(.contents, String(localized: "Contents"), unpacked),
-            .value(.files, String(localized: "Files"), summary.fileCount.formatted()),
+            .value(.files, String(localized: "File Count"), summary.fileCount.formatted()),
         ]
         rows.append(.value(.exportedBy, String(localized: "Exported By"), summary.createdBy))
         rows.append(.value(

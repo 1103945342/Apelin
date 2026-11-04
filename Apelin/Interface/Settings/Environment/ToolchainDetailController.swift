@@ -150,7 +150,7 @@ final class ToolchainDetailController: TableController {
         }
         var metadata: [Row] = []
         if let count = record.fileCount {
-            metadata.append(.value(.files, String(localized: "Files"), count.formatted()))
+            metadata.append(.value(.files, String(localized: "File Count"), count.formatted()))
         }
         if let product = Self.product(of: record) {
             metadata.append(.value(.appleProduct, String(localized: "Apple Product ID"), product))

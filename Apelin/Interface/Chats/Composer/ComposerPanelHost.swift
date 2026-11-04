@@ -90,6 +90,14 @@ class ComposerPanel: UIView {
         chevron.isHidden = !collapsible
     }
 
+    /// A panel that is only a body: no title band, no chevron, nothing to fold
+    /// by tapping what it draws. The control that opened it folds it again,
+    /// and the panel takes the room its content asks for.
+    func setHeaderless() {
+        header.isHidden = true
+        setCollapsible(false)
+    }
+
     func setExpanded(_ expanded: Bool) {
         guard isExpanded != expanded else { return }
         isExpanded = expanded
@@ -124,9 +132,11 @@ class ComposerPanel: UIView {
             + ComposerMetrics.Spacing.sm
     }
 
-    /// The header's own height: what a subclass measures its body against.
+    /// The header's own height: what a subclass measures its body against. A
+    /// headerless panel has none, and its body starts where the header would.
     var headerHeight: CGFloat {
-        max(titleLabel.font.lineHeight, chevron.intrinsicContentSize.height) + ComposerMetrics.Spacing.sm
+        guard !header.isHidden else { return 0 }
+        return max(titleLabel.font.lineHeight, chevron.intrinsicContentSize.height) + ComposerMetrics.Spacing.sm
     }
 
     /// How tall the body may grow before it scrolls.

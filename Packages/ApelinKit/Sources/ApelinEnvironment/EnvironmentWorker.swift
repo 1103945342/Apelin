@@ -168,6 +168,50 @@ public final class EnvironmentWorker: @unchecked Sendable {
             await WorkerMain.serve(GitRemoteSetRequest.self, request) { [self] in try git.setRemote($0) }
         case .gitRemoteRemove:
             await WorkerMain.serve(GitRemoteRemoveRequest.self, request) { [self] in try git.removeRemote($0) }
+        case .gitBranches:
+            await WorkerMain.serve(GitBranchesRequest.self, request) { [self] in try git.branches($0) }
+        case .gitBranchCreate:
+            await WorkerMain.serve(GitBranchCreateRequest.self, request) { [self] in try git.createBranch($0) }
+        case .gitBranchCheckout:
+            await WorkerMain.serve(GitBranchCheckoutRequest.self, request) { [self] in try git.checkoutBranch($0) }
+        case .gitBranchDelete:
+            await WorkerMain.serve(GitBranchDeleteRequest.self, request) { [self] in try git.deleteBranch($0) }
+        case .gitBranchRename:
+            await WorkerMain.serve(GitBranchRenameRequest.self, request) { [self] in try git.renameBranch($0) }
+        case .gitMerge:
+            await WorkerMain.serve(GitMergeRequest.self, request) { [self] in try git.merge($0) }
+        case .gitMergeAbort:
+            await WorkerMain.serve(GitMergeAbortRequest.self, request) { [self] in try git.abortMerge($0) }
+        case .gitTagCreate:
+            await WorkerMain.serve(GitTagCreateRequest.self, request) { [self] in try git.createTag($0) }
+        case .gitTagDelete:
+            await WorkerMain.serve(GitTagDeleteRequest.self, request) { [self] in try git.deleteTag($0) }
+        case .gitLog:
+            await WorkerMain.serve(GitLogRequest.self, request) { [self] in try git.log($0) }
+        case .gitCommitDetail:
+            await WorkerMain.serve(GitCommitDetailRequest.self, request) { [self] in try git.commitDetail($0) }
+        case .gitCommitFileDiff:
+            await WorkerMain.serve(GitCommitFileDiffRequest.self, request) { [self] in try git.commitFileDiff($0) }
+        case .gitFileVersions:
+            await WorkerMain.serve(GitFileVersionsRequest.self, request) { [self] in try git.fileVersions($0) }
+        case .gitRestore:
+            await WorkerMain.serve(GitRestoreRequest.self, request) { [self] in try git.restore($0) }
+        case .gitDeletePaths:
+            await WorkerMain.serve(GitDeletePathsRequest.self, request) { [self] in try git.deletePaths($0) }
+        case .gitIgnoreAppend:
+            await WorkerMain.serve(GitIgnoreAppendRequest.self, request) { [self] in try git.appendIgnore($0) }
+        case .gitReset:
+            await WorkerMain.serve(GitResetRequest.self, request) { [self] in try git.reset($0) }
+        case .gitStashList:
+            await WorkerMain.serve(GitStashListRequest.self, request) { [self] in try git.stashList($0) }
+        case .gitStashSave:
+            await WorkerMain.serve(GitStashSaveRequest.self, request) { [self] in try git.stashSave($0) }
+        case .gitStashApply:
+            await WorkerMain.serve(GitStashApplyRequest.self, request) { [self] in try git.stashApply($0) }
+        case .gitStashDrop:
+            await WorkerMain.serve(GitStashDropRequest.self, request) { [self] in try git.stashDrop($0) }
+        case .gitStashClear:
+            await WorkerMain.serve(GitStashClearRequest.self, request) { [self] in try git.stashClear($0) }
         case .distributionRepositoryList:
             await WorkerMain.serve(DistributionRepositoryListRequest.self, request) { [self] in
                 try await distribution.list($0)

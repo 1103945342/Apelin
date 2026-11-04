@@ -234,6 +234,12 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `gitAuthorSet`, `gitCredentialSet`, `gitCredentialRemove`,
   `gitRepositoryCreate`, `gitIssueCreate`, `gitSquash`, `gitRemoteList`,
   `gitRemoteSet`, `gitRemoteRemove`, `gitResetPreview`, `gitResetToRemote`;
+  `gitBranches`, `gitBranchCreate`, `gitBranchCheckout`, `gitBranchDelete`,
+  `gitBranchRename`, `gitMerge`, `gitMergeAbort`, `gitTagCreate`,
+  `gitTagDelete`, `gitLog`, `gitCommitDetail`, `gitCommitFileDiff`,
+  `gitFileVersions`, `gitRestore`, `gitDeletePaths`, `gitIgnoreAppend`,
+  `gitReset`, `gitStashList`, `gitStashSave`, `gitStashApply`,
+  `gitStashDrop`, `gitStashClear`;
   `distributionRepositoryList`, `distributionRepositoryCreate`,
   `distributionRepositoryLink`, `distributionRepositoryUnlink`,
   `distributionPublish`, `feedbackSend`, `feedbackRead`, `feedbackEdit`,
@@ -678,7 +684,11 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   Apple's under Apple's terms.
   *Git*: libgit2 in `ApelinGit`, no libgit2 type public. A project is named
   by its `projectID` or, before it has a description, its folder name, and
-  resolved to exactly one component below the realpath of `Projects/`;
+  resolved to exactly one component below the realpath of `Projects/` — or,
+  for a repository the workspace keeps in a subdirectory, that and `/` and
+  the folder inside it (owner, 2026-11-04: a workspace may hold a repository
+  below its root, which the page opens and uses as it uses the root's; the
+  same component checks apply to each part);
   every path is plain, literal (never a pathspec glob) and resolves inside.
   A commit's author is the request's, else `Settings/git.json`, else the
   repository's config; `gitCommit{all: true}` stages every change first,
@@ -3215,6 +3225,14 @@ manifest.json            the owngoal-packages entry
   `let` first).
 - `make build` — unsigned app, daemon and workers for iPhoneOS.
 - `make deb` / `make deb-all` — roothide and rootless packages, verified.
+- `make fast` — the loop, and only that: the app built per file and put over
+  the one on the vphone, exactly `make vphone-app INCREMENTAL=1`. It ships no
+  package, so the daemon, the workers and dpkg's record stay as the last
+  package left them. `FAST=1` on a packaging target still means every gate and
+  test skipped (no checklist, no `check`, no `harness`, no catalog gate):
+  `make vphone FAST=1` is that whole package straight onto the vphone. CI runs
+  every gate, and a release ships only what CI built — do not tag a build
+  either of these made.
 - Packages go onto a device through Irisin's installer (`irisin-cli install
   --yes <deb>`, as root), never apt or dpkg; `install-device.sh` and
   `device.py install` do so.
@@ -3231,6 +3249,22 @@ manifest.json            the owngoal-packages entry
   workers and dpkg's record stay as the last package left them, so a
   change outside the app, and anything that ships, takes `make vphone`.
   `make install-app` is the same onto `DEVICE_HOST`.
+- **The loop compiles per file: `make vphone-app INCREMENTAL=1`.** Release
+  sets `SWIFT_COMPILATION_MODE = wholemodule`, so one edited Swift file
+  recompiles the app target's every file — a minute, every time. The flag
+  passes `SWIFT_COMPILATION_MODE=incremental` to xcodebuild instead: same
+  Release products, same dependencies already built there, but only the
+  files that changed are rewritten, which is seconds. Reach for it
+  whenever the edit is inside the app; the mode change costs one rebuild
+  the first time and after each switch back. Debug (`CONFIGURATION=Debug`)
+  is per-file by itself, but its products are a second tree nothing else
+  has built, so the first Debug build compiles every dependency too — do
+  not mistake that cold build for the loop.
+- **Never interrupt a build to start another one.** A killed `xcodebuild`
+  leaves the build database half-written, and the next run throws away
+  what it cannot vouch for: the dependency packages rebuild in full, which
+  is fifteen minutes where a minute was asked for. Stop a build only when
+  there is nothing left to run.
 - `make device-test [SUITE=smoke|regression|…]` — console scripts on that
   vphone or device (`DEVICE_HOST`), set up, followed, checked and cleaned up
   by `Scripts/device.py`; `make device-run SCRIPT='i1-smoke terminal'` for
@@ -3239,9 +3273,12 @@ manifest.json            the owngoal-packages entry
   the rest (`call` one operation, `out`, `crashes --pull`, `screenshot`,
   `kill-host`, `shell`).
 
-Give every parallel worker its own `DERIVED_DATA=/private/tmp/<name>` — spelled
-`/private/tmp`, never `/tmp`, or a package manifest that strips its own
-checkout path finds no headers.
+Give every parallel worker its own `DERIVED_DATA` — each worktree's default
+under `build/` is already its own; two workers in one checkout take
+`/private/tmp/<name>` (spelled `/private/tmp`, never `/tmp`, or a package
+manifest that strips its own checkout path finds no headers). Keeping the
+folder across sessions matters more than it looks: it is also SwiftPM's
+`SourcePackages`, and a fresh one refetches every pinned dependency.
 
 ## Package Pages
 

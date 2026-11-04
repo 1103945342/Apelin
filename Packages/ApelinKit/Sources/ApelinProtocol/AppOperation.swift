@@ -111,6 +111,28 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
     case gitRemoteRemove
     case gitResetPreview
     case gitResetToRemote
+    case gitBranches
+    case gitBranchCreate
+    case gitBranchCheckout
+    case gitBranchDelete
+    case gitBranchRename
+    case gitMerge
+    case gitMergeAbort
+    case gitTagCreate
+    case gitTagDelete
+    case gitLog
+    case gitCommitDetail
+    case gitCommitFileDiff
+    case gitFileVersions
+    case gitRestore
+    case gitDeletePaths
+    case gitIgnoreAppend
+    case gitReset
+    case gitStashList
+    case gitStashSave
+    case gitStashApply
+    case gitStashDrop
+    case gitStashClear
 
     case distributionRepositoryList
     case distributionRepositoryCreate
@@ -152,7 +174,11 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
              .gitPull,
              .gitPush, .gitSettings, .gitAuthorSet, .gitCredentialSet, .gitCredentialRemove, .gitRepositoryCreate,
              .gitIssueCreate, .gitSquash, .gitRemoteList, .gitRemoteSet, .gitRemoteRemove, .gitResetPreview,
-             .gitResetToRemote:
+             .gitResetToRemote, .gitBranches, .gitBranchCreate, .gitBranchCheckout, .gitBranchDelete,
+             .gitBranchRename, .gitMerge, .gitMergeAbort, .gitTagCreate, .gitTagDelete, .gitLog,
+             .gitCommitDetail, .gitCommitFileDiff, .gitFileVersions, .gitRestore, .gitDeletePaths,
+             .gitIgnoreAppend, .gitReset, .gitStashList, .gitStashSave, .gitStashApply, .gitStashDrop,
+             .gitStashClear:
             .git
         case .transferExport, .transferInspect, .transferImport: .transfer
         case .distributionRepositoryList, .distributionRepositoryCreate, .distributionRepositoryLink,
@@ -253,6 +279,28 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .gitRemoteRemove: GitRemoteRemoveRequest.self
         case .gitResetPreview: GitResetPreviewRequest.self
         case .gitResetToRemote: GitResetToRemoteRequest.self
+        case .gitBranches: GitBranchesRequest.self
+        case .gitBranchCreate: GitBranchCreateRequest.self
+        case .gitBranchCheckout: GitBranchCheckoutRequest.self
+        case .gitBranchDelete: GitBranchDeleteRequest.self
+        case .gitBranchRename: GitBranchRenameRequest.self
+        case .gitMerge: GitMergeRequest.self
+        case .gitMergeAbort: GitMergeAbortRequest.self
+        case .gitTagCreate: GitTagCreateRequest.self
+        case .gitTagDelete: GitTagDeleteRequest.self
+        case .gitLog: GitLogRequest.self
+        case .gitCommitDetail: GitCommitDetailRequest.self
+        case .gitCommitFileDiff: GitCommitFileDiffRequest.self
+        case .gitFileVersions: GitFileVersionsRequest.self
+        case .gitRestore: GitRestoreRequest.self
+        case .gitDeletePaths: GitDeletePathsRequest.self
+        case .gitIgnoreAppend: GitIgnoreAppendRequest.self
+        case .gitReset: GitResetRequest.self
+        case .gitStashList: GitStashListRequest.self
+        case .gitStashSave: GitStashSaveRequest.self
+        case .gitStashApply: GitStashApplyRequest.self
+        case .gitStashDrop: GitStashDropRequest.self
+        case .gitStashClear: GitStashClearRequest.self
         case .distributionRepositoryList: DistributionRepositoryListRequest.self
         case .distributionRepositoryCreate: DistributionRepositoryCreateRequest.self
         case .distributionRepositoryLink: DistributionRepositoryLinkRequest.self

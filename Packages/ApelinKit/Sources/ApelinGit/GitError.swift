@@ -16,6 +16,15 @@ public struct GitError: Error, CustomStringConvertible, Sendable, Equatable {
         /// a checkout over a change or a file already in the work tree, or a
         /// clone into a folder that is already there.
         case conflict
+        /// A checkout or a merge the uncommitted changes are in the way of:
+        /// the work tree has to be committed or set aside first.
+        case dirtyTree
+        /// A restore of a path the index does not hold: nothing committed is
+        /// there to bring back.
+        case notTracked
+        /// A deletion of a path the index holds, which only ever takes what
+        /// git is not keeping.
+        case tracked
         /// A pull that is not a fast-forward: the branch has commits its
         /// upstream does not, so moving it would lose them.
         case notFastForward

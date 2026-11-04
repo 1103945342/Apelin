@@ -120,6 +120,25 @@ public final class GitRepository: @unchecked Sendable {
 
     // MARK: Status
 
+    /// Whether HEAD is on no branch at all, as `git status` says
+    /// `HEAD detached at …`.
+    public var isDetached: Bool {
+        git_repository_head_detached(pointer) == 1
+    }
+
+    /// Whether a merge, revert or cherry-pick is in progress: the state file
+    /// is there for it, and whatever conflicts it left are in the index. The
+    /// status page offers to abort or to commit one rather than to commit
+    /// something else.
+    public var isMerging: Bool {
+        let state = git_repository_state(pointer)
+        return state == Int32(GIT_REPOSITORY_STATE_MERGE.rawValue)
+            || state == Int32(GIT_REPOSITORY_STATE_REVERT.rawValue)
+            || state == Int32(GIT_REPOSITORY_STATE_REVERT_SEQUENCE.rawValue)
+            || state == Int32(GIT_REPOSITORY_STATE_CHERRYPICK.rawValue)
+            || state == Int32(GIT_REPOSITORY_STATE_CHERRYPICK_SEQUENCE.rawValue)
+    }
+
     public func status() throws -> [GitStatusItem] {
         var options = git_status_options()
         git_status_options_init(&options, UInt32(GIT_STATUS_OPTIONS_VERSION))
@@ -299,9 +318,11 @@ public final class GitRepository: @unchecked Sendable {
     // MARK: Commit
 
     /// Commits the index on HEAD's branch. Refuses an empty message and an
-    /// index that matches HEAD.
+    /// index that matches HEAD. With `amend`, HEAD's commit is rewritten in
+    /// place — its parents kept, the message and the index as they are now —
+    /// and an index that matches it is no refusal: only the message changed.
     @discardableResult
-    public func commit(message: String, author: GitSignature) throws -> String {
+    public func commit(message: String, author: GitSignature, amend: Bool = false) throws -> String {
         let message = message.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !message.isEmpty else { throw GitError(.invalid, "the commit message is empty") }
         guard !author.name.isEmpty, !author.email.isEmpty else {
@@ -319,19 +340,53 @@ public final class GitRepository: @unchecked Sendable {
 
         let parent = try headCommit()
         defer { git_commit_free(parent) }
+        if amend {
+            guard let parent else { throw GitError(.invalid, "there is no commit to amend: HEAD has no commit") }
+            var rewritten: [OpaquePointer?] = []
+            for position in 0 ..< git_commit_parentcount(parent) {
+                var grandparent: OpaquePointer?
+                try GitError.check(git_commit_parent(&grandparent, parent, position), "read HEAD's parent")
+                rewritten.append(grandparent)
+            }
+            defer { rewritten.forEach { git_commit_free($0) } }
+            return try writeCommit(
+                message: message,
+                author: author,
+                tree: tree,
+                parents: rewritten,
+                amend: true,
+            )
+        }
         if let parent, git_oid_equal(git_commit_tree_id(parent), &treeID) != 0 {
             throw GitError(.invalid, "nothing to commit: the index matches HEAD")
         }
         if parent == nil, git_index_entrycount(index) == 0 {
             throw GitError(.invalid, "nothing to commit: the index is empty")
         }
+        return try writeCommit(
+            message: message,
+            author: author,
+            tree: tree,
+            parents: parent.map { [$0] } ?? [],
+            amend: false,
+        )
+    }
 
+    /// The commit object itself: `parents` are the commits it is written on
+    /// top of, and the reflog says when it replaced HEAD's own.
+    private func writeCommit(
+        message: String,
+        author: GitSignature,
+        tree: OpaquePointer?,
+        parents: [OpaquePointer?],
+        amend: Bool,
+    ) throws -> String {
         var signature: UnsafeMutablePointer<git_signature>?
         try GitError.check(git_signature_now(&signature, author.name, author.email), "make the signature")
         defer { git_signature_free(signature) }
 
         var commitID = git_oid()
-        var parents: [OpaquePointer?] = parent.map { [$0] } ?? []
+        var parents = parents
         let code = parents.withUnsafeMutableBufferPointer { buffer in
             git_commit_create(
                 &commitID,
@@ -346,7 +401,7 @@ public final class GitRepository: @unchecked Sendable {
                 buffer.baseAddress,
             )
         }
-        try GitError.check(code, "commit")
+        try GitError.check(code, amend ? "amend the commit" : "commit")
         return Self.hex(&commitID)
     }
 

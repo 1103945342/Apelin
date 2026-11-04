@@ -7,6 +7,7 @@ import UIKit
 /// The `…` in the bar opens onboarding again or a new GitHub issue.
 final class SettingsViewController: TableController {
     private enum Section: Hashable, CaseIterable {
+        case chat
         case agent
         case environment
         case git
@@ -14,6 +15,9 @@ final class SettingsViewController: TableController {
     }
 
     private enum Row: Hashable {
+        case launch
+        case returnKey
+        case compression
         case modelProviders
         case permissionMode
         case memories
@@ -45,6 +49,11 @@ final class SettingsViewController: TableController {
         dataSource.update(Section.allCases.map { section in
             (section, rows(in: section).map { row in
                 let detail: String? = switch row {
+                case .launch: Preferences.launch.title
+                case .returnKey: ComposerBehavior.useConfirmationOnSend
+                    ? String(localized: "New Line")
+                    : String(localized: "Send")
+                case .compression: Preferences.percentText(Preferences.compressionThreshold)
                 case .permissionMode: AgentPermissions.title(for: AgentPermissions.mode)
                 case .memories: memorySummary
                 default: nil
@@ -95,6 +104,7 @@ final class SettingsViewController: TableController {
 
     private func rows(in section: Section) -> [Row] {
         switch section {
+        case .chat: [.launch, .returnKey, .compression]
         case .agent: [.modelProviders, .permissionMode, .memories, .skills]
         case .environment: [.toolchain, .sdks, .templates]
         case .git: [.git]
@@ -115,6 +125,7 @@ final class SettingsViewController: TableController {
 
     private func header(for section: Section) -> String? {
         switch section {
+        case .chat: String(localized: "Chat")
         case .agent: String(localized: "Agent")
         case .environment: String(localized: "Environment")
         case .git: nil
@@ -124,6 +135,7 @@ final class SettingsViewController: TableController {
 
     private func footer(for section: Section) -> String? {
         switch section {
+        case .chat: nil
         case .agent: nil
         case .environment: nil
         case .git:
@@ -140,6 +152,12 @@ final class SettingsViewController: TableController {
         cell.accessoryType = .disclosureIndicator
         cell.selectionStyle = .default
         switch value.row {
+        case .launch:
+            content.text = String(localized: "On Launch")
+        case .returnKey:
+            content.text = String(localized: "Return Key")
+        case .compression:
+            content.text = String(localized: "Compression Threshold")
         case .modelProviders:
             content.text = String(localized: "Model Providers")
         case .permissionMode:
@@ -183,6 +201,42 @@ final class SettingsViewController: TableController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         guard let row = dataSource.value(at: indexPath)?.row else { return }
+        switch row {
+        case .launch:
+            choose(
+                title: String(localized: "On Launch"),
+                options: Preferences.Launch.allCases.map { ($0.title, $0 == Preferences.launch) },
+            ) { index in
+                Preferences.launch = Preferences.Launch.allCases[index]
+                self.updateRows()
+            }
+            return
+        case .returnKey:
+            choose(
+                title: String(localized: "Return Key"),
+                options: [
+                    (String(localized: "Send"), !ComposerBehavior.useConfirmationOnSend),
+                    (String(localized: "New Line"), ComposerBehavior.useConfirmationOnSend),
+                ],
+            ) { index in
+                ComposerBehavior.useConfirmationOnSend = index == 1
+                self.updateRows()
+            }
+            return
+        case .compression:
+            let current = Preferences.compressionThreshold
+            choose(
+                title: String(localized: "Compression Threshold"),
+                options: Preferences.compressionChoices.map {
+                    (Preferences.percentText($0), abs($0 - current) < 0.001)
+                },
+            ) { index in
+                Preferences.compressionThreshold = Preferences.compressionChoices[index]
+                self.updateRows()
+            }
+            return
+        default: break
+        }
         let page: UIViewController
         switch row {
         case .modelProviders: page = ModelProvidersController()
@@ -195,9 +249,30 @@ final class SettingsViewController: TableController {
         case .git: page = GitSettingsController()
         case .licenses: page = LicensesViewController()
         case .logs: page = LogsController()
-        case .version: return
+        case .version, .launch, .returnKey, .compression: return
         }
         navigationController?.pushViewController(page, animated: true)
+    }
+
+    /// A list of choices as a sheet, the chosen one ticked; a tap answers
+    /// with the line it was on.
+    private func choose(
+        title: String,
+        options: [(String, Bool)],
+        chosen: @escaping (Int) -> Void,
+    ) {
+        let sheet = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
+        for (index, option) in options.enumerated() {
+            let action = UIAlertAction(title: option.0, style: .default) { _ in chosen(index) }
+            action.setValue(option.1, forKey: "checked")
+            sheet.addAction(action)
+        }
+        sheet.addAction(UIAlertAction(title: String(localized: "Cancel"), style: .cancel))
+        sheet.popoverPresentationController?.sourceView = view
+        sheet.popoverPresentationController?.sourceRect = CGRect(
+            x: view.bounds.midX, y: view.bounds.midY, width: 1, height: 1,
+        )
+        present(sheet, animated: true)
     }
 
     /// Settings as the sidebar's gear opens it, but already at Git, for a

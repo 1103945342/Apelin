@@ -20,7 +20,7 @@ final class ComposerModelBar: ComposerSectionView {
     /// The reasoning effort, as a brain in the colour of the level it is set
     /// to, tapped to change it. The level is drawn, never written: the row has
     /// no room for a word, and the colour says which of the settings is on.
-    private let effortButton = ComposerIconButton(symbolName: "brain", label: String(localized: "Reasoning Effort"))
+    private let effortButton = ComposerIconButton(symbolName: "sparkles", label: String(localized: "Reasoning Effort"))
 
     /// The speed the model answers at, for the ones that offer a faster tier
     /// than standard: the letters say which, a tap changes it. Absent for a
@@ -87,6 +87,13 @@ final class ComposerModelBar: ComposerSectionView {
         addButton.iconInset = sendButton.iconInset
         sendButton.fillColor = ComposerPalette.inert
         sendButton.iconView.tintColor = .secondaryLabel
+
+        // A brain's folds turn to mud at a row's size; a pair of sparks keeps
+        // its shape at any of them, and the colour says the level anyway.
+        effortButton.iconView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(
+            pointSize: 23,
+            weight: .medium,
+        )
 
         setEfforts([], selected: nil)
         setVisible(true)
@@ -310,9 +317,11 @@ final class ComposerModelBar: ComposerSectionView {
         x += iconSize + spacing
 
         // The lightning is one control again: its colour says which level is
-        // set, so it takes a slot of its own and no room for a word.
-        let lightning = iconSize * 0.8
-        effortButton.iconInset = (lightning - ComposerMetrics.Send.iconSize) / 2
+        // set, so it takes a slot of its own and no room for a word. The brain
+        // is the one mark here a reader looks for by shape, so it fills that
+        // slot rather than floating small inside it.
+        let lightning = iconSize * 0.75
+        effortButton.iconInset = 0
         effortButton.frame = directionalFrame(CGRect(
             x: x, y: (bounds.height - lightning) / 2, width: lightning, height: lightning,
         ))

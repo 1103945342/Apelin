@@ -27,12 +27,14 @@ enum ComposerMetrics {
         static let ground: CGFloat = 20
     }
 
-    /// The text band: two lines at rest, nine before it scrolls inside itself.
+    /// The text band: four lines at rest, more before it scrolls inside itself.
     enum Input {
-        /// What the band is worth before a word is typed: the two lines it
-        /// keeps, and the room its own inset asks for.
-        static let minHeight: CGFloat = 72
-        static let maxHeight: CGFloat = 200
+        /// What the band is worth before a word is typed: the lines it keeps,
+        /// and the room its own inset asks for. A draft is the one thing here
+        /// a reader writes in, so it opens with room to write rather than with
+        /// the two lines a placeholder needs.
+        static let minHeight: CGFloat = 112
+        static let maxHeight: CGFloat = 260
         /// The room the text keeps around it, inside the band's own inset.
         static let contentPadding: CGFloat = 4
         static let iconSize: CGFloat = 28
@@ -40,8 +42,9 @@ enum ComposerMetrics {
         // The text band and the row beneath it sit in one card: the band's
         // own inset is the text's breathing room, and the row takes its own,
         // so the card's height is the text plus one row, not text plus two
-        // insets' worth of air.
-        static let inset = UIEdgeInsets(top: 14, left: 16, bottom: 14, right: 16)
+        // insets' worth of air. The card's foot is thinner than its head: the
+        // row is a row of marks, and the ground under it is the page's.
+        static let inset = UIEdgeInsets(top: 14, left: 16, bottom: 6, right: 16)
     }
 
     /// The send button, and the stop it becomes: one control, two jobs.

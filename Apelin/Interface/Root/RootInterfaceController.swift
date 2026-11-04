@@ -131,15 +131,39 @@ final class RootInterfaceController: UIViewController {
             guard Self.isImport(link) else { return }
         }
         guard !restoredChat else { return }
+        // What the reader chose in Settings ▸ Chat decides between the
+        // conversation they were last in and a new one.
+        if Preferences.launch == .newChat {
+            guard sidebar.hasLoadedProjects else { return }
+            restoredChat = true
+            sidebar.startNewChat(picked: false)
+            return
+        }
         if let saved = Self.savedChatID, let summary = chatRuntime.records[saved]?.summary {
-            restoredChat = true
-            sidebar.select(summary)
+            restore(summary)
         } else if sidebar.hasLoadedProjects {
-            restoredChat = true
-            if isDrawer || traitCollection.userInterfaceIdiom == .phone || opensChatAfterWelcome {
-                sidebar.startNewChat(picked: false)
+            // Nothing was open last, or its record is gone: the conversation
+            // touched most recently is where the reader was.
+            if let recent = chatRuntime.records.values
+                .map(\.summary)
+                .max(by: { $0.lastInteraction < $1.lastInteraction })
+            {
+                restore(recent)
+            } else {
+                restoredChat = true
+                if isDrawer || traitCollection.userInterfaceIdiom == .phone || opensChatAfterWelcome {
+                    sidebar.startNewChat(picked: false)
+                }
             }
         }
+    }
+
+    /// The conversation at launch: highlighted in the sidebar and put on the
+    /// page, not highlighted alone — `select` only moves the sidebar's row.
+    private func restore(_ summary: ChatSummary) {
+        restoredChat = true
+        sidebar.select(summary)
+        open(summary, picked: false)
     }
 
     /// The conversation shown last, to show again at launch.
@@ -564,19 +588,43 @@ final class RootInterfaceController: UIViewController {
             )
         }
         if isRoot, !isSidebarShown {
-            // the right bar's items run from the trailing edge in
-            trailing.insert(
+            // Read from the trailing edge in: the page's own menu keeps the
+            // edge, and the two shortcuts sit inside it — Git first, then
+            // New Chat — so the bar reads, left to right, New Chat, Git,
+            // and the menu.
+            trailing.append(
+                RootBarItem(
+                    image: UIImage(systemName: "arrow.triangle.branch"),
+                    primaryAction: UIAction { [weak self] _ in self?.openGit() },
+                ).then {
+                    $0.accessibilityLabel = String(localized: "Git")
+                },
+            )
+            trailing.append(
                 RootBarItem(
                     image: UIImage(systemName: "square.and.pencil"),
                     primaryAction: UIAction { [weak self] _ in self?.sidebar.startNewChat() },
                 ).then {
                     $0.accessibilityLabel = String(localized: "New Chat")
                 },
-                at: 0,
             )
         }
         item.leftBarButtonItems = leading.isEmpty ? nil : leading
         item.rightBarButtonItems = trailing.isEmpty ? nil : trailing
+    }
+
+    /// The visual Git page for the conversation's project, full screen —
+    /// it is a place to work in, not a card. A conversation with no project
+    /// (a temporary one) has no repository to show.
+    private func openGit() {
+        guard let project = chatController.chat?.projectName else {
+            presentNotice(
+                title: "No Project",
+                message: String(localized: "This conversation is not in a project, so it has no repository."),
+            )
+            return
+        }
+        presentPageFullScreen(GitController(projectName: project))
     }
 
     override var childForStatusBarStyle: UIViewController? {

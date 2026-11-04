@@ -54,4 +54,20 @@ extension UIViewController {
         }
         presentAsFormSheet(navigation)
     }
+
+    /// `page` filling the screen rather than sitting on it as a card, closed by
+    /// the cross at the leading end of its bar. A place the reader works in —
+    /// the visual Git screen — is not something to be swiped away: on a phone
+    /// the card's edges and grabber compete with the page's own bars, and the
+    /// tabs and the log need the height. There is no card to swipe, so the
+    /// cross stays.
+    func presentPageFullScreen(_ page: UIViewController) {
+        let navigation = UINavigationController(rootViewController: page)
+        page.navigationItem.leftBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "xmark"),
+            primaryAction: UIAction { [weak navigation] _ in navigation?.dismiss(animated: true) },
+        ).then { $0.accessibilityLabel = String(localized: "Close") }
+        navigation.modalPresentationStyle = .fullScreen
+        present(navigation, animated: true)
+    }
 }

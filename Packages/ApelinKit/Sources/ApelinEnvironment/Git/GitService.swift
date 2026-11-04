@@ -26,10 +26,24 @@ public struct GitService: Sendable {
         let repository = try open(request.projectID).repository
         let head = repository.head()
         let entries = try mapped { try repository.status() }
+        var upstream: GitUpstream?
+        if let branch = head.branch {
+            upstream = try mapped { try repository.upstream(of: branch) }
+        }
         return GitStatusResponse(
             branch: head.branch,
             head: head.commit,
             entries: entries.map { GitStatusEntry(path: $0.path, index: $0.index, worktree: $0.worktree) },
+            isDetached: repository.isDetached,
+            upstream: upstream?.name,
+            // No upstream is nothing counted, not an unknown: the page
+            // draws neither arrow rather than a figure it does not have.
+            ahead: upstream?.ahead ?? 0,
+            behind: upstream?.behind ?? 0,
+            // The page says to set an author instead of failing at the
+            // commit button.
+            hasIdentity: (try? author(name: nil, email: nil, repository: repository)) != nil,
+            mergeInProgress: repository.isMerging,
         )
     }
 
@@ -60,7 +74,7 @@ public struct GitService: Sendable {
             if request.all == true {
                 try repository.stageAll()
             }
-            return try repository.commit(message: request.message, author: author)
+            return try repository.commit(message: request.message, author: author, amend: request.amend == true)
         })
     }
 
@@ -669,8 +683,34 @@ public struct GitService: Sendable {
         return marker
     }
 
+    /// The project a git request names: its ID or folder name, or that and
+    /// `/` and a folder inside it — a repository the workspace keeps in a
+    /// subdirectory rather than at its root, which the page can open and use
+    /// exactly as it uses the root's.
+    func locate(_ projectID: String) throws -> ProjectLocator.Project {
+        guard let slash = projectID.firstIndex(of: "/") else {
+            return try projects.locate(projectID)
+        }
+        let name = String(projectID[..<slash])
+        let inside = String(projectID[projectID.index(after: slash)...])
+        var project = try projects.locate(name)
+        guard !inside.isEmpty else { return project }
+        let checked = try projects.checkRelative(inside, in: project)
+        let candidate = project.root.appendingPathComponent(checked)
+        var metadata = stat()
+        guard lstat(candidate.path, &metadata) == 0, metadata.st_mode & S_IFMT == S_IFDIR,
+              let resolved = CanonicalPath.resolve(candidate.path),
+              let root = CanonicalPath.resolve(project.root.path),
+              CanonicalPath.isCanonical(resolved, inside: root)
+        else {
+            throw ApelinError(.notFound, "no folder \(inside.debugDescription) in project \(project.name)")
+        }
+        project.root = URL(fileURLWithPath: resolved, isDirectory: true)
+        return project
+    }
+
     func open(_ projectID: String) throws -> (project: ProjectLocator.Project, repository: GitRepository) {
-        let project = try projects.locate(projectID)
+        let project = try locate(projectID)
         let repository: GitRepository
         do {
             repository = try GitRepository(at: project.root)
@@ -743,6 +783,9 @@ public struct GitService: Sendable {
         case .notFound: return ApelinError(.notFound, error.message)
         case .invalid: return ApelinError(.badRequest, error.message)
         case .conflict: return ApelinError(.conflict, error.message)
+        case .dirtyTree: return ApelinError(.conflict, error.message, reason: .dirtyTree)
+        case .notTracked: return ApelinError(.notFound, error.message, reason: .notTracked)
+        case .tracked: return ApelinError(.notFound, error.message, reason: .tracked)
         case .notFastForward: return ApelinError(.conflict, error.message, reason: .notFastForward)
         case .rejected: return ApelinError(.conflict, error.message, reason: .rejected)
         case .remoteChanged: return ApelinError(.conflict, error.message, reason: .remoteChanged)

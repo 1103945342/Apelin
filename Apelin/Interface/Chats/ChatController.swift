@@ -43,6 +43,10 @@ final class ChatController: UIViewController {
     private var followedTurn: UUID?
     /// How fast the followed turn's reply streams.
     private var turnPace = TurnFollowing.Pace()
+    /// The conversations compacting themselves now, and how full each was
+    /// when it last tried, so one fill compacts once.
+    private var autoCompacting: Set<UUID> = []
+    private var autoCompactAttempt: [UUID: Int] = [:]
     /// The request the composer shows in place of the input, and the
     /// conversation its Stop stops. Each change to either lays the whole
     /// window out on the composer's spring, so the composer is told only of
@@ -192,8 +196,8 @@ final class ChatController: UIViewController {
                 // themselves; without one, the safe area's own edge.
                 view.keyboardLayoutGuide.usesBottomSafeArea = false
                 make.bottom.lessThanOrEqualTo(view.keyboardLayoutGuide.snp.top).offset(-composer.spacing)
-                make.bottom.lessThanOrEqualTo(view.safeAreaLayoutGuide).offset(-8)
-                make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-8).priority(.high)
+                make.bottom.lessThanOrEqualTo(view.safeAreaLayoutGuide).offset(16)
+                make.bottom.equalTo(view.safeAreaLayoutGuide).offset(16).priority(.high)
             } else {
                 make.bottom.equalTo(view.keyboardLayoutGuide.snp.top)
             }
@@ -482,6 +486,32 @@ final class ChatController: UIViewController {
         ConversationNotices.shared.withdraw(session: runtime.records[chat.id]?.sessionID)
     }
 
+    /// Fills the reader's threshold: the conversation compacts itself, as if
+    /// they had asked, rather than waiting to run out of room. Once per
+    /// fill — a compaction that did not bring the figure down is not tried
+    /// again until the conversation grows past where it was.
+    private func compactIfFull(
+        _ id: UUID,
+        usage: ChatContextUsage?,
+        isWorking: Bool,
+        isCompacting: Bool,
+    ) {
+        guard let usage, usage.window > 0,
+              usage.fraction >= Preferences.compressionThreshold,
+              !isWorking, !isCompacting,
+              !autoCompacting.contains(id),
+              autoCompactAttempt[id] != usage.tokens,
+              runtime.canCompact(id)
+        else { return }
+        autoCompactAttempt[id] = usage.tokens
+        autoCompacting.insert(id)
+        Task { @MainActor in
+            _ = try? await runtime.compact(id)
+            autoCompacting.remove(id)
+            refreshRuntime()
+        }
+    }
+
     func refreshRuntime() {
         guard let chat else { return }
         if let summary = runtime.records[chat.id]?.summary {
@@ -510,6 +540,13 @@ final class ChatController: UIViewController {
                 usedTokens: transcript.contextUsage?.tokens ?? 0,
                 limitTokens: transcript.contextUsage?.window ?? 0,
                 compactable: runtime.canCompact(chat.id) && !summary.isWorking,
+                compacting: transcript.isCompacting,
+            )
+            compactIfFull(
+                chat.id,
+                usage: transcript.contextUsage,
+                isWorking: summary.isWorking,
+                isCompacting: transcript.isCompacting,
             )
             quietWatch.wake(at: transcript.quietDeadline) { [weak self] in self?.refreshRuntime() }
             if summary.isWorking != chat.isWorking {
@@ -1026,6 +1063,43 @@ extension ChatController: UIScrollViewDelegate {
         readingPlace = nil
         // The reader has the list: only the next turn is followed again.
         followedTurn = nil
+        setComposerFaded(true)
+    }
+
+    func scrollViewWillBeginDecelerating(_: UIScrollView) {
+        setComposerFaded(true)
+    }
+
+    func scrollViewDidEndDragging(_: UIScrollView, willDecelerate decelerate: Bool) {
+        if !decelerate { setComposerFaded(false) }
+    }
+
+    func scrollViewDidEndDecelerating(_: UIScrollView) {
+        setComposerFaded(false)
+    }
+
+    func scrollViewDidEndScrollingAnimation(_: UIScrollView) {
+        setComposerFaded(false)
+    }
+
+    /// What is typed fades while the list moves under it, as aimini's input bar
+    /// does: a reader scrolling the transcript reads the transcript, and the
+    /// card comes back the moment the list stops. Never hidden, only quiet, so
+    /// a tap on it still lands.
+    private func setComposerFaded(_ faded: Bool) {
+        let alpha: CGFloat = faded ? 0.75 : 1
+        guard abs(composer.alpha - alpha) > 0.001 else { return }
+        guard !UIAccessibility.isReduceMotionEnabled else {
+            composer.alpha = alpha
+            return
+        }
+        UIView.animate(
+            withDuration: 0.2,
+            delay: 0,
+            options: [.allowUserInteraction, .beginFromCurrentState],
+        ) {
+            self.composer.alpha = alpha
+        }
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {

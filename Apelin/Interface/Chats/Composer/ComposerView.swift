@@ -251,10 +251,16 @@ class ComposerView: ComposerSectionView {
         dropColorView.frame = dropContainer.bounds
 
         var finalHeight = shadowContainer.frame.maxY
-        // The import panel opens below the box, off its ground.
+        // The import panel opens below the box, off its ground. Folded, it is
+        // hidden rather than faded: a view that is only transparent still
+        // takes the taps meant for whatever has moved under the frame it kept,
+        // and this one is drawn over the row of controls inside the box.
         if controlPanel.heightPublisher.value > 0 {
+            controlPanel.isHidden = false
             place(controlPanel, at: finalHeight + spacing)
             finalHeight = controlPanel.frame.maxY
+        } else {
+            controlPanel.isHidden = true
         }
 
         heightPublisher.send(finalHeight)
@@ -389,11 +395,13 @@ class ComposerView: ComposerSectionView {
         usedTokens: Int,
         limitTokens: Int,
         compactable: Bool,
+        compacting: Bool,
     ) {
         contextPanel.set(
             usedTokens: usedTokens,
             limitTokens: limitTokens,
-            compactEnabled: compactable,
+            compactable: compactable,
+            compacting: compacting,
         )
     }
 
@@ -475,7 +483,10 @@ class ComposerView: ComposerSectionView {
     }
 
     private func updateModelBarVisibility() {
-        modelBar.setVisible(!approvalSection.isPresentingRequest && !controlPanel.isPanelOpen.value)
+        // Only a request being answered takes the row away: the import panel
+        // opens under the box, and the row above it keeps its plus — drawn as
+        // a close while the panel is open, which is the way back out.
+        modelBar.setVisible(!approvalSection.isPresentingRequest)
     }
 
     /// What is typed, trimmed.

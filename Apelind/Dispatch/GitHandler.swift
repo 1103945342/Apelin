@@ -16,6 +16,15 @@ enum GitHandler: DomainHandler {
              .gitRemoteList, .gitRemoteSet, .gitRemoteRemove,
              .gitSettings, .gitAuthorSet, .gitCredentialSet, .gitCredentialRemove:
             return await host.forward(request, to: .environment)
+        // The git page's own screens: the refs, the history, the work tree's
+        // changes taken back, a reset and the stashes. None of them is an
+        // agent's, and CallerPolicy names none, so only the app reaches here.
+        case .gitBranches, .gitBranchCreate, .gitBranchCheckout, .gitBranchDelete, .gitBranchRename,
+             .gitMerge, .gitMergeAbort, .gitTagCreate, .gitTagDelete,
+             .gitLog, .gitCommitDetail, .gitCommitFileDiff, .gitFileVersions,
+             .gitRestore, .gitDeletePaths, .gitIgnoreAppend, .gitReset,
+             .gitStashList, .gitStashSave, .gitStashApply, .gitStashDrop, .gitStashClear:
+            return await host.forward(request, to: .environment)
         case .gitRepositoryCreate:
             return await createRepository(request, host: host)
         case .gitIssueCreate:
@@ -55,7 +64,11 @@ enum GitHandler: DomainHandler {
         guard let scoped = try? JSONCoding.decode(Scoped.self, from: request.request.payload) else {
             return ApelinError(.badRequest, "\(request.operation.rawValue) names no project")
         }
-        guard scoped.projectID == entry.project.id || scoped.projectID == entry.project.name else {
+        // A request may name a folder inside its project — a repository the
+        // workspace keeps there — and that is still the same project.
+        guard [entry.project.id, entry.project.name].contains(where: {
+            scoped.projectID == $0 || scoped.projectID.hasPrefix($0 + "/")
+        }) else {
             return ApelinError(.denied, "an agent's git call acts only on its own project")
         }
         return nil

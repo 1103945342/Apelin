@@ -1,15 +1,30 @@
 import UIKit
 
 /// How full the conversation's context is, opened from the ring beside the model
-/// row: a bar with the compaction threshold marked on it, what is used against
-/// what the model holds, and a button to compact now.
+/// row: the bar the agent's own compaction threshold is marked on, what is used
+/// against what the model holds, and a button to compact now.
 ///
-/// The figure is the last request's own input token count, the one the provider
-/// reported, not a total for the conversation: a total grows without ever
-/// falling when a compaction happens, and says nothing about the room left.
+/// The layout is aimini's `ContextInfoPanel`, read as points: no title band, a
+/// capsule bar with the threshold ticked on it, three lines at the left and one
+/// capsule action at the right. The figure is the last request's own input token
+/// count, the one the provider reported, not a total for the conversation: a
+/// total grows without ever falling when a compaction happens, and says nothing
+/// about the room left.
 final class ComposerContextPanel: ComposerPanel {
-    private let usageBar = UIView()
-    private let usageFill = UIView()
+    /// Where the agent compacts on its own: kwwk's `AgentAutoCompactOptions`
+    /// default, which Apelin does not override. The tick on the bar and the
+    /// sentence under it both read this one figure.
+    /// What the reader set in Settings ▸ Chat: the share at which a
+    /// conversation compacts itself, shown here as a percentage.
+    static var compactionThresholdPercent: Int {
+        Int((Preferences.compressionThreshold * 100).rounded())
+    }
+
+    private static let barHeight: CGFloat = 8
+
+    private let track = UIView()
+    private let fill = UIView()
+    private let thresholdTick = UIView()
     private let usedLabel = UILabel()
     private let limitLabel = UILabel()
     private let thresholdLabel = UILabel()
@@ -17,6 +32,12 @@ final class ComposerContextPanel: ComposerPanel {
 
     private var usedTokens = 0
     private var limitTokens = 0
+    private var compactEnabled = true
+    private var isCompacting = false
+
+    /// The height last handed to the composer, so a body measured against a
+    /// width it did not have yet is corrected once, not on every pass.
+    private var publishedHeight: CGFloat = 0
 
     /// Asked for when the button is tapped.
     var onCompact: (() -> Void)?
@@ -24,19 +45,25 @@ final class ComposerContextPanel: ComposerPanel {
     override func initializeViews() {
         super.initializeViews()
 
-        setTitle(String(localized: "Context"))
-        setCollapsible(false)
+        setHeaderless()
 
-        usageBar.backgroundColor = UIColor.tertiarySystemFill
-        usageBar.layer.cornerRadius = 4
-        usageBar.layer.cornerCurve = .continuous
-        usageBar.clipsToBounds = true
-        body.addSubview(usageBar)
-        usageFill.layer.cornerRadius = 4
-        usageFill.layer.cornerCurve = .continuous
-        usageBar.addSubview(usageFill)
+        track.layer.cornerRadius = Self.barHeight / 2
+        track.layer.cornerCurve = .continuous
+        track.backgroundColor = UIColor.separator.withAlphaComponent(0.4)
+        track.clipsToBounds = true
+        body.addSubview(track)
 
-        usedLabel.font = .preferredFont(forTextStyle: .footnote)
+        fill.layer.cornerRadius = Self.barHeight / 2
+        fill.layer.cornerCurve = .continuous
+        track.addSubview(fill)
+
+        // The threshold, as a hairline standing on the bar rather than a
+        // sentence about it: how close the fill is to compacting is read at a
+        // glance, which is the reason to open this at all.
+        thresholdTick.backgroundColor = UIColor.label.withAlphaComponent(0.55)
+        track.addSubview(thresholdTick)
+
+        usedLabel.font = Self.font(.footnote, weight: .semibold)
         usedLabel.textColor = .label
         usedLabel.adjustsFontForContentSizeCategory = true
         usedLabel.numberOfLines = 0
@@ -50,10 +77,22 @@ final class ComposerContextPanel: ComposerPanel {
             body.addSubview(label)
         }
 
-        compactButton.titleLabel?.font = .preferredFont(forTextStyle: .caption1)
-        compactButton.titleLabel?.adjustsFontForContentSizeCategory = true
-        compactButton.layer.cornerRadius = ComposerMetrics.Radius.sm
-        compactButton.layer.cornerCurve = .continuous
+        var configuration = UIButton.Configuration.filled()
+        configuration.cornerStyle = .capsule
+        configuration.image = Self.boltImage
+        configuration.imagePadding = ComposerMetrics.Spacing.xs
+        configuration.contentInsets = NSDirectionalEdgeInsets(
+            top: 6,
+            leading: ComposerMetrics.Spacing.md,
+            bottom: 6,
+            trailing: ComposerMetrics.Spacing.md,
+        )
+        configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.font = ComposerContextPanel.font(.caption1, weight: .semibold)
+            return outgoing
+        }
+        compactButton.configuration = configuration
         compactButton.addTarget(self, action: #selector(compactTapped), for: .primaryActionTriggered)
         body.addSubview(compactButton)
 
@@ -61,43 +100,35 @@ final class ComposerContextPanel: ComposerPanel {
     }
 
     override var preferredHeight: CGFloat {
-        // Measured against the body's own width once it has one; a panel that
-        // has not been laid out yet falls back to the composer's full width,
-        // which is what it is about to get.
-        let width = body.bounds.width > 0 ? body.bounds.width : UIScreen.main.bounds.width - ComposerMetrics.Spacing.lg * 2
-        let used = usedLabel.sizeThatFits(
-            CGSize(width: width, height: .greatestFiniteMagnitude),
-        ).height
-        let limit = limitLabel.sizeThatFits(
-            CGSize(width: width, height: .greatestFiniteMagnitude),
-        ).height
-        let threshold = thresholdLabel.sizeThatFits(
-            CGSize(width: width, height: .greatestFiniteMagnitude),
-        ).height
-        let buttonHeight = max(28, compactButton.titleLabel?.font.lineHeight ?? 0)
-        let texts = used + limit + threshold + ComposerMetrics.Spacing.xs * 2
-        let rowHeight = max(texts, buttonHeight)
-        return ComposerMetrics.Spacing.sm
-            + 8
+        // Measured against the body's own width once it has one; the composer
+        // hands the panel its width right after the height it asks for, and
+        // `layoutSubviews` corrects the answer when the guess was wrong.
+        ComposerMetrics.Spacing.sm
+            + Self.barHeight
             + ComposerMetrics.Spacing.sm
-            + rowHeight
+            + rowHeight(for: measuredWidth)
             + ComposerMetrics.Spacing.sm
     }
 
     func set(
         usedTokens: Int,
         limitTokens: Int,
-        compactEnabled: Bool,
+        compactable: Bool,
+        compacting: Bool,
     ) {
         self.usedTokens = usedTokens
         self.limitTokens = limitTokens
-        compactButton.isEnabled = compactEnabled
+        compactEnabled = compactable
+        isCompacting = compacting
         updateText()
         setNeedsLayout()
         // A folded panel publishes nothing. The composer lays out whatever has
         // a height, so a figure arriving while it is folded must not put the
         // card back over a body it is not showing.
-        heightPublisher.send(isExpanded ? preferredHeight : 0)
+        if isExpanded, !isSuppressed {
+            publishedHeight = preferredHeight
+            heightPublisher.send(publishedHeight)
+        }
     }
 
     private var fraction: Double? {
@@ -105,45 +136,110 @@ final class ComposerContextPanel: ComposerPanel {
         return min(1, max(0, Double(usedTokens) / Double(limitTokens)))
     }
 
+    /// The width the body will have: its own once the composer has placed the
+    /// panel, and before that the screen's less the panel's own insets.
+    private var measuredWidth: CGFloat {
+        if body.bounds.width > 0 { return body.bounds.width }
+        return max(0, UIScreen.main.bounds.width - ComposerMetrics.Spacing.md * 4)
+    }
+
+    private func rowHeight(for width: CGFloat) -> CGFloat {
+        let button = compactButton.intrinsicContentSize
+        let text = textColumnHeight(for: width - button.width - ComposerMetrics.Spacing.sm)
+        return max(button.height, text)
+    }
+
+    private func textColumnHeight(for width: CGFloat) -> CGFloat {
+        [usedLabel, limitLabel, thresholdLabel].reduce(0) { total, label in
+            total + label.sizeThatFits(
+                CGSize(width: max(0, width), height: .greatestFiniteMagnitude),
+            ).height
+        }
+    }
+
     private func updateText() {
         let ratio = fraction
-        usedLabel.text = String(
-            localized: "\(Self.tokenText(usedTokens)) used",
-        )
+        let threshold = Double(Self.compactionThresholdPercent) / 100
+
+        usedLabel.text = String(localized: "\(Self.tokenText(usedTokens)) tokens used")
         if let ratio {
             limitLabel.text = String(
-                localized: "of \(Self.tokenText(limitTokens)) tokens · \((Int(ratio * 100)))%",
+                localized: "Limit \(Self.tokenText(limitTokens)) (\(Int((ratio * 100).rounded()))%)",
             )
         } else {
-            limitLabel.text = String(localized: "Context limit unknown for this model")
+            limitLabel.text = String(localized: "Context limit unknown")
         }
-        thresholdLabel.text = String(localized: "The agent compacts near the limit")
+        thresholdLabel.text = String(localized: "Auto-compacts at \(Self.compactionThresholdPercent)%")
 
-        let fill = ratio.map { $0 >= 0.9 ? UIColor.systemRed : ($0 >= 0.75 ? .systemOrange : .secondaryLabel) }
-            ?? UIColor.tertiaryLabel
-        usageFill.backgroundColor = fill
+        let level: UIColor = if ratio == nil {
+            .tertiaryLabel
+        } else if let ratio, ratio >= 1 {
+            .systemRed
+        } else if let ratio, ratio >= threshold {
+            .systemOrange
+        } else {
+            .systemGreen
+        }
+        fill.backgroundColor = level
 
-        compactButton.setTitle(String(localized: "Compact Now"), for: .normal)
-        compactButton.accessibilityLabel = String(localized: "Compact This Conversation Now")
-        let enabled = compactButton.isEnabled
-        compactButton.backgroundColor = enabled
-            ? tintColor
-            : UIColor.tertiarySystemFill
-        compactButton.setTitleColor(
-            enabled ? .white : .secondaryLabel,
-            for: .normal,
+        updateButton()
+    }
+
+    /// The action's three states: ready, busy, and not this conversation's to
+    /// take — the same shape each time, so the panel does not jump.
+    private func updateButton() {
+        guard var configuration = compactButton.configuration else { return }
+        let enabled = compactEnabled && !isCompacting
+
+        configuration.showsActivityIndicator = isCompacting
+        configuration.image = isCompacting ? nil : Self.boltImage
+        configuration.title = isCompacting
+            ? String(localized: "Compressing context")
+            : String(localized: "Compact Now")
+        configuration.baseBackgroundColor = enabled ? .tintColor : UIColor.tertiarySystemFill
+        configuration.baseForegroundColor = enabled ? .white : .secondaryLabel
+        compactButton.configuration = configuration
+        compactButton.isUserInteractionEnabled = enabled
+        compactButton.accessibilityLabel = isCompacting
+            ? String(localized: "Compressing context")
+            : String(localized: "Compact This Conversation Now")
+        compactButton.accessibilityTraits = enabled ? .button : [.button, .notEnabled]
+    }
+
+    private static var boltImage: UIImage? {
+        UIImage(
+            systemName: "bolt.fill",
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold),
         )
+    }
+
+    /// A text style's own size and scaling, at another weight: the system has
+    /// no one-call answer for this, and a descriptor keeps Dynamic Type.
+    private static func font(_ style: UIFont.TextStyle, weight: UIFont.Weight) -> UIFont {
+        let base = UIFont.preferredFont(forTextStyle: style)
+        let descriptor = base.fontDescriptor.addingAttributes([
+            .traits: [UIFontDescriptor.TraitKey.weight: weight],
+        ])
+        return UIFont(descriptor: descriptor, size: 0)
     }
 
     private static func tokenText(_ tokens: Int) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 0
-        return formatter.string(from: NSNumber(value: tokens)) ?? String(tokens)
+        // aimini's `formatTokenCount`: one decimal in the thousands and above,
+        // so a window reads "200.0k" rather than seven digits.
+        switch tokens {
+        case 1_000_000_000...:
+            String(format: "%.1fB", Double(tokens) / 1_000_000_000)
+        case 1_000_000...:
+            String(format: "%.1fM", Double(tokens) / 1_000_000)
+        case 1_000...:
+            String(format: "%.1fk", Double(tokens) / 1_000)
+        default:
+            String(tokens)
+        }
     }
 
     @objc private func compactTapped() {
-        guard compactButton.isEnabled else { return }
+        guard compactEnabled, !isCompacting else { return }
         onCompact?()
     }
 
@@ -152,45 +248,48 @@ final class ComposerContextPanel: ComposerPanel {
 
         let width = body.bounds.width
         let ratio = fraction ?? 0
+        let threshold = CGFloat(Self.compactionThresholdPercent) / 100
 
-        usageBar.frame = CGRect(x: 0, y: 0, width: width, height: 8)
-        usageFill.frame = CGRect(x: 0, y: 0, width: width * ratio, height: 8)
+        track.frame = CGRect(x: 0, y: 0, width: width, height: Self.barHeight)
+        fill.frame = CGRect(x: 0, y: 0, width: width * ratio, height: Self.barHeight)
+        thresholdTick.frame = directionalFrame(CGRect(
+            x: min(max(0, width - 2), width * threshold - 1),
+            y: 0,
+            width: 2,
+            height: Self.barHeight,
+        ))
 
-        let buttonWidth = min(
-            width * 0.42,
-            compactButton.titleLabel?.intrinsicContentSize.width ?? 0
-                + ComposerMetrics.Spacing.md * 2,
-        )
-        let buttonHeight = max(28, compactButton.titleLabel?.font.lineHeight ?? 0)
-        let textWidth = width - buttonWidth - ComposerMetrics.Spacing.sm
+        let buttonSize = compactButton.intrinsicContentSize
+        let row = max(buttonSize.height, textColumnHeight(for: width - buttonSize.width - ComposerMetrics.Spacing.sm))
+        let rowTop = track.frame.maxY + ComposerMetrics.Spacing.sm
 
-        var y = usageBar.frame.maxY + ComposerMetrics.Spacing.sm
-        usedLabel.frame = CGRect(
-            x: 0,
-            y: y,
-            width: textWidth,
-            height: usedLabel.sizeThatFits(CGSize(width: textWidth, height: .greatestFiniteMagnitude)).height,
-        )
-        y = usedLabel.frame.maxY
-        limitLabel.frame = CGRect(
-            x: 0,
-            y: y,
-            width: textWidth,
-            height: limitLabel.sizeThatFits(CGSize(width: textWidth, height: .greatestFiniteMagnitude)).height,
-        )
-        y = limitLabel.frame.maxY
-        thresholdLabel.frame = CGRect(
-            x: 0,
-            y: y,
-            width: textWidth,
-            height: thresholdLabel.sizeThatFits(CGSize(width: textWidth, height: .greatestFiniteMagnitude)).height,
-        )
+        var y = rowTop
+        let textWidth = max(0, width - buttonSize.width - ComposerMetrics.Spacing.sm)
+        for label in [usedLabel, limitLabel, thresholdLabel] {
+            let height = label.sizeThatFits(
+                CGSize(width: textWidth, height: .greatestFiniteMagnitude),
+            ).height
+            label.frame = CGRect(x: 0, y: y, width: textWidth, height: height)
+            y = label.frame.maxY
+        }
 
         compactButton.frame = directionalFrame(CGRect(
-            x: width - buttonWidth,
-            y: usageBar.frame.maxY + ComposerMetrics.Spacing.sm,
-            width: buttonWidth,
-            height: buttonHeight,
+            x: width - buttonSize.width,
+            y: rowTop + (row - buttonSize.height) / 2,
+            width: buttonSize.width,
+            height: buttonSize.height,
         ))
+
+        // The height published at the moment the panel opened was measured
+        // against a width the body did not have yet. Now that it has one, hand
+        // the composer the real figure — once.
+        let height = rowTop + row + ComposerMetrics.Spacing.sm
+        if isExpanded, !isSuppressed, abs(publishedHeight - height) > 0.5 {
+            publishedHeight = height
+            DispatchQueue.main.async { [weak self] in
+                guard let self, self.isExpanded, !self.isSuppressed else { return }
+                self.heightPublisher.send(self.preferredHeight)
+            }
+        }
     }
 }
