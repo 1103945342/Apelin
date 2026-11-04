@@ -120,9 +120,10 @@ final class FileEditorController: UIViewController {
     /// to put them in. The page then has its text on the first frame it draws,
     /// instead of a blank one that fills in a moment later.
     static func prepare(url: URL, relativePath: String, line: Int?) async -> FileEditorController? {
-        guard let text = try? await Task.detached(priority: .userInitiated) {
+        let reading = Task.detached(priority: .userInitiated) {
             try ProjectFileContent.read(at: url)
-        }.value else { return nil }
+        }
+        guard let text = try? await reading.value else { return nil }
         let theme = ApelinEditorTheme()
         let state = await Task.detached(priority: .userInitiated) {
             highlightedState(for: text, theme: theme, fileName: relativePath)

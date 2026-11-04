@@ -119,11 +119,13 @@ final class ToolCallSectionView: UIView {
             // Two places the value can sit; `configure` turns one of them on.
             // Both start off, or the pair would contradict each other before
             // there is a section to decide with.
-            valueTopToName = x.top.equalTo(nameLabel.snp.bottom).offset(4).constraint.deactivated
-            valueTopToCard = x.top.equalToSuperview().offset(11).constraint.deactivated
+            valueTopToName = x.top.equalTo(nameLabel.snp.bottom).offset(4).constraint
+            valueTopToCard = x.top.equalToSuperview().offset(11).constraint
             x.leading.trailing.equalToSuperview().inset(12)
             x.bottom.equalToSuperview().offset(-11)
         }
+        valueTopToName?.deactivate()
+        valueTopToCard?.deactivate()
 
         configure(section)
     }
