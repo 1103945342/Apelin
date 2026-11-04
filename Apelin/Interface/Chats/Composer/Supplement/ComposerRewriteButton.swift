@@ -75,12 +75,9 @@ final class ComposerRewriteButton: ComposerIconButton {
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
-        // Off screen the ring has nobody to tell: it stops, and picks the turn
-        // up again when the composer is back.
-        guard window != nil else {
-            spinner.removeAnimation(forKey: Self.spinnerKey)
-            return
-        }
+        // Off screen the ring has nobody to read it: its colour is resolved
+        // again when the composer is back, so a change of appearance lands then.
+        guard window != nil else { return }
         updateAppearance()
     }
 
@@ -108,19 +105,11 @@ final class ComposerRewriteButton: ComposerIconButton {
         startSpinning()
     }
 
-    /// The ring turns one way for as long as the rewrite runs, and rests for
-    /// anyone who asked the system not to animate: it is then a still circle,
-    /// which is the same thing said without movement.
+    /// The ring is drawn once and left still: the stop mark already says what a
+    /// tap does, and the arc says a rewrite is running. Nothing turns — a ring
+    /// spinning over a small disc reads as busier than the work it reports.
     private func startSpinning() {
         spinner.removeAnimation(forKey: Self.spinnerKey)
-        guard !UIAccessibility.isReduceMotionEnabled else { return }
-        let turn = CABasicAnimation(keyPath: "transform.rotation.z")
-        turn.fromValue = 0
-        turn.toValue = CGFloat.pi * 2
-        turn.duration = 0.9
-        turn.repeatCount = .infinity
-        turn.isRemovedOnCompletion = false
-        spinner.add(turn, forKey: Self.spinnerKey)
     }
 }
 

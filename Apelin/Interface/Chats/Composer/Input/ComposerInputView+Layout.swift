@@ -68,7 +68,7 @@ extension ComposerInputView {
         let x = bounds.width - inset.right - rewriteSize
         rewriteButton.frame = CGRect(
             x: x,
-            y: inset.top,
+            y: max(0, inset.top - 4),
             width: rewriteSize,
             height: rewriteSize,
         )
