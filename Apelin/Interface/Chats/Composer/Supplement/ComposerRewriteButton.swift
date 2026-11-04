@@ -24,24 +24,11 @@ final class ComposerRewriteButton: ComposerIconButton {
     /// The text the draft will be read from, asked at the moment of the tap.
     var draftProvider: (() -> String)?
 
-    /// The ring that turns round the stop while a rewrite runs: the stop says
-    /// what a tap does, the ring says the answer is still on its way.
-    private let spinner = CAShapeLayer()
-    private static let spinnerKey = "rewriteSpinner"
-
     required init() {
         super.init()
         // The same disc as the send, so all the icons that act on the draft are
         // drawn alike: the wand, the plus, the send.
         iconInset = (ComposerMetrics.Send.diameter - ComposerMetrics.Send.iconSize) / 2
-        spinner.fillColor = nil
-        spinner.lineWidth = 2
-        spinner.lineCap = .round
-        spinner.strokeStart = 0
-        spinner.strokeEnd = 0.72
-        spinner.isHidden = true
-        // Under the mark, so the stop is drawn on top of the ring's opening.
-        layer.insertSublayer(spinner, below: iconView.layer)
         tapAction = { [weak self] in self?.tap() }
         updateAppearance()
     }
@@ -60,33 +47,15 @@ final class ComposerRewriteButton: ComposerIconButton {
         onRewrite?(draft)
     }
 
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        // The ring is drawn in the button's own coordinates and turns about
-        // its centre: a smaller ring that sits tight around the stop icon.
-        // The diameter matches the icon size plus a 4pt margin.
-        let iconDiameter = ComposerMetrics.Send.iconSize
-        let spinnerDiameter = iconDiameter + 4
-        let spinnerInset = (bounds.width - spinnerDiameter) / 2
-        let spinnerBounds = bounds.insetBy(dx: spinnerInset, dy: spinnerInset)
-        spinner.frame = spinnerBounds
-        spinner.path = UIBezierPath(ovalIn: spinnerBounds.insetBy(dx: 1, dy: 1)).cgPath
-    }
-
-    override func didMoveToWindow() {
-        super.didMoveToWindow()
-        // Off screen the ring has nobody to read it: its colour is resolved
-        // again when the composer is back, so a change of appearance lands then.
-        guard window != nil else { return }
-        updateAppearance()
-    }
-
     override func traitCollectionDidChange(_ previous: UITraitCollection?) {
         super.traitCollectionDidChange(previous)
         guard traitCollection.hasDifferentColorAppearance(comparedTo: previous) else { return }
         updateAppearance()
     }
 
+    /// Two marks and two colours, nothing that turns: the stop already says a
+    /// tap halts the rewrite, and a ring drawn around a disc this small only
+    /// adds noise to a control that is not the point of the row.
     private func updateAppearance() {
         iconView.image = UIImage(systemName: isRewriting ? "stop.fill" : "wand.and.stars")?
             .withRenderingMode(.alwaysTemplate)
@@ -94,22 +63,6 @@ final class ComposerRewriteButton: ComposerIconButton {
         accessibilityLabel = isRewriting
             ? String(localized: "Stop Rewriting")
             : String(localized: "Rewrite This Message")
-
-        spinner.strokeColor = (isRewriting ? UIColor.systemRed : UIColor.clear)
-            .resolvedColor(with: traitCollection).cgColor
-        spinner.isHidden = !isRewriting
-        guard isRewriting else {
-            spinner.removeAnimation(forKey: Self.spinnerKey)
-            return
-        }
-        startSpinning()
-    }
-
-    /// The ring is drawn once and left still: the stop mark already says what a
-    /// tap does, and the arc says a rewrite is running. Nothing turns — a ring
-    /// spinning over a small disc reads as busier than the work it reports.
-    private func startSpinning() {
-        spinner.removeAnimation(forKey: Self.spinnerKey)
     }
 }
 

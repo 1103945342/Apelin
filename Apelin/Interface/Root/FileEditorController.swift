@@ -308,15 +308,14 @@ final class FileEditorController: UIViewController {
     }
 
     @objc private func dismissKeyboard() {
-        if textView.isFirstResponder { textView.resignFirstResponder() }
-        if searchBar.searchTextField.isFirstResponder { searchBar.resignFirstResponder() }
+        // The text view does not hold the first responder itself — Runestone
+        // hands it to a view inside — so asking it to resign does nothing.
+        // Ending editing on the page reaches whichever one has it.
+        view.endEditing(true)
     }
 
     @objc private func keyboardWillShow(_ notification: Notification) {
         guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
-        // Only the text view moves: the search bar sits at the top and keeps
-        // its place while the reader steps through matches.
-        guard textView.isFirstResponder else { return }
         keyboardHeight = frame.height
         updateTextViewInsets()
     }
@@ -347,7 +346,7 @@ final class FileEditorController: UIViewController {
     /// visible: tapping a line near the foot of a file would otherwise put the
     /// caret behind the keyboard, where nothing typed there can be read.
     private func revealCaret() {
-        guard textView.isFirstResponder else { return }
+        guard keyboardHeight > 0 else { return }
         scrollToVisible(textView.selectedRange)
     }
 
@@ -461,7 +460,9 @@ final class FileEditorController: UIViewController {
     private func stopEditing() {
         isWriting = false
         textView.isEditable = false
-        textView.resignFirstResponder()
+        // The first responder is a view inside the text view, so only the page
+        // can end its editing.
+        view.endEditing(true)
         applyBarItem()
     }
 
@@ -635,7 +636,6 @@ extension FileEditorController: TextViewDelegate {
     /// keyboard is already up in this case, so nothing waits on its animation —
     /// only on the next layout pass, which puts the text where it will stay.
     func textViewDidChangeSelection(_ textView: TextView) {
-        guard textView.isFirstResponder else { return }
         DispatchQueue.main.async { [weak self] in
             self?.revealCaret()
         }
