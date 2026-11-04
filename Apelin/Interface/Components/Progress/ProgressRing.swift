@@ -63,7 +63,7 @@ final class ProgressRing: UIView {
             radius: min(bounds.width, bounds.height) / 2 - inset,
             startAngle: -.pi / 2,
             endAngle: .pi * 3 / 2,
-            clockwise: true,
+            clockwise: true
         ).cgPath
         for layer in [track, arc] {
             layer.frame = bounds
@@ -160,7 +160,7 @@ final class ProgressRing: UIView {
                 usingSpringWithDamping: 0.6,
                 initialSpringVelocity: 0,
                 options: [.beginFromCurrentState, .allowUserInteraction],
-                animations: settle,
+                animations: settle
             )
         } else {
             settle()

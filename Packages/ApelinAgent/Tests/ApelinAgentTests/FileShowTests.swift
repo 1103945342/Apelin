@@ -95,7 +95,7 @@ struct FileShowTests {
             ["notes.pdf", "large.mov"],
             ["notes.pdf", "missing.png"],
             Array(repeating: "notes.pdf", count: FileShow.maximumFiles + 1),
-            [],
+            []
         ]
         for paths in refusals {
             #expect(throws: (any Error).self, "\(paths)") {
@@ -140,19 +140,19 @@ struct FileShowTests {
         faux.setResponses([
             .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "file_show", arguments: [
                 "paths": ["notes.pdf", "../outside.png"],
-                "reason": "Show the notes",
+                "reason": "Show the notes"
             ])], stopReason: .toolUse)),
             .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "file_show", arguments: [
                 "paths": ["notes.pdf"],
-                "reason": "Show the notes",
+                "reason": "Show the notes"
             ])], stopReason: .toolUse)),
-            .message(fauxAssistantMessage("Here are the notes.")),
+            .message(fauxAssistantMessage("Here are the notes."))
         ])
         let session = try await AgentSession(
             configuration: AgentSessionConfiguration(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            credentials: DeliveredCredentialSource(),
+            credentials: DeliveredCredentialSource()
         )
         try await session.prompt("Let me see the notes")
         await session.waitForIdle()

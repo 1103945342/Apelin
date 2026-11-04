@@ -37,7 +37,7 @@ public extension GitService {
         if let expected = request.expectedURL, expected != target.url {
             throw ApelinError(
                 .conflict,
-                "\(request.remote) points to \(target.url) now, not \(expected) as shown: nothing was changed",
+                "\(request.remote) points to \(target.url) now, not \(expected) as shown: nothing was changed"
             )
         }
         return target
@@ -51,7 +51,7 @@ public extension GitService {
                 remote: target.remote,
                 branch: target.branch,
                 credentials: credentialLookup,
-                progress: Self.fetchProgress(reporter),
+                progress: Self.fetchProgress(reporter)
             )
         }
         let plan = try mapped { try target.repository.resetPlan(remote: target.remote, branch: branch) }
@@ -75,7 +75,7 @@ public extension GitService {
             overwrittenFileCount: plan.overwrittenFiles.count,
             overwrittenFiles: Array(plan.overwrittenFiles.prefix(listed)),
             projectFile: files.file,
-            upToDate: plan.upToDate,
+            upToDate: plan.upToDate
         )
         return try JSONValue(encoding: preview)
     }
@@ -89,7 +89,7 @@ public extension GitService {
                 remote: target.remote,
                 branch: request.branch,
                 credentials: credentialLookup,
-                progress: Self.fetchProgress(reporter),
+                progress: Self.fetchProgress(reporter)
             )
         }
         try reporter.checkCancelled()
@@ -105,14 +105,14 @@ public extension GitService {
                 expectedHead: request.expectedHead,
                 backupAuthor: backupAuthor,
                 settled: files.settled,
-                excluding: files.excluded,
+                excluding: files.excluded
             )
         }
         var payload: [String: JSONValue] = [
             "remote": .string(target.remote),
             "branch": .string(result.branch),
             "commit": .string(result.commit),
-            "projectFile": .string(files.file.rawValue),
+            "projectFile": .string(files.file.rawValue)
         ]
         if let previous = result.previousHead {
             payload["previousHead"] = .string(previous)
@@ -142,7 +142,7 @@ public extension GitService {
             repository: repository,
             remote: remote,
             branch: branch,
-            url: GitRemoteURL.shown(url).url ?? url,
+            url: GitRemoteURL.shown(url).url ?? url
         )
     }
 
@@ -152,7 +152,7 @@ public extension GitService {
     /// the files the remote lacks, which are kept out of the repository.
     private func settledFiles(
         _ target: ResetTarget,
-        remoteCommit: String,
+        remoteCommit: String
     ) throws -> (settled: [String: Data], excluded: [String], file: GitProjectFile) {
         var settled: [String: Data] = [:]
         var excluded: [String] = []
@@ -164,7 +164,7 @@ public extension GitService {
                     ownID: target.project.projectID,
                     mayTakeTheirs: target.project.projectID == nil,
                     root: target.project.root,
-                    projects: projects,
+                    projects: projects
                 )
                 settled[name] = try manifest.settle(theirs)
                 file = manifest.file

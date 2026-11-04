@@ -127,7 +127,7 @@ public struct GitRemoteToolRequest: Sendable, Hashable, Codable {
         remote: String? = nil,
         branch: String? = nil,
         url: String? = nil,
-        lease: GitPushLease? = nil,
+        lease: GitPushLease? = nil
     ) {
         self.context = context
         self.remote = remote
@@ -195,7 +195,7 @@ public struct GitTaskToolResponse: Sendable, Hashable, Codable {
         comparison: GitBranchComparison? = nil,
         forced: Bool? = nil,
         note: String? = nil,
-        projectFile: String? = nil,
+        projectFile: String? = nil
     ) {
         self.remote = remote
         self.branch = branch
@@ -279,7 +279,7 @@ public struct RepositoryCreateToolRequest: Sendable, Hashable, Codable {
         owner: String?,
         name: String,
         visibility: GitRepositoryVisibility,
-        description: String?,
+        description: String?
     ) {
         self.context = context
         self.owner = owner

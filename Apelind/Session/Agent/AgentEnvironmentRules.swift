@@ -69,7 +69,7 @@ enum AgentEnvironmentRules {
         _ request: WireRequest,
         descriptorCount: Int,
         entry: AgentSessionTable.Entry?,
-        registry: TaskRegistry,
+        registry: TaskRegistry
     ) async throws {
         guard let entry else { throw ApelinError(.denied, "no agent session for this worker") }
         let covers: (JSONValue) -> Bool
@@ -93,7 +93,7 @@ enum AgentEnvironmentRules {
         guard await AgentApprovals.spend(entry: entry, registry: registry, covers: covers) else {
             throw ApelinError(
                 .denied,
-                "approval required: the user has not approved this \(request.operation == .sdkImport ? "SDK import" : "toolchain setup")",
+                "approval required: the user has not approved this \(request.operation == .sdkImport ? "SDK import" : "toolchain setup")"
             )
         }
     }

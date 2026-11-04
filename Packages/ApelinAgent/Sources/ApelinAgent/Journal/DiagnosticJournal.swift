@@ -72,7 +72,7 @@ public final class DiagnosticJournal: @unchecked Sendable {
         _ category: String,
         _ message: String,
         level: DiagnosticLevel = .info,
-        date: Date = Date(),
+        date: Date = Date()
     ) -> Bool {
         lock.lock()
         defer { lock.unlock() }

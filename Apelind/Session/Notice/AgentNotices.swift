@@ -43,7 +43,7 @@ struct AgentNoticeMarks: Codable, Equatable, Sendable {
         AgentNoticeMarks(
             turns: max(turns, other.turns),
             approvals: max(approvals, other.approvals),
-            notices: max(notices, other.notices),
+            notices: max(notices, other.notices)
         )
     }
 }
@@ -87,7 +87,7 @@ struct AgentNoticeTrack: Sendable {
 
     /// The event kinds a track reads; the host skips the rest unread.
     static let kinds: Set<String> = [
-        "prompt", "message", "error", "toolCall", "approvalRequested", "finished", AgentNoticeRules.eventKind,
+        "prompt", "message", "error", "toolCall", "approvalRequested", "finished", AgentNoticeRules.eventKind
     ]
 
     /// Takes the task's next event and answers the banner it makes: an
@@ -100,7 +100,7 @@ struct AgentNoticeTrack: Sendable {
         _ kind: String,
         payload: JSONValue?,
         title: String?,
-        posted: AgentNoticeMarks,
+        posted: AgentNoticeMarks
     ) -> AgentNotice? {
         switch kind {
         case "prompt":
@@ -133,7 +133,7 @@ struct AgentNoticeTrack: Sendable {
                 sessionID: sessionID,
                 title: conversation(title),
                 subtitle: .key(AgentApprovals.isRootRequest(payload) ? "Root Approval Required" : "Approval Required"),
-                body: reason.map(AgentNotice.Text.verbatim),
+                body: reason.map(AgentNotice.Text.verbatim)
             )
         case "finished":
             marks.turns += 1
@@ -152,7 +152,7 @@ struct AgentNoticeTrack: Sendable {
                     identifier: identifier,
                     sessionID: sessionID,
                     title: conversation(title),
-                    body: excerpt.map(AgentNotice.Text.verbatim) ?? .key("Done"),
+                    body: excerpt.map(AgentNotice.Text.verbatim) ?? .key("Done")
                 )
             case "failed":
                 return AgentNotice(
@@ -160,7 +160,7 @@ struct AgentNoticeTrack: Sendable {
                     sessionID: sessionID,
                     title: conversation(title),
                     subtitle: .key("Failed"),
-                    body: (lastError ?? excerpt).map(AgentNotice.Text.verbatim),
+                    body: (lastError ?? excerpt).map(AgentNotice.Text.verbatim)
                 )
             default:
                 // `aborted`: the reader stopped it, and knows.
@@ -174,19 +174,19 @@ struct AgentNoticeTrack: Sendable {
             guard !headless, marks.notices > posted.notices, turnNotices <= AgentNoticeRules.maximumPerTurn,
                   let body = AgentNoticeRules.bounded(
                       payload?["body"]?.stringValue,
-                      limit: AgentNoticeRules.maximumBodyLength,
+                      limit: AgentNoticeRules.maximumBodyLength
                   )
             else { return nil }
             let headline = AgentNoticeRules.bounded(
                 payload?["title"]?.stringValue,
-                limit: AgentNoticeRules.maximumTitleLength,
+                limit: AgentNoticeRules.maximumTitleLength
             )
             return AgentNotice(
                 identifier: "\(sessionID).notice.\(marks.notices)",
                 sessionID: sessionID,
                 title: conversation(title),
                 subtitle: headline.map(AgentNotice.Text.verbatim),
-                body: .verbatim(body),
+                body: .verbatim(body)
             )
         default:
             break
@@ -271,7 +271,7 @@ enum AgentNoticeText {
             ("!\\[([^\\]]*)\\]\\([^)]*\\)", "$1"),
             ("\\[([^\\]]+)\\]\\([^)]*\\)", "$1"),
             ("(\\*\\*|__|~~|`)", ""),
-            ("\\*([^*\\s][^*]*)\\*", "$1"),
+            ("\\*([^*\\s][^*]*)\\*", "$1")
         ]
         return rules.reduce(line) { text, rule in
             text.replacingOccurrences(of: rule.pattern, with: rule.template, options: .regularExpression)

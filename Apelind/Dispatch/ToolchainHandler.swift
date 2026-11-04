@@ -33,7 +33,7 @@ enum ToolchainHandler: DomainHandler {
                 request.request,
                 descriptorCount: request.descriptors.count,
                 entry: entry,
-                registry: host.registry,
+                registry: host.registry
             )
             return nil
         } catch {

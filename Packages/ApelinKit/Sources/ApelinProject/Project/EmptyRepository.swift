@@ -12,7 +12,7 @@ public enum ProjectExcludes {
     public static let apelinFiles = [
         "/Attachments/",
         "/.apelin-metadata-*",
-        ".*.apelin-*",
+        ".*.apelin-*"
     ]
 }
 

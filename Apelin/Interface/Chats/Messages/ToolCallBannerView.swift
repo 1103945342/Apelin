@@ -76,7 +76,7 @@ final class ToolCallBannerView: UIView {
         super.layoutSubviews()
         let rule = 1 / max(traitCollection.displayScale, 1)
         ground.frame = bounds.inset(
-            by: UIEdgeInsets(top: 0, left: -groundBleed.left, bottom: 0, right: -groundBleed.right),
+            by: UIEdgeInsets(top: 0, left: -groundBleed.left, bottom: 0, right: -groundBleed.right)
         )
         topRule.frame = CGRect(x: 0, y: 0, width: ground.bounds.width, height: rule)
         bottomRule.frame = CGRect(x: 0, y: ground.bounds.height - rule, width: ground.bounds.width, height: rule)

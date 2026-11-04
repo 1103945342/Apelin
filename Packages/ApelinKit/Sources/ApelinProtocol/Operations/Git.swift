@@ -72,7 +72,7 @@ public struct GitStatusResponse: Codable, Sendable, Equatable {
         ahead: Int? = nil,
         behind: Int? = nil,
         hasIdentity: Bool? = nil,
-        mergeInProgress: Bool? = nil,
+        mergeInProgress: Bool? = nil
     ) {
         self.branch = branch
         self.head = head
@@ -162,7 +162,7 @@ public struct GitCommitRequest: OperationRequest {
         authorName: String? = nil,
         authorEmail: String? = nil,
         all: Bool? = nil,
-        amend: Bool? = nil,
+        amend: Bool? = nil
     ) {
         self.projectID = projectID
         self.message = message
@@ -321,7 +321,7 @@ public struct GitPushRequest: OperationRequest {
         remote: String? = nil,
         branch: String? = nil,
         url: String? = nil,
-        forceWithLease: GitPushLease? = nil,
+        forceWithLease: GitPushLease? = nil
     ) {
         self.projectID = projectID
         self.remote = remote

@@ -32,7 +32,7 @@ public enum RunCodeApproval: Codable, Sendable, Equatable {
     public static let presetRefusal = ApelinError(
         .denied,
         "the host does not recognise this command as a preset; ask the user",
-        reason: .notAPreset,
+        reason: .notAPreset
     )
 
     /// The key of a root request's command in its `approvalRequested`
@@ -64,7 +64,7 @@ public struct AgentRunCodeRequest: OperationRequest {
         workingDirectory: String = ".",
         timeoutSeconds: Int = 120,
         approval: RunCodeApproval,
-        asRoot: Bool? = nil,
+        asRoot: Bool? = nil
     ) {
         self.sessionID = sessionID
         self.spec = spec
@@ -91,7 +91,7 @@ public struct AgentRunCodeResponse: Codable, Sendable, Equatable {
         stderr: String,
         truncated: Bool = false,
         timedOut: Bool = false,
-        durationMilliseconds: Int = 0,
+        durationMilliseconds: Int = 0
     ) {
         self.exitCode = exitCode
         self.stdout = stdout

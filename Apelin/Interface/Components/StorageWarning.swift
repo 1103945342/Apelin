@@ -26,7 +26,7 @@ enum StorageWarning {
             warn(
                 title: "Unable to Save Chats",
                 message: String(localized: "\(error.readableMessage) Your chats keep working, and Apelin tries again with the next change."),
-                from: controller,
+                from: controller
             )
         }
     }
@@ -40,7 +40,7 @@ enum StorageWarning {
         warn(
             title: "Storage Almost Full",
             message: String(localized: "Your chats keep working, but Apelin can’t save them on this device until you free up space."),
-            from: controller,
+            from: controller
         )
     }
 

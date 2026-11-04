@@ -32,7 +32,7 @@ struct WebFetch: Sendable {
         configuration.timeoutIntervalForRequest = TimeInterval(Self.timeoutSeconds)
         configuration.httpAdditionalHeaders = [
             "User-Agent": "Apelin",
-            "Accept": "text/html, application/xhtml+xml, text/plain, text/markdown, application/json, application/xml;q=0.9, */*;q=0.5",
+            "Accept": "text/html, application/xhtml+xml, text/plain, text/markdown, application/json, application/xml;q=0.9, */*;q=0.5"
         ]
         session = URLSession(configuration: configuration, delegate: RedirectHold(), delegateQueue: nil)
     }
@@ -142,7 +142,7 @@ struct WebFetch: Sendable {
             contentType: type,
             title: page?.title,
             text: page?.text ?? text,
-            truncated: truncated,
+            truncated: truncated
         )
     }
 
@@ -167,7 +167,7 @@ struct WebFetch: Sendable {
     private static let textTypes: Set = [
         "application/json", "application/xml", "application/javascript", "application/ecmascript",
         "application/x-javascript", "application/yaml", "application/x-yaml", "application/toml",
-        "application/x-sh", "application/x-ndjson", "application/sql", "application/graphql",
+        "application/x-sh", "application/x-ndjson", "application/sql", "application/graphql"
     ]
 
     /// `text/html; charset=utf-8` → `text/html`; nil for an empty one.
@@ -213,7 +213,7 @@ struct WebFetch: Sendable {
     /// `body`, unless the call outlasts `timeoutSeconds`.
     private static func withinTimeout<T: Sendable>(
         _ url: URL,
-        _ body: @escaping @Sendable () async throws -> T,
+        _ body: @escaping @Sendable () async throws -> T
     ) async throws -> T {
         try await withThrowingTaskGroup(of: T.self) { group in
             group.addTask(operation: body)
@@ -235,7 +235,7 @@ private final class RedirectHold: NSObject, URLSessionTaskDelegate, Sendable {
         _: URLSession,
         task _: URLSessionTask,
         willPerformHTTPRedirection _: HTTPURLResponse,
-        newRequest _: URLRequest,
+        newRequest _: URLRequest
     ) async -> URLRequest? {
         nil
     }
@@ -279,7 +279,7 @@ private struct FetchedPage {
             offset: start,
             nextOffset: end < utf8.count ? end : nil,
             remainingBytes: utf8.count - end,
-            truncated: truncated,
+            truncated: truncated
         )
     }
 }

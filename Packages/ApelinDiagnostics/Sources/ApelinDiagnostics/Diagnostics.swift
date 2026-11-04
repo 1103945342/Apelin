@@ -45,7 +45,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
             process: filter.process,
             subsystem: filter.subsystem,
             messageContains: filter.messageContains,
-            level: filter.minimumLevel.rawValue,
+            level: filter.minimumLevel.rawValue
         )
     }
 
@@ -74,7 +74,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
     public func listen(
         _ filter: LogFilter,
         until deadline: Date,
-        deliver: @escaping @Sendable (LogEntry) -> Bool,
+        deliver: @escaping @Sendable (LogEntry) -> Bool
     ) throws -> LiveLogListener {
         try filter.validateMatchFields()
         let seconds = max(0.1, deadline.timeIntervalSinceNow)
@@ -94,7 +94,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
                     listener.markDropped()
                 }
                 listener.finish()
-            },
+            }
         )
         listener.onEnd { stream.cancel() }
         listener.settle(until: Date().addingTimeInterval(min(Self.refusalProbeSeconds, seconds)))
@@ -142,7 +142,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
                 subsystem: row["subsystem"] as? String ?? "",
                 category: row["category"] as? String ?? "",
                 level: LogLevel(icliName: row["level"] as? String ?? ""),
-                message: row["message"] as? String ?? "",
+                message: row["message"] as? String ?? ""
             )
             guard filter.matches(entry) else { continue }
             if kept.count == filter.maxEntries {
@@ -161,7 +161,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
     public static let crashDirectories = [
         "/var/mobile/Library/Logs/CrashReporter",
         "/var/mobile/Library/Logs/DiagnosticReports",
-        "/var/mobile/Library/Logs/CrashReporter/Retired",
+        "/var/mobile/Library/Logs/CrashReporter/Retired"
     ]
 
     /// What a crash report's file name ends with.
@@ -234,7 +234,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
             path: raw["path"] as? String ?? "",
             text: content,
             size: (raw["size"] as? NSNumber)?.intValue ?? content.utf8.count,
-            truncated: raw["truncated"] as? Bool ?? false,
+            truncated: raw["truncated"] as? Bool ?? false
         )
     }
 
@@ -257,7 +257,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
         return Screenshot(
             jpeg: jpeg,
             width: (raw["width"] as? NSNumber)?.intValue ?? 0,
-            height: (raw["height"] as? NSNumber)?.intValue ?? 0,
+            height: (raw["height"] as? NSNumber)?.intValue ?? 0
         )
     }
 
@@ -265,7 +265,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
     /// (to bind the request to a target); without one, this waits itself.
     public func uiTree(
         _ request: UITreeRequest = UITreeRequest(),
-        settled: ForegroundApp? = nil,
+        settled: ForegroundApp? = nil
     ) throws -> UITree {
         guard UITreeRequest.maxElementsRange.contains(request.maxElements) else {
             throw DiagnosticsError.invalidParameter("maxElements must be \(UITreeRequest.maxElementsRange.lowerBound)–\(UITreeRequest.maxElementsRange.upperBound)")
@@ -275,7 +275,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
         return try Self.decodeTree(icli.uiElements(
             maxElements: request.maxElements,
             visibleOnly: request.visibleOnly,
-            clickableOnly: request.clickableOnly,
+            clickableOnly: request.clickableOnly
         ))
     }
 
@@ -284,7 +284,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
         return UITree(
             pid: Int32(clamping: (raw["pid"] as? NSNumber)?.intValue ?? 0),
             elements: rows.map(decodeElement),
-            truncated: raw["truncated"] as? Bool ?? false,
+            truncated: raw["truncated"] as? Bool ?? false
         )
     }
 
@@ -310,9 +310,9 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
                 x: double(frame["x"]),
                 y: double(frame["y"]),
                 width: double(frame["width"]),
-                height: double(frame["height"]),
+                height: double(frame["height"])
             ),
-            tapPoint: UIPoint(x: double(row["x"]), y: double(row["y"])),
+            tapPoint: UIPoint(x: double(row["x"]), y: double(row["y"]))
         )
     }
 
@@ -330,7 +330,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
     @discardableResult
     public func perform(
         _ action: UIAction,
-        settled: ForegroundApp? = nil,
+        settled: ForegroundApp? = nil
     ) throws -> UIActionOutcome? {
         try action.validate()
         if action == .press(.wake) {
@@ -348,7 +348,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
                 identifier: selector.identifier,
                 role: selector.role,
                 match: selector.match.rawValue,
-                index: selector.index,
+                index: selector.index
             )
         case let .swipe(from, to, seconds):
             _ = try icli.swipe(x1: from.x, y1: from.y, x2: to.x, y2: to.y, seconds: seconds)
@@ -373,7 +373,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
             index: selector.index,
             appear: true,
             timeout: elementTimeout,
-            interval: elementInterval,
+            interval: elementInterval
         )
         guard wait["found"] as? Bool == true else {
             let name = selector.identifier ?? selector.text ?? ""
@@ -412,7 +412,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
         try Self.decodeTree(icli.uiElements(
             maxElements: UITreeRequest.maxElementsRange.upperBound,
             visibleOnly: true,
-            clickableOnly: false,
+            clickableOnly: false
         ))
     }
 
@@ -475,7 +475,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
         ForegroundApp(
             bundleIdentifier: raw["bundle_id"] as? String ?? "",
             verified: raw["verified"] as? Bool ?? false,
-            source: raw["source"] as? String ?? "unavailable",
+            source: raw["source"] as? String ?? "unavailable"
         )
     }
 
@@ -490,7 +490,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
                 pid: Int32(clamping: (row["pid"] as? NSNumber)?.intValue ?? 0),
                 name: row["name"] as? String ?? "",
                 executable: row["executable"] as? String ?? "",
-                bundleIdentifier: row["bundle_id"] as? String ?? "",
+                bundleIdentifier: row["bundle_id"] as? String ?? ""
             )
         }
     }
@@ -508,7 +508,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
         RespringResult(
             method: raw["method"] as? String ?? "",
             previousPID: Int32(clamping: (raw["previous_pid"] as? NSNumber)?.intValue ?? 0),
-            pid: Int32(clamping: (raw["pid"] as? NSNumber)?.intValue ?? 0),
+            pid: Int32(clamping: (raw["pid"] as? NSNumber)?.intValue ?? 0)
         )
     }
 }

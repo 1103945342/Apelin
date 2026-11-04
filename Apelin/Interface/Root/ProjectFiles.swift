@@ -124,7 +124,7 @@ final class ProjectFiles {
                 name: name,
                 isDirectory: values?.isDirectory ?? false,
                 modified: values?.contentModificationDate,
-                byteCount: values?.fileSize.map(Int64.init),
+                byteCount: values?.fileSize.map(Int64.init)
             ))
         }
         // Folders first, then by name, as every file browser reads.

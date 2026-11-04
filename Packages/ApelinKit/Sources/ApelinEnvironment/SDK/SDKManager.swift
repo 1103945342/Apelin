@@ -96,7 +96,7 @@ public struct SDKManager: Sendable {
         _ prepared: Prepared,
         staging: URL,
         hasSwiftToolchain: Bool,
-        reporter: TaskReporter,
+        reporter: TaskReporter
     ) async throws -> SDKRecord {
         let unpacked = staging.appendingPathComponent("tree", isDirectory: true)
         guard mkdir(unpacked.path, 0o755) == 0 else { throw ArchiveExtractor.posix("make the staging tree") }
@@ -113,7 +113,7 @@ public struct SDKManager: Sendable {
                         reporter.progress(
                             "fetching",
                             completed: Int64(progress.receivedBytes),
-                            detail: "\(progress.indexedObjects)/\(progress.totalObjects) objects",
+                            detail: "\(progress.indexedObjects)/\(progress.totalObjects) objects"
                         )
                     }
                     return !reporter.isCancelled
@@ -165,7 +165,7 @@ public struct SDKManager: Sendable {
         var inspection = try inspector.inspect(root, reporter: reporter)
         if inspection.identity.swiftCompilerVersion != nil, !hasSwiftToolchain {
             inspection.warnings.append(
-                "no registered toolchain has Swift; Swift projects cannot build against this SDK yet",
+                "no registered toolchain has Swift; Swift projects cannot build against this SDK yet"
             )
         }
         inspection.warnings.forEach(reporter.warning)
@@ -181,7 +181,7 @@ public struct SDKManager: Sendable {
             try? FileManager.default.removeItem(at: temporary)
             throw ApelinError(
                 .unavailable,
-                "Unable to download the SDK from \(url.host ?? "the server"). Check the link and try again.",
+                "Unable to download the SDK from \(url.host ?? "the server"). Check the link and try again."
             )
         }
         try reporter.checkCancelled()

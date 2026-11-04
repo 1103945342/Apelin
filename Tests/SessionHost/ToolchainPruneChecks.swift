@@ -134,7 +134,7 @@ func toolchainPruneChecks() async throws {
             installations: installations,
             packages: packages,
             fileLists: FakeFileLists(),
-            approvals: ApprovalLedger(directory: state.appendingPathComponent("approvals")),
+            approvals: ApprovalLedger(directory: state.appendingPathComponent("approvals"))
         )
     }
     await bridge(DpkgStatusDatabase(installRoot: base + "/no-dpkg")).pruneLeftoverToolchains()

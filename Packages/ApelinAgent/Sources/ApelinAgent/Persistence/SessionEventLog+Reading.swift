@@ -145,7 +145,7 @@ extension SessionEventLog {
         afterSeq: UInt64,
         lastSeq: UInt64,
         to continuation: AsyncStream<SessionEventRecord>.Continuation,
-        pausing pause: (@Sendable () async -> Void)?,
+        pausing pause: (@Sendable () async -> Void)?
     ) async -> Int {
         var decodes = 0
         var seq: UInt64 = 0
@@ -170,7 +170,7 @@ extension SessionEventLog {
                         let record = (try? decoder.decode(SessionEventRecord.self, from: data)) ?? SessionEventRecord(
                             seq: seq + 1,
                             date: Date(),
-                            event: .error(message: "Part of this chat's history could not be read."),
+                            event: .error(message: "Part of this chat's history could not be read.")
                         )
                         seq = record.seq
                         records.append(record)
@@ -189,7 +189,7 @@ extension SessionEventLog {
                 continuation.yield(SessionEventRecord(
                     seq: lastSeq,
                     date: Date(),
-                    event: .error(message: "The rest of this chat's history could not be read: \(error.localizedDescription)"),
+                    event: .error(message: "The rest of this chat's history could not be read: \(error.localizedDescription)")
                 ))
             }
         }
@@ -224,7 +224,7 @@ extension SessionEventLog {
     private static func forEachLine(
         in bytes: UnsafeRawBufferPointer,
         upTo end: Int,
-        _ body: (Range<Int>) throws -> Void,
+        _ body: (Range<Int>) throws -> Void
     ) rethrows -> Int {
         guard let base = bytes.baseAddress else { return 0 }
         var start = 0

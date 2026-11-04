@@ -28,7 +28,7 @@ final class DistributionTests: XCTestCase {
                 "name": name, "full_name": "\(owner)/\(name)", "owner": ["login": owner], "private": false,
                 "description": NSNull(), "html_url": "https://github.com/\(owner)/\(name)",
                 "clone_url": "https://github.com/\(owner)/\(name).git", "default_branch": defaultBranch,
-                "has_pages": false, "permissions": ["push": push],
+                "has_pages": false, "permissions": ["push": push]
             ]
         }
 
@@ -271,7 +271,7 @@ final class DistributionTests: XCTestCase {
         let result = try await fixture.service.create(
             DistributionRepositoryCreateRequest(name: "private-packages"),
             name: "private-packages",
-            reporter: log.reporter,
+            reporter: log.reporter
         )
         guard case let .array(warnings)? = result["warnings"] else { return XCTFail("no warnings") }
         XCTAssertEqual(warnings.count, 1)
@@ -318,7 +318,7 @@ final class DistributionTests: XCTestCase {
         try FileManager.default.createDirectory(at: seed.workdir.appendingPathComponent("debs"), withIntermediateDirectories: true)
         let mine: [(String, String)] = [
             ("index.html", "old page\n"), ("README.md", "old readme\n"),
-            ("sileo-featured.json", "{\"banners\": []}\n"), ("debs/a_1_iphoneos-arm64.deb", "deb\n"),
+            ("sileo-featured.json", "{\"banners\": []}\n"), ("debs/a_1_iphoneos-arm64.deb", "deb\n")
         ]
         for (path, text) in mine {
             try Data(text.utf8).write(to: seed.workdir.appendingPathComponent(path))
@@ -380,7 +380,7 @@ final class DistributionTests: XCTestCase {
         for name in names {
             XCTAssertTrue(FileManager.default.contentsEqual(
                 atPath: fixture.project("packages").appendingPathComponent("debs/\(name)").path,
-                andPath: (name.hasSuffix("arm64e.deb") ? roothide : rootless).path,
+                andPath: (name.hasSuffix("arm64e.deb") ? roothide : rootless).path
             ))
         }
         XCTAssertEqual(try commits(in: bare), ["Publish com.example.tweak 1:1.0", "Set up the package repository"])
@@ -412,7 +412,7 @@ final class DistributionTests: XCTestCase {
         let request = try DistributionPublishRequest(
             files: [roothide.path, rootless.path],
             digests: [fixture.digest(roothide), fixture.digest(other)],
-            repository: "someone/packages",
+            repository: "someone/packages"
         )
         let (linked, files) = try fixture.service.preparePublish(request)
         do {
@@ -478,7 +478,7 @@ final class DistributionTests: XCTestCase {
         let built = try fixture.build("com.example.tweak", version: "1.0")
         let digest = try fixture.digest(built)
         let malformed: [[String]] = [
-            [], [digest, digest], ["sha256:" + String(repeating: "A", count: 64)], [String(digest.dropFirst(7))], ["sha256:12"],
+            [], [digest, digest], ["sha256:" + String(repeating: "A", count: 64)], [String(digest.dropFirst(7))], ["sha256:12"]
         ]
         for digests in malformed {
             XCTAssertThrowsError(try fixture.service.preparePublish(DistributionPublishRequest(files: [built.path], digests: digests))) {
@@ -486,12 +486,12 @@ final class DistributionTests: XCTestCase {
             }
         }
         XCTAssertThrowsError(try fixture.service.preparePublish(DistributionPublishRequest(
-            files: [built.path], digests: [digest], repository: "someone/elsewhere",
+            files: [built.path], digests: [digest], repository: "someone/elsewhere"
         ))) {
             XCTAssertEqual(($0 as? ApelinError)?.code, .conflict, "another repository than the one linked")
         }
         XCTAssertNoThrow(try fixture.service.preparePublish(DistributionPublishRequest(
-            files: [built.path], digests: [digest], repository: "Someone/Packages",
+            files: [built.path], digests: [digest], repository: "Someone/Packages"
         )), "GitHub's names take any case")
         XCTAssertNoThrow(try fixture.service.preparePublish(DistributionPublishRequest(files: [built.path])), "as the app sends it")
 
@@ -529,7 +529,7 @@ final class DistributionTests: XCTestCase {
         XCTAssertEqual(DistributionService.sourceURL(owner: "Someone", name: "someone.github.io"), "https://someone.github.io/")
         XCTAssertEqual(
             try DistributionService.packageFileName(package: "com.a.b", version: "2:1.0~beta+1", architecture: "iphoneos-arm64"),
-            "com.a.b_2%3a1.0~beta+1_iphoneos-arm64.deb",
+            "com.a.b_2%3a1.0~beta+1_iphoneos-arm64.deb"
         )
         XCTAssertThrowsError(try DistributionService.packageFileName(package: "../x", version: "1", architecture: "a"))
         XCTAssertThrowsError(try DistributionService.packageFileName(package: "x", version: "1 2", architecture: "a"))

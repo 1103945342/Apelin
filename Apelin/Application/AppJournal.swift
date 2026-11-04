@@ -24,7 +24,7 @@ enum AppJournal {
     static let redaction = LogRedaction(
         home: DataFolder.app.root.deletingLastPathComponent().deletingLastPathComponent().path,
         installRoot: RoothideRoot.containing(Bundle.main.bundlePath),
-        names: PrivateShapes.currentHostName().map { [$0] } ?? [],
+        names: PrivateShapes.currentHostName().map { [$0] } ?? []
     )
 
     /// Opens this launch's file, once, early in `didFinishLaunching`. In
@@ -57,7 +57,7 @@ enum AppJournal {
                 [*] \(redaction.redacted(folder.root.path))
             Environment: uid \(getuid()) gid \(getgid())
             """,
-            level: .info,
+            level: .info
         )
     }
 }

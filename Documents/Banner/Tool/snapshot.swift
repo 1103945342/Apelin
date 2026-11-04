@@ -20,7 +20,7 @@ let window = NSWindow(
     contentRect: NSRect(x: 0, y: 0, width: width, height: height),
     styleMask: [.borderless],
     backing: .buffered,
-    defer: false,
+    defer: false
 )
 let webView = WKWebView(frame: NSRect(x: 0, y: 0, width: width, height: height))
 window.contentView = webView

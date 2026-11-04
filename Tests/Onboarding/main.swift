@@ -57,24 +57,24 @@ import Foundation
         }
         let script: JSONValue = .object(["script": .string("apelin/build.sh")])
         let workspace: JSONValue = .object([
-            "projectID": .string("w"), "kind": .string("workspace"), "buildSystem": .string("external"),
+            "projectID": .string("w"), "kind": .string("workspace"), "buildSystem": .string("external")
         ])
         precondition(ProjectBuildMethod(manifest: workspace) == .missingScript, "An empty workspace has none")
         precondition(ProjectBuildMethod(manifest: .object([
-            "kind": .string("workspace"), "buildSystem": .string("external"), "external": script,
+            "kind": .string("workspace"), "buildSystem": .string("external"), "external": script
         ])) == .script, "A workspace that declares its script is built by it")
         precondition(ProjectBuildMethod(manifest: .object(["kind": .string("workspace"), "external": script])) == .script,
                      "A workspace from before buildSystem with a script")
         precondition(ProjectBuildMethod(manifest: .object(["kind": .string("workspace")])) == .missingScript,
                      "A workspace from before buildSystem has none")
         precondition(ProjectBuildMethod(manifest: .object([
-            "kind": .string("workspace"), "build": build,
+            "kind": .string("workspace"), "build": build
         ])) == .missingScript, "A workspace is built by its own tools, whatever it holds")
         precondition(ProjectBuildMethod(manifest: .object([
-            "kind": .string("tweak"), "buildSystem": .string("external"), "build": build,
+            "kind": .string("tweak"), "buildSystem": .string("external"), "build": build
         ])) == .missingScript, "An external build system is not apelin-build's")
         precondition(ProjectBuildMethod(manifest: .object([
-            "kind": .string("workspace"), "external": .object(["script": .string("")]),
+            "kind": .string("workspace"), "external": .object(["script": .string("")])
         ])) == .missingScript, "An empty script names nothing")
         precondition(ProjectBuildMethod(manifest: .object(["kind": .string("tweak")])) == .missingDescription,
                      "A manifest without a build has nothing to build")

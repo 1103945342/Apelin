@@ -39,7 +39,7 @@ final class ProjectCatalogMonitor {
             let source = DispatchSource.makeFileSystemObjectSource(
                 fileDescriptor: descriptor,
                 eventMask: [.write, .rename, .delete],
-                queue: .main,
+                queue: .main
             )
             source.setEventHandler { [weak self] in self?.changed() }
             source.setCancelHandler { close(descriptor) }

@@ -61,7 +61,7 @@ struct SessionJournalTests {
             other.write("Session", String(repeating: "x", count: 10))
             try FileManager.default.setAttributes(
                 [.modificationDate: Date(timeIntervalSinceNow: Double(index - 10) * 60)],
-                ofItemAtPath: other.url.path,
+                ofItemAtPath: other.url.path
             )
         }
         try Data("old".utf8).write(to: folder.appendingPathComponent("a.old.log"))
@@ -94,19 +94,19 @@ struct SessionJournalTests {
         let journal = SessionJournal(
             sessionID: "redacted",
             file: file,
-            redaction: JournalRedaction(home: "/var/mobile", installRoot: "/var/jb"),
+            redaction: JournalRedaction(home: "/var/mobile", installRoot: "/var/jb")
         )
         let key = "ghp_" + String(repeating: "a1", count: 18)
         journal.toolStarted(id: "call-1", name: "shell_run", arguments: .object([
             "command": .string("curl -H 'Authorization: Bearer \(key)' https://api.github.com"),
-            "cwd": .string("/var/mobile/Documents/wiki.qaq.apelin/Projects/Hello"),
+            "cwd": .string("/var/mobile/Documents/wiki.qaq.apelin/Projects/Hello")
         ]))
         journal.toolEnded(
             id: "call-1",
             name: "shell_run",
             result: AgentToolResult(content: [.text(TextContent(text: "token=\(key)\nmail me at someone@example.com"))]),
             isError: false,
-            runStopped: false,
+            runStopped: false
         )
         journal.runFailed("401 from https://user:hunter22@example.com with \(key)")
         journal.drain()
@@ -125,7 +125,7 @@ struct SessionJournalTests {
             "path": .string("/var/mobile/Documents/wiki.qaq.apelin/Projects/Hello/Sources/Tweak.m"),
             "content": .string(String(repeating: "x", count: 5000)),
             "headers": .object(["Authorization": .string("Bearer something"), "Accept": .string("text/html")]),
-            "max_tokens": .int(4000),
+            "max_tokens": .int(4000)
         ])
         let summary = redaction.arguments(arguments, tool: AgentToolName.fileWrite.rawValue)
         #expect(summary.utf8.count < 1024)
@@ -136,7 +136,7 @@ struct SessionJournalTests {
 
         let credential = redaction.arguments(
             .object(["host": .string("git.example.com"), "username": .string("me"), "token": .string("plain")]),
-            tool: AgentToolName.gitSaveCredential.rawValue,
+            tool: AgentToolName.gitSaveCredential.rawValue
         )
         #expect(!credential.contains("plain") && credential.contains("git.example.com"), "\(credential)")
 
@@ -173,9 +173,9 @@ struct SessionJournalTests {
         faux.setResponses([
             .message(fauxAssistantMessage(
                 blocks: [fauxToolCall(name: "file_read", arguments: ["reason": "Read it", "path": "README.md"], id: "call-read")],
-                stopReason: .toolUse,
+                stopReason: .toolUse
             )),
-            .message(fauxAssistantMessage("It says hello.")),
+            .message(fauxAssistantMessage("It says hello."))
         ])
         let session = try await Self.open(home, faux: faux)
         try await session.prompt("What does the README say?")
@@ -210,7 +210,7 @@ struct SessionJournalTests {
             Self.removal(id: "call-declined"),
             .message(fauxAssistantMessage("Left it installed.")),
             Self.removal(id: "call-stopped"),
-            .message(fauxAssistantMessage("never reached")),
+            .message(fauxAssistantMessage("never reached"))
         ])
         let session = try await Self.open(home, faux: faux)
         let stream = try await session.events(afterSeq: 0)
@@ -261,14 +261,14 @@ struct SessionJournalTests {
         refused.failure = ProviderFailure(
             message: #"{"detail":"Unsupported parameter: metadata"}"#,
             httpStatus: 400,
-            requestId: "req-26",
+            requestId: "req-26"
         )
         faux.setResponses([
             .message(fauxAssistantMessage("First: " + long)),
             .message(fauxAssistantMessage("Second: " + long)),
             .message(fauxAssistantMessage("Third: " + long)),
             .message(refused),
-            .message(refused),
+            .message(refused)
         ])
         let session = try await Self.open(home, faux: faux)
         let stream = try await session.events(afterSeq: 0)
@@ -324,7 +324,7 @@ struct SessionJournalTests {
             messages: messages,
             model: model,
             sessionId: "native",
-            config: journal.observingCompaction(refusing),
+            config: journal.observingCompaction(refusing)
         )
         guard case let .failure(.failed(reason)) = result else {
             Issue.record("the refused compaction went on: \(result)")
@@ -401,7 +401,7 @@ struct SessionJournalTests {
         let native: NativeCompactionFn = { model, _, _, _ in
             NativeCompactionResult(
                 summary: "The user built a tweak.",
-                payload: NativeCompactionPayload(model: model, items: [.string("opaque")]),
+                payload: NativeCompactionPayload(model: model, items: [.string("opaque")])
             )
         }
         let long = String(repeating: "The build log says the hook loaded. ", count: 1200)
@@ -420,7 +420,7 @@ struct SessionJournalTests {
                 messages: messages,
                 model: model,
                 sessionId: "native",
-                config: journal.observingCompaction(AgentContextCompactionConfig(nativeCompaction: native)),
+                config: journal.observingCompaction(AgentContextCompactionConfig(nativeCompaction: native))
             )
             switch result {
             case let .success(replacement):
@@ -432,7 +432,7 @@ struct SessionJournalTests {
                     .compacted(messagesCompacted: replacement.messagesCompacted, hasRunningTasksLedger: false),
                     usage: usage,
                     nativeSummary: !tooLarge && recap.nativeCompaction != nil,
-                    stopped: false,
+                    stopped: false
                 )
             case let .failure(failure):
                 journal.compactionEnded(failure.outcome, usage: usage, nativeSummary: false, stopped: false)
@@ -510,7 +510,7 @@ struct SessionJournalTests {
     private static func open(
         _ home: TemporaryHome,
         faux: FauxProviderRegistration,
-        id: String = UUID().uuidString,
+        id: String = UUID().uuidString
     ) async throws -> AgentSession {
         try await AgentSession(
             configuration: AgentSessionConfiguration(
@@ -518,11 +518,11 @@ struct SessionJournalTests {
                 project: home.project,
                 provider: .registered(faux.getModel()),
                 approval: ApprovalPolicy(mode: .confirm),
-                dataRoot: home.dataRoot,
+                dataRoot: home.dataRoot
             ),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            credentials: DeliveredCredentialSource(),
+            credentials: DeliveredCredentialSource()
         )
     }
 
@@ -531,16 +531,16 @@ struct SessionJournalTests {
             blocks: [fauxToolCall(
                 name: "apelin_package_remove",
                 arguments: ["reason": "Remove it", "installation_id": "inst-1"],
-                id: id,
+                id: id
             )],
-            stopReason: .toolUse,
+            stopReason: .toolUse
         ))
     }
 
     private static func journal(of session: AgentSession, in home: TemporaryHome) throws -> String {
         try String(
             contentsOf: home.dataRoot.agentJournals.appendingPathComponent(session.id + ".log"),
-            encoding: .utf8,
+            encoding: .utf8
         )
     }
 
@@ -550,7 +550,7 @@ struct SessionJournalTests {
 
     /// The outcome the next `compactionFinished` reports, after its start.
     private static func compaction(
-        from events: inout AsyncStream<SessionEventRecord>.Iterator,
+        from events: inout AsyncStream<SessionEventRecord>.Iterator
     ) async -> AgentCompactionResult? {
         var started = false
         while let record = await events.next() {

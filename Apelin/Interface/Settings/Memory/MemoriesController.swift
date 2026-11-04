@@ -55,7 +55,7 @@ final class MemoriesController: TableController {
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             systemItem: .add,
-            primaryAction: UIAction { [weak self] _ in self?.open(nil) },
+            primaryAction: UIAction { [weak self] _ in self?.open(nil) }
         )
         navigationItem.rightBarButtonItem?.accessibilityLabel = String(localized: "Add Memory")
         navigationItem.rightBarButtonItem?.isEnabled = false
@@ -98,7 +98,7 @@ final class MemoriesController: TableController {
                 guard !Task.isCancelled, let self else { return }
                 let names = Dictionary(
                     projects.compactMap { project in project.projectID.map { ($0, project.displayTitle) } },
-                    uniquingKeysWith: { first, _ in first },
+                    uniquingKeysWith: { first, _ in first }
                 )
                 let renamed = Set(names.keys.filter { dataSource.projectNames[$0] != names[$0] })
                     .union(dataSource.projectNames.keys.filter { names[$0] == nil })
@@ -119,7 +119,7 @@ final class MemoriesController: TableController {
         let oldRecords = Dictionary(uniqueKeysWithValues: (memories?.records ?? []).map { ($0.id, $0) })
         let changedIDs = Set(
             value.records.filter { oldRecords[$0.id] != $0 && !renamedProjects.contains($0.projectID ?? "") }
-                .map(\.id),
+                .map(\.id)
         )
         let changed = memories?.records != value.records || !renamedProjects.isEmpty
         memories = value
@@ -135,7 +135,7 @@ final class MemoriesController: TableController {
             snapshot.appendSections([.project(id)])
             snapshot.appendItems(
                 value.records.filter { $0.projectID == id }.map { .memory($0.id) },
-                toSection: .project(id),
+                toSection: .project(id)
             )
         }
         if value.records.isEmpty {
@@ -144,7 +144,7 @@ final class MemoriesController: TableController {
         tableView.backgroundView = value.records.isEmpty ? EmptyStateView(
             symbolName: "brain",
             title: String(localized: "No Memories Yet"),
-            text: String(localized: "Tap “+” to add a memory."),
+            text: String(localized: "Tap “+” to add a memory.")
         ) : nil
         snapshot.reconfigureItems(snapshot.itemIdentifiers.filter {
             guard case let .memory(id) = $0 else { return false }
@@ -166,7 +166,7 @@ final class MemoriesController: TableController {
         guard let memories else { return }
         navigationController?.pushViewController(
             MemoryEditorController(store: store, record: record, revision: memories.revision),
-            animated: true,
+            animated: true
         )
     }
 
@@ -180,12 +180,12 @@ final class MemoriesController: TableController {
 
     override func tableView(
         _: UITableView,
-        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
     ) -> UISwipeActionsConfiguration? {
         guard case let .memory(id)? = dataSource.itemIdentifier(for: indexPath), let memories else { return nil }
         let action = UIContextualAction(
             style: .destructive,
-            title: String(localized: "Delete"),
+            title: String(localized: "Delete")
         ) { [weak self] _, _, complete in
             guard let self else { complete(false); return }
             let store = store

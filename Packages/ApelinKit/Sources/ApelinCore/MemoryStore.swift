@@ -53,7 +53,7 @@ public struct MemoryStore: Sendable {
     public func save(
         _ record: MemoryRecord,
         replacing existingID: String? = nil,
-        revision: String,
+        revision: String
     ) throws -> MemorySnapshot {
         try locked { directory in
             var snapshot = try read(in: directory)
@@ -63,7 +63,7 @@ public struct MemoryStore: Sendable {
                 id: record.id,
                 title: record.title.trimmingCharacters(in: .whitespacesAndNewlines),
                 body: record.body.trimmingCharacters(in: .whitespacesAndNewlines),
-                projectID: record.projectID,
+                projectID: record.projectID
             )
             if let existingID {
                 guard existingID == record.id, let index = records.firstIndex(where: { $0.id == existingID }),
@@ -89,7 +89,7 @@ public struct MemoryStore: Sendable {
             }
             let snapshot = MemorySnapshot(
                 revision: UUID().uuidString.lowercased(),
-                records: previous.records.filter { $0.id != id },
+                records: previous.records.filter { $0.id != id }
             )
             try write(snapshot, in: directory)
             return snapshot

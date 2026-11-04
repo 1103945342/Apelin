@@ -28,7 +28,7 @@ struct ForcePushToolTests {
         remote: theirs,
         pushURL: url,
         remoteOnly: [GitCommitSummary(commit: theirs, subject: "Theirs"), GitCommitSummary(commit: older, subject: "Older")],
-        remoteOnlyCount: 2,
+        remoteOnlyCount: 2
     )
 
     private static let force = ForcePushApproval(
@@ -40,7 +40,7 @@ struct ForcePushToolTests {
         localCommit: mine,
         localSubject: "Rewrite the clock",
         overwritten: diverged.remoteOnly,
-        overwrittenCount: 2,
+        overwrittenCount: 2
     )
 
     private static let arguments: JSONValue = ["force_with_lease": true]

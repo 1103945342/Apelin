@@ -54,7 +54,7 @@ enum AgentHandler: DomainHandler {
                         table: .shared,
                         registry: host.registry,
                         home: host.home,
-                        state: host.stateDirectory,
+                        state: host.stateDirectory
                     )
                 }
                 // The app's: the sessions it may follow, every project's or one's.
@@ -63,12 +63,12 @@ enum AgentHandler: DomainHandler {
                     projectID = try AgentProjects.resolve(
                         home: host.home,
                         projectID: list.projectID,
-                        projectName: list.projectName,
+                        projectName: list.projectName
                     ).id
                 }
                 return await AgentListResponse(sessions: AgentSessionTable.shared.summaries(
                     registry: host.registry,
-                    projectID: projectID,
+                    projectID: projectID
                 ))
             }
         case .agentClose:
@@ -138,7 +138,7 @@ enum AgentHandler: DomainHandler {
                 let reason = (error as? ApelinError)?.message ?? String(describing: error)
                 throw ApelinError(
                     .conflict,
-                    "the project's conversation “\(entry.title ?? entry.sessionID)” could not be closed (\(reason)), so the project was not deleted",
+                    "the project's conversation “\(entry.title ?? entry.sessionID)” could not be closed (\(reason)), so the project was not deleted"
                 )
             }
             await forgetClosed(entry.sessionID, host: host)
@@ -177,7 +177,7 @@ enum AgentHandler: DomainHandler {
     /// nil for the app. Any other caller is refused.
     private static func callerSession(
         _ request: HostRequest,
-        host: SessionHost,
+        host: SessionHost
     ) async throws -> AgentSessionTable.Entry? {
         switch request.caller {
         case .app:
@@ -230,7 +230,7 @@ enum AgentHandler: DomainHandler {
         _ request: HostRequest,
         _ asked: AgentOpenRequest,
         sessionID: String,
-        host: SessionHost,
+        host: SessionHost
     ) async -> HostReply {
         let opener: AgentSessionTable.Entry?
         let open: AgentOpenRequest
@@ -249,7 +249,7 @@ enum AgentHandler: DomainHandler {
                     guard approved else {
                         throw ApelinError(
                             .denied,
-                            "approval required: opening a conversation in \(target.name) needs the user's approval of this call",
+                            "approval required: opening a conversation in \(target.name) needs the user's approval of this call"
                         )
                     }
                 }
@@ -263,7 +263,7 @@ enum AgentHandler: DomainHandler {
                     home: host.home,
                     projectID: open.projectID,
                     projectName: open.projectName,
-                    temporaryID: open.temporaryID,
+                    temporaryID: open.temporaryID
                 )
             }
         } catch {
@@ -301,7 +301,7 @@ enum AgentHandler: DomainHandler {
             guard await AgentSessionTable.shared.reserveChild(project: project.id, registry: host.registry) else {
                 return request.fail(ApelinError(
                     .conflict,
-                    "\(AgentConversations.maximumOpenChildren) conversations agents opened are already running in this project; stop one first",
+                    "\(AgentConversations.maximumOpenChildren) conversations agents opened are already running in this project; stop one first"
                 ))
             }
         }
@@ -344,7 +344,7 @@ enum AgentHandler: DomainHandler {
             AgentSessionLineage.save(
                 AgentSessionLineage.Record(parentSessionID: opener.sessionID, depth: opener.depth + 1),
                 session: sessionID,
-                state: host.stateDirectory,
+                state: host.stateDirectory
             )
         }
         // A session the app opens again keeps the opener it had, after a
@@ -359,9 +359,9 @@ enum AgentHandler: DomainHandler {
                 title: title ?? existing?.title,
                 createdAt: Date(),
                 parentSessionID: opener?.sessionID ?? existing?.parentSessionID ?? saved?.parentSessionID,
-                depth: opener.map { $0.depth + 1 } ?? existing?.depth ?? saved?.depth ?? 0,
+                depth: opener.map { $0.depth + 1 } ?? existing?.depth ?? saved?.depth ?? 0
             ),
-            releasingReservation: opener != nil,
+            releasingReservation: opener != nil
         )
         if let opener, let prompt = open.prompt {
             await host.registry.append(
@@ -372,8 +372,8 @@ enum AgentHandler: DomainHandler {
                     task: handle,
                     title: open.title,
                     prompt: prompt,
-                    project: project,
-                ),
+                    project: project
+                )
             )
         }
         return (.success(request.requestID, AgentOpenResponse(sessionID: sessionID, task: handle)), [])
@@ -396,7 +396,7 @@ enum AgentHandler: DomainHandler {
                     asked,
                     sender: sender,
                     target: target,
-                    descriptorCount: request.descriptors.count,
+                    descriptorCount: request.descriptors.count
                 )
                 // Another project's conversation: under Confirm, the user's
                 // approval of exactly this message, spent here.
@@ -407,7 +407,7 @@ enum AgentHandler: DomainHandler {
                     guard approved else {
                         throw ApelinError(
                             .denied,
-                            "approval required: a message to a conversation of \(target.project.name) needs the user's approval of this call",
+                            "approval required: a message to a conversation of \(target.project.name) needs the user's approval of this call"
                         )
                     }
                 }
@@ -445,7 +445,7 @@ enum AgentHandler: DomainHandler {
                     caller: caller,
                     table: .shared,
                     registry: host.registry,
-                    home: host.home,
+                    home: host.home
                 )
             }
         } catch {
@@ -460,7 +460,7 @@ enum AgentHandler: DomainHandler {
         _ request: HostRequest,
         _: R.Type,
         host: SessionHost,
-        sessionID: (R) -> String,
+        sessionID: (R) -> String
     ) async -> HostReply {
         let id: String
         do {
@@ -469,7 +469,7 @@ enum AgentHandler: DomainHandler {
                 try await AgentConversationRules.mayStop(
                     AgentSessionTable.shared.entry(id),
                     caller: caller,
-                    sessionID: id,
+                    sessionID: id
                 )
             }
         } catch {
@@ -484,7 +484,7 @@ enum AgentHandler: DomainHandler {
         _ wire: WireRequest,
         to id: String,
         host: SessionHost,
-        prepare: () async -> Void = {},
+        prepare: () async -> Void = {}
     ) async -> HostReply {
         guard await AgentSessionTable.shared.entry(id) != nil, let worker = await host.workers.existing(.agent, instance: id), !worker.channel.isClosed else {
             return request.fail(ApelinError(.notFound, "This chat is no longer running."))
@@ -494,7 +494,7 @@ enum AgentHandler: DomainHandler {
             return try await worker.call(wire, descriptors: request.descriptors)
         } catch {
             return request.fail(
-                (error as? ApelinError) ?? ApelinError(.unavailable, "This chat could not be reached. Try again."),
+                (error as? ApelinError) ?? ApelinError(.unavailable, "This chat could not be reached. Try again.")
             )
         }
     }
@@ -516,7 +516,7 @@ enum AgentHandler: DomainHandler {
                 registry: host.registry,
                 ledger: host.approvals,
                 forward: relay,
-                accepted: { reply in (try? reply.0.result.get()) != nil },
+                accepted: { reply in (try? reply.0.result.get()) != nil }
             )
         } catch {
             return request.fail(error)
@@ -543,7 +543,7 @@ enum AgentHandler: DomainHandler {
                 entry: entry,
                 registry: host.registry,
                 ledger: host.approvals,
-                installRoot: host.installRoot,
+                installRoot: host.installRoot
             )
             return try await AgentRunCode.run(
                 run,
@@ -551,7 +551,7 @@ enum AgentHandler: DomainHandler {
                 project: entry.project,
                 installRoot: host.installRoot,
                 home: host.home,
-                stopsSeen: stopsSeen,
+                stopsSeen: stopsSeen
             )
         }
     }

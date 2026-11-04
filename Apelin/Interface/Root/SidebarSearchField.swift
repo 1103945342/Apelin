@@ -43,7 +43,7 @@ final class SidebarSearchField: UIView {
                 onChange?("")
                 field.becomeFirstResponder()
             },
-            for: .touchUpInside,
+            for: .touchUpInside
         )
     }
 
@@ -92,7 +92,7 @@ final class SidebarSearchField: UIView {
                 updateClearButton()
                 onChange?(text)
             },
-            for: .editingChanged,
+            for: .editingChanged
         )
         field.delegate = self
         // The capsule is one control to VoiceOver, not a box around one.

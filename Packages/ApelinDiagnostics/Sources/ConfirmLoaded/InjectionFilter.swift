@@ -61,7 +61,7 @@ public struct InjectionFilter: Hashable, Sendable {
                 classes: [],
                 modeAny: false,
                 coreFoundationVersion: nil,
-                hasFilter: false,
+                hasFilter: false
             )
             return
         }
@@ -88,7 +88,7 @@ public struct InjectionFilter: Hashable, Sendable {
             classes: strings("Classes"),
             modeAny: (filter["Mode"] as? String) == "Any",
             coreFoundationVersion: versions,
-            hasFilter: true,
+            hasFilter: true
         )
     }
 
@@ -98,7 +98,7 @@ public struct InjectionFilter: Hashable, Sendable {
         classes: [String],
         modeAny: Bool,
         coreFoundationVersion: (minimum: Double, maximum: Double?)?,
-        hasFilter: Bool,
+        hasFilter: Bool
     ) {
         self.bundles = bundles
         self.executables = executables
@@ -128,7 +128,7 @@ public struct FilterTarget: Codable, Hashable, Sendable {
     public init(
         bundleIdentifier: String?,
         executableName: String,
-        coreFoundationVersion: Double? = nil,
+        coreFoundationVersion: Double? = nil
     ) {
         self.bundleIdentifier = bundleIdentifier
         self.executableName = executableName
@@ -234,6 +234,6 @@ extension InjectionFilter {
     private static let appOnlyIdentifiers: Set<String> = [
         "com.apple.springboard", "com.apple.Preferences", "com.apple.mobilesafari", "com.apple.MobileSMS",
         "com.apple.mobilephone", "com.apple.mobilemail", "com.apple.camera", "com.apple.mobileslideshow",
-        "com.apple.AppStore", "com.apple.Music", "com.apple.mobilenotes", "com.apple.MobileAddressBook",
+        "com.apple.AppStore", "com.apple.Music", "com.apple.mobilenotes", "com.apple.MobileAddressBook"
     ]
 }

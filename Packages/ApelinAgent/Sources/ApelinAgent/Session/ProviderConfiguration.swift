@@ -67,7 +67,7 @@ public struct ResolvedProvider: Sendable {
     public init(
         model: Model,
         authResolver: (@Sendable (Model, String?) async throws -> ResolvedProviderAuth?)?,
-        credentials: OAuthCredentials? = nil,
+        credentials: OAuthCredentials? = nil
     ) {
         self.model = model
         self.authResolver = authResolver
@@ -93,7 +93,7 @@ public enum ProviderResolver {
     /// the same model capabilities used when verifying the account.
     public static func resolve(
         _ configuration: ProviderConfiguration,
-        credentials: any CredentialSource,
+        credentials: any CredentialSource
     ) async throws -> ResolvedProvider {
         let stored = try await storedCredentials(configuration, in: credentials)
         guard let storeID = configuration.storeID else {
@@ -109,7 +109,7 @@ public enum ProviderResolver {
         guard let resolved = try await ProviderRegistration.resolve(
             storeID: storeID,
             manager: manager,
-            modelOverride: configuration.modelID,
+            modelOverride: configuration.modelID
         ) else {
             throw ProviderResolutionError.missingCredentials(storeID)
         }
@@ -120,7 +120,7 @@ public enum ProviderResolver {
     /// none; missing, it is an error.
     static func storedCredentials(
         _ configuration: ProviderConfiguration,
-        in credentials: any CredentialSource,
+        in credentials: any CredentialSource
     ) async throws -> OAuthCredentials? {
         guard let storeID = configuration.storeID else { return nil }
         guard let stored = try await credentials.credentials(for: storeID) else {

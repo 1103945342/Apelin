@@ -44,7 +44,7 @@ enum XPCEnvelope {
             operation: operation,
             protocolVersion: version,
             requestID: string(Wire.requestIDKey, in: message) ?? "",
-            payload: data(in: message),
+            payload: data(in: message)
         )
         return .success((request, descriptors(in: message)))
     }
@@ -76,10 +76,10 @@ enum XPCEnvelope {
                     requestID,
                     ApelinError(
                         .unavailable,
-                        String(localized: "The connection to Apelin’s background service closed. Try again."),
-                    ),
+                        String(localized: "The connection to Apelin’s background service closed. Try again.")
+                    )
                 ),
-                [],
+                []
             )
         }
         if xpc_dictionary_get_bool(message, Wire.okKey) {
@@ -91,10 +91,10 @@ enum XPCEnvelope {
                     requestID,
                     ApelinError(
                         .internal,
-                        String(localized: "Apelin’s background service returned an incomplete response. Try again."),
-                    ),
+                        String(localized: "Apelin’s background service returned an incomplete response. Try again.")
+                    )
                 ),
-                [],
+                []
             )
         }
         let code = string(Wire.errorCodeKey, in: detail).flatMap(ApelinError.Code.init(rawValue:)) ?? .internal
@@ -113,7 +113,7 @@ enum XPCEnvelope {
                 dictionary,
                 Wire.payloadKey,
                 bytes.baseAddress ?? UnsafeRawPointer(bitPattern: 1)!,
-                bytes.count,
+                bytes.count
             )
         }
     }

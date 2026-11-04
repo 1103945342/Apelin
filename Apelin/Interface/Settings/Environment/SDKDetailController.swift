@@ -18,7 +18,7 @@ final class SDKDetailController: TableController {
 
     private lazy var dataSource = TableDataSource<Int, Field, Row>(
         tableView: tableView,
-        identifier: { $0.id },
+        identifier: { $0.id }
     ) { [weak self] _, _, row in
         self?.cell(for: row)
     }
@@ -34,16 +34,16 @@ final class SDKDetailController: TableController {
             },
             UIAction(
                 title: String(localized: "Export…"),
-                image: UIImage(systemName: "square.and.arrow.up"),
+                image: UIImage(systemName: "square.and.arrow.up")
             ) { [weak self] _ in
                 self?.export()
             },
             UIAction(
                 title: String(localized: "Remove"),
                 image: UIImage(systemName: "trash"),
-                attributes: .destructive,
-            ) { [weak self] _ in self?.confirmRemoval() },
-        ]),
+                attributes: .destructive
+            ) { [weak self] _ in self?.confirmRemoval() }
+        ])
     ).then { $0.accessibilityLabel = String(localized: "More") }
 
     init(record: SDKRecord) {
@@ -84,7 +84,7 @@ final class SDKDetailController: TableController {
         navigationItem.rightBarButtonItem = moreItem
 
         var about: [Row] = [
-            Row(id: .version, name: String(localized: "Version"), value: record.version),
+            Row(id: .version, name: String(localized: "Version"), value: record.version)
         ]
         if let swift = Self.swiftVersion(of: record) {
             about.append(Row(id: .swiftInterfaces, name: String(localized: "Swift Interfaces"), value: swift))
@@ -127,7 +127,7 @@ final class SDKDetailController: TableController {
             title: "Remove the SDK?",
             message: "This deletes the SDK files. SDKs used by a project cannot be removed.",
             confirmTitle: "Remove",
-            destructive: true,
+            destructive: true
         ) { [weak self] in
             self?.remove()
         }
@@ -136,14 +136,14 @@ final class SDKDetailController: TableController {
     override func tableView(
         _: UITableView,
         contextMenuConfigurationForRowAt indexPath: IndexPath,
-        point _: CGPoint,
+        point _: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard let row = dataSource.value(at: indexPath) else { return nil }
         let text = row.value.isEmpty ? row.name : row.value
         return UIContextMenuConfiguration(actionProvider: { _ in
             UIMenu(children: [UIAction(
                 title: String(localized: "Copy"),
-                image: UIImage(systemName: "doc.on.doc"),
+                image: UIImage(systemName: "doc.on.doc")
             ) { _ in
                 UIPasteboard.general.string = text
             }])
@@ -157,7 +157,7 @@ final class SDKDetailController: TableController {
             id: record.id,
             name: Self.displayName(of: record),
             from: self,
-            anchor: moreItem,
+            anchor: moreItem
         )
     }
 
@@ -169,7 +169,7 @@ final class SDKDetailController: TableController {
                     title: String(localized: "Removing SDK"),
                     message: Self.displayName(of: record),
                     cancellable: false,
-                    from: self,
+                    from: self
                 ) { _ in
                     try await ApelinService.app.sdkRemove(id: record.id)
                 }

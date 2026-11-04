@@ -13,7 +13,7 @@ struct PBZXTests {
             compression_encode_buffer(
                 out.bindMemory(to: UInt8.self).baseAddress!, out.count,
                 input.bindMemory(to: UInt8.self).baseAddress!, input.count,
-                nil, COMPRESSION_LZMA,
+                nil, COMPRESSION_LZMA
             )
         } }
         precondition(count > 0)

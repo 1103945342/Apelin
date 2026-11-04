@@ -28,7 +28,7 @@ final class GitRepositoryTests: XCTestCase {
         try write("hello\n", "README", in: root)
         XCTAssertEqual(try repository.status(), [
             GitStatusItem(path: "README", index: "?", worktree: "?"),
-            GitStatusItem(path: "Sources/main.c", index: "?", worktree: "?"),
+            GitStatusItem(path: "Sources/main.c", index: "?", worktree: "?")
         ])
         XCTAssertTrue(try repository.diff().contains("+hello"), "untracked content shows")
         let one = try repository.diff(path: "README")
@@ -44,7 +44,7 @@ final class GitRepositoryTests: XCTestCase {
         try repository.unstage(["README"])
         XCTAssertEqual(try repository.status(), [
             GitStatusItem(path: "README", index: "?", worktree: "?"),
-            GitStatusItem(path: "Sources/main.c", index: "A", worktree: " "),
+            GitStatusItem(path: "Sources/main.c", index: "A", worktree: " ")
         ])
 
         let first = try repository.commit(message: "First", author: author)

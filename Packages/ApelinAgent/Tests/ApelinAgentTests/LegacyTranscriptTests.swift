@@ -17,11 +17,11 @@ struct LegacyTranscriptTests {
         let search = "mcp__docs__search"
         var tools = [
             Tool(name: "read_file", description: "Read a project file.", parameters: schema),
-            Tool(name: "build", description: "Build the project.", parameters: schema),
+            Tool(name: "build", description: "Build the project.", parameters: schema)
         ]
         var calls = [fauxText("Reading it."), fauxToolCall(name: "read_file", arguments: ["path": "Sources/Tweak.m"], id: "call-1")]
         var results: [Message] = [
-            .toolResult(ToolResultMessage(toolCallId: "call-1", toolName: "read_file", content: [.text(TextContent(text: "build_id"))])),
+            .toolResult(ToolResultMessage(toolCallId: "call-1", toolName: "read_file", content: [.text(TextContent(text: "build_id"))]))
         ]
         if mcp {
             tools.append(Tool(name: search, description: "Search the docs.", parameters: schema))
@@ -31,9 +31,9 @@ struct LegacyTranscriptTests {
         return [
             .system(SystemMessage(toolsAdded: tools)),
             .user(UserMessage(text: "What does run_code do?")),
-            .assistant(fauxAssistantMessage(blocks: calls, stopReason: .toolUse)),
+            .assistant(fauxAssistantMessage(blocks: calls, stopReason: .toolUse))
         ] + results + [
-            .system(SystemMessage(toolsRemoved: ["build"])),
+            .system(SystemMessage(toolsRemoved: ["build"]))
         ]
     }
 
@@ -62,7 +62,7 @@ struct LegacyTranscriptTests {
             "file_read", "apelin_project_build", "mcp__docs__search",
             "file_read", "mcp__docs__search",
             "file_read", "mcp__docs__search",
-            "apelin_project_build",
+            "apelin_project_build"
         ])
         #expect(migrated[1] == recorded[1], "the user's words are theirs")
         guard case let .toolResult(result) = migrated[3], case let .text(text)? = result.content.first else {
@@ -91,7 +91,7 @@ struct LegacyTranscriptTests {
             project: home.project,
             provider: .registered(faux.getModel()),
             approval: ApprovalPolicy(mode: .relaxed),
-            dataRoot: home.dataRoot,
+            dataRoot: home.dataRoot
         )
         let log = try SessionEventLog(sessionsRoot: home.dataRoot.sessions, sessionID: configuration.id)
         try await log.writeTranscript(Self.recorded(mcp: false))

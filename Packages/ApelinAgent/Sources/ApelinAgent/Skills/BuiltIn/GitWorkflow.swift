@@ -112,6 +112,6 @@ extension BuiltInSkills {
         - A commit is routine: a short clause at most ("committed as Hook the
           clock"), never a list of files.
         - Say plainly when you leave something uncommitted, and why.
-        """,
+        """
     )
 }

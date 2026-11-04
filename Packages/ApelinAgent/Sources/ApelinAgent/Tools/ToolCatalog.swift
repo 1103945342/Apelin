@@ -201,7 +201,7 @@ public extension AgentToolName {
         case .memoryList:
             Schema.object([
                 "project": Self.memoryProjectParameter,
-                "all_projects": Schema.boolean("Every record, all chats' and every project's, each project's with its folder and name, or missing when no project has its projectID now. Default false."),
+                "all_projects": Schema.boolean("Every record, all chats' and every project's, each project's with its folder and name, or missing when no project has its projectID now. Default false.")
             ], required: [])
         case .todoList:
             Schema.object([:], required: [])
@@ -213,74 +213,74 @@ public extension AgentToolName {
                         "title": Schema.string("What is to be done, one line, in the user's language."),
                         "status": Schema.enumeration(
                             ["pending", "inProgress", "completed", "blocked"],
-                            description: "pending: not started. inProgress: being worked on now. completed: done and verified. blocked: tried and abandoned, or waiting on the user.",
-                        ),
+                            description: "pending: not started. inProgress: being worked on now. completed: done and verified. blocked: tried and abandoned, or waiting on the user."
+                        )
                     ], required: ["title", "status"]),
-                    description: "The whole list, in the order it is worked through.",
-                ),
+                    description: "The whole list, in the order it is worked through."
+                )
             ], required: ["items"])
         case .conversationList:
             Schema.object([
-                "project": Self.listedProjectParameter,
+                "project": Self.listedProjectParameter
             ], required: [])
         case .conversationCreate:
             Schema.object([
                 "prompt": Schema.string("The first message, which the other agent reads as the user's: the task, the files involved, what to deliver, and what to leave alone."),
                 "title": Schema.string("A short name for the sidebar, in the user's language."),
-                "project": Self.projectParameter,
+                "project": Self.projectParameter
             ], required: ["prompt"])
         case .conversationSend:
             Schema.object([
                 "session_id": Schema.string("Session id from apelin_conversation_create or apelin_conversation_list."),
                 "text": Schema.string("The message, which that agent reads as the user's."),
-                "project": Self.projectParameter,
+                "project": Self.projectParameter
             ], required: ["session_id", "text"])
         case .conversationRead:
             Schema.object([
                 "session_id": Schema.string("Session id from apelin_conversation_create or apelin_conversation_list."),
                 "after_seq": Schema.integer("Only messages after this point: last_seq from the previous read. Omit for the whole conversation."),
                 "wait_seconds": Schema.integer("Wait up to this long, 0 to \(ConversationReadToolRequest.maximumWaitSeconds), for a turn after after_seq to finish; to wait longer, read again. The user sees nothing new while you wait, so for long work wait about 60 at a time. Default 0."),
-                "project": Self.projectParameter,
+                "project": Self.projectParameter
             ], required: ["session_id"])
         case .toolchainSetup:
             Schema.object([
                 "version": Schema.string("A release from apelin_toolchain_list's available, e.g. 16.4. Omit for the newest this device can take."),
                 "product_id": Schema.string("Or the release's product id from apelin_toolchain_list."),
-                "swift": Schema.boolean("Also set up Swift, where the release offers it on this device. Default false."),
+                "swift": Schema.boolean("Also set up Swift, where the release offers it on this device. Default false.")
             ], required: [])
         case .sdkImport:
             Schema.object([
                 "version": Schema.string("An SDK version from apelin_sdk_list's available, e.g. 17.5."),
-                "source": Schema.string("The source's name from apelin_sdk_list; omit for the first enabled source that offers the version."),
+                "source": Schema.string("The source's name from apelin_sdk_list; omit for the first enabled source that offers the version.")
             ], required: ["version"])
         case .toolchainSelfTest:
             Schema.object([
-                "toolchain_id": Schema.string("A registered toolchain's id from apelin_toolchain_list."),
+                "toolchain_id": Schema.string("A registered toolchain's id from apelin_toolchain_list.")
             ], required: ["toolchain_id"])
         case .projectSetEnvironment:
             Schema.object([
                 "toolchain_id": Schema.string("A registered toolchain's id; omit to keep the project's."),
-                "sdk_id": Schema.string("A registered SDK's id; omit to keep the project's."),
+                "sdk_id": Schema.string("A registered SDK's id; omit to keep the project's.")
             ], required: [])
         case .conversationStop:
             Schema.object([
                 "session_id": Schema.string("Session id of a conversation you opened."),
-                "close": Schema.boolean("Also end the conversation, freeing its place."),
+                "close": Schema.boolean("Also end the conversation, freeing its place.")
             ], required: ["session_id"])
         case .gitSetAuthor:
             Schema.object([
                 "name": Schema.string("Author name; empty clears it."),
-                "email": Schema.string("Author email; empty clears it."),
+                "email": Schema.string("Author email; empty clears it.")
             ], required: [])
         case .gitSaveCredential:
             Schema.object([
                 "host": Schema.string("Host name, with :port only if the remote URL names one, e.g. github.com. No scheme or path."),
                 "username": Schema.string("The account's username."),
-                "token": Schema.string("The personal access token, used as the HTTPS password."),
+                "token": Schema.string("The personal access token, used as the HTTPS password.")
             ], required: ["host", "username", "token"])
         case .gitRemoveCredential:
             Schema.object([
-                "host": Schema.string("Host name as apelin_git_read_settings lists it."),
+                "host": Schema.string("Host name as apelin_git_read_settings lists it.")
             ], required: ["host"])
         case .gitCreateRepository:
             Schema.object([
@@ -288,80 +288,80 @@ public extension AgentToolName {
                 "visibility": .object([
                     "type": "string",
                     "enum": .array(GitRepositoryVisibility.allCases.map { .string($0.rawValue) }),
-                    "description": "public (anyone can see it) or private (only people given access), as the user chose; ask them when they have not said.",
+                    "description": "public (anyone can see it) or private (only people given access), as the user chose; ask them when they have not said."
                 ]),
                 "owner": Schema.string("The login of an organization to create it in, as the user named it; omit for the user's own account."),
-                "description": Schema.string("One line GitHub shows under the name, at most \(GitRepositoryCreateRequest.maximumDescriptionLength) characters. Optional."),
+                "description": Schema.string("One line GitHub shows under the name, at most \(GitRepositoryCreateRequest.maximumDescriptionLength) characters. Optional.")
             ], required: ["name", "visibility"])
         case .gitCreateIssue:
             Schema.object([
                 "repository": Schema.string("The repository as owner/name, exactly as the user named it, e.g. Lakr233/Irisin."),
                 "title": Schema.string("The issue's title: one line of at most \(FeedbackRules.maximumTitleLength) characters saying what went wrong or what is asked."),
-                "body": Schema.string("The issue in Markdown, at most \(FeedbackRules.maximumBodyBytes / 1024) KB: what the user did, what happened, what they expected, and the steps to see it again, from what the user said and what you saw."),
+                "body": Schema.string("The issue in Markdown, at most \(FeedbackRules.maximumBodyBytes / 1024) KB: what the user did, what happened, what they expected, and the steps to see it again, from what the user said and what you saw.")
             ], required: ["repository", "title", "body"])
         case .gitDiff:
             Schema.object([
                 "path": Schema.string("Path relative to the project root; omit for every change."),
-                "staged": Schema.boolean("Diff the index against HEAD instead of the worktree against the index."),
+                "staged": Schema.boolean("Diff the index against HEAD instead of the worktree against the index.")
             ], required: [])
         case .gitStage, .gitUnstage:
             Schema.object([
                 "paths": .object([
                     "type": "array",
                     "items": .object(["type": "string"]),
-                    "description": "Paths relative to the project root, taken literally.",
-                ]),
+                    "description": "Paths relative to the project root, taken literally."
+                ])
             ], required: ["paths"])
         case .gitCommit:
             Schema.object([
                 "message": Schema.string("The commit message: a short summary line, then a blank line and details if needed."),
-                "all": Schema.boolean("Stage every change first, as git add --all does: new, changed and deleted files, ignored ones left out."),
+                "all": Schema.boolean("Stage every change first, as git add --all does: new, changed and deleted files, ignored ones left out.")
             ], required: ["message"])
         case .gitFetch, .gitPull:
             Schema.object([
-                "remote": Schema.string("Remote name; omit for origin."),
+                "remote": Schema.string("Remote name; omit for origin.")
             ], required: [])
         case .gitPush:
             Schema.object([
                 "remote": Schema.string("Remote name; omit for origin."),
                 "branch": Schema.string("Local branch to push; omit for the checked-out one."),
                 "url": Schema.string("HTTPS URL of the repository to add as the remote when the project does not have it yet, without credentials: one the user gave you. Omit for a remote the project has."),
-                "force_with_lease": Schema.boolean("Overwrite the remote's branch with this one, protected by a lease: only when the user explicitly asked to force-push this branch to this remote. Default false."),
+                "force_with_lease": Schema.boolean("Overwrite the remote's branch with this one, protected by a lease: only when the user explicitly asked to force-push this branch to this remote. Default false.")
             ], required: [])
         case .gitSquash:
             Schema.object([
                 "count": Schema.integer("How many of the branch's last commits to combine, two or more. Give count or base."),
                 "base": Schema.string("The commit kept below the squashed one, by its ID (at least seven digits): every commit after it is combined. Give count or base."),
-                "message": Schema.string("The squashed commit's message: a short summary line, then a blank line and details if needed."),
+                "message": Schema.string("The squashed commit's message: a short summary line, then a blank line and details if needed.")
             ], required: ["message"])
         case .gitClone:
             Schema.object([
                 "url": Schema.string("HTTPS URL of the repository, without credentials."),
-                "branch": Schema.string("Branch to check out; omit for the remote's default."),
+                "branch": Schema.string("Branch to check out; omit for the remote's default.")
             ], required: ["url"])
         case .gitRemoteSet:
             Schema.object([
                 "name": Schema.string("The remote's name, such as origin or upstream: letters, digits, periods, underscores and hyphens."),
-                "url": Schema.string("HTTPS address of the repository, without credentials, e.g. https://github.com/owner/name.git."),
+                "url": Schema.string("HTTPS address of the repository, without credentials, e.g. https://github.com/owner/name.git.")
             ], required: ["name", "url"])
         case .gitRemoteRemove:
             Schema.object([
-                "name": Schema.string("The remote's name, as git_remote_list lists it."),
+                "name": Schema.string("The remote's name, as git_remote_list lists it.")
             ], required: ["name"])
         case .gitResetToRemote:
             Schema.object([
                 "remote": Schema.string("Remote name; omit for origin."),
-                "branch": Schema.string("The remote's branch to match; omit for the one the remote's HEAD names."),
+                "branch": Schema.string("The remote's branch to match; omit for the one the remote's HEAD names.")
             ], required: [])
         case .projectRename:
             Schema.object([
                 "display_name": Schema.string("The new name: a few words on one line, at most \(ProjectDisplayName.maximumLength) characters, in the user's language."),
                 "project": Schema.string("Another project, by its projectID or folder name from apelin_project_list: required in General Chat, omit for this project."),
-                "automatic": Schema.boolean("Only replace the name Apelin generated for this project, if the user has not renamed it. Default false."),
+                "automatic": Schema.boolean("Only replace the name Apelin generated for this project, if the user has not renamed it. Default false.")
             ], required: ["display_name"])
         case .projectDelete:
             Schema.object([
-                "project": Schema.string("The project to delete, by its projectID or folder name from apelin_project_list; never this conversation's own."),
+                "project": Schema.string("The project to delete, by its projectID or folder name from apelin_project_list; never this conversation's own.")
             ], required: ["project"])
         case .projectCreate:
             Schema.object([
@@ -369,8 +369,8 @@ public extension AgentToolName {
                 "name": Schema.string("Project folder name: a few words, no slashes. It never changes later."),
                 "values": .object([
                     "type": "object",
-                    "description": #"Template parameters by name, each a string, boolean or integer, or for a list kind (bundleIDList, executableList) an array of strings, such as {"filterBundles": ["com.apple.Preferences"]}; omit for the defaults."#,
-                ]),
+                    "description": #"Template parameters by name, each a string, boolean or integer, or for a list kind (bundleIDList, executableList) an array of strings, such as {"filterBundles": ["com.apple.Preferences"]}; omit for the defaults."#
+                ])
             ], required: ["template", "name"])
         case .memorySave:
             Schema.object([
@@ -381,102 +381,102 @@ public extension AgentToolName {
                 "scope": .object([
                     "type": "string",
                     "enum": ["global", "project"],
-                    "description": "For new records: global for user preferences, project for this project's facts (default). Existing scope is preserved.",
+                    "description": "For new records: global for user preferences, project for this project's facts (default). Existing scope is preserved."
                 ]),
-                "project": Self.memoryProjectParameter,
+                "project": Self.memoryProjectParameter
             ], required: ["revision", "title", "body"])
         case .projectCheckDistribution:
             Schema.object([
                 "bootstrap": .object([
                     "type": "string",
                     "enum": .array(BuildBootstrap.allCases.map { .string($0.rawValue) }),
-                    "description": "The distribution target; omit to compare the version with both.",
-                ]),
+                    "description": "The distribution target; omit to compare the version with both."
+                ])
             ], required: [])
         case .notificationSend:
             Schema.object([
                 "title": Schema.string("A few words heading the notification, at most \(AgentNoticeRules.maximumTitleLength) characters, e.g. \"Build failed\"; the chat's title is shown above it. Optional."),
-                "body": Schema.string("What happened or what the user must do, in one or two plain sentences in the user's language, at most \(AgentNoticeRules.maximumBodyLength) characters."),
+                "body": Schema.string("What happened or what the user must do, in one or two plain sentences in the user's language, at most \(AgentNoticeRules.maximumBodyLength) characters.")
             ], required: ["body"])
         case .webFetch:
             Schema.object([
                 "url": Schema.string("The page's http or https address, with no user or password in it."),
-                "offset": Schema.integer("Where to start in the page's text: the offset the previous call's answer ended with. Default 0."),
+                "offset": Schema.integer("Where to start in the page's text: the offset the previous call's answer ended with. Default 0.")
             ], required: ["url"])
         case .feedbackSend:
             Schema.object([
                 "title": Schema.string("The issue's title: one line of at most \(FeedbackRules.maximumTitleLength) characters saying what went wrong or what is asked, e.g. \"The build log stops before the link step\"."),
-                "body": Schema.string("The issue in Markdown, at most \(FeedbackRules.maximumBodyBytes / 1024) KB: what the user did, what happened, what they expected, and the steps to see it again, from what the user said and what you saw."),
+                "body": Schema.string("The issue in Markdown, at most \(FeedbackRules.maximumBodyBytes / 1024) KB: what the user did, what happened, what they expected, and the steps to see it again, from what the user said and what you saw.")
             ], required: ["title", "body"])
         case .feedbackRead:
             Schema.object([
-                FeedbackEdit.numberKey: Schema.integer("The issue's number on \(FeedbackRules.repository), e.g. 12 for its issues/12 page."),
+                FeedbackEdit.numberKey: Schema.integer("The issue's number on \(FeedbackRules.repository), e.g. 12 for its issues/12 page.")
             ], required: [FeedbackEdit.numberKey])
         case .feedbackEdit:
             Schema.object([
                 FeedbackEdit.numberKey: Schema.integer("The issue's number on \(FeedbackRules.repository), e.g. 12 for its issues/12 page."),
                 FeedbackEdit.revisionKey: Schema.string("The revision apelin_feedback_read answered for the issue, or this tool after an edit: the text this edit was made against."),
                 "title": Schema.string("The new title in full: one line of at most \(FeedbackRules.maximumTitleLength) characters. Omit it to keep the title."),
-                "body": Schema.string("The new body in full, in Markdown, at most \(FeedbackRules.maximumBodyBytes / 1024) KB, without the line Apelin added below it, which stays. Omit it to keep the body."),
+                "body": Schema.string("The new body in full, in Markdown, at most \(FeedbackRules.maximumBodyBytes / 1024) KB, without the line Apelin added below it, which stays. Omit it to keep the body.")
             ], required: [FeedbackEdit.numberKey, FeedbackEdit.revisionKey])
         case .skillSave:
             Schema.object([
                 "name": Schema.string("The skill's name: lowercase letters, digits and single hyphens, at most \(SkillTools.maximumNameLength) characters, e.g. release-notes. It is also its folder's name."),
                 "description": Schema.string("One line, at most \(SkillTools.maximumDescriptionLength) characters, saying when to use the skill: every conversation reads it to decide."),
                 "instructions": Schema.string("The skill's instructions in Markdown, which apelin_skill_read answers."),
-                "replace": Schema.boolean("Replace the user's skill of that name. Default false: a skill already there is refused."),
+                "replace": Schema.boolean("Replace the user's skill of that name. Default false: a skill already there is refused.")
             ], required: ["name", "description", "instructions"])
         case .skillRemove:
             Schema.object([
-                "name": Schema.string("A user skill's name from apelin_skill_list."),
+                "name": Schema.string("A user skill's name from apelin_skill_list.")
             ], required: ["name"])
         case .skillRead:
             Schema.object([
                 "name": Schema.string("Skill name from the skills list."),
-                "file": Schema.string("A file in the skill's folder, relative to it; omit for the instructions."),
+                "file": Schema.string("A file in the skill's folder, relative to it; omit for the instructions.")
             ], required: ["name"])
         case .memoryDelete:
             Schema.object([
                 "revision": Schema.string("Exact current revision from apelin_memory_list."),
                 "id": Schema.string("Record id to delete."),
-                "project": Self.memoryProjectParameter,
+                "project": Self.memoryProjectParameter
             ], required: ["revision", "id"])
         case .fileWrite:
             Schema.object([
                 "path": Schema.string("Path relative to the project root."),
-                "content": Schema.string("The whole new content."),
+                "content": Schema.string("The whole new content.")
             ], required: ["path", "content"])
         case .fileEdit:
             Schema.object([
                 "path": Schema.string("Path relative to the project root."),
                 "old_text": Schema.string("Exact text to replace."),
                 "new_text": Schema.string("Replacement text."),
-                "replace_all": Schema.boolean("Replace every occurrence instead of exactly one."),
+                "replace_all": Schema.boolean("Replace every occurrence instead of exactly one.")
             ], required: ["path", "old_text", "new_text"])
         case .fileCreate:
             Schema.object([
                 "path": Schema.string("Path relative to the project root."),
-                "content": Schema.string("Content of the new file."),
+                "content": Schema.string("Content of the new file.")
             ], required: ["path", "content"])
         case .fileRead:
             Schema.object([
                 "path": Schema.string("Path relative to the project root, or an absolute path inside the development extensions or SDKs folder # Environment names."),
                 "offset": Schema.integer("First line to return, 1-based."),
                 "limit": Schema.integer("Number of lines to return."),
-                "frame": Schema.integer("For an image with several frames, such as an animated GIF, the 0-based frame to show. Default: its primary image, the first frame of an animation."),
+                "frame": Schema.integer("For an image with several frames, such as an animated GIF, the 0-based frame to show. Default: its primary image, the first frame of an animation.")
             ], required: ["path"])
         case .fileShow:
             Schema.object([
                 "paths": .object([
                     "type": "array",
                     "items": .object(["type": "string"]),
-                    "description": .string("Files relative to the project root, 1 to \(FileShow.maximumFiles)."),
-                ]),
+                    "description": .string("Files relative to the project root, 1 to \(FileShow.maximumFiles).")
+                ])
             ], required: ["paths"])
         case .fileList:
             Schema.object([
                 "path": Schema.string("Folder relative to the project root, or an absolute path inside the development extensions or SDKs folder # Environment names; omit for the root."),
-                "depth": Schema.integer("How many levels to descend, 1 to 4. Default 1."),
+                "depth": Schema.integer("How many levels to descend, 1 to 4. Default 1.")
             ], required: [])
         case .fileGrep:
             Schema.object([
@@ -484,34 +484,34 @@ public extension AgentToolName {
                 "path": Schema.string("Folder or file to search, relative to the project root, or an absolute path inside the development extensions or SDKs folder # Environment names."),
                 "glob": Schema.string("Only files whose name matches this glob, e.g. *.m"),
                 "ignore_case": Schema.boolean("Case-insensitive match."),
-                "max_results": Schema.integer("Maximum matching lines. Default 100."),
+                "max_results": Schema.integer("Maximum matching lines. Default 100.")
             ], required: ["pattern"])
         case .fileFind:
             Schema.object([
                 "pattern": Schema.string("Glob matched against file names, e.g. *.plist"),
                 "path": Schema.string("Folder to search, relative to the project root, or an absolute path inside the development extensions or SDKs folder # Environment names."),
-                "max_results": Schema.integer("Maximum paths. Default 200."),
+                "max_results": Schema.integer("Maximum paths. Default 200.")
             ], required: ["pattern"])
         case .shellRun:
             Schema.object([
                 "argv": .object([
                     "type": "array",
                     "items": .object(["type": "string"]),
-                    "description": "A plain command: an executable name, found on shell_run's PATH (the toolchain's tools first), or a path, then arguments.",
+                    "description": "A plain command: an executable name, found on shell_run's PATH (the toolchain's tools first), or a path, then arguments."
                 ]),
                 "command": Schema.string("Shell text, when a plain argv is not enough."),
                 "script": Schema.string("Script source, run by interpreter."),
                 "interpreter": Schema.string("Interpreter for script: sh, bash, zsh, python3, perl."),
                 "cwd": Schema.string("Working directory relative to the project root."),
                 "timeout_seconds": Schema.integer("Timeout, default 120."),
-                "root": Schema.boolean("Run as root instead of mobile. Never for the project's own build or install, never apt or dpkg."),
+                "root": Schema.boolean("Run as root instead of mobile. Never for the project's own build or install, never apt or dpkg.")
             ], required: [])
         case .sdkAnalyzeFramework:
             Schema.object([
                 "framework": Schema.string("Framework name without extension, e.g. UIKit or SpringBoardServices."),
                 "private": Self.privateFrameworkParameter,
                 "sdk_id": Schema.string("Registered SDK id; omit for the project's SDK."),
-                "symbol_filter": Schema.string("Only symbols containing this text."),
+                "symbol_filter": Schema.string("Only symbols containing this text.")
             ], required: ["framework"])
         case .sdkReadHeader:
             Schema.object([
@@ -519,43 +519,43 @@ public extension AgentToolName {
                 "header": Schema.string("Header file name, e.g. UIView.h; leave out header and symbol to list the headers. When no header has the name, the one declaring that class or type is answered instead."),
                 "symbol": Schema.string("Instead of header: a class, protocol, type, function or constant name; finds the headers that declare it."),
                 "private": Self.privateFrameworkParameter,
-                "sdk_id": Schema.string("Registered SDK id; omit for the project's SDK."),
+                "sdk_id": Schema.string("Registered SDK id; omit for the project's SDK.")
             ], required: ["framework"])
         case .projectBuild:
             Schema.object([
                 "configuration": .object([
                     "type": "string",
                     "enum": ["debug", "release"],
-                    "description": "Default debug.",
+                    "description": "Default debug."
                 ]),
                 "bootstrap": .object([
                     "type": "string",
                     "enum": .array(BuildBootstrap.allCases.map { .string($0.rawValue) }),
-                    "description": "Explicit distribution target; omit for the current device. Build both targets separately for distribution.",
-                ]),
+                    "description": "Explicit distribution target; omit for the current device. Build both targets separately for distribution."
+                ])
             ], required: [])
         case .packageInstall:
             Schema.object([
                 "artifact_id": Schema.string("Package artifact id from apelin_project_build."),
-                "artifact_digest": Schema.string("The artifact's digest from apelin_project_build."),
+                "artifact_digest": Schema.string("The artifact's digest from apelin_project_build.")
             ], required: ["artifact_id", "artifact_digest"])
         case .packageRemove:
             Schema.object([
                 "installation_id": Schema.string("Installation id from apelin_package_install or apelin_package_list."),
-                "package_id": Schema.string("Or the package id, e.g. local.apelin.my-tweak, whose one installation Apelin can remove is removed. Give one of the two."),
+                "package_id": Schema.string("Or the package id, e.g. local.apelin.my-tweak, whose one installation Apelin can remove is removed. Give one of the two.")
             ], required: [])
         case .packagePublish:
             Schema.object([
                 PackagePublish.buildIDsKey: .object([
                     "type": "array",
                     "items": .object(["type": "string"]),
-                    "description": .string("The build_id of each release build to publish, as apelin_project_build answered it (its package artifact's id is the same), 1 to \(DistributionPublishRequest.maximumFiles), one per package id, version and architecture."),
-                ]),
+                    "description": .string("The build_id of each release build to publish, as apelin_project_build answered it (its package artifact's id is the same), 1 to \(DistributionPublishRequest.maximumFiles), one per package id, version and architecture.")
+                ])
             ], required: [PackagePublish.buildIDsKey])
         case .packageList:
             Schema.object([
                 "package_id": Schema.string("Only this package id."),
-                "project": Schema.string("Only what this project's builds installed, by its projectID or folder name from apelin_project_list; omit for every project."),
+                "project": Schema.string("Only what this project's builds installed, by its projectID or folder name from apelin_project_list; omit for every project.")
             ], required: [])
         case .deviceRespring:
             Schema.object([:], required: [])
@@ -563,40 +563,40 @@ public extension AgentToolName {
             Schema.object([
                 "build_id": Schema.string("Build id from apelin_project_build."),
                 "target": Schema.string("Process name or bundle id the tweak should load into, e.g. SpringBoard."),
-                "respring": Schema.boolean("Start listening, then respring, then wait for the marker. Approved like apelin_device_respring."),
+                "respring": Schema.boolean("Start listening, then respring, then wait for the marker. Approved like apelin_device_respring.")
             ], required: ["build_id", "target"])
         case .logRead:
             Schema.object([
                 "process": Schema.string("Process name."),
                 "subsystem": Schema.string("Log subsystem."),
                 "listen_seconds": Schema.integer("How long to listen, 1 to \(ReadLogsRequest.maximumListenSeconds) seconds. Default \(ReadLogsRequest.maximumListenSeconds)."),
-                "limit": Schema.integer("Maximum lines, default 200, at most 1000."),
+                "limit": Schema.integer("Maximum lines, default 200, at most 1000.")
             ], required: [])
         case .crashList:
             Schema.object([
                 "process": Schema.string("Only this process."),
-                "limit": Schema.integer("Maximum reports, default 20."),
+                "limit": Schema.integer("Maximum reports, default 20.")
             ], required: [])
         case .crashRead:
             Schema.object(["report_id": Schema.string("Report id from apelin_crash_list.")], required: ["report_id"])
         case .crashSymbolicate:
             Schema.object([
                 "report_id": Schema.string("Report id from apelin_crash_list."),
-                "build_id": Schema.string("Build whose dSYM to use; omit to match by image UUID."),
+                "build_id": Schema.string("Build whose dSYM to use; omit to match by image UUID.")
             ], required: ["report_id"])
         case .screenCapture:
             Schema.object(["target_id": Schema.string("Target; omit for the whole screen.")], required: [])
         case .screenReadTree:
             Schema.object([
                 "target_id": Schema.string("Target; omit for the foreground app."),
-                "max_depth": Schema.integer("Default 12."),
+                "max_depth": Schema.integer("Default 12.")
             ], required: [])
         case .screenInteract:
             Schema.object([
                 "target_id": Schema.string("Target; omit for the foreground app."),
                 "action": .object([
                     "type": "string",
-                    "enum": ["tap", "tap_element", "type_text", "swipe", "press_button"],
+                    "enum": ["tap", "tap_element", "type_text", "swipe", "press_button"]
                 ]),
                 "x": Schema.number("Tap or swipe start x, points."),
                 "y": Schema.number("Tap or swipe start y, points."),
@@ -608,8 +608,8 @@ public extension AgentToolName {
                 "button": .object([
                     "type": "string",
                     "enum": ["wake", "home", "lock"],
-                    "description": "wake turns the screen on and takes a device without a passcode past its lock screen; on a device already awake it presses nothing, so wake the device with it, never with home. home sends the front app to the home screen. lock is the side button: the screen goes off and the device locks, so press it only when locking is what you are testing, and wake the device after. A press acts on the whole device: leave target_id out.",
-                ]),
+                    "description": "wake turns the screen on and takes a device without a passcode past its lock screen; on a device already awake it presses nothing, so wake the device with it, never with home. home sends the front app to the home screen. lock is the side button: the screen goes off and the device locks, so press it only when locking is what you are testing, and wake the device after. A press acts on the whole device: leave target_id out."
+                ])
             ], required: ["action"])
         }
     }
@@ -699,7 +699,7 @@ enum Schema {
             "type": "object",
             "properties": .object(properties),
             "required": .array(required.map { .string($0) }),
-            "additionalProperties": false,
+            "additionalProperties": false
         ])
     }
 
@@ -723,7 +723,7 @@ enum Schema {
         .object([
             "type": "array",
             "description": .string(description),
-            "items": items,
+            "items": items
         ])
     }
 
@@ -731,7 +731,7 @@ enum Schema {
         .object([
             "type": "string",
             "description": .string(description),
-            "enum": .array(values.map { .string($0) }),
+            "enum": .array(values.map { .string($0) })
         ])
     }
 }

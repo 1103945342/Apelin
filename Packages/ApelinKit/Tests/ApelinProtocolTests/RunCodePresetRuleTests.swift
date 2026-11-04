@@ -145,7 +145,7 @@ final class RunCodePresetRuleTests: XCTestCase {
             (["rm", "-rf", "."], nil),
             (["/bin/cat", "a"], nil),
             (["cat", "a\0b"], nil),
-            ([], nil),
+            ([], nil)
         ]
         for (argv, paths) in table {
             XCTAssertEqual(RunCodePresetRule.pathArguments(of: argv), paths, "\(argv)")

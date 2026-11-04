@@ -30,7 +30,7 @@ public struct ToolchainSource: Codable, Equatable, Sendable {
         url: URL,
         size: Int64,
         upstreamDigest: String? = nil,
-        upstreamDigestAlgorithm: String? = nil,
+        upstreamDigestAlgorithm: String? = nil
     ) {
         self.productID = productID; self.version = version; self.url = url; self.size = size
         self.upstreamDigest = upstreamDigest; self.upstreamDigestAlgorithm = upstreamDigestAlgorithm
@@ -147,7 +147,7 @@ func directory(_ url: URL) throws {
     try FileManager.default.createDirectory(
         at: url,
         withIntermediateDirectories: true,
-        attributes: [.posixPermissions: 0o700],
+        attributes: [.posixPermissions: 0o700]
     )
 }
 

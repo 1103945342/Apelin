@@ -58,7 +58,7 @@ enum GitGlassButton {
         title: String,
         symbol: String? = nil,
         prominent: Bool = false,
-        destructive: Bool = false,
+        destructive: Bool = false
     ) -> UIButton {
         var configuration = configuration(prominent: prominent)
         configuration.title = title
@@ -155,7 +155,7 @@ final class GitFormSheetController: UIViewController {
             let button = GitGlassButton.make(
                 title: action.title,
                 prominent: index == actions.count - 1,
-                destructive: action.destructive,
+                destructive: action.destructive
             )
             buttons.addArrangedSubview(button)
             button.addAction(UIAction { [weak self] _ in self?.run(action) }, for: .touchUpInside)
@@ -238,7 +238,7 @@ class GitBottomSheetController: UIViewController {
         stack.isLayoutMarginsRelativeArrangement = true
         stack.layoutMargins = UIEdgeInsets(
             top: GitTheme.Space.sm, left: GitTheme.Space.lg,
-            bottom: GitTheme.Space.xl, right: GitTheme.Space.lg,
+            bottom: GitTheme.Space.xl, right: GitTheme.Space.lg
         )
 
         if let sheetTitle {
@@ -290,7 +290,7 @@ class GitBottomSheetController: UIViewController {
 
     private func makeRow(_ row: Row) -> UIView {
         let button = GitGlassButton.make(
-            title: row.title, symbol: row.symbol, destructive: row.destructive,
+            title: row.title, symbol: row.symbol, destructive: row.destructive
         )
         button.contentHorizontalAlignment = .leading
         button.addAction(UIAction { [weak self] _ in
@@ -487,7 +487,7 @@ final class GitCopyButton: UIButton {
         UIView.transition(
             with: self,
             duration: 0.18,
-            options: [.transitionCrossDissolve, .allowUserInteraction, .beginFromCurrentState],
+            options: [.transitionCrossDissolve, .allowUserInteraction, .beginFromCurrentState]
         ) {
             self.configuration = configuration
         }
@@ -668,7 +668,7 @@ extension UIViewController {
         title: String,
         message: String? = nil,
         content: UIView? = nil,
-        actions: [GitDialogAction],
+        actions: [GitDialogAction]
     ) {
         guard let content else {
             // A question with nothing to fill in is the system's alert.
@@ -676,7 +676,7 @@ extension UIViewController {
             for action in actions where action.title != String(localized: "Cancel") {
                 alert.addAction(UIAlertAction(
                     title: action.title,
-                    style: action.destructive ? .destructive : .default,
+                    style: action.destructive ? .destructive : .default
                 ) { _ in action.handler() })
             }
             if let cancel = actions.first(where: { $0.title == String(localized: "Cancel") }) {
@@ -692,7 +692,7 @@ extension UIViewController {
     func presentGitSheet(
         title: String? = nil,
         content: UIView? = nil,
-        rows: [GitBottomSheetController.Row] = [],
+        rows: [GitBottomSheetController.Row] = []
     ) {
         let sheet = GitBottomSheetController(title: title, content: content, rows: rows)
         topPresenter.present(sheet, animated: true)

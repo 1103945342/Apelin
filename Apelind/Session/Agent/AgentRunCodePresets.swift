@@ -45,7 +45,7 @@ extension AgentRunCode {
         "-c", "gpg.openpgp.program=/nonexistent/gpg",
         "-c", "gpg.x509.program=/nonexistent/gpgsm",
         "-c", "gpg.ssh.program=/nonexistent/ssh-keygen",
-        "-c", "log.showSignature=false",
+        "-c", "log.showSignature=false"
     ]
 
     /// What every git preset adds to the environment, and the repository
@@ -58,7 +58,7 @@ extension AgentRunCode {
             "GIT_ATTR_NOSYSTEM=1",
             "GIT_OPTIONAL_LOCKS=0",
             "GIT_PAGER=cat",
-            "GIT_CEILING_DIRECTORIES=\((project as NSString).deletingLastPathComponent)",
+            "GIT_CEILING_DIRECTORIES=\((project as NSString).deletingLastPathComponent)"
         ]
     }
 
@@ -69,7 +69,7 @@ extension AgentRunCode {
         _ spec: RunCodeSpec,
         directory: String,
         project: String,
-        installRoot: String,
+        installRoot: String
     ) async -> Preset? {
         // The words first (the rule the agent reads too), then each path by
         // realpath and a repository's config by git, which only the host can.
@@ -87,7 +87,7 @@ extension AgentRunCode {
         let noSubmodules = subcommand == "log" ? [] : ["--ignore-submodules=all"]
         return Preset(
             argv: ["git"] + gitOverrides + [subcommand] + noPrograms + noSubmodules + rest,
-            environment: gitEnvironment(project: project),
+            environment: gitEnvironment(project: project)
         )
     }
 
@@ -122,16 +122,16 @@ extension AgentRunCode {
     private static let inertConfigKeys: [String: Set<String>] = [
         "core": [
             "repositoryformatversion", "filemode", "bare", "logallrefupdates", "ignorecase",
-            "precomposeunicode", "symlinks",
+            "precomposeunicode", "symlinks"
         ],
         "user": ["name", "email"],
-        "apelin": ["clonetask"],
+        "apelin": ["clonetask"]
     ]
 
     /// The keys that are inert only under a subsection: `[remote "origin"]`.
     private static let inertSubsectionKeys: [String: Set<String>] = [
         "remote": ["url", "fetch", "pushurl"],
-        "branch": ["remote", "merge"],
+        "branch": ["remote", "merge"]
     ]
 
     /// Asks git which repository it would use from `directory` — with the
@@ -149,14 +149,14 @@ extension AgentRunCode {
     private static func repositoryConfigIsInert(
         from directory: String,
         project: String,
-        installRoot: String,
+        installRoot: String
     ) async -> Bool {
         guard let git = findExecutable("git", in: DevelopmentEnvironment.searchPath(installRoot: installRoot)),
               let found = await capture(
                   [git] + gitOverrides + ["rev-parse", "--absolute-git-dir", "--git-common-dir", "--show-toplevel"],
                   environment: gitEnvironment(project: project) + ["HOME=/var/empty"],
                   directory: directory,
-                  timeoutSeconds: 10,
+                  timeoutSeconds: 10
               ),
               found.exitCode == 0, !found.truncated
         else { return false }
@@ -202,7 +202,7 @@ extension AgentRunCode {
               let listed = await capture(
                   [git, "config", "--file", path, "--list", "--name-only", "--null"],
                   environment: ["GIT_CONFIG_NOSYSTEM=1", "GIT_CONFIG_GLOBAL=/dev/null", "HOME=/var/empty"],
-                  timeoutSeconds: 10,
+                  timeoutSeconds: 10
               ),
               listed.exitCode == 0, !listed.truncated
         else { return nil }

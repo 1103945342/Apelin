@@ -8,7 +8,7 @@ public enum ProviderRegistration {
     public static func resolve(
         storeID: String,
         manager: OAuthManager,
-        modelOverride: String? = nil,
+        modelOverride: String? = nil
     ) async throws -> ResolvedAuth? {
         guard let credentials = try await manager.credentials(for: storeID) else { return nil }
         if storeID == CredentialProviderID.deepSeek {
@@ -34,7 +34,7 @@ public enum ProviderRegistration {
             modelLabel: resolved.modelLabel,
             authResolver: { _, _ in ResolvedProviderAuth(token: credentials.access, scheme: .bearer) },
             providerSlots: resolved.providerSlots,
-            authResolvers: resolved.authResolvers,
+            authResolvers: resolved.authResolvers
         )
     }
 }

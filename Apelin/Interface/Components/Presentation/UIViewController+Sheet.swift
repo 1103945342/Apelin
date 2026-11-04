@@ -19,7 +19,7 @@ extension UIViewController {
     func presentAsFormSheet(
         _ viewController: SheetNavigationController,
         size: CGSize = CGSize(width: 555, height: 555),
-        usesDetents: Bool = true,
+        usesDetents: Bool = true
     ) {
         viewController.modalPresentationStyle = .formSheet
         let window = viewIfLoaded?.window?.traitCollection ?? traitCollection
@@ -47,7 +47,7 @@ extension UIViewController {
         let navigation = SheetNavigationController(rootViewController: page)
         page.navigationItem.leftBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "xmark"),
-            primaryAction: UIAction { [weak navigation] _ in navigation?.dismiss(animated: true) },
+            primaryAction: UIAction { [weak navigation] _ in navigation?.dismiss(animated: true) }
         ).then { $0.accessibilityLabel = String(localized: "Close") }
         if let deeper {
             navigation.pushViewController(deeper, animated: false)
@@ -65,7 +65,7 @@ extension UIViewController {
         let navigation = UINavigationController(rootViewController: page)
         page.navigationItem.leftBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "xmark"),
-            primaryAction: UIAction { [weak navigation] _ in navigation?.dismiss(animated: true) },
+            primaryAction: UIAction { [weak navigation] _ in navigation?.dismiss(animated: true) }
         ).then { $0.accessibilityLabel = String(localized: "Close") }
         navigation.modalPresentationStyle = .fullScreen
         present(navigation, animated: true)

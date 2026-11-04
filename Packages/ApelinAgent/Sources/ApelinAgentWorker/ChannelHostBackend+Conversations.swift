@@ -7,7 +7,7 @@ public extension ChannelHostBackend {
     // MARK: conversations
 
     func conversationCreate(
-        _ request: ConversationCreateToolRequest,
+        _ request: ConversationCreateToolRequest
     ) async throws -> ConversationCreateToolResponse {
         let choice = await modelChoice.current
         let target = request.target ?? project
@@ -24,18 +24,18 @@ public extension ChannelHostBackend {
                 serviceTier: choice.serviceTier,
                 modelParameters: choice.modelParameters,
                 prompt: request.prompt,
-                title: request.title,
+                title: request.title
             ))
         }
         return ConversationCreateToolResponse(
             sessionID: opened.sessionID,
             taskID: opened.task.taskID.rawValue,
-            project: request.target,
+            project: request.target
         )
     }
 
     func conversationSend(
-        _ request: ConversationSendToolRequest,
+        _ request: ConversationSendToolRequest
     ) async throws -> ConversationActionToolResponse {
         try await conversation("apelin_conversation_send") {
             _ = try await service.send(AgentPromptRequest(sessionID: request.sessionID, text: request.text))
@@ -59,7 +59,7 @@ public extension ChannelHostBackend {
                     : summary.state == .waitingForApproval ? "waitingForApproval" : "open",
                 openedBy: summary.parentSessionID,
                 updatedAt: summary.updatedAt,
-                isThisConversation: summary.sessionID == sessionID,
+                isThisConversation: summary.sessionID == sessionID
             )
         }
         let note = listed.unreachedProjects.map { count in
@@ -86,7 +86,7 @@ public extension ChannelHostBackend {
                 try await service.agentAttach(AgentAttachRequest(
                     taskID: summary.task.taskID,
                     afterSeq: cursor,
-                    waitMilliseconds: 0,
+                    waitMilliseconds: 0
                 ))
             }
             reader.take(batch)
@@ -94,7 +94,7 @@ public extension ChannelHostBackend {
             cursor = batch.lastSeq
         }
         let deadline = Date().addingTimeInterval(
-            Double(min(ConversationReadToolRequest.maximumWaitSeconds, max(0, request.waitSeconds))),
+            Double(min(ConversationReadToolRequest.maximumWaitSeconds, max(0, request.waitSeconds)))
         )
         var timedOut = false
         while !reader.isSettled {
@@ -109,7 +109,7 @@ public extension ChannelHostBackend {
                 try await service.agentAttach(AgentAttachRequest(
                     taskID: summary.task.taskID,
                     afterSeq: reader.lastSeq,
-                    waitMilliseconds: wait,
+                    waitMilliseconds: wait
                 ))
             }
             reader.take(batch)
@@ -118,7 +118,7 @@ public extension ChannelHostBackend {
     }
 
     func conversationStop(
-        _ request: ConversationStopToolRequest,
+        _ request: ConversationStopToolRequest
     ) async throws -> ConversationActionToolResponse {
         try await conversation("apelin_conversation_stop") { try await service.agentAbort(sessionID: request.sessionID) }
         guard request.close else {
@@ -189,7 +189,7 @@ public extension ChannelHostBackend {
                 projectID: found.identity.id,
                 displayName: manifest["displayName"]?.stringValue.flatMap { $0.isEmpty ? nil : $0 } ?? name,
                 buildSystem: external ? "external" : "apelin",
-                isThisProject: found.identity.id == project.id,
+                isThisProject: found.identity.id == project.id
             ))
         }
         return ProjectListToolResponse(projects: listed, truncated: false)
@@ -206,7 +206,7 @@ public extension ChannelHostBackend {
     /// projectID.
     private static func project(
         named name: String,
-        in root: URL,
+        in root: URL
     ) -> (identity: ApelinAgent.ProjectIdentity, manifest: ApelinCore.JSONValue)? {
         guard let folder = try? ApelinAgent.ProjectName(name) else { return nil }
         let url = root.appendingPathComponent(name, isDirectory: true)

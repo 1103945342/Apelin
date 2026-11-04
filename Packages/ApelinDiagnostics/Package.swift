@@ -29,14 +29,14 @@ let package = Package(
         // What Workers/LogReader/main.swift calls. System code only, like
         // everything apelin-log-reader links: ApelinLogReader, ApelinCore,
         // ApelinProtocol. `Scripts/check-system-only.py` holds it to that.
-        .library(name: "ApelinLogReaderWorker", targets: ["ApelinLogReaderWorker"]),
+        .library(name: "ApelinLogReaderWorker", targets: ["ApelinLogReaderWorker"])
     ],
     dependencies: [
         // owngoal-dev/icli, MIT. Pinned exactly: a new icli is a reviewed bump,
         // not something resolution picks up.
         .package(url: "https://github.com/owngoal-dev/icli.git", exact: "0.9.0"),
         // Apelin's own wire and worker channel. System code only.
-        .package(path: "../ApelinKit"),
+        .package(path: "../ApelinKit")
     ],
     targets: [
         // Request and result types every product shares. Foundation only.
@@ -46,15 +46,15 @@ let package = Package(
             name: "ApelinDiagnostics",
             dependencies: [
                 "ApelinDiagnosticsCore",
-                .product(name: "IcliKit", package: "icli", condition: .when(platforms: [.iOS])),
-            ],
+                .product(name: "IcliKit", package: "icli", condition: .when(platforms: [.iOS]))
+            ]
         ),
 
         // LoggingSupport's live stream, driven from Objective-C. Foundation
         // and libobjc; the framework itself is opened at run time.
         .target(
             name: "ApelinLogReaderSPI",
-            linkerSettings: [.linkedFramework("Foundation")],
+            linkerSettings: [.linkedFramework("Foundation")]
         ),
         .target(name: "ApelinLogReader", dependencies: ["ApelinDiagnosticsCore", "ApelinLogReaderSPI"]),
 
@@ -74,9 +74,9 @@ let package = Package(
                 // The stream pump both log workers share.
                 "ApelinLogReaderWorker",
                 .product(name: "ApelinCore", package: "ApelinKit"),
-                .product(name: "ApelinProtocol", package: "ApelinKit"),
+                .product(name: "ApelinProtocol", package: "ApelinKit")
             ],
-            swiftSettings: [.enableUpcomingFeature("ConciseMagicFile")],
+            swiftSettings: [.enableUpcomingFeature("ConciseMagicFile")]
         ),
         // apelin-log-reader (root): logStream through the root live stream.
         .target(
@@ -84,28 +84,28 @@ let package = Package(
             dependencies: [
                 "ApelinLogReader",
                 .product(name: "ApelinCore", package: "ApelinKit"),
-                .product(name: "ApelinProtocol", package: "ApelinKit"),
+                .product(name: "ApelinProtocol", package: "ApelinKit")
             ],
-            swiftSettings: [.enableUpcomingFeature("ConciseMagicFile")],
+            swiftSettings: [.enableUpcomingFeature("ConciseMagicFile")]
         ),
 
         .testTarget(
             name: "ApelinDiagnosticsTests",
             dependencies: ["ApelinDiagnostics"],
-            resources: [.copy("Fixtures")],
+            resources: [.copy("Fixtures")]
         ),
         .testTarget(name: "ApelinLogReaderTests", dependencies: ["ApelinLogReader"]),
         .testTarget(
             name: "ApelinCrashReportTests",
             dependencies: ["ApelinCrashReport"],
             exclude: ["LICENSE"],
-            resources: [.copy("Fixtures")],
+            resources: [.copy("Fixtures")]
         ),
         .testTarget(
             name: "ApelinCrashSymbolsTests",
             dependencies: ["ApelinCrashSymbols", "ApelinCrashBlame"],
             exclude: ["LICENSE"],
-            resources: [.copy("Fixtures")],
+            resources: [.copy("Fixtures")]
         ),
         .testTarget(name: "ApelinCrashBlameTests", dependencies: ["ApelinCrashBlame"], exclude: ["LICENSE"]),
         .testTarget(name: "ConfirmLoadedTests", dependencies: ["ConfirmLoaded"]),
@@ -114,8 +114,8 @@ let package = Package(
             dependencies: [
                 "ApelinDiagnosticsWorker", "ApelinLogReaderWorker", "ApelinDiagnostics", "ConfirmLoaded",
                 .product(name: "ApelinCore", package: "ApelinKit"),
-                .product(name: "ApelinProtocol", package: "ApelinKit"),
-            ],
-        ),
-    ],
+                .product(name: "ApelinProtocol", package: "ApelinKit")
+            ]
+        )
+    ]
 )

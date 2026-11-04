@@ -26,7 +26,7 @@ final class WorkerProcess: @unchecked Sendable {
         _ request: WireRequest,
         descriptors: [OwnedDescriptor],
         taskID: TaskID? = nil,
-        resumed: Bool = false,
+        resumed: Bool = false
     ) async throws -> (WireReply, [OwnedDescriptor]) {
         lock.withLock { inFlight += 1 }
         defer { lock.withLock { inFlight -= 1; idleSince = Date() } }
@@ -72,7 +72,7 @@ actor WorkerSupervisor {
         onRequest: @escaping @Sendable (WorkerProcess, ChannelRequest) async -> (WireReply, [OwnedDescriptor]),
         onEvent: @escaping @Sendable (WorkerProcess, ChannelFrame) -> Void,
         onExit: @escaping @Sendable (WorkerProcess) -> Void,
-        isBusy: @escaping @Sendable (WorkerRole, String?) async -> Bool,
+        isBusy: @escaping @Sendable (WorkerRole, String?) async -> Bool
     ) {
         requestHandler = onRequest
         eventHandler = onEvent
@@ -140,7 +140,7 @@ actor WorkerSupervisor {
             "HOME=\(home)",
             "PATH=\(installRoot == "/" ? "" : installRoot)/usr/bin:/usr/bin:/bin",
             "DISABLE_TWEAKS=1",
-            "APELIN_ROLE=\(key.role.rawValue)",
+            "APELIN_ROLE=\(key.role.rawValue)"
         ]
         let pid: pid_t
         do {
@@ -149,7 +149,7 @@ actor WorkerSupervisor {
                 arguments: [key.role.executableName],
                 environment: environment,
                 channel: remote,
-                identity: key.role.runsAsRoot ? nil : .mobile,
+                identity: key.role.runsAsRoot ? nil : .mobile
             )
         } catch {
             channel.close()
@@ -181,7 +181,7 @@ actor WorkerSupervisor {
         do {
             try channel.sendControl(
                 WorkerControl.assign,
-                body: WorkerAssignment(role: key.role, installRoot: installRoot, home: home, sessionID: key.instance),
+                body: WorkerAssignment(role: key.role, installRoot: installRoot, home: home, sessionID: key.instance)
             )
         } catch {
             channel.close()
@@ -216,7 +216,7 @@ private final class ReadySignal: @unchecked Sendable {
         await withCheckedContinuation { continuation in
             DispatchQueue.global().async {
                 continuation.resume(
-                    returning: self.semaphore.wait(timeout: .now() + .seconds(Int(seconds))) == .success,
+                    returning: self.semaphore.wait(timeout: .now() + .seconds(Int(seconds))) == .success
                 )
             }
         }

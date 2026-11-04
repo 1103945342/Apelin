@@ -29,7 +29,7 @@ public struct ReleaseCompatibility: Codable, Sendable, Equatable {
     public func refusal(
         hostVersion: String,
         hasFeature: (String) -> Bool,
-        hasLibcxxSymbol: (String) -> Bool = { _ in false },
+        hasLibcxxSymbol: (String) -> Bool = { _ in false }
     ) -> String? {
         if hostVersion.compare(minimumHost, options: .numeric) == .orderedAscending {
             return "This toolchain requires iOS \(minimumHost) or later."
@@ -97,8 +97,8 @@ public extension CommandLineToolsRelease {
                 "SDK versions describe build inputs, not the device's OS or the output's deployment target.",
                 "The base component supports C, C++ and Objective-C without clang modules on an LRCPC CPU.",
                 "Clang modules and Swift have separate CPU requirements; the complete image may contain guarded instructions.",
-                "Unreviewed Swift components are not offered even when their instructions fit the CPU.",
-            ],
+                "Unreviewed Swift components are not offered even when their instructions fit the CPU."
+            ]
         )
     }
 }
@@ -119,6 +119,6 @@ public extension CommandLineToolsSupport {
         .init(chips: ["A11"], cpuFeatures: [], llvmCPU: "apple-a11"),
         .init(chips: ["A12", "A12X", "A12Z"], cpuFeatures: ["FEAT_LRCPC"], llvmCPU: "apple-a12"),
         .init(chips: ["A13 and later"], cpuFeatures: ["FEAT_LRCPC", "FEAT_SHA3", "FEAT_DotProd"], llvmCPU: "apple-a13"),
-        .init(chips: ["M1 and later"], cpuFeatures: ["FEAT_LRCPC", "FEAT_SHA3", "FEAT_DotProd"], llvmCPU: "apple-m1"),
+        .init(chips: ["M1 and later"], cpuFeatures: ["FEAT_LRCPC", "FEAT_SHA3", "FEAT_DotProd"], llvmCPU: "apple-m1")
     ]
 }

@@ -35,7 +35,7 @@ func screenConsentChecks(scratch: URL, scratchPath: String) async {
         .argv(["uiopen", "https://example.com"]),
         .argv(["uishoot"]),
         .script(interpreter: "sh", source: "x=$(icli screen info); echo \"$x\""),
-        .script(interpreter: "python3", source: "import subprocess\nsubprocess.run([\"icli\", \"input\", \"type\", \"hi\"])"),
+        .script(interpreter: "python3", source: "import subprocess\nsubprocess.run([\"icli\", \"input\", \"type\", \"hi\"])")
     ]
     for spec in screenSpecs {
         check(ScreenConsent.usesScreen(spec), "\(spec) runs a screen program")
@@ -45,7 +45,7 @@ func screenConsentChecks(scratch: URL, scratchPath: String) async {
         .argv(["make", "all"]),
         .argv(["musicli"]),
         .argv(["cat", "Sources/iclient.c"]),
-        .script(interpreter: "sh", source: "echo publicli"),
+        .script(interpreter: "sh", source: "echo publicli")
     ]
     for spec in otherSpecs {
         check(!ScreenConsent.usesScreen(spec), "\(spec) runs no screen program")
@@ -60,7 +60,7 @@ func screenConsentChecks(scratch: URL, scratchPath: String) async {
             project: project,
             mode: mode,
             asksBeforeScreen: asks,
-            createdAt: Date(),
+            createdAt: Date()
         )
         await sessions.add(entry)
         await ledger.setMode(mode, session: id)
@@ -86,7 +86,7 @@ func screenConsentChecks(scratch: URL, scratchPath: String) async {
             "tool": .string(tool.rawValue),
             "workingDirectory": .string("."),
             "allowsSessionScope": .bool(false),
-            "detail": detail,
+            "detail": detail
         ]))
     }
     @discardableResult
@@ -95,14 +95,14 @@ func screenConsentChecks(scratch: URL, scratchPath: String) async {
             sessionID: entry.sessionID,
             approvalID: approvalID,
             decision: .approve,
-            ownerVerified: ownerVerified,
+            ownerVerified: ownerVerified
         )
         return await (try? AgentApprovals.relay(
             request,
             registry: registry,
             ledger: ledger,
             forward: { true },
-            accepted: { $0 },
+            accepted: { $0 }
         )) ?? false
     }
     func kept(_ entry: AgentSessionTable.Entry, _ approvalID: String) async -> Bool {
@@ -115,7 +115,7 @@ func screenConsentChecks(scratch: URL, scratchPath: String) async {
         let refusal = await AgentScreenRules.authorize(
             wire,
             caller: caller ?? .worker(.agent, instance: entry.sessionID),
-            registry: registry,
+            registry: registry
         )
         return refusal == nil
     }
@@ -124,14 +124,14 @@ func screenConsentChecks(scratch: URL, scratchPath: String) async {
         _ spec: RunCodeSpec,
         _ approval: RunCodeApproval,
         root: Bool = false,
-        in directory: String = ".",
+        in directory: String = "."
     ) async -> AgentRunCode.Identity? {
         let run = AgentRunCodeRequest(
             sessionID: entry.sessionID,
             spec: spec,
             workingDirectory: directory,
             approval: approval,
-            asRoot: root ? true : nil,
+            asRoot: root ? true : nil
         )
         let current = await sessions.entry(entry.sessionID) ?? entry
         return try? await AgentApprovals.authorize(run, entry: current, registry: registry, ledger: ledger, installRoot: "/")
@@ -293,14 +293,14 @@ func screenConsentChecks(scratch: URL, scratchPath: String) async {
     let child = try? AgentConversationRules.childOpen(
         AgentOpenRequest(approvalMode: .relaxed, asksBeforeScreen: false, prompt: "go"),
         opener: opener,
-        target: project,
+        target: project
     )
     check(child?.asksBeforeScreen == true, "an agent's open takes its opener's setting, never the one it sent")
     let lax = await session("screen-lax-opener", mode: .relaxed, asks: false)
     let laxChild = try? AgentConversationRules.childOpen(
         AgentOpenRequest(approvalMode: .relaxed, asksBeforeScreen: true, prompt: "go"),
         opener: lax,
-        target: project,
+        target: project
     )
     check(laxChild?.asksBeforeScreen == false, "an opener that does not ask opens one that does not")
     let target = await session("screen-target", mode: .relaxed)
@@ -308,7 +308,7 @@ func screenConsentChecks(scratch: URL, scratchPath: String) async {
         AgentPromptRequest(sessionID: target.sessionID, text: "go", asksBeforeScreen: false),
         sender: opener,
         target: target,
-        descriptorCount: 0,
+        descriptorCount: 0
     )
     check(sent != nil && sent?.asksBeforeScreen == nil, "an agent's message changes no conversation's setting")
     let fromApp = AgentConversationRules.appPrompt(AgentPromptRequest(sessionID: target.sessionID, text: "go", asksBeforeScreen: false))

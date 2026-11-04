@@ -10,7 +10,7 @@ public struct ToolchainCatalog: Sendable {
 
     public func list() async throws -> [ToolchainSource] {
         let (data, response) = try await URLSession.shared.data(
-            for: URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData),
+            for: URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData)
         )
         guard (response as? HTTPURLResponse)?.statusCode == 200, data.count <= 64 * 1024 * 1024 else {
             throw ToolchainFailure("Unable to read the software update catalog. Try again.")
@@ -47,7 +47,7 @@ public struct ToolchainCatalog: Sendable {
                 url: source.url,
                 size: source.size,
                 upstreamDigest: source.upstreamDigest,
-                upstreamDigestAlgorithm: source.upstreamDigestAlgorithm,
+                upstreamDigestAlgorithm: source.upstreamDigestAlgorithm
             ))
         }
         // Newest first, a package that names no version last.
@@ -63,7 +63,7 @@ public struct ToolchainCatalog: Sendable {
     /// The version a product's English distribution names, or nil.
     static func distributionVersion(_ url: URL) async throws -> String? {
         let (metadata, response) = try await URLSession.shared.data(
-            for: URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData),
+            for: URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData)
         )
         guard (response as? HTTPURLResponse)?.statusCode == 200, metadata.count < 2 * 1024 * 1024 else {
             throw ToolchainFailure("Unable to read the Command Line Tools details from Apple. Try again.")
@@ -104,7 +104,7 @@ public struct ToolchainCatalog: Sendable {
                     url: url,
                     size: size.int64Value,
                     upstreamDigest: digest,
-                    upstreamDigestAlgorithm: digest == nil ? nil : "xar-toc-sha1",
+                    upstreamDigestAlgorithm: digest == nil ? nil : "xar-toc-sha1"
                 ))
             }
         }
@@ -123,7 +123,7 @@ enum ResumableDownload {
         progress: ToolchainProgressHandler,
         session: URLSession = .shared,
         rangeBytes: Int64 = Self.rangeBytes,
-        parallelRanges: Int = Self.parallelRanges,
+        parallelRanges: Int = Self.parallelRanges
     ) async throws -> URL {
         guard source.url.scheme == "https", source.size > 0, source.size <= 8 * 1024 * 1024 * 1024 else {
             throw ToolchainFailure("The download details for this toolchain are invalid. Choose another toolchain.")
@@ -179,7 +179,7 @@ enum ResumableDownload {
                             from: range.0,
                             to: range.1,
                             validator: range.0 > 0 ? known : nil,
-                            session: session,
+                            session: session
                         )
                         return (index, data, response)
                     }
@@ -213,14 +213,14 @@ enum ResumableDownload {
                 let checkpointDigest = hex(prefixHash.finalize())
                 try writeJSON(
                     Receipt(source: source, validator: validator, bytes: offset, prefixSHA256: checkpointDigest),
-                    to: record,
+                    to: record
                 )
             }
             progress(.init(
                 stage: .downloading,
                 completedBytes: offset,
                 totalBytes: source.size,
-                detail: source.productID,
+                detail: source.productID
             ))
         }
         if let digest = source.upstreamDigest {
@@ -235,7 +235,7 @@ enum ResumableDownload {
             let length = try header.number(8, as: UInt64.self, big: true)
             guard length <= 16 * 1024 * 1024 else {
                 throw ToolchainFailure(
-                    "The downloaded package index exceeds the size limit. Choose another toolchain.",
+                    "The downloaded package index exceeds the size limit. Choose another toolchain."
                 )
             }
             try reader.seek(UInt64(header.number(4, as: UInt16.self, big: true)))
@@ -244,7 +244,7 @@ enum ResumableDownload {
                 try handle.truncate(atOffset: 0)
                 try? FileManager.default.removeItem(at: record)
                 throw ToolchainFailure(
-                    "The downloaded package failed its integrity check. Try again to start a fresh download.",
+                    "The downloaded package failed its integrity check. Try again to start a fresh download."
                 )
             }
         }
@@ -262,7 +262,7 @@ enum ResumableDownload {
         from start: Int64,
         to end: Int64,
         validator: String?,
-        session: URLSession,
+        session: URLSession
     ) async throws -> (Data, HTTPURLResponse) {
         var request = URLRequest(url: url)
         request.setValue("bytes=\(start)-\(end)", forHTTPHeaderField: "Range")
@@ -337,7 +337,7 @@ private final class RangeReceiver: NSObject, URLSessionDataDelegate, @unchecked 
         _: URLSession,
         dataTask _: URLSessionDataTask,
         didReceive response: URLResponse,
-        completionHandler: @escaping (URLSession.ResponseDisposition) -> Void,
+        completionHandler: @escaping (URLSession.ResponseDisposition) -> Void
     ) {
         // Anything but a partial answer is judged by its status and headers alone: its body
         // (a whole package, for a 200) is never read.

@@ -38,7 +38,7 @@ final class SettingsViewController: TableController {
 
     private lazy var dataSource = TableDataSource<Section, Row, RowContent>(
         tableView: tableView,
-        identifier: { $0.row },
+        identifier: { $0.row }
     ) { [weak self] table, _, row in
         self?.cell(in: table, content: row)
     }
@@ -84,13 +84,13 @@ final class SettingsViewController: TableController {
             menu: UIMenu(children: [
                 UIAction(
                     title: String(localized: "Open Onboarding"),
-                    image: UIImage(systemName: "hand.wave"),
+                    image: UIImage(systemName: "hand.wave")
                 ) { [weak self] _ in self?.openOnboarding() },
                 UIAction(
                     title: String(localized: "Report a Problem"),
-                    image: UIImage(systemName: "exclamationmark.bubble"),
-                ) { _ in Self.reportProblem() },
-            ]),
+                    image: UIImage(systemName: "exclamationmark.bubble")
+                ) { _ in Self.reportProblem() }
+            ])
         ).then { $0.accessibilityLabel = String(localized: "More") }
         updateRows()
     }
@@ -205,7 +205,7 @@ final class SettingsViewController: TableController {
         case .launch:
             choose(
                 title: String(localized: "On Launch"),
-                options: Preferences.Launch.allCases.map { ($0.title, $0 == Preferences.launch) },
+                options: Preferences.Launch.allCases.map { ($0.title, $0 == Preferences.launch) }
             ) { index in
                 Preferences.launch = Preferences.Launch.allCases[index]
                 self.updateRows()
@@ -216,8 +216,8 @@ final class SettingsViewController: TableController {
                 title: String(localized: "Return Key"),
                 options: [
                     (String(localized: "Send"), !ComposerBehavior.useConfirmationOnSend),
-                    (String(localized: "New Line"), ComposerBehavior.useConfirmationOnSend),
-                ],
+                    (String(localized: "New Line"), ComposerBehavior.useConfirmationOnSend)
+                ]
             ) { index in
                 ComposerBehavior.useConfirmationOnSend = index == 1
                 self.updateRows()
@@ -229,7 +229,7 @@ final class SettingsViewController: TableController {
                 title: String(localized: "Compression Threshold"),
                 options: Preferences.compressionChoices.map {
                     (Preferences.percentText($0), abs($0 - current) < 0.001)
-                },
+                }
             ) { index in
                 Preferences.compressionThreshold = Preferences.compressionChoices[index]
                 self.updateRows()
@@ -259,7 +259,7 @@ final class SettingsViewController: TableController {
     private func choose(
         title: String,
         options: [(String, Bool)],
-        chosen: @escaping (Int) -> Void,
+        chosen: @escaping (Int) -> Void
     ) {
         let sheet = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
         for (index, option) in options.enumerated() {
@@ -270,7 +270,7 @@ final class SettingsViewController: TableController {
         sheet.addAction(UIAlertAction(title: String(localized: "Cancel"), style: .cancel))
         sheet.popoverPresentationController?.sourceView = view
         sheet.popoverPresentationController?.sourceRect = CGRect(
-            x: view.bounds.midX, y: view.bounds.midY, width: 1, height: 1,
+            x: view.bounds.midX, y: view.bounds.midY, width: 1, height: 1
         )
         present(sheet, animated: true)
     }

@@ -14,7 +14,7 @@ struct PackagePublishToolTests {
         bootstrap: String = "roothide",
         configuration: String = "Release",
         version: String = "1.0",
-        present: Bool = true,
+        present: Bool = true
     ) -> PackageBuildRecord {
         let architecture = bootstrap == "roothide" ? "iphoneos-arm64e" : "iphoneos-arm64"
         return PackageBuildRecord(
@@ -27,7 +27,7 @@ struct PackagePublishToolTests {
             architecture: architecture,
             file: "/data/Builds/p-clock/\(id)/com.example.clock_\(version)_\(architecture).deb",
             digest: "sha256:" + String(repeating: bootstrap == "roothide" ? "a" : "b", count: 64),
-            present: present,
+            present: present
         )
     }
 
@@ -47,9 +47,9 @@ struct PackagePublishToolTests {
                     architecture: record.architecture,
                     bootstrap: record.bootstrap,
                     file: record.file,
-                    digest: record.digest,
+                    digest: record.digest
                 )
-            },
+            }
         )
     }
 
@@ -86,7 +86,7 @@ struct PackagePublishToolTests {
             policy: ApprovalPolicy(mode: .confirm),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            gate: ApprovalGate { _ in },
+            gate: ApprovalGate { _ in }
         ).agentTools(mcp: []).map(\.name)
         #expect(general.contains("apelin_package_publish"), "General Chat too")
     }
@@ -174,7 +174,7 @@ struct PackagePublishToolTests {
             (["build_ids": ["build-nothing"]], "No build build-nothing made a package"),
             (["build_ids": ["build-debug"]], "build-debug is a Debug build of com.example.clock 1.0 for iphoneos-arm64e; publish a release build"),
             (["build_ids": ["build-gone"]], "is no longer in Apelin's build folder: build it again"),
-            (["build_ids": ["build-roothide", "build-twin"]], "build-roothide and build-twin are both com.example.clock 1.0 for iphoneos-arm64e"),
+            (["build_ids": ["build-roothide", "build-twin"]], "build-roothide and build-twin are both com.example.clock 1.0 for iphoneos-arm64e")
         ]
         for (arguments, words) in refused {
             await #expect {

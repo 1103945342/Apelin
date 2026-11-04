@@ -24,7 +24,7 @@ struct SquashToolTests {
             commits: preview.commits,
             count: 3,
             upstream: upstream,
-            published: published,
+            published: published
         )
     }
 
@@ -79,7 +79,7 @@ struct SquashToolTests {
             base: preview.base,
             expectedHead: preview.previousHead,
             message: "Add the clock",
-            evidence: .user(requestID: request.id, fingerprint: request.fingerprint),
+            evidence: .user(requestID: request.id, fingerprint: request.fingerprint)
         ))
         guard case let .text(text)? = result.content.first else {
             Issue.record("no answer"); return
@@ -133,7 +133,7 @@ struct SquashToolTests {
         for arguments: JSONValue in [
             ["message": "Add the clock"],
             ["count": 2, "base": "aaaaaaa", "message": "Add the clock"],
-            ["count": 2, "message": " "],
+            ["count": 2, "message": " "]
         ] {
             await #expect(throws: ToolArgumentError.self) {
                 _ = try await harness.run(.gitSquash, arguments)

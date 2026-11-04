@@ -19,7 +19,7 @@ public struct SystemLogReader: LogEvidenceSource, LiveLogSource {
     public func listen(
         _ filter: LogFilter,
         until deadline: Date,
-        deliver: @escaping @Sendable (LogEntry) -> Bool,
+        deliver: @escaping @Sendable (LogEntry) -> Bool
     ) throws -> LiveLogListener {
         try filter.validateMatchFields()
         let listener = LiveLogListener(deadline: deadline, deliver: deliver)
@@ -32,7 +32,7 @@ public struct SystemLogReader: LogEvidenceSource, LiveLogSource {
                 subsystem: subsystem,
                 category: category,
                 level: LogLevel(logType: type),
-                message: message,
+                message: message
             )
             guard filter.matches(entry) else { return true }
             return listener.offer(entry)
@@ -60,7 +60,7 @@ public struct SystemLogReader: LogEvidenceSource, LiveLogSource {
                 subsystem: subsystem,
                 category: category,
                 level: LogLevel(logType: type),
-                message: message,
+                message: message
             ))
         }, &failure)
         guard ran else {

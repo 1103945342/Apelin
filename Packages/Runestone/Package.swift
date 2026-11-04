@@ -19,19 +19,19 @@ let grammars: [(name: String, cxx: Bool, exclude: [String])] = [
     ("TreeSitterSwift", false, []),
     ("TreeSitterXML", false, []),
     // scanner.cc includes the schema; compiled alone it is not a unit.
-    ("TreeSitterYAML", true, ["src/schema.generated.cc"]),
+    ("TreeSitterYAML", true, ["src/schema.generated.cc"])
 ]
 
 let package = Package(
     name: "Runestone",
     defaultLocalization: "en",
     platforms: [
-        .iOS(.v16),
+        .iOS(.v16)
     ],
     products: [
         .library(name: "Runestone", targets: ["Runestone"]),
         .library(name: "RunestoneLanguageSupport", targets: ["RunestoneLanguageSupport"]),
-        .library(name: "RunestoneThemeSupport", targets: ["RunestoneThemeSupport"]),
+        .library(name: "RunestoneThemeSupport", targets: ["RunestoneThemeSupport"])
     ],
     targets: [
         // lib.c includes every other runtime source; compiling them again
@@ -49,11 +49,11 @@ let package = Package(
             dependencies: ["TreeSitter"],
             resources: [
                 .copy("PrivacyInfo.xcprivacy"),
-                .process("TextView/Appearance/Theme.xcassets"),
+                .process("TextView/Appearance/Theme.xcassets")
             ],
             swiftSettings: [
                 .swiftLanguageMode(.v5),
-                .enableUpcomingFeature("ConciseMagicFile"),
+                .enableUpcomingFeature("ConciseMagicFile")
             ]
         ),
         .target(
@@ -64,7 +64,7 @@ let package = Package(
         .target(
             name: "RunestoneThemeSupport",
             dependencies: ["Runestone"]
-        ),
+        )
     ] + grammars.map { grammar in
         .target(
             name: grammar.name,

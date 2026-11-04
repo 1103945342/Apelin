@@ -17,7 +17,7 @@ final class SystemLogReaderTests: XCTestCase {
             subsystem: "wiki.qaq.apelin.hello",
             category: "ui",
             level: .default,
-            message: "ApelinHello: loaded into SpringBoard",
+            message: "ApelinHello: loaded into SpringBoard"
         )
         XCTAssertTrue(LogFilter(subsystem: "wiki.qaq.apelin").matches(entry))
         XCTAssertFalse(LogFilter(subsystem: "wiki.qaq.ape").matches(entry), "dotted children only")
@@ -58,7 +58,7 @@ final class SystemLogReaderTests: XCTestCase {
                 subsystem: "wiki.qaq.apelin.tests",
                 messageContains: marker,
                 duration: 2,
-                maxEntries: 3,
+                maxEntries: 3
             ))
         } catch let DiagnosticsError.unavailable(reason) {
             throw XCTSkip("live stream unavailable: \(reason)")
@@ -82,7 +82,7 @@ final class SystemLogReaderTests: XCTestCase {
         let received = Received()
         let listener = try SystemLogReader().listen(
             LogFilter(subsystem: "wiki.qaq.apelin.tests", messageContains: marker),
-            until: Date().addingTimeInterval(30),
+            until: Date().addingTimeInterval(30)
         ) { entry in
             received.append(entry.message)
             return true

@@ -26,7 +26,7 @@ struct WelcomeEnvironmentRecommendation {
     static func resolve(
         catalog: [ToolchainCatalogProduct],
         status: ToolchainStatusResponse,
-        sdks: SDKListResponse,
+        sdks: SDKListResponse
     ) -> Self? {
         var choices = sdks.sdks.map { SDK(version: $0.version, installed: true, source: nil) }
         for source in sdks.sources ?? [] where source.enabled && source.problem == nil {
@@ -38,7 +38,7 @@ struct WelcomeEnvironmentRecommendation {
                 choices.append(SDK(
                     version: version,
                     installed: false,
-                    source: .repository(url: source.url, branch: branch),
+                    source: .repository(url: source.url, branch: branch)
                 ))
             }
         }

@@ -19,7 +19,7 @@ final class TemplatesController: TableController {
 
     private lazy var dataSource = TableDataSource<String, String, Row>(
         tableView: tableView,
-        identifier: { $0.id },
+        identifier: { $0.id }
     ) { [weak self] table, _, row in
         self?.cell(in: table, template: row.template)
     }

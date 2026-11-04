@@ -42,7 +42,7 @@ public struct ConfirmLoadedResponse: Sendable, Hashable, Codable {
         markerLogged: Bool,
         filterMatches: Bool? = nil,
         logEvidence: [String] = [],
-        notes: String = "",
+        notes: String = ""
     ) {
         self.loaded = loaded
         basis = Self.markerBasis
@@ -178,7 +178,7 @@ public struct SymbolicatedFrame: Sendable, Hashable, Codable {
         address: String,
         symbol: String? = nil,
         file: String? = nil,
-        line: Int? = nil,
+        line: Int? = nil
     ) {
         self.index = index
         self.image = image
@@ -200,7 +200,7 @@ public struct SymbolicateCrashResponse: Sendable, Hashable, Codable {
         reportID: String,
         matchedImageUUID: String?,
         crashedThread: [SymbolicatedFrame],
-        suspects: [String] = [],
+        suspects: [String] = []
     ) {
         self.reportID = reportID
         self.matchedImageUUID = matchedImageUUID
@@ -264,7 +264,7 @@ public struct UIElementNode: Sendable, Hashable, Codable {
         label: String? = nil,
         value: String? = nil,
         frame: [Double] = [],
-        children: [UIElementNode] = [],
+        children: [UIElementNode] = []
     ) {
         self.id = id
         self.role = role
@@ -318,7 +318,7 @@ public struct UIActionResponse: Sendable, Hashable, Codable {
         performed: Bool,
         message: String = "",
         typedTextMatches: Bool? = nil,
-        fieldValues: [String]? = nil,
+        fieldValues: [String]? = nil
     ) {
         self.performed = performed
         self.message = message

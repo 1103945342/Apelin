@@ -59,7 +59,7 @@ public struct ArtifactRecord: Codable, Sendable, Equatable {
             packagingDigest: packagingDigest,
             path: path,
             projectID: projectID,
-            packageFiles: packageFiles,
+            packageFiles: packageFiles
         )
     }
 
@@ -146,7 +146,7 @@ public struct Packager: Sendable {
             package: package.id,
             version: package.version,
             architecture: layout.architecture,
-            description: description,
+            description: description
         )
         control["Name"] = package.name
         control["Icon"] = package.icon
@@ -163,7 +163,7 @@ public struct Packager: Sendable {
             ("Conflicts", package.conflicts),
             ("Breaks", package.breaks),
             ("Replaces", package.replaces),
-            ("Provides", package.provides),
+            ("Provides", package.provides)
         ] {
             if let relations, !relations.isEmpty {
                 control[field] = relations.joined(separator: ", ")
@@ -205,7 +205,7 @@ public struct Packager: Sendable {
                     }
                 } else {
                     entries.append(
-                        .file(packagePath, copying: built.executable, mode: mode(entry.mode, default: 0o755)),
+                        .file(packagePath, copying: built.executable, mode: mode(entry.mode, default: 0o755))
                     )
                 }
             } else if let file = entry.file {
@@ -241,7 +241,7 @@ public struct Packager: Sendable {
             let plist = try PropertyListSerialization.data(
                 fromPropertyList: ["Filter": inner],
                 format: .xml,
-                options: 0,
+                options: 0
             )
             try entries.append(.file(layout.packagePath(for: filterPath), contents: plist, mode: 0o644))
             let root = inputs.installRoot == "/" ? "" : inputs.installRoot
@@ -255,7 +255,7 @@ public struct Packager: Sendable {
                 filterPlistInstalledPath: root + filterPath,
                 bundles: filter.bundles ?? [],
                 executables: filter.executables ?? [],
-                classes: filter.classes ?? [],
+                classes: filter.classes ?? []
             )
         }
         writer.entries = entries
@@ -279,7 +279,7 @@ public struct Packager: Sendable {
             path: destination,
             digest: CanonicalJSON.sha256Tag(data),
             byteCount: Int64(data.count),
-            loadCheck: loadCheck,
+            loadCheck: loadCheck
         )
     }
 
@@ -297,9 +297,9 @@ public struct Packager: Sendable {
                 executable: shell,
                 arguments: ["-n", scratch.path],
                 workingDirectory: inputs.workDirectory.path,
-                environment: ["PATH": "/usr/bin:/bin"],
+                environment: ["PATH": "/usr/bin:/bin"]
             ),
-            cancellation: BuildCancellation(),
+            cancellation: BuildCancellation()
         )
         guard result.succeeded else {
             throw BuildFailure(
@@ -309,9 +309,9 @@ public struct Packager: Sendable {
                         code: "package.script.syntax",
                         severity: .error,
                         message: result.output.replacingOccurrences(of: scratch.path, with: name),
-                        file: name,
-                    ),
-                ],
+                        file: name
+                    )
+                ]
             )
         }
     }

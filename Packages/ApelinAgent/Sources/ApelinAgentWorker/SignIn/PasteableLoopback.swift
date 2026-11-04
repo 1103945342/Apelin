@@ -69,7 +69,7 @@ final class PasteableLoopback: OAuthLoopbackListener, @unchecked Sendable {
         guard let components = URLComponents(string: trimmed), let items = components.queryItems else {
             throw ApelinError(
                 .badRequest,
-                "This is not the address Safari showed after sign-in. Copy the full address from Safari and paste it again.",
+                "This is not the address Safari showed after sign-in. Copy the full address from Safari and paste it again."
             )
         }
         var parameters: [String: String] = [:]
@@ -81,7 +81,7 @@ final class PasteableLoopback: OAuthLoopbackListener, @unchecked Sendable {
         guard parameters["code"]?.isEmpty == false || parameters["error"]?.isEmpty == false else {
             throw ApelinError(
                 .badRequest,
-                "This address does not contain a sign-in code. Copy the full address from Safari and paste it again.",
+                "This address does not contain a sign-in code. Copy the full address from Safari and paste it again."
             )
         }
         return parameters

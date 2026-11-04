@@ -120,7 +120,7 @@ public struct LogRedaction: Sendable {
         }
         let secret: Set<String> = [
             "token", "password", "passwd", "passphrase", "pwd", "pass", "secret", "secrets", "credential",
-            "credentials", "cookie", "authorization", "auth", "apikey", "privatekey", "accesskey",
+            "credentials", "cookie", "authorization", "auth", "apikey", "privatekey", "accesskey"
         ]
         return last == "key" || words.contains(where: secret.contains)
     }
@@ -159,23 +159,23 @@ public struct LogRedaction: Sendable {
     /// `name: value`, `name=value`, `"name": "value"` and, inside JSON
     /// written as a string, `\"name\":\"value\"`: `$1` the name.
     private static let assignment = PrivateShapes.pattern(
-        #"(?<![A-Za-z0-9_.-])([A-Za-z][A-Za-z0-9_.-]{0,63})\\?["']?[ \t]{0,4}[:=][ \t]{0,4}"#,
+        #"(?<![A-Za-z0-9_.-])([A-Za-z][A-Za-z0-9_.-]{0,63})\\?["']?[ \t]{0,4}[:=][ \t]{0,4}"#
     )
 
     /// A command line's `--name value` or `--name=value`: `$1` the name.
     private static let option = PrivateShapes.pattern(
-        #"(?<![A-Za-z0-9_-])--([A-Za-z][A-Za-z0-9_-]{0,63})(?:=|[ \t]{1,4})"#,
+        #"(?<![A-Za-z0-9_-])--([A-Za-z][A-Za-z0-9_-]{0,63})(?:=|[ \t]{1,4})"#
     )
 
     /// curl's `-u user:password` and `--user user:password`, up to the
     /// password.
     private static let userOption = PrivateShapes.pattern(
-        #"(?<![A-Za-z0-9_-])(?:-u|--user)[ \t]{1,4}["']?[^\s:"']{1,256}:"#,
+        #"(?<![A-Za-z0-9_-])(?:-u|--user)[ \t]{1,4}["']?[^\s:"']{1,256}:"#
     )
 
     /// Headers whose whole value is the credential, to the end of the line.
     private static let credentialHeaders: Set<String> = [
-        "authorization", "proxy-authorization", "cookie", "set-cookie", "x-api-key", "api-key", "x-auth-token",
+        "authorization", "proxy-authorization", "cookie", "set-cookie", "x-api-key", "api-key", "x-auth-token"
     ]
 
     /// The longest value read after a name.
@@ -191,7 +191,7 @@ public struct LogRedaction: Sendable {
         in text: String,
         after expression: NSRegularExpression,
         header: Bool,
-        named: Bool = true,
+        named: Bool = true
     ) -> String {
         let source = text as NSString
         var masks: [NSRange] = []
@@ -284,13 +284,13 @@ public struct LogRedaction: Sendable {
 
     /// A user and password in an address: `$1` the scheme.
     private static let userInfo = PrivateShapes.pattern(
-        #"(?i)(?<![a-z0-9+.-])([a-z][a-z0-9+.-]{0,31}://)[^/\s:@]{1,256}:[^/\s@]{1,256}@"#,
+        #"(?i)(?<![a-z0-9+.-])([a-z][a-z0-9+.-]{0,31}://)[^/\s:@]{1,256}:[^/\s@]{1,256}@"#
     )
 
     /// An e-mail address. A domain starts with a letter: `icon@2x.png` is
     /// a file.
     private static let email = PrivateShapes.pattern(
-        #"(?<![A-Za-z0-9._%+-])[A-Za-z0-9._%+-]{1,64}@[A-Za-z][A-Za-z0-9-]{0,62}(?:\.[A-Za-z0-9-]{1,63}){0,8}\.[A-Za-z]{2,24}"#,
+        #"(?<![A-Za-z0-9._%+-])[A-Za-z0-9._%+-]{1,64}@[A-Za-z][A-Za-z0-9-]{0,62}(?:\.[A-Za-z0-9-]{1,63}){0,8}\.[A-Za-z]{2,24}"#
     )
 
     private struct Rule: @unchecked Sendable {
@@ -310,17 +310,17 @@ public struct LogRedaction: Sendable {
         Rule(expression: PrivateShapes.pattern(#"/((?:jb|dopamine)-)[A-Za-z0-9]{4,64}"#), template: "/$1<id>"),
         Rule(
             expression: PrivateShapes.pattern(#"(/var/containers/(?:Bundle|Data|Shared)/[A-Za-z]{1,32}/)[0-9A-Fa-f-]{36}"#),
-            template: "$1<id>",
+            template: "$1<id>"
         ),
         Rule(expression: PrivateShapes.pattern(#"/Users/[^/\s"']{1,255}"#), template: "/Users/<user>"),
-        Rule(expression: PrivateShapes.pattern(#"/home/[^/\s"']{1,255}"#), template: "/home/<user>"),
+        Rule(expression: PrivateShapes.pattern(#"/home/[^/\s"']{1,255}"#), template: "/home/<user>")
     ]
 
     private static func replacing(_ expression: NSRegularExpression, in text: String, with template: String) -> String {
         expression.stringByReplacingMatches(
             in: text,
             range: NSRange(location: 0, length: (text as NSString).length),
-            withTemplate: template,
+            withTemplate: template
         )
     }
 

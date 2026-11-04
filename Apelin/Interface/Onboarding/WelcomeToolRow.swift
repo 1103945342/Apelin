@@ -50,14 +50,14 @@ final class WelcomeToolRow: UITableViewCell {
         shimmer.colors = [
             UIColor.white.withAlphaComponent(0.4).cgColor,
             UIColor.white.cgColor,
-            UIColor.white.withAlphaComponent(0.4).cgColor,
+            UIColor.white.withAlphaComponent(0.4).cgColor
         ]
         isAccessibilityElement = true
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(updateShimmer),
             name: UIAccessibility.reduceMotionStatusDidChangeNotification,
-            object: nil,
+            object: nil
         )
     }
 

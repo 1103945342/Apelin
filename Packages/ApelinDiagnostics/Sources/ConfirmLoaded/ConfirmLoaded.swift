@@ -31,7 +31,7 @@ public struct LoadConfirmationRequest: Codable, Hashable, Sendable {
         dylibPath: String,
         filterPlist: Data? = nil,
         coreFoundationVersion: Double? = nil,
-        logWindow: TimeInterval = 15,
+        logWindow: TimeInterval = 15
     ) {
         self.marker = marker
         self.markerSubsystem = markerSubsystem
@@ -50,7 +50,7 @@ public struct LoadConfirmationRequest: Codable, Hashable, Sendable {
             process: targetExecutable,
             messageContains: marker,
             duration: logWindow,
-            maxEntries: 20,
+            maxEntries: 20
         )
     }
 }
@@ -132,7 +132,7 @@ public struct ConfirmLoaded: Sendable {
     public func run(
         _ request: LoadConfirmationRequest,
         trigger: (@Sendable () throws -> Void)? = nil,
-        stage: (@Sendable (Stage) -> Void)? = nil,
+        stage: (@Sendable (Stage) -> Void)? = nil
     ) -> LoadConfirmation {
         let filter = Self.evaluateFilter(request)
 
@@ -160,7 +160,7 @@ public struct ConfirmLoaded: Sendable {
             marker: Self.evaluateMarker(markerResult, request: request),
             image: Self.imageNotRead,
             filter: filter,
-            triggerFailure: triggerError.map { "\($0)" },
+            triggerFailure: triggerError.map { "\($0)" }
         )
     }
 
@@ -184,12 +184,12 @@ public struct ConfirmLoaded: Sendable {
     /// rule for another system.
     public static let imageNotRead = ImageEvidence(
         status: .notRead,
-        detail: "The target's image list is never read, on any iOS version: reading it panicked the kernel on a test device.",
+        detail: "The target's image list is never read, on any iOS version: reading it panicked the kernel on a test device."
     )
 
     public static func evaluateMarker(
         _ result: Result<LogReadResult, Error>,
-        request: LoadConfirmationRequest,
+        request: LoadConfirmationRequest
     ) -> MarkerEvidence {
         switch result {
         case let .failure(error):
@@ -202,7 +202,7 @@ public struct ConfirmLoaded: Sendable {
             if hits.isEmpty {
                 return MarkerEvidence(
                     status: .absent,
-                    detail: "No line containing \"\(request.marker)\" from \(request.targetExecutable) in \(Int(request.logWindow)) s.",
+                    detail: "No line containing \"\(request.marker)\" from \(request.targetExecutable) in \(Int(request.logWindow)) s."
                 )
             }
             let pids = Set(hits.map(\.pid)).sorted().map(String.init).joined(separator: ", ")
@@ -223,7 +223,7 @@ public struct ConfirmLoaded: Sendable {
         let match = filter.evaluate(for: FilterTarget(
             bundleIdentifier: request.targetBundleIdentifier,
             executableName: request.targetExecutable,
-            coreFoundationVersion: request.coreFoundationVersion,
+            coreFoundationVersion: request.coreFoundationVersion
         ))
         let status: EvidenceStatus = switch match.verdict {
         case .matches: .confirmed

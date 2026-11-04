@@ -35,7 +35,7 @@ struct FileImage: Sendable {
         "public.heif": "HEIF",
         "org.webmproject.webp": "WebP",
         "public.tiff": "TIFF",
-        "com.microsoft.bmp": "BMP",
+        "com.microsoft.bmp": "BMP"
     ]
 
     /// The format of a file whose first bytes are `head`, when it is one
@@ -69,7 +69,7 @@ struct FileImage: Sendable {
         // Divided, so no size a header claims overflows.
         guard facts.width <= maxSourcePixels / facts.height else {
             throw ToolArgumentError(
-                "\(name) is a \(facts.width)×\(facts.height) \(format) image, over the \(maxSourcePixels >> 20)-megapixel limit",
+                "\(name) is a \(facts.width)×\(facts.height) \(format) image, over the \(maxSourcePixels >> 20)-megapixel limit"
             )
         }
         // Smaller until it fits: a detailed picture with transparency stays
@@ -79,7 +79,7 @@ struct FileImage: Sendable {
                 kCGImageSourceCreateThumbnailFromImageAlways: true,
                 kCGImageSourceCreateThumbnailWithTransform: true,
                 kCGImageSourceThumbnailMaxPixelSize: side,
-                kCGImageSourceShouldCacheImmediately: true,
+                kCGImageSourceShouldCacheImmediately: true
             ] as CFDictionary
             guard let picture = CGImageSourceCreateThumbnailAtIndex(source, index, options) else { return nil }
             guard let encoded = encode(picture, transparent: facts.transparent) else {
@@ -102,7 +102,7 @@ struct FileImage: Sendable {
     /// photo an alpha channel when it scales it.
     private static func facts(
         _ source: CGImageSource,
-        _ index: Int,
+        _ index: Int
     ) -> (width: Int, height: Int, transparent: Bool)? {
         guard let properties = CGImageSourceCopyPropertiesAtIndex(source, index, nil) as? [CFString: Any],
               let width = properties[kCGImagePropertyPixelWidth] as? Int,

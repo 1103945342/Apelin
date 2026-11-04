@@ -93,7 +93,7 @@ final class ConfirmLoadedTests: XCTestCase {
             targetBundleIdentifier: "com.apple.springboard",
             dylibPath: "/var/jb/Library/MobileSubstrate/DynamicLibraries/ApelinHello.dylib",
             filterPlist: Data(#"{ Filter = { Bundles = ( "com.apple.springboard" ); }; }"#.utf8),
-            logWindow: window,
+            logWindow: window
         )
     }
 
@@ -106,7 +106,7 @@ final class ConfirmLoadedTests: XCTestCase {
         let stages = Stages()
         let confirm = ConfirmLoaded(logs: FakeLogs(entries: [
             line("SpringBoardHelper", 801, "ApelinHello: loaded into SpringBoardHelper"),
-            line("SpringBoard", 1200, "ApelinHello: loaded into SpringBoard"),
+            line("SpringBoard", 1200, "ApelinHello: loaded into SpringBoard")
         ]))
         let result = confirm.run(request(), trigger: { triggered.set() }, stage: stages.append)
         XCTAssertTrue(triggered.value)

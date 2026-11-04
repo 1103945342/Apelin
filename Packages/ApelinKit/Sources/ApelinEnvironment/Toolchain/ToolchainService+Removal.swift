@@ -12,13 +12,13 @@ public extension ToolchainService {
         guard users.isEmpty else {
             throw ApelinError(
                 .conflict,
-                "\(record.id) is used by \(users.joined(separator: ", ")). Move these projects to another toolchain first.",
+                "\(record.id) is used by \(users.joined(separator: ", ")). Move these projects to another toolchain first."
             )
         }
         guard record.installationID != nil else {
             throw ApelinError(
                 .conflict,
-                "Apelin has no install record for \(record.id). Remove its package with your preferred package manager.",
+                "Apelin has no install record for \(record.id). Remove its package with your preferred package manager."
             )
         }
         return record
@@ -27,7 +27,7 @@ public extension ToolchainService {
     func remove(
         _ record: ToolchainRecord,
         installer: any PackageInstaller,
-        reporter: TaskReporter,
+        reporter: TaskReporter
     ) async throws {
         reporter.stage("removing")
         if let installationID = record.installationID {

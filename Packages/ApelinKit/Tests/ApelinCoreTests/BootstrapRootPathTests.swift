@@ -20,7 +20,7 @@ final class BootstrapRootPathTests: XCTestCase {
         let recorded = old + "/usr/lib/apelin/toolchains/clt-27.0-abcdef01"
         XCTAssertEqual(
             BootstrapRootPath.rebased(recorded, onto: new + "/var/mobile/Documents/wiki.qaq.apelin"),
-            new + "/usr/lib/apelin/toolchains/clt-27.0-abcdef01",
+            new + "/usr/lib/apelin/toolchains/clt-27.0-abcdef01"
         )
         XCTAssertEqual(BootstrapRootPath.rebased(old, onto: new), new)
     }
@@ -29,7 +29,7 @@ final class BootstrapRootPathTests: XCTestCase {
         let recorded = "/var/containers/Bundle/Application/.jbroot-F1E6FD3C82204430/usr/lib"
         XCTAssertEqual(
             BootstrapRootPath.rebased(recorded, onto: new + "/var/mobile"),
-            "/var/containers/Bundle/Application/.jbroot-809D56B82B2E1CEA/usr/lib",
+            "/var/containers/Bundle/Application/.jbroot-809D56B82B2E1CEA/usr/lib"
         )
     }
 

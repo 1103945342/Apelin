@@ -26,7 +26,7 @@ final class ConsoleRunnerTests: XCTestCase {
             service: ApelinService(transport: transport),
             folder: folder,
             log: RecordingLog(),
-            respringPause: respringPause,
+            respringPause: respringPause
         )
     }
 
@@ -158,7 +158,7 @@ final class ConsoleRunnerTests: XCTestCase {
         """)
         XCTAssertEqual(
             output(runID).first { $0["type"] == .string("step.result") }?["error"]?["code"],
-            .string("denied"),
+            .string("denied")
         )
         XCTAssertEqual(fake.operations, [], "a Full open never goes out")
 
@@ -168,7 +168,7 @@ final class ConsoleRunnerTests: XCTestCase {
         """)
         XCTAssertEqual(
             output(runID).first { $0["type"] == .string("step.result") }?["error"]?["code"],
-            .string("denied"),
+            .string("denied")
         )
         XCTAssertEqual(fake.operations, [], "a Full prompt never goes out")
     }
@@ -185,7 +185,7 @@ final class ConsoleRunnerTests: XCTestCase {
             XCTAssertEqual(
                 output(runID).first { $0["type"] == .string("step.result") }?["error"]?["code"],
                 .string("denied"),
-                "ownerVerified \(mark) is refused",
+                "ownerVerified \(mark) is refused"
             )
         }
         XCTAssertEqual(fake.operations, [], "an approval with the owner mark never goes out")
@@ -202,7 +202,7 @@ final class ConsoleRunnerTests: XCTestCase {
     func testConsoleStillOpensInStrictAndRelaxed() async throws {
         fake.reply(.agentOpen, with: AgentOpenResponse(
             sessionID: "11111111-2222-4333-8444-555555555555",
-            task: TaskHandle(taskID: TaskID("t1"), kind: .agent),
+            task: TaskHandle(taskID: TaskID("t1"), kind: .agent)
         ))
         for mode in ["confirm", "relaxed"] {
             let runID = try await runInbox("""
@@ -443,7 +443,7 @@ final class ConsoleRunnerTests: XCTestCase {
     /// the output it is in.
     private func waitForLine(
         timeout: TimeInterval = 5,
-        _ matches: (JSONValue) -> Bool,
+        _ matches: (JSONValue) -> Bool
     ) async throws -> String {
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
@@ -518,7 +518,7 @@ final class ConsoleRunnerTests: XCTestCase {
         let early = output(runID)
         XCTAssertTrue(
             try Self.isRespringResult(XCTUnwrap(early.last)),
-            "no line may follow the respring within the pause: \(types(early).suffix(3))",
+            "no line may follow the respring within the pause: \(types(early).suffix(3))"
         )
         await run.value
         XCTAssertGreaterThanOrEqual(Date().timeIntervalSince(answered), pause * 0.8)

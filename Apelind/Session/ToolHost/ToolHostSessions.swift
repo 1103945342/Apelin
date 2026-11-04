@@ -74,7 +74,7 @@ actor ToolHostSessions {
             "HOME": home,
             "PATH": "\(root)/usr/bin:\(root)/bin:/usr/bin:/bin",
             "TMPDIR": home + "/tmp",
-            "DISABLE_TWEAKS": "1",
+            "DISABLE_TWEAKS": "1"
         ]
         let identity: ToolProcessIdentity? = geteuid() == 0 ? .mobile : nil
         let client = ToolHostClient(
@@ -82,7 +82,7 @@ actor ToolHostSessions {
             environment: environment,
             host: ToolPeer(name: "apelin", version: Self.hostVersion),
             runAs: identity,
-            logHandler: { line in NSLog("apelind-session: agent tool %@: %@", request.id, line) },
+            logHandler: { line in NSLog("apelind-session: agent tool %@: %@", request.id, line) }
         )
         do {
             try await client.start()
@@ -95,7 +95,7 @@ actor ToolHostSessions {
             extensionID: request.id,
             owner: caller,
             client: client,
-            manifest: validated.manifest,
+            manifest: validated.manifest
         )
         return ToolHostOpenResponse(sessionID: id, tools: validated.manifest.tools.map(Self.describe))
     }
@@ -105,7 +105,7 @@ actor ToolHostSessions {
     func call(
         _ request: ToolHostCallRequest,
         descriptors: [OwnedDescriptor],
-        caller: Caller,
+        caller: Caller
     ) async throws -> (ToolHostCallResponse, [OwnedDescriptor]) {
         let session = try owned(request.sessionID, by: caller)
         guard session.manifest.tool(named: request.tool) != nil else {
@@ -119,13 +119,13 @@ actor ToolHostSessions {
             request.attachments,
             descriptors: descriptors,
             maximumAttachments: maximumAttachments,
-            maximumBytes: maximumBytes,
+            maximumBytes: maximumBytes
         )
         let outcome = await session.client.call(
             tool: request.tool,
             arguments: arguments,
             attachments: outgoing,
-            timeout: request.timeoutSeconds,
+            timeout: request.timeoutSeconds
         )
         switch outcome {
         case let .success(result):
@@ -142,10 +142,10 @@ actor ToolHostSessions {
                             text: result.text,
                             error: .object([
                                 "code": .string(ToolErrorCode.attachmentRejected.rawValue),
-                                "message": .string(error.message),
-                            ]),
+                                "message": .string(error.message)
+                            ])
                         ),
-                        [],
+                        []
                     )
                 }
                 attachments.append(
@@ -154,8 +154,8 @@ actor ToolHostSessions {
                         name: file.name,
                         mimeType: file.mimeType,
                         byteCount: copy.byteCount,
-                        sha256: copy.sha256,
-                    ),
+                        sha256: copy.sha256
+                    )
                 )
                 returned.append(copy.descriptor)
             }
@@ -164,9 +164,9 @@ actor ToolHostSessions {
             return (
                 ToolHostCallResponse(
                     text: "",
-                    error: .object(["code": .string(failure.code.rawValue), "message": .string(failure.message)]),
+                    error: .object(["code": .string(failure.code.rawValue), "message": .string(failure.message)])
                 ),
-                [],
+                []
             )
         }
     }
@@ -203,7 +203,7 @@ actor ToolHostSessions {
         _ slots: [ToolHostAttachmentSlot],
         descriptors: [OwnedDescriptor],
         maximumAttachments: Int,
-        maximumBytes: Int,
+        maximumBytes: Int
     ) throws -> [ToolOutgoingAttachment] {
         guard slots.count <= maximumAttachments else {
             throw ApelinError(.badRequest, "a call carries at most \(maximumAttachments) attachments")
@@ -215,7 +215,7 @@ actor ToolHostSessions {
             else {
                 throw ApelinError(
                     .badRequest,
-                    "attachment slot \(slot.descriptor.index) names a descriptor this request does not carry, or one another slot already names",
+                    "attachment slot \(slot.descriptor.index) names a descriptor this request does not carry, or one another slot already names"
                 )
             }
             for (field, value) in [("argument", slot.argument), ("mimeType", slot.mimeType), ("name", slot.name)] {
@@ -225,7 +225,7 @@ actor ToolHostSessions {
                 else {
                     throw ApelinError(
                         .badRequest,
-                        "an attachment's \(field) must be 1–\(Self.maximumAttachmentFieldBytes) bytes with no NUL",
+                        "an attachment's \(field) must be 1–\(Self.maximumAttachmentFieldBytes) bytes with no NUL"
                     )
                 }
             }
@@ -235,7 +235,7 @@ actor ToolHostSessions {
                     duplicating: copy.descriptor.rawValue,
                     argument: slot.argument,
                     mimeType: slot.mimeType,
-                    name: slot.name,
+                    name: slot.name
                 )
             } catch {
                 throw ApelinError(.unavailable, "the attachment copy cannot be passed on: \(error)")

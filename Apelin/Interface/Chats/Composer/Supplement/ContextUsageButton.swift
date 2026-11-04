@@ -80,7 +80,7 @@ final class ContextUsageButton: UIControl {
             x: (bounds.width - chevronSize) / 2,
             y: (bounds.height - chevronSize) / 2,
             width: chevronSize,
-            height: chevronSize,
+            height: chevronSize
         )
     }
 

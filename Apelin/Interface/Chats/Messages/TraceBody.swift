@@ -74,7 +74,7 @@ enum TraceBody {
     private static func build(_ key: Key) -> NSAttributedString {
         let body: [NSAttributedString.Key: Any] = [
             .font: UIFont.preferredFont(forTextStyle: .body),
-            .foregroundColor: UIColor.label,
+            .foregroundColor: UIColor.label
         ]
         // A result and anything given as several lines — a command's output,
         // a file's content — read as code: a monospaced face a size down, so
@@ -82,9 +82,9 @@ enum TraceBody {
         let code: [NSAttributedString.Key: Any] = [
             .font: UIFont.monospacedSystemFont(
                 ofSize: max(11, UIFont.preferredFont(forTextStyle: .body).pointSize - 1),
-                weight: .regular,
+                weight: .regular
             ),
-            .foregroundColor: UIColor.label,
+            .foregroundColor: UIColor.label
         ]
         guard let title = key.callTitle else {
             return NSAttributedString(string: key.source, attributes: body)
@@ -92,7 +92,7 @@ enum TraceBody {
         let footnote = UIFont.preferredFont(forTextStyle: .footnote)
         let name: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: footnote.pointSize, weight: .semibold),
-            .foregroundColor: UIColor.secondaryLabel,
+            .foregroundColor: UIColor.secondaryLabel
         ]
         let result = NSMutableAttributedString()
         for (index, section) in ToolCallDetail(detail: key.source, title: title).sections.enumerated() {

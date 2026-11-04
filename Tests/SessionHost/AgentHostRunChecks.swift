@@ -29,7 +29,7 @@ func agentHostRunChecks() async {
         let otherOpen = await run.forwarded(
             AgentOpenRequest(projectName: "Tweak", sessionID: other, approvalMode: .confirm),
             sessionID: other,
-            byApp: true,
+            byApp: true
         )
         check(otherOpen.hostRestarted == true, "another conversation is told on its own first open")
         let freshHost = await AgentHostRun().forwarded(reopen, sessionID: session, byApp: true)
@@ -44,13 +44,13 @@ func agentHostRunChecks() async {
         let new = await run.forwarded(
             AgentOpenRequest(projectName: "Tweak", approvalMode: .confirm),
             sessionID: generated,
-            byApp: true,
+            byApp: true
         )
         check(new.hostRestarted == nil, "a brand-new conversation is told nothing")
         let child = await run.forwarded(
             AgentOpenRequest(projectName: "Tweak", approvalMode: .confirm, prompt: "Build it"),
             sessionID: generated,
-            byApp: false,
+            byApp: false
         )
         check(child.hostRestarted == nil, "a conversation an agent opens is told nothing")
     }
@@ -73,7 +73,7 @@ func agentHostRunChecks() async {
         // Decoded as the host decodes it, the field is still the host's to set.
         let wire = try? JSONCoding.decode(
             AgentOpenRequest.self,
-            from: Data(#"{"approvalMode":"confirm","sessionID":"\#(session)","hostRestarted":true}"#.utf8),
+            from: Data(#"{"approvalMode":"confirm","sessionID":"\#(session)","hostRestarted":true}"#.utf8)
         )
         let decoded = await run.forwarded(wire ?? reopen, sessionID: session, byApp: true)
         check(wire?.hostRestarted == true && decoded.hostRestarted == nil, "a request that arrives with the field set loses it")

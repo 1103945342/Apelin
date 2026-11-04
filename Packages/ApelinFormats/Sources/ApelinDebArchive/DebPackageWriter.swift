@@ -135,7 +135,7 @@ public struct DebPackageWriter: Sendable {
     private func writeTar(
         into member: ByteSink,
         compression: DebCompression,
-        _ body: (TarWriter) throws -> Void,
+        _ body: (TarWriter) throws -> Void
     ) throws {
         let compressor = try compression == .none ? nil : CompressingSink(compression: compression, into: member)
         let tar = TarWriter(sink: compressor ?? member)
@@ -155,7 +155,7 @@ public struct DebPackageWriter: Sendable {
                 name: entry.tarName,
                 kind: .symbolicLink(target: target),
                 mode: 0o777,
-                modificationTime: time,
+                modificationTime: time
             )
         case let .file(.data(contents)):
             try writeFile(contents, as: entry.tarName, mode: mode, modificationTime: time, to: tar)
@@ -169,13 +169,13 @@ public struct DebPackageWriter: Sendable {
         as name: String,
         mode: UInt16,
         modificationTime: Int64,
-        to tar: TarWriter,
+        to tar: TarWriter
     ) throws {
         try tar.writeHeader(
             name: name,
             kind: .file(size: Int64(contents.count)),
             mode: mode,
-            modificationTime: modificationTime,
+            modificationTime: modificationTime
         )
         try contents.withUnsafeBytes { try tar.writeContents($0) }
         try tar.finishContents(size: Int64(contents.count))
@@ -186,7 +186,7 @@ public struct DebPackageWriter: Sendable {
         as name: String,
         mode: UInt16,
         modificationTime: Int64,
-        to tar: TarWriter,
+        to tar: TarWriter
     ) throws {
         let descriptor = open(source, O_RDONLY | O_NOFOLLOW | O_CLOEXEC)
         guard descriptor >= 0 else { throw PackageFormatError.system(errno: errno, "open \(source)") }

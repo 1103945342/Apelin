@@ -51,7 +51,7 @@ actor TerminalHost {
             directory: directory,
             project: projectDirectory,
             columns: request.columns,
-            rows: request.rows,
+            rows: request.rows
         )
         let session: TerminalSession
         do {
@@ -70,7 +70,7 @@ actor TerminalHost {
         var started: [String: JSONValue] = [
             "pid": .number(Double(session.pid)),
             "shell": .string(launch.shell),
-            "cwd": .string(launch.workingDirectory),
+            "cwd": .string(launch.workingDirectory)
         ]
         if let credentials = ProcessCredentials(pid: session.pid) {
             started["uid"] = .number(Double(credentials.uid))
@@ -99,7 +99,7 @@ actor TerminalHost {
                 await registry.finish(
                     taskID,
                     .failed,
-                    message: "the shell crashed with signal \(crash) (\(String(cString: strsignal(crash))))",
+                    message: "the shell crashed with signal \(crash) (\(String(cString: strsignal(crash))))"
                 )
             } else {
                 await registry.finish(taskID, .succeeded)
@@ -124,7 +124,7 @@ actor TerminalHost {
                 }
                 sink.yield(("exit", .object(payload)))
                 sink.finish()
-            },
+            }
         )
         if let input = request.initialInput, !input.isEmpty {
             // After the shell has had a moment to set the terminal up.
@@ -170,7 +170,7 @@ actor TerminalHost {
         guard sizeRange.contains(columns), sizeRange.contains(rows) else {
             throw ApelinError(
                 .badRequest,
-                "columns and rows must each be \(sizeRange.lowerBound) to \(sizeRange.upperBound)",
+                "columns and rows must each be \(sizeRange.lowerBound) to \(sizeRange.upperBound)"
             )
         }
     }
@@ -187,7 +187,7 @@ actor TerminalHost {
         SIGABRT,
         SIGTRAP,
         SIGFPE,
-        SIGSYS,
+        SIGSYS
     ]
 
     /// The shell, its arguments and the environment `login` would have set,
@@ -202,7 +202,7 @@ actor TerminalHost {
         directory: String,
         project: String? = nil,
         columns: Int,
-        rows: Int,
+        rows: Int
     ) throws -> TerminalSession.Launch {
         let root = installRoot == "/" ? "" : installRoot
         let candidates = [
@@ -211,7 +211,7 @@ actor TerminalHost {
             "\(root)/usr/bin/zsh",
             "\(root)/bin/zsh",
             "\(root)/bin/sh",
-            "/bin/sh",
+            "/bin/sh"
         ]
         guard let shell = candidates.first(where: { access($0, X_OK) == 0 }) else {
             throw ApelinError(.unavailable, "no shell is installed")
@@ -238,7 +238,7 @@ actor TerminalHost {
             // line, so a repository's own config cannot turn it back off.
             "GIT_CONFIG_COUNT": "1",
             "GIT_CONFIG_KEY_0": "safe.bareRepository",
-            "GIT_CONFIG_VALUE_0": "explicit",
+            "GIT_CONFIG_VALUE_0": "explicit"
         ]
         let path = [
             "\(root)/usr/local/bin",
@@ -249,7 +249,7 @@ actor TerminalHost {
             "/usr/bin",
             "/bin",
             "/usr/sbin",
-            "/sbin",
+            "/sbin"
         ]
         let development = DevelopmentEnvironment.prepared(home: home, projectDirectory: project)
         environment.merge(development.variables(basePath: path)) { _, prepared in prepared }
@@ -261,7 +261,7 @@ actor TerminalHost {
             workingDirectory: directory,
             fallbackDirectory: home,
             columns: UInt16(columns),
-            rows: UInt16(rows),
+            rows: UInt16(rows)
         )
     }
 }

@@ -7,7 +7,7 @@ import Foundation
 @_silgen_name("posix_spawn_file_actions_addchdir_np")
 private func spawnAddChdir(
     _ actions: UnsafeMutablePointer<posix_spawn_file_actions_t?>,
-    _ path: UnsafePointer<CChar>,
+    _ path: UnsafePointer<CChar>
 ) -> Int32
 
 /// One tool invocation: an executable, its argv, a working directory and an
@@ -122,7 +122,7 @@ public enum ToolRunner {
     public static func run(
         _ invocation: ToolInvocation,
         cancellation: BuildCancellation,
-        onLine: ((String) -> Void)? = nil,
+        onLine: ((String) -> Void)? = nil
     ) throws -> ToolResult {
         if cancellation.isCancelled {
             throw BuildCancelled()
@@ -149,7 +149,7 @@ public enum ToolRunner {
         defer { posix_spawnattr_destroy(&attributes) }
         posix_spawnattr_setflags(
             &attributes,
-            Int16(POSIX_SPAWN_SETPGROUP | POSIX_SPAWN_CLOEXEC_DEFAULT | POSIX_SPAWN_SETSIGDEF | POSIX_SPAWN_SETSIGMASK),
+            Int16(POSIX_SPAWN_SETPGROUP | POSIX_SPAWN_CLOEXEC_DEFAULT | POSIX_SPAWN_SETSIGDEF | POSIX_SPAWN_SETSIGMASK)
         )
         posix_spawnattr_setpgroup(&attributes, 0)
         var defaults = sigset_t()
@@ -171,7 +171,7 @@ public enum ToolRunner {
         guard status == 0 else {
             close(readEnd)
             throw ToolFailure(
-                description: "could not start \(invocation.executable): \(String(cString: strerror(status)))",
+                description: "could not start \(invocation.executable): \(String(cString: strerror(status)))"
             )
         }
         guard cancellation.register(pid) else {
@@ -220,7 +220,7 @@ public enum ToolRunner {
 
     private static func withCStrings<R>(
         _ strings: [String],
-        _ body: (UnsafePointer<UnsafeMutablePointer<CChar>?>) -> R,
+        _ body: (UnsafePointer<UnsafeMutablePointer<CChar>?>) -> R
     ) -> R {
         let pointers = strings.map { strdup($0) } + [nil]
         defer { pointers.forEach { free($0) } }

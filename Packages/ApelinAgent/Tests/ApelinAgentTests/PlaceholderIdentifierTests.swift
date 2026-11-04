@@ -35,14 +35,14 @@ struct PlaceholderIdentifierTests {
         packageID: "local.apelin.banana",
         version: "0.0.1",
         installedAt: Date(timeIntervalSince1970: 1_790_000_000),
-        removable: true,
+        removable: true
     )
 
     /// A tool's result as the model reads it, decoded.
     private func run(
         _ harness: DigestApprovalTests.Harness,
         _ tool: AgentToolName,
-        _ arguments: JSONValue = [:],
+        _ arguments: JSONValue = [:]
     ) async throws -> [String: Any] {
         let (result, _) = try await harness.run(tool, arguments)
         let text = result.content.compactMap {
@@ -163,7 +163,7 @@ struct PlaceholderIdentifierTests {
         defer { harness.home.remove() }
         try harness.home.write(
             "apelin-project.json",
-            #"{"schemaVersion":1,"projectID":"x","kind":"workspace","buildSystem":"external","external":{"script":"apelin/build.sh"},"package":{"id":"local.apelin.banana"}}"#,
+            #"{"schemaVersion":1,"projectID":"x","kind":"workspace","buildSystem":"external","external":{"script":"apelin/build.sh"},"package":{"id":"local.apelin.banana"}}"#
         )
         await harness.backend.setInstallations([])
         let built = try await run(harness, .projectBuild)

@@ -24,7 +24,7 @@ func checkSidebarOrder() throws {
     var build = ChatRecord(
         summary: ChatSummary(title: "Build", lastInteraction: at(9), projectName: "Clock"),
         sessionID: UUID().uuidString.lowercased(),
-        task: task,
+        task: task
     )
     var docs = ChatRecord(summary: ChatSummary(title: "Docs", lastInteraction: at(10), projectName: "Clock"))
     let plan = ChatSummary(title: "Plan", lastInteraction: at(-30), projectName: "Clock", isPinned: true)
@@ -38,7 +38,7 @@ func checkSidebarOrder() throws {
     precondition(start.days == [
         SidebarOrder.Day(start: today, chats: [docs.summary.id, build.summary.id]),
         SidebarOrder.Day(start: at(-24), chats: [notes.summary.id]),
-        SidebarOrder.Day(start: at(-48), chats: []),
+        SidebarOrder.Day(start: at(-48), chats: [])
     ], "the rest under their days, newest first, and the pinned one's day kept with no rows")
     precondition(SidebarOrder.newest([build.summary, docs.summary, plan, notes.summary])?.id == docs.summary.id)
 
@@ -58,7 +58,7 @@ func checkSidebarOrder() throws {
         agentEvent(10, "compactionStarted", at: at(12)),
         agentEvent(11, "compactionFinished", at: at(12), ["outcome": .string("compacted")]),
         agentEvent(12, "prompt", at: at(13), ["text": .string("Review it"), "from": .string("other-session")]),
-        agentEvent(13, "finished", at: at(13), ["reason": .string("completed")]),
+        agentEvent(13, "finished", at: at(13), ["reason": .string("completed")])
     ]
     precondition(build.take(output) == output)
     // what the runtime does with a batch besides keeping its events
@@ -93,7 +93,7 @@ func checkSidebarOrder() throws {
     precondition(listed().days == [
         SidebarOrder.Day(start: at(24), chats: [notes.summary.id]),
         SidebarOrder.Day(start: today, chats: [build.summary.id, docs.summary.id]),
-        SidebarOrder.Day(start: at(-48), chats: []),
+        SidebarOrder.Day(start: at(-48), chats: [])
     ])
 
     // A conversation an agent opened is listed by when it was taken in,
@@ -103,7 +103,7 @@ func checkSidebarOrder() throws {
         "sessionID": .string(child),
         "task": .object(["taskID": .string("child-task"), "kind": .string("agent")]),
         "title": .string("Docs pass"),
-        "prompt": .string("Write the README"),
+        "prompt": .string("Write the README")
     ])
     guard var adopted = ChatAdoption.record(opened: opened, parent: build, records: [build], now: at(18)) else {
         preconditionFailure("a conversation an agent opened is taken in")
@@ -113,7 +113,7 @@ func checkSidebarOrder() throws {
         agentEvent(1, "prompt", at: at(18), ["text": .string("Write the README")]),
         agentEvent(2, "messageStarted", at: at(19)),
         agentEvent(3, "message", at: at(20), ["text": .string("Done.")]),
-        agentEvent(4, "finished", at: at(20), ["reason": .string("completed")]),
+        agentEvent(4, "finished", at: at(20), ["reason": .string("completed")])
     ]
     precondition(adopted.take(childOutput) == childOutput && adopted.summary.lastInteraction == at(18),
                  "its own first prompt and its agent's output leave it where it was taken in")
@@ -127,7 +127,7 @@ func checkSidebarOrder() throws {
         task: TaskHandle(taskID: TaskID("missed-task"), kind: .agent),
         state: .running,
         updatedAt: at(22),
-        parentSessionID: build.sessionID,
+        parentSessionID: build.sessionID
     )
     let late = ChatAdoption.record(session: missed, records: [build], now: at(23))
     precondition(late?.summary.lastInteraction == at(23), "one adopted at launch by when it was taken in, not its last event")

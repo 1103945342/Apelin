@@ -56,13 +56,13 @@ public struct DevelopmentEnvironment: Sendable, Equatable {
     public static func prepared(home: String, projectDirectory: String?) -> DevelopmentEnvironment {
         resolve(
             RegisteredEnvironment.read(DataFolder(home: home)),
-            binding: projectDirectory.flatMap(ProjectManifestBinding.read(projectDirectory:)),
+            binding: projectDirectory.flatMap(ProjectManifestBinding.read(projectDirectory:))
         )
     }
 
     public static func resolve(
         _ registered: RegisteredEnvironment,
-        binding: ProjectManifestBinding?,
+        binding: ProjectManifestBinding?
     ) -> DevelopmentEnvironment {
         func usable(_ record: ToolchainRecord, _ source: Source) -> Toolchain? {
             guard let path = record.path, let bin = ToolchainLayout.binDirectory(installedAt: path) else { return nil }
@@ -90,7 +90,7 @@ public struct DevelopmentEnvironment: Sendable, Equatable {
         return DevelopmentEnvironment(
             toolchain: toolchain,
             sdk: sdk,
-            deploymentTarget: target ?? defaultDeploymentTarget,
+            deploymentTarget: target ?? defaultDeploymentTarget
         )
     }
 

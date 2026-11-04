@@ -36,12 +36,12 @@ struct PromptState: Equatable {
         root: ScopedRoot,
         skills: [SkillDocument],
         device: DeviceFacts = .current,
-        toolExtensions: [OfferedToolExtension]? = nil,
+        toolExtensions: [OfferedToolExtension]? = nil
     ) -> PromptState {
         let memory = try? MemoryStore(root: configuration.dataRoot.url).read().forProject(configuration.project.id)
         let extensions = toolExtensions ?? ToolExtensionOffer.read(
             installRoot: configuration.installRoot,
-            policy: configuration.toolExtensionPolicy,
+            policy: configuration.toolExtensionPolicy
         ).extensions
         let inputs = EnvironmentPrompt.inputs(configuration, root: root, device: device, toolExtensions: extensions)
         return PromptState(
@@ -49,7 +49,7 @@ struct PromptState: Equatable {
             skills: skills,
             memory: memory?.records,
             environment: EnvironmentPrompt.section(inputs),
-            buildSystem: ProjectBuildSystem.read(in: root),
+            buildSystem: ProjectBuildSystem.read(in: root)
         )
     }
 
@@ -179,7 +179,7 @@ struct PromptState: Equatable {
         arguments: JSONValue,
         into told: PromptState,
         now: PromptState,
-        project: ProjectIdentity,
+        project: ProjectIdentity
     ) -> PromptState {
         var told = told
         switch tool {

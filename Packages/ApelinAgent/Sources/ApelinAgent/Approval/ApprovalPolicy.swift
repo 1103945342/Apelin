@@ -39,8 +39,8 @@ public struct ApprovalPresets: Sendable, Hashable, Codable {
             CommandPreset(name: "plutil -p", executable: "plutil", argumentPrefix: ["-p"]),
             CommandPreset(name: "git status", executable: "git", argumentPrefix: ["status"]),
             CommandPreset(name: "git diff", executable: "git", argumentPrefix: ["diff"]),
-            CommandPreset(name: "git log", executable: "git", argumentPrefix: ["log"]),
-        ],
+            CommandPreset(name: "git log", executable: "git", argumentPrefix: ["log"])
+        ]
     )
 }
 
@@ -145,7 +145,7 @@ public struct InvocationFacts: Sendable, Hashable {
         toolchainSetup: ToolchainSetupApproval? = nil,
         sdkImport: SDKImportApproval? = nil,
         otherProject: OtherProjectApproval? = nil,
-        runsAsRoot: Bool = false,
+        runsAsRoot: Bool = false
     ) {
         self.tool = tool
         self.pathCheck = pathCheck
@@ -239,7 +239,7 @@ public struct ApprovalPolicy: Sendable, Hashable {
             // starts it and passes the call on, deciding nothing again.
             return .ask(
                 reason: "\(tool.name) is a tool of \(tool.extensionName) \(tool.extensionVersion), an agent tool extension that runs in its own process. Review it before running.",
-                detail: .none,
+                detail: .none
             )
         case let .local(tool):
             return evaluateConfirm(tool, facts: facts, root: root)
@@ -258,7 +258,7 @@ public struct ApprovalPolicy: Sendable, Hashable {
         }
         return .ask(
             reason: "Runs as root, with full control of this device. Each command that runs as root needs your approval.",
-            detail: .rootCommand(command),
+            detail: .rootCommand(command)
         )
     }
 
@@ -415,7 +415,7 @@ public struct ApprovalPolicy: Sendable, Hashable {
             }
             return .ask(
                 reason: "Imports the iPhoneOS \(sdkImport.version) SDK onto this device from \(sdkImport.source) (branch \(sdkImport.branch) of \(sdkImport.url)): one branch is downloaded, checked and registered for every project. Each import needs your approval.",
-                detail: .sdkImport(sdkImport),
+                detail: .sdkImport(sdkImport)
             )
 
         // Runs the toolchain's compilers and the programs they make, as
@@ -423,7 +423,7 @@ public struct ApprovalPolicy: Sendable, Hashable {
         case .toolchainSelfTest:
             return .ask(
                 reason: "Runs the toolchain's self-test again: small programs are compiled, signed and run as mobile, and the results recorded.",
-                detail: .none,
+                detail: .none
             )
 
         // A new folder from a template: nothing in it runs, and its build
@@ -438,7 +438,7 @@ public struct ApprovalPolicy: Sendable, Hashable {
             guard let rename = facts.projectRename else { return .allow(.notRequired) }
             return .ask(
                 reason: "Renames the project \(rename.folder) (shown as “\(rename.currentName)”) to “\(rename.displayName)”. The folder and its identifiers stay. Each rename of another project needs your approval.",
-                detail: .projectRename(rename),
+                detail: .projectRename(rename)
             )
 
         // Another project, gone for good with its files and conversations:
@@ -481,7 +481,7 @@ public struct ApprovalPolicy: Sendable, Hashable {
             let unforced = target.unforced.map { " \($0)" } ?? ""
             return .ask(
                 reason: "Pushing \(branch) to \(place) publishes its commits.\(unforced) Each push needs your approval.",
-                detail: .gitPush(remote: target.remote, branch: target.branch),
+                detail: .gitPush(remote: target.remote, branch: target.branch)
             )
 
         // The project's own commits replaced by one, which the user may
@@ -542,7 +542,7 @@ public struct ApprovalPolicy: Sendable, Hashable {
             let summary = facts.gitSettings ?? "a change to the git settings"
             return .ask(
                 reason: "This changes \(summary) for every project. Each change needs your approval.",
-                detail: .gitSettings(summary: summary),
+                detail: .gitSettings(summary: summary)
             )
 
         case .fileRead, .fileList, .fileGrep, .fileFind, .fileShow, .sdkAnalyzeFramework, .sdkReadHeader,
@@ -577,12 +577,12 @@ public struct ApprovalPolicy: Sendable, Hashable {
             case .argv:
                 return .ask(
                     reason: "This command is not in your approved presets. Review it before running.",
-                    detail: .command(command),
+                    detail: .command(command)
                 )
             case .shell:
                 return .ask(
                     reason: "This command uses shell features such as pipes or redirection. Review it before running.",
-                    detail: .command(command),
+                    detail: .command(command)
                 )
             case .script: return .ask(reason: "Scripts require approval each time they run.", detail: .command(command))
             }
@@ -594,7 +594,7 @@ public struct ApprovalPolicy: Sendable, Hashable {
             if tool == .projectBuild, let build = facts.externalBuild {
                 return .ask(
                     reason: "Runs this workspace's own build script, \(build.script), as mobile with the prepared toolchain: it can run any code in the repository. Each build of a workspace needs your approval.",
-                    detail: .externalBuild(build),
+                    detail: .externalBuild(build)
                 )
             }
             let kind: DescriptionKind = tool == .projectBuild ? .build : .packaging
@@ -607,7 +607,7 @@ public struct ApprovalPolicy: Sendable, Hashable {
             case let .changed(diff):
                 return .ask(
                     reason: "The \(kind.rawValue) description changed since the template or your last approval. Review the changes before continuing.",
-                    detail: .descriptionChanged(kind: kind, digest: state.digest, diff: diff),
+                    detail: .descriptionChanged(kind: kind, digest: state.digest, diff: diff)
                 )
             }
 
@@ -619,7 +619,7 @@ public struct ApprovalPolicy: Sendable, Hashable {
             }
             return .ask(
                 reason: Self.removalReason(facts.removedPackage),
-                detail: .packageRemoval(installationID: installationID),
+                detail: .packageRemoval(installationID: installationID)
             )
         }
     }
@@ -705,14 +705,14 @@ public enum ApprovalFingerprint {
         arguments: JSONValue,
         workingDirectory: String,
         projectID: String,
-        digest: String?,
+        digest: String?
     ) -> String {
         let material: JSONValue = .object([
             "tool": .string(tool),
             "arguments": arguments,
             "cwd": .string(workingDirectory),
             "project": .string(projectID),
-            "digest": digest.map { .string($0) } ?? .null,
+            "digest": digest.map { .string($0) } ?? .null
         ])
         let hash = SHA256.hash(data: Data(material.canonicalJSON.utf8))
         return hash.map { String(format: "%02x", $0) }.joined()

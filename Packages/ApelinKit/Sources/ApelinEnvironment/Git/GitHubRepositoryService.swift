@@ -33,7 +33,7 @@ public struct GitHubRepositoryService: Sendable {
                 name: request.name,
                 description: request.description,
                 isPrivate: request.visibility == .private,
-                organization: organization,
+                organization: organization
             )
         } catch let error as ApelinError where error.code == .notFound {
             // GitHub answers an organization it will not show the account

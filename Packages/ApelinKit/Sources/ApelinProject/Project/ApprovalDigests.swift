@@ -92,7 +92,7 @@ public struct ApprovalDigests: Codable, Sendable, Equatable {
             ("description", .string("apelin.build")),
             ("version", .integer(1)),
             ("project", .object(selected)),
-            ("files", .object(files)),
+            ("files", .object(files))
         ]))
     }
 
@@ -116,7 +116,7 @@ public struct ApprovalDigests: Codable, Sendable, Equatable {
             ("description", .string("apelin.packaging")),
             ("version", .integer(1)),
             ("project", .object(JSONObject([("kind", document["kind"] ?? .null), ("package", .object(trimmed))]))),
-            ("files", .object(files)),
+            ("files", .object(files))
         ]))
     }
 
@@ -128,14 +128,14 @@ public struct ApprovalDigests: Codable, Sendable, Equatable {
         let packaging = try packagingDescription(project, root: root)
         return ApprovalDigests(
             build: Description(canonical: CanonicalJSON.string(build), digest: CanonicalJSON.digest(build)),
-            packaging: Description(canonical: CanonicalJSON.string(packaging), digest: CanonicalJSON.digest(packaging)),
+            packaging: Description(canonical: CanonicalJSON.string(packaging), digest: CanonicalJSON.digest(packaging))
         )
     }
 
     /// Reads, validates and digests `<root>/apelin-project.json`.
     public static func compute(projectAt root: URL) throws -> ApprovalDigests {
         let (document, _) = try ProjectValidation.load(
-            Data(contentsOf: root.appendingPathComponent(ProjectStore.projectFileName)),
+            Data(contentsOf: root.appendingPathComponent(ProjectStore.projectFileName))
         )
         return try compute(document, root: root)
     }

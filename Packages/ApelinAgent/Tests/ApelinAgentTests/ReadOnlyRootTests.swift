@@ -57,7 +57,7 @@ struct ReadOnlyRootTests {
                 backend: MockBackend(),
                 digests: MockDigestLedger(),
                 gate: gate,
-                readOnlyRoots: roots,
+                readOnlyRoots: roots
             )
         }
 
@@ -80,7 +80,7 @@ struct ReadOnlyRootTests {
                 toolCallID: UUID().uuidString,
                 arguments: arguments,
                 cancellation: nil,
-                mcp: nil,
+                mcp: nil
             )
             let asked = await events.events.filter { event in
                 if case .approvalRequested = event {
@@ -160,7 +160,7 @@ struct ReadOnlyRootTests {
                 (AgentToolName.fileWrite, ["path": JSONValue.string(fixture.header), "content": "x"] as JSONValue),
                 (.fileEdit, ["path": .string(fixture.header), "old_text": "PSSpecifier", "new_text": "x"]),
                 (.fileCreate, ["path": .string(fixture.development + "/x/support/include/New.h"), "content": "x"]),
-                (.fileCreate, ["path": .string(fixture.sdks + "/iPhoneOS18.2-aaaaaaaa/usr/include/New.h"), "content": "x"]),
+                (.fileCreate, ["path": .string(fixture.sdks + "/iPhoneOS18.2-aaaaaaaa/usr/include/New.h"), "content": "x"])
             ] {
                 let refusal = await fixture.refusal(tool, arguments, mode: mode)
                 #expect(refusal?.contains("is outside the project") == true, "\(tool.rawValue) \(mode): \(refusal ?? "ran")")
@@ -187,7 +187,7 @@ struct ReadOnlyRootTests {
                 ["path": .string(fixture.sdks + "/iPhoneOS18.2-aaaaaaaa/usr/include/escape.txt")],
                 ["path": .string(fixture.outside.path)],
                 ["path": "/etc/hosts"],
-                ["path": .string(fixture.header + "\0")],
+                ["path": .string(fixture.header + "\0")]
             ] {
                 let refusal = await fixture.refusal(.fileRead, arguments, mode: mode)
                 #expect(refusal?.hasPrefix("refused: ") == true, "\(mode) \(arguments): \(refusal ?? "ran")")
@@ -214,7 +214,7 @@ struct ReadOnlyRootTests {
             policy: ApprovalPolicy(mode: .relaxed),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            gate: ApprovalGate { _ in },
+            gate: ApprovalGate { _ in }
         )
         await #expect(throws: ToolDeniedError.self) {
             _ = try await runner.run(.local(.fileRead), toolCallID: "read", arguments: ["path": .string(fixture.header)], cancellation: nil, mcp: nil)

@@ -13,7 +13,7 @@ struct UserNoticeTests {
         project: ProjectIdentity? = nil,
         mode: ApprovalMode = .confirm,
         gate: ApprovalGate = ApprovalGate { _ in },
-        record: (@Sendable (AgentSessionEvent) async throws -> Void)? = nil,
+        record: (@Sendable (AgentSessionEvent) async throws -> Void)? = nil
     ) throws -> ToolRunner {
         try ToolRunner(
             sessionID: UUID().uuidString,
@@ -23,7 +23,7 @@ struct UserNoticeTests {
             backend: MockBackend(),
             digests: MockDigestLedger(),
             gate: gate,
-            record: record,
+            record: record
         )
     }
 
@@ -33,7 +33,7 @@ struct UserNoticeTests {
             toolCallID: UUID().uuidString,
             arguments: arguments,
             cancellation: nil,
-            mcp: nil,
+            mcp: nil
         )
         return result.content.compactMap { block -> String? in
             if case let .text(text) = block {
@@ -136,20 +136,20 @@ struct UserNoticeTests {
             .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_notification_send", arguments: [
                 "reason": "Tell the user the build is done",
                 "title": "Build done",
-                "body": "The tweak built; installing it next.",
+                "body": "The tweak built; installing it next."
             ])], stopReason: .toolUse)),
-            .message(fauxAssistantMessage("Done.")),
+            .message(fauxAssistantMessage("Done."))
         ])
         let session = try await AgentSession(
             configuration: AgentSessionConfiguration(
                 project: home.project,
                 provider: .registered(faux.getModel()),
                 approval: ApprovalPolicy(mode: .confirm),
-                dataRoot: home.dataRoot,
+                dataRoot: home.dataRoot
             ),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            credentials: DeliveredCredentialSource(),
+            credentials: DeliveredCredentialSource()
         )
         try await session.prompt("Build it")
         await session.waitForIdle()

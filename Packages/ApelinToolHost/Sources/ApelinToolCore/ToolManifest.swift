@@ -28,7 +28,7 @@ public struct ToolDescriptor: Codable, Hashable, Sendable {
         description: String,
         parameters: JSONValue,
         risk: ToolRisk,
-        timeoutSeconds: Double? = nil,
+        timeoutSeconds: Double? = nil
     ) {
         self.name = name
         self.description = description
@@ -64,7 +64,7 @@ public struct ToolManifest: Codable, Hashable, Sendable {
         licenseFiles: [String]? = nil,
         executable: String,
         protocolVersions: [Int] = ToolProtocol.supportedVersions,
-        tools: [ToolDescriptor],
+        tools: [ToolDescriptor]
     ) {
         schemaVersion = Self.schemaVersion
         self.id = id
@@ -125,7 +125,7 @@ public enum ToolManifestValidator {
     /// is isolated to its own entry; it never hides the others.
     public static func discover(
         installRoot: String,
-        policy: ToolManifestPolicy = .init(),
+        policy: ToolManifestPolicy = .init()
     ) -> [Result<ValidatedToolManifest, ToolManifestError>] {
         let folder = join(installRoot, relativeDirectory)
         guard let names = try? FileManager.default.contentsOfDirectory(atPath: folder) else { return [] }
@@ -139,7 +139,7 @@ public enum ToolManifestValidator {
     public static func validate(
         installRoot: String,
         id: String,
-        policy: ToolManifestPolicy = .init(),
+        policy: ToolManifestPolicy = .init()
     ) throws -> ValidatedToolManifest {
         func fail(_ reason: String) -> ToolManifestError {
             ToolManifestError(id: id, reason: reason)
@@ -201,7 +201,7 @@ public enum ToolManifestValidator {
             manifest: manifest,
             installRoot: root,
             executablePath: executable,
-            licensePaths: licenses,
+            licensePaths: licenses
         )
     }
 
@@ -209,7 +209,7 @@ public enum ToolManifestValidator {
     /// changed since the manifest was read.
     public static func recheckExecutable(
         _ validated: ValidatedToolManifest,
-        policy: ToolManifestPolicy = .init(),
+        policy: ToolManifestPolicy = .init()
     ) throws {
         func fail(_ reason: String) -> ToolManifestError {
             ToolManifestError(id: validated.manifest.id, reason: reason)
@@ -217,7 +217,7 @@ public enum ToolManifestValidator {
         let current = try canonical(
             join(validated.installRoot, validated.manifest.executable),
             inside: validated.installRoot,
-            fail,
+            fail
         )
         guard current == validated.executablePath else { throw fail("the executable now resolves elsewhere") }
         try checkExecutable(current, policy: policy, fail)
@@ -244,7 +244,7 @@ public enum ToolManifestValidator {
         _ manifest: ToolManifest,
         id: String,
         policy: ToolManifestPolicy,
-        _ fail: (String) -> ToolManifestError,
+        _ fail: (String) -> ToolManifestError
     ) throws {
         guard manifest.schemaVersion == ToolManifest.schemaVersion else {
             throw fail("unknown schemaVersion \(manifest.schemaVersion)")
@@ -284,7 +284,7 @@ public enum ToolManifestValidator {
     private static func canonical(
         _ path: String,
         inside root: String,
-        _ fail: (String) -> ToolManifestError,
+        _ fail: (String) -> ToolManifestError
     ) throws -> String {
         let resolved: String
         do { resolved = try CanonicalPath.resolve(path) } catch { throw fail("\(error)") }
@@ -297,7 +297,7 @@ public enum ToolManifestValidator {
         _ path: String,
         policy: ToolManifestPolicy,
         directory: Bool,
-        _ fail: (String) -> ToolManifestError,
+        _ fail: (String) -> ToolManifestError
     ) throws -> stat {
         var info = stat()
         guard lstat(path, &info) == 0 else { throw fail("\(path): \(String(cString: strerror(errno)))") }
@@ -315,7 +315,7 @@ public enum ToolManifestValidator {
     private static func checkExecutable(
         _ path: String,
         policy: ToolManifestPolicy,
-        _ fail: (String) -> ToolManifestError,
+        _ fail: (String) -> ToolManifestError
     ) throws {
         let info = try checkOwnership(path, policy: policy, directory: false, fail)
         guard info.st_mode & S_IXUSR != 0 else { throw fail("\(path) is not executable by its owner") }

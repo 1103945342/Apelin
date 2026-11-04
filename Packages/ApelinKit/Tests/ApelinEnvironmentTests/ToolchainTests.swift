@@ -36,7 +36,7 @@ struct FakeBackend: ToolchainBackend {
     func catalog() async throws -> [ToolchainProduct] {
         products ?? [
             ToolchainProduct(productID: "001-00001", version: "26.4", url: "https://example.invalid/26.pkg", size: 1),
-            Self.newest,
+            Self.newest
         ]
     }
 
@@ -68,7 +68,7 @@ struct FakeBackend: ToolchainBackend {
         onSelfTest?()
         return [
             ToolchainSelfTestResult(language: "C", architecture: "arm64", passed: !failSelfTest),
-            ToolchainSelfTestResult(language: "ObjC", architecture: "arm64e", passed: true),
+            ToolchainSelfTestResult(language: "ObjC", architecture: "arm64e", passed: true)
         ] + (prepared.components.contains(.swift) ? swiftResults : [])
     }
 
@@ -82,7 +82,7 @@ struct FakeBackend: ToolchainBackend {
         progress(ToolchainBackendProgress(stage: "validating"))
         return [
             ToolchainSelfTestResult(language: "C", architecture: "arm64", passed: !failSelfTest, seconds: 0.5),
-            ToolchainSelfTestResult(language: "ObjC", architecture: "arm64e", passed: true, seconds: 0.5),
+            ToolchainSelfTestResult(language: "ObjC", architecture: "arm64e", passed: true, seconds: 0.5)
         ]
     }
 }
@@ -193,7 +193,7 @@ final class ToolchainServiceTests: XCTestCase {
         let home = try TemporaryHome(self)
         let records = [
             ToolchainRecord(id: "first", version: "16.4", components: [.init(kind: .c)]),
-            ToolchainRecord(id: "second", version: "27.0", components: [.init(kind: .c), .init(kind: .swift)]),
+            ToolchainRecord(id: "second", version: "27.0", components: [.init(kind: .c), .init(kind: .swift)])
         ]
         try ToolchainRegistry(toolchains: records, defaultID: "first").save(home.layout)
         let service = ToolchainService(layout: home.layout, backend: UnavailableToolchainBackend())
@@ -275,16 +275,16 @@ final class ToolchainServiceTests: XCTestCase {
     // MARK: Releases and the SDKs they read
 
     private static let older = ToolchainProduct(
-        productID: "001-00016", version: "16.4", url: "https://example.invalid/16.pkg", size: 1, newestSDK: "18.5",
+        productID: "001-00016", version: "16.4", url: "https://example.invalid/16.pkg", size: 1, newestSDK: "18.5"
     )
     private static let refused = ToolchainProduct(
         productID: "001-00012", version: "12.4", url: "https://example.invalid/12.pkg", size: 1,
-        unsupportedReason: "Command Line Tools 12.4 cannot be set up: a reason.", reviewed: false,
+        unsupportedReason: "Command Line Tools 12.4 cannot be set up: a reason.", reviewed: false
     )
     /// A kept release this device cannot run: listed, struck through, with why.
     private static let cannotRun = ToolchainProduct(
         productID: "001-00027", version: "27.0", url: "https://example.invalid/27b.pkg", size: 1,
-        unsupportedReason: "This toolchain requires CPU features this device lacks: FEAT_LRCPC.", reviewed: true,
+        unsupportedReason: "This toolchain requires CPU features this device lacks: FEAT_LRCPC.", reviewed: true
     )
 
     /// The picker lists only releases Apelin sets up: an unreviewed or
@@ -294,7 +294,7 @@ final class ToolchainServiceTests: XCTestCase {
         let home = try await ready(self)
         let service = ToolchainService(
             layout: home.layout,
-            backend: FakeBackend(products: [Self.refused, Self.cannotRun, FakeBackend.newest, Self.older]),
+            backend: FakeBackend(products: [Self.refused, Self.cannotRun, FakeBackend.newest, Self.older])
         )
         let listed = try await service.catalog().products
         XCTAssertFalse(listed.contains { $0.productID == Self.refused.productID })
@@ -468,9 +468,9 @@ final class ToolchainServiceTests: XCTestCase {
                 path: home.home.path,
                 digest: "",
                 packageID: ToolchainPackager.packageID(for: FakeBackend.id),
-                version: "27.0+01234567",
+                version: "27.0+01234567"
             ),
-            reporter: .silent,
+            reporter: .silent
         )
         let folder = jobFolder(home)
         try home.layout.make(folder)
@@ -483,9 +483,9 @@ final class ToolchainServiceTests: XCTestCase {
                 taskID: "killed",
                 toolchainID: FakeBackend.id,
                 installationID: earlier.installationID,
-                updated: Date(),
+                updated: Date()
             ),
-            to: folder.appendingPathComponent("job.json"),
+            to: folder.appendingPathComponent("job.json")
         )
 
         let flag = CancellationFlag()
@@ -496,7 +496,7 @@ final class ToolchainServiceTests: XCTestCase {
                 service.prepare(ToolchainSetupRequest()),
                 taskID: TaskID("again"),
                 installer: installer,
-                reporter: reporter,
+                reporter: reporter
             )
             XCTFail("setup should be cancelled")
         } catch {}
@@ -519,7 +519,7 @@ final class ToolchainServiceTests: XCTestCase {
             service.prepare(ToolchainSetupRequest()),
             taskID: TaskID("first"),
             installer: installer,
-            reporter: .silent,
+            reporter: .silent
         )
         let earlier = try await installer.install(
             LocalArtifact(
@@ -527,9 +527,9 @@ final class ToolchainServiceTests: XCTestCase {
                 path: home.home.path,
                 digest: "",
                 packageID: ToolchainPackager.packageID(for: FakeBackend.id),
-                version: "27.0+01234567",
+                version: "27.0+01234567"
             ),
-            reporter: .silent,
+            reporter: .silent
         )
         let folder = jobFolder(home)
         try home.layout.make(folder)
@@ -542,9 +542,9 @@ final class ToolchainServiceTests: XCTestCase {
                 taskID: "killed",
                 toolchainID: FakeBackend.id,
                 installationID: earlier.installationID,
-                updated: Date(),
+                updated: Date()
             ),
-            to: folder.appendingPathComponent("job.json"),
+            to: folder.appendingPathComponent("job.json")
         )
 
         let failing = ToolchainService(layout: home.layout, backend: FakeBackend(failPrepare: true))
@@ -553,7 +553,7 @@ final class ToolchainServiceTests: XCTestCase {
                 failing.prepare(ToolchainSetupRequest()),
                 taskID: TaskID("again"),
                 installer: installer,
-                reporter: .silent,
+                reporter: .silent
             )
             XCTFail("setup should fail")
         } catch {}
@@ -689,7 +689,7 @@ final class ToolchainServiceTests: XCTestCase {
         let tested = try await service.selfTest(
             service.prepareSelfTest(ToolchainSelfTestRequest(id: record.id)),
             taskID: TaskID("again"),
-            reporter: .silent,
+            reporter: .silent
         )
         XCTAssertEqual(tested.selfTests?.map(\.seconds), [0.5, 0.5])
         XCTAssertEqual(service.status(activeTasks: []).toolchains.first?.selfTests?.map(\.seconds), [0.5, 0.5])
@@ -726,7 +726,7 @@ final class ToolchainServiceTests: XCTestCase {
         }
         XCTAssertEqual(
             service.status(activeTasks: []).toolchains.first?.components.first?.problem,
-            "not found at its installed path",
+            "not found at its installed path"
         )
         installer.removalFailure = ApelinError(.conflict, "no longer installed")
         let log = EventLog()
@@ -832,7 +832,7 @@ final class ToolchainPackagerTests: XCTestCase {
         XCTAssertEqual(
             CanonicalPath.resolve(escape.path),
             CanonicalPath.resolve(tree.deletingLastPathComponent().path),
-            "the link really resolves above the tree",
+            "the link really resolves above the tree"
         )
         XCTAssertThrowsError(try ToolchainPackager(layout: home.layout).package(prepared(tree)))
     }
@@ -849,7 +849,7 @@ final class ToolchainPackagerTests: XCTestCase {
         try FileManager.default.createSymbolicLink(atPath: lib.appendingPathComponent("cc").path, withDestinationPath: "bin/cc")
         try FileManager.default.createSymbolicLink(
             atPath: lib.appendingPathComponent("up").path,
-            withDestinationPath: "bin/../../manifest.json",
+            withDestinationPath: "bin/../../manifest.json"
         )
         try FileManager.default.createSymbolicLink(atPath: lib.appendingPathComponent("gone").path, withDestinationPath: "nothing/here")
         XCTAssertNoThrow(try ToolchainPackager(layout: home.layout).package(prepared(tree)))

@@ -14,7 +14,7 @@ struct ProviderModelsTests {
         #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer key")
         // the key goes to opencode.ai alone, whatever an imported credential names
         let imported = OAuthCredentials(access: "key", refresh: "", expires: .max, extras: [
-            "baseUrl": .string("https://example.com/v1"),
+            "baseUrl": .string("https://example.com/v1")
         ])
         #expect(ProviderModels.modelRequest(provider, credentials: imported)?.url?.absoluteString
             == plan.rootURL + "/v1/models")
@@ -35,7 +35,7 @@ struct ProviderModelsTests {
     @Test
     func `DeepSeek's Anthropic endpoint lists its real models, not Claude aliases`() {
         let credentials = OAuthCredentials(access: "test", refresh: "", expires: .max, extras: [
-            "baseUrl": .string("https://api.deepseek.com/anthropic"),
+            "baseUrl": .string("https://api.deepseek.com/anthropic")
         ])
         #expect(ProviderModels.list(.anthropic, credentials: credentials) == ["deepseek-flash", "deepseek-v4-pro"])
     }
@@ -43,7 +43,7 @@ struct ProviderModelsTests {
     @Test
     func `DeepSeek reasoning levels come from kwwk, while unknown models have no guessed capability`() {
         let credentials = OAuthCredentials(access: "test", refresh: "", expires: .max, extras: [
-            "baseUrl": .string("https://api.deepseek.com/anthropic"),
+            "baseUrl": .string("https://api.deepseek.com/anthropic")
         ])
         let efforts = ProviderModels.reasoningEfforts(.anthropic, credentials: credentials)
         #expect(efforts["deepseek-v4-pro"]?.contains(.high) == true)
@@ -57,7 +57,7 @@ struct ProviderModelsTests {
         #expect(tiers["gpt-6.1-sol"] == [.priority, .ultrafast])
         #expect(tiers["gpt-6-sol"] == [.priority])
         let deepSeek = OAuthCredentials(access: "test", refresh: "", expires: .max, extras: [
-            "baseUrl": .string("https://api.deepseek.com/anthropic"),
+            "baseUrl": .string("https://api.deepseek.com/anthropic")
         ])
         #expect(ProviderModels.serviceTiers(.anthropic, credentials: deepSeek).isEmpty)
     }
@@ -65,7 +65,7 @@ struct ProviderModelsTests {
     @Test
     func `a similarly named host does not receive DeepSeek's mapping`() {
         let credentials = OAuthCredentials(access: "test", refresh: "", expires: .max, extras: [
-            "baseUrl": .string("https://api.deepseek.com.example.org/anthropic"),
+            "baseUrl": .string("https://api.deepseek.com.example.org/anthropic")
         ])
         #expect(!ProviderModels.isDeepSeek(credentials))
     }
@@ -73,7 +73,7 @@ struct ProviderModelsTests {
     @Test
     func `a configured custom model remains selectable`() {
         let credentials = OAuthCredentials(access: "test", refresh: "", expires: .max, extras: [
-            "baseUrl": .string("https://example.invalid/v1"), "defaultModel": .string("custom-model"),
+            "baseUrl": .string("https://example.invalid/v1"), "defaultModel": .string("custom-model")
         ])
         #expect(ProviderModels.list(.openAICompatible, credentials: credentials) == ["custom-model"])
     }

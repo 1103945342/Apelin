@@ -64,7 +64,7 @@ struct ChatTranscript {
     /// meanwhile (a title, a message queued, the count).
     private static let endsAttempt: Set<String> = [
         "prompt", "steer", "message", "toolCall", "toolResult", "approvalRequested", "approvalResolved",
-        "error", "finished", "compactionStarted", "compactionFinished", TaskEvent.stateKind,
+        "error", "finished", "compactionStarted", "compactionFinished", TaskEvent.stateKind
     ]
     /// What ends `reconnecting`: the request answered, or the run moved on.
     private static let endsReconnecting = endsAttempt.union(["messageStarted", "thinking", "toolCallPreparing", "text"])
@@ -80,7 +80,7 @@ struct ChatTranscript {
         sending: [ComposerDraft] = [],
         conversationTitle: (String) -> String? = { _ in nil },
         now: Date? = nil,
-        attachment: (AgentAttachment) -> ComposerAttachment?,
+        attachment: (AgentAttachment) -> ComposerAttachment?
     ) {
         append(events, sending: sending, conversationTitle: conversationTitle, now: now, attachment: attachment)
     }
@@ -93,7 +93,7 @@ struct ChatTranscript {
         sending: [ComposerDraft] = [],
         conversationTitle: (String) -> String? = { _ in nil },
         now: Date? = nil,
-        attachment: (AgentAttachment) -> ComposerAttachment?,
+        attachment: (AgentAttachment) -> ComposerAttachment?
     ) {
         // By position: a reopened session's events go on after the earlier
         // task's under a numbering that starts again (`ChatRecord.reopen`).
@@ -120,7 +120,7 @@ struct ChatTranscript {
                         id: messageID,
                         role: .user,
                         text: text,
-                        attachments: files.compactMap(attachment),
+                        attachments: files.compactMap(attachment)
                     )
                     message.sender = payload?["from"]?.stringValue.map { Self.senderLine(conversationTitle($0)) }
                     add(message)
@@ -136,7 +136,7 @@ struct ChatTranscript {
                     id: messageID,
                     role: .user,
                     text: text,
-                    attachments: files.compactMap(attachment),
+                    attachments: files.compactMap(attachment)
                 )
                 message.isQueued = true
                 queued.append(message)
@@ -229,7 +229,7 @@ struct ChatTranscript {
                         id: id,
                         role: .assistant,
                         text: "",
-                        attachments: files.compactMap(attachment),
+                        attachments: files.compactMap(attachment)
                     ))
                     unanswered = id
                 }
@@ -239,18 +239,18 @@ struct ChatTranscript {
                     approvalIDs[rowID] = approvalID
                     let title = ApprovalCardText.title(payload) ?? Self.toolTitle(
                         payload?["tool"]?.stringValue ?? "",
-                        arguments: payload?["arguments"]?.stringValue,
+                        arguments: payload?["arguments"]?.stringValue
                     )
                     let detail = ApprovalCardText.detail(
                         payload,
                         title: title,
-                        callReason: payload?["toolCallID"]?.stringValue.flatMap { callReasons[$0] },
+                        callReason: payload?["toolCallID"]?.stringValue.flatMap { callReasons[$0] }
                     )
                     var request = ChatMessage(id: rowID, role: .approval(nil), text: title + "\n\n" + detail)
                     request.runsAsRoot = ApprovalCardText.isRoot(payload)
                     request.approvalSections = ApprovalCardText.sections(
                         payload, title: title,
-                        callReason: payload?["toolCallID"]?.stringValue.flatMap { callReasons[$0] },
+                        callReason: payload?["toolCallID"]?.stringValue.flatMap { callReasons[$0] }
                     )
                     add(request)
                 }
@@ -386,7 +386,7 @@ struct ChatTranscript {
     private static func keepTrailingSummaryRunning(
         _ rows: inout [ChatMessage],
         receivedTokens: Int?,
-        reconnecting: Bool,
+        reconnecting: Bool
     ) {
         guard let index = rows.lastIndex(where: { !$0.role.needsApproval }) else { return }
         guard case let .thinking(_, tools) = rows[index].role else {
@@ -450,7 +450,7 @@ struct ChatTranscript {
                     combined.append(ChatMessage(
                         id: Self.rowID("trace:\(message.id)"),
                         role: .thinking(seconds: 0, tools: 0),
-                        text: "",
+                        text: ""
                     ))
                 }
                 if let summary {
@@ -634,7 +634,7 @@ struct ChatTranscript {
         let bytes = Array(SHA256.hash(data: Data(value.utf8)).prefix(16))
         return UUID(uuid: (
             bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7],
-            bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15],
+            bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]
         ))
     }
 }

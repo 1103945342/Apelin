@@ -79,7 +79,7 @@ enum JournalFiles {
                 started: nil,
                 size: Int(metadata.st_size),
                 sessionID: session,
-                modified: Date(timeIntervalSince1970: Double(modified.tv_sec) + Double(modified.tv_nsec) / 1e9),
+                modified: Date(timeIntervalSince1970: Double(modified.tv_sec) + Double(modified.tv_nsec) / 1e9)
             )
         }
         return files.sorted { a, b in

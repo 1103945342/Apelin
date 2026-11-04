@@ -14,7 +14,7 @@ extension ToolRunner {
             preview = try await backend.gitResetPreview(GitResetPreviewToolRequest(
                 context: context,
                 remote: remote,
-                branch: arguments.argNonEmptyString("branch"),
+                branch: arguments.argNonEmptyString("branch")
             ))
         } catch let failure as GitToolFailure {
             throw GitToolFailure(message: "Nothing was changed: " + failure.message)

@@ -16,7 +16,7 @@ public extension AgentProvider {
             .openAICodex, .anthropicOAuth, .githubCopilot, .cursor,
             .workBuddyAI, .workBuddy, .kimiCoding, .kimiCodingGlobal, .xai, .openRouter,
             .zai, .zaiCodingCN, .qoder, .qoderCN, .kiro, .devin,
-            .openAI, .deepSeek, .openCodeGo, .openCodeZen, .google, .anthropic, .openAICompatible,
+            .openAI, .deepSeek, .openCodeGo, .openCodeZen, .google, .anthropic, .openAICompatible
         ]
         // New providers remain reachable until their position is chosen.
         return order + allCases.filter { !order.contains($0) }
@@ -109,37 +109,37 @@ enum SignInKeyForms {
     static let all: [Form] = [
         Form(provider: .anthropic, fields: [
             KeyField(field: .apiKey, required: true, placeholder: "sk-ant-api03-…"),
-            KeyField(field: .baseURL, required: false, defaultValue: "https://api.anthropic.com"),
+            KeyField(field: .baseURL, required: false, defaultValue: "https://api.anthropic.com")
         ]),
         Form(provider: .openAI, fields: [
             KeyField(field: .apiKey, required: true, placeholder: "sk-proj-…"),
-            KeyField(field: .baseURL, required: false, defaultValue: "https://api.openai.com"),
+            KeyField(field: .baseURL, required: false, defaultValue: "https://api.openai.com")
         ]),
         Form(provider: .google, fields: [
             KeyField(field: .apiKey, required: true, placeholder: "AIza…"),
-            KeyField(field: .baseURL, required: false, defaultValue: "https://generativelanguage.googleapis.com"),
+            KeyField(field: .baseURL, required: false, defaultValue: "https://generativelanguage.googleapis.com")
         ]),
         Form(provider: .deepSeek, fields: [
             KeyField(field: .apiKey, required: true, placeholder: "sk-…"),
-            KeyField(field: .baseURL, required: false, defaultValue: DeepSeekProvider.baseURL),
+            KeyField(field: .baseURL, required: false, defaultValue: DeepSeekProvider.baseURL)
         ]),
         Form(provider: .openCodeGo, fields: [
             KeyField(field: .apiKey, required: true, placeholder: "oc_sk_…"),
-            KeyField(field: .defaultModel, required: false, placeholder: "glm-5.2"),
+            KeyField(field: .defaultModel, required: false, placeholder: "glm-5.2")
         ]),
         Form(provider: .openCodeZen, fields: [
             KeyField(field: .apiKey, required: true, placeholder: "oc_sk_…"),
-            KeyField(field: .defaultModel, required: false, placeholder: "claude-sonnet-5"),
+            KeyField(field: .defaultModel, required: false, placeholder: "claude-sonnet-5")
         ]),
         Form(provider: .openRouter, fields: [
             KeyField(field: .apiKey, required: true, placeholder: "sk-or-v1-…"),
-            KeyField(field: .defaultModel, required: false, placeholder: "anthropic/claude-sonnet-5"),
+            KeyField(field: .defaultModel, required: false, placeholder: "anthropic/claude-sonnet-5")
         ]),
         Form(provider: .openAICompatible, fields: [
             KeyField(field: .apiKey, required: true),
             KeyField(field: .baseURL, required: true, placeholder: "https://…"),
-            KeyField(field: .defaultModel, required: true),
-        ]),
+            KeyField(field: .defaultModel, required: true)
+        ])
     ]
 
     static func fields(for provider: AgentProvider) -> [KeyField]? {
@@ -165,7 +165,7 @@ public struct SignInOptions: Sendable, Equatable {
 public typealias SignInLogin = @Sendable (
     AgentProvider,
     OAuthLogin.Callbacks,
-    SignInOptions,
+    SignInOptions
 ) async throws -> OAuthCredentials
 
 public enum KWWKSignIn {
@@ -174,7 +174,7 @@ public enum KWWKSignIn {
         try await OAuthSubscriptions.login(
             providerId: provider.storeID,
             callbacks: callbacks,
-            kimiIdentity: options.kimiIdentity,
+            kimiIdentity: options.kimiIdentity
         )
     }
 
@@ -205,7 +205,7 @@ public enum KWWKSignIn {
                 "user-agent": "GitHubCopilotChat/0.35.0",
                 "copilot-integration-id": "vscode-chat",
                 "openai-intent": "chat-policy",
-                "x-interaction-type": "chat-policy",
+                "x-interaction-type": "chat-policy"
             ]
             let (_, response) = try await URLSession.shared.data(for: request)
             guard let response = response as? HTTPURLResponse, (200 ..< 300).contains(response.statusCode) else {

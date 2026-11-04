@@ -169,7 +169,7 @@ extension OfferedToolExtension {
                 extensionName: name,
                 extensionVersion: version,
                 timeoutSeconds: tool.timeoutSeconds,
-                required: Set(tool.parameters["required"]?.arrayValue?.compactMap(\.stringValue) ?? []),
+                required: Set(tool.parameters["required"]?.arrayValue?.compactMap(\.stringValue) ?? [])
             )
             return (callable, "\(tool.description)\n\n\(origin)", ToolReason.adding(to: schema))
         }

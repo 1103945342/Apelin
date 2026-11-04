@@ -8,7 +8,7 @@ import Foundation
 @_silgen_name("posix_spawn_file_actions_addchdir_np")
 private func spawnAddChdir(
     _ actions: UnsafeMutablePointer<posix_spawn_file_actions_t?>,
-    _ path: UnsafePointer<CChar>,
+    _ path: UnsafePointer<CChar>
 ) -> Int32
 
 /// `agentRunCode`: the agent's `shell_run`, run by the session host as
@@ -37,7 +37,7 @@ enum AgentRunCode {
     private static let timeoutRange = 1 ... 1800
     /// In the order the refusal lists them.
     private static let interpreters: [(name: String, flag: String)] = [
-        ("sh", "-c"), ("bash", "-c"), ("zsh", "-c"), ("python3", "-c"), ("perl", "-e"),
+        ("sh", "-c"), ("bash", "-c"), ("zsh", "-c"), ("python3", "-c"), ("perl", "-e")
     ]
     /// The process groups of the shell_run calls running now, by session.
     private static let running = RunningGroups()
@@ -110,7 +110,7 @@ enum AgentRunCode {
         as identity: Identity,
         environment: [String],
         installRoot: String,
-        directory: String,
+        directory: String
     ) throws -> (executable: String, argv: [String]) {
         let searched = searchPath(for: identity, environment: environment, installRoot: installRoot)
         let lookedIn = switch identity {
@@ -129,7 +129,7 @@ enum AgentRunCode {
             guard argv.allSatisfy({ !CanonicalPath.containsNUL($0) }), argv.count <= maximumArguments else {
                 throw ApelinError(
                     .badRequest,
-                    "shell_run takes at most \(maximumArguments) arguments, and none may contain a NUL byte",
+                    "shell_run takes at most \(maximumArguments) arguments, and none may contain a NUL byte"
                 )
             }
             if name.contains("/") {
@@ -141,7 +141,7 @@ enum AgentRunCode {
             guard let path = findExecutable(name, in: searched) else {
                 throw ApelinError(
                     .notFound,
-                    "\(name) is not \(lookedIn): give the executable's path, or run a shell builtin with bash -c",
+                    "\(name) is not \(lookedIn): give the executable's path, or run a shell builtin with bash -c"
                 )
             }
             return (path, argv)
@@ -153,7 +153,7 @@ enum AgentRunCode {
             guard !CanonicalPath.containsNUL(source), source.utf8.count <= maximumSourceBytes else {
                 throw ApelinError(
                     .badRequest,
-                    "the script must not contain a NUL byte or be larger than \(maximumSourceBytes / 1024) KiB",
+                    "the script must not contain a NUL byte or be larger than \(maximumSourceBytes / 1024) KiB"
                 )
             }
             guard let path = findExecutable(interpreter, in: searched) else {
@@ -188,12 +188,12 @@ enum AgentRunCode {
         project: ResolvedProject,
         installRoot: String,
         home: String,
-        stopsSeen: Int,
+        stopsSeen: Int
     ) async throws -> AgentRunCodeResponse {
         guard timeoutRange.contains(request.timeoutSeconds) else {
             throw ApelinError(
                 .badRequest,
-                "timeoutSeconds must be \(timeoutRange.lowerBound)–\(timeoutRange.upperBound)",
+                "timeoutSeconds must be \(timeoutRange.lowerBound)–\(timeoutRange.upperBound)"
             )
         }
         let preset: Preset? = if case let .mobile(preset) = identity {
@@ -208,14 +208,14 @@ enum AgentRunCode {
             project: project,
             installRoot: installRoot,
             home: home,
-            asRoot: asRoot,
+            asRoot: asRoot
         )
         let command = try invocation(
             preset.map { .argv($0.argv) } ?? request.spec,
             as: identity,
             environment: environment,
             installRoot: installRoot,
-            directory: directory,
+            directory: directory
         )
         let timeout = request.timeoutSeconds
         let session = request.sessionID
@@ -228,7 +228,7 @@ enum AgentRunCode {
                 timeoutSeconds: timeout,
                 asMobile: !asRoot,
                 session: session,
-                stopsSeen: stopsSeen,
+                stopsSeen: stopsSeen
             )
         }
     }
@@ -252,7 +252,7 @@ enum AgentRunCode {
         project: ResolvedProject,
         installRoot: String,
         home: String,
-        asRoot: Bool = false,
+        asRoot: Bool = false
     ) -> [String] {
         let base = DevelopmentEnvironment.searchPath(installRoot: installRoot)
         let common = [
@@ -260,14 +260,14 @@ enum AgentRunCode {
             "LANG=en_US.UTF-8",
             "TERM=dumb",
             "TMPDIR=\(prefix(for: installRoot))/var/tmp",
-            "APELIN_PROJECT_ROOT=\(project.path)",
+            "APELIN_PROJECT_ROOT=\(project.path)"
         ]
         if let preset {
             return preset.environment + ["PATH=\(base.joined(separator: ":"))"] + common
         }
         let development = DevelopmentEnvironment.prepared(
             home: home,
-            projectDirectory: project.isTemporary ? nil : project.path,
+            projectDirectory: project.isTemporary ? nil : project.path
         )
         return common + development.entries(basePath: base)
     }
@@ -296,7 +296,7 @@ enum AgentRunCode {
         directory: String = "/",
         timeoutSeconds: Int,
         session: String? = nil,
-        stopsSeen: Int = 0,
+        stopsSeen: Int = 0
     ) async -> AgentRunCodeResponse? {
         try? await offThePool {
             try execute(
@@ -307,7 +307,7 @@ enum AgentRunCode {
                 timeoutSeconds: timeoutSeconds,
                 asMobile: geteuid() == 0,
                 session: session,
-                stopsSeen: stopsSeen,
+                stopsSeen: stopsSeen
             )
         }
     }
@@ -322,7 +322,7 @@ enum AgentRunCode {
         timeoutSeconds: Int,
         asMobile: Bool,
         session: String?,
-        stopsSeen: Int,
+        stopsSeen: Int
     ) throws -> AgentRunCodeResponse {
         var out: [Int32] = [-1, -1]
         var err: [Int32] = [-1, -1]
@@ -359,7 +359,7 @@ enum AgentRunCode {
         posix_spawnattr_setsigmask(&attributes, &noSignal)
         posix_spawnattr_setpgroup(&attributes, 0)
         let flags = Int16(
-            POSIX_SPAWN_CLOEXEC_DEFAULT | POSIX_SPAWN_SETSIGDEF | POSIX_SPAWN_SETSIGMASK | POSIX_SPAWN_SETPGROUP,
+            POSIX_SPAWN_CLOEXEC_DEFAULT | POSIX_SPAWN_SETSIGDEF | POSIX_SPAWN_SETSIGMASK | POSIX_SPAWN_SETPGROUP
         )
         posix_spawnattr_setflags(&attributes, flags)
 
@@ -428,13 +428,13 @@ enum AgentRunCode {
             stderr: errors.text,
             truncated: output.truncated || errors.truncated || timedOut.isSet,
             timedOut: timedOut.isSet,
-            durationMilliseconds: Int(Date().timeIntervalSince(started) * 1000),
+            durationMilliseconds: Int(Date().timeIntervalSince(started) * 1000)
         )
     }
 
     private static func cStrings<T>(
         _ strings: [String],
-        _ body: (UnsafePointer<UnsafeMutablePointer<CChar>?>) -> T,
+        _ body: (UnsafePointer<UnsafeMutablePointer<CChar>?>) -> T
     ) -> T {
         var pointers = strings.map { strdup($0) }
         pointers.append(nil)

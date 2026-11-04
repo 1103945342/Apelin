@@ -87,7 +87,7 @@ enum NetworkRecovery {
         inner: @escaping StreamFn = { model, context, options in
             try await KWWKAI.stream(model: model, context: context, options: options)
         },
-        onWait: @escaping @Sendable () async -> Void,
+        onWait: @escaping @Sendable () async -> Void
     ) -> StreamFn {
         { model, context, options in
             let first = try await inner(model, context, options)
@@ -99,7 +99,7 @@ enum NetworkRecovery {
                     path: path,
                     patience: patience,
                     cancellation: options?.cancellation,
-                    onWait: onWait,
+                    onWait: onWait
                 ) {
                     try await inner(model, context, options)
                 }
@@ -130,7 +130,7 @@ enum NetworkRecovery {
         patience: Patience,
         cancellation: CancellationHandle?,
         onWait: @Sendable () async -> Void,
-        ask: @Sendable () async throws -> AssistantMessageStream,
+        ask: @Sendable () async throws -> AssistantMessageStream
     ) async {
         var attempt = first
         // Whether kwwk has had any of the reply: a start alone carries
@@ -185,7 +185,7 @@ enum NetworkRecovery {
     private static func waitForRoute(
         _ path: NetworkPath,
         patience: Patience,
-        cancellation: CancellationHandle?,
+        cancellation: CancellationHandle?
     ) async throws {
         var waited: UInt64 = 0
         while !path.isSatisfied(), waited < patience.pathWait {
@@ -197,7 +197,7 @@ enum NetworkRecovery {
     private static func finish(
         _ out: AssistantMessageStream.Continuation,
         _ ending: AssistantMessageEvent?,
-        _ final: AssistantMessage,
+        _ final: AssistantMessage
     ) {
         if let ending {
             out.push(ending)
@@ -213,7 +213,7 @@ enum NetworkRecovery {
             provider: failed.provider,
             model: failed.model,
             stopReason: .aborted,
-            errorMessage: "Request was aborted",
+            errorMessage: "Request was aborted"
         )
     }
 }

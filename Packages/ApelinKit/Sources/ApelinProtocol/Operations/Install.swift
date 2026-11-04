@@ -41,7 +41,7 @@ public struct InstallResult: Codable, Sendable, Equatable {
         version: String,
         artifactDigest: String = "",
         projectID: String? = nil,
-        buildID: String? = nil,
+        buildID: String? = nil
     ) {
         self.installationID = installationID
         self.transactionID = transactionID
@@ -83,7 +83,7 @@ public struct InstallConflict: Codable, Sendable, Hashable {
         packageID: String,
         version: String,
         installationID: String? = nil,
-        projectID: String? = nil,
+        projectID: String? = nil
     ) {
         self.relation = relation
         self.file = file
@@ -159,7 +159,7 @@ public struct InstallationSummary: Codable, Sendable, Equatable {
         buildID: String? = nil,
         installedAt: Date,
         removable: Bool,
-        reason: String? = nil,
+        reason: String? = nil
     ) {
         self.installationID = installationID
         self.packageID = packageID
@@ -260,7 +260,7 @@ public extension ApelinService {
     func approvalDigestState(
         projectID: String,
         kind: ApprovalDescriptionKind,
-        digest: String,
+        digest: String
     ) async throws -> ApprovalDigestStateResponse {
         try await send(ApprovalDigestStateRequest(projectID: projectID, kind: kind, digest: digest))
     }

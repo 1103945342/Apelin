@@ -52,7 +52,7 @@ struct ChatAttachmentsTests {
         defer { faux.unregister() }
         faux.setResponses([
             .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_screen_capture", arguments: ["reason": "Look at the screen"])], stopReason: .toolUse)),
-            .message(fauxAssistantMessage("Here is the screen.")),
+            .message(fauxAssistantMessage("Here is the screen."))
         ])
         let session = try await AgentSession(configuration: AgentSessionConfiguration(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .relaxed), dataRoot: home.dataRoot), backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
         try await session.prompt("Capture the screen")

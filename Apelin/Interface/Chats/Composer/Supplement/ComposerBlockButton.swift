@@ -88,7 +88,7 @@ final class ComposerBlockButton: UIButton {
             x: icon.maxX + spacing,
             y: inset,
             width: max(0, bounds.width - icon.maxX - spacing - inset),
-            height: bounds.height - inset * 2,
+            height: bounds.height - inset * 2
         ))
     }
 }

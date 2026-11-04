@@ -41,7 +41,7 @@ enum PublicHost {
         (0xAC10_0000, 12, "a private network address"),
         (0xC0A8_0000, 16, "a private network address"),
         (0xE000_0000, 4, "a multicast address"),
-        (0xF000_0000, 4, "a reserved address"),
+        (0xF000_0000, 4, "a reserved address")
     ]
 
     private static func ipv4Refusal(_ address: UInt32) -> String? {

@@ -73,7 +73,7 @@ public struct ConfirmLoadedRequest: OperationRequest {
         projectID: String? = nil,
         trigger: LoadTrigger? = nil,
         logWindowSeconds: Double? = nil,
-        imageCheck: LoadImageCheck? = nil,
+        imageCheck: LoadImageCheck? = nil
     ) {
         self.buildID = buildID
         self.targetID = targetID
@@ -196,7 +196,7 @@ public struct UIActionResponse: Codable, Sendable, Equatable {
         locked: Bool? = nil,
         screenOff: Bool? = nil,
         typedTextMatches: Bool? = nil,
-        fieldValues: [String]? = nil,
+        fieldValues: [String]? = nil
     ) {
         self.locked = locked
         self.screenOff = screenOff
@@ -241,7 +241,7 @@ public extension ApelinService {
         projectID: String? = nil,
         trigger: LoadTrigger? = nil,
         logWindowSeconds: Double? = nil,
-        imageCheck: LoadImageCheck? = nil,
+        imageCheck: LoadImageCheck? = nil
     ) async throws -> ConfirmLoadedResponse {
         let handle = try await confirmLoadedStart(ConfirmLoadedRequest(
             buildID: buildID,
@@ -249,7 +249,7 @@ public extension ApelinService {
             projectID: projectID,
             trigger: trigger,
             logWindowSeconds: logWindowSeconds,
-            imageCheck: imageCheck,
+            imageCheck: imageCheck
         ))
         var last: TaskEvent?
         for try await event in events(of: handle) where event.kind == TaskEvent.stateKind {

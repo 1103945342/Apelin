@@ -131,7 +131,7 @@ enum ChatWidgetStore {
         guard let url = fileURL else { return false }
         try FileManager.default.createDirectory(
             at: url.deletingLastPathComponent(),
-            withIntermediateDirectories: true,
+            withIntermediateDirectories: true
         )
         try JSONEncoder().encode(snapshot).write(to: url, options: .atomic)
         return true

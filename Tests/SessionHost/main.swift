@@ -56,7 +56,7 @@ func expectErrorAsync(
     _ what: String,
     code: ApelinError.Code? = nil,
     line: UInt = #line,
-    _ body: () async throws -> Void,
+    _ body: () async throws -> Void
 ) async {
     checks += 1
     do {
@@ -83,7 +83,7 @@ let scratchPath = CanonicalPath.resolve(scratch.path)!
 func write(_ path: String, _ text: String, mode: mode_t = 0o644) {
     try! FileManager.default.createDirectory(
         atPath: (path as NSString).deletingLastPathComponent,
-        withIntermediateDirectories: true,
+        withIntermediateDirectories: true
     )
     FileManager.default.createFile(atPath: path, contents: Data(text.utf8))
     chmod(path, mode)
@@ -111,19 +111,19 @@ func makeDeb(at path: String, package: String, version: String, fields: String =
     let work = scratchPath + "/deb-\(UUID().uuidString)"
     write(
         work + "/control/control",
-        "Package: \(package)\nVersion: \(version)\nArchitecture: iphoneos-arm64e\n\(fields)Description: test\n",
+        "Package: \(package)\nVersion: \(version)\nArchitecture: iphoneos-arm64e\n\(fields)Description: test\n"
     )
     write(work + "/data/usr/share/\(package)/hello", "hello\n")
     run(
         "/usr/bin/tar",
         ["--format", "ustar", "-czf", work + "/control.tar.gz", "-C", work + "/control", "./control"],
-        in: work,
+        in: work
     )
     run("/usr/bin/tar", ["--format", "ustar", "-czf", work + "/data.tar.gz", "-C", work + "/data", "."], in: work)
     let archive = arArchive([
         ("debian-binary", Data("2.0\n".utf8)),
         ("control.tar.gz", FileManager.default.contents(atPath: work + "/control.tar.gz")!),
-        ("data.tar.gz", FileManager.default.contents(atPath: work + "/data.tar.gz")!),
+        ("data.tar.gz", FileManager.default.contents(atPath: work + "/data.tar.gz")!)
     ])
     FileManager.default.createFile(atPath: path, contents: archive)
 }
@@ -176,7 +176,7 @@ do {
         resumable.taskID,
         as: .buildAttach,
         afterSeq: EventSeq(1),
-        waitMilliseconds: 0,
+        waitMilliseconds: 0
     )
     check(resumed.events.isEmpty && resumed.state == .running, "a resumed task keeps running")
     let finished = await second.record(done.taskID)
@@ -261,14 +261,14 @@ final class FakeTaskWorker: @unchecked Sendable {
                     try? self.worker.sendEvent(
                         taskID: taskID,
                         kind: "log",
-                        payload: .object(["line": .string(request.resumed ? "again" : "first")]),
+                        payload: .object(["line": .string(request.resumed ? "again" : "first")])
                     )
                     try? await Task.sleep(nanoseconds: 10_000_000)
                     await self.waitIfHeld()
                     try? self.worker.sendEvent(
                         taskID: taskID,
                         kind: TaskEvent.stateKind,
-                        payload: .object(["state": .string(TaskState.succeeded.rawValue)]),
+                        payload: .object(["state": .string(TaskState.succeeded.rawValue)])
                     )
                 }
             }
@@ -314,7 +314,7 @@ final class FakeTaskWorker: @unchecked Sendable {
             },
             recheck: { caller, _ in
                 refuse && caller.isAgent ? ApelinError(.denied, "approval required") : nil
-            },
+            }
         )
     }
 }
@@ -341,18 +341,18 @@ do {
     _ = try await host.requestCancel(cancelled.taskID)
     let secretClone = await host.create(kind: .environment, owner: .environment)
     let cloneRequest = try WireRequest(
-        GitCloneRequest(url: "https://me:s3cret-token@example.com/r.git", branch: "main", projectName: "R"),
+        GitCloneRequest(url: "https://me:s3cret-token@example.com/r.git", branch: "main", projectName: "R")
     )
     await host.setResume(secretClone.taskID, TaskResume.plan(cloneRequest, descriptorCount: 0, caller: .app))
     let removal = await host.create(kind: .environment, owner: .environment)
     try await host.setResume(
         removal.taskID,
-        TaskResume.plan(WireRequest(ToolchainRemoveRequest(id: "t1")), descriptorCount: 0, caller: .app),
+        TaskResume.plan(WireRequest(ToolchainRemoveRequest(id: "t1")), descriptorCount: 0, caller: .app)
     )
     let agentBuild = await host.create(kind: .build, owner: .build)
     await host.setResume(
         agentBuild.taskID,
-        TaskResume.plan(build, descriptorCount: 0, caller: .worker(.agent, instance: "s1")),
+        TaskResume.plan(build, descriptorCount: 0, caller: .worker(.agent, instance: "s1"))
     )
     // A transfer import, even of a file in the inbox: a project it placed
     // would be placed again.
@@ -362,12 +362,12 @@ do {
         TaskResume.plan(
             WireRequest(TransferImportRequest(source: .inbox(path: "Hello.apeproj"))),
             descriptorCount: 0,
-            caller: .app,
-        ),
+            caller: .app
+        )
     )
     let stored = (try? String(
         contentsOf: directory.appendingPathComponent("\(secretClone.taskID.rawValue).json"),
-        encoding: .utf8,
+        encoding: .utf8
     )) ?? ""
     check(!stored.contains("s3cret") && stored.contains("credentials"), "a URL with credentials is never written into the record")
     // A token can ride in a query or a fragment as well as in the userinfo.
@@ -376,13 +376,13 @@ do {
     await host.setResume(queryImport.taskID, TaskResume.plan(queryRequest, descriptorCount: 0, caller: .app))
     let fragmentClone = await host.create(kind: .environment, owner: .environment)
     let fragmentRequest = try WireRequest(
-        GitCloneRequest(url: "https://example.com/r.git#f-s3cret", branch: "main", projectName: "F"),
+        GitCloneRequest(url: "https://example.com/r.git#f-s3cret", branch: "main", projectName: "F")
     )
     await host.setResume(fragmentClone.taskID, TaskResume.plan(fragmentRequest, descriptorCount: 0, caller: .app))
     for task in [queryImport, fragmentClone] {
         let text = (try? String(
             contentsOf: directory.appendingPathComponent("\(task.taskID.rawValue).json"),
-            encoding: .utf8,
+            encoding: .utf8
         )) ?? ""
         check(!text.contains("s3cret") && text.contains("credentials"), "a URL with a query or fragment is never written into the record")
     }
@@ -445,8 +445,8 @@ do {
         TaskResume.plan(
             WireRequest(SDKImportRequest(source: .inbox(path: "x.sdk"))),
             descriptorCount: 0,
-            caller: .app,
-        ),
+            caller: .app
+        )
     )
     for restart in 1 ... TaskResume.maximumResumes + 1 {
         host = TaskRegistry(directory: directory)
@@ -469,9 +469,9 @@ do {
         event: .object([
             "artifactID": .string(buildID.rawValue),
             "path": .string("/x.deb"),
-            "digest": .string(String(repeating: "a", count: 64)),
+            "digest": .string(String(repeating: "a", count: 64))
         ]),
-        buildID: buildID,
+        buildID: buildID
     )
     await artifacts.forget(buildID: buildID)
     let forgotten = await artifacts.artifact(buildID.rawValue)
@@ -490,13 +490,13 @@ do {
     check(check1.attachOperation == .confirmLoadedAttach, "a load check is read with confirmLoadedAttach")
     let answer = ConfirmLoadedResponse(
         loaded: true,
-        evidence: [LoadEvidence(kind: "log", passed: true, detail: "confirmed: Marker logged by pid 55.")],
+        evidence: [LoadEvidence(kind: "log", passed: true, detail: "confirmed: Marker logged by pid 55.")]
     )
     await first.append(check1.taskID, kind: "stage", payload: .object(["stage": .string("listening")]))
     await first.append(check1.taskID, kind: "stage", payload: .object(["stage": .string("trigger")]))
     try await first.append(check1.taskID, kind: TaskEvent.stateKind, payload: .object([
         "state": .string("succeeded"),
-        ConfirmLoadedResponse.stateMember: JSONValue(encoding: answer),
+        ConfirmLoadedResponse.stateMember: JSONValue(encoding: answer)
     ]))
     let counts = await first.activeByKind
     check(counts["confirmLoaded"] == nil, "a finished load check is no longer work")
@@ -552,7 +552,7 @@ do {
     }
     check(
         agentEnvironmentOperations == [.toolchainStatus, .toolchainCatalog, .toolchainSetup, .toolchainSelfTest, .sdkList, .sdkImport, .environmentAttach],
-        "and exactly those of the environment domains: \(agentEnvironmentOperations.map(\.rawValue).sorted())",
+        "and exactly those of the environment domains: \(agentEnvironmentOperations.map(\.rawValue).sorted())"
     )
     // The project's other conversations: AgentHandler narrows each one.
     for operation: AppOperation in [.agentOpen, .agentPrompt, .agentList, .agentAttach, .agentAbort, .agentClose] {
@@ -615,7 +615,7 @@ do {
         in project: ResolvedProject = project,
         mode: ApprovalMode = .confirm,
         parent: String? = nil,
-        depth: Int = 0,
+        depth: Int = 0
     ) async -> AgentSessionTable.Entry {
         let entry = await AgentSessionTable.Entry(
             sessionID: id,
@@ -624,7 +624,7 @@ do {
             mode: mode,
             createdAt: Date(),
             parentSessionID: parent,
-            depth: depth,
+            depth: depth
         )
         await table.add(entry)
         return entry
@@ -645,7 +645,7 @@ do {
         serviceTier: .priority,
         prompt: "Write the README",
         closeWhenFinished: true,
-        title: "  Docs\nsecond line",
+        title: "  Docs\nsecond line"
     )
     let child = try AgentConversationRules.childOpen(asked, opener: opener, target: project)
     check(child.projectID == project.id && child.projectName == project.name, "an opened conversation is in the project the host resolved, not the one the request spelled")
@@ -654,14 +654,14 @@ do {
     check(
         child.provider == .anthropic && child.model == "claude-sonnet-5-5" && child.reasoningEffort == .high
             && child.serviceTier == .priority,
-        "provider, model, effort and tier go as sent",
+        "provider, model, effort and tier go as sent"
     )
     check(child.prompt == "Write the README" && child.title == "Docs", "the prompt goes as sent, the title on one trimmed line")
     let relaxed = await session("c-relaxed", mode: .relaxed)
     let relaxedChild = try AgentConversationRules.childOpen(
         AgentOpenRequest(approvalMode: .confirm, prompt: "go"),
         opener: relaxed,
-        target: project,
+        target: project
     )
     check(relaxedChild.approvalMode == .relaxed, "a Relaxed opener's conversation is Relaxed")
     expectError("an opened conversation needs a prompt", code: .badRequest) {
@@ -694,7 +694,7 @@ do {
     // user's of exactly that call.
     func otherProjectAsk(_ tool: String, action: String, projectID: String, sessionID: String? = nil, text: String) -> JSONValue {
         var detail: [String: JSONValue] = [
-            "action": .string(action), "projectID": .string(projectID), "projectName": .string("Other"), "text": .string(text),
+            "action": .string(action), "projectID": .string(projectID), "projectName": .string("Other"), "text": .string(text)
         ]
         if let sessionID {
             detail["sessionID"] = .string(sessionID)
@@ -707,11 +707,11 @@ do {
     check(!AgentConversationRules.coversOpen(crossChild, target: third, asked: openAsk), "not one in another project")
     check(
         !AgentConversationRules.coversOpen(AgentOpenRequest(prompt: "Delete everything"), target: other, asked: openAsk),
-        "nor another prompt",
+        "nor another prompt"
     )
     check(
         !AgentConversationRules.coversOpen(crossChild, target: other, asked: otherProjectAsk("apelin_conversation_send", action: "send", projectID: other.id, text: "Import the repository")),
-        "nor an approval of another tool",
+        "nor an approval of another tool"
     )
 
     // The cap counts running agent-opened sessions and held places.
@@ -736,9 +736,9 @@ do {
             mode: .confirm,
             createdAt: Date(),
             parentSessionID: "c-opener",
-            depth: 1,
+            depth: 1
         ),
-        releasingReservation: true,
+        releasingReservation: true
     )
     let afterOpen = await table.reserveChild(project: capped.id, registry: registry)
     check(!afterOpen, "an open session takes the place it held")
@@ -759,7 +759,7 @@ do {
         reasoningEffort: .max,
         serviceTier: .ultrafast,
         approvalMode: .relaxed,
-        fromSessionID: "c-forged",
+        fromSessionID: "c-forged"
     )
     let rewritten = try AgentConversationRules.childPrompt(sent, sender: opener, target: target, descriptorCount: 0)
     check(rewritten.sessionID == "c-target" && rewritten.text == "Review Tweak.x", "the message goes to the target as typed")
@@ -768,7 +768,7 @@ do {
         rewritten.approvalMode == nil && rewritten.provider == nil && rewritten.model == nil
             && rewritten.reasoningEffort == nil && rewritten.serviceTier == nil && rewritten.attachments == nil
             && rewritten.messageID == nil,
-        "and carries no mode, provider, model, effort, tier, files or message id of the sender's",
+        "and carries no mode, provider, model, effort, tier, files or message id of the sender's"
     )
     expectError("a message carries no descriptors", code: .badRequest) {
         _ = try AgentConversationRules.childPrompt(sent, sender: opener, target: target, descriptorCount: 1)
@@ -776,7 +776,7 @@ do {
     let attached = AgentPromptRequest(
         sessionID: "c-target",
         text: "x",
-        attachments: [AgentInputAttachment(descriptor: DescriptorSlot(index: 0), name: "a", mimeType: "text/plain")],
+        attachments: [AgentInputAttachment(descriptor: DescriptorSlot(index: 0), name: "a", mimeType: "text/plain")]
     )
     expectError("nor attachments", code: .badRequest) {
         _ = try AgentConversationRules.childPrompt(attached, sender: opener, target: target, descriptorCount: 0)
@@ -786,7 +786,7 @@ do {
             AgentPromptRequest(sessionID: "c-opener", text: "x"),
             sender: opener,
             target: opener,
-            descriptorCount: 0,
+            descriptorCount: 0
         )
     }
     let elsewhere = await session("c-elsewhere", in: other)
@@ -794,14 +794,14 @@ do {
         AgentPromptRequest(sessionID: "c-elsewhere", text: "Build it"),
         sender: opener,
         target: elsewhere,
-        descriptorCount: 0,
+        descriptorCount: 0
     )
     check(toElsewhere.fromSessionID == "c-opener", "a message goes to another project's conversation the same way")
     let sendAsk = otherProjectAsk("apelin_conversation_send", action: "send", projectID: other.id, sessionID: "c-elsewhere", text: "Build it")
     check(AgentConversationRules.coversSend(toElsewhere, target: elsewhere, asked: sendAsk), "an approval of this message to this conversation covers it")
     check(
         !AgentConversationRules.coversSend(AgentPromptRequest(sessionID: "c-elsewhere", text: "Push it"), target: elsewhere, asked: sendAsk),
-        "not another text",
+        "not another text"
     )
     let elsewhereToo = await session("c-elsewhere-too", in: other)
     check(!AgentConversationRules.coversSend(toElsewhere, target: elsewhereToo, asked: sendAsk), "nor another conversation")
@@ -811,7 +811,7 @@ do {
             AgentPromptRequest(sessionID: "c-temporary-target", text: "x"),
             sender: opener,
             target: temporaryTarget,
-            descriptorCount: 0,
+            descriptorCount: 0
         )
     }
     expectError("nor one the host does not know", code: .notFound) {
@@ -819,7 +819,7 @@ do {
             AgentPromptRequest(sessionID: "c-gone", text: "x"),
             sender: opener,
             target: nil,
-            descriptorCount: 0,
+            descriptorCount: 0
         )
     }
     expectError("nor an empty message", code: .badRequest) {
@@ -827,7 +827,7 @@ do {
             AgentPromptRequest(sessionID: "c-target", text: " "),
             sender: opener,
             target: target,
-            descriptorCount: 0,
+            descriptorCount: 0
         )
     }
     let fromApp = AgentConversationRules.appPrompt(sent)
@@ -855,11 +855,11 @@ do {
     }
     check(
         (try? AgentConversationRules.mayRead(elsewhere.task.taskID, target: elsewhere, caller: opener, reachable: true)) != nil,
-        "one it may reach, it reads",
+        "one it may reach, it reads"
     )
     check(
         (try? AgentConversationRules.mayRead(elsewhere.task.taskID, target: elsewhere, caller: relaxed)) != nil,
-        "and in Relaxed mode every project's",
+        "and in Relaxed mode every project's"
     )
     expectError("never a temporary chat's", code: .denied) {
         try AgentConversationRules.mayRead(temporaryTarget.task.taskID, target: temporaryTarget, caller: relaxed, reachable: true)
@@ -887,19 +887,19 @@ do {
         sessionID: "c-mine",
         task: mine.task,
         title: "Docs",
-        prompt: "Write the README",
+        prompt: "Write the README"
     )
     check(
         opened["sessionID"]?.stringValue == "c-mine" && opened["task"]?["taskID"]?.stringValue == mine.task.taskID.rawValue
             && opened["task"]?["kind"]?.stringValue == "agent" && opened["title"]?.stringValue == "Docs"
             && opened["prompt"]?.stringValue == "Write the README",
-        "conversationOpened names the session, its task, its title and its prompt",
+        "conversationOpened names the session, its task, its title and its prompt"
     )
     check(AgentConversationRules.openedEvent(sessionID: "s", task: mine.task, title: nil, prompt: "p")["title"] == nil, "and leaves out a title it was not given")
     let openedElsewhere = AgentConversationRules.openedEvent(sessionID: "s", task: mine.task, title: nil, prompt: "p", project: other)
     check(
         openedElsewhere["projectID"]?.stringValue == other.id && openedElsewhere["projectName"]?.stringValue == other.name,
-        "and names the project it opened in, which the app adopts it into",
+        "and names the project it opened in, which the app adopts it into"
     )
     check(AgentConversationRules.title(String(repeating: "x", count: 200))?.count == AgentConversationRules.maximumTitleLength, "a title is bounded")
     check(AgentConversationRules.title(" \n ") == nil, "and an empty one is none")
@@ -964,7 +964,7 @@ do {
             task: registry.create(kind: .agent, owner: .agent, ownerKey: id),
             project: project,
             mode: mode,
-            createdAt: Date(),
+            createdAt: Date()
         )
         await table.add(entry)
         return entry
@@ -976,7 +976,7 @@ do {
             table: table,
             registry: registry,
             home: home,
-            state: state,
+            state: state
         )
     }
     let own = await session(caller, in: docs, mode: .confirm)
@@ -986,13 +986,13 @@ do {
     let listed = try await list(own)
     check(
         Set(listed.sessions.dropLast().map(\.sessionID)) == [titled, child] && listed.sessions.last?.sessionID == caller,
-        "a project's list names its sessions the host has not run since it started, then the running ones: \(listed.sessions.map(\.sessionID))",
+        "a project's list names its sessions the host has not run since it started, then the running ones: \(listed.sessions.map(\.sessionID))"
     )
     let titledListed = listed.sessions.first { $0.sessionID == titled }
     check(
         titledListed?.task == titledTask && titledListed?.state == .interrupted && titledListed?.title == "Docs pass"
             && titledListed?.projectID == "p-docs" && titledListed?.projectName == "Docs",
-        "each by its task, ended, with the title its agent gave it and its project",
+        "each by its task, ended, with the title its agent gave it and its project"
     )
     let childListed = listed.sessions.first { $0.sessionID == child }
     check(childListed?.task == childTask && childListed?.parentSessionID == titled, "a session opened twice by its newest task, with its opener")
@@ -1026,7 +1026,7 @@ do {
     let general = await session(
         generalID,
         in: ResolvedProject(id: "temporary:" + generalID, name: generalID, path: data.root.path + "/Temporary/" + generalID),
-        mode: .confirm,
+        mode: .confirm
     )
     let strict = try await list(general)
     check(strict.sessions.isEmpty && strict.unreachedProjects == 3, "General Chat under Strict lists no project it may not reach, and says how many")
@@ -1034,19 +1034,19 @@ do {
     let reached = try await list(general)
     check(
         Set(reached.sessions.dropLast().map(\.sessionID)) == [titled, child] && reached.sessions.last?.sessionID == caller,
-        "then the ones it may: \(reached.sessions.map(\.sessionID))",
+        "then the ones it may: \(reached.sessions.map(\.sessionID))"
     )
     check(reached.unreachedProjects == 2, "and counts the rest")
     let relaxedID = UUID().uuidString.lowercased()
     let relaxed = await session(
         relaxedID,
         in: ResolvedProject(id: "temporary:" + relaxedID, name: relaxedID, path: data.root.path + "/Temporary/" + relaxedID),
-        mode: .relaxed,
+        mode: .relaxed
     )
     let everything = try await list(relaxed)
     check(
         Set(everything.sessions.map(\.sessionID)) == [titled, child, distant, caller],
-        "in Relaxed mode General Chat lists every project's, and no temporary chat: \(everything.sessions.map(\.sessionID))",
+        "in Relaxed mode General Chat lists every project's, and no temporary chat: \(everything.sessions.map(\.sessionID))"
     )
     check(everything.unreachedProjects == nil, "leaving none out")
     check(everything.sessions.allSatisfy { $0.projectName != nil }, "each with its project")
@@ -1069,7 +1069,7 @@ do {
         table: table,
         registry: later,
         home: home,
-        state: state,
+        state: state
     )
     check(manyListed.sessions.count == AgentConversationList.maximumStoredSessions, "a list names at most \(AgentConversationList.maximumStoredSessions) sessions that have not run")
     check(!manyListed.sessions.contains { $0.sessionID == many[0] }, "the most recently active")
@@ -1083,7 +1083,7 @@ do {
     let home = root + "/var/mobile"
     try FileManager.default.createDirectory(
         atPath: home + "/Documents/wiki.qaq.apelin",
-        withIntermediateDirectories: true,
+        withIntermediateDirectories: true
     )
     write(root + "/etc/hosts", "127.0.0.1 localhost\n")
     write(root + "/etc/run.sh", "#!/bin/sh\n", mode: 0o755)
@@ -1117,7 +1117,7 @@ do {
         grantID: opened.grantID,
         contents: nil,
         contentsBase64: Data("10.0.0.1 router\n".utf8).base64EncodedString(),
-        expectedVersion: opened.version,
+        expectedVersion: opened.version
     )
     let saved = try await editor.commit(commit, descriptors: [])
     check(String(data: FileManager.default.contents(atPath: root + "/etc/hosts")!, encoding: .utf8) == "10.0.0.1 router\n", "the commit replaces the contents")
@@ -1138,15 +1138,15 @@ do {
                 grantID: stale.grantID,
                 contents: nil,
                 contentsBase64: "eA==",
-                expectedVersion: stale.version,
+                expectedVersion: stale.version
             ),
-            descriptors: [],
+            descriptors: []
         )
     }
     check(String(data: FileManager.default.contents(atPath: root + "/etc/hosts")!, encoding: .utf8) == "changed elsewhere\n", "the outside change survives")
 
     let (plist, _) = try await editor.open(
-        ProtectedEditOpenRequest(path: root + "/Library/LaunchDaemons/com.example.plist"),
+        ProtectedEditOpenRequest(path: root + "/Library/LaunchDaemons/com.example.plist")
     )
     check(plist.needsConfirmation, "the open says the plist needs confirmation")
     await expectErrorAsync("an unconfirmed LaunchDaemons save", code: .denied) {
@@ -1155,13 +1155,13 @@ do {
                 grantID: plist.grantID,
                 contents: nil,
                 contentsBase64: "eA==",
-                expectedVersion: plist.version,
+                expectedVersion: plist.version
             ),
-            descriptors: [],
+            descriptors: []
         )
     }
     let (plistAgain, _) = try await editor.open(
-        ProtectedEditOpenRequest(path: root + "/Library/LaunchDaemons/com.example.plist"),
+        ProtectedEditOpenRequest(path: root + "/Library/LaunchDaemons/com.example.plist")
     )
     _ = try await editor.commit(
         ProtectedEditCommitRequest(
@@ -1169,9 +1169,9 @@ do {
             contents: nil,
             contentsBase64: "eA==",
             expectedVersion: plistAgain.version,
-            confirmed: true,
+            confirmed: true
         ),
-        descriptors: [],
+        descriptors: []
     )
     check(FileManager.default.contents(atPath: root + "/Library/LaunchDaemons/com.example.plist") == Data("x".utf8), "a confirmed LaunchDaemons save goes through")
 
@@ -1180,7 +1180,7 @@ do {
     try FileManager.default.createDirectory(atPath: trap, withIntermediateDirectories: true)
     try FileManager.default.createDirectory(
         atPath: scratchPath + "/elsewhere/wiki.qaq.apelin",
-        withIntermediateDirectories: true,
+        withIntermediateDirectories: true
     )
     symlink(scratchPath + "/elsewhere", trap + "/Documents")
     expectError("a backup through a linked Documents", code: .unavailable) { _ = try BackupStore(home: trap).save(path: root + "/etc/hosts") }
@@ -1209,7 +1209,7 @@ func record(
     package: String,
     version: String,
     status: InstallationRecord.Status = .installed,
-    created: Date = Date(),
+    created: Date = Date()
 ) -> InstallationRecord {
     InstallationRecord(
         installationID: id,
@@ -1234,11 +1234,11 @@ func record(
             version: version,
             failure: nil,
             failureText: nil,
-            finishedAt: created,
+            finishedAt: created
         ) : nil,
         removalTransactionID: nil,
         removalTaskID: nil,
-        removalReceipt: nil,
+        removalReceipt: nil
     )
 }
 
@@ -1283,7 +1283,7 @@ do {
         try ManagedPackagePolicy.checkInstall(
             packageID: "com.example.tweak",
             installed: installed,
-            records: [record(package: "com.example.tweak", version: "0.9")],
+            records: [record(package: "com.example.tweak", version: "0.9")]
         )
     }
 
@@ -1451,15 +1451,15 @@ final class FakeIrisin: InstallService, @unchecked Sendable {
                         sequence: 2,
                         kind: "failure",
                         text: text,
-                        problem: "installationStopped",
-                    ),
+                        problem: "installationStopped"
+                    )
                 )
                 events.append(InstallTransactionEvent(sequence: 3, kind: "exit", text: "exit 1", exitStatus: 1))
                 failNext = false
                 failNextText = nil
             } else {
                 events.append(
-                    InstallTransactionEvent(sequence: 2, kind: "phase", text: "verifying", phase: "verifying"),
+                    InstallTransactionEvent(sequence: 2, kind: "phase", text: "verifying", phase: "verifying")
                 )
                 events.append(
                     InstallTransactionEvent(
@@ -1468,11 +1468,11 @@ final class FakeIrisin: InstallService, @unchecked Sendable {
                         text: "unpacking",
                         step: "unpacking",
                         packageID: control?.packageID,
-                        version: control?.version,
-                    ),
+                        version: control?.version
+                    )
                 )
                 events.append(
-                    InstallTransactionEvent(sequence: 4, kind: "phase", text: "completed", phase: "completed"),
+                    InstallTransactionEvent(sequence: 4, kind: "phase", text: "completed", phase: "completed")
                 )
                 events.append(InstallTransactionEvent(sequence: 5, kind: "exit", text: "exit 0", exitStatus: 0))
             }
@@ -1482,7 +1482,7 @@ final class FakeIrisin: InstallService, @unchecked Sendable {
                 version: control?.version,
                 digest: sha256,
                 events: events,
-                failureText: failureText,
+                failureText: failureText
             )
             return status(transaction, duplicate: false)
         }
@@ -1503,9 +1503,9 @@ final class FakeIrisin: InstallService, @unchecked Sendable {
                     kind: "package",
                     text: "removing",
                     step: "removing",
-                    packageID: packageID,
+                    packageID: packageID
                 ),
-                InstallTransactionEvent(sequence: 3, kind: "exit", text: "exit 0", exitStatus: 0),
+                InstallTransactionEvent(sequence: 3, kind: "exit", text: "exit 0", exitStatus: 0)
             ])
             return status(transaction, duplicate: false)
         }
@@ -1515,7 +1515,7 @@ final class FakeIrisin: InstallService, @unchecked Sendable {
         lock.withLock {
             transactions[transaction] = Transaction(
                 kind: "respring",
-                events: [InstallTransactionEvent(sequence: 1, kind: "exit", text: "exit 0", exitStatus: 0)],
+                events: [InstallTransactionEvent(sequence: 1, kind: "exit", text: "exit 0", exitStatus: 0)]
             )
             return status(transaction, duplicate: false)
         }
@@ -1531,7 +1531,7 @@ final class FakeIrisin: InstallService, @unchecked Sendable {
     /// Events come out two at a time, as a running helper's would.
     func events(
         of transaction: UUID,
-        after: UInt64,
+        after: UInt64
     ) async throws -> (status: InstallTransactionStatus, events: [InstallTransactionEvent]) {
         try lock.withLock {
             guard var entry = transactions[transaction] else { throw InstallServiceError(.notFound) }
@@ -1540,7 +1540,7 @@ final class FakeIrisin: InstallService, @unchecked Sendable {
             let visible = entry.events.prefix(min(entry.events.count, entry.polls * 2))
             return (
                 status(transaction, duplicate: false, visible: visible.count),
-                visible.filter { $0.sequence > after },
+                visible.filter { $0.sequence > after }
             )
         }
     }
@@ -1567,7 +1567,7 @@ final class FakeIrisin: InstallService, @unchecked Sendable {
             version: entry.version,
             failure: state == .failed ? "installationStopped" : nil,
             failureText: state == .failed ? entry.failureText ?? "the digest did not match" : nil,
-            duplicate: duplicate,
+            duplicate: duplicate
         )
     }
 }
@@ -1586,7 +1586,7 @@ struct FakeDatabase: InstalledPackageSource {
                     version: version,
                     status: "install ok installed",
                     essential: false,
-                    priority: "optional",
+                    priority: "optional"
                 )
             }
         }
@@ -1608,7 +1608,7 @@ func waitForEnd(_ registry: TaskRegistry, _ handle: TaskHandle) async throws -> 
         handle.taskID,
         as: handle.kind.attachOperation,
         afterSeq: .start,
-        waitMilliseconds: 0,
+        waitMilliseconds: 0
     )
     for _ in 0 ..< 200 where !batch.finished {
         try await Task.sleep(nanoseconds: 20_000_000)
@@ -1616,7 +1616,7 @@ func waitForEnd(_ registry: TaskRegistry, _ handle: TaskHandle) async throws -> 
             handle.taskID,
             as: handle.kind.attachOperation,
             afterSeq: .start,
-            waitMilliseconds: 0,
+            waitMilliseconds: 0
         )
     }
     return batch
@@ -1671,8 +1671,8 @@ do {
             version: "1",
             status: "install ok installed",
             essential: false,
-            priority: nil,
-        ),
+            priority: nil
+        )
     ]
     func bridge() -> InstallBridge {
         InstallBridge(
@@ -1684,7 +1684,7 @@ do {
             packages: FakeDatabase(irisin: irisin, extra: extra),
             fileLists: FakeFileLists(),
             approvals: approvals,
-            pollInterval: 0.01,
+            pollInterval: 0.01
         )
     }
     let install = bridge()
@@ -1698,7 +1698,7 @@ do {
         "version": .string("1.0"),
         "path": .string(deb),
         "projectID": .string("p-1"),
-        "packagingDigest": .string(packaging),
+        "packagingDigest": .string(packaging)
     ]), buildID: buildTask.taskID)
     check(recorded?.buildID == buildTask.taskID.rawValue, "an artifact event is recorded with its build")
     let missing = await artifacts.record(event: .object(["artifactID": .string("x")]), buildID: buildTask.taskID)
@@ -1707,7 +1707,7 @@ do {
     await expectErrorAsync("a wrong digest", code: .conflict) {
         _ = try await install.install(
             InstallPackageRequest(artifactID: "art-1", digest: String(repeating: "e", count: 64)),
-            caller: .app,
+            caller: .app
         )
     }
     await expectErrorAsync("an unknown artifact", code: .notFound) {
@@ -1716,19 +1716,19 @@ do {
     await expectErrorAsync("a file install from the agent", code: .denied) {
         _ = try await install.install(
             InstallPackageRequest(artifactID: "file:Projects/Hello/.build/hello.deb", digest: digest),
-            caller: .worker(.agent, instance: "s"),
+            caller: .worker(.agent, instance: "s")
         )
     }
     await expectErrorAsync("an agent install of a changed packaging description", code: .denied) {
         _ = try await install.install(
             InstallPackageRequest(artifactID: "art-1", digest: "sha256:" + digest),
-            caller: .worker(.agent, instance: "s"),
+            caller: .worker(.agent, instance: "s")
         )
     }
     await expectErrorAsync("an install from the build worker", code: .denied) {
         _ = try await install.install(
             InstallPackageRequest(artifactID: "art-1", digest: digest),
-            caller: .worker(.build, instance: "b"),
+            caller: .worker(.build, instance: "b")
         )
     }
 
@@ -1736,7 +1736,7 @@ do {
     try await approvals.recordApproval(packaging, kind: .packaging, project: "p-1")
     let handle = try await install.install(
         InstallPackageRequest(artifactID: "art-1", digest: "sha256:" + digest),
-        caller: .worker(.agent, instance: "s"),
+        caller: .worker(.agent, instance: "s")
     )
     let batch = try await waitForEnd(registry, handle)
     check(batch.state == .succeeded, "the install succeeds (\(batch.events.last?.payload?["message"]?.stringValue ?? ""))")
@@ -1755,7 +1755,7 @@ do {
     await expectErrorAsync("overwriting a foreign package", code: .conflict) {
         _ = try await install.install(
             InstallPackageRequest(artifactID: "file:foreign.deb", digest: sha256(foreign)),
-            caller: .app,
+            caller: .app
         )
     }
     let core = data + "/core.deb"
@@ -1763,14 +1763,14 @@ do {
     await expectErrorAsync("installing the install service", code: .denied) {
         _ = try await install.install(
             InstallPackageRequest(artifactID: "file:core.deb", digest: sha256(core)),
-            caller: .app,
+            caller: .app
         )
     }
     symlink(scratchPath + "/peek.deb", data + "/linked.deb")
     await expectErrorAsync("a file through a link out of the data folder") {
         _ = try await install.install(
             InstallPackageRequest(artifactID: "file:linked.deb", digest: sha256(scratchPath + "/peek.deb")),
-            caller: .app,
+            caller: .app
         )
     }
 
@@ -1779,7 +1779,7 @@ do {
     await expectErrorAsync("an unapproved agent removal", code: .denied) {
         _ = try await install.remove(
             RemovePackageRequest(installationID: installationID),
-            caller: .worker(.agent, instance: "s"),
+            caller: .worker(.agent, instance: "s")
         )
     }
     // The session asks the way apelin-agent does (its EventRelay test holds
@@ -1789,25 +1789,25 @@ do {
         task: registry.create(kind: .agent, owner: .agent, ownerKey: "s"),
         project: ResolvedProject(id: "p-1", name: "Hello", path: data + "/Projects/Hello"),
         mode: .confirm,
-        createdAt: Date(),
+        createdAt: Date()
     )
     await AgentSessionTable.shared.add(removalSession)
     await registry.append(removalSession.task.taskID, kind: "approvalRequested", payload: .object([
         "approvalID": .string("remove-hello"),
         "tool": .string("apelin_package_remove"),
         "arguments": .string(#"{"installation_id":"\#(installationID)"}"#),
-        "detail": .object(["packageRemoval": .object(["installationID": .string(installationID)])]),
+        "detail": .object(["packageRemoval": .object(["installationID": .string(installationID)])])
     ]))
     _ = try await AgentApprovals.relay(
         AgentApproveRequest(sessionID: "s", approvalID: "remove-hello", decision: .approve),
         registry: registry,
         ledger: approvals,
         forward: { true },
-        accepted: { $0 },
+        accepted: { $0 }
     )
     let removal = try await install.remove(
         RemovePackageRequest(installationID: installationID),
-        caller: .worker(.agent, instance: "s"),
+        caller: .worker(.agent, instance: "s")
     )
     let removed = try await waitForEnd(registry, removal)
     check(removed.state == .succeeded && removed.events.contains { $0.kind == "removed" }, "the removal succeeds")
@@ -1820,14 +1820,14 @@ do {
     makeDeb(
         at: artifactsFolder + "/toolchain-abc123.deb",
         package: "wiki.qaq.apelin.toolchain.abc123",
-        version: "16.0+abc123",
+        version: "16.0+abc123"
     )
     let toolchainDigest = sha256(artifactsFolder + "/toolchain-abc123.deb")
     let environmentCaller = Caller.worker(.environment, instance: nil)
     await expectErrorAsync("the environment worker installing a build artifact", code: .denied) {
         _ = try await install.install(
             InstallPackageRequest(artifactID: "art-1", digest: digest),
-            caller: environmentCaller,
+            caller: environmentCaller
         )
     }
     await expectErrorAsync("the environment worker removing a project package", code: .denied) {
@@ -1836,12 +1836,12 @@ do {
     await expectErrorAsync("the agent installing a toolchain", code: .denied) {
         _ = try await install.install(
             InstallPackageRequest(artifactID: "toolchain-abc123", digest: toolchainDigest),
-            caller: .worker(.agent, instance: "s"),
+            caller: .worker(.agent, instance: "s")
         )
     }
     let toolchainHandle = try await install.install(
         InstallPackageRequest(artifactID: "toolchain-abc123", digest: toolchainDigest),
-        caller: environmentCaller,
+        caller: environmentCaller
     )
     let toolchainBatch = try await waitForEnd(registry, toolchainHandle)
     let toolchainResult = try toolchainBatch.events.first { $0.kind == "result" }?.payload?.decode(InstallResult.self)
@@ -1851,9 +1851,9 @@ do {
         _ = try await install.install(
             InstallPackageRequest(
                 artifactID: "toolchain-evil",
-                digest: sha256(artifactsFolder + "/toolchain-evil.deb"),
+                digest: sha256(artifactsFolder + "/toolchain-evil.deb")
             ),
-            caller: environmentCaller,
+            caller: environmentCaller
         )
     }
     expectError("a toolchain-family package from a project", code: .denied) {
@@ -1861,12 +1861,12 @@ do {
             packageID: "wiki.qaq.apelin.toolchain.abc123",
             origin: .build,
             installed: [:],
-            records: [],
+            records: []
         )
     }
     let toolchainRemoval = try await install.remove(
         RemovePackageRequest(installationID: toolchainResult!.installationID),
-        caller: environmentCaller,
+        caller: environmentCaller
     )
     let toolchainRemoved = try await waitForEnd(registry, toolchainRemoval)
     check(toolchainRemoved.state == .succeeded, "the environment worker removes its toolchain package")
@@ -1883,14 +1883,14 @@ do {
     makeDeb(at: resumeDeb, package: "com.example.resume", version: "1")
     let resumeHandle = try await install.install(
         InstallPackageRequest(artifactID: "file:resume.deb", digest: sha256(resumeDeb)),
-        caller: .app,
+        caller: .app
     )
     _ = try await waitForEnd(registry, resumeHandle)
     let resumeBatch = try await registry.attach(
         resumeHandle.taskID,
         as: .buildAttach,
         afterSeq: .start,
-        waitMilliseconds: 0,
+        waitMilliseconds: 0
     )
     let resumeID = try resumeBatch.events.first { $0.kind == "result" }!
         .payload!.decode(InstallResult.self).installationID
@@ -1909,11 +1909,11 @@ do {
     try await installations.update(resumeID) { $0.status = .staged; $0.followedSeq = 0 }
     try? FileManager.default.createDirectory(
         at: state.appendingPathComponent("staging"),
-        withIntermediateDirectories: true,
+        withIntermediateDirectories: true
     )
     try FileManager.default.copyItem(
         atPath: resumeDeb,
-        toPath: state.appendingPathComponent("staging/\(resumeID).deb").path,
+        toPath: state.appendingPathComponent("staging/\(resumeID).deb").path
     )
     let crashedAgain = await registry.create(kind: .install, owner: nil)
     await registry.setResume(crashedAgain.taskID, .object(["installationID": .string(resumeID)]))
@@ -1983,11 +1983,11 @@ do {
     // the agent's, whatever its mode.
     let toolchain = try await installedResult(install.install(
         InstallPackageRequest(artifactID: "toolchain-abc123", digest: toolchainDigest),
-        caller: environmentCaller,
+        caller: environmentCaller
     ))
     let toolchainForAgent = try await install.list(
         InstallationListRequest(packageID: "wiki.qaq.apelin.toolchain.abc123"),
-        caller: lister,
+        caller: lister
     )
     let toolchainForApp = try await install.list(InstallationListRequest(packageID: "wiki.qaq.apelin.toolchain.abc123"), caller: .app)
     check(toolchainForAgent.installations.first.map { !$0.removable && ($0.reason ?? "").contains("Settings") } == true, "the agent sees a toolchain as not its to remove")
@@ -2038,7 +2038,7 @@ do {
     try await installations.save(renamed)
     let installed = Dictionary(uniqueKeysWithValues: [
         ("local.apelin.dockflip", "0.1"), ("com.example.foreign", "2.0"), ("local.apelin.old", "1.0"),
-        ("local.apelin.versioned", "1.0"), ("local.apelin.taken", "1.0"), ("mobilesubstrate", "0.9"),
+        ("local.apelin.versioned", "1.0"), ("local.apelin.taken", "1.0"), ("mobilesubstrate", "0.9")
     ].map { id, version in
         (id, InstalledPackage(packageID: id, version: version, status: "install ok installed", essential: false, priority: nil))
     })
@@ -2053,10 +2053,10 @@ do {
             "local.apelin.dockflip": ["/Library", dylib, "/Library/MobileSubstrate/DynamicLibraries/DockFlip.plist"],
             "com.example.foreign": [foreignDylib],
             "local.apelin.taken": ["/usr/lib/libtaken.dylib"],
-            "mobilesubstrate": ["/usr/lib/libsubstrate.dylib"],
+            "mobilesubstrate": ["/usr/lib/libsubstrate.dylib"]
         ]),
         approvals: ApprovalLedger(directory: state.appendingPathComponent("approvals")),
-        pollInterval: 0.01,
+        pollInterval: 0.01
     )
 
     // `package` as a build reports it, installed by the app, and irisind
@@ -2065,7 +2065,7 @@ do {
         _ package: String,
         files: [String]?,
         fields: String = "",
-        text: String,
+        text: String
     ) async throws -> (conflicts: [InstallConflict], message: String) {
         let deb = data + "/Builds/\(package).deb"
         makeDeb(at: deb, package: package, version: "1.0", fields: fields)
@@ -2073,7 +2073,7 @@ do {
         let build = await registry.create(kind: .build, owner: .build, ownerKey: "b")
         var event: [String: JSONValue] = [
             "artifactID": .string(package), "digest": .string(digest), "packageID": .string(package),
-            "version": .string("1.0"), "path": .string(deb), "projectID": .string("p-2"),
+            "version": .string("1.0"), "path": .string(deb), "projectID": .string("p-2")
         ]
         if let files {
             event["packageFiles"] = .array(files.map(JSONValue.string))
@@ -2103,7 +2103,7 @@ do {
         "local.apelin.newer",
         files: ["/usr/lib/libtaken.dylib"],
         fields: "Conflicts: local.apelin.old, local.apelin.versioned (<< 0.5)\nBreaks: local.apelin.absent | local.apelin.old\nReplaces: local.apelin.taken\n",
-        text: conflicting,
+        text: conflicting
     )
     check(declared.conflicts.map(\.relation) == [.conflicts, .breaks] && declared.conflicts.allSatisfy { $0.packageID == "local.apelin.old" && $0.installationID == nil }, "Conflicts and Breaks name the installed package (\(declared.conflicts))")
     check(declared.message == "This package's Conflicts names local.apelin.old 1.0, which is installed. The installer does not remove it: remove it with your preferred package manager first, then install again. Irisin reported: \(conflicting)", "one sentence for the package, the installer's limit and the fix (\(declared.message))")
@@ -2161,7 +2161,7 @@ do {
     check(String(decoding: buffer.prefix(max(0, count)), as: UTF8.self) == "attachment bytes\n", "the sender changing its file afterwards does not reach the copy")
     check((try? FileManager.default.contentsOfDirectory(atPath: scratchPath + "/attachments"))?.isEmpty == true, "nothing is left in the copies' directory")
     let mode = (
-        try? FileManager.default.attributesOfItem(atPath: scratchPath + "/attachments")[.posixPermissions] as? NSNumber,
+        try? FileManager.default.attributesOfItem(atPath: scratchPath + "/attachments")[.posixPermissions] as? NSNumber
     )?.intValue
     check(mode == 0o700, "the copies' directory is private")
 
@@ -2179,7 +2179,7 @@ do {
 
     try? FileManager.default.createSymbolicLink(
         atPath: scratchPath + "/attachments-link",
-        withDestinationPath: scratchPath + "/attachments",
+        withDestinationPath: scratchPath + "/attachments"
     )
     let linked = AttachmentCopies(directory: URL(fileURLWithPath: scratchPath + "/attachments-link"))
     expectError("a symlinked copies' directory is refused", code: .unavailable) { _ = try linked.copy(writable, maximumBytes: 1024) }
@@ -2200,7 +2200,7 @@ do {
         workingDirectory: scratchPath,
         fallbackDirectory: "/",
         columns: 80,
-        rows: 24,
+        rows: 24
     )
     let queue = DispatchQueue(label: "terminal-test")
     let session = try TerminalSession.spawn(launch, queue: queue)
@@ -2226,14 +2226,14 @@ do {
         home: scratchPath,
         directory: scratchPath,
         columns: 80,
-        rows: 24,
+        rows: 24
     )
     let environment = launch.environment
     let protected = environment.filter { $0.key.hasPrefix("GIT_CONFIG_") }
     check(protected == [
         "GIT_CONFIG_COUNT": "1",
         "GIT_CONFIG_KEY_0": "safe.bareRepository",
-        "GIT_CONFIG_VALUE_0": "explicit",
+        "GIT_CONFIG_VALUE_0": "explicit"
     ], "the terminal's login environment sets safe.bareRepository=explicit as protected config, and nothing else")
 
     // A bare layout the agent's files could have made, with a pager in its
@@ -2254,7 +2254,7 @@ do {
             "HOME": scratchPath,
             "GIT_CONFIG_NOSYSTEM": "1",
             "GIT_CONFIG_GLOBAL": "/dev/null",
-            "GIT_CEILING_DIRECTORIES": scratchPath + "/terminal-bare",
+            "GIT_CEILING_DIRECTORIES": scratchPath + "/terminal-bare"
         ].merging(extra) { $1 }
         let pipe = Pipe()
         process.standardOutput = pipe
@@ -2290,17 +2290,17 @@ for (id, version, path) in [("iphoneos27.0-1a2b3c4d", "27.0", developmentNewSDK)
     write(path + "/SDKSettings.json", "{}")
     write(
         developmentData + "/SDKs/.registry/\(id).json",
-        #"{"id":"\#(id)","canonicalName":"\#(id)","version":"\#(version)","path":"\#(path)","targets":[],"warnings":[],"digest":"1a"}"#,
+        #"{"id":"\#(id)","canonicalName":"\#(id)","version":"\#(version)","path":"\#(path)","targets":[],"warnings":[],"digest":"1a"}"#
     )
 }
 
 write(
     developmentData + "/Environment/Toolchains/registry.json",
-    #"{"defaultID":"clt-27.0","toolchains":[{"id":"clt-27.0","version":"27.0","components":[{"kind":"c","selfCheckPassed":true}],"path":"\#(developmentToolchain)","contentDigest":"ab","installationID":"inst-secret","origin":"082-1 https://user:tok3n@example.invalid/p"}]}"#,
+    #"{"defaultID":"clt-27.0","toolchains":[{"id":"clt-27.0","version":"27.0","components":[{"kind":"c","selfCheckPassed":true}],"path":"\#(developmentToolchain)","contentDigest":"ab","installationID":"inst-secret","origin":"082-1 https://user:tok3n@example.invalid/p"}]}"#
 )
 write(
     developmentProject + "/apelin-project.json",
-    #"{"projectID":"p-env","deploymentTarget":"15.0","environment":{"toolchain":{"id":"clt-27.0"},"sdk":{"id":"iphoneos18.5-5e6f7a8b"}}}"#,
+    #"{"projectID":"p-env","deploymentTarget":"15.0","environment":{"toolchain":{"id":"clt-27.0"},"sdk":{"id":"iphoneos18.5-5e6f7a8b"}}}"#
 )
 
 do {
@@ -2310,7 +2310,7 @@ do {
         home: developmentHome,
         directory: developmentHome,
         columns: 80,
-        rows: 24,
+        rows: 24
     )
     let environment = launch.environment
     let path = (environment["PATH"] ?? "").split(separator: ":").map(String.init)
@@ -2331,7 +2331,7 @@ do {
         directory: developmentProject,
         project: developmentProject,
         columns: 80,
-        rows: 24,
+        rows: 24
     )
     check(launch.environment["SDKROOT"] == developmentOldSDK, "a project's terminal has the SDK the project binds")
     check(launch.environment["IPHONEOS_DEPLOYMENT_TARGET"] == "15.0", "and its deployment target")
@@ -2383,7 +2383,7 @@ write(lookupProject + "/build.sh", "#!/bin/sh\necho built\n", mode: 0o755)
 write(lookupProject + "/notes.txt", "not a program\n")
 write(
     lookupHome + "/Documents/wiki.qaq.apelin/Environment/Toolchains/registry.json",
-    #"{"defaultID":"clt-27.0","toolchains":[{"id":"clt-27.0","version":"27.0","components":[{"kind":"c","selfCheckPassed":true}],"path":"\#(lookupToolchain)","contentDigest":"ab"}]}"#,
+    #"{"defaultID":"clt-27.0","toolchains":[{"id":"clt-27.0","version":"27.0","components":[{"kind":"c","selfCheckPassed":true}],"path":"\#(lookupToolchain)","contentDigest":"ab"}]}"#
 )
 
 do {
@@ -2451,7 +2451,7 @@ do {
         as: ordinary,
         environment: environment,
         installRoot: "/",
-        directory: lookupProject,
+        directory: lookupProject
     )
     check(shell.map { $0.argv == [$0.executable, "-c", "true"] } == true, "a script runs as before: \(String(describing: shell))")
 
@@ -2464,7 +2464,7 @@ do {
             project: project,
             installRoot: "/",
             home: lookupHome,
-            stopsSeen: AgentRunCode.stopCount(session: session),
+            stopsSeen: AgentRunCode.stopCount(session: session)
         )
     }
     let echoed = await run(["/bin/echo", "ok"], session: "lookup-absolute")
@@ -2489,7 +2489,7 @@ do {
             task: registry.create(kind: .agent, owner: .agent, ownerKey: id),
             project: ResolvedProject(id: "p-agent", name: "Agent", path: scratchPath),
             mode: .confirm,
-            createdAt: Date(),
+            createdAt: Date()
         )
         await sessions.add(entry)
         return entry
@@ -2499,12 +2499,12 @@ do {
         _ approvalID: String,
         tool: String,
         detail: JSONValue? = nil,
-        workingDirectory: String = ".",
+        workingDirectory: String = "."
     ) async {
         var payload: [String: JSONValue] = [
             "approvalID": .string(approvalID),
             "tool": .string(tool),
-            "workingDirectory": .string(workingDirectory),
+            "workingDirectory": .string(workingDirectory)
         ]
         if let detail {
             payload["detail"] = detail
@@ -2522,7 +2522,7 @@ do {
         AgentRunCodeRequest(
             sessionID: entry.sessionID,
             spec: .argv(["make"]),
-            approval: .user(approvalID: approvalID),
+            approval: .user(approvalID: approvalID)
         )
     }
 
@@ -2534,7 +2534,7 @@ do {
     }
     let digest = "sha256:" + String(repeating: "d", count: 64)
     let changed: JSONValue = .object([
-        "descriptionChanged": .object(["kind": .string("build"), "digest": .string(digest)]),
+        "descriptionChanged": .object(["kind": .string("build"), "digest": .string(digest)])
     ])
     await ask(long, "late-build", tool: "apelin_project_build", detail: changed)
     await ask(long, "late-run", tool: "shell_run", detail: makeCommand)
@@ -2564,7 +2564,7 @@ do {
             entry: short,
             registry: registry,
             ledger: ledger,
-            installRoot: "/",
+            installRoot: "/"
         )
     }
     let kept = await sessions.entry(short.sessionID)?.approvals["for-build"]
@@ -2576,7 +2576,7 @@ do {
             entry: short,
             registry: registry,
             ledger: ledger,
-            installRoot: "/",
+            installRoot: "/"
         )
     }
     let unasked = await sessions.entry(short.sessionID)?.approvals["never-asked"]
@@ -2598,7 +2598,7 @@ do {
     let other = AgentRunCodeRequest(
         sessionID: bound.sessionID,
         spec: .argv(["rm", "-rf", "Sources"]),
-        approval: .user(approvalID: "make-here"),
+        approval: .user(approvalID: "make-here")
     )
     let otherPassed = await authorized(other)
     check(!otherPassed, "an approval cited for another command is refused")
@@ -2606,7 +2606,7 @@ do {
         sessionID: bound.sessionID,
         spec: .argv(["make"]),
         workingDirectory: "Sources",
-        approval: .user(approvalID: "make-here"),
+        approval: .user(approvalID: "make-here")
     )
     let elsewherePassed = await authorized(elsewhere)
     check(!elsewherePassed, "an approval cited in another working directory is refused")
@@ -2622,7 +2622,7 @@ do {
     let piped = AgentRunCodeRequest(
         sessionID: bound.sessionID,
         spec: .script(interpreter: "sh", source: shellText),
-        approval: .user(approvalID: "make-piped"),
+        approval: .user(approvalID: "make-piped")
     )
     let pipedPassed = await authorized(piped)
     check(pipedPassed, "approved shell text runs as the sh script it became")
@@ -2650,7 +2650,7 @@ do {
             task: registry.create(kind: .agent, owner: .agent, ownerKey: id),
             project: ResolvedProject(id: "p-environment", name: "Environment", path: scratchPath),
             mode: mode,
-            createdAt: Date(),
+            createdAt: Date()
         )
         await sessions.add(entry)
         return entry
@@ -2659,15 +2659,15 @@ do {
     // approvalRequested `detail` (ApelinAgentWorker's tests hold that shape).
     func ask(_ entry: AgentSessionTable.Entry, _ approvalID: String, tool: String, detail: JSONValue) async {
         await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object([
-            "approvalID": .string(approvalID), "tool": .string(tool), "detail": detail,
+            "approvalID": .string(approvalID), "tool": .string(tool), "detail": detail
         ]))
     }
     let setupDetail: JSONValue = .object(["toolchainSetup": .object([
-        "productID": .string("082-1"), "version": .string("16.4"), "components": .array([.string("c")]), "sizeBytes": .number(1),
+        "productID": .string("082-1"), "version": .string("16.4"), "components": .array([.string("c")]), "sizeBytes": .number(1)
     ])])
     let sourceURL = "https://github.com/owngoal-dev/iOS-SDKs.git"
     let importDetail: JSONValue = .object(["sdkImport": .object([
-        "source": .string("OwnGoal iOS SDKs"), "url": .string(sourceURL), "branch": .string("sdk/iPhoneOS17.5"), "version": .string("17.5"),
+        "source": .string("OwnGoal iOS SDKs"), "url": .string(sourceURL), "branch": .string("sdk/iPhoneOS17.5"), "version": .string("17.5")
     ])])
     func authorized(_ request: some OperationRequest, _ entry: AgentSessionTable.Entry?, descriptors: Int = 0) async -> Bool {
         guard let wire = try? WireRequest(request) else { return false }
@@ -2694,7 +2694,7 @@ do {
         .repository(url: "https://user:token@github.com/owngoal-dev/iOS-SDKs.git", branch: "sdk/iPhoneOS17.5"),
         .repository(url: sourceURL + "?token=1", branch: "sdk/iPhoneOS17.5"),
         .repository(url: sourceURL + "#frag", branch: "sdk/iPhoneOS17.5"),
-        .repository(url: "http://github.com/owngoal-dev/iOS-SDKs.git", branch: "sdk/iPhoneOS17.5"),
+        .repository(url: "http://github.com/owngoal-dev/iOS-SDKs.git", branch: "sdk/iPhoneOS17.5")
     ] {
         let passed = await authorized(SDKImportRequest(source: source), relaxed)
         check(!passed, "an agent imports an SDK only from an HTTPS repository without credentials (\(source))")
@@ -2754,7 +2754,7 @@ do {
         task: registry.create(kind: .agent, owner: .agent, ownerKey: "external-build-strict"),
         project: ResolvedProject(id: "p-workspace", name: "Workspace", path: scratchPath),
         mode: .confirm,
-        createdAt: Date(),
+        createdAt: Date()
     )
     await sessions.add(entry)
     // What apelin-agent writes into a workspace build's approvalRequested
@@ -2762,12 +2762,12 @@ do {
     // when the build names none.
     func ask(_ approvalID: String, configuration: String, bootstrap: String? = nil) async {
         var detail: [String: JSONValue] = [
-            "projectID": .string("p-workspace"), "script": .string("apelin/build.sh"), "configuration": .string(configuration),
+            "projectID": .string("p-workspace"), "script": .string("apelin/build.sh"), "configuration": .string(configuration)
         ]
         detail["bootstrap"] = bootstrap.map(JSONValue.string)
         await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object([
             "approvalID": .string(approvalID), "tool": .string("apelin_project_build"),
-            "detail": .object([AgentExternalBuildRules.detailKey: .object(detail)]),
+            "detail": .object([AgentExternalBuildRules.detailKey: .object(detail)])
         ]))
     }
     let debug = BuildStartRequest(projectID: "p-workspace", configuration: .debug)
@@ -2816,7 +2816,7 @@ do {
             task: registry.create(kind: .agent, owner: .agent, ownerKey: id),
             project: ResolvedProject(id: "p-rename-mine", name: "Mine", path: homePath + "/Documents/wiki.qaq.apelin/Projects/Mine"),
             mode: mode,
-            createdAt: Date(),
+            createdAt: Date()
         )
         await sessions.add(entry)
         return entry
@@ -2835,8 +2835,8 @@ do {
         "approvalID": .string("rename-1"), "tool": .string("apelin_project_rename"),
         "detail": .object([AgentProjectRenameRules.detailKey: .object([
             "projectID": .string("p-rename-theirs"), "folder": .string("Theirs"),
-            "currentName": .string("Theirs"), "displayName": .string("Weather"),
-        ])]),
+            "currentName": .string("Theirs"), "displayName": .string("Weather")
+        ])])
     ]))
     let asked = await authorized(theirs, strict)
     check(!asked, "asking is not approving")
@@ -2912,7 +2912,7 @@ do {
             task: registry.create(kind: .agent, owner: .agent, ownerKey: id),
             project: project ?? ResolvedProject(id: "p-delete-mine", name: "Mine", path: homePath + "/Documents/wiki.qaq.apelin/Projects/Mine"),
             mode: mode,
-            createdAt: Date(),
+            createdAt: Date()
         )
         await sessions.add(entry)
         return entry
@@ -2928,8 +2928,8 @@ do {
         await registry.append(strict.task.taskID, kind: "approvalRequested", payload: .object([
             "approvalID": .string(approvalID), "tool": .string(tool),
             "detail": .object([AgentProjectDeleteRules.detailKey: .object([
-                "projectID": .string(projectID), "folder": .string(folder), "displayName": .string("Weather"),
-            ])]),
+                "projectID": .string(projectID), "folder": .string(folder), "displayName": .string("Weather")
+            ])])
         ]))
     }
     let unasked = await authorized(strict)
@@ -2998,7 +2998,7 @@ do {
             task: registry.create(kind: .agent, owner: .agent, ownerKey: id),
             project: ResolvedProject(id: "p-feedback", name: "Feedback", path: scratchPath),
             mode: mode,
-            createdAt: Date(),
+            createdAt: Date()
         )
         await sessions.add(entry)
         return entry
@@ -3011,8 +3011,8 @@ do {
         await registry.append(strict.task.taskID, kind: "approvalRequested", payload: .object([
             "approvalID": .string(approvalID), "tool": .string("apelin_feedback_send"),
             "detail": .object([AgentFeedbackRules.detailKey: .object([
-                "repository": .string(repository), "title": .string(feedback.title), "body": .string(body),
-            ])]),
+                "repository": .string(repository), "title": .string(feedback.title), "body": .string(body)
+            ])])
         ]))
     }
     func authorized(_ entry: AgentSessionTable.Entry?) async -> ApelinError? {
@@ -3061,7 +3061,7 @@ do {
             task: registry.create(kind: .agent, owner: .agent, ownerKey: id),
             project: ResolvedProject(id: "p-feedback-edit", name: "Feedback Edit", path: scratchPath),
             mode: mode,
-            createdAt: Date(),
+            createdAt: Date()
         )
         await sessions.add(entry)
         return entry
@@ -3072,7 +3072,7 @@ do {
         title: nil,
         body: "It ends before the link step, on roothide and rootless.",
         expectedTitle: "The build log stops early",
-        expectedBody: "It ends before the link step.",
+        expectedBody: "It ends before the link step."
     )
     // What apelin-agent writes into apelin_feedback_edit's approvalRequested
     // (ApelinAgentWorker's tests hold that shape): no title, since it stays.
@@ -3082,19 +3082,19 @@ do {
         number: Double = 12,
         title: String? = nil,
         body: String = "It ends before the link step, on roothide and rootless.",
-        currentBody: String = "It ends before the link step.",
+        currentBody: String = "It ends before the link step."
     ) async {
         var detail: [String: JSONValue] = [
             "repository": .string(FeedbackRules.repository), "number": .number(number),
             "url": .string("https://github.com/owngoal-dev/Apelin/issues/12"),
-            "body": .string(body), "currentTitle": .string("The build log stops early"), "currentBody": .string(currentBody),
+            "body": .string(body), "currentTitle": .string("The build log stops early"), "currentBody": .string(currentBody)
         ]
         if let title {
             detail["title"] = .string(title)
         }
         await registry.append(strict.task.taskID, kind: "approvalRequested", payload: .object([
             "approvalID": .string(approvalID), "tool": .string(tool),
-            "detail": .object([AgentFeedbackRules.editDetailKey: .object(detail)]),
+            "detail": .object([AgentFeedbackRules.editDetailKey: .object(detail)])
         ]))
         await sessions.record(strict.sessionID, approvalID: approvalID, decision: .approve)
     }
@@ -3112,12 +3112,12 @@ do {
     let unspent = await sessions.approvedIDs(strict.sessionID)
     check(
         near != nil && Set(unspent) == ["edit-number", "edit-body", "edit-title", "edit-against", "edit-tool"],
-        "an approval covers the issue, the text and what it was made against it showed only, and stays unspent (\(unspent))",
+        "an approval covers the issue, the text and what it was made against it showed only, and stays unspent (\(unspent))"
     )
     let send = await AgentFeedbackRules.authorize(
         FeedbackSendRequest(title: "The build log stops early", body: edit.body ?? ""),
         session: strict.sessionID,
-        registry: registry,
+        registry: registry
     )
     check(send != nil, "an edit's approval never files a new issue")
     await ask("edit-exact")
@@ -3147,7 +3147,7 @@ do {
             task: registry.create(kind: .agent, owner: .agent, ownerKey: id),
             project: ResolvedProject(id: "p-repository", name: "Repository", path: scratchPath),
             mode: mode,
-            createdAt: Date(),
+            createdAt: Date()
         )
         await sessions.add(entry)
         return entry
@@ -3158,14 +3158,14 @@ do {
     // approvalRequested (ApelinAgentWorker's tests hold that shape).
     func ask(_ approvalID: String, owner: String? = nil, visibility: String = "private") async {
         var detail: [String: JSONValue] = [
-            "name": .string(create.name), "visibility": .string(visibility), "description": .string("A clock in the status bar"),
+            "name": .string(create.name), "visibility": .string(visibility), "description": .string("A clock in the status bar")
         ]
         if let owner {
             detail["owner"] = .string(owner)
         }
         await registry.append(strict.task.taskID, kind: "approvalRequested", payload: .object([
             "approvalID": .string(approvalID), "tool": .string("apelin_git_create_repository"),
-            "detail": .object([AgentRepositoryCreateRules.detailKey: .object(detail)]),
+            "detail": .object([AgentRepositoryCreateRules.detailKey: .object(detail)])
         ]))
     }
     func authorized(_ entry: AgentSessionTable.Entry?) async -> ApelinError? {
@@ -3212,7 +3212,7 @@ do {
             task: registry.create(kind: .agent, owner: .agent, ownerKey: id),
             project: ResolvedProject(id: "p-issue", name: "Issue", path: scratchPath),
             mode: mode,
-            createdAt: Date(),
+            createdAt: Date()
         )
         await sessions.add(entry)
         return entry
@@ -3221,7 +3221,7 @@ do {
     let issue = GitIssueCreateRequest(
         repository: "Lakr233/Irisin",
         title: "The installer stops at 90%",
-        body: "Installing a package from the inbox stops at 90%.",
+        body: "Installing a package from the inbox stops at 90%."
     )
     // What apelin-agent writes into apelin_git_create_issue's
     // approvalRequested (ApelinAgentWorker's tests hold that shape).
@@ -3229,13 +3229,13 @@ do {
         _ approvalID: String,
         tool: String = "apelin_git_create_issue",
         repository: String = "Lakr233/Irisin",
-        body: String = "Installing a package from the inbox stops at 90%.",
+        body: String = "Installing a package from the inbox stops at 90%."
     ) async {
         await registry.append(strict.task.taskID, kind: "approvalRequested", payload: .object([
             "approvalID": .string(approvalID), "tool": .string(tool),
             "detail": .object([AgentIssueCreateRules.detailKey: .object([
-                "repository": .string(repository), "title": .string(issue.title), "body": .string(body),
-            ])]),
+                "repository": .string(repository), "title": .string(issue.title), "body": .string(body)
+            ])])
         ]))
         await sessions.record(strict.sessionID, approvalID: approvalID, decision: .approve)
     }
@@ -3251,12 +3251,12 @@ do {
     let unspent = await sessions.approvedIDs(strict.sessionID)
     check(
         near != nil && Set(unspent) == ["issue-elsewhere", "issue-body", "issue-tool"],
-        "an approval covers the repository and the text it showed only, and stays unspent (\(unspent))",
+        "an approval covers the repository and the text it showed only, and stays unspent (\(unspent))"
     )
     let feedback = await AgentFeedbackRules.authorize(
         FeedbackSendRequest(title: issue.title, body: issue.body),
         session: strict.sessionID,
-        registry: registry,
+        registry: registry
     )
     check(feedback != nil, "an issue's approval files no feedback on Apelin's repository")
     await ask("issue-exact")
@@ -3283,7 +3283,7 @@ do {
             task: registry.create(kind: .agent, owner: .agent, ownerKey: id),
             project: ResolvedProject(id: "p-force", name: "Force", path: scratchPath),
             mode: mode,
-            createdAt: Date(),
+            createdAt: Date()
         )
         await sessions.add(entry)
         return entry
@@ -3302,7 +3302,7 @@ do {
         remote: String = "origin",
         branch: String = "main",
         expected: String? = nil,
-        local: String? = nil,
+        local: String? = nil
     ) async {
         await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object([
             "approvalID": .string(approvalID), "tool": .string(tool), "allowsSessionScope": .bool(false),
@@ -3310,8 +3310,8 @@ do {
                 "projectID": .string(project), "remote": .string(remote), "branch": .string(branch),
                 "expectedCommit": .string(expected ?? theirs), "localCommit": .string(local ?? mine),
                 "overwritten": .array([.object(["commit": .string(theirs), "subject": .string("Theirs")])]),
-                "overwrittenCount": .number(1),
-            ])]),
+                "overwrittenCount": .number(1)
+            ])])
         ]))
         await sessions.record(entry.sessionID, approvalID: approvalID, decision: .approve)
     }
@@ -3332,7 +3332,7 @@ do {
         let unspent = await sessions.approvedIDs(entry.sessionID)
         check(
             near != nil && unspent.count == 6,
-            "\(mode.rawValue): an approval covers the remote, branch, project and lease it named only, and stays unspent (\(unspent))",
+            "\(mode.rawValue): an approval covers the remote, branch, project and lease it named only, and stays unspent (\(unspent))"
         )
         await ask(entry, "force-\(mode.rawValue)-exact")
         let approved = await authorized(entry)
@@ -3345,12 +3345,12 @@ do {
     check(ordinary == nil, "a push without a lease is never forced, and asks the host nothing")
     let unnamed = await authorized(relaxed, GitPushRequest(
         projectID: "p-force",
-        forceWithLease: GitPushLease(expectedCommit: theirs, localCommit: mine),
+        forceWithLease: GitPushLease(expectedCommit: theirs, localCommit: mine)
     ))
     let noLocal = await authorized(relaxed, GitPushRequest(
         projectID: "p-force",
         branch: "main",
-        forceWithLease: GitPushLease(expectedCommit: theirs),
+        forceWithLease: GitPushLease(expectedCommit: theirs)
     ))
     check(unnamed?.code == .badRequest && noLocal?.code == .badRequest, "an agent's lease names the branch and the local commit")
     let noSession = await authorized(nil)
@@ -3371,7 +3371,7 @@ do {
             task: registry.create(kind: .agent, owner: .agent, ownerKey: id),
             project: ResolvedProject(id: "p-squash", name: "Squash", path: scratchPath),
             mode: mode,
-            createdAt: Date(),
+            createdAt: Date()
         )
         await sessions.add(entry)
         return entry
@@ -3388,15 +3388,15 @@ do {
         project: String = "p-squash",
         base asked: String? = nil,
         head shown: String? = nil,
-        message: String = "Add the clock",
+        message: String = "Add the clock"
     ) async {
         await registry.append(strict.task.taskID, kind: "approvalRequested", payload: .object([
             "approvalID": .string(approvalID), "tool": .string(tool), "allowsSessionScope": .bool(false),
             "detail": .object([AgentSquashRules.detailKey: .object([
                 "projectID": .string(project), "branch": .string("main"), "base": .string(asked ?? base),
                 "expectedHead": .string(shown ?? head), "message": .string(message), "count": .number(3),
-                "commits": .array([]), "published": .number(0),
-            ])]),
+                "commits": .array([]), "published": .number(0)
+            ])])
         ]))
         await sessions.record(strict.sessionID, approvalID: approvalID, decision: .approve)
     }
@@ -3443,7 +3443,7 @@ do {
             task: registry.create(kind: .agent, owner: .agent, ownerKey: id),
             project: ResolvedProject(id: "p-publish", name: "Publish", path: scratchPath),
             mode: mode,
-            createdAt: Date(),
+            createdAt: Date()
         )
         await sessions.add(entry)
         return entry
@@ -3455,7 +3455,7 @@ do {
     for (index, build) in builds.enumerated() {
         await artifacts.record(event: .object([
             "artifactID": .string(build.0), "path": .string(files[index]), "digest": .string(digests[index]),
-            "packageID": .string("com.example.clock"), "version": .string("1.0"), "projectID": .string("p-publish"),
+            "packageID": .string("com.example.clock"), "version": .string("1.0"), "projectID": .string("p-publish")
         ]), buildID: TaskID(build.0))
     }
     let publish = DistributionPublishRequest(files: files, digests: digests, repository: "someone/packages")
@@ -3469,8 +3469,8 @@ do {
         await registry.append(strict.task.taskID, kind: "approvalRequested", payload: .object([
             "approvalID": .string(approvalID), "tool": .string("apelin_package_publish"),
             "detail": .object([AgentPublishRules.detailKey: .object([
-                "repository": .string(asked.repository ?? ""), "packages": .array(packages),
-            ])]),
+                "repository": .string(asked.repository ?? ""), "packages": .array(packages)
+            ])])
         ]))
     }
     func authorized(_ entry: AgentSessionTable.Entry?, _ request: DistributionPublishRequest) async -> ApelinError? {
@@ -3512,7 +3512,7 @@ do {
     check(relaxedPublishes == nil && fullPublishes == nil, "Relaxed and Full publish as they push")
     // In every mode: only what a build reported to this host, as it reported it.
     let handMade = DistributionPublishRequest(
-        files: ["/data/Builds/p-publish/made-by-hand.deb"], digests: [digests[0]], repository: "someone/packages",
+        files: ["/data/Builds/p-publish/made-by-hand.deb"], digests: [digests[0]], repository: "someone/packages"
     )
     let notBuilt = await authorized(relaxed, handMade)
     check(notBuilt?.code == .denied, "a .deb no build reported is refused, even in Relaxed")
@@ -3539,14 +3539,14 @@ do {
         task: registry.create(kind: .agent, owner: .agent, ownerKey: "reach-opener"),
         project: ResolvedProject(id: "p-reach", name: "Reach", path: scratchPath),
         mode: .confirm,
-        createdAt: Date(),
+        createdAt: Date()
     )
     await sessions.add(entry)
     let detail: JSONValue = .object([AgentConversationRules.otherProjectDetail: .object([
-        "action": .string("create"), "projectID": .string("p-far"), "projectName": .string("Far"), "text": .string("Build it"),
+        "action": .string("create"), "projectID": .string("p-far"), "projectName": .string("Far"), "text": .string("Build it")
     ])])
     await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object([
-        "approvalID": .string("reach-1"), "tool": .string("apelin_conversation_create"), "detail": detail,
+        "approvalID": .string("reach-1"), "tool": .string("apelin_conversation_create"), "detail": detail
     ]))
     let before = await sessions.mayReach("p-far", session: entry.sessionID)
     check(!before, "another project is out of reach until the user approves a call naming it")
@@ -3556,7 +3556,7 @@ do {
         registry: registry,
         ledger: ledger,
         forward: { false },
-        accepted: { $0 },
+        accepted: { $0 }
     )
     let afterRefusedRelay = await sessions.mayReach("p-far", session: entry.sessionID)
     check(!afterRefusedRelay, "an approval the worker did not take lets it reach nothing")
@@ -3565,7 +3565,7 @@ do {
         registry: registry,
         ledger: ledger,
         forward: { true },
-        accepted: { $0 },
+        accepted: { $0 }
     )
     let afterRelay = await sessions.mayReach("p-far", session: entry.sessionID)
     check(afterRelay, "once approved, the session may list and read that project's conversations")
@@ -3596,18 +3596,18 @@ do {
         task: registry.create(kind: .agent, owner: .agent, ownerKey: "agent-relay"),
         project: ResolvedProject(id: "p-relay", name: "Relay", path: scratchPath),
         mode: .confirm,
-        createdAt: Date(),
+        createdAt: Date()
     )
     await sessions.add(entry)
     let digest = "sha256:" + String(repeating: "e", count: 64)
     let changedBuild: JSONValue = .object(["kind": .string("build"), "digest": .string(digest)])
     let asks: [(String, JSONValue)] = [
         ("relay-build", .object(["descriptionChanged": changedBuild])),
-        ("relay-remove", .object(["packageRemoval": .object(["installationID": .string("inst-relay")])])),
+        ("relay-remove", .object(["packageRemoval": .object(["installationID": .string("inst-relay")])]))
     ]
     for (approvalID, detail) in asks {
         await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object([
-            "approvalID": .string(approvalID), "tool": .string("apelin_project_build"), "detail": detail,
+            "approvalID": .string(approvalID), "tool": .string("apelin_project_build"), "detail": detail
         ]))
     }
     func relay(_ approvalID: String, workerTakesIt: Bool) async throws {
@@ -3617,7 +3617,7 @@ do {
             registry: registry,
             ledger: ledger,
             forward: { workerTakesIt },
-            accepted: { $0 },
+            accepted: { $0 }
         )
     }
 
@@ -3647,7 +3647,7 @@ do {
     // A's worker refuses. B's approval must still hold.
     let shared = "sha256:" + String(repeating: "f", count: 64)
     let sharedBuild: JSONValue = .object(["descriptionChanged": .object([
-        "kind": .string("build"), "digest": .string(shared),
+        "kind": .string("build"), "digest": .string(shared)
     ])])
     var pair: [AgentSessionTable.Entry] = []
     for name in ["agent-relay-a", "agent-relay-b"] {
@@ -3656,11 +3656,11 @@ do {
             task: registry.create(kind: .agent, owner: .agent, ownerKey: name),
             project: entry.project,
             mode: .confirm,
-            createdAt: Date(),
+            createdAt: Date()
         )
         await sessions.add(session)
         await registry.append(session.task.taskID, kind: "approvalRequested", payload: .object([
-            "approvalID": .string("shared-build"), "tool": .string("apelin_project_build"), "detail": sharedBuild,
+            "approvalID": .string("shared-build"), "tool": .string("apelin_project_build"), "detail": sharedBuild
         ]))
         pair.append(session)
     }
@@ -3677,11 +3677,11 @@ do {
                 registry: registry,
                 ledger: ledger,
                 forward: { true },
-                accepted: { $0 },
+                accepted: { $0 }
             )
             return false
         },
-        accepted: { $0 },
+        accepted: { $0 }
     )
     let sharedState = try await ledger.state(of: shared, kind: .build, project: "p-relay")
     check(sharedState.baseline == .approved, "one session's refused relay leaves another session's accepted approval")
@@ -3690,11 +3690,11 @@ do {
     // too, and nothing is left.
     let unheld = "sha256:" + String(repeating: "c", count: 64)
     let unheldBuild: JSONValue = .object(["descriptionChanged": .object([
-        "kind": .string("build"), "digest": .string(unheld),
+        "kind": .string("build"), "digest": .string(unheld)
     ])])
     for session in pair {
         await registry.append(session.task.taskID, kind: "approvalRequested", payload: .object([
-            "approvalID": .string("unheld-build"), "tool": .string("apelin_project_build"), "detail": unheldBuild,
+            "approvalID": .string("unheld-build"), "tool": .string("apelin_project_build"), "detail": unheldBuild
         ]))
     }
     func approveUnheld(_ session: AgentSessionTable.Entry) -> AgentApproveRequest {
@@ -3710,11 +3710,11 @@ do {
                 registry: registry,
                 ledger: ledger,
                 forward: { false },
-                accepted: { $0 },
+                accepted: { $0 }
             )
             return false
         },
-        accepted: { $0 },
+        accepted: { $0 }
     )
     let unheldState = try await ledger.state(of: unheld, kind: .build, project: "p-relay")
     check(unheldState.baseline == .changed, "a digest no session's worker accepted is taken back")
@@ -3741,15 +3741,15 @@ do {
         task: registry.create(kind: .agent, owner: .agent, ownerKey: "agent-evict"),
         project: ResolvedProject(id: "p-evict", name: "Evict", path: scratchPath),
         mode: .confirm,
-        createdAt: Date(),
+        createdAt: Date()
     )
     await AgentSessionTable.shared.add(entry)
     await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object([
         "approvalID": .string("evict-build"),
         "tool": .string("apelin_project_build"),
         "detail": .object(["descriptionChanged": .object([
-            "kind": .string("build"), "digest": .string(digest(1000)),
-        ])]),
+            "kind": .string("build"), "digest": .string(digest(1000))
+        ])])
     ]))
     var pushedOut = false
     _ = try await AgentApprovals.relay(
@@ -3760,7 +3760,7 @@ do {
             pushedOut = await (try? ledger.state(of: digest(0), kind: .build, project: "p-evict"))?.baseline == .changed
             return false
         },
-        accepted: { $0 },
+        accepted: { $0 }
     )
     check(pushedOut, "a new approval past the cap pushes the oldest out")
     let restored = try await ledger.state(of: digest(0), kind: .build, project: "p-evict")
@@ -3771,7 +3771,7 @@ do {
     let onDisk = try await reloaded.state(of: digest(0), kind: .build, project: "p-evict")
     check(
         onDisk.baseline == .approved && onDisk.lastApprovedDigest == digest(63),
-        "the restored ledger is the one on disk",
+        "the restored ledger is the one on disk"
     )
 }
 
@@ -3787,7 +3787,7 @@ do {
         task: registry.create(kind: .agent, owner: .agent, ownerKey: "agent-grant"),
         project: ResolvedProject(id: "p-grant", name: "Grant", path: scratchPath),
         mode: .confirm,
-        createdAt: Date(),
+        createdAt: Date()
     )
     await sessions.add(entry)
     func ask(_ approvalID: String, argv: [String], sessionScope: Bool, workingDirectory: String = ".") async {
@@ -3796,7 +3796,7 @@ do {
             "tool": .string("shell_run"),
             "workingDirectory": .string(workingDirectory),
             "allowsSessionScope": .bool(sessionScope),
-            "detail": .object(["command": .object(["argv": .object(["_0": .array(argv.map { .string($0) })])])]),
+            "detail": .object(["command": .object(["argv": .object(["_0": .array(argv.map { .string($0) })])])])
         ]))
     }
     func approve(_ approvalID: String, scope: ApprovalScope?, workerTakesIt: Bool = true) async throws {
@@ -3804,14 +3804,14 @@ do {
             sessionID: entry.sessionID,
             approvalID: approvalID,
             decision: .approve,
-            scope: scope,
+            scope: scope
         )
         _ = try await AgentApprovals.relay(
             approve,
             registry: registry,
             ledger: ledger,
             forward: { workerTakesIt },
-            accepted: { $0 },
+            accepted: { $0 }
         )
     }
     func authorized(_ argv: [String], _ approval: RunCodeApproval, in directory: String = ".") async -> Bool {
@@ -3819,7 +3819,7 @@ do {
             sessionID: entry.sessionID,
             spec: .argv(argv),
             workingDirectory: directory,
-            approval: approval,
+            approval: approval
         )
         do {
             try await AgentApprovals.authorize(run, entry: entry, registry: registry, ledger: ledger, installRoot: "/")
@@ -3885,7 +3885,7 @@ do {
         task: registry.create(kind: .agent, owner: .agent, ownerKey: "agent-presets"),
         project: ResolvedProject(id: "p-presets", name: "Presets", path: project),
         mode: .confirm,
-        createdAt: Date(),
+        createdAt: Date()
     )
     await AgentSessionTable.shared.add(entry)
     func preset(_ argv: [String], in directory: String = ".") async -> Bool {
@@ -3893,7 +3893,7 @@ do {
             sessionID: entry.sessionID,
             spec: .argv(argv),
             workingDirectory: directory,
-            approval: .preset(argv[0]),
+            approval: .preset(argv[0])
         )
         do {
             try await AgentApprovals.authorize(request, entry: entry, registry: registry, ledger: ledger, installRoot: "/")
@@ -3912,7 +3912,7 @@ do {
         (["plutil", "-p", "Info.plist"], "."),
         (["git", "status"], "."),
         (["git", "diff", "--stat"], "."),
-        (["git", "log", "--oneline", "-n", "5"], "."),
+        (["git", "log", "--oneline", "-n", "5"], ".")
     ]
     for (argv, directory) in passes {
         let passed = await preset(argv, in: directory)
@@ -3961,7 +3961,7 @@ do {
         (["ls", "-R"], "."),
         (["git", "diff", "-O/etc/passwd"], "."),
         (["git", "log", "--show-signature"], "."),
-        (["git", "log", "--format=%G?"], "."),
+        (["git", "log", "--format=%G?"], ".")
     ]
     for (argv, directory) in refused {
         let passed = await preset(argv, in: directory)
@@ -3984,7 +3984,7 @@ do {
         "[user]name = a\n[filter \"x\"] clean = touch /tmp/apelin-preset-escape\n",
         "[includeIf \"gitdir:/\"]\n\tpath = /tmp/apelin-preset-escape\n",
         "[core \"x\"]\n\tbare = false\n",
-        "[core]\n\tbare = \"unterminated\n",
+        "[core]\n\tbare = \"unterminated\n"
     ] {
         try (plainConfig + extra).write(toFile: gitConfig, atomically: true, encoding: .utf8)
         let passed = await preset(["git", "status"])
@@ -4076,7 +4076,7 @@ do {
         .split(separator: "\n").map(String.init)
     check(
         named.count == 2 && named[0] == linked && named[1] != named[0],
-        "without safe.bareRepository git takes the folder as a repository whose common directory is another",
+        "without safe.bareRepository git takes the folder as a repository whose common directory is another"
     )
     try FileManager.default.removeItem(atPath: linked)
 
@@ -4088,7 +4088,7 @@ do {
         .argv(["git", "status"]),
         directory: unversioned,
         project: unversioned,
-        installRoot: "/",
+        installRoot: "/"
     )
     check(noRepository == nil, "git status in a project with no .git is not a preset")
 
@@ -4098,29 +4098,29 @@ do {
         .argv(["git", "diff", "--stat"]),
         directory: project,
         project: project,
-        installRoot: "/",
+        installRoot: "/"
     )
     check(
         diff?.argv == ["git"] + AgentRunCode.gitOverrides
             + ["diff", "--no-ext-diff", "--no-textconv", "--ignore-submodules=all", "--stat"],
-        "git diff runs with the overrides and without external diff, textconv or submodules",
+        "git diff runs with the overrides and without external diff, textconv or submodules"
     )
     let status = await AgentRunCode.preset(
         .argv(["git", "status"]),
         directory: project,
         project: project,
-        installRoot: "/",
+        installRoot: "/"
     )
     check(
         status?.argv == ["git"] + AgentRunCode.gitOverrides + ["status", "--ignore-submodules=all"],
-        "git status runs with the overrides and without submodules",
+        "git status runs with the overrides and without submodules"
     )
     check(AgentRunCode.gitOverrides.contains("submodule.recurse=false"), "no git preset recurses into a submodule")
     let environment = status?.environment ?? []
     check(
         environment.contains("GIT_CONFIG_NOSYSTEM=1") && environment.contains("GIT_CONFIG_GLOBAL=/dev/null")
             && environment.contains("GIT_CEILING_DIRECTORIES=\(scratchPath)"),
-        "git reads no system or global config and finds no repository above the project",
+        "git reads no system or global config and finds no repository above the project"
     )
     let gitOutput = Pipe()
     let hardened = Process()
@@ -4159,7 +4159,7 @@ do {
     let discovered = try gitStatus(in: bareAgain, ["rev-parse", "--is-bare-repository"])
     check(
         overridden != 0 && discovered == 0,
-        "the overrides keep git from using a bare repository found by discovery, which it uses otherwise",
+        "the overrides keep git from using a bare repository found by discovery, which it uses otherwise"
     )
     try FileManager.default.removeItem(atPath: bareAgain)
 
@@ -4216,13 +4216,13 @@ do {
     }
     check(
         startsUnguarded && !FileManager.default.fileExists(atPath: started),
-        "the overrides keep a signed commit from starting gpg, which a plain log starts",
+        "the overrides keep a signed commit from starting gpg, which a plain log starts"
     )
     let cat = await AgentRunCode.preset(
         .argv(["cat", "Info.plist"]),
         directory: project,
         project: project,
-        installRoot: "/",
+        installRoot: "/"
     )
     check(cat == AgentRunCode.Preset(argv: ["cat", "Info.plist"], environment: []), "a file tool runs as asked")
 }
@@ -4286,7 +4286,7 @@ do {
             let response = await AgentRunCode.capture(
                 ["/usr/bin/perl", "-e", script],
                 environment: ["PATH=/usr/bin:/bin"],
-                timeoutSeconds: timeout,
+                timeoutSeconds: timeout
             )
             box.lock.withLock { box.response = response }
             returned.signal()
@@ -4350,7 +4350,7 @@ do {
     check(
         replay.events.map(\.kind) == ["log", "log", "resumed", "log"]
             && replay.events.map(\.seq.rawValue) == [1, 2, 3, 4],
-        "events appended after a torn line survive the next load",
+        "events appended after a torn line survive the next load"
     )
 
     // A last line that lost only its newline is an event all the same.
@@ -4364,7 +4364,7 @@ do {
     let kept = try await fifth.attach(handle.taskID, as: .buildAttach, afterSeq: .start, waitMilliseconds: 0)
     check(
         kept.events.map(\.seq.rawValue) == [1, 2, 3, 4, 5],
-        "a last event missing only its newline is kept, and the next one follows it",
+        "a last event missing only its newline is kept, and the next one follows it"
     )
 }
 
@@ -4381,7 +4381,7 @@ do {
     let final = TaskEvent(
         seq: EventSeq(2),
         kind: TaskEvent.stateKind,
-        payload: .object(["state": .string("succeeded"), "artifactID": .string(handle.taskID.rawValue)]),
+        payload: .object(["state": .string("succeeded"), "artifactID": .string(handle.taskID.rawValue)])
     )
     var line = try JSONCoding.encode(final)
     line.append(0x0A)
@@ -4399,11 +4399,11 @@ do {
     let replay = try await second.attach(handle.taskID, as: .buildAttach, afterSeq: .start, waitMilliseconds: 0)
     check(
         replay.finished && replay.events.last?.payload?["artifactID"]?.stringValue == handle.taskID.rawValue,
-        "it reads as finished, with the final event's result",
+        "it reads as finished, with the final event's result"
     )
     let stored = try JSONCoding.decoder().decode(
         TaskRegistry.Record.self,
-        from: Data(contentsOf: directory.appendingPathComponent("\(handle.taskID.rawValue).json")),
+        from: Data(contentsOf: directory.appendingPathComponent("\(handle.taskID.rawValue).json"))
     )
     check(stored.state == .succeeded, "the corrected record is written back")
 }
@@ -4433,11 +4433,11 @@ do {
     let replay = try await second.attach(handle.taskID, as: .buildAttach, afterSeq: .start, waitMilliseconds: 0)
     check(
         replay.events.map(\.seq.rawValue) == [1, 2, 3, 4] && replay.finished && replay.state == .succeeded,
-        "the events after a bad line are read, numbered with no gap: \(replay.events.map(\.seq.rawValue))",
+        "the events after a bad line are read, numbered with no gap: \(replay.events.map(\.seq.rawValue))"
     )
     check(
         replay.events.count == 4 && replay.events[2].kind == TaskRegistry.unreadableKind,
-        "the bad line reads as an unreadable event",
+        "the bad line reads as an unreadable event"
     )
     let after = try String(contentsOf: events, encoding: .utf8)
     check(after == rewritten, "the log keeps every line, the bad one included")
@@ -4459,7 +4459,7 @@ do {
     let reread = try await fourth.attach(open.taskID, as: .buildAttach, afterSeq: .start, waitMilliseconds: 0)
     check(
         reread.events.map(\.seq.rawValue) == [1, 2] && reread.events.last?.payload?["line"]?.stringValue == "two",
-        "an event appended after a bad last line is read back",
+        "an event appended after a bad last line is read back"
     )
     let openLog = try String(contentsOf: openEvents, encoding: .utf8)
     check(openLog.contains("a shape from elsewhere"), "and the bad line is still in the log")
@@ -4501,7 +4501,7 @@ do {
     await first.append(
         handle.taskID,
         kind: TaskEvent.stateKind,
-        payload: .object(["state": .string("succeeded"), "result": .object(["loaded": .bool(true)])]),
+        payload: .object(["state": .string("succeeded"), "result": .object(["loaded": .bool(true)])])
     )
     // The last two lines are whole, newline and all, but no longer decode.
     let events = directory.appendingPathComponent("\(handle.taskID.rawValue).events.jsonl")
@@ -4516,25 +4516,25 @@ do {
         handle.taskID,
         as: .confirmLoadedAttach,
         afterSeq: .start,
-        waitMilliseconds: 0,
+        waitMilliseconds: 0
     )
     let final = replay.events.last
     check(
         replay.finished && final?.kind == TaskEvent.stateKind
             && final?.payload?["state"]?.stringValue == "succeeded",
-        "a finished task whose final state line cannot be read ends with a state event: \(replay.events.map(\.kind))",
+        "a finished task whose final state line cannot be read ends with a state event: \(replay.events.map(\.kind))"
     )
     check(
         replay.events.map(\.seq.rawValue) == [1, 2, 3, 4]
             && replay.events[1].kind == TaskRegistry.unreadableKind
             && replay.events[2].kind == TaskRegistry.unreadableKind,
-        "the trailing lines that cannot be read keep their numbers: \(replay.events.map(\.seq.rawValue))",
+        "the trailing lines that cannot be read keep their numbers: \(replay.events.map(\.seq.rawValue))"
     )
     let record = await second.record(handle.taskID)
     check(record?.lastSeq == final?.seq, "the record's last number is the closing state's")
     let stored = try JSONCoding.decoder().decode(
         TaskRegistry.Record.self,
-        from: Data(contentsOf: directory.appendingPathComponent("\(handle.taskID.rawValue).json")),
+        from: Data(contentsOf: directory.appendingPathComponent("\(handle.taskID.rawValue).json"))
     )
     check(stored.lastSeq == EventSeq(4), "and the record on disk says so too")
     if let final {
@@ -4549,7 +4549,7 @@ do {
     let reread = try await third.attach(handle.taskID, as: .confirmLoadedAttach, afterSeq: .start, waitMilliseconds: 0)
     check(
         reread.events.map(\.seq.rawValue) == [1, 2, 3, 4] && reread.events.last?.kind == TaskEvent.stateKind,
-        "the closing state survives the next load with the same numbers",
+        "the closing state survives the next load with the same numbers"
     )
 }
 
@@ -4581,14 +4581,14 @@ do {
     await first.append(handle.taskID, kind: TaskEvent.stateKind, payload: .object(["state": .string("running")]))
     check(
         recordInode() == created && FileManager.default.contents(atPath: recordFile.path) == createdBytes,
-        "ordinary events, and a state event that leaves the task as it was, do not write the record again",
+        "ordinary events, and a state event that leaves the task as it was, do not write the record again"
     )
     await first.append(handle.taskID, kind: TaskEvent.stateKind, payload: .object(["state": .string("waitingForApproval")]))
     let waiting = recordInode()
     let stored = try storedRecord()
     check(
         waiting != created && stored.state == .waitingForApproval && stored.lastSeq == EventSeq(2002),
-        "a state event that moves the task writes the record: \(stored.state) at \(stored.lastSeq)",
+        "a state event that moves the task writes the record: \(stored.state) at \(stored.lastSeq)"
     )
     await first.append(handle.taskID, kind: "approvalResolved", payload: .object(["approvalID": .string("a1")]))
     await first.append(handle.taskID, kind: TaskEvent.stateKind, payload: .object(["state": .string("running")]))
@@ -4613,12 +4613,12 @@ do {
     let lastLine = try lines.last.map { try JSONCoding.decoder().decode(TaskEvent.self, from: Data($0.utf8)) }
     check(
         reloaded?.lastSeq == inMemory?.lastSeq && reloaded?.state == inMemory?.state,
-        "its number and state are the ones the first host had: \(String(describing: reloaded?.lastSeq)), \(String(describing: reloaded?.state))",
+        "its number and state are the ones the first host had: \(String(describing: reloaded?.lastSeq)), \(String(describing: reloaded?.state))"
     )
     if let reloaded, let inMemory, let lastLine {
         check(
             reloaded.updatedAt == lastLine.time && abs(reloaded.updatedAt.timeIntervalSince(inMemory.updatedAt)) < 1,
-            "its time is the last event's, as the log keeps it: \(reloaded.updatedAt), \(inMemory.updatedAt)",
+            "its time is the last event's, as the log keeps it: \(reloaded.updatedAt), \(inMemory.updatedAt)"
         )
     } else {
         check(false, "the task and its last event read back")
@@ -4630,12 +4630,12 @@ do {
         task: handle,
         project: ResolvedProject(id: "p-record-writes", name: "Record Writes", path: scratchPath),
         mode: .confirm,
-        createdAt: Date.distantPast,
+        createdAt: Date.distantPast
     ))
     let summary = await table.summaries(registry: second).first
     check(
         summary?.updatedAt == reloaded?.updatedAt && summary?.state == .running,
-        "agentList reports the time of the last event after a restart",
+        "agentList reports the time of the last event after a restart"
     )
     let next = await second.append(handle.taskID, kind: "text", payload: .object(["text": .string("after")]))
     check(next?.seq == EventSeq(2505), "numbering goes on from the last event")
@@ -4647,7 +4647,7 @@ do {
     let ended = await third.record(handle.taskID)
     check(
         none.isEmpty && ended?.state == .succeeded && ended?.lastSeq == EventSeq(2506),
-        "and a third host reads the task as finished",
+        "and a third host reads the task as finished"
     )
 
     // A record written long before its last events takes their time; one
@@ -4667,7 +4667,7 @@ do {
             owner: .build,
             ownerKey: "lags",
             cancelRequested: false,
-            resume: nil,
+            resume: nil
         )
         try JSONCoding.encode(record).write(to: lagging.appendingPathComponent("\(id.rawValue).json"))
         var log = Data()
@@ -4685,7 +4685,7 @@ do {
     let caughtUp = await fourth.record(behind)
     check(
         caughtUp?.updatedAt == written.addingTimeInterval(120) && caughtUp?.lastSeq == EventSeq(2),
-        "a record behind its log takes the last event's time and number",
+        "a record behind its log takes the last event's time and number"
     )
     let kept = await fourth.record(ahead)
     check(kept?.updatedAt == written.addingTimeInterval(600), "a record's time never moves back")
@@ -4779,7 +4779,7 @@ do {
     let next = try await ledger.state(of: digest(1), kind: .build, project: "p-restore-order")
     check(
         oldest.baseline == .changed && next.baseline == .approved,
-        "approvals put back in the order their grants were made keep their age order",
+        "approvals put back in the order their grants were made keep their age order"
     )
 
     // Withdrawn the other way round, the same order comes back.
@@ -4804,7 +4804,7 @@ do {
     let reverseNext = try await reverse.state(of: digest(1), kind: .build, project: "p-restore-reverse")
     check(
         reverseOldest.baseline == .changed && reverseNext.baseline == .approved,
-        "approvals put back in the reverse order keep their age order too",
+        "approvals put back in the reverse order keep their age order too"
     )
 }
 
@@ -4820,12 +4820,12 @@ do {
     let folder = state.appendingPathComponent("agent-sessions")
     check(
         FileManager.default.fileExists(atPath: folder.appendingPathComponent("\(session).json").path),
-        "the record is the session's own file in agent-sessions",
+        "the record is the session's own file in agent-sessions"
     )
     var folderMetadata = stat()
     check(
         stat(folder.path, &folderMetadata) == 0 && folderMetadata.st_mode & 0o777 == 0o700,
-        "the records' folder is its owner's alone",
+        "the records' folder is its owner's alone"
     )
     check(AgentSessionLineage.load(session: UUID().uuidString, state: state) == nil, "another session has no opener")
     let escaped = state.appendingPathComponent("x.json")
@@ -4848,13 +4848,13 @@ do {
         environment: [],
         timeoutSeconds: 30,
         session: session,
-        stopsSeen: seen,
+        stopsSeen: seen
     )
     var elapsed = Date().timeIntervalSince(begin)
     check(elapsed < 3, "a call stopped before it spawned ends as it spawns (it took \(elapsed) s)")
     check(
         stopped?.exitCode == 137 && stopped?.timedOut == false,
-        "it is killed, not timed out: \(String(describing: stopped))",
+        "it is killed, not timed out: \(String(describing: stopped))"
     )
     check(AgentRunCode.stopCount(session: session) == seen + 1, "the stop is counted once")
 
@@ -4865,11 +4865,11 @@ do {
         environment: [],
         timeoutSeconds: 30,
         session: session,
-        stopsSeen: later,
+        stopsSeen: later
     )
     check(
         finished?.exitCode == 0 && finished?.timedOut == false,
-        "a call after the stop runs: \(String(describing: finished))",
+        "a call after the stop runs: \(String(describing: finished))"
     )
 
     // A stop while a call runs ends it.
@@ -4880,7 +4880,7 @@ do {
             environment: [],
             timeoutSeconds: 30,
             session: session,
-            stopsSeen: later,
+            stopsSeen: later
         )
     }
     try await Task.sleep(nanoseconds: 300_000_000)
@@ -4930,7 +4930,7 @@ do {
     let deb = scratchPath + "/negative-size.deb"
     FileManager.default.createFile(
         atPath: deb,
-        contents: arArchive([("debian-binary", Data("2.0\n".utf8)), ("control.tar", Data(backwards))]),
+        contents: arArchive([("debian-binary", Data("2.0\n".utf8)), ("control.tar", Data(backwards))])
     )
     let descriptor = open(deb, O_RDONLY)
     defer { close(descriptor) }
@@ -4954,7 +4954,7 @@ do {
     let home = root + "/var/mobile"
     try FileManager.default.createDirectory(
         atPath: home + "/Documents/wiki.qaq.apelin",
-        withIntermediateDirectories: true,
+        withIntermediateDirectories: true
     )
     write(root + "/etc/a_b", "underscore\n")
     write(root + "/etc/a/b", "nested\n")
@@ -4971,7 +4971,7 @@ do {
 
     check(
         BackupStore.key(for: "/x-var/jb/etc/hosts") != BackupStore.key(for: "/var/jb/etc/hosts"),
-        "a path ending in another's has another key",
+        "a path ending in another's has another key"
     )
     // A backup of /x-var/jb/etc/hosts: its name ends in /var/jb/etc/hosts's
     // flattened path, and is still not that file's.

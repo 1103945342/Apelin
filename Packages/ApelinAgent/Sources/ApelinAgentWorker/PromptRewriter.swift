@@ -39,7 +39,7 @@ enum PromptRewriter {
             """
             The prompt optimization instructions are missing from this install. Reinstall Apelin \
             with your preferred package manager, then try again.
-            """,
+            """
         )
     }
 
@@ -56,7 +56,7 @@ enum PromptRewriter {
         _ request: AgentRewritePromptRequest,
         home: URL,
         installRoot: String,
-        credentials source: any CredentialSource,
+        credentials source: any CredentialSource
     ) async throws -> AgentRewritePromptResponse {
         let draft = request.text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !draft.isEmpty else {
@@ -72,7 +72,7 @@ enum PromptRewriter {
         }
         let configuration = try AgentWorker.provider(
             provider: provider,
-            model: request.model,
+            model: request.model
         )
         let resolved = try await ProviderResolver.resolve(configuration, credentials: source)
 
@@ -92,7 +92,7 @@ enum PromptRewriter {
                 model: resolved.model,
                 context: Context(
                     systemPrompt: systemPrompt,
-                    messages: [.user(UserMessage(text: String(draft.prefix(inputLimit))))],
+                    messages: [.user(UserMessage(text: String(draft.prefix(inputLimit))))]
                 ),
                 options: StreamOptions(
                     maxTokens: 2048,
@@ -100,15 +100,15 @@ enum PromptRewriter {
                     resolvedAuth: auth,
                     reasoning: nil,
                     cancellation: cancellation,
-                    verbose: false,
-                ),
+                    verbose: false
+                )
             )
             for await _ in stream {}
             let final = await stream.result()
             guard final.stopReason == .stop || final.stopReason == .length else {
                 throw ApelinError(
                     .badRequest,
-                    final.providerFailure?.message ?? "The model did not answer the rewrite.",
+                    final.providerFailure?.message ?? "The model did not answer the rewrite."
                 )
             }
             return text(of: final.content)

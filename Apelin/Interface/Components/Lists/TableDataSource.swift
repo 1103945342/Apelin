@@ -22,7 +22,7 @@ final class TableDataSource<Section: Hashable, Item: Hashable, Content: Equatabl
     init(
         tableView: UITableView,
         identifier: @escaping (Content) -> Item,
-        cellProvider: @escaping (UITableView, IndexPath, Content) -> UITableViewCell?,
+        cellProvider: @escaping (UITableView, IndexPath, Content) -> UITableViewCell?
     ) {
         let content = TableContent<Item, Content>()
         self.content = content
@@ -57,7 +57,7 @@ final class TableDataSource<Section: Hashable, Item: Hashable, Content: Equatabl
         reconfigure: Bool = false,
         changedItems: Set<Item> = [],
         animatingDifferences: Bool? = nil,
-        completion: (() -> Void)? = nil,
+        completion: (() -> Void)? = nil
     ) {
         let previous = snapshot()
         var next = NSDiffableDataSourceSnapshot<Section, Item>()
@@ -136,7 +136,7 @@ final class TableDataSource<Section: Hashable, Item: Hashable, Content: Equatabl
         _ snapshot: NSDiffableDataSourceSnapshot<Section, Item>,
         values: [Item: Content],
         text: [Section: SectionText],
-        completion: (() -> Void)?,
+        completion: (() -> Void)?
     ) {
         guard let table else {
             completion?()

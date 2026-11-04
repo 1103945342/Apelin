@@ -92,7 +92,7 @@ struct JournalRedaction: Sendable {
         .fileRead, .fileList, .fileGrep, .fileFind, .fileShow, .memoryList, .memorySave, .memoryDelete,
         .todoList, .todoWrite,
         .skillList, .skillRead, .skillSave, .skillRemove, .conversationRead, .webFetch, .logRead,
-        .crashList, .crashRead, .crashSymbolicate, .screenCapture, .screenReadTree, .screenInteract,
+        .crashList, .crashRead, .crashSymbolicate, .screenCapture, .screenReadTree, .screenInteract
     ]
 
     /// A call's result: for a content tool's that succeeded, its size —

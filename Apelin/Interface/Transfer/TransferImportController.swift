@@ -49,7 +49,7 @@ final class TransferImportController: TableController {
 
     private lazy var dataSource = TableDataSource<SectionID, Item, ItemContent>(
         tableView: tableView,
-        identifier: { $0.id },
+        identifier: { $0.id }
     ) { [weak self] _, _, item in
         self?.cell(for: item.row)
     }
@@ -73,7 +73,7 @@ final class TransferImportController: TableController {
                 }
                 return ItemContent(
                     id: Item(section: section.id, field: field, text: text, occurrence: occurrence),
-                    row: row,
+                    row: row
                 )
             }
             return (section.id, rows)
@@ -88,7 +88,7 @@ final class TransferImportController: TableController {
 
     private lazy var importItem: UIBarButtonItem = .init(
         title: String(localized: "Import"),
-        primaryAction: UIAction { [weak self] _ in self?.startImport() },
+        primaryAction: UIAction { [weak self] _ in self?.startImport() }
     ).then {
         $0.style = .done
         $0.isEnabled = false
@@ -106,7 +106,7 @@ final class TransferImportController: TableController {
         $0.addAction(UIAction { [weak self] _ in self?.updateImportItem() }, for: .editingChanged)
         $0.addAction(
             UIAction { action in (action.sender as? UITextField)?.resignFirstResponder() },
-            for: .editingDidEndOnExit,
+            for: .editingDidEndOnExit
         )
     }
 
@@ -148,7 +148,7 @@ final class TransferImportController: TableController {
                 let inspection = try await ApelinService.app.transferInspect(
                     .file(DescriptorSlot(index: 0)),
                     fileName: file.fileName,
-                    descriptors: [descriptor],
+                    descriptors: [descriptor]
                 )
                 guard !Task.isCancelled else { return }
                 self?.show(inspection)
@@ -179,7 +179,7 @@ final class TransferImportController: TableController {
             sections.append(Section(
                 id: .problems,
                 header: String(localized: "Unable to Import"),
-                rows: inspection.problems.map(Row.problem),
+                rows: inspection.problems.map(Row.problem)
             ))
         }
         if !inspection.notes.isEmpty {
@@ -188,7 +188,7 @@ final class TransferImportController: TableController {
         sections.append(Section(
             id: .details,
             header: summary.kind == .project ? Self.kindTitle(.project) : String(localized: "Version"),
-            rows: details(of: summary),
+            rows: details(of: summary)
         ))
         if let record = summary.toolchain?.record {
             var languages: [String] = []
@@ -227,7 +227,7 @@ final class TransferImportController: TableController {
                 footer: String(localized: """
                 The imported project has a new ID and no saved approvals. In Strict mode, the agent asks for approval before its first build or installation.
                 """),
-                rows: [.name],
+                rows: [.name]
             ))
         }
         sections.append(Section(id: .metadata, header: String(localized: "File"), rows: metadata(of: summary, fileSize: inspection.fileSize)))
@@ -269,7 +269,7 @@ final class TransferImportController: TableController {
                 rows.append(.value(
                     .gitHistory,
                     String(localized: "Git History"),
-                    project.includesRepository ? String(localized: "Included") : String(localized: "None"),
+                    project.includesRepository ? String(localized: "Included") : String(localized: "None")
                 ))
                 if let remote = project.remoteURL {
                     rows.append(.identifier(.remote, String(localized: "Remote"), remote))
@@ -291,13 +291,13 @@ final class TransferImportController: TableController {
         var rows: [Row] = [
             .value(.fileSize, String(localized: "File Size"), size),
             .value(.contents, String(localized: "Contents"), unpacked),
-            .value(.files, String(localized: "File Count"), summary.fileCount.formatted()),
+            .value(.files, String(localized: "File Count"), summary.fileCount.formatted())
         ]
         rows.append(.value(.exportedBy, String(localized: "Exported By"), summary.createdBy))
         rows.append(.value(
             .exportedOn,
             String(localized: "Exported On"),
-            summary.created.formatted(date: .numeric, time: .shortened),
+            summary.created.formatted(date: .numeric, time: .shortened)
         ))
         if let toolchain = summary.toolchain {
             rows.append(.value(.appleProduct, String(localized: "Apple Product ID"), toolchain.productID))
@@ -368,9 +368,9 @@ final class TransferImportController: TableController {
                         source: .file(DescriptorSlot(index: 0)),
                         fileName: file.fileName,
                         kind: kind,
-                        projectName: name,
+                        projectName: name
                     ),
-                    descriptors: [descriptor],
+                    descriptors: [descriptor]
                 )
                 self?.showTask(handle, kind: kind)
             } catch {
@@ -409,7 +409,7 @@ final class TransferImportController: TableController {
             handle: handle,
             work: .transferImport(kind),
             title: title,
-            doneTitle: doneTitle,
+            doneTitle: doneTitle
         )
         page.onFinish = {
             NotificationCenter.default.post(name: TransferOpener.environmentChanged, object: nil)
@@ -423,7 +423,7 @@ final class TransferImportController: TableController {
         if isRoot {
             page.navigationItem.leftBarButtonItem = UIBarButtonItem(
                 image: UIImage(systemName: "xmark"),
-                primaryAction: UIAction { [weak navigation] _ in navigation?.dismiss(animated: true) },
+                primaryAction: UIAction { [weak navigation] _ in navigation?.dismiss(animated: true) }
             ).then { $0.accessibilityLabel = String(localized: "Close") }
         }
         navigation.setViewControllers(stack + [page], animated: true)
@@ -485,7 +485,7 @@ final class TransferImportController: TableController {
     override func tableView(
         _: UITableView,
         contextMenuConfigurationForRowAt indexPath: IndexPath,
-        point _: CGPoint,
+        point _: CGPoint
     ) -> UIContextMenuConfiguration? {
         let text: String
         guard let row = dataSource.value(at: indexPath)?.row else { return nil }
@@ -496,7 +496,7 @@ final class TransferImportController: TableController {
         return UIContextMenuConfiguration(actionProvider: { _ in
             UIMenu(children: [UIAction(
                 title: String(localized: "Copy"),
-                image: UIImage(systemName: "doc.on.doc"),
+                image: UIImage(systemName: "doc.on.doc")
             ) { _ in
                 UIPasteboard.general.string = text
             }])

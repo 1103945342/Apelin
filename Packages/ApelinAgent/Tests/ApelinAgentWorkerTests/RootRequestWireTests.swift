@@ -15,7 +15,7 @@ struct RootRequestWireTests {
     static let shapes: [(invocation: RunCodeInvocation, detail: String, spec: RunCodeSpec)] = [
         (.argv(["irisin-cli", "install", "--yes", "x"]), #"{"argv":{"_0":["irisin-cli","install","--yes","x"]}}"#, .argv(["irisin-cli", "install", "--yes", "x"])),
         (.shell("irisin-cli install --yes x | tee log"), #"{"shell":{"_0":"irisin-cli install --yes x | tee log"}}"#, .script(interpreter: "sh", source: "irisin-cli install --yes x | tee log")),
-        (.script(interpreter: "python3", source: "print(1)"), #"{"script":{"interpreter":"python3","source":"print(1)"}}"#, .script(interpreter: "python3", source: "print(1)")),
+        (.script(interpreter: "python3", source: "print(1)"), #"{"script":{"interpreter":"python3","source":"print(1)"}}"#, .script(interpreter: "python3", source: "print(1)"))
     ]
 
     @Test
@@ -23,7 +23,7 @@ struct RootRequestWireTests {
         for (invocation, detail, spec) in Self.shapes {
             let request = ApprovalRequest(
                 id: "a", toolCallID: "c", tool: "shell_run", arguments: "{}", workingDirectory: "Sources",
-                projectID: "p", fingerprint: "f", reason: "root", detail: .rootCommand(invocation), allowsSessionScope: false,
+                projectID: "p", fingerprint: "f", reason: "root", detail: .rootCommand(invocation), allowsSessionScope: false
             )
             let payload = EventRelay.approvalPayload(request)
             let expected = try JSONCoding.decode(ApelinCore.JSONValue.self, from: Data(detail.utf8))
@@ -44,7 +44,7 @@ struct RootRequestWireTests {
                 invocation: .argv(["id"]),
                 workingDirectory: "Sources",
                 timeoutSeconds: 10,
-                asRoot: asRoot,
+                asRoot: asRoot
             ))
         }
         let sent = fixture.host.requests(AgentRunCodeRequest.self)

@@ -25,14 +25,14 @@ class ComposerInputView: ComposerSectionView {
     /// the same text, on a page tall enough to see it.
     let expandButton = ComposerIconButton(
         symbolName: "arrow.up.left.and.arrow.down.right",
-        label: String(localized: "Expand"),
+        label: String(localized: "Expand")
     )
 
     let inset: UIEdgeInsets = ComposerMetrics.Input.inset
     let iconSpacing: CGFloat = ComposerMetrics.Input.iconSpacing
     let iconSize = CGSize(
         width: ComposerMetrics.Input.iconSize,
-        height: ComposerMetrics.Input.iconSize,
+        height: ComposerMetrics.Input.iconSize
     )
 
     weak var delegate: Delegate?
@@ -112,7 +112,7 @@ class ComposerInputView: ComposerSectionView {
             self,
             selector: #selector(updateReturnKeyType),
             name: .composerBehaviorChanged,
-            object: nil,
+            object: nil
         )
 
         addSubview(elementClipper)
@@ -178,7 +178,7 @@ class ComposerInputView: ComposerSectionView {
                 // in, and the row under it is theirs to read.
                 return max(
                     max(textLayoutHeight(textHeight), iconSize.height) + inset.top + inset.bottom,
-                    ComposerMetrics.Input.minHeight,
+                    ComposerMetrics.Input.minHeight
                 )
             }
             .ensureMainThread()
@@ -198,7 +198,7 @@ class ComposerInputView: ComposerSectionView {
         // laid out left to right; right to left the band is mirrored, and the
         // tools follow the text's end as the placeholder reads
         elementClipper.mirrorForLayoutDirection(
-            [textView, placeholderLabel, expandButton, rewriteButton],
+            [textView, placeholderLabel, expandButton, rewriteButton]
         )
 
         updatePlaceholderAlpha()

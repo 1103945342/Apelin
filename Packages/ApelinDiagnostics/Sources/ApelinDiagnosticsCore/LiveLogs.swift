@@ -13,7 +13,7 @@ public protocol LiveLogSource: Sendable {
     func listen(
         _ filter: LogFilter,
         until deadline: Date,
-        deliver: @escaping @Sendable (LogEntry) -> Bool,
+        deliver: @escaping @Sendable (LogEntry) -> Bool
     ) throws -> LiveLogListener
 }
 

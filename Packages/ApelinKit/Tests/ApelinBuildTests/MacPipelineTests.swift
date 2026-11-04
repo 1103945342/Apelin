@@ -35,7 +35,7 @@ final class MacPipelineTests: XCTestCase {
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
         let created = try store.create(templateID: "wiki.qaq.apelin.dev.tweak/objc-hook", name: "Hello Tweak", values: [
-            "packageID": .string("com.example.hellotweak"),
+            "packageID": .string("com.example.hellotweak")
         ], catalog: catalog, registry: registry)
 
         for bootstrap in [Bootstrap.roothide, .rootless] {

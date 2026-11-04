@@ -58,7 +58,7 @@ public struct TransferService: Sendable {
                 archive: .descriptor(descriptor.rawValue),
                 fileName: fileName,
                 size: Int64(metadata.st_size),
-                descriptor: descriptor,
+                descriptor: descriptor
             )
         case let .inbox(path):
             return try file(path, inside: layout.inbox, folder: "inbox")
@@ -96,7 +96,7 @@ public struct TransferService: Sendable {
         return Input(
             archive: .path(resolved),
             fileName: (resolved as NSString).lastPathComponent,
-            size: Int64(metadata.st_size),
+            size: Int64(metadata.st_size)
         )
     }
 
@@ -113,20 +113,20 @@ public struct TransferService: Sendable {
             guard let named = TransferKind(fileName: fileName) else {
                 throw ApelinError(
                     .badRequest,
-                    "Apelin cannot open \(fileName). Choose a toolchain (.apetc), SDK (.apesdk) or project (.apeproj) file.",
+                    "Apelin cannot open \(fileName). Choose a toolchain (.apetc), SDK (.apesdk) or project (.apeproj) file."
                 )
             }
             guard named == manifest.kind else {
                 throw ApelinError(
                     .badRequest,
-                    "\(fileName) contains \(manifest.kind.description), not \(named.description). Export it again.",
+                    "\(fileName) contains \(manifest.kind.description), not \(named.description). Export it again."
                 )
             }
         }
         if let kind, kind != manifest.kind {
             throw ApelinError(
                 .badRequest,
-                "This file contains \(manifest.kind.description), not \(kind.description). Choose another file.",
+                "This file contains \(manifest.kind.description), not \(kind.description). Choose another file."
             )
         }
     }
@@ -135,7 +135,7 @@ public struct TransferService: Sendable {
 
     public func inspect(
         _ request: TransferInspectRequest,
-        descriptors: [OwnedDescriptor],
+        descriptors: [OwnedDescriptor]
     ) throws -> TransferInspection {
         let input = try input(request.source, fileName: request.fileName, descriptors: descriptors)
         let manifest = try manifest(of: input)
@@ -165,22 +165,22 @@ public struct TransferService: Sendable {
         if !registered.contains(where: { SDKVersionLimit.allows(sdkVersion: $0.version, newestSDK: newest) }) {
             if toolchains.supplier.hasEnabledSource {
                 inspection.notes.append(
-                    "No SDK on this device fits its self-test; one is downloaded from your SDK sources first.",
+                    "No SDK on this device fits its self-test; one is downloaded from your SDK sources first."
                 )
             } else {
                 inspection.problems.append(
-                    "Its self-test compiles against an iPhoneOS SDK up to \(newest ?? "any version"), and none is registered here. Import one first.",
+                    "Its self-test compiles against an iPhoneOS SDK up to \(newest ?? "any version"), and none is registered here. Import one first."
                 )
             }
         }
         let here = layout.isRoothide ? BootstrapFlavor.roothide.rawValue : BootstrapFlavor.rootless.rawValue
         if toolchain.bootstrap != here {
             inspection.notes.append(
-                "It was exported from a \(toolchain.bootstrap) device; it is packaged again for this \(here) one.",
+                "It was exported from a \(toolchain.bootstrap) device; it is packaged again for this \(here) one."
             )
         }
         inspection.notes.append(
-            "It is installed through Irisin and self-tested on this device, and kept only if the self-test passes.",
+            "It is installed through Irisin and self-tested on this device, and kept only if the self-test passes."
         )
     }
 
@@ -191,7 +191,7 @@ public struct TransferService: Sendable {
         }
         if manifest.sdk?.record.swiftCompilerVersion != nil, !toolchains.hasSwift {
             inspection.notes.append(
-                "No toolchain here has Swift yet; Swift projects cannot build against it until one does.",
+                "No toolchain here has Swift yet; Swift projects cannot build against it until one does."
             )
         }
     }
@@ -224,7 +224,7 @@ public struct TransferService: Sendable {
             guard let path = record.path, FileManager.default.fileExists(atPath: path) else {
                 throw ApelinError(
                     .notFound,
-                    "The files for \(record.id) are missing. Remove the toolchain and set it up again.",
+                    "The files for \(record.id) are missing. Remove the toolchain and set it up again."
                 )
             }
             prepared.toolchain = record
@@ -238,7 +238,7 @@ public struct TransferService: Sendable {
             guard project.projectID != nil else {
                 throw ApelinError(
                     .badRequest,
-                    "\(project.name) cannot be exported because its project file is missing.",
+                    "\(project.name) cannot be exported because its project file is missing."
                 )
             }
             prepared.project = project
@@ -255,7 +255,7 @@ public struct TransferService: Sendable {
     public func export(
         _ handle: PreparedExportHandle,
         staging: URL,
-        reporter: TaskReporter,
+        reporter: TaskReporter
     ) async throws -> TransferExport {
         let prepared = handle.prepared
         reporter.stage("collecting")
@@ -309,7 +309,7 @@ public struct TransferService: Sendable {
             fileName: fileName,
             size: size,
             sha256: digest,
-            summary: collected.manifest.summary,
+            summary: collected.manifest.summary
         )
     }
 
@@ -325,7 +325,7 @@ public struct TransferService: Sendable {
     private func toolchainContents(
         _ record: ToolchainRecord,
         staging: URL,
-        reporter: TaskReporter,
+        reporter: TaskReporter
     ) throws -> Collected {
         let tree = staging.appendingPathComponent("toolchain", isDirectory: true)
         let prepared = try toolchains.backend.exportTree(installed: URL(fileURLWithPath: record.path!), into: tree)
@@ -344,7 +344,7 @@ public struct TransferService: Sendable {
             sourceSHA256: facts["sourceSHA256"]?.stringValue ?? "",
             bootstrap: flavor.rawValue,
             architecture: PackageLayout(flavor: flavor).architecture,
-            minimumOS: facts["minimumOS"]?.stringValue ?? "",
+            minimumOS: facts["minimumOS"]?.stringValue ?? ""
         )
         let swift = record.components.contains { $0.kind == .swift }
         let name = "Command Line Tools \(record.version)" + (swift ? " with Swift" : "")
@@ -354,10 +354,10 @@ public struct TransferService: Sendable {
                 id: record.id,
                 name: name,
                 createdBy: "",
-                toolchain: toolchain,
+                toolchain: toolchain
             ),
             tree: TransferTree.collect(tree, reporter: reporter),
-            fileStem: name,
+            fileStem: name
         )
     }
 
@@ -371,10 +371,10 @@ public struct TransferService: Sendable {
                 id: record.id,
                 name: name,
                 createdBy: "",
-                sdk: TransferSDK(record: shared),
+                sdk: TransferSDK(record: shared)
             ),
             tree: TransferTree.collect(sdk.store.tree(record.id), reporter: reporter),
-            fileStem: name + " SDK",
+            fileStem: name + " SDK"
         )
     }
 
@@ -407,7 +407,7 @@ public struct TransferService: Sendable {
     /// manifest holds, and this device would take it.
     public func prepareImport(
         _ request: TransferImportRequest,
-        descriptors: [OwnedDescriptor],
+        descriptors: [OwnedDescriptor]
     ) throws -> PreparedImport {
         let input = try input(request.source, fileName: request.fileName, descriptors: descriptors)
         let manifest = try manifest(of: input, expecting: request.kind)
@@ -439,7 +439,7 @@ public struct TransferService: Sendable {
         staging: URL,
         taskID: TaskID,
         installer: any PackageInstaller,
-        reporter: TaskReporter,
+        reporter: TaskReporter
     ) async throws -> JSONValue {
         reporter.stage("reading")
         let tree = staging.appendingPathComponent("tree", isDirectory: true)
@@ -459,14 +459,14 @@ public struct TransferService: Sendable {
             else {
                 throw ApelinError(
                     .badRequest,
-                    "This file is damaged or was changed after it was exported. Export it again.",
+                    "This file is damaged or was changed after it was exported. Export it again."
                 )
             }
             let record = try await toolchains.importPrepared(
                 prepared,
                 taskID: taskID,
                 installer: installer,
-                reporter: reporter,
+                reporter: reporter
             )
             return try .object(["toolchain": JSONValue(encoding: record)])
         case .sdk:
@@ -477,7 +477,7 @@ public struct TransferService: Sendable {
                 tree,
                 manifest: manifest,
                 name: prepared.request.projectName,
-                reporter: reporter,
+                reporter: reporter
             )
             return try .object(["project": JSONValue(encoding: result)])
         }
@@ -487,7 +487,7 @@ public struct TransferService: Sendable {
         _ tree: URL,
         manifest: TransferManifest,
         fileName: String?,
-        reporter: TaskReporter,
+        reporter: TaskReporter
     ) throws -> SDKRecord {
         reporter.stage("inspecting")
         var metadata = stat()
@@ -501,7 +501,7 @@ public struct TransferService: Sendable {
         guard id == manifest.id, manifest.sdk?.record.digest.map({ $0 == inspection.digest }) ?? true else {
             throw ApelinError(
                 .badRequest,
-                "This file is damaged or was changed after it was exported. Export it again.",
+                "This file is damaged or was changed after it was exported. Export it again."
             )
         }
         if let existing = sdk.store.record(id) {
@@ -509,7 +509,7 @@ public struct TransferService: Sendable {
         }
         if inspection.identity.swiftCompilerVersion != nil, !toolchains.hasSwift {
             inspection.warnings.append(
-                "No toolchain on this device has Swift. Swift projects cannot build against this SDK until one does.",
+                "No toolchain on this device has Swift. Swift projects cannot build against this SDK until one does."
             )
         }
         inspection.warnings.forEach(reporter.warning)
@@ -519,7 +519,7 @@ public struct TransferService: Sendable {
         return try sdk.store.register(
             root: tree,
             inspection: inspection,
-            origin: "transfer \(fileName ?? manifest.name)\(from)",
+            origin: "transfer \(fileName ?? manifest.name)\(from)"
         )
     }
 }

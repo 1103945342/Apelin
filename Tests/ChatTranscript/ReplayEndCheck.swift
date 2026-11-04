@@ -19,7 +19,7 @@ func checkReplayEnd() {
         event(5, TaskEvent.stateKind, ["state": .string(TaskState.waitingForApproval.rawValue)]),
         event(6, "approvalResolved", ["approvalID": .string("a1"), "decision": .string("approve")]),
         event(7, TaskEvent.stateKind, ["state": .string(TaskState.running.rawValue)]),
-        event(8, "text", ["text": .string("Building")]),
+        event(8, "text", ["text": .string("Building")])
     ]
     let replay = history
     let shown = ChatTranscript(events: history) { _ in nil }
@@ -35,7 +35,7 @@ func checkReplayEnd() {
 
     func end(_ seq: Int, _ state: TaskState) -> TaskEvent {
         event(UInt64(seq), TaskEvent.stateKind, [
-            "state": .string(state.rawValue), "message": .string("The background process for this task stopped."),
+            "state": .string(state.rawValue), "message": .string("The background process for this task stopped.")
         ])
     }
 
@@ -48,7 +48,7 @@ func checkReplayEnd() {
     // in one of its own.
     let cuts: [(state: TaskState, replayed: Int, inOneBatch: Bool)] = [
         (.failed, 0, true), (.interrupted, 3, true), (.interrupted, 5, false),
-        (.failed, replay.count, false), (.cancelled, replay.count, true), (.cancelled, 7, false),
+        (.failed, replay.count, false), (.cancelled, replay.count, true), (.cancelled, 7, false)
     ]
     for cut in cuts {
         var record = reopened()

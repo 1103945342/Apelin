@@ -20,7 +20,7 @@ final class ChatTopBlurView: UIView {
         guard let filterClass = NSClassFromString("CAFilter") as? NSObject.Type,
               let filter = filterClass.perform(
                   NSSelectorFromString("filterWithType:"),
-                  with: "variableBlur",
+                  with: "variableBlur"
               )?.takeUnretainedValue() as? NSObject
         else { return }
 

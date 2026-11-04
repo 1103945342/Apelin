@@ -57,12 +57,12 @@ final class SidebarFilesController: UIViewController {
         $0.backgroundView = EmptyStateView(
             symbolName: "doc.text",
             text: String(localized: "No files yet. Long press to make one."),
-            showsText: true,
+            showsText: true
         )
     }
 
     private lazy var dataSource = UITableViewDiffableDataSource<Int, String>(
-        tableView: tableView,
+        tableView: tableView
     ) { [unowned self] tableView, indexPath, path in
         let cell = tableView.dequeueReusableCell(withIdentifier: "file", for: indexPath) as! SidebarFileCell
         let file = rows.first { $0.relativePath == path }
@@ -70,7 +70,7 @@ final class SidebarFilesController: UIViewController {
             file: file,
             depth: query.isEmpty ? (file?.depth ?? 0) : 0,
             expanded: files?.isExpanded(path) ?? false,
-            columns: query.isEmpty ? (guideColumns[path] ?? []) : [],
+            columns: query.isEmpty ? (guideColumns[path] ?? []) : []
         )
         return cell
     }
@@ -147,7 +147,7 @@ final class SidebarFilesController: UIViewController {
             symbol: query.isEmpty ? "doc.text" : "magnifyingglass",
             text: query.isEmpty
                 ? String(localized: "No files yet. Long press to make one.")
-                : String(localized: "No files match."),
+                : String(localized: "No files match.")
         )
     }
 
@@ -268,7 +268,7 @@ final class SidebarFilesController: UIViewController {
                 ? "The folder and everything in it will be deleted. This cannot be undone."
                 : "This file will be deleted. This cannot be undone.",
             confirmTitle: "Delete",
-            destructive: true,
+            destructive: true
         ) { [weak self] in
             guard let self else { return }
             do {
@@ -289,7 +289,7 @@ final class SidebarFilesController: UIViewController {
         guard !(clipboard.file.isDirectory && directory.hasPrefix(clipboard.file.relativePath)) else {
             presentNotice(
                 title: "Unable to Paste",
-                message: String(localized: "A folder cannot be put inside itself."),
+                message: String(localized: "A folder cannot be put inside itself.")
             )
             return
         }
@@ -305,14 +305,14 @@ final class SidebarFilesController: UIViewController {
         title: String.LocalizationValue,
         in directory: String,
         current: String = "",
-        onConfirm: @escaping (String) -> Void,
+        onConfirm: @escaping (String) -> Void
     ) {
         present(AlertInputViewController(
             title: title,
             message: "",
             placeholder: "Name",
             text: current,
-            doneButtonText: "Done",
+            doneButtonText: "Done"
         ) { [weak self] name in
             guard let self else { return }
             let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -342,7 +342,7 @@ extension SidebarFilesController: UITableViewDelegate {
     func tableView(
         _: UITableView,
         contextMenuConfigurationForRowAt indexPath: IndexPath,
-        point _: CGPoint,
+        point _: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard let path = dataSource.itemIdentifier(for: indexPath),
               let file = rows.first(where: { $0.relativePath == path })
@@ -375,7 +375,7 @@ extension SidebarFilesController: UITableViewDelegate {
             actions.append(UIAction(
                 title: String(localized: "Delete"),
                 image: UIImage(systemName: "trash"),
-                attributes: .destructive,
+                attributes: .destructive
             ) { [weak self] _ in
                 self?.delete(file)
             })
@@ -385,7 +385,7 @@ extension SidebarFilesController: UITableViewDelegate {
 
     func tableView(
         _: UITableView,
-        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
     ) -> UISwipeActionsConfiguration? {
         guard let path = dataSource.itemIdentifier(for: indexPath),
               let file = rows.first(where: { $0.relativePath == path })

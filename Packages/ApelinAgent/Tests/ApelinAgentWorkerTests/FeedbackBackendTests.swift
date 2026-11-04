@@ -14,7 +14,7 @@ struct FeedbackBackendTests {
         let response = try await fixture.backend.sendFeedback(FeedbackToolRequest(
             context: fixture.context(),
             title: "The build log stops early",
-            body: "It ends before the link step.",
+            body: "It ends before the link step."
         ))
         let sent = try #require(fixture.host.requests(FeedbackSendRequest.self).first)
         #expect(fixture.host.requests.map(\.operation) == [.feedbackSend])
@@ -52,7 +52,7 @@ struct FeedbackBackendTests {
         let fixture = try Fixture()
         fixture.host.on(.feedbackRead, reply: FeedbackReadResponse(
             number: 12, url: "https://github.com/owngoal-dev/Apelin/issues/12", title: "T", body: "B",
-            footer: "Sent with Apelin 0.2.7 (18) · iOS 17.3.1 · rootless", author: "someone", state: "open", isAuthor: true,
+            footer: "Sent with Apelin 0.2.7 (18) · iOS 17.3.1 · rootless", author: "someone", state: "open", isAuthor: true
         ))
         let read = try await fixture.backend.readFeedback(FeedbackReadToolRequest(context: fixture.context(), number: 12))
         #expect(fixture.host.requests.map(\.operation) == [.feedbackRead])
@@ -62,7 +62,7 @@ struct FeedbackBackendTests {
         func revision(title: String, body: String) -> String {
             FeedbackReadToolResponse(
                 repository: "owngoal-dev/Apelin", issue: 12, url: "", title: title, state: "closed", author: "other",
-                openedByUser: false, body: body, footer: nil,
+                openedByUser: false, body: body, footer: nil
             ).revision
         }
         #expect(read.revision == revision(title: "T", body: "B"), "the text alone names it")
@@ -74,10 +74,10 @@ struct FeedbackBackendTests {
     func `an edit is one feedbackEdit with what changes and what it was made against`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.feedbackEdit, reply: FeedbackEditResponse(
-            number: 12, url: "https://github.com/owngoal-dev/Apelin/issues/12", title: "T", body: "New",
+            number: 12, url: "https://github.com/owngoal-dev/Apelin/issues/12", title: "T", body: "New"
         ))
         let edited = try await fixture.backend.editFeedback(FeedbackEditToolRequest(
-            context: fixture.context(), number: 12, title: nil, body: "New", expectedTitle: "T", expectedBody: "B",
+            context: fixture.context(), number: 12, title: nil, body: "New", expectedTitle: "T", expectedBody: "B"
         ))
         let sent = try #require(fixture.host.requests(FeedbackEditRequest.self).first)
         #expect(fixture.host.requests.map(\.operation) == [.feedbackEdit])
@@ -85,11 +85,11 @@ struct FeedbackBackendTests {
         #expect(sent.expectedTitle == "T" && sent.expectedBody == "B")
         #expect(edited == FeedbackEditToolResponse(
             repository: "owngoal-dev/Apelin", issue: 12, url: "https://github.com/owngoal-dev/Apelin/issues/12", changed: ["body"],
-            title: "T", body: "New",
+            title: "T", body: "New"
         ), "the revision an edit after it passes is the text GitHub now has")
         let reread = FeedbackReadToolResponse(
             repository: "owngoal-dev/Apelin", issue: 12, url: "", title: "T", state: "open", author: "someone",
-            openedByUser: true, body: "New", footer: nil,
+            openedByUser: true, body: "New", footer: nil
         )
         #expect(edited.revision == reread.revision)
 
@@ -98,7 +98,7 @@ struct FeedbackBackendTests {
         }
         await #expect {
             _ = try await fixture.backend.editFeedback(FeedbackEditToolRequest(
-                context: fixture.context(), number: 12, title: "T2", body: nil, expectedTitle: "T", expectedBody: "B",
+                context: fixture.context(), number: 12, title: "T2", body: nil, expectedTitle: "T", expectedBody: "B"
             ))
         } throws: { error in
             let message = (error as? FeedbackToolFailure)?.message ?? ""
@@ -113,15 +113,15 @@ struct FeedbackBackendTests {
             projectID: "p", fingerprint: "f", reason: "Replaces the body of issue #12.",
             detail: .feedbackEdit(FeedbackEditApproval(
                 repository: "owngoal-dev/Apelin", number: 12, url: "https://github.com/owngoal-dev/Apelin/issues/12",
-                title: nil, body: "New", currentTitle: "T", currentBody: "B",
+                title: nil, body: "New", currentTitle: "T", currentBody: "B"
             )),
-            allowsSessionScope: false,
+            allowsSessionScope: false
         )
         let payload = EventRelay.approvalPayload(request)
         let expected: ApelinCore.JSONValue = .object(["feedbackEdit": .object([
             "repository": .string("owngoal-dev/Apelin"), "number": .number(12),
             "url": .string("https://github.com/owngoal-dev/Apelin/issues/12"),
-            "body": .string("New"), "currentTitle": .string("T"), "currentBody": .string("B"),
+            "body": .string("New"), "currentTitle": .string("T"), "currentBody": .string("B")
         ])])
         #expect(payload["detail"] == expected)
         #expect(payload["allowsSessionScope"] == .bool(false))
@@ -133,11 +133,11 @@ struct FeedbackBackendTests {
             id: "a", toolCallID: "c", tool: "apelin_feedback_send", arguments: "{}", workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Posts this title and body as a public issue.",
             detail: .feedback(FeedbackApproval(repository: "owngoal-dev/Apelin", title: "T", body: "B")),
-            allowsSessionScope: false,
+            allowsSessionScope: false
         )
         let payload = EventRelay.approvalPayload(request)
         let expected: ApelinCore.JSONValue = .object(["feedback": .object([
-            "repository": .string("owngoal-dev/Apelin"), "title": .string("T"), "body": .string("B"),
+            "repository": .string("owngoal-dev/Apelin"), "title": .string("T"), "body": .string("B")
         ])])
         #expect(payload["detail"] == expected)
         #expect(payload["allowsSessionScope"] == .bool(false))

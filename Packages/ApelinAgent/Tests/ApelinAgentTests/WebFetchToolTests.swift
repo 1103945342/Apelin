@@ -31,7 +31,7 @@ struct WebFetchToolTests {
             backend: MockBackend(),
             digests: MockDigestLedger(),
             gate: gate,
-            webFetch: web,
+            webFetch: web
         )
     }
 
@@ -120,20 +120,20 @@ struct WebFetchToolTests {
         WebStub.serve("https://\(host)/meta", WebStub.Reply(
             headers: ["Content-Type": "text/html"],
             body: Data("<html><head><meta charset=\"iso-8859-1\"><title>Caf".utf8) + Data([0xE9])
-                + Data("</title></head><body><p>Cr".utf8) + Data([0xE8]) + Data("me</p></body></html>".utf8),
+                + Data("</title></head><body><p>Cr".utf8) + Data([0xE8]) + Data("me</p></body></html>".utf8)
         ))
         WebStub.serve("https://\(host)/equiv", WebStub.Reply(
             headers: ["Content-Type": "text/html"],
             body: Data("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1252\"><p>".utf8)
-                + Data([0x93]) + Data("quoted".utf8) + Data([0x94]) + Data("</p>".utf8),
+                + Data([0x93]) + Data("quoted".utf8) + Data([0x94]) + Data("</p>".utf8)
         ))
         WebStub.serve("https://\(host)/header", WebStub.Reply(
             headers: ["Content-Type": "text/plain; charset=ISO-8859-1"],
-            body: Data("caf".utf8) + Data([0xE9]),
+            body: Data("caf".utf8) + Data([0xE9])
         ))
         WebStub.serve("https://\(host)/none", WebStub.Reply(
             headers: ["Content-Type": "text/plain"],
-            body: Data("caf".utf8) + Data([0xE9]),
+            body: Data("caf".utf8) + Data([0xE9])
         ))
         let meta = try await Self.fetch("https://\(host)/meta")
         #expect(meta.title == "Café" && meta.text == "Crème")
@@ -193,12 +193,12 @@ struct WebFetchToolTests {
         let host = WebStub.host()
         WebStub.serve("https://\(host)/logo.png", WebStub.Reply(
             headers: ["Content-Type": "image/png", "Content-Length": "2048"],
-            body: Data(repeating: 0x89, count: 2048),
+            body: Data(repeating: 0x89, count: 2048)
         ))
         WebStub.serve("https://\(host)/blob", WebStub.Reply(headers: [:], body: Data([0x00, 0x01, 0x02])))
         WebStub.serve("https://\(host)/Tweak.m", WebStub.Reply(
             headers: ["Content-Type": "application/octet-stream"],
-            body: Data("#import <UIKit/UIKit.h>\n".utf8),
+            body: Data("#import <UIKit/UIKit.h>\n".utf8)
         ))
         let image = await #expect(throws: ToolDeniedError.self) { _ = try await Self.fetch("https://\(host)/logo.png") }
         #expect(image?.message.contains("image/png") == true && image?.message.contains("KB") == true)
@@ -220,14 +220,14 @@ struct WebFetchToolTests {
             "http://169.254.169.254/latest/meta-data/", "http://224.0.0.251/", "http://255.255.255.255/",
             "http://[::1]/", "http://[::]/", "http://[fe80::1%25en0]/", "http://[fd00::1]/", "http://[ff02::1]/",
             "http://[::ffff:192.168.0.1]/", "http://[64:ff9b::a00:1]/",
-            "http://printer.local/", "http://router/", "http://nas.home.arpa/", "http://db.internal/",
+            "http://printer.local/", "http://router/", "http://nas.home.arpa/", "http://db.internal/"
         ]
         for address in refused {
             #expect(throws: ToolArgumentError.self, "\(address)") { _ = try WebFetch.target(address) }
         }
         let allowed = [
             "https://example.com/a", "http://8.8.8.8/", "https://172.32.0.1/", "https://100.128.0.1/",
-            "http://[2001:4860:4860::8888]/", "https://github.com:443/owngoal-dev",
+            "http://[2001:4860:4860::8888]/", "https://github.com:443/owngoal-dev"
         ]
         for address in allowed {
             #expect(try WebFetch.target(address).absoluteString == address, "\(address)")
@@ -272,7 +272,7 @@ struct WebFetchToolTests {
             toolCallID: "fetch",
             arguments: ["url": .string("https://\(host)/notes.txt"), "offset": ""],
             cancellation: nil,
-            mcp: nil,
+            mcp: nil
         )
         #expect(Self.text(result) == "https://\(host)/notes.txt (HTTP 200, text/plain)\n\nhello")
         #expect(await events.events.isEmpty)

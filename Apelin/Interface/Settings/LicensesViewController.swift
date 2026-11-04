@@ -24,7 +24,7 @@ final class LicensesViewController: TableController {
 
     private lazy var dataSource = TableDataSource<Int, String, LicenseEntry>(
         tableView: tableView,
-        identifier: { $0.name + "\u{1f}" + $0.url + "\u{1f}" + $0.license },
+        identifier: { $0.name + "\u{1f}" + $0.url + "\u{1f}" + $0.license }
     ) { [weak self] table, _, entry in
         self?.cell(in: table, entry: entry)
     }
@@ -77,7 +77,7 @@ final class LicensesViewController: TableController {
         guard let entry = dataSource.value(at: indexPath) else { return }
         navigationController?.pushViewController(
             LicenseTextViewController(entry: entry),
-            animated: true,
+            animated: true
         )
     }
 }
@@ -102,21 +102,21 @@ private final class LicenseTextViewController: UIViewController {
         view.backgroundColor = .systemGroupedBackground
         let footnote = UIFont.preferredFont(forTextStyle: .footnote)
         let text = NSMutableAttributedString(string: entry.name + "\n", attributes: [
-            .font: UIFont.preferredFont(forTextStyle: .title2), .foregroundColor: UIColor.label,
+            .font: UIFont.preferredFont(forTextStyle: .title2), .foregroundColor: UIColor.label
         ])
         text.append(NSAttributedString(string: entry.summary + "\n\n", attributes: [
-            .font: footnote, .foregroundColor: UIColor.secondaryLabel,
+            .font: footnote, .foregroundColor: UIColor.secondaryLabel
         ]))
         if let url = URL(string: entry.url), ["https", "http"].contains(url.scheme) {
             text.append(NSAttributedString(string: entry.url + "\n\n", attributes: [
-                .font: footnote, .link: url,
+                .font: footnote, .link: url
             ]))
         }
         let monospaced = UIFontMetrics(forTextStyle: .footnote).scaledFont(
-            for: .monospacedSystemFont(ofSize: footnote.pointSize, weight: .regular),
+            for: .monospacedSystemFont(ofSize: footnote.pointSize, weight: .regular)
         )
         text.append(NSAttributedString(string: entry.text, attributes: [
-            .font: monospaced, .foregroundColor: UIColor.label,
+            .font: monospaced, .foregroundColor: UIColor.label
         ]))
 
         let textView = UITextView()
@@ -132,7 +132,7 @@ private final class LicenseTextViewController: UIViewController {
             textView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             textView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             textView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            textView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            textView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
         ])
     }
 }

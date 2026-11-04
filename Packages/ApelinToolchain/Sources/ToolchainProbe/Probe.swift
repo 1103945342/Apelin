@@ -33,9 +33,9 @@ struct Probe {
                             version: $0.version,
                             compatibility: $0.compatibility,
                             swift: $0.swiftSupport,
-                            clangModuleCPUFeatures: $0.clangModuleCPUFeatures,
+                            clangModuleCPUFeatures: $0.clangModuleCPUFeatures
                         )
-                    },
+                    }
                 ))
             case "catalog":
                 try await printJSON(ToolchainCatalog().list())
@@ -45,7 +45,7 @@ struct Probe {
                     throw NSError(
                         domain: "probe",
                         code: 1,
-                        userInfo: [NSLocalizedDescriptionKey: "Run setup as the mobile user (uid 501)."],
+                        userInfo: [NSLocalizedDescriptionKey: "Run setup as the mobile user (uid 501)."]
                     )
                 }
                 let sources = try await ToolchainCatalog().list()
@@ -61,14 +61,14 @@ struct Probe {
                     "id": manifest.id,
                     "fileCount": String(manifest.files.count),
                     "installRelativePath": manifest.installRelativePath,
-                    "sourceSHA256": manifest.sourceSHA256,
+                    "sourceSHA256": manifest.sourceSHA256
                 ])
             case "test":
                 guard args.count == 4 else { throw Usage() }
                 let results = try await ToolchainSelfTest().run(
                     toolchain: URL(fileURLWithPath: args[1]),
                     sdk: URL(fileURLWithPath: args[2]),
-                    scratch: URL(fileURLWithPath: args[3]),
+                    scratch: URL(fileURLWithPath: args[3])
                 )
                 try printJSON(results)
                 if results.contains(where: { !$0.passed }) {

@@ -32,7 +32,7 @@ public struct GitCommitRow: Codable, Sendable, Equatable, Hashable {
         authorName: String,
         authorEmail: String,
         authoredAt: Double,
-        refs: [GitRefRow] = [],
+        refs: [GitRefRow] = []
     ) {
         self.id = id
         self.shortID = shortID
@@ -132,7 +132,7 @@ public struct GitCommitDetailResponse: Codable, Sendable, Equatable {
         authorName: String,
         authorEmail: String,
         authoredAt: Double,
-        files: [GitChangedFile] = [],
+        files: [GitChangedFile] = []
     ) {
         self.id = id
         self.message = message

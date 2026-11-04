@@ -20,7 +20,7 @@ enum EnvironmentHandler: DomainHandler {
         default:
             return request.fail(ApelinError(
                 .badRequest,
-                "\(request.operation.rawValue) is not an environment operation",
+                "\(request.operation.rawValue) is not an environment operation"
             ))
         }
     }

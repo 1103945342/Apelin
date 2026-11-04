@@ -123,7 +123,7 @@ final class GitBranchesPage: UIViewController, GitPage {
                     loading: false,
                     branch: branches.local.first { $0.name == current },
                     tag: nil,
-                    actions: [.rename],
+                    actions: [.rename]
                 )))
             } else {
                 items.append(.ref(RefRow(
@@ -136,7 +136,7 @@ final class GitBranchesPage: UIViewController, GitPage {
                     loading: false,
                     branch: nil,
                     tag: nil,
-                    actions: [],
+                    actions: []
                 )))
             }
         }
@@ -146,7 +146,7 @@ final class GitBranchesPage: UIViewController, GitPage {
             items.append(.header(RefHeader(
                 key: "local",
                 title: "\(String(localized: "Local")) (\(local.count))",
-                add: { [weak self] in self?.showCreateBranch() },
+                add: { [weak self] in self?.showCreateBranch() }
             )))
             if isExpanded("local") {
                 appendTree(local, isRemote: false, depth: 1, to: &items)
@@ -156,7 +156,7 @@ final class GitBranchesPage: UIViewController, GitPage {
         if !remote.isEmpty {
             items.append(.header(RefHeader(
                 key: "remote",
-                title: "\(String(localized: "Remote")) (\(remote.count))",
+                title: "\(String(localized: "Remote")) (\(remote.count))"
             )))
             if isExpanded("remote") {
                 appendTree(remote, isRemote: true, depth: 1, to: &items)
@@ -167,7 +167,7 @@ final class GitBranchesPage: UIViewController, GitPage {
             items.append(.header(RefHeader(
                 key: "tags",
                 title: "\(String(localized: "Tags")) (\(tags.count))",
-                add: { [weak self] in self?.showCreateTag() },
+                add: { [weak self] in self?.showCreateTag() }
             )))
             if isExpanded("tags") {
                 for tag in tags.sorted(by: { $0.name < $1.name }) {
@@ -181,7 +181,7 @@ final class GitBranchesPage: UIViewController, GitPage {
                         loading: checkoutLoading == tag.name,
                         branch: nil,
                         tag: tag,
-                        actions: [.switchTo, .delete],
+                        actions: [.switchTo, .delete]
                     )))
                 }
             }
@@ -220,7 +220,7 @@ final class GitBranchesPage: UIViewController, GitPage {
                     loading: checkoutLoading == branch.name,
                     branch: branch,
                     tag: nil,
-                    actions: actions,
+                    actions: actions
                 )))
             }
         }
@@ -281,8 +281,8 @@ final class GitBranchesPage: UIViewController, GitPage {
                 .init(title: String(localized: "Cancel")) {},
                 .init(title: String(localized: "Switch")) { [weak self] in
                     self?.checkout(ref, remote: isRemote)
-                },
-            ],
+                }
+            ]
         )
     }
 
@@ -324,15 +324,15 @@ final class GitBranchesPage: UIViewController, GitPage {
                     Task { @MainActor in
                         do {
                             _ = try await self.session.merge(
-                                branch.name, noFastForward: noFastForward.toggle.isOn,
+                                branch.name, noFastForward: noFastForward.toggle.isOn
                             )
                         } catch {
                             self.host?.gitShowToast(error.readableMessage)
                         }
                         self.busy = false
                     }
-                },
-            ],
+                }
+            ]
         )
     }
 
@@ -380,7 +380,7 @@ final class GitBranchesPage: UIViewController, GitPage {
                 Task { @MainActor in
                     do {
                         try await self.session.createBranch(
-                            name: branchName, startPoint: start, checkout: checkout.toggle.isOn,
+                            name: branchName, startPoint: start, checkout: checkout.toggle.isOn
                         )
                     } catch {
                         self.host?.gitShowToast(error.readableMessage)
@@ -471,8 +471,8 @@ final class GitBranchesPage: UIViewController, GitPage {
                         }
                         self.busy = false
                     }
-                },
-            ],
+                }
+            ]
         )
     }
 
@@ -496,8 +496,8 @@ final class GitBranchesPage: UIViewController, GitPage {
                         }
                         self.busy = false
                     }
-                },
-            ],
+                }
+            ]
         )
     }
 
@@ -518,8 +518,8 @@ final class GitBranchesPage: UIViewController, GitPage {
                         }
                         self.busy = false
                     }
-                },
-            ],
+                }
+            ]
         )
     }
 }
@@ -540,7 +540,7 @@ extension GitBranchesPage: UITableViewDataSource, UITableViewDelegate {
                 detached: !session.localBranches.contains(where: \.isCurrent),
                 local: session.localBranches.count,
                 remote: session.remoteBranches.count,
-                tags: session.tags.count,
+                tags: session.tags.count
             )
             return cell
         case let .header(header):
@@ -555,7 +555,7 @@ extension GitBranchesPage: UITableViewDataSource, UITableViewDelegate {
                     self.expanded[header.key] = !self.isExpanded(header.key)
                     self.applySession()
                 },
-                onAdd: header.add,
+                onAdd: header.add
             )
             return cell
         case let .ref(row):
@@ -667,13 +667,13 @@ private final class GitBranchesOverviewCell: UITableViewCell {
         detached.isHidden = !isDetached
         metrics.arrangedSubviews.forEach { $0.removeFromSuperview() }
         metrics.addArrangedSubview(GitMetricView(
-            title: String(localized: "Local"), count: local, color: GitTheme.primary,
+            title: String(localized: "Local"), count: local, color: GitTheme.primary
         ))
         metrics.addArrangedSubview(GitMetricView(
-            title: String(localized: "Remote"), count: remote, color: GitTheme.secondary,
+            title: String(localized: "Remote"), count: remote, color: GitTheme.secondary
         ))
         metrics.addArrangedSubview(GitMetricView(
-            title: String(localized: "Tags"), count: tags, color: GitTheme.tertiary,
+            title: String(localized: "Tags"), count: tags, color: GitTheme.tertiary
         ))
     }
 }
@@ -726,11 +726,11 @@ private final class GitRefHeaderCell: UITableViewCell {
         indent: CGFloat,
         hasAdd: Bool,
         onToggle: @escaping () -> Void,
-        onAdd: (() -> Void)?,
+        onAdd: (() -> Void)?
     ) {
         label.text = title
         chevron.image = GitIcon.image(
-            expanded ? GitIcon.Name.chevronDown : GitIcon.Name.chevronRight, pointSize: 16,
+            expanded ? GitIcon.Name.chevronDown : GitIcon.Name.chevronRight, pointSize: 16
         )
         add.isHidden = !hasAdd
         self.onAdd = onAdd

@@ -7,13 +7,13 @@ import Testing
 @Suite("apelin_git_create_repository")
 struct RepositoryToolTests {
     private static let arguments: JSONValue = [
-        "name": " clock-tweak ", "visibility": "private", "description": "A clock in the status bar",
+        "name": " clock-tweak ", "visibility": "private", "description": "A clock in the status bar"
     ]
     private static let repository = RepositoryCreateApproval(
         owner: nil,
         name: "clock-tweak",
         visibility: .private,
-        description: "A clock in the status bar",
+        description: "A clock in the status bar"
     )
 
     @Test
@@ -42,7 +42,7 @@ struct RepositoryToolTests {
             policy: ApprovalPolicy(mode: .confirm),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            gate: ApprovalGate { _ in },
+            gate: ApprovalGate { _ in }
         ).agentTools(mcp: []).map(\.name)
         #expect(general.contains("apelin_git_create_repository"), "General Chat too")
     }
@@ -122,7 +122,7 @@ struct RepositoryToolTests {
             ["name": "tools", "visibility": "internal"],
             ["name": "not a name", "visibility": "private"],
             ["name": "tools", "visibility": "private", "owner": "Own Goal"],
-            ["name": "tools", "visibility": "private", "description": "Two\nlines"],
+            ["name": "tools", "visibility": "private", "description": "Two\nlines"]
         ]
         for arguments in refused {
             await #expect(throws: ToolArgumentError.self) { _ = try await harness.run(.gitCreateRepository, arguments) }

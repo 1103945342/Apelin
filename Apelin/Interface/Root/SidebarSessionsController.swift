@@ -69,7 +69,7 @@ final class SidebarSessionsController: UIViewController {
                 // knows which empty one stands in its place.
                 controllingSidebar?.startNewChat()
             },
-            for: .touchUpInside,
+            for: .touchUpInside
         )
     }
 
@@ -90,7 +90,7 @@ final class SidebarSessionsController: UIViewController {
         $0.backgroundView = EmptyStateView(
             symbolName: "bubble.left.and.bubble.right.fill",
             text: String(localized: "No chats yet. Tap “New Chat” to start one."),
-            showsText: false,
+            showsText: false
         )
     }
 
@@ -98,12 +98,12 @@ final class SidebarSessionsController: UIViewController {
     /// the light, white at 0.1 in the dark (owner, 2026-10-21).
     private static let selectionColor = UIColor(
         light: UIColor.black.withAlphaComponent(0.1),
-        dark: UIColor.white.withAlphaComponent(0.1),
+        dark: UIColor.white.withAlphaComponent(0.1)
     )
 
     /// The rows are conversation IDs.
     private lazy var dataSource = SwipeableTableDataSource<Section, UUID>(
-        tableView: tableView,
+        tableView: tableView
     ) { [unowned self] tableView, indexPath, id in
         let cell = tableView.dequeueReusableCell(withIdentifier: "chat", for: indexPath)
         let summary = chat(id)
@@ -218,7 +218,7 @@ final class SidebarSessionsController: UIViewController {
         _ id: UUID,
         from origin: ChatDeletion.Origin,
         presenter: UIViewController,
-        onDeleted: @escaping () -> Void,
+        onDeleted: @escaping () -> Void
     ) {
         guard let chat = runtime.records[id]?.summary else { return }
         guard let confirmation = ChatDeletion.confirmation(for: chat, from: origin) else {
@@ -232,14 +232,14 @@ final class SidebarSessionsController: UIViewController {
                 title: "Delete Conversation?",
                 message: "“\(name)” and its messages will be deleted. This cannot be undone.",
                 confirmTitle: "Delete",
-                destructive: true,
+                destructive: true
             ) { [weak self] in self?.delete(id, onDeleted: onDeleted) }
         case .stopAndDelete:
             presenter.presentConfirmation(
                 title: "Delete Conversation?",
                 message: "“\(name)” is still working. It will be stopped, then deleted with its messages. This cannot be undone.",
                 confirmTitle: "Stop and Delete",
-                destructive: true,
+                destructive: true
             ) { [weak self] in self?.delete(id, onDeleted: onDeleted) }
         }
     }
@@ -373,7 +373,7 @@ extension SidebarSessionsController: UITableViewDelegate {
 
     func tableView(
         _: UITableView,
-        leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath,
+        leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath
     ) -> UISwipeActionsConfiguration? {
         guard let id = dataSource.itemIdentifier(for: indexPath), let chat = chat(id) else { return nil }
         return UISwipeActionsConfiguration(actions: ChatRowAction.leadingSwipe(for: chat).map { swipeAction($0, for: id) })
@@ -383,13 +383,13 @@ extension SidebarSessionsController: UITableViewDelegate {
     /// that does nothing here.
     func tableView(
         _: UITableView,
-        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
     ) -> UISwipeActionsConfiguration? {
         guard let id = dataSource.itemIdentifier(for: indexPath), let chat = chat(id) else {
             return UISwipeActionsConfiguration(actions: [])
         }
         let actions = UISwipeActionsConfiguration(
-            actions: ChatRowAction.trailingSwipe(for: chat).map { swipeAction($0, for: id) },
+            actions: ChatRowAction.trailingSwipe(for: chat).map { swipeAction($0, for: id) }
         )
         // a full swipe deletes one at rest; one that works keeps Stop beside Delete
         actions.performsFirstActionWithFullSwipe = !chat.isWorking
@@ -401,7 +401,7 @@ extension SidebarSessionsController: UITableViewDelegate {
         case .pin, .unpin:
             let pin = UIContextualAction(
                 style: .normal,
-                title: action == .unpin ? String(localized: "Unpin") : String(localized: "Pin"),
+                title: action == .unpin ? String(localized: "Unpin") : String(localized: "Pin")
             ) { [weak self] _, _, completion in
                 // the swipe's own transaction has to end for the row to settle
                 completion(true)
@@ -413,7 +413,7 @@ extension SidebarSessionsController: UITableViewDelegate {
         case .stop:
             let stop = UIContextualAction(
                 style: .normal,
-                title: String(localized: "Stop"),
+                title: String(localized: "Stop")
             ) { [weak self] _, _, completion in
                 completion(true)
                 self?.stop(id)
@@ -424,7 +424,7 @@ extension SidebarSessionsController: UITableViewDelegate {
         case .delete:
             let delete = UIContextualAction(
                 style: .destructive,
-                title: String(localized: "Delete"),
+                title: String(localized: "Delete")
             ) { [weak self] _, _, completion in
                 // The snapshot removes the row only after deletion succeeds.
                 completion(false)
@@ -448,7 +448,7 @@ extension SidebarSessionsController: UITableViewDelegate {
     func tableView(
         _: UITableView,
         contextMenuConfigurationForRowAt indexPath: IndexPath,
-        point _: CGPoint,
+        point _: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard let id = dataSource.itemIdentifier(for: indexPath), let chat = chat(id) else { return nil }
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
@@ -461,18 +461,18 @@ extension SidebarSessionsController: UITableViewDelegate {
         case .pin, .unpin:
             UIAction(
                 title: action == .unpin ? String(localized: "Unpin") : String(localized: "Pin"),
-                image: UIImage(systemName: action == .unpin ? "pin.slash" : "pin"),
+                image: UIImage(systemName: action == .unpin ? "pin.slash" : "pin")
             ) { [weak self] _ in self?.togglePin(id) }
         case .stop:
             UIAction(
                 title: String(localized: "Stop"),
-                image: UIImage(systemName: "stop.fill"),
+                image: UIImage(systemName: "stop.fill")
             ) { [weak self] _ in self?.stop(id) }
         case .delete:
             UIAction(
                 title: String(localized: "Delete"),
                 image: UIImage(systemName: "trash"),
-                attributes: .destructive,
+                attributes: .destructive
             ) { [weak self] _ in
                 guard let self else { return }
                 delete(id, from: .sidebarRow, presenter: self) { [weak self] in

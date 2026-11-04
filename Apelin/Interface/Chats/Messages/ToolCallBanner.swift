@@ -31,7 +31,7 @@ extension ToolCallBanner {
         let path = values?["path"]?.stringValue ?? ""
         self.init(
             reason: reason.isEmpty ? title : reason,
-            file: Self.writesFile(tool) && !path.isEmpty ? (path as NSString).lastPathComponent : nil,
+            file: Self.writesFile(tool) && !path.isEmpty ? (path as NSString).lastPathComponent : nil
         )
     }
 

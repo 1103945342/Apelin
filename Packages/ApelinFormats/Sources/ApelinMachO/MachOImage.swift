@@ -170,7 +170,7 @@ public struct MachOImage: Sendable {
     /// `damaged` when the blob is not a property list with a dictionary root.
     public func entitlementsDictionary(
         of slice: Slice,
-        maximumByteCount: Int64 = 128 * 1024,
+        maximumByteCount: Int64 = 128 * 1024
     ) throws -> [String: Any]? {
         guard let bytes = try entitlements(of: slice, maximumByteCount: maximumByteCount) else { return nil }
         guard let dictionary = try? PropertyListSerialization.propertyList(from: bytes, format: nil) as? [String: Any]
@@ -217,7 +217,7 @@ public struct MachOImage: Sendable {
             guard Int64(commands) <= remainingCommands else {
                 throw FormatFailure.tooLarge(
                     byteCount: maximumLoadCommandByteCount + 1,
-                    limit: maximumLoadCommandByteCount,
+                    limit: maximumLoadCommandByteCount
                 )
             }
             remainingCommands -= Int64(commands)
@@ -263,7 +263,7 @@ public struct MachOImage: Sendable {
             installName: nil,
             isEncrypted: false,
             isCodeSigned: false,
-            headerFlags: headerWord(24),
+            headerFlags: headerWord(24)
         )
 
         let commandCount = try headerWord(16)
@@ -297,7 +297,7 @@ public struct MachOImage: Sendable {
                 let bytes = commands.subdata(in: cursor + 8 ..< cursor + 24)
                 slice.uuid = UUID(uuid: (
                     bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7],
-                    bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15],
+                    bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]
                 ))
 
             case LoadCommand.loadDylib, LoadCommand.loadWeakDylib,
@@ -338,7 +338,7 @@ public struct MachOImage: Sendable {
         _ commands: Data,
         at cursor: Int,
         size: Int,
-        word: (Int) throws -> UInt32,
+        word: (Int) throws -> UInt32
     ) throws -> String? {
         guard size >= 24 else { return nil }
         let nameOffset = try Int(word(cursor + 8))

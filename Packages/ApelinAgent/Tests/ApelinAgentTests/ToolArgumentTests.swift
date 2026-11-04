@@ -12,7 +12,7 @@ struct ToolArgumentTests {
         #expect(ToolArguments.normalized(["name": "apelin-tweak-development", "file": ""], for: .skillRead) == ["name": "apelin-tweak-development"])
         #expect(ToolArguments.normalized(
             ["argv": [], "command": "ls", "cwd": "", "timeout_seconds": .null],
-            for: .shellRun,
+            for: .shellRun
         ) == ["command": "ls"])
         #expect(ToolArguments.normalized(["template": "t", "name": "n", "values": [:]], for: .projectCreate) == ["template": "t", "name": "n"])
         #expect(ToolArguments.normalized(["path": "a.m", "content": ""], for: .fileWrite) == ["path": "a.m", "content": ""],

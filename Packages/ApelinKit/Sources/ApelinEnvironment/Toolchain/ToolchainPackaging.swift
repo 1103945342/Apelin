@@ -84,7 +84,7 @@ public struct HostPackageInstaller: PackageInstaller {
                     let message = event.payload?["message"]?.stringValue ?? state
                     throw ApelinError(
                         state == TaskState.cancelled.rawValue ? .cancelled : .internal,
-                        "install bridge: \(message)",
+                        "install bridge: \(message)"
                     )
                 }
                 finished = true
@@ -95,7 +95,7 @@ public struct HostPackageInstaller: PackageInstaller {
         guard finished else {
             throw ApelinError(
                 .unavailable,
-                "install bridge: task \(handle.taskID.rawValue) stopped answering before it ended",
+                "install bridge: task \(handle.taskID.rawValue) stopped answering before it ended"
             )
         }
         return result
@@ -133,7 +133,7 @@ public struct ToolchainPackager: Sendable {
             package: packageID,
             version: version.first?.isNumber == true ? version : "0" + version,
             architecture: packageLayout.architecture,
-            description: "Apelin toolchain \(prepared.id)\nApple Command Line Tools \(prepared.product.version) retargeted on this device. Built locally; never redistributed.",
+            description: "Apelin toolchain \(prepared.id)\nApple Command Line Tools \(prepared.product.version) retargeted on this device. Built locally; never redistributed."
         )
         control["Name"] = Self.name(of: prepared)
         control["Icon"] = Self.icon
@@ -147,7 +147,7 @@ public struct ToolchainPackager: Sendable {
         let destination = try packageLayout.packagePath(for: "/" + prepared.installRelativePath)
         writer.entries = try Self.installable(
             DebEntry.tree(fromDirectory: prepared.tree.path, at: destination),
-            under: destination,
+            under: destination
         )
 
         try layout.make(layout.artifacts)
@@ -160,7 +160,7 @@ public struct ToolchainPackager: Sendable {
             path: path.path,
             digest: Self.sha256(path),
             packageID: packageID,
-            version: control.version ?? version,
+            version: control.version ?? version
         )
     }
 

@@ -56,7 +56,7 @@ extension BuiltInSkills {
         That changes the build description, so Strict mode asks before its
         next build.
         """,
-        files: ["Tool.entitlements": toolEntitlements],
+        files: ["Tool.entitlements": toolEntitlements]
     )
 
     /// Every key of the cli templates' `Packaging/Tool.entitlements`, the

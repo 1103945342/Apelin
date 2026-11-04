@@ -48,8 +48,8 @@ public struct SDKSourceList: Codable, Sendable, Equatable {
             url: "https://github.com/owngoal-dev/iOS-SDKs.git",
             enabled: true,
             branchPrefix: "sdk/",
-            note: "Apple's iPhoneOS SDKs, one per branch, collected by xybp888/iOS-SDKs.",
-        ),
+            note: "Apple's iPhoneOS SDKs, one per branch, collected by xybp888/iOS-SDKs."
+        )
     ]
 
     /// The configured list, or the default when the file is missing or does
@@ -71,7 +71,7 @@ public struct SDKSourceList: Codable, Sendable, Equatable {
                 url: source.url,
                 enabled: source.enabled,
                 branchPrefix: source.branchPrefix,
-                note: source.note,
+                note: source.note
             )
             guard read, source.enabled else { return status }
             guard GitClone.isAcceptedRemote(source.url) else {
@@ -159,7 +159,7 @@ public protocol SDKSupplier: Sendable {
         _ offer: SDKOffer,
         staging: URL,
         hasSwiftToolchain: Bool,
-        reporter: TaskReporter,
+        reporter: TaskReporter
     ) async throws -> SDKRecord
 }
 
@@ -180,7 +180,7 @@ public struct SourceSDKSupplier: SDKSupplier {
         let statuses = SDKSourceList.load(layout).statuses(read: true).filter(\.enabled)
         return SDKOffers(
             offers: SDKOffer.offers(from: statuses),
-            problems: statuses.compactMap { status in status.problem.map { "\(status.name): \($0)" } },
+            problems: statuses.compactMap { status in status.problem.map { "\(status.name): \($0)" } }
         )
     }
 
@@ -188,18 +188,18 @@ public struct SourceSDKSupplier: SDKSupplier {
         _ offer: SDKOffer,
         staging: URL,
         hasSwiftToolchain: Bool,
-        reporter: TaskReporter,
+        reporter: TaskReporter
     ) async throws -> SDKRecord {
         let manager = SDKManager(layout: layout)
         let prepared = try manager.prepare(
             SDKImportRequest(source: .repository(url: offer.url, branch: offer.branch)),
-            descriptors: [],
+            descriptors: []
         )
         return try await manager.run(
             prepared,
             staging: staging,
             hasSwiftToolchain: hasSwiftToolchain,
-            reporter: reporter,
+            reporter: reporter
         )
     }
 }

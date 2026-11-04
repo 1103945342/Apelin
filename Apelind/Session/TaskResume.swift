@@ -92,14 +92,14 @@ struct TaskResume: Sendable {
         if let refused = plan.refused {
             await registry.interrupt(
                 record.id,
-                message: "The background service stopped. This task could not resume: \(refused)",
+                message: "The background service stopped. This task could not resume: \(refused)"
             )
             return true
         }
         guard plan.resumes < Self.maximumResumes else {
             await registry.interrupt(
                 record.id,
-                message: "The background service stopped \(plan.resumes + 1) times. Start the task again.",
+                message: "The background service stopped \(plan.resumes + 1) times. Start the task again."
             )
             return true
         }

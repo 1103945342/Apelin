@@ -116,7 +116,7 @@ struct GitHubAPI: Sendable {
         try await send(
             "GET",
             "/user/repos?affiliation=owner,organization_member&sort=updated&per_page=100",
-            as: [Repository].self,
+            as: [Repository].self
         )
     }
 
@@ -139,7 +139,7 @@ struct GitHubAPI: Sendable {
         description: String?,
         isPrivate: Bool,
         organization: String? = nil,
-        features: [String: Bool] = [:],
+        features: [String: Bool] = [:]
     ) async throws -> Repository {
         var body: [String: Any] = ["name": name, "private": isPrivate, "auto_init": false]
         for (feature, isOn) in features {
@@ -300,7 +300,7 @@ struct GitHubAPI: Sendable {
             throw ApelinError(
                 .denied,
                 "GitHub refused the saved sign-in. Sign in with GitHub again in Settings ▸ Git.",
-                reason: .authenticationRequired,
+                reason: .authenticationRequired
             )
         case 403:
             throw ApelinError(.denied, "GitHub refused: \(message)")

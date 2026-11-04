@@ -42,7 +42,7 @@ enum AgentScreenRules {
         guard await AgentApprovals.spend(entry: entry, registry: registry, covers: covers) else {
             return ApelinError(
                 .denied,
-                "approval required: Ask Before Using the Screen is on, and the user has not approved \(what) with this call",
+                "approval required: Ask Before Using the Screen is on, and the user has not approved \(what) with this call"
             )
         }
         return nil
@@ -55,7 +55,7 @@ enum AgentScreenRules {
         guard case let .user(approvalID) = run.approval else {
             throw ApelinError(
                 .denied,
-                "approval required: Ask Before Using the Screen is on, and this command runs a program that opens apps and links or reads and acts on the screen; it needs the user's approval of this call, every time",
+                "approval required: Ask Before Using the Screen is on, and this command runs a program that opens apps and links or reads and acts on the screen; it needs the user's approval of this call, every time"
             )
         }
         let asked = await AgentApprovals.requested(approvalID, entry: entry, registry: registry)

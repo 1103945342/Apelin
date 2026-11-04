@@ -16,7 +16,7 @@ enum ComposerProjectIndex {
     /// would bury everything else.
     private static let skippedDirectories: Set<String> = [
         ".git", ".build", "build", "Build", "node_modules", "Pods", "DerivedData",
-        ".swiftpm", ".index-build", "vendor", "dist", "target", ".next",
+        ".swiftpm", ".index-build", "vendor", "dist", "target", ".next"
     ]
 
     private static let fileLimit = 4000
@@ -27,7 +27,7 @@ enum ComposerProjectIndex {
         guard let enumerator = FileManager.default.enumerator(
             at: root,
             includingPropertiesForKeys: keys,
-            options: [.skipsHiddenFiles, .skipsPackageDescendants],
+            options: [.skipsHiddenFiles, .skipsPackageDescendants]
         ) else {
             return []
         }

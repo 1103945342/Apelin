@@ -103,7 +103,7 @@ final class CompressingSink: ByteSink {
                     }
                 },
                 nil,
-                nil,
+                nil
             ))
             guard let entry = archive_entry_new() else { throw PackageFormatError.archive("archive_entry_new failed") }
             defer { archive_entry_free(entry) }
@@ -150,7 +150,7 @@ final class CompressingSink: ByteSink {
             return error
         }
         return PackageFormatError.archive(
-            archive_error_string(archive).map { String(cString: $0) } ?? "libarchive error",
+            archive_error_string(archive).map { String(cString: $0) } ?? "libarchive error"
         )
     }
 }

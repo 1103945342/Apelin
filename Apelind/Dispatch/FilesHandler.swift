@@ -43,7 +43,7 @@ enum FilesHandler: DomainHandler {
             let response = FileReadResponse(
                 descriptor: DescriptorSlot(index: 0),
                 version: FileScopes.version(of: descriptor.rawValue),
-                path: path,
+                path: path
             )
             return (.success(request.requestID, response), [descriptor])
         } catch {

@@ -42,7 +42,7 @@ final class ComposerQueuePanel: ComposerPanel {
         setTitle(
             count == 1
                 ? String(localized: "1 Message Waiting")
-                : String(localized: "\(count) Messages Waiting"),
+                : String(localized: "\(count) Messages Waiting")
         )
     }
 
@@ -75,7 +75,7 @@ final class ComposerQueuePanel: ComposerPanel {
             x: body.frame.minX,
             y: body.frame.minY,
             width: body.frame.width,
-            height: min(body.frame.height, ComposerMetrics.Panel.maxQueueHeight),
+            height: min(body.frame.height, ComposerMetrics.Panel.maxQueueHeight)
         )
     }
 }
@@ -129,7 +129,7 @@ private final class QueueRow: UIView {
             x: numberWidth + ComposerMetrics.Spacing.sm,
             y: 0,
             width: max(0, bounds.width - numberWidth - ComposerMetrics.Spacing.sm),
-            height: bounds.height,
+            height: bounds.height
         ))
     }
 }

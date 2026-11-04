@@ -15,7 +15,7 @@ public final class ToolOutgoingAttachment: @unchecked Sendable {
         duplicating descriptor: Int32,
         argument: String? = nil,
         mimeType: String? = nil,
-        name: String? = nil,
+        name: String? = nil
     ) throws {
         let copy = fcntl(descriptor, F_DUPFD_CLOEXEC, 0)
         guard copy >= 0 else { throw ToolAttachmentError.system("dup", errno) }
@@ -232,7 +232,7 @@ public final class ToolAttachmentChannel: @unchecked Sendable {
     /// The caller owns what it gets.
     private func take(
         id: String,
-        timeout: TimeInterval,
+        timeout: TimeInterval
     ) -> Result<(descriptor: Int32, size: Int), ToolAttachmentError> {
         let deadline = Date().addingTimeInterval(timeout)
         condition.lock()
@@ -256,7 +256,7 @@ public final class ToolAttachmentChannel: @unchecked Sendable {
     /// The attachment a frame references, as an owned file.
     public func claim(
         _ reference: ToolAttachmentReference,
-        timeout: TimeInterval,
+        timeout: TimeInterval
     ) -> Result<ToolReceivedAttachment, ToolAttachmentError> {
         take(id: reference.id, timeout: timeout).map {
             ToolReceivedAttachment(
@@ -264,7 +264,7 @@ public final class ToolAttachmentChannel: @unchecked Sendable {
                 descriptor: $0.descriptor,
                 byteCount: $0.size,
                 mimeType: reference.mimeType,
-                name: reference.name,
+                name: reference.name
             )
         }
     }
@@ -437,7 +437,7 @@ public final class ToolAttachmentChannel: @unchecked Sendable {
                     let count = (length - headerSpace) / MemoryLayout<Int32>.size
                     for index in 0 ..< count {
                         result.append(
-                            raw.loadUnaligned(fromByteOffset: offset + headerSpace + index * 4, as: Int32.self),
+                            raw.loadUnaligned(fromByteOffset: offset + headerSpace + index * 4, as: Int32.self)
                         )
                     }
                 }

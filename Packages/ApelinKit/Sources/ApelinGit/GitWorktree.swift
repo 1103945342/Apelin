@@ -158,7 +158,7 @@ public extension GitRepository {
         defer { git_object_free(object) }
         try GitError.check(
             git_reset(pointer, object, mode == .soft ? GIT_RESET_SOFT : GIT_RESET_MIXED, nil),
-            "reset to \(commit)",
+            "reset to \(commit)"
         )
         return id
     }

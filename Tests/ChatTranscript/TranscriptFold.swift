@@ -64,7 +64,7 @@ private struct FoldCoverage {
     func expectEverything() {
         let counts = [
             waitingForQuiet, standingInForQuiet, counting, settling, compacting, compacted, queued, onTheirWay, decided, senders,
-            attached, bannered, reconnecting,
+            attached, bannered, reconnecting
         ]
         precondition(!counts.contains(0), "the random logs reach every part of a transcript: \(self)")
     }
@@ -73,7 +73,7 @@ private struct FoldCoverage {
 /// The payload readers read what decoding reads, malformed lists included.
 private func checkPayloadReaders() {
     let attachment: JSONValue = .object([
-        "path": .string("A/1.png"), "name": .string("1.png"), "mimeType": .string("image/png"),
+        "path": .string("A/1.png"), "name": .string("1.png"), "mimeType": .string("image/png")
     ])
     let id = JSONValue.string(UUID().uuidString)
     let values: [JSONValue?] = [
@@ -83,7 +83,7 @@ private func checkPayloadReaders() {
         .array([.object(["path": .number(1), "name": .string("n"), "mimeType": .string("m")])]),
         .array([.object(["path": .string("p"), "name": .string("n"), "mimeType": .string("m"), "extra": .null])]),
         .array([attachment, .null]), .array([id]), .array([id, id]), .array([id, .string("not an id")]),
-        .array([.number(3)]),
+        .array([.number(3)])
     ]
     for value in values {
         let decodedFiles = value.flatMap { try? $0.decode([AgentAttachment].self) } ?? []
@@ -277,12 +277,12 @@ private struct FoldLog {
             case 0:
                 .array([.object([
                     "path": .string("Attachments/\(log.events.count).png"), "name": .string("a.png"),
-                    "mimeType": .string("image/png"),
+                    "mimeType": .string("image/png")
                 ])])
             case 1:
                 .array([.object([
                     "path": .string("Attachments/missing-\(log.events.count).txt"), "name": .string("a.txt"),
-                    "mimeType": .string("text/plain"),
+                    "mimeType": .string("text/plain")
                 ])])
             case 2: .array([.object(["path": .string("broken")])])
             default: nil
@@ -291,7 +291,7 @@ private struct FoldLog {
         // Today's names, and now and then one an earlier release recorded.
         let tools = [
             "file_write", "file_read", "shell_run", "file_edit", "apelin_project_build", "apelin_notification_send",
-            "apelin_project_create", "patch_file", "build",
+            "apelin_project_create", "patch_file", "build"
         ]
         while log.events.count < count {
             switch random.int(in: 0 ... 29) {
@@ -299,7 +299,7 @@ private struct FoldLog {
                 let id = random.id()
                 log.messageIDs.append(id)
                 var payload: [String: JSONValue] = [
-                    "text": .string("prompt \(log.events.count)"), "id": .string(id.uuidString),
+                    "text": .string("prompt \(log.events.count)"), "id": .string(id.uuidString)
                 ]
                 payload["attachments"] = files()
                 if random.chance(4) {
@@ -341,7 +341,7 @@ private struct FoldLog {
             case 13, 14:
                 let id = random.chance(6) ? "call-unknown" : openCalls.popLast() ?? "call-none"
                 var payload: [String: JSONValue] = [
-                    "id": .string(id), "output": .string("Wrote F (3 lines, +2 -1)\nmore"),
+                    "id": .string(id), "output": .string("Wrote F (3 lines, +2 -1)\nmore")
                 ]
                 payload["attachments"] = files()
                 if random.chance(5) {
@@ -354,7 +354,7 @@ private struct FoldLog {
                 openApprovals.append(id)
                 var payload: [String: JSONValue] = [
                     "approvalID": .string(id), "tool": .string("shell_run"),
-                    "arguments": .string("{\"command\":\"ls\"}"), "reason": .string("why"),
+                    "arguments": .string("{\"command\":\"ls\"}"), "reason": .string("why")
                 ]
                 if random.chance(3) {
                     payload["detail"] = .object(["descriptionChanged": .object(["diff": .string("- a\n+ b")])])

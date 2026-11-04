@@ -19,10 +19,10 @@ func checkForcePushCard() {
             "localSubject": .string("Rewrite the clock"),
             "overwritten": .array([
                 .object(["commit": .string(theirs), "subject": .string("Theirs")]),
-                .object(["commit": .string(String(repeating: "c", count: 40)), "subject": .string("Older")]),
+                .object(["commit": .string(String(repeating: "c", count: 40)), "subject": .string("Older")])
             ]),
-            "overwrittenCount": .number(3),
-        ])]),
+            "overwrittenCount": .number(3)
+        ])])
     ])
     precondition(ApprovalCardText.title(payload) == "Force-push to the remote", "the title says it forces")
     precondition(ApprovalCardText.title(.object(["tool": .string("git_push")])) == nil, "an ordinary push keeps its own")

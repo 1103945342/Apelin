@@ -10,7 +10,7 @@ public struct ToolchainSelfTest: Sendable {
         toolchain: URL,
         sdk: URL,
         scratch: URL,
-        progress: @escaping ToolchainProgressHandler = { _ in },
+        progress: @escaping ToolchainProgressHandler = { _ in }
     ) async throws -> [ToolchainTestResult] {
         let root = try canonical(toolchain), sdk = try canonical(sdk)
         guard FileManager.default.fileExists(atPath: sdk.appendingPathComponent("SDKSettings.json").path) else {
@@ -20,7 +20,7 @@ public struct ToolchainSelfTest: Sendable {
         let scratch = try canonical(scratch)
         let manifest = try JSONDecoder().decode(
             ToolchainManifest.self,
-            from: Data(contentsOf: root.appendingPathComponent("manifest.json")),
+            from: Data(contentsOf: root.appendingPathComponent("manifest.json"))
         )
         try ToolchainSetup.verify(manifest, at: root)
         let bin = root.appendingPathComponent("usr/bin")
@@ -28,7 +28,7 @@ public struct ToolchainSelfTest: Sendable {
             // __builtin_available needs the builtins' __isPlatformVersionAtLeast at link time.
             ("C", "c", "#include <stdio.h>\nint main(void) { if (__builtin_available(iOS 13.0, *)) puts(\"apelin-ok\"); else puts(\"bad\"); return 0; }\n"),
             ("C++", "cpp", "#include <iostream>\n#include <vector>\nint main() { std::vector<int> v{1,2,3}; std::cout << (v.size()==3 ? \"apelin-ok\" : \"bad\") << std::endl; }\n"),
-            ("ObjC", "m", "#import <Foundation/Foundation.h>\n#include <stdio.h>\nint main(void) { @autoreleasepool { NSArray *a = @[@1,@2]; puts(a.count==2 ? \"apelin-ok\" : \"bad\"); } return 0; }\n"),
+            ("ObjC", "m", "#import <Foundation/Foundation.h>\n#include <stdio.h>\nint main(void) { @autoreleasepool { NSArray *a = @[@1,@2]; puts(a.count==2 ? \"apelin-ok\" : \"bad\"); } return 0; }\n")
         ]
         var results: [ToolchainTestResult] = []
         for arch in ["arm64", "arm64e"] {
@@ -43,7 +43,7 @@ public struct ToolchainSelfTest: Sendable {
                         stage: .validating,
                         completedBytes: 0,
                         totalBytes: nil,
-                        detail: "\(language) \(arch)",
+                        detail: "\(language) \(arch)"
                     ))
                     let input = work.appendingPathComponent("hello." + suffix),
                         object = work.appendingPathComponent("hello.o"),
@@ -53,7 +53,7 @@ public struct ToolchainSelfTest: Sendable {
                         "-target", "\(arch)-apple-ios\(manifest.minimumOS)",
                         "-isysroot", sdk.path,
                         "-B" + bin.path,
-                        "-g",
+                        "-g"
                     ]
                     if language == "C++" {
                         flags += ["-stdlib=libc++", "-std=c++17"]
@@ -65,7 +65,7 @@ public struct ToolchainSelfTest: Sendable {
                         bin.appendingPathComponent("clang"),
                         flags + ["-c", input.path, "-o", object.path],
                         cwd: work,
-                        bin: bin,
+                        bin: bin
                     )
                     var link = flags + [object.path, "-o", executable.path]
                     if language == "C++" {
@@ -80,12 +80,12 @@ public struct ToolchainSelfTest: Sendable {
                         bin.appendingPathComponent("dsymutil"),
                         [executable.path, "-o", dsym.path],
                         cwd: work,
-                        bin: bin,
+                        bin: bin
                     )
                     var image = try MachOImage(Data(contentsOf: executable))
                     let symbols = try MachOImage(
                         Data(contentsOf: dsym.appendingPathComponent("Contents/Resources/DWARF/hello")),
-                        allowDSYM: true,
+                        allowDSYM: true
                     )
                     guard let uuid = image.uuid, uuid == symbols.uuid else {
                         throw ToolchainFailure("dSYM UUID differs from executable")
@@ -101,7 +101,7 @@ public struct ToolchainSelfTest: Sendable {
                         architecture: arch,
                         passed: true,
                         detail: "Compile, link, run and dSYM UUID \(uuid) matched",
-                        seconds: Date().timeIntervalSince(start),
+                        seconds: Date().timeIntervalSince(start)
                     ))
                 } catch {
                     try Task.checkCancellation()
@@ -110,7 +110,7 @@ public struct ToolchainSelfTest: Sendable {
                         architecture: arch,
                         passed: false,
                         detail: String(describing: error),
-                        seconds: Date().timeIntervalSince(start),
+                        seconds: Date().timeIntervalSince(start)
                     ))
                     // Do not keep launching tools that may be crashing on
                     // this host. The failed case already refuses registration.
@@ -123,10 +123,10 @@ public struct ToolchainSelfTest: Sendable {
                 bin: bin,
                 sdk: sdk,
                 scratch: scratch,
-                minimumOS: manifest.minimumOS,
+                minimumOS: manifest.minimumOS
             ).run(
                 progress: progress,
-                cltVersion: manifest.source.version,
+                cltVersion: manifest.source.version
             )
         }
         return results
@@ -242,7 +242,7 @@ struct SwiftSelfTest {
                 architecture: "arm64e",
                 passed: false,
                 detail: "The SDK has no Swift interfaces for arm64 or arm64e",
-                seconds: 0,
+                seconds: 0
             )]
         }
         var results: [ToolchainTestResult] = []
@@ -262,7 +262,7 @@ struct SwiftSelfTest {
                     let floor = language == "Swift macro" ? Self.newer(minimumOS, "17.0") : minimumOS
                     var flags = [
                         "-sdk", sdk.path, "-target", "\(arch)-apple-ios\(floor)",
-                        "-module-cache-path", cache.path, "-g",
+                        "-module-cache-path", cache.path, "-g"
                     ]
                     // CLT 14.2's driver does not recognize this option. Newer
                     // drivers need it because the tree omits libSwiftScan.
@@ -282,40 +282,40 @@ struct SwiftSelfTest {
                         try await swift([
                             "-parse-as-library", "-module-name", "ApelinSelfTest", "-emit-module",
                             "-emit-module-path", work.appendingPathComponent("ApelinSelfTest.swiftmodule").path,
-                            work.appendingPathComponent("lib.swift").path,
+                            work.appendingPathComponent("lib.swift").path
                         ])
                         // The legacy driver treats module emission as the
                         // output action, so emit the object in a separate call.
                         try await swift([
                             "-parse-as-library", "-module-name", "ApelinSelfTest",
                             "-c", work.appendingPathComponent("lib.swift").path,
-                            "-o", work.appendingPathComponent("lib.o").path,
+                            "-o", work.appendingPathComponent("lib.o").path
                         ])
                         try await swift([
                             "-emit-library", "-module-name", "ApelinSelfTest",
                             work.appendingPathComponent("lib.o").path, "-o", library.path,
-                            "-Xlinker", "-install_name", "-Xlinker", "@rpath/libApelinSelfTest.dylib",
+                            "-Xlinker", "-install_name", "-Xlinker", "@rpath/libApelinSelfTest.dylib"
                         ])
                         try await swift([
                             "-I", work.path, "-module-name", "main",
                             "-c", work.appendingPathComponent("main.swift").path,
-                            "-o", work.appendingPathComponent("main.o").path,
+                            "-o", work.appendingPathComponent("main.o").path
                         ])
                         try await swift([
                             work.appendingPathComponent("main.o").path, "-L", work.path, "-lApelinSelfTest",
-                            "-Xlinker", "-rpath", "-Xlinker", "@executable_path", "-o", executable.path,
+                            "-Xlinker", "-rpath", "-Xlinker", "@executable_path", "-o", executable.path
                         ])
                         images.append(library)
                     default:
                         let source = [
-                            "Swift": Self.executable, "Swift async": Self.concurrency, "Swift macro": Self.macro,
+                            "Swift": Self.executable, "Swift async": Self.concurrency, "Swift macro": Self.macro
                         ][language] ?? ""
                         try Data(source.utf8).write(to: work.appendingPathComponent("main.swift"))
                         let object = work.appendingPathComponent("main.o")
                         try await swift(
                             (language == "Swift async" ? ["-parse-as-library"] : [])
                                 + ["-module-name", "main", "-c", work.appendingPathComponent("main.swift").path,
-                                   "-o", object.path],
+                                   "-o", object.path]
                         )
                         try await swift([object.path, "-o", executable.path])
                     }
@@ -326,14 +326,14 @@ struct SwiftSelfTest {
                             bin.appendingPathComponent("dsymutil"),
                             [image.path, "-o", dsym.path],
                             cwd: work,
-                            bin: bin,
+                            bin: bin
                         )
                         var binary = try MachOImage(Data(contentsOf: image))
                         let symbols = try MachOImage(
                             Data(contentsOf: dsym.appendingPathComponent(
-                                "Contents/Resources/DWARF/" + image.lastPathComponent,
+                                "Contents/Resources/DWARF/" + image.lastPathComponent
                             )),
-                            allowDSYM: true,
+                            allowDSYM: true
                         )
                         guard let uuid = binary.uuid, uuid == symbols.uuid else {
                             throw ToolchainFailure("dSYM UUID differs from \(image.lastPathComponent)")
@@ -352,7 +352,7 @@ struct SwiftSelfTest {
                         architecture: arch,
                         passed: true,
                         detail: "Compile, link, run and dSYM UUID \(uuids.joined(separator: ", ")) matched",
-                        seconds: Date().timeIntervalSince(start),
+                        seconds: Date().timeIntervalSince(start)
                     ))
                 } catch {
                     try Task.checkCancellation()
@@ -361,7 +361,7 @@ struct SwiftSelfTest {
                         architecture: arch,
                         passed: false,
                         detail: String(describing: error),
-                        seconds: Date().timeIntervalSince(start),
+                        seconds: Date().timeIntervalSince(start)
                     ))
                     return results
                 }
@@ -377,7 +377,7 @@ func runProcess(
     _ arguments: [String],
     cwd: URL,
     bin: URL,
-    timeout: Double = 120,
+    timeout: Double = 120
 ) async throws -> String {
     let log = cwd.appendingPathComponent("process.log")
     let fd = open(log.path, O_CREAT | O_TRUNC | O_WRONLY | O_NOFOLLOW, 0o600)
@@ -396,7 +396,7 @@ func runProcess(
         "PATH=\(bin.path):/usr/bin:/bin",
         "HOME=\(cwd.path)",
         "TMPDIR=\(cwd.path)",
-        "LC_ALL=C",
+        "LC_ALL=C"
     ].map { (value: String) in value.withCString { strdup($0) } } + [nil]
     defer { argv.forEach { free($0) }; env.forEach { free($0) } }
     var pid: pid_t = 0
@@ -407,7 +407,7 @@ func runProcess(
             &actions,
             nil,
             UnsafeMutablePointer(mutating: a.baseAddress!),
-            UnsafeMutablePointer(mutating: e.baseAddress!),
+            UnsafeMutablePointer(mutating: e.baseAddress!)
         )
     } }
     guard status == 0 else {

@@ -16,7 +16,7 @@ extension UIViewController {
         title: String.LocalizationValue,
         message: String.LocalizationValue,
         dismissTitle: String.LocalizationValue = "Dismiss",
-        onDismiss: @escaping () -> Void = {},
+        onDismiss: @escaping () -> Void = {}
     ) {
         present(AlertViewController(title: title, message: message) { context in
             context.addAction(title: dismissTitle) {
@@ -30,13 +30,13 @@ extension UIViewController {
         title: String.LocalizationValue,
         message: String,
         dismissTitle: String.LocalizationValue = "Dismiss",
-        onDismiss: @escaping () -> Void = {},
+        onDismiss: @escaping () -> Void = {}
     ) {
         presentNotice(
             title: title,
             message: String.LocalizationValue(message),
             dismissTitle: dismissTitle,
-            onDismiss: onDismiss,
+            onDismiss: onDismiss
         )
     }
 
@@ -53,7 +53,7 @@ extension UIViewController {
         cancelTitle: String.LocalizationValue = "Cancel",
         confirmTitle: String.LocalizationValue = "Confirm",
         destructive: Bool = false,
-        onConfirm: @escaping () -> Void,
+        onConfirm: @escaping () -> Void
     ) {
         let accent = AlertControllerConfiguration.accentColor
         let accentForeground = AlertControllerConfiguration.accentForegroundColor
@@ -80,7 +80,7 @@ extension UIViewController {
         message: String.LocalizationValue,
         placeholder: String.LocalizationValue,
         doneTitle: String.LocalizationValue,
-        onConfirm: @escaping @MainActor (String) -> Void,
+        onConfirm: @escaping @MainActor (String) -> Void
     ) {
         present(AlertInputViewController(
             title: title,
@@ -88,7 +88,7 @@ extension UIViewController {
             placeholder: placeholder,
             text: "",
             doneButtonText: doneTitle,
-            onConfirm: onConfirm,
+            onConfirm: onConfirm
         ), animated: true)
     }
 }

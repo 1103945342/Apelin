@@ -81,7 +81,7 @@ struct EnvironmentPromptTests {
         // A package is apelin_project_build's, a workspace's script aside.
         inputs.commandsFound = ["dpkg-deb", "git"]
         #expect(EnvironmentPrompt.section(inputs).contains(
-            "- Also on shell_run's PATH: dpkg-deb, git. Not installed: cmake, ldid, make, ninja, perl, python3, xcrun. dpkg-deb builds a package only inside a workspace's declared build script, which apelin_project_build runs; never build one with it yourself.",
+            "- Also on shell_run's PATH: dpkg-deb, git. Not installed: cmake, ldid, make, ninja, perl, python3, xcrun. dpkg-deb builds a package only inside a workspace's declared build script, which apelin_project_build runs; never build one with it yourself."
         ))
     }
 

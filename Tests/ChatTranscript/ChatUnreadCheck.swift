@@ -14,7 +14,7 @@ func checkChatUnread() throws {
         prompt,
         event(2, "messageStarted"), event(3, "text", ["text": .string("Building")]),
         event(4, "message", ["text": .string("Built and installed.")]),
-        event(5, "finished", ["reason": .string("completed")]),
+        event(5, "finished", ["reason": .string("completed")])
     ]
 
     // What counts as a reply.
@@ -27,7 +27,7 @@ func checkChatUnread() throws {
     precondition(!ChatUnread.isReply(event(1, "finished", ["reason": .string("aborted")])), "a turn the reader stopped")
     let news = [
         "prompt", "steer", "queued", "title", "received", "text", "thinking",
-        "toolCall", "toolResult", "messageStarted", TaskEvent.stateKind,
+        "toolCall", "toolResult", "messageStarted", TaskEvent.stateKind
     ]
     for kind in news {
         precondition(!ChatUnread.isReply(event(1, kind, ["text": .string("words")])), "\(kind) is no reply")
@@ -72,7 +72,7 @@ func checkChatUnread() throws {
     let again = UUID()
     let next = reopened.take([
         event(6, "prompt", ["id": .string(again.uuidString), "text": .string("Once more")]),
-        event(7, "message", ["text": .string("Done again.")]),
+        event(7, "message", ["text": .string("Done again.")])
     ])
     precondition(next.count == 2 && reopened.summary.noteReplies(in: next, isViewed: false), "what follows the replay counts")
 
@@ -95,7 +95,7 @@ func checkChatUnread() throws {
         chat("Pineora", unread: true), chat("Pineora", unread: true), chat("Pineora", unread: true),
         chat("Pineora", unread: false), chat("Pineora", unread: true, working: true),
         chat("Clock", unread: true), chat("Dock", unread: false),
-        chat(nil, unread: true), chat(nil, unread: false),
+        chat(nil, unread: true), chat(nil, unread: false)
     ])
     precondition(counts.projects == ["Pineora": 3, "Clock": 1], "conversations, not messages or runs: \(counts.projects)")
     precondition(counts.general == 1, "General Chat's temporary conversations")

@@ -22,7 +22,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
             task: registry.create(kind: .agent, owner: .agent, ownerKey: id),
             project: ResolvedProject(id: "p-root", name: "Root", path: scratchPath),
             mode: mode,
-            createdAt: Date(),
+            createdAt: Date()
         )
         await sessions.add(entry)
         await ledger.setMode(mode, session: id)
@@ -42,7 +42,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         _ words: [String],
         root: Bool,
         sessionScope: Bool = false,
-        workingDirectory: String = ".",
+        workingDirectory: String = "."
     ) async {
         let key = root ? RunCodeApproval.rootCommandDetail : "command"
         await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object([
@@ -50,7 +50,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
             "tool": .string("shell_run"),
             "workingDirectory": .string(workingDirectory),
             "allowsSessionScope": .bool(sessionScope),
-            "detail": .object([key: argv(words)]),
+            "detail": .object([key: argv(words)])
         ]))
     }
     @discardableResult
@@ -59,14 +59,14 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         _ approvalID: String,
         scope: ApprovalScope? = nil,
         ownerVerified: Bool? = true,
-        workerTakesIt: Bool = true,
+        workerTakesIt: Bool = true
     ) async -> Bool {
         let request = AgentApproveRequest(
             sessionID: entry.sessionID,
             approvalID: approvalID,
             decision: .approve,
             scope: scope,
-            ownerVerified: ownerVerified,
+            ownerVerified: ownerVerified
         )
         do {
             return try await AgentApprovals.relay(
@@ -74,7 +74,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
                 registry: registry,
                 ledger: ledger,
                 forward: { workerTakesIt },
-                accepted: { $0 },
+                accepted: { $0 }
             )
         } catch {
             return false
@@ -85,14 +85,14 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         _ words: [String],
         _ approval: RunCodeApproval,
         root: Bool = true,
-        in directory: String = ".",
+        in directory: String = "."
     ) async -> AgentRunCode.Identity? {
         let run = AgentRunCodeRequest(
             sessionID: entry.sessionID,
             spec: .argv(words),
             workingDirectory: directory,
             approval: approval,
-            asRoot: root ? true : nil,
+            asRoot: root ? true : nil
         )
         let current = await sessions.entry(entry.sessionID) ?? entry
         return try? await AgentApprovals.authorize(
@@ -100,7 +100,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
             entry: current,
             registry: registry,
             ledger: ledger,
-            installRoot: "/",
+            installRoot: "/"
         )
     }
     func kept(_ entry: AgentSessionTable.Entry, _ approvalID: String) async -> Bool {
@@ -134,7 +134,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         registry: registry,
         ledger: ledger,
         forward: { true },
-        accepted: { $0 },
+        accepted: { $0 }
     )) ?? false
     check(denyPassed, "denying a root request needs no check")
 
@@ -233,13 +233,13 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         "approvalID": .string("r"),
         "tool": .string("shell_run"),
         "reason": .string("Runs as root."),
-        "detail": .object([RunCodeApproval.rootCommandDetail: argv(install)]),
+        "detail": .object([RunCodeApproval.rootCommandDetail: argv(install)])
     ]), title: "Install", posted: AgentNoticeMarks())
     check(rootNotice?.subtitle == .key("Root Approval Required"), "a root request's banner says so")
     let plainNotice = track.take("approvalRequested", payload: .object([
         "approvalID": .string("p"),
         "tool": .string("shell_run"),
-        "detail": .object(["command": argv(install)]),
+        "detail": .object(["command": argv(install)])
     ]), title: "Install", posted: AgentNoticeMarks())
     check(plainNotice?.subtitle == .key("Approval Required"), "an ordinary request's banner does not")
 
@@ -252,7 +252,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         project: project,
         installRoot: "/",
         home: mobileHome,
-        asRoot: true,
+        asRoot: true
     )
     check(rootEntries.contains("HOME=\(AgentRunCode.rootHome)"), "a run as root has root's own HOME")
     check(!rootEntries.contains("HOME=\(mobileHome)"), "and not mobile's")
@@ -269,11 +269,11 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         project: project,
         installRoot: "/",
         home: NSHomeDirectory(),
-        stopsSeen: AgentRunCode.stopCount(session: "root-run"),
+        stopsSeen: AgentRunCode.stopCount(session: "root-run")
     )
     check(
         response?.exitCode == 0 && response?.stdout.trimmingCharacters(in: .whitespacesAndNewlines) == String(geteuid()),
-        "a root run runs as the host itself, without dropping to mobile: \(String(describing: response))",
+        "a root run runs as the host itself, without dropping to mobile: \(String(describing: response))"
     )
 
     // MARK: A request that does not ask for root runs as mobile (invariant 1)
@@ -292,8 +292,8 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         AgentRunCodeRequest.self,
         from: Data(
             #"{"sessionID":"root-mobile","spec":{"argv":{"_0":["make"]}},"workingDirectory":".","timeoutSeconds":120,"approval":{"relaxed":{}}}"#
-                .utf8,
-        ),
+                .utf8
+        )
     )
     check(older?.asRoot == nil, "an older request has no asRoot field")
     if let older {
@@ -343,9 +343,9 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         (#"{"argv":{"_0":["irisin-cli","install","--yes","x"]}}"#, .argv(["irisin-cli", "install", "--yes", "x"])),
         (
             #"{"shell":{"_0":"irisin-cli install --yes x | tee log"}}"#,
-            .script(interpreter: "sh", source: "irisin-cli install --yes x | tee log"),
+            .script(interpreter: "sh", source: "irisin-cli install --yes x | tee log")
         ),
-        (#"{"script":{"interpreter":"python3","source":"print(1)"}}"#, .script(interpreter: "python3", source: "print(1)")),
+        (#"{"script":{"interpreter":"python3","source":"print(1)"}}"#, .script(interpreter: "python3", source: "print(1)"))
     ]
     let wire = await session("root-wire", mode: .confirm)
     for (index, shape) in wireShapes.enumerated() {
@@ -355,7 +355,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
             "approvalID": .string(id),
             "tool": .string("shell_run"),
             "workingDirectory": .string("."),
-            "detail": .object([RunCodeApproval.rootCommandDetail: detail]),
+            "detail": .object([RunCodeApproval.rootCommandDetail: detail])
         ]))
         await sessions.record(wire.sessionID, approvalID: id, decision: .approve)
         let run = AgentRunCodeRequest(sessionID: wire.sessionID, spec: shape.spec, approval: .user(approvalID: id), asRoot: true)
@@ -376,7 +376,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         task: reopened.task,
         project: reopened.project,
         mode: .confirm,
-        createdAt: Date(),
+        createdAt: Date()
     ))
     let afterReopen = await identity(reopened, install, .user(approvalID: "reopen-root"))
     check(afterReopen == nil, "a root approval does not survive a session reopen")
@@ -391,7 +391,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         entry: restarted,
         registry: registry,
         ledger: freshLedger,
-        installRoot: "/",
+        installRoot: "/"
     )
     check(afterRestart == nil, "Full does not survive a host restart")
     let freshMode = await freshLedger.mode(session: restarted.sessionID)
@@ -409,7 +409,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         task: registry.create(kind: .agent, owner: .agent, ownerKey: "opener-strict"),
         project: homeProject,
         mode: .confirm,
-        createdAt: Date(),
+        createdAt: Date()
     )
     let wantsFull = AgentOpenRequest(approvalMode: .full, prompt: "install the dependency")
     let strictChild = try? AgentConversationRules.childOpen(wantsFull, opener: strictOpener, target: other)
@@ -419,12 +419,12 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         task: registry.create(kind: .agent, owner: .agent, ownerKey: "opener-full"),
         project: homeProject,
         mode: .full,
-        createdAt: Date(),
+        createdAt: Date()
     )
     let fullChild = try? AgentConversationRules.childOpen(
         AgentOpenRequest(approvalMode: .confirm, prompt: "x"),
         opener: fullOpener,
-        target: other,
+        target: other
     )
     check(fullChild?.approvalMode == .full, "a Full opener's child is Full, from the opener alone")
 
@@ -435,13 +435,13 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         task: registry.create(kind: .agent, owner: .agent, ownerKey: "target-sess"),
         project: other,
         mode: .confirm,
-        createdAt: Date(),
+        createdAt: Date()
     )
     let childMessage = try? AgentConversationRules.childPrompt(
         AgentPromptRequest(sessionID: targetEntry.sessionID, text: "run as root", approvalMode: .full),
         sender: strictOpener,
         target: targetEntry,
-        descriptorCount: 0,
+        descriptorCount: 0
     )
     check(childMessage != nil, "an agent's message to another conversation is built")
     check(childMessage?.approvalMode == nil, "an agent's prompt carries no approval mode, so it cannot imply Full")
@@ -456,7 +456,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
     check(
         Set(rootEnvironment).subtracting(mobileEnvironment) == ["HOME=\(AgentRunCode.rootHome)"]
             && Set(mobileEnvironment).subtracting(rootEnvironment) == ["HOME=/var/mobile"],
-        "a root run's environment differs from a mobile run's by HOME alone: \(Set(rootEnvironment).symmetricDifference(mobileEnvironment))",
+        "a root run's environment differs from a mobile run's by HOME alone: \(Set(rootEnvironment).symmetricDifference(mobileEnvironment))"
     )
 
     // The timeout bounds a root run: a one-second cap kills a longer sleep,
@@ -467,7 +467,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         project: bounds,
         installRoot: "/",
         home: NSHomeDirectory(),
-        stopsSeen: AgentRunCode.stopCount(session: "root-timeout"),
+        stopsSeen: AgentRunCode.stopCount(session: "root-timeout")
     )
     check(timed?.timedOut == true && timed?.exitCode == -1, "the timeout kills a root run that overruns: \(String(describing: timed))")
 
@@ -478,7 +478,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         project: bounds,
         installRoot: "/",
         home: NSHomeDirectory(),
-        stopsSeen: 0,
+        stopsSeen: 0
     )
     check(escaped == nil, "a root run cannot leave the project")
 
@@ -489,7 +489,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         project: bounds,
         installRoot: "/",
         home: NSHomeDirectory(),
-        stopsSeen: 0,
+        stopsSeen: 0
     )
     check(ranged == nil, "a root run's timeout is bounded")
 
@@ -501,16 +501,16 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
             spec: .script(interpreter: "sh", source: "yes x | head -c 400000"),
             timeoutSeconds: 10,
             approval: .relaxed,
-            asRoot: true,
+            asRoot: true
         ),
         as: .root,
         project: bounds,
         installRoot: "/",
         home: NSHomeDirectory(),
-        stopsSeen: 0,
+        stopsSeen: 0
     )
     check(
         loud?.truncated == true && loud?.stdout.utf8.count == 256 * 1024,
-        "a root run's output is capped: \(loud?.stdout.utf8.count ?? -1) bytes, truncated \(String(describing: loud?.truncated))",
+        "a root run's output is capped: \(loud?.stdout.utf8.count ?? -1) bytes, truncated \(String(describing: loud?.truncated))"
     )
 }

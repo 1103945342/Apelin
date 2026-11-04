@@ -16,12 +16,12 @@ final class TaskLogController: UIViewController {
     private let pacing = ListPacing()
 
     private lazy var dataSource = UITableViewDiffableDataSource<Int, Int>(
-        tableView: tableView,
+        tableView: tableView
     ) { [weak self] table, indexPath, line in
         let cell = table.dequeueReusableCell(withIdentifier: TaskLogCell.reuseIdentifier, for: indexPath)
         (cell as? TaskLogCell)?.configure(
             number: line + 1,
-            message: self.flatMap { $0.lines.indices.contains(line) ? $0.lines[line] : nil } ?? "",
+            message: self.flatMap { $0.lines.indices.contains(line) ? $0.lines[line] : nil } ?? ""
         )
         return cell
     }
@@ -43,7 +43,7 @@ final class TaskLogController: UIViewController {
         navigationItem.largeTitleDisplayMode = .never
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             systemItem: .action,
-            primaryAction: UIAction { [weak self] _ in self?.share() },
+            primaryAction: UIAction { [weak self] _ in self?.share() }
         ).then { $0.accessibilityLabel = String(localized: "Share Log") }
 
         tableView.backgroundColor = .pageBackground
@@ -123,13 +123,13 @@ private final class TaskLogCell: UITableViewCell {
         selectionStyle = .none
         numberLabel.font = .monospacedSystemFont(
             ofSize: UIFont.preferredFont(forTextStyle: .caption2).pointSize,
-            weight: .regular,
+            weight: .regular
         )
         numberLabel.textColor = .secondaryLabel
         numberLabel.textAlignment = .right
         messageLabel.font = .monospacedSystemFont(
             ofSize: UIFont.preferredFont(forTextStyle: .footnote).pointSize,
-            weight: .regular,
+            weight: .regular
         )
         messageLabel.textColor = .label
         messageLabel.numberOfLines = 0

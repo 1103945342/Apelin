@@ -16,7 +16,7 @@ public struct TodoRecord: Codable, Equatable, Sendable, Identifiable {
         id: String = UUID().uuidString.lowercased(),
         title: String,
         status: TodoStatus,
-        sessionID: String,
+        sessionID: String
     ) {
         self.id = id
         self.title = title

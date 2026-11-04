@@ -39,8 +39,8 @@ struct HostDigestLedger: ApprovalDigestStore {
             return DescriptionState(
                 digest: digest,
                 baseline: .changed(
-                    diff: "The \(kind.rawValue) description is \(digest), not \(against); review apelin-project.json.",
-                ),
+                    diff: "The \(kind.rawValue) description is \(digest), not \(against); review apelin-project.json."
+                )
             )
         }
     }
@@ -69,8 +69,8 @@ struct HostDigestLedger: ApprovalDigestStore {
             return DescriptionState(
                 digest: digest,
                 baseline: .changed(
-                    diff: "This package's control file, maintainer scripts or installed paths are \(digest), which you have not approved for this workspace; review the package before it is installed.",
-                ),
+                    diff: "This package's control file, maintainer scripts or installed paths are \(digest), which you have not approved for this workspace; review the package before it is installed."
+                )
             )
         }
     }

@@ -21,7 +21,7 @@ final class FileNameTests: XCTestCase {
             ("spotlight_heartbeat_last.log", "spotlight_heartbeat_last", .other, false),
             // A basebin reporter's epoch and pid, with and without the dot.
             ("launchd-1789883447.990538-1-2026-09-20-135048.ips", "launchd", .crash, false),
-            ("jailbreakd-178988300887279-891-2026-09-20-134328.ips", "jailbreakd", .crash, false),
+            ("jailbreakd-178988300887279-891-2026-09-20-134328.ips", "jailbreakd", .crash, false)
         ]
         for (fileName, process, kind, synced) in cases {
             let parsed = ReportFileName(fileName)
@@ -57,11 +57,11 @@ final class FileNameTests: XCTestCase {
     func testGroupBeforeTheFileIsOpened() {
         XCTAssertEqual(
             ReportDecoder.summary(path: "/a/Fila-2026-09-08-191717.ips", byteCount: 1, modified: .now).group,
-            .service,
+            .service
         )
         XCTAssertEqual(
             ReportDecoder.summary(path: "/a/JetsamEvent-2026-09-10-101010.ips", byteCount: 1, modified: .now).group,
-            .jetsam,
+            .jetsam
         )
     }
 }

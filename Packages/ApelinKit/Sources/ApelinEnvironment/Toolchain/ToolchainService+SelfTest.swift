@@ -14,7 +14,7 @@ public extension ToolchainService {
         guard Self.exists(record.path) else {
             throw ApelinError(
                 .conflict,
-                "The files for \(record.id) are missing. Remove the toolchain and set it up again.",
+                "The files for \(record.id) are missing. Remove the toolchain and set it up again."
             )
         }
         return record
@@ -26,7 +26,7 @@ public extension ToolchainService {
     func selfTest(
         _ record: ToolchainRecord,
         taskID: TaskID,
-        reporter: TaskReporter,
+        reporter: TaskReporter
     ) async throws -> ToolchainRecord {
         reporter.stage("validating")
         let swift = record.components.contains { $0.kind == .swift }
@@ -39,7 +39,7 @@ public extension ToolchainService {
             guard let product = try await backend.catalog().first(where: { $0.productID == productID }) else {
                 throw ApelinError(
                     .notFound,
-                    "Apple's catalog no longer lists \(productID ?? record.id) to pick an SDK for",
+                    "Apple's catalog no longer lists \(productID ?? record.id) to pick an SDK for"
                 )
             }
             sdk = try Self.selfTestSDK(for: product, among: registered, swift: swift)
@@ -60,10 +60,10 @@ public extension ToolchainService {
                         "validating",
                         completed: update.completed,
                         total: update.total,
-                        detail: update.detail.isEmpty ? nil : update.detail,
+                        detail: update.detail.isEmpty ? nil : update.detail
                     )
                 }
-            },
+            }
         )
         try reporter.checkCancelled()
 

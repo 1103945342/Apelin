@@ -51,7 +51,7 @@ enum GitHandler: DomainHandler {
     /// repository made on GitHub, which AgentRepositoryCreateRules decides,
     /// and an issue opened on one, which AgentIssueCreateRules decides.
     private static let unscoped: Set<AppOperation> = [
-        .gitSettings, .gitAuthorSet, .gitCredentialSet, .gitCredentialRemove, .gitRepositoryCreate, .gitIssueCreate,
+        .gitSettings, .gitAuthorSet, .gitCredentialSet, .gitCredentialRemove, .gitRepositoryCreate, .gitIssueCreate
     ]
 
     /// An agent's git call acts on its own session's project and no other:

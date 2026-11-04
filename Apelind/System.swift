@@ -9,7 +9,7 @@ import XPC
 func daemonCreateMachServiceListener(
     _ name: UnsafePointer<CChar>,
     _ queue: DispatchQueue?,
-    _ flags: UInt64,
+    _ flags: UInt64
 ) -> xpc_connection_t?
 
 @_silgen_name("xpc_connection_get_audit_token")

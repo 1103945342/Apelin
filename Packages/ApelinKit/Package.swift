@@ -22,7 +22,7 @@ import PackageDescription
 /// packager greps every shipped binary for the repository root. Package
 /// targets do not inherit Configuration/Base.xcconfig, so it is set here.
 let swiftSettings: [SwiftSetting] = [
-    .enableUpcomingFeature("ConciseMagicFile"),
+    .enableUpcomingFeature("ConciseMagicFile")
 ]
 
 let package = Package(
@@ -36,7 +36,7 @@ let package = Package(
         .library(name: "ApelinProject", targets: ["ApelinProject"]),
         .library(name: "ApelinGit", targets: ["ApelinGit"]),
         .library(name: "ApelinConsole", targets: ["ApelinConsole"]),
-        .library(name: "ApelinReplay", targets: ["ApelinReplay"]),
+        .library(name: "ApelinReplay", targets: ["ApelinReplay"])
     ],
     dependencies: [
         .package(url: "https://github.com/Lakr233/libgit2.xcframework.git", from: "1.0.0"),
@@ -46,7 +46,7 @@ let package = Package(
         .package(path: "../ApelinFormats"),
         // The device-side Command Line Tools download, retarget and
         // self-test (apelin-environment's RetargetToolchainBackend).
-        .package(path: "../ApelinToolchain"),
+        .package(path: "../ApelinToolchain")
     ],
     targets: [
         // System only: paths, the data folder, project naming, JSON.
@@ -67,9 +67,9 @@ let package = Package(
                 .product(name: "ApelinMachO", package: "ApelinFormats"),
                 .product(name: "ApelinDebian", package: "ApelinFormats"),
                 .product(name: "ApelinDebArchive", package: "ApelinFormats"),
-                .product(name: "ApelinToolchain", package: "ApelinToolchain"),
+                .product(name: "ApelinToolchain", package: "ApelinToolchain")
             ],
-            swiftSettings: swiftSettings,
+            swiftSettings: swiftSettings
         ),
         // apelin-build: compile, link, lipo, dSYM, strip, sign, package.
         .target(
@@ -79,9 +79,9 @@ let package = Package(
                 .product(name: "ApelinMachO", package: "ApelinFormats"),
                 .product(name: "ApelinCodeSign", package: "ApelinFormats"),
                 .product(name: "ApelinDebian", package: "ApelinFormats"),
-                .product(name: "ApelinDebArchive", package: "ApelinFormats"),
+                .product(name: "ApelinDebArchive", package: "ApelinFormats")
             ],
-            swiftSettings: swiftSettings,
+            swiftSettings: swiftSettings
         ),
         // apelin-project.json, extension manifests, templates, project checks.
         .target(name: "ApelinProject", dependencies: ["ApelinCore", "ApelinProtocol"], swiftSettings: swiftSettings),
@@ -91,9 +91,9 @@ let package = Package(
             name: "ApelinGit",
             dependencies: [
                 "ApelinCore",
-                .product(name: "GitKit", package: "libgit2.xcframework"),
+                .product(name: "GitKit", package: "libgit2.xcframework")
             ],
-            swiftSettings: swiftSettings,
+            swiftSettings: swiftSettings
         ),
 
         // Never shipped: the real EnvironmentWorker with a fake toolchain
@@ -103,10 +103,10 @@ let package = Package(
             name: "apelin-environment-harness",
             dependencies: [
                 "ApelinCore", "ApelinProtocol", "ApelinEnvironment",
-                .product(name: "ApelinDebArchive", package: "ApelinFormats"),
+                .product(name: "ApelinDebArchive", package: "ApelinFormats")
             ],
             path: "Tests/EnvironmentHarness",
-            swiftSettings: swiftSettings,
+            swiftSettings: swiftSettings
         ),
 
         // The app's console: scripts, `${…}`, expect, follow, the inbox and
@@ -122,7 +122,7 @@ let package = Package(
             name: "ApelinReplay",
             dependencies: ["ApelinCore", "ApelinProtocol"],
             resources: [.copy("Fixtures")],
-            swiftSettings: swiftSettings,
+            swiftSettings: swiftSettings
         ),
 
         .testTarget(name: "ApelinCoreTests", dependencies: ["ApelinCore"]),
@@ -133,18 +133,18 @@ let package = Package(
                 "ApelinEnvironment", "ApelinGit", "ApelinProject", "ApelinProtocol",
                 .product(name: "ArchiveKit", package: "libarchive.xcframework"),
                 .product(name: "ApelinDebArchive", package: "ApelinFormats"),
-                .product(name: "ApelinDebian", package: "ApelinFormats"),
-            ],
+                .product(name: "ApelinDebian", package: "ApelinFormats")
+            ]
         ),
         .testTarget(name: "ApelinBuildTests", dependencies: [
             "ApelinBuild", "ApelinProject",
             .product(name: "ApelinMachO", package: "ApelinFormats"),
-            .product(name: "ApelinDebArchive", package: "ApelinFormats"),
+            .product(name: "ApelinDebArchive", package: "ApelinFormats")
         ]),
         .testTarget(name: "ApelinProjectTests", dependencies: ["ApelinProject"]),
         .testTarget(name: "ApelinGitTests", dependencies: ["ApelinGit"]),
         .testTarget(name: "ApelinConsoleTests", dependencies: ["ApelinConsole", "ApelinCore", "ApelinProtocol"]),
-        .testTarget(name: "ApelinReplayTests", dependencies: ["ApelinReplay", "ApelinCore", "ApelinProtocol"]),
+        .testTarget(name: "ApelinReplayTests", dependencies: ["ApelinReplay", "ApelinCore", "ApelinProtocol"])
     ],
-    swiftLanguageVersions: [.v5],
+    swiftLanguageVersions: [.v5]
 )

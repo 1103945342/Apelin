@@ -31,7 +31,7 @@ func agentNoticeChecks() async {
     check(AgentNoticeText.excerpt("Done. The tweak builds.\n\nMore below.") == "Done. The tweak builds.", "an excerpt is the first paragraph")
     check(
         AgentNoticeText.excerpt("## Summary\n\nThe **tweak** hides the `dock`, see [the log](https://example.com/log).") == "The tweak hides the dock, see the log.",
-        "headings are passed over, emphasis, code marks and link targets taken off",
+        "headings are passed over, emphasis, code marks and link targets taken off"
     )
     check(AgentNoticeText.excerpt("```swift\nlet x = 1\n```\nIt compiles.") == "It compiles.", "a leading code block is passed over")
     check(AgentNoticeText.excerpt("It compiles:\n```\nok\n```\nand runs.") == "It compiles:", "a code block ends the paragraph")
@@ -56,13 +56,13 @@ func agentNoticeChecks() async {
     _ = track.take("toolCall", payload: object([
         "id": .string("call-1"),
         "tool": .string("apelin_project_build"),
-        "arguments": .string(#"{"reason":"Build the tweak to check it compiles"}"#),
+        "arguments": .string(#"{"reason":"Build the tweak to check it compiles"}"#)
     ]), title: nil, posted: none)
     let approval = track.take("approvalRequested", payload: object([
         "approvalID": .string("a-1"),
         "toolCallID": .string("call-1"),
         "tool": .string("apelin_project_build"),
-        "reason": .string("The build description changed. Review it before running."),
+        "reason": .string("The build description changed. Review it before running.")
     ]), title: nil, posted: none)
     check(
         approval == AgentNotice(
@@ -70,9 +70,9 @@ func agentNoticeChecks() async {
             sessionID: session,
             title: .verbatim("Hide the dock"),
             subtitle: .key("Approval Required"),
-            body: .verbatim("Build the tweak to check it compiles"),
+            body: .verbatim("Build the tweak to check it compiles")
         ),
-        "an approval is named by the first message until the session has a title, and says the call's reason: \(String(describing: approval))",
+        "an approval is named by the first message until the session has a title, and says the call's reason: \(String(describing: approval))"
     )
     check(approval?.link == "apelin://conversation/\(session)", "a tap opens the conversation")
     _ = track.take("message", payload: object(["text": .string("I will build it.")]), title: nil, posted: none)
@@ -83,9 +83,9 @@ func agentNoticeChecks() async {
             identifier: "\(session).turn.1",
             sessionID: session,
             title: .verbatim("Dock Hider"),
-            body: .verbatim("I will build it."),
+            body: .verbatim("I will build it.")
         ),
-        "a completed turn says its last message with text, under the session's title: \(String(describing: finished))",
+        "a completed turn says its last message with text, under the session's title: \(String(describing: finished))"
     )
 
     let quiet = track.take("finished", payload: object(["reason": .string("completed")]), title: "Dock Hider", posted: none)
@@ -96,17 +96,17 @@ func agentNoticeChecks() async {
     let failed = track.take("finished", payload: object(["reason": .string("failed")]), title: nil, posted: none)
     check(
         failed?.subtitle == .key("Failed") && failed?.body == .verbatim("The model provider returned an error. Try again."),
-        "a failed turn says its error",
+        "a failed turn says its error"
     )
     let gate = track.take("approvalRequested", payload: object([
         "approvalID": .string("a-2"),
         "toolCallID": .string("call-1"),
-        "reason": .string("This command is not in your approved presets. Review it before running."),
+        "reason": .string("This command is not in your approved presets. Review it before running.")
     ]), title: nil, posted: none)
     check(
         gate?.body == .verbatim("This command is not in your approved presets. Review it before running.")
             && gate?.identifier == "\(session).approval.2",
-        "a call whose reason is gone with its turn says why the gate asked",
+        "a call whose reason is gone with its turn says why the gate asked"
     )
 
     var untitled = AgentNoticeTrack(sessionID: session)
@@ -130,7 +130,7 @@ func agentNoticeChecks() async {
     _ = notifying.take("prompt", payload: object(["text": .string("Set up the toolchain")]), title: nil, posted: none)
     let notice = notifying.take("notice", payload: object([
         "title": .string("Toolchain ready"),
-        "body": .string("CLT 16.4 is set up.\nUnlock the phone so I can test it."),
+        "body": .string("CLT 16.4 is set up.\nUnlock the phone so I can test it.")
     ]), title: "Toolchain", posted: none)
     check(
         notice == AgentNotice(
@@ -138,16 +138,16 @@ func agentNoticeChecks() async {
             sessionID: session,
             title: .verbatim("Toolchain"),
             subtitle: .verbatim("Toolchain ready"),
-            body: .verbatim("CLT 16.4 is set up. Unlock the phone so I can test it."),
+            body: .verbatim("CLT 16.4 is set up. Unlock the phone so I can test it.")
         ),
-        "a notice is headed by the conversation, its title the subtitle, its body one plain line: \(String(describing: notice))",
+        "a notice is headed by the conversation, its title the subtitle, its body one plain line: \(String(describing: notice))"
     )
     check(notice?.link == "apelin://conversation/\(session)", "a notice's tap opens the conversation")
     let untitledNotice = notifying.take("notice", payload: object(["body": .string(String(repeating: "x", count: 400))]), title: nil, posted: none)
     check(
         untitledNotice?.subtitle == nil && untitledNotice?.title == .verbatim("Set up the toolchain")
             && untitledNotice?.body == .verbatim(String(repeating: "x", count: AgentNoticeRules.maximumBodyLength - 1) + "…"),
-        "one without a title has no subtitle, and a body past the limit is cut",
+        "one without a title has no subtitle, and a body past the limit is cut"
     )
     let blank = notifying.take("notice", payload: object(["body": .string(" \n ")]), title: nil, posted: none)
     let fourth = notifying.take("notice", payload: object(["body": .string("One too many.")]), title: nil, posted: none)
@@ -165,14 +165,14 @@ func agentNoticeChecks() async {
         "notice",
         payload: object(["body": .string("Seen.")]),
         title: nil,
-        posted: AgentNoticeMarks(notices: 100),
+        posted: AgentNoticeMarks(notices: 100)
     )
     check(counted == nil, "a notice the marks already count posts nothing")
     var headlessNotices = AgentNoticeTrack(sessionID: session, headless: true)
     check(
         headlessNotices.take("notice", payload: object(["body": .string("Done.")]), title: nil, posted: none) == nil
             && headlessNotices.marks.notices == 1,
-        "a headless session posts no notice",
+        "a headless session posts no notice"
     )
     let older = try? JSONDecoder().decode(AgentNoticeMarks.self, from: Data(#"{"turns":2,"approvals":1}"#.utf8))
     check(older == AgentNoticeMarks(turns: 2, approvals: 1, notices: 0), "marks saved before notices still read: \(String(describing: older))")
@@ -194,13 +194,13 @@ func agentNoticeChecks() async {
             lastSeq: .start,
             owner: .agent,
             ownerKey: owner ?? session,
-            cancelRequested: false,
+            cancelRequested: false
         )
     }
     let turn: [(String, JSONValue?)] = [
         ("prompt", object(["text": .string("Hide the dock")])),
         ("message", object(["text": .string("Built.")])),
-        ("finished", object(["reason": .string("completed")])),
+        ("finished", object(["reason": .string("completed")]))
     ]
 
     let first = TaskID.make()
@@ -221,7 +221,7 @@ func agentNoticeChecks() async {
     }
     check(
         posted.all.map(\.identifier) == ["\(session).turn.1", "\(session).turn.2"],
-        "the replayed turn posts nothing, the new one does: \(posted.all.map(\.identifier))",
+        "the replayed turn posts nothing, the new one does: \(posted.all.map(\.identifier))"
     )
     check(posted.all.last?.body == .key("Done"), "a turn's message is its own, not the replayed one's")
 
@@ -246,7 +246,7 @@ func agentNoticeChecks() async {
     await pruned.relayed(record(TaskID.make(), session: other), kind: "finished", payload: object(["reason": .string("completed")]))
     check(
         saved()?[session] == nil && saved()?[other] == AgentNoticeMarks(turns: 1, approvals: 0) && posted.all.count == 3,
-        "a gone session's marks are dropped: \(String(describing: saved()))",
+        "a gone session's marks are dropped: \(String(describing: saved()))"
     )
 
     // A notice the agent sent is not sent again when the session reopens.
@@ -256,7 +256,7 @@ func agentNoticeChecks() async {
     let noticeTurn: [(String, JSONValue?)] = [
         ("prompt", object(["text": .string("Build and install it")])),
         ("notice", object(["body": .string("The build failed: a header is missing.")])),
-        ("finished", object(["reason": .string("completed")])),
+        ("finished", object(["reason": .string("completed")]))
     ]
     let live = TaskID.make()
     var notifierNotices = AgentNotices(file: file, sessions: sessions) { sent.append($0) }
@@ -272,7 +272,7 @@ func agentNoticeChecks() async {
     }
     check(
         sent.all.map(\.identifier) == ["\(notifier).notice.1", "\(notifier).turn.1", "\(notifier).notice.2"],
-        "the replayed notice posts nothing, the new one does: \(sent.all.map(\.identifier))",
+        "the replayed notice posts nothing, the new one does: \(sent.all.map(\.identifier))"
     )
     check(saved()?[notifier] == AgentNoticeMarks(turns: 1, approvals: 0, notices: 2), "a session's notices are on disk: \(String(describing: saved()))")
 }

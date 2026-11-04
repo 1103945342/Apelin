@@ -12,7 +12,7 @@ import UIKit
 /// Irisin's type ramp so the copied page retains its original appearance.
 enum WelcomeStyle {
     static let accent = AppAccent.color(
-        glass: UIColor(light: UIColor(hex: 0x278EFF), dark: UIColor(hex: 0x58A6FF)),
+        glass: UIColor(light: UIColor(hex: 0x278EFF), dark: UIColor(hex: 0x58A6FF))
     )
     /// The title on the filled button, whose ground is `accent`.
     static let accentForeground = AppAccent.foreground(glass: .white)

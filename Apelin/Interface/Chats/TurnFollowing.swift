@@ -42,7 +42,7 @@ enum TurnFollowing {
         offset: CGFloat,
         latest: CGFloat,
         messageTop: CGFloat,
-        topInset: CGFloat,
+        topInset: CGFloat
     ) -> Move {
         guard pace.isFast else { return .latest }
         let limit = messageTop - topInset

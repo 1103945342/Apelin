@@ -52,14 +52,14 @@ struct ProjectCreationTests {
         let arguments: JSONValue = .object([
             "template": "wiki.qaq.apelin.dev.tweak/tweak",
             "name": "Lock Screen Clock",
-            "values": .object(["filter": "com.apple.springboard", "verbose": .bool(true), "count": .int(3)]),
+            "values": .object(["filter": "com.apple.springboard", "verbose": .bool(true), "count": .int(3)])
         ])
         let created = try await runner.run(.local(.projectCreate), toolCallID: "call-2", arguments: arguments, cancellation: nil, mcp: nil)
         #expect(text(created).contains("project-1"))
         #expect(await backend.calls == [.createProject(
             template: "wiki.qaq.apelin.dev.tweak/tweak",
             name: "Lock Screen Clock",
-            values: ["filter": .string("com.apple.springboard"), "verbose": .boolean(true), "count": .integer(3)],
+            values: ["filter": .string("com.apple.springboard"), "verbose": .boolean(true), "count": .integer(3)]
         )])
     }
 
@@ -76,7 +76,7 @@ struct ProjectCreationTests {
             _ = try await runner.run(.local(.projectCreate), toolCallID: UUID().uuidString, arguments: .object([
                 "template": "wiki.qaq.apelin.dev.tweak/objc-hook",
                 "name": "Settings Tweak",
-                "values": values,
+                "values": values
             ]), cancellation: nil, mcp: nil)
         }
         try await create(["filterBundles": ["com.apple.springboard", "com.apple.Preferences"], "displayName": "X"])
@@ -86,14 +86,14 @@ struct ProjectCreationTests {
             .createProject(
                 template: "wiki.qaq.apelin.dev.tweak/objc-hook",
                 name: "Settings Tweak",
-                values: ["filterBundles": .list(["com.apple.springboard", "com.apple.Preferences"]), "displayName": .string("X")],
+                values: ["filterBundles": .list(["com.apple.springboard", "com.apple.Preferences"]), "displayName": .string("X")]
             ),
-            .createProject(template: "wiki.qaq.apelin.dev.tweak/objc-hook", name: "Settings Tweak", values: ["filterBundles": .list([])]),
+            .createProject(template: "wiki.qaq.apelin.dev.tweak/objc-hook", name: "Settings Tweak", values: ["filterBundles": .list([])])
         ])
         for (values, expected) in [
             (["filterBundles": [1]], "filterBundles: a list holds strings only"),
             (["filterBundles": [[:]]], "filterBundles: a list holds strings only"),
-            (["displayName": "X", "filterBundles": ["bundles": "com.apple.Preferences"]], "filterBundles must be a string, boolean, integer or list of strings"),
+            (["displayName": "X", "filterBundles": ["bundles": "com.apple.Preferences"]], "filterBundles must be a string, boolean, integer or list of strings")
         ] as [(JSONValue, String)] {
             let error = await #expect(throws: ToolArgumentError.self) { try await create(values) }
             #expect(error?.message.hasPrefix(expected) == true, "\(error?.message ?? "no error")")
@@ -105,7 +105,7 @@ struct ProjectCreationTests {
     func `a template value round-trips as the JSON it stands for`() throws {
         let values: [String: TemplateValue] = [
             "filterBundles": .list(["com.apple.Preferences"]), "displayName": .string("X"),
-            "verbose": .boolean(true), "count": .integer(3),
+            "verbose": .boolean(true), "count": .integer(3)
         ]
         let data = try JSONEncoder().encode(values)
         #expect(try JSONDecoder().decode([String: JSONValue].self, from: data)["filterBundles"] == ["com.apple.Preferences"])

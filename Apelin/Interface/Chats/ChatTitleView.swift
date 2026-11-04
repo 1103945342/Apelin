@@ -60,7 +60,7 @@ final class ChatTitleView: UIView {
     private static var font: UIFont {
         UIFont.preferredFont(
             forTextStyle: .headline,
-            compatibleWith: UITraitCollection(preferredContentSizeCategory: .large),
+            compatibleWith: UITraitCollection(preferredContentSizeCategory: .large)
         )
     }
 
@@ -188,7 +188,7 @@ final class ChatTitleView: UIView {
             CFRange(location: 0, length: 0),
             nil,
             CGSize(width: width, height: .greatestFiniteMagnitude),
-            nil,
+            nil
         )
         return size.height <= height + 0.5
     }
@@ -245,7 +245,7 @@ final class ChatTitleView: UIView {
         return [
             .font: font,
             .foregroundColor: UIColor.label,
-            .paragraphStyle: paragraph,
+            .paragraphStyle: paragraph
         ]
     }
 
@@ -259,7 +259,7 @@ final class ChatTitleView: UIView {
         return [
             .font: twoLineFont,
             .foregroundColor: UIColor.label,
-            .paragraphStyle: paragraph,
+            .paragraphStyle: paragraph
         ]
     }
 
@@ -268,7 +268,7 @@ final class ChatTitleView: UIView {
         var textAttributes = attributes(indent: 0)
         textAttributes[.font] = font
         let line = CTLineCreateWithAttributedString(
-            NSAttributedString(string: text, attributes: textAttributes),
+            NSAttributedString(string: text, attributes: textAttributes)
         )
         return ceil(CGFloat(CTLineGetTypographicBounds(line, nil, nil, nil)))
     }

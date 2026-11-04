@@ -20,7 +20,7 @@ final class SignInRecorder: @unchecked Sendable {
     var reporter: SignInReporter {
         SignInReporter(
             emit: { [self] _, kind, payload in lock.withLock { recorded.append(Event(kind: kind, payload: payload)) } },
-            finish: { [self] _, state, message in lock.withLock { ended = (state, message) } },
+            finish: { [self] _, state, message in lock.withLock { ended = (state, message) } }
         )
     }
 
@@ -119,7 +119,7 @@ struct AccountDeskTests {
             let code = OAuthLogin.DeviceCode(
                 code: "ABCD-1234",
                 verificationURL: URL(string: "https://github.com/login/device")!,
-                pageHoldsCode: false,
+                pageHoldsCode: false
             )
             await callbacks.onDeviceCode?(code)
             return try await callbacks.browser!.run(code.verificationURL) {
@@ -162,7 +162,7 @@ struct AccountDeskTests {
         #expect(recorder.events == [SignInRecorder.Event(kind: "deviceCode", payload: .object([
             "code": .string("ABCD-1234"),
             "verificationURL": .string("https://github.com/login/device"),
-            "pageHoldsCode": .bool(false),
+            "pageHoldsCode": .bool(false)
         ]))])
 
         // A device flow takes nothing from the app.
@@ -205,7 +205,7 @@ struct AccountDeskTests {
 
         try await desk.respond(AgentSignInRespondRequest(
             taskID: TaskID("t2"),
-            fields: [.callbackURL: "http://localhost:53692/callback?code=c1&state=s1"],
+            fields: [.callbackURL: "http://localhost:53692/callback?code=c1&state=s1"]
         ))
         try await recorder.waitFor { $0.state != nil }
         #expect(recorder.state == .succeeded)
@@ -227,7 +227,7 @@ struct AccountDeskTests {
         #expect(fields == .array([
             .object(["key": .string("apiKey"), "required": .bool(true), "secure": .bool(true)]),
             .object(["key": .string("baseUrl"), "required": .bool(true), "secure": .bool(false), "placeholder": .string("https://…")]),
-            .object(["key": .string("defaultModel"), "required": .bool(true), "secure": .bool(false)]),
+            .object(["key": .string("defaultModel"), "required": .bool(true), "secure": .bool(false)])
         ]))
 
         // Each refusal names the field and never what was typed.
@@ -236,7 +236,7 @@ struct AccountDeskTests {
             [.apiKey: "sk-SECRET", .baseURL: "ftp://example.invalid", .defaultModel: "m"],
             [.apiKey: "sk-SECRET", .baseURL: "https://user:pw@example.invalid", .defaultModel: "m"],
             [.apiKey: "sk SECRET", .baseURL: "https://example.invalid", .defaultModel: "m"],
-            [.apiKey: "sk-SECRET", .baseURL: "https://example.invalid", .defaultModel: "m", .callbackURL: "x"],
+            [.apiKey: "sk-SECRET", .baseURL: "https://example.invalid", .defaultModel: "m", .callbackURL: "x"]
         ]
         for values in refusals {
             do {
@@ -250,7 +250,7 @@ struct AccountDeskTests {
         #expect(recorder.state == nil)
 
         try await desk.respond(AgentSignInRespondRequest(taskID: task, fields: [
-            .apiKey: " sk-SECRET\n", .baseURL: "https://llm.example.invalid/v1", .defaultModel: "test-model",
+            .apiKey: " sk-SECRET\n", .baseURL: "https://llm.example.invalid/v1", .defaultModel: "test-model"
         ]))
         try await recorder.waitFor { $0.state != nil }
         #expect(recorder.state == .succeeded)
@@ -288,12 +288,12 @@ struct AccountDeskTests {
         #expect(recorder.events[0].payload?["fields"] == .array([
             .object([
                 "key": .string("apiKey"), "required": .bool(true), "secure": .bool(true),
-                "placeholder": .string("sk-ant-api03-…"),
+                "placeholder": .string("sk-ant-api03-…")
             ]),
             .object([
                 "key": .string("baseUrl"), "required": .bool(false), "secure": .bool(false),
-                "defaultValue": .string("https://api.anthropic.com"),
-            ]),
+                "defaultValue": .string("https://api.anthropic.com")
+            ])
         ]))
         try await desk.respond(AgentSignInRespondRequest(taskID: TaskID("t4"), fields: [.apiKey: "sk-ant-SECRET", .baseURL: ""]))
         try await recorder.waitFor { $0.state != nil }
@@ -415,7 +415,7 @@ struct AccountDeskTests {
         await #expect(throws: ApelinError.self) { try await desk.apiConfiguration(for: .githubCopilot) }
         await #expect(throws: ApelinError.self) { try await desk.apiConfiguration(for: .openAI) }
         let defaultDesk = AccountDesk(store: DeliveredCredentialSource([
-            "anthropic-api-key": OAuthCredentials(access: "test-default-key", refresh: "", expires: .max),
+            "anthropic-api-key": OAuthCredentials(access: "test-default-key", refresh: "", expires: .max)
         ]))
         let defaults = try await defaultDesk.apiConfiguration(for: .anthropic)
         #expect(defaults.values["baseUrl"] == "https://api.anthropic.com")
@@ -495,7 +495,7 @@ struct AccountDeskTests {
         await #expect(throws: ApelinError.self) {
             try await desk.respond(AgentSignInRespondRequest(
                 taskID: TaskID("t6"),
-                fields: [.callbackURL: "http://localhost:53692/callback?code=c1&state=s1"],
+                fields: [.callbackURL: "http://localhost:53692/callback?code=c1&state=s1"]
             ))
         }
         #expect(await desk.cancel(TaskID("t7")))
@@ -624,7 +624,7 @@ struct AccountDeskTests {
     @Test
     func `each key form asks for a key first, as KWWKCli's does`() {
         #expect(SignInKeyForms.all.map(\.provider) == [
-            .anthropic, .openAI, .google, .deepSeek, .openCodeGo, .openCodeZen, .openRouter, .openAICompatible,
+            .anthropic, .openAI, .google, .deepSeek, .openCodeGo, .openCodeZen, .openRouter, .openAICompatible
         ])
         for form in SignInKeyForms.all {
             #expect(form.fields.first == KeyField(field: .apiKey, required: true, placeholder: form.fields.first?.placeholder))
@@ -650,7 +650,7 @@ struct AccountDeskTests {
             let code = OAuthLogin.DeviceCode(
                 code: "KIMI-0001",
                 verificationURL: URL(string: "https://www.kimi.com/code/authorize_device?user_code=KIMI-0001")!,
-                pageHoldsCode: true,
+                pageHoldsCode: true
             )
             await callbacks.onDeviceCode?(code)
             return try await callbacks.browser!.run(code.verificationURL) {
@@ -660,7 +660,7 @@ struct AccountDeskTests {
             }
         }
         let previous = OAuthCredentials(access: "old-SECRET", refresh: "old-refresh-SECRET", expires: 1, extras: [
-            KimiIdentity.deviceIDExtra: .string("0123456789abcdef0123456789abcdef"),
+            KimiIdentity.deviceIDExtra: .string("0123456789abcdef0123456789abcdef")
         ])
         let store = DeliveredCredentialSource([site.storeID: previous])
         let desk = AccountDesk(store: store, login: login, listener: Self.silent, verifyKey: { _, _, _ in })
@@ -703,7 +703,7 @@ struct AccountDeskTests {
         try await recorder.waitFor { !$0.events.isEmpty }
         #expect(recorder.events == [SignInRecorder.Event(kind: "authorize", payload: .object([
             "url": .string("https://cursor.com/loginDeepControl?uuid=u"),
-            "acceptsCallbackURL": .bool(false),
+            "acceptsCallbackURL": .bool(false)
         ]))])
         do {
             try await desk.respond(AgentSignInRespondRequest(taskID: TaskID("c1"), fields: [.callbackURL: "http://localhost:1/x?code=c"]))
@@ -746,12 +746,12 @@ struct AccountDeskTests {
         #expect(recorder.events[0].payload?["fields"] == .array([
             .object([
                 "key": .string("apiKey"), "required": .bool(true), "secure": .bool(true),
-                "placeholder": .string("sk-or-v1-…"),
+                "placeholder": .string("sk-or-v1-…")
             ]),
             .object([
                 "key": .string("defaultModel"), "required": .bool(false), "secure": .bool(false),
-                "placeholder": .string("anthropic/claude-sonnet-5"),
-            ]),
+                "placeholder": .string("anthropic/claude-sonnet-5")
+            ])
         ]))
         // OpenRouter's form has no endpoint to give.
         await #expect(throws: ApelinError.self) {
@@ -773,7 +773,7 @@ struct AccountDeskTests {
         let desk = AccountDesk(store: store, login: Self.neverCalled, listener: Self.silent, verifyKey: { _, _, _ in })
         for (provider, id, host) in [
             (AgentProvider.openAI, "openai-api-key", "api.openai.com"),
-            (.google, "google-api-key", "generativelanguage.googleapis.com"),
+            (.google, "google-api-key", "generativelanguage.googleapis.com")
         ] {
             let recorder = SignInRecorder()
             try await desk.start(AgentSignInRequest(provider: provider), taskID: TaskID("k-\(id)"), reporter: recorder.reporter)

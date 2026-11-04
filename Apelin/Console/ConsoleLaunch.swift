@@ -30,7 +30,7 @@ enum ConsoleLaunch {
         _ = NotificationCenter.default.addObserver(
             forName: UIApplication.willEnterForegroundNotification,
             object: nil,
-            queue: .main,
+            queue: .main
         ) { _ in
             Task.detached(priority: .utility) {
                 await keepingAwake { await ConsoleRunner.shared.drainInbox() }

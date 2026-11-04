@@ -62,7 +62,7 @@ public struct ReplayFixtures: Sendable {
     public init(directory: URL) throws {
         let replies = try JSONCoding.decode(
             [Reply].self,
-            from: Data(contentsOf: directory.appendingPathComponent("replies.json")),
+            from: Data(contentsOf: directory.appendingPathComponent("replies.json"))
         )
         let taskFolder = directory.appendingPathComponent("tasks", isDirectory: true)
         let names = try FileManager.default.contentsOfDirectory(atPath: taskFolder.path)
@@ -73,7 +73,7 @@ public struct ReplayFixtures: Sendable {
                 // persisted-read: a test fixture, which must read whole
                 return try JSONCoding.decode(
                     TaskRecording.self,
-                    from: Data(contentsOf: taskFolder.appendingPathComponent(name)),
+                    from: Data(contentsOf: taskFolder.appendingPathComponent(name))
                 )
             } catch {
                 throw ApelinError(.internal, "replay fixture tasks/\(name) does not decode: \(error)")

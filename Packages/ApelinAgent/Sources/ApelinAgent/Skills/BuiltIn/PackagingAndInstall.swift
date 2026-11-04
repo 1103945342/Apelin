@@ -164,6 +164,6 @@ extension BuiltInSkills {
           Settings) are out of reach, and a package installed some other way
           is the user's to remove with their package manager. In Strict mode
           every removal asks.
-        """,
+        """
     )
 }

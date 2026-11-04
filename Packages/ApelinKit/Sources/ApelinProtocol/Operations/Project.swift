@@ -27,7 +27,7 @@ public struct TemplateSummary: Codable, Sendable, Equatable {
         displayName: String,
         summary: String? = nil,
         byteCount: Int64? = nil,
-        parameters: [TemplateParameter] = [],
+        parameters: [TemplateParameter] = []
     ) {
         self.id = id
         self.displayName = displayName
@@ -66,7 +66,7 @@ public struct DevelopmentExtension: Codable, Sendable, Equatable {
         kind: DevelopmentExtensionKind,
         displayName: String,
         templates: [TemplateSummary] = [],
-        problems: [String] = [],
+        problems: [String] = []
     ) {
         self.id = id
         self.version = version
@@ -181,7 +181,7 @@ public struct ProjectCreateResponse: Codable, Sendable, Equatable {
         name: String,
         path: String,
         baseline: ProjectBaseline? = nil,
-        descriptionDigests: DescriptionDigests? = nil,
+        descriptionDigests: DescriptionDigests? = nil
     ) {
         self.projectID = projectID
         self.name = name
@@ -234,7 +234,7 @@ public struct ProjectBaseline: Codable, Sendable, Equatable {
         templateVersion: String,
         templateDigest: String,
         build: Description,
-        packaging: Description,
+        packaging: Description
     ) {
         self.projectID = projectID
         self.templateExtensionID = templateExtensionID
@@ -271,7 +271,7 @@ public struct ProjectDiagnostic: Codable, Sendable, Equatable {
         line: Int? = nil,
         column: Int? = nil,
         field: String? = nil,
-        fixes: [String] = [],
+        fixes: [String] = []
     ) {
         self.code = code
         self.severity = severity
@@ -346,7 +346,7 @@ public struct ProjectCheckRequest: OperationRequest {
         projectID: String,
         purpose: ProjectCheckPurpose? = nil,
         bootstrap: BuildBootstrap? = nil,
-        environment: ProjectEnvironmentChoice? = nil,
+        environment: ProjectEnvironmentChoice? = nil
     ) {
         self.projectID = projectID
         self.purpose = purpose
@@ -375,7 +375,7 @@ public struct ProjectCheckResponse: Codable, Sendable, Equatable {
         diagnostics: [ProjectDiagnostic] = [],
         descriptionDigests: DescriptionDigests? = nil,
         environment: ProjectEnvironmentBinding? = nil,
-        buildSystem: BuildSystemKind? = nil,
+        buildSystem: BuildSystemKind? = nil
     ) {
         self.passed = passed
         self.diagnostics = diagnostics
@@ -405,13 +405,13 @@ public extension ApelinService {
         projectID: String,
         purpose: ProjectCheckPurpose? = nil,
         bootstrap: BuildBootstrap? = nil,
-        environment: ProjectEnvironmentChoice? = nil,
+        environment: ProjectEnvironmentChoice? = nil
     ) async throws -> ProjectCheckResponse {
         try await send(ProjectCheckRequest(
             projectID: projectID,
             purpose: purpose,
             bootstrap: bootstrap,
-            environment: environment,
+            environment: environment
         ))
     }
 

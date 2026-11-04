@@ -60,7 +60,7 @@ final class GitRemoteSetTests: XCTestCase {
             "http://example.com/a.git", "ssh://example.com/a.git", "git@github.com:a/b.git", "/tmp/a.git",
             "https://user:token@example.com/a.git", "https://token@example.com/a.git",
             "https://example.com/a.git?access_token=x", "https://example.com/a.git#frag",
-            "https://example.com/a b.git", "https://example.com/a.git\n[core]", "https://",
+            "https://example.com/a b.git", "https://example.com/a.git\n[core]", "https://"
         ]
         for url in refusedURLs {
             XCTAssertThrowsError(try git.setRemote(GitRemoteSetRequest(projectID: id, name: "origin", url: url)), url) {
@@ -70,7 +70,7 @@ final class GitRemoteSetTests: XCTestCase {
         }
         let refusedNames = [
             "", "-x", "--upload-pack=evil", ".hidden", "a..b", "../x", "/abs", "a/b", "x.lock", "x.", "with space",
-            "https://example.com/a.git", "git@github.com:a/b", String(repeating: "a", count: 65), "a\0b",
+            "https://example.com/a.git", "git@github.com:a/b", String(repeating: "a", count: 65), "a\0b"
         ]
         for name in refusedNames {
             XCTAssertThrowsError(try git.setRemote(GitRemoteSetRequest(projectID: id, name: name, url: "https://example.com/a.git")), name) {

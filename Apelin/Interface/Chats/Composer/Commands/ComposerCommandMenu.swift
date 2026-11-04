@@ -26,7 +26,7 @@ final class ComposerCommandMenu: UIView {
         tableView.delegate = self
         tableView.backgroundColor = .clear
         tableView.separatorInset = UIEdgeInsets(
-            top: 0, left: ComposerMetrics.Spacing.md, bottom: 0, right: 0,
+            top: 0, left: ComposerMetrics.Spacing.md, bottom: 0, right: 0
         )
         tableView.rowHeight = rowHeight
         tableView.register(CommandCell.self, forCellReuseIdentifier: "command")
@@ -144,19 +144,19 @@ private final class CommandCell: UITableViewCell {
             x: inset,
             y: 6,
             width: max(0, contentView.bounds.width - inset * 2 - kindRoom),
-            height: nameLabel.font.lineHeight,
+            height: nameLabel.font.lineHeight
         )
         kindLabel.frame = directionalFrame(CGRect(
             x: contentView.bounds.width - inset - kindWidth,
             y: nameLabel.frame.minY,
             width: kindWidth,
-            height: nameLabel.font.lineHeight,
+            height: nameLabel.font.lineHeight
         ))
         summaryLabel.frame = CGRect(
             x: inset,
             y: nameLabel.frame.maxY + 2,
             width: max(0, contentView.bounds.width - inset * 2),
-            height: summaryLabel.font.lineHeight,
+            height: summaryLabel.font.lineHeight
         )
     }
 }

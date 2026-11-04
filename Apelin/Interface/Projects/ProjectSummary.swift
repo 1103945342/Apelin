@@ -13,7 +13,7 @@ struct ProjectSummary: Hashable, Sendable {
                 throw CocoaError(.fileReadNoSuchFile)
             }
             return try FileManager.default.contentsOfDirectory(
-                atPath: folder.projects.path,
+                atPath: folder.projects.path
             ).sorted().compactMap { name in
                 guard let url = folder.project(named: name), let root = CanonicalPath.resolve(url.path),
                       root == projectsPath + "/" + name,
@@ -37,7 +37,7 @@ struct ProjectSummary: Hashable, Sendable {
                     projectID: document["projectID"]?.stringValue,
                     automaticallyNamed: document["autoName"]?.boolValue == true,
                     buildMethod: ProjectBuildMethod(manifest: document),
-                    created: (try? FileManager.default.attributesOfItem(atPath: root))?[.creationDate] as? Date,
+                    created: (try? FileManager.default.attributesOfItem(atPath: root))?[.creationDate] as? Date
                 )
             }
         }.value
@@ -66,7 +66,7 @@ struct ProjectSummary: Hashable, Sendable {
 extension DevelopmentExtensionKind {
     /// The order kinds are listed in, workspace first.
     static let displayOrder: [DevelopmentExtensionKind] = [
-        .workspace, .app, .tweak, .commandLineTool, .preferenceBundle,
+        .workspace, .app, .tweak, .commandLineTool, .preferenceBundle
     ]
 
     /// The kind as a section header names it.
@@ -106,7 +106,7 @@ enum ProjectIcon {
               let image = CGImageSourceCreateThumbnailAtIndex(source, 0, [
                   kCGImageSourceCreateThumbnailFromImageAlways: true,
                   kCGImageSourceCreateThumbnailWithTransform: true,
-                  kCGImageSourceThumbnailMaxPixelSize: 36 * scale,
+                  kCGImageSourceThumbnailMaxPixelSize: 36 * scale
               ] as CFDictionary)
         else { return nil }
         return UIImage(cgImage: image, scale: scale, orientation: .up)

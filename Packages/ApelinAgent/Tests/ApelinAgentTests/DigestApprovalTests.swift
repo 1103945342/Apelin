@@ -34,7 +34,7 @@ struct DigestApprovalTests {
         init(
             mode: ApprovalMode = .confirm,
             onGitWalk: (@Sendable () -> Void)? = nil,
-            skills: Bool = false,
+            skills: Bool = false
         ) throws {
             home = try TemporaryHome()
             let events = events
@@ -49,7 +49,7 @@ struct DigestApprovalTests {
                 backend: backend,
                 digests: ledger,
                 gate: gate,
-                skills: skills ? home.dataRoot.skills : nil,
+                skills: skills ? home.dataRoot.skills : nil
             )
         }
 

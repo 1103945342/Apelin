@@ -18,7 +18,7 @@ class WelcomeListPage: UIViewController, UITableViewDelegate {
         title: String(localized: "Next"),
         secondaryTitle: secondaryTitle,
         action: { [weak self] in self?.action?() },
-        secondaryAction: { [weak self] in self?.secondaryAction() },
+        secondaryAction: { [weak self] in self?.secondaryAction() }
     )
 
     init(flow: WelcomeFlow) {

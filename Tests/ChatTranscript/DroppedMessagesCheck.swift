@@ -11,7 +11,7 @@ func checkDroppedMessages() {
             .object(["path": .string(path), "name": .string(path), "mimeType": .string("text/plain")])
         }
         return TaskEvent(seq: EventSeq(seq), kind: "queued", time: Date(timeIntervalSince1970: Double(seq)), payload: .object([
-            "id": .string(id.uuidString), "text": .string(text), "attachments": .array(attachments),
+            "id": .string(id.uuidString), "text": .string(text), "attachments": .array(attachments)
         ]))
     }
 
@@ -27,9 +27,9 @@ func checkDroppedMessages() {
         queued(1, first, "Build it", files: ["Attachments/notes"]),
         queued(2, taken, "Taken by the run"),
         TaskEvent(seq: EventSeq(3), kind: "prompt", time: Date(timeIntervalSince1970: 3), payload: .object([
-            "id": .string(taken.uuidString), "text": .string("Taken by the run"),
+            "id": .string(taken.uuidString), "text": .string("Taken by the run")
         ])),
-        queued(4, second, "And test it", files: ["Attachments/log"]),
+        queued(4, second, "And test it", files: ["Attachments/log"])
     ]
 
     let empty = ComposerDraft()

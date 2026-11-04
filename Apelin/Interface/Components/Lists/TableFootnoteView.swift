@@ -45,7 +45,7 @@ final class TableFootnoteView: UIView {
         let height = systemLayoutSizeFitting(
             CGSize(width: width, height: UIView.layoutFittingCompressedSize.height),
             withHorizontalFittingPriority: .required,
-            verticalFittingPriority: .fittingSizeLevel,
+            verticalFittingPriority: .fittingSizeLevel
         ).height
         guard frame.size != CGSize(width: width, height: height) else { return }
         frame = CGRect(x: 0, y: 0, width: width, height: height)

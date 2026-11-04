@@ -28,7 +28,7 @@ public enum LogReaderWorker {
     public static func serve(
         _ request: ChannelRequest,
         context: WorkerContext,
-        pump: LogStreamPump,
+        pump: LogStreamPump
     ) -> (WireReply, [OwnedDescriptor]) {
         let requestID = request.request.requestID
         do {
@@ -40,7 +40,7 @@ public enum LogReaderWorker {
                 stream,
                 taskID: taskID,
                 emit: { kind, payload in context.emit(taskID, kind, payload) },
-                finish: { state, message in context.finish(taskID, state, message: message) },
+                finish: { state, message in context.finish(taskID, state, message: message) }
             )
             return (.success(requestID, Acknowledged()), [])
         } catch let error as ApelinError {

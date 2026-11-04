@@ -263,14 +263,14 @@ public struct MachOSlice {
                         name: reader.fixedString(base, length: 16),
                         address: reader.u64(base + 32),
                         size: reader.u64(base + 40),
-                        flags: reader.u32(base + 64),
+                        flags: reader.u32(base + 64)
                     ))
                 }
                 try segments.append(MachOSegment(
                     name: name,
                     address: reader.u64(offset + 24),
                     fileOffset: reader.u64(offset + 40),
-                    fileSize: reader.u64(offset + 48),
+                    fileSize: reader.u64(offset + 48)
                 ))
                 sections += segmentSections
             case 0x2: // LC_SYMTAB
@@ -322,7 +322,7 @@ public struct MachOSlice {
                     address: reader.u64(entry + 8),
                     kind: kind,
                     isExternal: type & 0x01 != 0,
-                    section: reader.u8(entry + 5),
+                    section: reader.u8(entry + 5)
                 ))
             }
         }

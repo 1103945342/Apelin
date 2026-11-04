@@ -17,7 +17,7 @@ final class TraceController: TableController {
 
     private lazy var dataSource = TableDataSource<Int, UUID, TraceStep>(
         tableView: tableView,
-        identifier: \.id,
+        identifier: \.id
     ) { table, indexPath, row in
         Self.cell(in: table, at: indexPath, row: row)
     }

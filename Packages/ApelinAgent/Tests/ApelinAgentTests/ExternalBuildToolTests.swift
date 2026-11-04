@@ -26,7 +26,7 @@ struct ExternalBuildToolTests {
             projectID: harness.home.project.id,
             script: "apelin/build.sh",
             configuration: "release",
-            bootstrap: "rootless",
+            bootstrap: "rootless"
         )), "a session answer granted nothing: the next build asks again")
 
         let calls = await harness.backend.calls

@@ -294,7 +294,7 @@ actor ChatStore {
         try folder.makeLevels(to: directory)
         try JSONEncoder().encode(record).write(
             to: directory.appendingPathComponent(id.uuidString + ".json"),
-            options: .atomic,
+            options: .atomic
         )
         revisions[id] = revision
     }
@@ -302,7 +302,7 @@ actor ChatStore {
     func remove(_ id: UUID) throws {
         do {
             try FileManager.default.removeItem(
-                at: folder.root.appendingPathComponent("Chats/" + id.uuidString + ".json"),
+                at: folder.root.appendingPathComponent("Chats/" + id.uuidString + ".json")
             )
         } catch let error as CocoaError where error.code == .fileNoSuchFile {
             // Deleting before the first queued save is also a successful delete.

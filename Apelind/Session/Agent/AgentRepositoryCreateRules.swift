@@ -36,7 +36,7 @@ enum AgentRepositoryCreateRules {
             let owner = create.owner.map { "\($0)/" } ?? ""
             return ApelinError(
                 .denied,
-                "approval required: the user has not approved creating the \(create.visibility.rawValue) repository \(owner)\(create.name) on GitHub",
+                "approval required: the user has not approved creating the \(create.visibility.rawValue) repository \(owner)\(create.name) on GitHub"
             )
         }
         return nil

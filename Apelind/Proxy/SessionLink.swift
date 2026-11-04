@@ -36,9 +36,9 @@ final class SessionLink: @unchecked Sendable {
             return (
                 .failure(request.requestID, ApelinError(
                     .unavailable,
-                    "Apelin's background service is unavailable. \(error)",
+                    "Apelin's background service is unavailable. \(error)"
                 )),
-                [],
+                []
             )
         }
     }
@@ -81,7 +81,7 @@ final class SessionLink: @unchecked Sendable {
                 arguments: ["apelind-session", Self.sessionArgument],
                 environment: ["DISABLE_TWEAKS=1", "PATH=/usr/bin:/bin:/usr/sbin:/sbin"],
                 channel: remote,
-                identity: nil,
+                identity: nil
             )
             reapWhenExited(pid, queue: queue) { status in
                 NSLog("apelind: the session host exited (status %d)", status)

@@ -23,7 +23,7 @@ final class MemoryEditorController: TableController, UITextViewDelegate {
     private var saving = false
     private lazy var saveItem = UIBarButtonItem(
         title: String(localized: "Save"),
-        primaryAction: UIAction { [weak self] _ in self?.save() },
+        primaryAction: UIAction { [weak self] _ in self?.save() }
     )
 
     init(store: MemoryStore, record: MemoryRecord?, revision: String) {
@@ -71,7 +71,7 @@ final class MemoryEditorController: TableController, UITextViewDelegate {
         NSLayoutConstraint.activate([
             bodyPlaceholder.leadingAnchor.constraint(equalTo: bodyField.frameLayoutGuide.leadingAnchor),
             bodyPlaceholder.trailingAnchor.constraint(equalTo: bodyField.frameLayoutGuide.trailingAnchor),
-            bodyPlaceholder.topAnchor.constraint(equalTo: bodyField.frameLayoutGuide.topAnchor),
+            bodyPlaceholder.topAnchor.constraint(equalTo: bodyField.frameLayoutGuide.topAnchor)
         ])
         let titleCell = fieldCell(titleField)
         let bodyCell = fieldCell(bodyField, minimumHeight: 180)
@@ -112,7 +112,7 @@ final class MemoryEditorController: TableController, UITextViewDelegate {
             field.leadingAnchor.constraint(equalTo: margins.leadingAnchor),
             field.trailingAnchor.constraint(equalTo: margins.trailingAnchor),
             field.topAnchor.constraint(equalTo: margins.topAnchor),
-            field.bottomAnchor.constraint(equalTo: margins.bottomAnchor),
+            field.bottomAnchor.constraint(equalTo: margins.bottomAnchor)
         ]
         if let minimumHeight {
             constraints.append(field.heightAnchor.constraint(greaterThanOrEqualToConstant: minimumHeight))
@@ -139,7 +139,7 @@ final class MemoryEditorController: TableController, UITextViewDelegate {
             id: record?.id ?? UUID().uuidString.lowercased(),
             title: titleField.text ?? "",
             body: bodyField.text ?? "",
-            projectID: record?.projectID,
+            projectID: record?.projectID
         )
         perform { [store, record, revision] in try store.save(value, replacing: record?.id, revision: revision) }
     }
@@ -169,7 +169,7 @@ final class MemoryEditorController: TableController, UITextViewDelegate {
             title: "Delete Memory?",
             message: "This memory will no longer be used in future replies.",
             confirmTitle: "Delete",
-            destructive: true,
+            destructive: true
         ) { [weak self] in
             guard let self else { return }
             perform { [store, revision] in try store.delete(id: record.id, revision: revision) }

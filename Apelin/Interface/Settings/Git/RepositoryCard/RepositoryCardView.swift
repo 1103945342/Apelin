@@ -42,7 +42,7 @@ final class RepositoryCardView: UIView {
             card.title,
             card.address,
             String(localized: "Scan with Camera to add in Irisin"),
-            "@" + card.owner,
+            "@" + card.owner
         ].joined(separator: ", ")
     }
 
@@ -116,7 +116,7 @@ final class RepositoryCardView: UIView {
             with: CGRect(x: 32, y: y, width: canvas.width - 64, height: font.lineHeight),
             options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine],
             attributes: [.font: font, .foregroundColor: color, .paragraphStyle: paragraph],
-            context: nil,
+            context: nil
         )
     }
 
@@ -139,7 +139,7 @@ final class RepositoryCardView: UIView {
                     x: origin.x + CGFloat(x) * cell,
                     y: origin.y + CGFloat(y) * cell,
                     width: cell,
-                    height: cell,
+                    height: cell
                 )))
             }
         }

@@ -22,7 +22,7 @@ final class Scratch {
         let target = path + "/" + name
         try FileManager.default.createDirectory(
             atPath: (target as NSString).deletingLastPathComponent,
-            withIntermediateDirectories: true,
+            withIntermediateDirectories: true
         )
         try Data(contents.utf8).write(to: URL(fileURLWithPath: target))
         chmod(target, mode_t(mode))
@@ -37,7 +37,7 @@ func samplePackage(_ layout: PackageLayout, compression: DebCompression = .zstd)
         package: "com.example.sample",
         version: "1.2.3-4",
         architecture: layout.architecture,
-        description: "A sample package\nWritten by the tests.",
+        description: "A sample package\nWritten by the tests."
     )
     control["Maintainer"] = "Example <example@example.com>"
     control["Depends"] = "firmware (>= 16.0)"
@@ -53,7 +53,7 @@ func samplePackage(_ layout: PackageLayout, compression: DebCompression = .zstd)
         .symbolicLink(layout.packagePath(for: "/usr/share/long-link"), target: "/" + longName),
         .file(layout.packagePath(for: "/usr/share/" + longName), contents: Data("long\n".utf8)),
         .file(layout.packagePath(for: "/etc/sample.conf"), contents: Data("key=value\n".utf8)),
-        .directory(layout.packagePath(for: "/var/mobile/Empty"), mode: 0o700),
+        .directory(layout.packagePath(for: "/var/mobile/Empty"), mode: 0o700)
     ]
     writer.maintainerScripts[.postinst] = Data(layout.substitutingPlaceholders(in: "#!/bin/sh\n[ -d @PREFIX@/usr ] || exit 1\nexit 0\n").utf8)
     writer.maintainerScripts[.prerm] = Data("#!/bin/sh\nexit 0\n".utf8)
@@ -135,7 +135,7 @@ struct DebPackageWriterTests {
 
     @Test func `installed size counts kibibytes`() throws {
         var writer = DebPackageWriter(control: DebianControlFile(
-            package: "aa", version: "1", architecture: "all", description: "x",
+            package: "aa", version: "1", architecture: "all", description: "x"
         ))
         writer.entries = [
             .file("/a/one", contents: Data(count: 1)), // 1, plus /a: 1
@@ -156,7 +156,7 @@ struct DebPackageWriterTests {
         try FileManager.default.createSymbolicLink(atPath: bundle + "/Current", withDestinationPath: "Resources")
 
         var writer = DebPackageWriter(control: DebianControlFile(
-            package: "com.example.app", version: "1.0", architecture: "iphoneos-arm64", description: "x",
+            package: "com.example.app", version: "1.0", architecture: "iphoneos-arm64", description: "x"
         ))
         writer.entries = try DebEntry.tree(fromDirectory: bundle, at: PackageLayout.rootless.applicationBundle(named: "Sample"))
         let output = scratch.path + "/out.deb"
@@ -186,7 +186,7 @@ struct DebPackageWriterTests {
             [.file("/a", contents: Data()), .file("/a/b", contents: Data())],
             [.symbolicLink("/a", target: "")],
             [DebEntry(path: "/a", kind: .directory, mode: 0o40755)],
-            [.file("/", contents: Data())],
+            [.file("/", contents: Data())]
         ]
         for entries in invalid {
             var writer = DebPackageWriter(control: control)
@@ -203,7 +203,7 @@ struct DebPackageWriterTests {
     @Test func `failed write leaves nothing behind`() throws {
         let scratch = try Scratch()
         var writer = DebPackageWriter(control: DebianControlFile(
-            package: "aa", version: "1", architecture: "all", description: "x",
+            package: "aa", version: "1", architecture: "all", description: "x"
         ))
         writer.entries = [.file("/missing", copying: scratch.path + "/does-not-exist")]
         let output = scratch.path + "/out.deb"
@@ -216,7 +216,7 @@ struct DebPackageWriterTests {
     @Test func `tar header checksum and fields`() {
         let header = TarWriter.header(
             name: Array("./usr/bin/x".utf8), mode: 0o755, size: 10, modificationTime: 0o17,
-            typeflag: UInt8(ascii: "0"), linkName: [],
+            typeflag: UInt8(ascii: "0"), linkName: []
         )
         #expect(header.count == 512)
         #expect(String(decoding: header[100 ..< 107], as: UTF8.self) == "0000755")

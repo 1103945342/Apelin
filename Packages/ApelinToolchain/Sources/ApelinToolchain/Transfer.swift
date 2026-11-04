@@ -21,7 +21,7 @@ public enum ToolchainTransfer {
     public static func exportCopy(
         installed: URL,
         to destination: URL,
-        progress: (String) -> Void = { _ in },
+        progress: (String) -> Void = { _ in }
     ) throws -> ToolchainManifest {
         let root = try canonical(installed)
         let manifestData = try readManifest(at: root)
@@ -37,7 +37,7 @@ public enum ToolchainTransfer {
         // (usr/lib/swift/iphoneos) is part of what setup made.
         let walker = FileManager.default.enumerator(
             at: root,
-            includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey],
+            includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey]
         )
         while let item = walker?.nextObject() as? URL {
             let values = try item.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
@@ -47,7 +47,7 @@ public enum ToolchainTransfer {
             try FileManager.default.createDirectory(
                 at: target,
                 withIntermediateDirectories: true,
-                attributes: [.posixPermissions: 0o755],
+                attributes: [.posixPermissions: 0o755]
             )
         }
 
@@ -69,7 +69,7 @@ public enum ToolchainTransfer {
                     let data = try Data(contentsOf: source, options: .mappedIfSafe)
                     guard let original = try? removingRuntimeBrand(from: data), sha256(original) == digest else {
                         throw ToolchainFailure(
-                            "The installed toolchain's \(relative) no longer matches what setup installed.",
+                            "The installed toolchain's \(relative) no longer matches what setup installed."
                         )
                     }
                     try original.write(to: target)
@@ -102,18 +102,18 @@ public enum ToolchainTransfer {
             productID: manifest.source.productID,
             sourceSHA256: manifest.sourceSHA256,
             scheme: manifest.retargetSchemeVersion,
-            swift: manifest.components.contains(.swift),
+            swift: manifest.components.contains(.swift)
         ) {
             throw ToolchainFailure(refusal)
         }
         let expected = ToolchainSetup.identity(
             sourceSHA256: manifest.sourceSHA256,
             minimumOS: manifest.minimumOS,
-            components: manifest.components,
+            components: manifest.components
         )
         guard manifest.id == expected else {
             throw ToolchainFailure(
-                "The toolchain's identity does not match its source and components. Import another copy.",
+                "The toolchain's identity does not match its source and components. Import another copy."
             )
         }
         guard (try? ToolchainSetup.encodedVersion(manifest.minimumOS)) != nil else {
@@ -128,7 +128,7 @@ public enum ToolchainTransfer {
         let walker = FileManager.default.enumerator(
             at: root,
             includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey, .isRegularFileKey],
-            errorHandler: { _, _ in unreadable = true; return false },
+            errorHandler: { _, _ in unreadable = true; return false }
         )
         while let item = walker?.nextObject() as? URL {
             let relative = try relativePath(item, under: root)
@@ -143,13 +143,13 @@ public enum ToolchainTransfer {
                 }
                 guard metadata.st_mode & 0o7000 == 0 else {
                     throw ToolchainFailure(
-                        "The toolchain file \(relative) has unsafe permissions. Import another copy.",
+                        "The toolchain file \(relative) has unsafe permissions. Import another copy."
                     )
                 }
             case S_IFLNK:
                 guard links[relative] != nil else {
                     throw ToolchainFailure(
-                        "The toolchain carries the link \(relative), which its manifest does not list.",
+                        "The toolchain carries the link \(relative), which its manifest does not list."
                     )
                 }
                 walker?.skipDescendants()
@@ -171,7 +171,7 @@ public enum ToolchainTransfer {
         productID: String,
         sourceSHA256: String,
         scheme: Int,
-        swift: Bool,
+        swift: Bool
     ) -> String? {
         guard scheme == ToolchainSetup.schemeVersion else {
             return "This toolchain was prepared by a different version of Apelin. Set it up again on this device."

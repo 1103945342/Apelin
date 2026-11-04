@@ -73,9 +73,9 @@ final class EnvironmentHarness: @unchecked Sendable {
             return (
                 .failure(
                     id,
-                    ApelinError(.denied, "\(request.request.operation.rawValue) is not available to this caller"),
+                    ApelinError(.denied, "\(request.request.operation.rawValue) is not available to this caller")
                 ),
-                [],
+                []
             )
         }
         do {
@@ -84,17 +84,17 @@ final class EnvironmentHarness: @unchecked Sendable {
                 return try await (
                     .success(
                         id,
-                        bridge.install(request.request.decode(InstallPackageRequest.self), caller: caller),
+                        bridge.install(request.request.decode(InstallPackageRequest.self), caller: caller)
                     ),
-                    [],
+                    []
                 )
             case .removePackage:
                 return try await (
                     .success(
                         id,
-                        bridge.remove(request.request.decode(RemovePackageRequest.self), caller: caller),
+                        bridge.remove(request.request.decode(RemovePackageRequest.self), caller: caller)
                     ),
-                    [],
+                    []
                 )
             case .buildAttach:
                 let attach = try request.request.decode(BuildAttachRequest.self)
@@ -105,10 +105,10 @@ final class EnvironmentHarness: @unchecked Sendable {
                             attach.taskID,
                             as: .buildAttach,
                             afterSeq: attach.afterSeq,
-                            waitMilliseconds: attach.waitMilliseconds,
-                        ),
+                            waitMilliseconds: attach.waitMilliseconds
+                        )
                     ),
-                    [],
+                    []
                 )
             default:
                 return (.failure(id, .unimplemented(request.request.operation)), [])
@@ -143,14 +143,14 @@ final class EnvironmentHarness: @unchecked Sendable {
             handle.taskID,
             as: .environmentAttach,
             afterSeq: .start,
-            waitMilliseconds: 0,
+            waitMilliseconds: 0
         )
         while !batch.finished, Date() < deadline {
             batch = try await registry.attach(
                 handle.taskID,
                 as: .environmentAttach,
                 afterSeq: .start,
-                waitMilliseconds: 500,
+                waitMilliseconds: 500
             )
         }
         return batch
@@ -225,7 +225,7 @@ func toolchainEndToEnd(harness: String) async throws {
         paths: .init(
             installRoot: installRoot,
             dataFolder: data.root.path,
-            staging: state.appendingPathComponent("staging"),
+            staging: state.appendingPathComponent("staging")
         ),
         service: irisin,
         registry: registry,
@@ -234,13 +234,13 @@ func toolchainEndToEnd(harness: String) async throws {
         packages: FakeDatabase(irisin: irisin),
         fileLists: DpkgFileLists(installRoot: installRoot),
         approvals: ApprovalLedger(directory: state.appendingPathComponent("approvals")),
-        pollInterval: 0.01,
+        pollInterval: 0.01
     )
     let worker = try EnvironmentHarness(
         executable: harness,
         assignment: WorkerAssignment(role: .environment, installRoot: installRoot, home: home),
         registry: registry,
-        bridge: bridge,
+        bridge: bridge
     )
     defer { worker.stop() }
 
@@ -251,11 +251,11 @@ func toolchainEndToEnd(harness: String) async throws {
     try manager.createDirectory(at: foundation.appendingPathComponent("Headers"), withIntermediateDirectories: true)
     write(
         sdk.appendingPathComponent("SDKSettings.json").path,
-        #"{"CanonicalName": "iphoneos99.0", "Version": "99.0", "DisplayName": "iOS 99.0"}"#,
+        #"{"CanonicalName": "iphoneos99.0", "Version": "99.0", "DisplayName": "iOS 99.0"}"#
     )
     write(
         foundation.appendingPathComponent("Foundation.tbd").path,
-        "--- !tapi-tbd\ntbd-version: 4\ntargets: [ arm64e-ios ]\ninstall-name: '/System/Library/Frameworks/Foundation.framework/Foundation'\n...\n",
+        "--- !tapi-tbd\ntbd-version: 4\ntargets: [ arm64e-ios ]\ninstall-name: '/System/Library/Frameworks/Foundation.framework/Foundation'\n...\n"
     )
     write(foundation.appendingPathComponent("Headers/Foundation.h").path, "// Foundation\n")
     let imported = try await worker.end(worker.start(SDKImportRequest(source: .inbox(path: "iPhoneOS.sdk"))))
@@ -282,7 +282,7 @@ func toolchainEndToEnd(harness: String) async throws {
     let job = jobs.first.flatMap {
         try? JSONCoding.decode(
             JSONValue.self,
-            from: Data(contentsOf: environment.appendingPathComponent("Toolchains/jobs/\($0)/job.json")),
+            from: Data(contentsOf: environment.appendingPathComponent("Toolchains/jobs/\($0)/job.json"))
         )
     }
     check(job?["failure"]?.stringValue != nil && job?["installationID"] == nil, "e2e: job.json keeps the failure for a retry, and no installation")

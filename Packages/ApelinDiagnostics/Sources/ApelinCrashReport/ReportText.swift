@@ -45,7 +45,7 @@ enum ReportDates {
     private static let formatters: [DateFormatter] = [stamp] + [
         "yyyy-MM-dd HH:mm:ss.SSS Z",
         "yyyy-MM-dd HH:mm:ss.SS Z",
-        "yyyy-MM-dd HH:mm:ss Z",
+        "yyyy-MM-dd HH:mm:ss Z"
     ].map(make)
 
     /// `2026-09-08 19:17:17.0000 +0900` — the header's spelling, and the one

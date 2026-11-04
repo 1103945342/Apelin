@@ -27,7 +27,7 @@ public enum ReportDecoder {
             group: group(for: parsed.kind, isApp: false),
             date: parsed.date ?? modified,
             byteCount: byteCount,
-            isSynced: parsed.isSynced,
+            isSynced: parsed.isSynced
         )
     }
 
@@ -36,7 +36,7 @@ public enum ReportDecoder {
     public static func enrich(
         _ summary: ReportSummary,
         header: ReportHeader,
-        executablePath: String?,
+        executablePath: String?
     ) -> ReportSummary {
         var row = summary
         row.kind = BugType.kind(of: header.bugType)
@@ -49,7 +49,7 @@ public enum ReportDecoder {
         row.incidentID = header.incidentID ?? summary.incidentID
         row.group = group(
             for: row.kind,
-            isApp: isApp(header: header, executablePath: executablePath, processName: row.processName),
+            isApp: isApp(header: header, executablePath: executablePath, processName: row.processName)
         )
         return row
     }

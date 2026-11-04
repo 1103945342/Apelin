@@ -26,7 +26,7 @@ extension ToolRunner {
             fetched = try await backend.gitFetch(GitRemoteToolRequest(
                 context: HostCallContext(sessionID: sessionID, project: project, toolCallID: "", approval: .notRequired),
                 remote: target.remote,
-                branch: branch,
+                branch: branch
             ))
         } catch {
             throw GitToolFailure(message: "Nothing was pushed: a forced push first fetches \(target.remote) to show the user what it would overwrite, and that failed. \(error.localizedDescription) A forced push goes to a remote the project already has.")
@@ -40,7 +40,7 @@ extension ToolRunner {
     static func forcePushPlan(
         _ comparison: GitBranchComparison,
         target: GitPushTarget,
-        projectID: String,
+        projectID: String
     ) throws -> ForcePushPlan {
         let branch = comparison.branch
         if let url = target.url, url != comparison.pushURL {
@@ -65,7 +65,7 @@ extension ToolRunner {
             localCommit: comparison.local,
             localSubject: comparison.localSubject,
             overwritten: comparison.remoteOnly,
-            overwrittenCount: comparison.remoteOnlyCount,
+            overwrittenCount: comparison.remoteOnlyCount
         ))
     }
 
@@ -94,7 +94,7 @@ extension ToolRunner {
             context: HostCallContext(sessionID: sessionID, project: project, toolCallID: "", approval: .notRequired),
             base: base,
             count: count,
-            preview: true,
+            preview: true
         ))
         return SquashApproval(
             projectID: project.id,
@@ -105,7 +105,7 @@ extension ToolRunner {
             commits: preview.commits,
             count: preview.count,
             upstream: preview.upstream,
-            published: preview.published,
+            published: preview.published
         )
     }
 
@@ -118,7 +118,7 @@ extension ToolRunner {
             base: plan.base,
             message: plan.message,
             expectedHead: plan.expectedHead,
-            preview: false,
+            preview: false
         ))
         var note = "Squashed \(squashed.count) commits on \(squashed.branch) into \(squashed.commit ?? "one"). The old head, \(squashed.previousHead), stays in the branch's reflog."
         if let upstream = squashed.upstream, squashed.published > 0 {

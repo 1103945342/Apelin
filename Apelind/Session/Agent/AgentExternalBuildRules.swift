@@ -30,7 +30,7 @@ enum AgentExternalBuildRules {
         guard await AgentApprovals.spend(entry: entry, registry: registry, covers: { covers(build, asked: $0) }) else {
             return ApelinError(
                 .denied,
-                "approval required: the user has not approved this build of the workspace \(build.projectID), which runs its own build script",
+                "approval required: the user has not approved this build of the workspace \(build.projectID), which runs its own build script"
             )
         }
         return nil

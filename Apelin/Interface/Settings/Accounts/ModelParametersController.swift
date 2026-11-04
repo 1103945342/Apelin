@@ -26,7 +26,7 @@ final class ModelParametersController: TableController {
 
     private lazy var dataSource = TableDataSource<Int, String, String>(
         tableView: tableView,
-        identifier: { $0 },
+        identifier: { $0 }
     ) { [weak self] _, _, model in
         let cell = UITableViewCell(style: .value1, reuseIdentifier: nil)
         var content = cell.defaultContentConfiguration()
@@ -63,9 +63,9 @@ final class ModelParametersController: TableController {
             ModelParameterFormController(
                 model: model,
                 provider: account.provider,
-                onSave: { [weak self] in self?.dataSource.update([(0, self?.models ?? [])], reconfigure: true) },
+                onSave: { [weak self] in self?.dataSource.update([(0, self?.models ?? [])], reconfigure: true) }
             ),
-            animated: true,
+            animated: true
         )
     }
 }
@@ -97,7 +97,7 @@ final class ModelParameterFormController: TableController {
 
     private lazy var dataSource = TableDataSource<Section, Section, Section>(
         tableView: tableView,
-        identifier: { $0 },
+        identifier: { $0 }
     ) { [weak self] _, _, section in
         guard let self else { return nil }
         let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
@@ -134,7 +134,7 @@ final class ModelParameterFormController: TableController {
         output.text = values.maxTokens.map { "\($0)" }
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: String(localized: "Save"),
-            primaryAction: UIAction { [weak self] _ in self?.save() },
+            primaryAction: UIAction { [weak self] _ in self?.save() }
         )
         dataSource.footerTitle = { section in
             switch section {
@@ -151,14 +151,14 @@ final class ModelParameterFormController: TableController {
         guard let contextWindow = figure(window.text), let maxTokens = figure(output.text) else {
             presentNotice(
                 title: "Invalid Value",
-                message: "Enter a whole number of tokens, or leave the field empty.",
+                message: "Enter a whole number of tokens, or leave the field empty."
             )
             return
         }
         ModelParameters.save(
             ModelParameters.Values(contextWindow: contextWindow, maxTokens: maxTokens),
             for: provider,
-            model: model,
+            model: model
         )
         onSave()
         navigationController?.popViewController(animated: true)

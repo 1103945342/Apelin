@@ -36,7 +36,7 @@ public final class ToolHostClient: @unchecked Sendable {
         init(
             frame: ToolFrame,
             attachments: [(id: String, file: ToolOutgoingAttachment)],
-            continuation: CheckedContinuation<ToolCallOutcome, Never>,
+            continuation: CheckedContinuation<ToolCallOutcome, Never>
         ) {
             self.frame = frame
             self.attachments = attachments
@@ -85,7 +85,7 @@ public final class ToolHostClient: @unchecked Sendable {
         limits: ToolProtocolLimits = .init(),
         host: ToolPeer = ToolPeer(name: "apelin", version: "0"),
         runAs: ToolProcessIdentity? = nil,
-        logHandler: (@Sendable (String) -> Void)? = nil,
+        logHandler: (@Sendable (String) -> Void)? = nil
     ) {
         configuration = Configuration(
             executable: validated.executablePath,
@@ -94,7 +94,7 @@ public final class ToolHostClient: @unchecked Sendable {
             host: host,
             manifest: validated.manifest,
             runAs: runAs,
-            logHandler: logHandler,
+            logHandler: logHandler
         )
         recheck = (validated, policy)
         outboundFrameLimit = limits.maxFrameBytes
@@ -136,7 +136,7 @@ public final class ToolHostClient: @unchecked Sendable {
         guard fresh else {
             throw ToolCallFailure(
                 .extensionNotRunning,
-                "this client has already been started; create a new client to start the extension again",
+                "this client has already been started; create a new client to start the extension again"
             )
         }
 
@@ -150,7 +150,7 @@ public final class ToolHostClient: @unchecked Sendable {
                 arguments: configuration.arguments,
                 environment: configuration.environment,
                 allowRoot: configuration.allowRoot,
-                runAs: configuration.runAs,
+                runAs: configuration.runAs
             )
         } catch {
             lock.withLock { state = .stopped }
@@ -160,7 +160,7 @@ public final class ToolHostClient: @unchecked Sendable {
         let channel = ToolAttachmentChannel(
             socket: spawned.attachmentSocket,
             maxAttachmentBytes: limits.maxAttachmentBytes,
-            maxPending: limits.maxPendingAttachments,
+            maxPending: limits.maxPendingAttachments
         )
         lock.withLock {
             process = spawned
@@ -192,7 +192,7 @@ public final class ToolHostClient: @unchecked Sendable {
                 timerQueue.asyncAfter(deadline: .now() + limits.helloTimeout) { [self] in
                     failHello(ToolCallFailure(
                         .timeout,
-                        "The tool extension did not respond within \(limits.helloTimeout) seconds. Try again.",
+                        "The tool extension did not respond within \(limits.helloTimeout) seconds. Try again."
                     ))
                 }
                 write(hello)
@@ -221,7 +221,7 @@ public final class ToolHostClient: @unchecked Sendable {
             guard peer.name == manifest.id else {
                 throw reject(
                     .badFrame,
-                    "the extension identifies itself as \(peer.name), but the manifest names \(manifest.id)",
+                    "the extension identifies itself as \(peer.name), but the manifest names \(manifest.id)"
                 )
             }
             if let missing = manifest.tools.map(\.name).first(where: { !tools.contains($0) }) {
@@ -247,7 +247,7 @@ public final class ToolHostClient: @unchecked Sendable {
             protocolVersion: reply.protocolVersion,
             peer: peer,
             tools: tools,
-            maxConcurrentCalls: agreed,
+            maxConcurrentCalls: agreed
         )
     }
 
@@ -272,7 +272,7 @@ public final class ToolHostClient: @unchecked Sendable {
         arguments: JSONValue = .object([:]),
         attachments: [ToolOutgoingAttachment] = [],
         timeout: TimeInterval? = nil,
-        requestID: String? = nil,
+        requestID: String? = nil
     ) async -> ToolCallOutcome {
         let id = requestID ?? nextID(prefix: "c")
         return await withTaskCancellationHandler {
@@ -283,7 +283,7 @@ public final class ToolHostClient: @unchecked Sendable {
                     arguments: arguments,
                     attachments: attachments,
                     timeout: timeout,
-                    continuation: continuation,
+                    continuation: continuation
                 )
             }
         } onCancel: {
@@ -303,7 +303,7 @@ public final class ToolHostClient: @unchecked Sendable {
         arguments: JSONValue,
         attachments: [ToolOutgoingAttachment],
         timeout: TimeInterval?,
-        continuation: CheckedContinuation<ToolCallOutcome, Never>,
+        continuation: CheckedContinuation<ToolCallOutcome, Never>
     ) {
         func refuse(_ code: ToolErrorCode, _ message: String) {
             continuation.resume(returning: .failure(ToolCallFailure(code, message)))
@@ -321,7 +321,7 @@ public final class ToolHostClient: @unchecked Sendable {
             lock.unlock()
             return refuse(
                 .extensionNotRunning,
-                reason.map { "the extension is not running (\($0))" } ?? "the extension is not running",
+                reason.map { "the extension is not running (\($0))" } ?? "the extension is not running"
             )
         }
         let known = configuration.manifest != nil ? descriptor != nil : helloTools.contains(tool)
@@ -348,7 +348,7 @@ public final class ToolHostClient: @unchecked Sendable {
             else {
                 return refuse(
                     .attachmentRejected,
-                    "an attachment is not a regular file under \(limits.maxAttachmentBytes) bytes",
+                    "an attachment is not a regular file under \(limits.maxAttachmentBytes) bytes"
                 )
             }
             let attachmentID = nextID(prefix: "a")
@@ -358,7 +358,7 @@ public final class ToolHostClient: @unchecked Sendable {
                 argument: file.argument,
                 mimeType: file.mimeType,
                 name: file.name,
-                byteCount: Int(info.st_size),
+                byteCount: Int(info.st_size)
             ))
         }
 
@@ -469,7 +469,7 @@ public final class ToolHostClient: @unchecked Sendable {
         if stuck {
             stop(ToolCallFailure(
                 .extensionTerminated,
-                "call \(id) did not end within \(limits.cancelGrace) seconds of its cancel; the extension was stopped",
+                "call \(id) did not end within \(limits.cancelGrace) seconds of its cancel; the extension was stopped"
             ))
         }
     }
@@ -505,7 +505,7 @@ public final class ToolHostClient: @unchecked Sendable {
             case .oversized:
                 stop(ToolCallFailure(
                     .frameTooLarge,
-                    "the extension sent a frame longer than \(limits.maxFrameBytes) bytes",
+                    "the extension sent a frame longer than \(limits.maxFrameBytes) bytes"
                 ))
             case .endOfFile:
                 break loop
@@ -547,7 +547,7 @@ public final class ToolHostClient: @unchecked Sendable {
         guard frame.protocolVersion == version else {
             stop(ToolCallFailure(
                 .protocolVersionMismatch,
-                "the extension sent protocol version \(frame.protocolVersion), but version \(version) was negotiated",
+                "the extension sent protocol version \(frame.protocolVersion), but version \(version) was negotiated"
             ))
             return
         }
@@ -598,7 +598,7 @@ public final class ToolHostClient: @unchecked Sendable {
             channel?.discard(ids: attachmentIDs)
             outcome = .failure(ToolCallFailure(
                 .attachmentRejected,
-                "the result names more than \(limits.maxAttachmentsPerFrame) attachments",
+                "the result names more than \(limits.maxAttachmentsPerFrame) attachments"
             ))
         } else {
             var items: [ToolResultItem] = []
@@ -770,7 +770,7 @@ public final class ToolHostClient: @unchecked Sendable {
         let tail = logTail.suffix(10).joined(separator: "\n")
         let crash = ToolCallFailure(
             .extensionCrashed,
-            "the extension \(ended)" + (tail.isEmpty ? "" : "; last log:\n\(tail)"),
+            "the extension \(ended)" + (tail.isEmpty ? "" : "; last log:\n\(tail)")
         )
         let waiters = exitWaiters
         exitWaiters.removeAll()

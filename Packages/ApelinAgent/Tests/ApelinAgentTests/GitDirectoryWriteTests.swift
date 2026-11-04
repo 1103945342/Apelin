@@ -17,7 +17,7 @@ struct GitDirectoryWriteTests {
         try home.write(".git/HEAD", "ref: refs/heads/main\n")
         try FileManager.default.createDirectory(
             at: home.projectURL.appendingPathComponent(".git/hooks", isDirectory: true),
-            withIntermediateDirectories: true,
+            withIntermediateDirectories: true
         )
         tools = try ProjectFileTools(root: ScopedRoot(home.projectURL))
     }
@@ -90,11 +90,11 @@ struct GitDirectoryWriteTests {
         try home.write("elsewhere/config", "[core]\n")
         try FileManager.default.createDirectory(
             at: home.projectURL.appendingPathComponent("checkout", isDirectory: true),
-            withIntermediateDirectories: true,
+            withIntermediateDirectories: true
         )
         try FileManager.default.createSymbolicLink(
             atPath: home.projectURL.appendingPathComponent("checkout/.git").path,
-            withDestinationPath: "../elsewhere",
+            withDestinationPath: "../elsewhere"
         )
         #expect(refused { _ = try tools.writeFile(["path": "elsewhere/config", "content": "x"]) })
         #expect(refused { _ = try tools.writeFile(["path": "elsewhere/hooks/pre-commit", "content": "x"]) })
@@ -106,11 +106,11 @@ struct GitDirectoryWriteTests {
         defer { home.remove() }
         try FileManager.default.createDirectory(
             at: home.projectURL.appendingPathComponent("checkout", isDirectory: true),
-            withIntermediateDirectories: true,
+            withIntermediateDirectories: true
         )
         try FileManager.default.createSymbolicLink(
             atPath: home.projectURL.appendingPathComponent("checkout/.git").path,
-            withDestinationPath: "../store/repo.git",
+            withDestinationPath: "../store/repo.git"
         )
         #expect(refused { _ = try tools.writeFile(["path": "store/repo.git/config", "content": "x"]) })
         #expect(refused { _ = try tools.createFile(["path": "store/repo.git/HEAD", "content": "x"]) })
@@ -134,11 +134,11 @@ struct GitDirectoryWriteTests {
         defer { home.remove() }
         try FileManager.default.createSymbolicLink(
             atPath: home.projectURL.appendingPathComponent("alias").path,
-            withDestinationPath: home.projectURL.appendingPathComponent(".git").path,
+            withDestinationPath: home.projectURL.appendingPathComponent(".git").path
         )
         try FileManager.default.createSymbolicLink(
             atPath: home.projectURL.appendingPathComponent("relative").path,
-            withDestinationPath: ".git/hooks",
+            withDestinationPath: ".git/hooks"
         )
         #expect(refused { _ = try tools.writeFile(["path": "alias/config", "content": "x"]) })
         #expect(refused { _ = try tools.writeFile(["path": "alias/hooks/pre-commit", "content": "x"]) })
@@ -159,7 +159,7 @@ struct GitDirectoryWriteTests {
         #expect(refused { _ = try tools.writeFile(["path": ".git/HEAD", "content": "ref: refs/heads/evil\n"]) })
         #expect(refused { _ = try tools.writeFile(["path": ".git/info/attributes", "content": "* diff=x\n"]) })
         let entries = try FileManager.default.contentsOfDirectory(
-            atPath: home.projectURL.appendingPathComponent(".git").path,
+            atPath: home.projectURL.appendingPathComponent(".git").path
         )
         #expect(Set(entries) == ["config", "HEAD", "hooks"])
         #expect(try home.read(".git/HEAD") == "ref: refs/heads/main\n")
@@ -205,8 +205,8 @@ struct GitDirectoryWriteTests {
             (["HEAD", "commondir"], "commondir"),
             (["commondir", "HEAD"], "HEAD"),
             (["commondir", "config", "HEAD"], "HEAD"),
-            (["objects/x", "refs/x", "head"], "head"),
-        ],
+            (["objects/x", "refs/x", "head"], "head")
+        ]
     )
     func `a bare repository's layout is never completed, whatever order its files arrive in`(order: [String], refusedFile: String) {
         defer { home.remove() }
@@ -243,7 +243,7 @@ struct GitDirectoryWriteTests {
             "store/repo.git/config", "store/repo.git/HEAD", "store/repo.git/commondir",
             "store/repo.git/hooks/post-checkout", "store/repo.git/info/attributes",
             "store/repo.git/objects/ab/cdef", "store/repo.git/refs/heads/evil",
-            "worktree/config", "worktree/HEAD", "worktree/hooks/pre-commit",
+            "worktree/config", "worktree/HEAD", "worktree/hooks/pre-commit"
         ] {
             #expect(refusedWrite(path), "\(path)")
         }
@@ -259,7 +259,7 @@ struct GitDirectoryWriteTests {
         for path in [
             "config", "Sources/config", "Resources/HEAD", "Docs/commondir", "Docs/HEAD.md",
             "Pkg/config", "Pkg/HEAD", "Pkg/HEAD.d/objects/a", "Assets/objects/a.png", "Assets/refs/b.txt",
-            "Assets/config", "Assets/refs/HEAD", "Assets/objects/HEAD",
+            "Assets/config", "Assets/refs/HEAD", "Assets/objects/HEAD"
         ] {
             #expect(!refusedWrite(path), "\(path)")
         }
@@ -303,7 +303,7 @@ struct GitDirectoryWalkTests {
         #expect(walks.value == 1)
         _ = try await harness.run(
             .fileEdit,
-            ["path": "Sources/Tweak.m", "old_text": "a = 2", "new_text": "a = 3"],
+            ["path": "Sources/Tweak.m", "old_text": "a = 2", "new_text": "a = 3"]
         )
         #expect(walks.value == 2)
         _ = try await harness.run(.fileCreate, ["path": "Sources/New.m", "content": "int b;\n"])

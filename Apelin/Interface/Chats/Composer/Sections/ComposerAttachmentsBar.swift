@@ -47,12 +47,12 @@ final class ComposerAttachmentsBar: ComposerSectionView, UICollectionViewDataSou
 
     func collectionView(
         _ collectionView: UICollectionView,
-        cellForItemAt indexPath: IndexPath,
+        cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
         let item = items[indexPath.item]
         let cell = collectionView.dequeueReusableCell(
             withReuseIdentifier: "attachment",
-            for: indexPath,
+            for: indexPath
         ) as! AttachmentCell
         cell.show(item)
         cell.remove = { [weak self] in self?.onRemove?(item.id) }
@@ -66,7 +66,7 @@ final class ComposerAttachmentsBar: ComposerSectionView, UICollectionViewDataSou
     func collectionView(
         _: UICollectionView,
         layout _: UICollectionViewLayout,
-        sizeForItemAt indexPath: IndexPath,
+        sizeForItemAt indexPath: IndexPath
     ) -> CGSize {
         CGSize(width: items[indexPath.item].isImage ? 80 : 240, height: 80)
     }
@@ -113,7 +113,7 @@ private final class AttachmentCell: UICollectionViewCell {
         }
         configuration.image = UIImage(
             systemName: "xmark",
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: 11, weight: .bold),
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 11, weight: .bold)
         )
         configuration.cornerStyle = .capsule
         configuration.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 6, bottom: 6, trailing: 6)
@@ -139,7 +139,7 @@ private final class AttachmentCell: UICollectionViewCell {
         accessibilityLabel = item.name
         accessibilityHint = String(localized: "Opens the attachment preview.")
         accessibilityCustomActions = [UIAccessibilityCustomAction(
-            name: String(localized: "Remove Attachment"),
+            name: String(localized: "Remove Attachment")
         ) { [weak self] _ in
             self?.remove?()
             return true

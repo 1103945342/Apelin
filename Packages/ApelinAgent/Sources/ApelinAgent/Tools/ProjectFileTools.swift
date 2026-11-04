@@ -55,7 +55,7 @@ struct ProjectFileTools: Sendable {
         guard occurrences > 0 else { throw ToolArgumentError("old_text does not occur in \(path)") }
         if occurrences > 1, !replaceAll {
             throw ToolArgumentError(
-                "old_text occurs \(occurrences) times in \(path); give more context or set replace_all",
+                "old_text occurs \(occurrences) times in \(path); give more context or set replace_all"
             )
         }
         let updated: String
@@ -114,7 +114,7 @@ struct ProjectFileTools: Sendable {
         let name = shown(real)
         guard file.size <= Self.maxImageFileBytes else {
             throw ToolArgumentError(
-                "\(name) is a \(format) image of \(file.size) bytes, over the \(Self.maxImageFileBytes)-byte limit",
+                "\(name) is a \(format) image of \(file.size) bytes, over the \(Self.maxImageFileBytes)-byte limit"
             )
         }
         let data = head + handle.readDataToEndOfFile()
@@ -221,7 +221,7 @@ struct ProjectFileTools: Sendable {
         defer { close(file.descriptor) }
         guard file.size <= limit else {
             throw ToolArgumentError(
-                "\(shown(canonical)) is \(file.size) bytes, over the \(limit)-byte limit",
+                "\(shown(canonical)) is \(file.size) bytes, over the \(limit)-byte limit"
             )
         }
         // One byte past the limit, for a file that grew since fstat.
@@ -352,7 +352,7 @@ enum LineDiff {
         var lines = [
             "--- a/\(path)",
             "+++ b/\(path)",
-            "@@ -\(start + 1),\(aContextEnd - start) +\(start + 1),\(min(b.count, bEnd + context) - start) @@",
+            "@@ -\(start + 1),\(aContextEnd - start) +\(start + 1),\(min(b.count, bEnd + context) - start) @@"
         ]
         for line in a[start ..< prefix] {
             lines.append(" \(line)")

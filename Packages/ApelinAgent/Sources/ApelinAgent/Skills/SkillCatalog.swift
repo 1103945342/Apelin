@@ -25,7 +25,7 @@ public struct SkillDocument: Sendable, Hashable {
         isUserSkill: Bool = false,
         directory: String? = nil,
         files: [String: String] = [:],
-        location: String? = nil,
+        location: String? = nil
     ) {
         self.name = name
         self.description = description
@@ -73,7 +73,7 @@ public enum SkillCatalog {
                 diagnostics.append(SkillProblem(
                     path: skill.path,
                     location: location(of: skill.path, in: userRoot),
-                    message: "“\(skill.name)” is the name of a built-in skill. Rename this skill to use it.",
+                    message: "“\(skill.name)” is the name of a built-in skill. Rename this skill to use it."
                 ))
                 continue
             }
@@ -85,7 +85,7 @@ public enum SkillCatalog {
                 body: skill.body,
                 isUserSkill: true,
                 directory: file.lastPathComponent == "SKILL.md" && folder != userRoot ? folder : nil,
-                location: location(of: skill.path, in: userRoot),
+                location: location(of: skill.path, in: userRoot)
             ))
         }
         return (skills, diagnostics)
@@ -108,7 +108,7 @@ public enum SkillCatalog {
             "# Skills",
             "Skills hold detailed instructions for particular tasks. When a task matches a skill's description, call apelin_skill_read with its name before you start, and follow it.",
             "",
-            "<available_skills>",
+            "<available_skills>"
         ]
         for skill in skills {
             let source = skill.isUserSkill ? " source=\"user\"" : ""

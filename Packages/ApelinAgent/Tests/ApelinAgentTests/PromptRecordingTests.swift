@@ -69,7 +69,7 @@ struct PromptRecordingTests {
                 }
                 return fauxAssistantMessage("First.")
             },
-            .message(fauxAssistantMessage("Second.")),
+            .message(fauxAssistantMessage("Second."))
         ])
         let session = try await AgentSession(configuration: AgentSessionConfiguration(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .relaxed), dataRoot: home.dataRoot), backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
         try await session.prompt("First", messageID: UUID())
@@ -122,7 +122,7 @@ struct PromptRecordingTests {
     /// The session's records once one matches, or nil after five seconds.
     private func recorded(
         in session: AgentSession,
-        where matches: (AgentSessionEvent) -> Bool,
+        where matches: (AgentSessionEvent) -> Bool
     ) async throws -> [SessionEventRecord]? {
         let deadline = Date().addingTimeInterval(5)
         while Date() < deadline {

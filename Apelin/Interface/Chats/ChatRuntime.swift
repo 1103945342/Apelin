@@ -287,7 +287,7 @@ final class ChatRuntime {
             of: record,
             now: Date(),
             isFollowed: { readers[$0] != nil },
-            conversationTitle: { title(ofSession: $0) },
+            conversationTitle: { title(ofSession: $0) }
         ) { [self] item in attachment(item, in: id) }
     }
 
@@ -313,7 +313,7 @@ final class ChatRuntime {
             name: item.name,
             data: data,
             text: isText ? String(decoding: data.prefix(8192), as: UTF8.self) : nil,
-            isImage: item.mimeType.hasPrefix("image/"),
+            isImage: item.mimeType.hasPrefix("image/")
         )
         attachmentCache[path] = file
         return file
@@ -391,7 +391,7 @@ final class ChatRuntime {
                 mimeType: file.isImage
                     ? imageMIME(file.data)
                     : (UTType(filenameExtension: (file.name as NSString).pathExtension)?.preferredMIMEType
-                        ?? "application/octet-stream"),
+                        ?? "application/octet-stream")
             ))
             descriptors.append(OwnedDescriptor(adopting: fd))
         }
@@ -409,9 +409,9 @@ final class ChatRuntime {
                 approvalMode: AgentPermissions.mode,
                 asksBeforeScreen: AgentPermissions.asksBeforeScreen,
                 runMode: ComposerModeStore.mode.runMode,
-                modelParameters: ModelParameters.values(for: selection?.provider, model: selection?.model).wire,
+                modelParameters: ModelParameters.values(for: selection?.provider, model: selection?.model).wire
             ),
-            descriptors: descriptors,
+            descriptors: descriptors
         )
         records[id]?.summary.nameAfterFirstMessage(text: draft.text, attachmentName: draft.attachments.first?.name)
         changed(id)
@@ -427,7 +427,7 @@ final class ChatRuntime {
             sessionID: sessionID,
             approvalID: approvalID,
             decision: decision,
-            ownerVerified: ownerVerified,
+            ownerVerified: ownerVerified
         )
     }
 
@@ -498,7 +498,7 @@ final class ChatRuntime {
             asksBeforeScreen: AgentPermissions.asksBeforeScreen,
             reasoningEffort: selected?.effort,
             serviceTier: selected?.tier,
-            modelParameters: ModelParameters.values(for: selected?.provider, model: selected?.model).wire,
+            modelParameters: ModelParameters.values(for: selected?.provider, model: selected?.model).wire
         )
         if request.temporaryID != nil {
             try DataFolder.app.makeLevels(to: DataFolder.app.root.appendingPathComponent("Temporary/" + id.uuidString))
@@ -525,7 +525,7 @@ final class ChatRuntime {
                 self?.readers[id] = nil
                 self?.endCompaction(id, with: .failure(ApelinError(
                     .notFound,
-                    String(localized: "This chat is no longer running."),
+                    String(localized: "This chat is no longer running.")
                 )))
             }
             while !Task.isCancelled {
@@ -549,7 +549,7 @@ final class ChatRuntime {
                             adopt(ChatAdoption.record(
                                 opened: event.payload,
                                 parent: parent,
-                                records: Array(records.values),
+                                records: Array(records.values)
                             ))
                         }
                     }
@@ -569,7 +569,7 @@ final class ChatRuntime {
                     {
                         Task {
                             if let response = try? await ApelinService.app.projectRename(
-                                .init(projectID: project, displayName: name, onlyIfAutomatic: true),
+                                .init(projectID: project, displayName: name, onlyIfAutomatic: true)
                             ), response.changed {
                                 NotificationCenter.default.post(name: .apelinProjectsChanged, object: nil)
                             }

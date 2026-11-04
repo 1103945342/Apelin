@@ -14,7 +14,7 @@ private func terminalForkPTY(
     _ master: UnsafeMutablePointer<Int32>,
     _ name: UnsafeMutablePointer<CChar>?,
     _ termios: UnsafeMutableRawPointer?,
-    _ winsize: UnsafeMutablePointer<winsize>?,
+    _ winsize: UnsafeMutablePointer<winsize>?
 ) -> pid_t
 
 /// One pseudo-terminal and the shell on it, run as mobile.

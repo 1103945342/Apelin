@@ -32,7 +32,7 @@ final class SkillsController: TableController {
             case let .problem(problem): "problem:" + (problem.location ?? "") + "\u{1f}" + problem.message
             case .empty: "empty"
             }
-        },
+        }
     ) { [weak self] table, _, row in
         self?.cell(in: table, row: row)
     }
@@ -56,7 +56,7 @@ final class SkillsController: TableController {
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             systemItem: .add,
-            primaryAction: UIAction { [weak self] _ in self?.pickSkill() },
+            primaryAction: UIAction { [weak self] _ in self?.pickSkill() }
         ).then { $0.accessibilityLabel = String(localized: "Import Skill") }
         dataSource.allowsEditing = true
         dataSource.headerTitle = { section in
@@ -105,7 +105,7 @@ final class SkillsController: TableController {
                     tableView.backgroundView = EmptyStateView(
                         symbolName: "exclamationmark.triangle",
                         title: String(localized: "Error"),
-                        text: ToolchainController.unavailableText(error),
+                        text: ToolchainController.unavailableText(error)
                     )
                 }
             }
@@ -119,7 +119,7 @@ final class SkillsController: TableController {
         let user = listing.skills.filter { $0.source == .user }.map(Row.skill)
         var sections: [(Section, [Row])] = [
             (.builtIn, listing.skills.filter { $0.source == .builtIn }.map(Row.skill)),
-            (.user, user.isEmpty ? [.empty] : user),
+            (.user, user.isEmpty ? [.empty] : user)
         ]
         if !listing.problems.isEmpty {
             sections.append((.problems, listing.problems.map(Row.problem)))
@@ -185,12 +185,12 @@ final class SkillsController: TableController {
 
     override func tableView(
         _: UITableView,
-        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
     ) -> UISwipeActionsConfiguration? {
         guard let target = removable(at: indexPath) else { return nil }
         let delete = UIContextualAction(
             style: .destructive,
-            title: String(localized: "Remove"),
+            title: String(localized: "Remove")
         ) { [weak self] _, _, completion in
             // the row goes when the list is read again
             completion(false)
@@ -207,7 +207,7 @@ final class SkillsController: TableController {
             title: "Remove \(name)?",
             message: "Its files are removed from the skills folder, and chats are no longer offered it.",
             confirmTitle: "Remove",
-            destructive: true,
+            destructive: true
         ) { [weak self] in
             self?.remove(location)
         }
@@ -254,7 +254,7 @@ final class SkillsController: TableController {
                     title: "Replace \(location)?",
                     message: "The skills folder already has a skill here. Replacing it removes its files.",
                     confirmTitle: "Replace",
-                    destructive: true,
+                    destructive: true
                 ) { [weak self] in
                     self?.add(url, replacing: true)
                 }
@@ -263,12 +263,12 @@ final class SkillsController: TableController {
                 case .tooLarge:
                     self?.presentNotice(
                         title: "Unable to Import Skill",
-                        message: "A skill can hold up to 2,000 files and 32 MB.",
+                        message: "A skill can hold up to 2,000 files and 32 MB."
                     )
                 default:
                     self?.presentNotice(
                         title: "Unable to Import Skill",
-                        message: "Choose a folder that holds a SKILL.md, or a Markdown file.",
+                        message: "Choose a folder that holds a SKILL.md, or a Markdown file."
                     )
                 }
             } catch {

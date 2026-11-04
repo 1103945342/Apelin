@@ -193,10 +193,10 @@ final class ToolSchemaValidatorTests: XCTestCase {
         "properties": [
             "binary": ["type": "string", "minLength": 1],
             "count": ["type": "integer", "minimum": 1, "maximum": 10],
-            "arch": ["type": "string", "enum": ["arm64", "x86_64"]],
+            "arch": ["type": "string", "enum": ["arm64", "x86_64"]]
         ],
         "required": ["binary"],
-        "additionalProperties": false,
+        "additionalProperties": false
     ]
 
     func testAcceptsAndRejects() {
@@ -215,7 +215,7 @@ final class ToolSchemaValidatorTests: XCTestCase {
         XCTAssertEqual(JSONValue.number(-0x1p63).intValue, Int.min)
         XCTAssertEqual(
             ToolSchemaValidator.problem(with: .number(0x1p64), against: ["type": "integer", "maximum": .number(0x1p63)]),
-            "args must be at most 9.223372036854776e+18",
+            "args must be at most 9.223372036854776e+18"
         )
     }
 }

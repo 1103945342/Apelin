@@ -43,14 +43,14 @@ struct FrameworkTools: Sendable {
         let symbols = stub.symbols.filter { filter == nil || $0.localizedCaseInsensitiveContains(filter!) }
         let classes = stub.objcClasses.filter { filter == nil || $0.localizedCaseInsensitiveContains(filter!) }
         lines.append(
-            "exported symbols: \(stub.symbols.count)\(filter.map { ", \(symbols.count) matching '\($0)'" } ?? "")",
+            "exported symbols: \(stub.symbols.count)\(filter.map { ", \(symbols.count) matching '\($0)'" } ?? "")"
         )
         lines.append(contentsOf: symbols.prefix(300).map { "  \($0)" })
         if symbols.count > 300 {
             lines.append("  … \(symbols.count - 300) more; narrow with symbol_filter")
         }
         lines.append(
-            "Objective-C classes: \(stub.objcClasses.count)\(filter.map { ", \(classes.count) matching '\($0)'" } ?? "")",
+            "Objective-C classes: \(stub.objcClasses.count)\(filter.map { ", \(classes.count) matching '\($0)'" } ?? "")"
         )
         lines.append(contentsOf: classes.prefix(300).map { "  \($0)" })
         if classes.count > 300 {
@@ -280,7 +280,7 @@ struct HeaderDeclarations {
         let name = NSRegularExpression.escapedPattern(for: symbol)
         let forms = [
             #"@interface\s+NAME\b(?!\s*\()"#,
-            #"@protocol\s+NAME\b(?!\s*[;,])"#,
+            #"@protocol\s+NAME\b(?!\s*[;])"#,
             // typedef … NAME; typedef NS_ENUM(…, NAME); typedef … (^NAME)(…);
             // typedef … NAME API_AVAILABLE(…);
             #"^\s*typedef\b.*[\s*,(^]NAME\s*(?:;|\)|MACRO)"#,
@@ -292,7 +292,7 @@ struct HeaderDeclarations {
             #"^\s+NAME\s*(?:=|,|$|MACRO)"#,
             #"^\s*#\s*define\s+NAME\b"#,
             #"^\s*(?!return\b|typedef\b)(?:[A-Za-z_][\w\s*]*?[\s*])?NAME\s*\("#,
-            #"^\s*\w*(?:extern|EXTERN|EXPORT|static)\b[\w\s*]*?[\s*]NAME\s*(?:;|\[|=|$|MACRO)"#,
+            #"^\s*\w*(?:extern|EXTERN|EXPORT|static)\b[\w\s*]*?[\s*]NAME\s*(?:;|\[|=|$|MACRO)"#
         ]
         // MACRO: an attribute after the name, as in NAME API_AVAILABLE(…) or
         // NAME NS_TYPED_ENUM; — not a return type before a function's name.
@@ -372,14 +372,14 @@ struct TBDStub: Equatable {
             stub.targets = unique(lists("archs", in: text))
         }
         stub.reexports = unique(
-            lists("re-exports", in: text) + lists("reexported-libraries", in: text).filter { $0.hasPrefix("/") },
+            lists("re-exports", in: text) + lists("reexported-libraries", in: text).filter { $0.hasPrefix("/") }
         )
         // Only the exports sections, not undefineds.
         let exports = sections(of: text, named: ["exports:", "reexports:"])
         stub.symbols = unique(
             lists("symbols", in: exports)
                 + lists("weak-symbols", in: exports)
-                + lists("thread-local-symbols", in: exports),
+                + lists("thread-local-symbols", in: exports)
         )
         stub.objcClasses = unique(lists("objc-classes", in: exports))
         return stub

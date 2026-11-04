@@ -45,7 +45,7 @@ public enum GitClone {
         branch: String,
         into directory: URL,
         credentials: GitCredentialLookup? = nil,
-        progress: @escaping (GitCloneProgress) -> Bool = { _ in true },
+        progress: @escaping (GitCloneProgress) -> Bool = { _ in true }
     ) throws -> GitCloneResult {
         GitLibrary.ensure()
         guard !branch.isEmpty, !branch.utf8.contains(0), !branch.hasPrefix("-"), !branch.contains(".."),
@@ -119,7 +119,7 @@ public enum GitClone {
         excluding patterns: [String] = [],
         replacing replacements: [Replacement] = [],
         credentials: GitCredentialLookup? = nil,
-        progress: @escaping (GitCloneProgress) -> Bool = { _ in true },
+        progress: @escaping (GitCloneProgress) -> Bool = { _ in true }
     ) throws -> GitCloneIntoResult {
         GitLibrary.ensure()
         guard !url.utf8.contains(0) else { throw GitError(.invalid, "bad repository URL") }
@@ -160,7 +160,7 @@ public enum GitClone {
                 checkout: checkout,
                 replaced: replaced,
                 credentials: credentials,
-                progress: progress,
+                progress: progress
             )
         } catch {
             undo(checkout.written, keeping: folders, in: directory)
@@ -199,7 +199,7 @@ public enum GitClone {
         checkout: CheckoutRecord,
         replaced: ReplacementRecord,
         credentials: GitCredentialLookup?,
-        progress: @escaping (GitCloneProgress) -> Bool,
+        progress: @escaping (GitCloneProgress) -> Bool
     ) throws -> GitCloneIntoResult {
         let pointer = repository.pointer
         var remote: OpaquePointer?
@@ -243,7 +243,7 @@ public enum GitClone {
         var local: OpaquePointer?
         try GitError.check(
             git_reference_create(&local, pointer, "refs/heads/\(name)", &target, 0, "clone: from \(url)"),
-            "make the branch \(name)",
+            "make the branch \(name)"
         )
         git_reference_free(local)
         try repository.setLocalConfigValue("origin", for: "branch.\(name).remote")

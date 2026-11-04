@@ -21,7 +21,7 @@ public struct GitSquashToolRequest: Sendable, Hashable, Codable {
         count: Int? = nil,
         message: String? = nil,
         expectedHead: String? = nil,
-        preview: Bool,
+        preview: Bool
     ) {
         self.context = context
         self.base = base

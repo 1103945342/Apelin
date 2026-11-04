@@ -19,7 +19,7 @@ enum DiagnosticsHandler: DomainHandler {
         default:
             request.fail(ApelinError(
                 .badRequest,
-                "\(request.operation.rawValue) is not a diagnostics operation",
+                "\(request.operation.rawValue) is not a diagnostics operation"
             ))
         }
     }

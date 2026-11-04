@@ -12,7 +12,7 @@ public struct SignInReporter: Sendable {
 
     public init(
         emit: @escaping @Sendable (TaskID, String, ApelinCore.JSONValue?) -> Void,
-        finish: @escaping @Sendable (TaskID, TaskState, String?) -> Void,
+        finish: @escaping @Sendable (TaskID, TaskState, String?) -> Void
     ) {
         self.emit = emit
         self.finish = finish
@@ -21,7 +21,7 @@ public struct SignInReporter: Sendable {
     public init(context: WorkerContext) {
         self.init(
             emit: { context.emit($0, $1, $2) },
-            finish: { context.finish($0, $1, message: $2) },
+            finish: { context.finish($0, $1, message: $2) }
         )
     }
 }
@@ -50,7 +50,7 @@ public actor AccountDesk {
         login: @escaping SignInLogin = KWWKSignIn.login,
         listener: @escaping OAuthLoopbackFactory = AccountDesk.nioListener,
         timeoutSeconds: Double = Double(AgentSignInRequest.timeoutSeconds),
-        verifyKey: @escaping @Sendable (AgentProvider, OAuthCredentials, String?) async throws -> Void = ProviderKeyVerification.verify,
+        verifyKey: @escaping @Sendable (AgentProvider, OAuthCredentials, String?) async throws -> Void = ProviderKeyVerification.verify
     ) {
         self.store = store
         self.login = login
@@ -67,7 +67,7 @@ public actor AccountDesk {
             successHTML: PasteableLoopback.successPage,
             errorHTML: PasteableLoopback.errorPage,
             redirectHost: host,
-            surfacesProviderErrors: true,
+            surfacesProviderErrors: true
         )
     }
 
@@ -82,7 +82,7 @@ public actor AccountDesk {
                 provider: provider,
                 method: provider.signInMethod,
                 alternativeMethods: others.isEmpty ? nil : others,
-                signedIn: stored.contains(provider.storeID),
+                signedIn: stored.contains(provider.storeID)
             )
             // An item that does not decode is still signed in: Sign Out is
             // how it goes away.
@@ -127,7 +127,7 @@ public actor AccountDesk {
         } catch {
             throw ApelinError(
                 .internal,
-                "Unable to remove the saved sign-in: \(error.localizedDescription). Try again.",
+                "Unable to remove the saved sign-in: \(error.localizedDescription). Try again."
             )
         }
     }
@@ -163,7 +163,7 @@ public actor AccountDesk {
         guard request.provider.signInMethods.contains(method) else {
             throw ApelinError(
                 .badRequest,
-                "\(request.provider.rawValue) does not support \(method.rawValue) sign-in. Choose another method.",
+                "\(request.provider.rawValue) does not support \(method.rawValue) sign-in. Choose another method."
             )
         }
         await stopRunning()
@@ -188,7 +188,7 @@ public actor AccountDesk {
         guard let run = running, run.taskID == request.taskID else {
             throw ApelinError(
                 .notFound,
-                "Sign-in \(request.taskID) is no longer waiting for a response. Start signing in again.",
+                "Sign-in \(request.taskID) is no longer waiting for a response. Start signing in again."
             )
         }
         var values: [AgentSignInField: String] = [:]
@@ -202,7 +202,7 @@ public actor AccountDesk {
         case .deviceCode:
             throw ApelinError(
                 .badRequest,
-                "Complete sign-in on the provider’s website. No response is needed in Apelin.",
+                "Complete sign-in on the provider’s website. No response is needed in Apelin."
             )
         case .browser:
             guard values.count == 1, let text = values[.callbackURL] else {
@@ -219,7 +219,7 @@ public actor AccountDesk {
             let accepted = try Self.validated(
                 values,
                 for: run.provider,
-                requiresDefaultModel: request.verifyModel != false,
+                requiresDefaultModel: request.verifyModel != false
             )
             guard request.verifyModel != false else {
                 try run.deliver(accepted)
@@ -249,7 +249,7 @@ public actor AccountDesk {
     public func activateModels(
         _ request: AgentModelActivateRequest,
         taskID: TaskID,
-        reporter: SignInReporter,
+        reporter: SignInReporter
     ) async throws {
         guard !request.models.isEmpty, request.models.count <= 64,
               request.models.allSatisfy({ !$0.isEmpty && $0.count <= 256 && !$0.contains(where: \.isNewline) })
@@ -283,7 +283,7 @@ public actor AccountDesk {
                 reporter.finish(
                     taskID,
                     run.isCancelled ? .cancelled : .failed,
-                    run.isCancelled ? nil : "Unable to verify model \(currentModel). Check the model ID and provider access, then try again.",
+                    run.isCancelled ? nil : "Unable to verify model \(currentModel). Check the model ID and provider access, then try again."
                 )
             }
             await self?.clear(run)
@@ -311,7 +311,7 @@ public actor AccountDesk {
     static func validated(
         _ values: [AgentSignInField: String],
         for provider: AgentProvider,
-        requiresDefaultModel: Bool = true,
+        requiresDefaultModel: Bool = true
     ) throws -> [AgentSignInField: String] {
         let fields = provider.keyFields
         for field in values.keys where !fields.contains(where: { $0.field == field }) {
@@ -441,7 +441,7 @@ public actor AccountDesk {
     private nonisolated func credentials(
         for run: SignInRun,
         options: SignInOptions,
-        reporter: SignInReporter,
+        reporter: SignInReporter
     ) async throws -> OAuthCredentials {
         let taskID = run.taskID
         switch run.method {
@@ -450,7 +450,7 @@ public actor AccountDesk {
                 var entry: [String: ApelinCore.JSONValue] = [
                     "key": .string(field.field.rawValue),
                     "required": .bool(field.required),
-                    "secure": .bool(field.secure),
+                    "secure": .bool(field.secure)
                 ]
                 if let value = field.defaultValue {
                     entry["defaultValue"] = .string(value)
@@ -469,7 +469,7 @@ public actor AccountDesk {
                     reporter.emit(taskID, "deviceCode", .object([
                         "code": .string(code.code),
                         "verificationURL": .string(code.verificationURL.absoluteString),
-                        "pageHoldsCode": .bool(code.pageHoldsCode),
+                        "pageHoldsCode": .bool(code.pageHoldsCode)
                     ]))
                 },
                 browser: SignInPresenter(signIn: run, reporter: reporter),
@@ -477,7 +477,7 @@ public actor AccountDesk {
                     let loopback = try PasteableLoopback(inner: listener(host, port, path))
                     run.loopback = loopback
                     return loopback
-                },
+                }
             )
             return try await login(run.provider, callbacks, options)
         }
@@ -489,7 +489,7 @@ public actor AccountDesk {
     /// the deadline.
     static func withDeadline<T: Sendable>(
         _ seconds: Double,
-        _ body: @escaping @Sendable () async throws -> T,
+        _ body: @escaping @Sendable () async throws -> T
     ) async throws -> T {
         try await withThrowingTaskGroup(of: T?.self) { group in
             group.addTask { try await body() }
@@ -520,12 +520,12 @@ private struct SignInPresenter: OAuthBrowserPresenter {
 
     func run<Outcome: Sendable>(
         _ url: URL,
-        while work: @escaping @Sendable () async throws -> Outcome,
+        while work: @escaping @Sendable () async throws -> Outcome
     ) async throws -> Outcome {
         if !signIn.hasAnnouncedDeviceCode {
             reporter.emit(signIn.taskID, "authorize", .object([
                 "url": .string(url.absoluteString),
-                "acceptsCallbackURL": .bool(signIn.loopback != nil),
+                "acceptsCallbackURL": .bool(signIn.loopback != nil)
             ]))
         }
         return try await work()

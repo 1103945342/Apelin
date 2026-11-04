@@ -47,7 +47,7 @@ final class DistributionRepositoryFlow {
         let alert = UIAlertController(
             title: String(localized: "Choose an Owner"),
             message: String(localized: "Create the repository on your account or in one of your organizations."),
-            preferredStyle: .alert,
+            preferredStyle: .alert
         )
         alert.addAction(UIAlertAction(title: account, style: .default) { [weak self] _ in
             self?.askName(owner: nil)
@@ -71,7 +71,7 @@ final class DistributionRepositoryFlow {
         let alert = UIAlertController(
             title: String(localized: "Create Distribution Repository"),
             message: message,
-            preferredStyle: .alert,
+            preferredStyle: .alert
         )
         alert.addTextField {
             $0.text = "packages"
@@ -89,7 +89,7 @@ final class DistributionRepositoryFlow {
             self?.start(
                 work: .distributionCreate,
                 title: String(localized: "Creating Repository"),
-                doneTitle: String(localized: "Repository Ready"),
+                doneTitle: String(localized: "Repository Ready")
             ) { try await ApelinService.app.distributionRepositoryCreate(name: name, owner: owner) }
         })
         presenter?.present(alert, animated: true)
@@ -107,12 +107,12 @@ final class DistributionRepositoryFlow {
         presenter?.presentConfirmation(
             title: "Link \(candidate.fullName)?",
             message: "Apelin clones it as a project, adds the package index’s files it lacks — a GitHub Pages workflow and an index script — without changing any it has, pushes them, and turns on GitHub Pages.",
-            confirmTitle: "Link",
+            confirmTitle: "Link"
         ) { [weak self] in
             self?.start(
                 work: .distributionLink,
                 title: String(localized: "Linking Repository"),
-                doneTitle: String(localized: "Repository Linked"),
+                doneTitle: String(localized: "Repository Linked")
             ) { try await ApelinService.app.distributionRepositoryLink(fullName: candidate.fullName) }
         }
     }
@@ -124,12 +124,12 @@ final class DistributionRepositoryFlow {
             title: "Update \(repository.fullName)?",
             message: "This overwrites the repository’s home page, README, icon, GitHub Pages workflow and index script with Apelin’s current template, replacing any changes made to them, then commits and pushes. Packages, depictions and banners stay as they are.",
             confirmTitle: "Update",
-            destructive: true,
+            destructive: true
         ) { [weak self] in
             self?.start(
                 work: .distributionLink,
                 title: String(localized: "Updating Repository"),
-                doneTitle: String(localized: "Repository Updated"),
+                doneTitle: String(localized: "Repository Updated")
             ) { try await ApelinService.app.distributionRepositoryLink(fullName: repository.fullName, overwrite: true) }
         }
     }
@@ -139,7 +139,7 @@ final class DistributionRepositoryFlow {
             title: "Unlink \(repository.fullName)?",
             message: "“Distribute…” stops publishing to it. The repository on GitHub and its project stay as they are.",
             confirmTitle: "Unlink",
-            destructive: true,
+            destructive: true
         ) { [weak self] in
             Task { [weak self] in
                 do {
@@ -159,7 +159,7 @@ final class DistributionRepositoryFlow {
         work: EnvironmentTaskProgress.Work,
         title: String,
         doneTitle: String,
-        _ request: @escaping () async throws -> TaskHandle,
+        _ request: @escaping () async throws -> TaskHandle
     ) {
         Task { [weak self] in
             guard let self, let navigation = presenter?.navigationController else { return }

@@ -7,10 +7,10 @@ import Foundation
 /// comes back relative to it; anything else keeps its own path.
 public enum ToolDiagnostics {
     private static let located = try! NSRegularExpression(
-        pattern: #"^(.+?):(\d+):(?:(\d+):)? (fatal error|error|warning|note|remark): (.*)$"#,
+        pattern: #"^(.+?):(\d+):(?:(\d+):)? (fatal error|error|warning|note|remark): (.*)$"#
     )
     private static let unlocated = try! NSRegularExpression(
-        pattern: #"^(ld|clang|swiftc|swift-frontend|lipo|strip|dsymutil|error|warning)(?:\([^)]*\))?: (?:(fatal error|error|warning|note)\s*: )?(.*)$"#,
+        pattern: #"^(ld|clang|swiftc|swift-frontend|lipo|strip|dsymutil|error|warning)(?:\([^)]*\))?: (?:(fatal error|error|warning|note)\s*: )?(.*)$"#
     )
 
     public static func parse(_ output: String, tool: String, projectRoot: String) -> [ProjectDiagnostic] {
@@ -36,7 +36,7 @@ public enum ToolDiagnostics {
                 message: group(5) ?? line,
                 file: file,
                 line: group(2).flatMap { Int($0) },
-                column: group(3).flatMap { Int($0) },
+                column: group(3).flatMap { Int($0) }
             )
         }
         if let match = unlocated.firstMatch(in: line, range: range) {
@@ -62,7 +62,7 @@ public enum ToolDiagnostics {
             return ProjectDiagnostic(
                 code: "\(tool).\(severityName(kindName))",
                 severity: severity(kindName),
-                message: message,
+                message: message
             )
         }
         if line.hasPrefix("Undefined symbols for architecture") {

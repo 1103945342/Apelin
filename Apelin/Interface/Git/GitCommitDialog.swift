@@ -21,7 +21,7 @@ final class GitCommitDialogController: UIViewController {
     }
 
     private let commitButton = GitGlassButton.make(
-        title: String(localized: "Commit"), prominent: true,
+        title: String(localized: "Commit"), prominent: true
     )
     private let types = ["feat", "fix", "refactor", "chore", "docs", "style", "perf", "test"]
 
@@ -164,7 +164,7 @@ final class GitCommitDialogController: UIViewController {
         }
 
         let stack = UIStackView(arrangedSubviews: [
-            titleRow, chips, messageBox, amendRow, buttons,
+            titleRow, chips, messageBox, amendRow, buttons
         ]).then {
             $0.axis = .vertical
             $0.spacing = 16
@@ -289,7 +289,7 @@ final class GitStashSheetContent: UIView {
         onPop: @escaping (GitStash) -> Void,
         onApply: @escaping (GitStash) -> Void,
         onDrop: @escaping (GitStash) -> Void,
-        onClear: @escaping () -> Void,
+        onClear: @escaping () -> Void
     ) {
         self.stashes = stashes
         self.hasChanges = hasChanges

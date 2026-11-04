@@ -21,7 +21,7 @@ for path in [
     parent + "/.jbroot-test/Applications/Example.app",
     parent + "/.jbroot-+123456789ABCDEF/Applications/Example.app",
     "/var/jb/Applications/Example.app/.jbroot/Applications/Example.app",
-    "",
+    ""
 ] {
     require(RoothideRoot.containing(path) == nil)
 }

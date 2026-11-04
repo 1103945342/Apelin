@@ -54,7 +54,7 @@ public enum ExternalBuild {
             installRoot: String,
             home: String,
             timestamp: Int64 = Int64(Date().timeIntervalSince1970),
-            timeout: TimeInterval = ExternalBuild.defaultTimeout,
+            timeout: TimeInterval = ExternalBuild.defaultTimeout
         ) {
             self.buildID = buildID
             self.projectID = projectID
@@ -82,7 +82,7 @@ public enum ExternalBuild {
         inputs: Inputs,
         store: ProjectStore,
         reporter: BuildReporter,
-        cancellation: BuildCancellation,
+        cancellation: BuildCancellation
     ) throws -> ArtifactRecord {
         let work = inputs.workDirectory
         let packages = work.appendingPathComponent("package", isDirectory: true)
@@ -126,7 +126,7 @@ public enum ExternalBuild {
         }
         guard control.architecture == expected else {
             throw BuildFailure(
-                "\(deb.lastPathComponent) is for \(control.architecture ?? "no architecture"), not \(expected), the \(inputs.bootstrap.rawValue) package architecture (APELIN_ARCHITECTURE)",
+                "\(deb.lastPathComponent) is for \(control.architecture ?? "no architecture"), not \(expected), the \(inputs.bootstrap.rawValue) package architecture (APELIN_ARCHITECTURE)"
             )
         }
         let bytes = try Data(contentsOf: deb)
@@ -157,7 +157,7 @@ public enum ExternalBuild {
             log: logURL.path,
             loadCheck: loadCheck(contents, packageID: packageID, inputs: inputs),
             createdAt: Date(timeIntervalSince1970: TimeInterval(inputs.timestamp)),
-            packageFiles: ArtifactRecord.packageFiles(of: contents),
+            packageFiles: ArtifactRecord.packageFiles(of: contents)
         )
         log("packaged \(packageID) \(version) (\(expected)), \(record.digest)")
         if inputs.configuration == .release {
@@ -174,7 +174,7 @@ public enum ExternalBuild {
         packages: URL,
         temporary: URL,
         cancellation: BuildCancellation,
-        log: @escaping (String) -> Void,
+        log: @escaping (String) -> Void
     ) throws -> ToolResult {
         let declaration = inputs.declaration
         let base = inputs.installRoot == "/" ? "" : inputs.installRoot
@@ -188,7 +188,7 @@ public enum ExternalBuild {
             executable: executable,
             arguments: [declaration.script] + declaration.arguments,
             workingDirectory: root,
-            environment: environment(inputs, projectRoot: root, packages: packages, temporary: temporary),
+            environment: environment(inputs, projectRoot: root, packages: packages, temporary: temporary)
         )
         log("$ " + invocation.displayLine)
         let limit: String = inputs.timeout >= 120 ? "\(Int(inputs.timeout / 60)) minutes" : "\(Int(inputs.timeout)) seconds"
@@ -239,7 +239,7 @@ public enum ExternalBuild {
             throw BuildFailure(
                 debs.isEmpty
                     ? "the build script wrote no package: write one .deb into APELIN_PACKAGE_DIR"
-                    : "the build script wrote \(debs.count) packages into APELIN_PACKAGE_DIR (\(debs.joined(separator: ", "))): write exactly one",
+                    : "the build script wrote \(debs.count) packages into APELIN_PACKAGE_DIR (\(debs.joined(separator: ", "))): write exactly one"
             )
         }
         let url = folder.appendingPathComponent(debs[0])
@@ -273,7 +273,7 @@ public enum ExternalBuild {
             (key: "version", value: .integer(1)),
             (key: "control", value: .array(fields)),
             (key: "members", value: .object(JSONObject(members))),
-            (key: "files", value: .array(files)),
+            (key: "files", value: .array(files))
         ]
         return CanonicalJSON.digest(.object(JSONObject(description)))
     }
@@ -317,7 +317,7 @@ public enum ExternalBuild {
             filterPlistInstalledPath: installed(plistPath),
             bundles: rules["Bundles"] as? [String] ?? [],
             executables: rules["Executables"] as? [String] ?? [],
-            classes: rules["Classes"] as? [String] ?? [],
+            classes: rules["Classes"] as? [String] ?? []
         )
     }
 }

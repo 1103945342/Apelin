@@ -277,7 +277,7 @@ final class GitDiffPage: UIViewController {
         table.reloadData()
         hScroll.contentSize = CGSize(
             width: max(contentWidth, view.bounds.width),
-            height: view.bounds.height,
+            height: view.bounds.height
         )
         table.snp.remakeConstraints { make in
             make.top.bottom.equalToSuperview()
@@ -295,7 +295,7 @@ final class GitDiffPage: UIViewController {
         let wrap = UIAction(
             title: String(localized: "Wrap Lines"),
             image: GitIcon.image(GitIcon.Name.wrap, pointSize: 16),
-            state: wraps ? .on : .off,
+            state: wraps ? .on : .off
         ) { [weak self] _ in
             guard let self else { return }
             self.wraps.toggle()
@@ -427,7 +427,7 @@ private final class GitDiffLineCell: UITableViewCell {
             row.oldNumber.map { "\($0)" },
             row.newNumber.map { "\($0)" },
             row.kind == .added ? String(localized: "Added") : row.kind == .removed ? String(localized: "Deleted") : nil,
-            row.text,
+            row.text
         ].compactMap { $0 }.joined(separator: " ")
     }
 }

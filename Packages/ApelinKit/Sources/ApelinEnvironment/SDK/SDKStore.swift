@@ -75,7 +75,7 @@ public struct SDKStore: Sendable {
             warnings: inspection.warnings,
             digest: inspection.digest,
             swiftCompilerVersion: identity.swiftCompilerVersion,
-            origin: origin,
+            origin: origin
         )
         let pending = layout.sdkRegistry.appendingPathComponent(".\(id).json.pending")
         try JSONFile.write(record, to: pending)
@@ -94,7 +94,7 @@ public struct SDKStore: Sendable {
         guard users.isEmpty else {
             throw ApelinError(
                 .conflict,
-                "\(record.id) is used by \(users.joined(separator: ", ")); move them to another SDK first",
+                "\(record.id) is used by \(users.joined(separator: ", ")); move them to another SDK first"
             )
         }
         // Record first: from here on the SDK is not registered, whatever

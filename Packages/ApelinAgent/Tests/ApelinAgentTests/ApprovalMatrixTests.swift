@@ -49,7 +49,7 @@ struct ApprovalMatrixTests {
             let facts = InvocationFacts(
                 tool: .local(tool),
                 command: tool == .shellRun ? .shell("rm -rf build; make") : nil,
-                description: DescriptionState(digest: "x", baseline: .changed(diff: "")),
+                description: DescriptionState(digest: "x", baseline: .changed(diff: ""))
             )
             #expect(verdict(.relaxed, facts) == .allow(.relaxed), "\(tool.rawValue)")
         }
@@ -186,7 +186,7 @@ struct ApprovalMatrixTests {
             ["ls", "-lR"], ["ls", "-L", "Sources"], ["git", "diff", "-O/etc/passwd"],
             ["git", "log", "--show-signature"], ["git", "log", "--format=%G?"], ["git", "log", "--format=%+GS"],
             // A bundle with a flag the subcommand does not take bare.
-            ["git", "status", "-sp"], ["git", "diff", "-pc"], ["git", "diff", "-pO"],
+            ["git", "status", "-sp"], ["git", "diff", "-pc"], ["git", "diff", "-pO"]
         ] {
             #expect(isAsk(runVerdict(.argv(argv))), "\(argv)")
         }
@@ -208,7 +208,7 @@ struct ApprovalMatrixTests {
                 tool: .local(.shellRun),
                 pathCheck: .inside,
                 command: .argv(argv),
-                workingDirectory: directory,
+                workingDirectory: directory
             ))
         }
         #expect(runVerdict(["cat", "../Sources/Tweak.m"], in: "Sources") == .allow(.preset("cat")))
@@ -251,7 +251,7 @@ struct ApprovalMatrixTests {
                 tool: .local(.shellRun),
                 pathCheck: .inside,
                 command: invocation,
-                runsAsRoot: true,
+                runsAsRoot: true
             ))
         }
         let install = RunCodeInvocation.argv(["irisin-cli", "install", "--yes", "mobilesubstrate"])
@@ -285,7 +285,7 @@ struct ApprovalMatrixTests {
         #expect(base != ApprovalFingerprint.make(tool: "apelin_project_build", arguments: ["argv": ["make"]], workingDirectory: ".", projectID: "p", digest: nil))
         #expect(
             ApprovalFingerprint.make(tool: "apelin_project_build", arguments: [:], workingDirectory: ".", projectID: "p", digest: "a")
-                != ApprovalFingerprint.make(tool: "apelin_project_build", arguments: [:], workingDirectory: ".", projectID: "p", digest: "b"),
+                != ApprovalFingerprint.make(tool: "apelin_project_build", arguments: [:], workingDirectory: ".", projectID: "p", digest: "b")
         )
     }
 }

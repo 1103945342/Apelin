@@ -23,7 +23,7 @@ struct ChatTranscriptCache {
         now: Date,
         isFollowed: (UUID) -> Bool,
         conversationTitle: (String) -> String?,
-        attachment: (AgentAttachment) -> ComposerAttachment?,
+        attachment: (AgentAttachment) -> ComposerAttachment?
     ) -> ChatTranscript {
         let id = record.summary.id
         let sending = (record.sending ?? []).map(Entry.Sent.init)
@@ -43,7 +43,7 @@ struct ChatTranscriptCache {
                 sending: sending,
                 now: now,
                 conversationTitle: conversationTitle,
-                attachment: attachment,
+                attachment: attachment
             )
             built = kept
         } else {
@@ -53,7 +53,7 @@ struct ChatTranscriptCache {
                 now: now,
                 shown: entry?.transcript.messages,
                 conversationTitle: conversationTitle,
-                attachment: attachment,
+                attachment: attachment
             )
         }
         if !isFollowed(id) {
@@ -113,7 +113,7 @@ struct ChatTranscriptCache {
             now: Date,
             shown: [ChatMessage]?,
             conversationTitle: (String) -> String?,
-            attachment: (AgentAttachment) -> ComposerAttachment?,
+            attachment: (AgentAttachment) -> ComposerAttachment?
         ) {
             var senderTitles: [String: String?] = [:]
             transcript = ChatTranscript(
@@ -125,7 +125,7 @@ struct ChatTranscriptCache {
                     return title
                 },
                 now: now,
-                attachment: attachment,
+                attachment: attachment
             )
             if let shown {
                 transcript.messages = ChatTranscriptCache.reusing(shown, in: transcript.messages)
@@ -152,7 +152,7 @@ struct ChatTranscriptCache {
             sending: [Sent],
             now: Date,
             conversationTitle: (String) -> String?,
-            attachment: (AgentAttachment) -> ComposerAttachment?,
+            attachment: (AgentAttachment) -> ComposerAttachment?
         ) {
             let shown = transcript.messages
             var looked: [String: String?] = [:]
@@ -165,7 +165,7 @@ struct ChatTranscriptCache {
                     return title
                 },
                 now: now,
-                attachment: attachment,
+                attachment: attachment
             )
             transcript.messages = ChatTranscriptCache.reusing(shown, in: transcript.messages)
             senderTitles.merge(looked) { _, latest in latest }

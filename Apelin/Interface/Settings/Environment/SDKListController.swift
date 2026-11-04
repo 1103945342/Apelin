@@ -53,7 +53,7 @@ final class SDKListController: TableController {
                 let page = SDKCatalogController()
                 page.onImport = { self?.reload() }
                 self?.navigationController?.pushViewController(page, animated: true)
-            },
+            }
         ).then { $0.accessibilityLabel = String(localized: "Add SDK") }
         tableView.backgroundView = LoadingView()
         updateRows()
@@ -64,7 +64,7 @@ final class SDKListController: TableController {
             self,
             selector: #selector(transferImported),
             name: TransferOpener.environmentChanged,
-            object: nil,
+            object: nil
         )
     }
 
@@ -101,7 +101,7 @@ final class SDKListController: TableController {
             sections.append(Section(
                 id: "tasks",
                 header: String(localized: "In Progress"),
-                rows: list.activeTasks.map(Row.task),
+                rows: list.activeTasks.map(Row.task)
             ))
         }
         if !list.sdks.isEmpty {
@@ -112,7 +112,7 @@ final class SDKListController: TableController {
             sections.append(Section(
                 id: "installed",
                 header: String(localized: "Installed"),
-                rows: sdks.map(Row.sdk),
+                rows: sdks.map(Row.sdk)
             ))
         }
         self.sections = sections
@@ -120,7 +120,7 @@ final class SDKListController: TableController {
             ? EmptyStateView(
                 symbolName: "shippingbox",
                 title: String(localized: "No SDKs Yet"),
-                text: String(localized: "Tap “+” to download an iOS SDK."),
+                text: String(localized: "Tap “+” to download an iOS SDK.")
             )
             : nil
         updateRows()
@@ -132,7 +132,7 @@ final class SDKListController: TableController {
         tableView.backgroundView = EmptyStateView(
             symbolName: "exclamationmark.triangle",
             title: String(localized: "Error"),
-            text: ToolchainController.unavailableText(error),
+            text: ToolchainController.unavailableText(error)
         )
         updateRows()
     }
@@ -178,7 +178,7 @@ final class SDKListController: TableController {
             handle: handle,
             work: .sdkImport,
             title: String(localized: "Importing SDK"),
-            doneTitle: String(localized: "SDK Imported"),
+            doneTitle: String(localized: "SDK Imported")
         )
         page.onFinish = { [weak self] in self?.reload() }
         navigationController?.pushViewController(page, animated: true)

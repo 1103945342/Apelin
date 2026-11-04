@@ -58,7 +58,7 @@ public struct ToolAttachmentReference: Codable, Hashable, Sendable {
         argument: String? = nil,
         mimeType: String? = nil,
         name: String? = nil,
-        byteCount: Int? = nil,
+        byteCount: Int? = nil
     ) {
         self.id = id
         self.argument = argument
@@ -185,7 +185,7 @@ public struct ToolFrame: Codable, Hashable, Sendable {
         _ code: ToolErrorCode,
         _ message: String,
         requestID: String?,
-        protocolVersion: Int = ToolProtocol.version,
+        protocolVersion: Int = ToolProtocol.version
     ) -> ToolFrame {
         var frame = ToolFrame(protocolVersion: protocolVersion, type: .error, requestID: requestID)
         frame.error = ToolErrorPayload(code: code, message: message)

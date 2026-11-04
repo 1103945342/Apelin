@@ -150,15 +150,15 @@ final class GitLogPage: UIViewController, GitPage {
                             Task { @MainActor in
                                 do {
                                     try await self.session.createBranch(
-                                        name: name, startPoint: commit.id, checkout: false,
+                                        name: name, startPoint: commit.id, checkout: false
                                     )
                                 } catch {
                                     self.host?.gitShowToast(error.readableMessage)
                                 }
                                 self.host?.gitSetBusy(false)
                             }
-                        },
-                    ],
+                        }
+                    ]
                 )
             },
             onCreateTag: { [weak self] in
@@ -177,15 +177,15 @@ final class GitLogPage: UIViewController, GitPage {
                             Task { @MainActor in
                                 do {
                                     try await self.session.createTag(
-                                        name: name, commit: commit.id, message: nil,
+                                        name: name, commit: commit.id, message: nil
                                     )
                                 } catch {
                                     self.host?.gitShowToast(error.readableMessage)
                                 }
                                 self.host?.gitSetBusy(false)
                             }
-                        },
-                    ],
+                        }
+                    ]
                 )
             },
             onReset: { [weak self] in
@@ -199,7 +199,7 @@ final class GitLogPage: UIViewController, GitPage {
                     return
                 }
                 let page = GitDiffPage(
-                    session: self.session, source: .commit(commit.id), path: path,
+                    session: self.session, source: .commit(commit.id), path: path
                 )
                 page.host = self.host
                 if let sheet = navigation.sheetPresentationController {
@@ -208,13 +208,13 @@ final class GitLogPage: UIViewController, GitPage {
                     }
                 }
                 navigation.pushViewController(page, animated: true)
-            },
+            }
         )
         let detail = GitCommitDetailController(content: content, title: commit.shortID)
         let navigation = UINavigationController(rootViewController: detail)
         detail.navigationItem.rightBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "xmark"),
-            primaryAction: UIAction { [weak navigation] _ in navigation?.dismiss(animated: true) },
+            primaryAction: UIAction { [weak navigation] _ in navigation?.dismiss(animated: true) }
         ).then { $0.accessibilityLabel = String(localized: "Close") }
         navigation.modalPresentationStyle = .pageSheet
         if let sheet = navigation.sheetPresentationController {
@@ -250,8 +250,8 @@ final class GitLogPage: UIViewController, GitPage {
                         }
                         self.host?.gitSetBusy(false)
                     }
-                },
-            ],
+                }
+            ]
         )
     }
 
@@ -288,7 +288,7 @@ extension GitLogPage: UITableViewDataSource, UITableViewDelegate {
                 layout: layout,
                 index: index,
                 showsGraph: !searching,
-                laneWidth: GitGraphView.laneWidth(for: layout.maxLane),
+                laneWidth: GitGraphView.laneWidth(for: layout.maxLane)
             )
             return cell
         case .footer:
@@ -400,7 +400,7 @@ private final class GitLogCommitCell: UITableViewCell {
     private var graphWidth: Constraint?
     private let refs = UIStackView()
     private let chevron = UIImageView(image: GitIcon.image(
-        GitIcon.Name.chevronRight, pointSize: 16,
+        GitIcon.Name.chevronRight, pointSize: 16
     )).then {
         $0.tintColor = GitTheme.onSurfaceVariant
         $0.contentMode = .scaleAspectFit
@@ -508,7 +508,7 @@ private final class GitLogCommitCell: UITableViewCell {
         layout: GitGraphLayout,
         index: Int,
         showsGraph: Bool,
-        laneWidth: CGFloat,
+        laneWidth: CGFloat
     ) {
         graph.isHidden = !showsGraph
         graphWidth?.update(offset: showsGraph
@@ -545,7 +545,7 @@ private final class GitLogCommitCell: UITableViewCell {
             commit.shortID,
             commit.authorName,
             date.text,
-            commit.refs.map(\.name).joined(separator: ", "),
+            commit.refs.map(\.name).joined(separator: ", ")
         ].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")
         backgroundColor = .clear
         contentView.backgroundColor = .clear
@@ -585,7 +585,7 @@ private final class GitRefPill: UIStackView {
         let icon = UIImageView(image: GitIcon.image(
             ref.kind == .remote ? GitIcon.Name.cloud
                 : ref.kind == .tag ? GitIcon.Name.tag : GitIcon.Name.branch,
-            pointSize: 11,
+            pointSize: 11
         ))
         icon.tintColor = foreground
         icon.setContentHuggingPriority(.required, for: .horizontal)
@@ -693,7 +693,7 @@ private final class GitCommitDetailContent: UIView {
         onCreateBranch: @escaping () -> Void,
         onCreateTag: @escaping () -> Void,
         onReset: @escaping () -> Void,
-        onFile: @escaping (String) -> Void,
+        onFile: @escaping (String) -> Void
     ) {
         super.init(frame: .zero)
         let message = UILabel().then {
@@ -747,13 +747,13 @@ private final class GitCommitDetailContent: UIView {
         hashRow.addArrangedSubview(fullCopy)
 
         let branchButton = GitButtons.tonal(
-            title: String(localized: "Branches"), symbol: GitIcon.Name.branch, height: 36,
+            title: String(localized: "Branches"), symbol: GitIcon.Name.branch, height: 36
         )
         let tagButton = GitButtons.tonal(
-            title: String(localized: "Tags"), symbol: GitIcon.Name.tag, height: 36,
+            title: String(localized: "Tags"), symbol: GitIcon.Name.tag, height: 36
         )
         let resetButton = GitButtons.tonal(
-            title: String(localized: "Reset to this Commit"), symbol: GitIcon.Name.rotate, height: 36,
+            title: String(localized: "Reset to this Commit"), symbol: GitIcon.Name.rotate, height: 36
         )
         branchButton.addAction(UIAction { _ in onCreateBranch() }, for: .touchUpInside)
         tagButton.addAction(UIAction { _ in onCreateTag() }, for: .touchUpInside)
@@ -996,7 +996,7 @@ private final class GitResetChoiceRow: UIControl {
     private func update() {
         circle.image = UIImage(
             systemName: isChosen ? "largecircle.fill.circle" : "circle",
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: 18),
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 18)
         )
         accessibilityTraits = isChosen ? [.button, .selected] : .button
     }

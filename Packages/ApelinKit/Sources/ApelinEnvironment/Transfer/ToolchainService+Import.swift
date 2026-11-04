@@ -15,7 +15,7 @@ extension ToolchainService {
         _ tree: PreparedToolchain,
         taskID: TaskID,
         installer: any PackageInstaller,
-        reporter: TaskReporter,
+        reporter: TaskReporter
     ) async throws -> ToolchainRecord {
         let product = tree.product
         if let refusal = HostCPU.toolchainRefusal {
@@ -29,7 +29,7 @@ extension ToolchainService {
             throw ApelinError(
                 .badRequest,
                 product.swiftUnavailableReason
-                    ?? "Swift from Command Line Tools \(product.version) is not available on this device.",
+                    ?? "Swift from Command Line Tools \(product.version) is not available on this device."
             )
         }
         if ToolchainRegistry.load(layout).toolchains.contains(where: { $0.id == tree.id }) {
@@ -38,7 +38,7 @@ extension ToolchainService {
         guard !sdks.list().isEmpty || supplier.hasEnabledSource else {
             throw ApelinError(
                 .badRequest,
-                "Import an SDK first. Apelin tests each new toolchain against an SDK.",
+                "Import an SDK first. Apelin tests each new toolchain against an SDK."
             )
         }
 
@@ -57,7 +57,7 @@ extension ToolchainService {
                 components: tree.components,
                 stage: "reading",
                 taskID: taskID.rawValue,
-                updated: Date(),
+                updated: Date()
             )
         if job.taskID != taskID.rawValue {
             reporter.emit("resumed", .object(["stage": .string(job.stage), "previousTask": .string(job.taskID)]))
@@ -85,7 +85,7 @@ extension ToolchainService {
                     update.stage,
                     completed: update.completed,
                     total: update.total,
-                    detail: update.detail.isEmpty ? nil : update.detail,
+                    detail: update.detail.isEmpty ? nil : update.detail
                 )
             }
         }
@@ -104,7 +104,7 @@ extension ToolchainService {
                 staging: directory.appendingPathComponent("sdk", isDirectory: true),
                 journal: journal,
                 reporter: reporter,
-                resumeStage: "packaging",
+                resumeStage: "packaging"
             )
             try reporter.checkCancelled()
             guard let installRoot = CanonicalPath.resolve(layout.installRoot) else {
@@ -113,7 +113,7 @@ extension ToolchainService {
             guard let sdk = CanonicalPath.resolve(sdkRecord.path) else {
                 throw ApelinError(
                     .notFound,
-                    "The files for SDK \(sdkRecord.id) are missing. Remove the SDK and import it again.",
+                    "The files for SDK \(sdkRecord.id) are missing. Remove the SDK and import it again."
                 )
             }
 
@@ -157,12 +157,12 @@ extension ToolchainService {
                     guard installs.latest == nil else {
                         throw ApelinError(
                             .internal,
-                            "irisind installed \(artifact.packageID), but the bytes under \(tree.installRelativePath) are not the package's",
+                            "irisind installed \(artifact.packageID), but the bytes under \(tree.installRelativePath) are not the package's"
                         )
                     }
                     try await install()
                 },
-                progress: progress,
+                progress: progress
             )
             try reporter.checkCancelled()
 
@@ -173,7 +173,7 @@ extension ToolchainService {
                 path: CanonicalPath.resolve(path) ?? path,
                 selfTests: selfTests,
                 installationID: installs.latest ?? remembered,
-                selfTestSDK: sdkRecord.version,
+                selfTestSDK: sdkRecord.version
             )
             try? FileManager.default.removeItem(at: directory)
             return record
@@ -186,7 +186,7 @@ extension ToolchainService {
                 previous: nil,
                 journal: journal,
                 installer: installer,
-                reporter: reporter,
+                reporter: reporter
             )
             if clean {
                 try? FileManager.default.removeItem(at: directory)

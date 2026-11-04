@@ -176,7 +176,7 @@ final class ProjectManifestFormatTests: XCTestCase {
                         values: [:],
                         catalog: catalog,
                         registry: sampleRegistry(),
-                        automaticallyName: automatic,
+                        automaticallyName: automatic
                     )
                     let data = try manifest(created.root.path)
                     assertFormatted(data, "\(qualified), automatically named \(automatic)")
@@ -189,7 +189,7 @@ final class ProjectManifestFormatTests: XCTestCase {
         let initial = try manifest(workspace.path)
         assertFormatted(initial, "an empty workspace")
         XCTAssertEqual(try StrictJSON.parse(initial).objectValue?.keys, [
-            "schemaVersion", "projectID", "kind", "buildSystem", "displayName", "autoName",
+            "schemaVersion", "projectID", "kind", "buildSystem", "displayName", "autoName"
         ])
         XCTAssertEqual(try StrictJSON.parse(initial)["schemaVersion"], .integer(1))
 
@@ -200,7 +200,7 @@ final class ProjectManifestFormatTests: XCTestCase {
         let renamed = try manifest(workspace.path)
         assertFormatted(renamed, "a rename")
         XCTAssertEqual(try StrictJSON.parse(renamed).objectValue?.keys, [
-            "schemaVersion", "projectID", "kind", "buildSystem", "displayName", "autoName",
+            "schemaVersion", "projectID", "kind", "buildSystem", "displayName", "autoName"
         ], "renamed in place")
         XCTAssertEqual(try StrictJSON.parse(renamed)["displayName"]?.stringValue, "Weather Widget")
     }

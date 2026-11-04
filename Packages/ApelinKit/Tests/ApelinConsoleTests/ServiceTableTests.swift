@@ -155,11 +155,11 @@ final class ServiceTableTests: XCTestCase {
             return Row(reply: AgentCredentialImportResponse()) { _ = try await $0.agentCredentialImport() }
         case .agentAccountList:
             return Row(reply: AgentAccountListResponse(accounts: [
-                AgentAccount(provider: .githubCopilot, method: .deviceCode, signedIn: true),
+                AgentAccount(provider: .githubCopilot, method: .deviceCode, signedIn: true)
             ])) { _ = try await $0.agentAccountList() }
         case .agentSkillList:
             return Row(reply: AgentSkillListResponse(skills: [
-                AgentSkill(name: "example", description: "An example.", source: .builtIn, body: "Do it."),
+                AgentSkill(name: "example", description: "An example.", source: .builtIn, body: "Do it.")
             ])) { _ = try await $0.agentSkillList() }
         case .agentRewritePrompt:
             return Row(reply: AgentRewritePromptResponse(text: "Rewritten.")) {
@@ -196,7 +196,7 @@ final class ServiceTableTests: XCTestCase {
         case .feedbackRead:
             let issue = FeedbackReadResponse(
                 number: 1, url: "https://github.com/owngoal-dev/Apelin/issues/1", title: "t", body: "b",
-                footer: nil, author: "someone", state: "open", isAuthor: true,
+                footer: nil, author: "someone", state: "open", isAuthor: true
             )
             return Row(reply: issue) { _ = try await $0.feedbackRead(number: 1) }
         case .feedbackEdit:
@@ -262,7 +262,7 @@ final class ServiceTableTests: XCTestCase {
             let created = GitRepositoryCreateResponse(
                 fullName: "u/r",
                 cloneURL: "https://github.com/u/r.git",
-                url: "https://github.com/u/r",
+                url: "https://github.com/u/r"
             )
             return Row(reply: created) { _ = try await $0.gitRepositoryCreate(GitRepositoryCreateRequest(name: "r", visibility: .private)) }
         case .gitIssueCreate:
@@ -287,7 +287,7 @@ final class ServiceTableTests: XCTestCase {
                 remote: "origin",
                 branch: "main",
                 expectedRemoteCommit: String(repeating: "a", count: 40),
-                expectedHead: nil,
+                expectedHead: nil
             )
             return Row(reply: handle) { _ = try await $0.gitResetToRemote(reset) }
         }

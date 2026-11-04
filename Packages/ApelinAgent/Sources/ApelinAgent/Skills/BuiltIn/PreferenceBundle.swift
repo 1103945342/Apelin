@@ -82,6 +82,6 @@ extension BuiltInSkills {
           `{path, file}` layout entry, mode `0644`.
         Settings reads the row at launch; a change to the entry or the bundle
         shows after Settings is relaunched.
-        """,
+        """
     )
 }

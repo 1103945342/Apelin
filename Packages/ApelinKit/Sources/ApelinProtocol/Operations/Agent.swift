@@ -83,7 +83,7 @@ public struct AgentSessionSummary: Codable, Sendable, Equatable {
         title: String? = nil,
         state: TaskState,
         updatedAt: Date,
-        parentSessionID: String? = nil,
+        parentSessionID: String? = nil
     ) {
         self.sessionID = sessionID
         self.task = task
@@ -290,7 +290,7 @@ public struct AgentOpenRequest: OperationRequest {
         prompt: String? = nil,
         closeWhenFinished: Bool? = nil,
         title: String? = nil,
-        hostRestarted: Bool? = nil,
+        hostRestarted: Bool? = nil
     ) {
         self.projectID = projectID
         self.projectName = projectName
@@ -389,7 +389,7 @@ public struct AgentPromptRequest: OperationRequest {
         asksBeforeScreen: Bool? = nil,
         runMode: AgentRunMode? = nil,
         fromSessionID: String? = nil,
-        modelParameters: AgentModelParameters? = nil,
+        modelParameters: AgentModelParameters? = nil
     ) {
         self.sessionID = sessionID
         self.text = text
@@ -494,7 +494,7 @@ public struct AgentApproveRequest: OperationRequest {
         approvalID: String,
         decision: ApprovalDecision,
         scope: ApprovalScope? = nil,
-        ownerVerified: Bool? = nil,
+        ownerVerified: Bool? = nil
     ) {
         self.sessionID = sessionID
         self.approvalID = approvalID
@@ -581,14 +581,14 @@ public extension ApelinService {
         approvalID: String,
         decision: ApprovalDecision,
         scope: ApprovalScope? = nil,
-        ownerVerified: Bool? = nil,
+        ownerVerified: Bool? = nil
     ) async throws {
         _ = try await send(AgentApproveRequest(
             sessionID: sessionID,
             approvalID: approvalID,
             decision: decision,
             scope: scope,
-            ownerVerified: ownerVerified,
+            ownerVerified: ownerVerified
         ))
     }
 

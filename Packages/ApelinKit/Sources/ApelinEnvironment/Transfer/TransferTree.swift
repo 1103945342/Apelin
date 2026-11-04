@@ -38,7 +38,7 @@ struct TransferTree {
             rules: rules,
             scanned: &scanned,
             throttle: throttle,
-            reporter: reporter,
+            reporter: reporter
         )
 
         var links: [[String]: String] = [:]
@@ -67,7 +67,7 @@ struct TransferTree {
         rules: Rules,
         scanned: inout Int64,
         throttle: ProgressThrottle,
-        reporter: TaskReporter,
+        reporter: TaskReporter
     ) throws {
         let names: [String]
         do {
@@ -99,14 +99,14 @@ struct TransferTree {
                     rules: rules,
                     scanned: &scanned,
                     throttle: throttle,
-                    reporter: reporter,
+                    reporter: reporter
                 )
             case S_IFREG:
                 members.append(TransferMember(
                     path: path,
                     kind: .file,
                     size: Int64(metadata.st_size),
-                    executable: metadata.st_mode & 0o111 != 0 ? true : nil,
+                    executable: metadata.st_mode & 0o111 != 0 ? true : nil
                 ))
                 sources[path] = url
             case S_IFLNK:

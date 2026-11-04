@@ -35,10 +35,10 @@ final class GitGlassTabs: UIView {
         control.backgroundColor = .clear
         control.addTarget(self, action: #selector(selectionChanged), for: .valueChanged)
         control.setTitleTextAttributes(
-            [.font: GitTheme.font(13, .semibold)], for: .selected,
+            [.font: GitTheme.font(13, .semibold)], for: .selected
         )
         control.setTitleTextAttributes(
-            [.font: GitTheme.font(13, .regular)], for: .normal,
+            [.font: GitTheme.font(13, .regular)], for: .normal
         )
         glass.contentView.addSubview(control)
         control.snp.makeConstraints { make in

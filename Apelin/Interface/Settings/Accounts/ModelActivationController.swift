@@ -46,12 +46,12 @@ final class ModelActivationController: TableController, UISearchResultsUpdating 
         let save = UIBarButtonItem(
             title: String(localized: "Save"),
             primaryAction: UIAction { [weak self] _ in self?.save() },
-            menu: menu,
+            menu: menu
         )
         if usesAPIKey {
             let add = UIBarButtonItem(
                 image: UIImage(systemName: "plus"),
-                primaryAction: UIAction { [weak self] _ in self?.addCustomModel() },
+                primaryAction: UIAction { [weak self] _ in self?.addCustomModel() }
             )
             add.accessibilityLabel = String(localized: "Add Custom Model")
             navigationItem.rightBarButtonItems = [save, add]
@@ -75,7 +75,7 @@ final class ModelActivationController: TableController, UISearchResultsUpdating 
 
     private lazy var dataSource = TableDataSource<Int, String, ModelRow>(
         tableView: tableView,
-        identifier: { $0.id },
+        identifier: { $0.id }
     ) { [weak self] table, indexPath, row in
         self?.cell(in: table, at: indexPath, row: row)
     }
@@ -138,12 +138,12 @@ final class ModelActivationController: TableController, UISearchResultsUpdating 
 
     override func tableView(
         _: UITableView,
-        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
     ) -> UISwipeActionsConfiguration? {
         guard usesAPIKey, !saving, let model = dataSource.itemIdentifier(for: indexPath) else { return nil }
         let delete = UIContextualAction(
             style: .destructive,
-            title: String(localized: "Delete"),
+            title: String(localized: "Delete")
         ) { [weak self] _, _, completion in
             guard let self, !saving, let row = shown.firstIndex(of: model) else { completion(false); return }
             selected.remove(model)
@@ -164,14 +164,14 @@ final class ModelActivationController: TableController, UISearchResultsUpdating 
             message: "Enter the model ID accepted by this provider.",
             placeholder: "Model ID",
             text: "",
-            doneButtonText: "Add",
+            doneButtonText: "Add"
         ) { [weak self] value in
             guard let self else { return }
             let id = value.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !id.isEmpty, id.count <= 256, !id.contains(where: \.isWhitespace) else {
                 presentNotice(
                     title: "Invalid Model ID",
-                    message: String(localized: "Enter a model ID without spaces or line breaks."),
+                    message: String(localized: "Enter a model ID without spaces or line breaks.")
                 )
                 return
             }
@@ -211,11 +211,11 @@ final class ModelActivationController: TableController, UISearchResultsUpdating 
                         if let handle = self?.verification {
                             try? await ApelinService.app.agentSignInCancel(taskID: handle.taskID)
                         }
-                    },
+                    }
                 ) {
                     let handle = try await ApelinService.app.agentModelActivate(
                         provider: self.account.provider,
-                        models: self.selected.sorted(),
+                        models: self.selected.sorted()
                     )
                     self.verification = handle
                     if Task.isCancelled {
@@ -234,7 +234,7 @@ final class ModelActivationController: TableController, UISearchResultsUpdating 
                             throw ApelinError(
                                 .unavailable,
                                 event.payload?["message"]?.stringValue
-                                    ?? String(localized: "Model verification failed."),
+                                    ?? String(localized: "Model verification failed.")
                             )
                         }
                         return

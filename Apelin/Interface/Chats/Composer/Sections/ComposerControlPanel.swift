@@ -40,7 +40,7 @@ final class ComposerControlPanel: ComposerSectionView {
         let width = (bounds.width - spacing * CGFloat(buttons.count - 1)) / CGFloat(buttons.count)
         for (index, button) in buttons.enumerated() {
             button.frame = directionalFrame(
-                CGRect(x: CGFloat(index) * (width + spacing), y: 0, width: width, height: buttonHeight),
+                CGRect(x: CGFloat(index) * (width + spacing), y: 0, width: width, height: buttonHeight)
             )
         }
     }

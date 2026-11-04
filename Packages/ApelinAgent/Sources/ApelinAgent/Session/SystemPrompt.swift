@@ -15,7 +15,7 @@ enum SystemPrompt {
         projectInstructions: ProjectInstructions? = nil,
         buildSystem: ProjectBuildSystem = .apelin,
         memory: String = "",
-        environment: String = "",
+        environment: String = ""
     ) -> String {
         var sections: [String] = []
         sections.append("""

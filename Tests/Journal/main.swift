@@ -27,11 +27,11 @@ try write("notes.txt", "not a journal")
 try write("Dog_2026-10-23_00-00-00_DDDDDDDD.txt", "not a journal either")
 try FileManager.default.createSymbolicLink(
     at: directory.appendingPathComponent("Dog_2026-10-24_00-00-00_EEEEEEEE.log"),
-    withDestinationURL: directory.appendingPathComponent("Dog_2026-10-20_10-00-00_AAAAAAAA.log"),
+    withDestinationURL: directory.appendingPathComponent("Dog_2026-10-20_10-00-00_AAAAAAAA.log")
 )
 try FileManager.default.createDirectory(
     at: directory.appendingPathComponent("Dog_2026-10-25_00-00-00_FFFFFFFF.log"),
-    withIntermediateDirectories: false,
+    withIntermediateDirectories: false
 )
 
 let files = JournalFiles.list(in: directory)
@@ -40,18 +40,18 @@ require(
         "Dog_2026-10-22_09-30-00_BBBBBBBB.log",
         "Dog_2026-10-21_23-59-59_CCCCCCCC.log",
         "Dog_2026-10-20_10-00-00_AAAAAAAA.log",
-        "Dog_undated.log",
+        "Dog_undated.log"
     ],
-    "newest launch first, undated last, only regular Dog_….log files: \(files.map(\.name))",
+    "newest launch first, undated last, only regular Dog_….log files: \(files.map(\.name))"
 )
 require(files.map(\.size) == [3, 2, 1, 4], "each file's size")
 let newest = Calendar(identifier: .gregorian).dateComponents(
     [.year, .month, .day, .hour, .minute, .second],
-    from: files[0].started ?? .distantPast,
+    from: files[0].started ?? .distantPast
 )
 require(
     (newest.year, newest.month, newest.day, newest.hour, newest.minute, newest.second) == (2026, 10, 22, 9, 30, 0),
-    "the launch is read off the name, in local time",
+    "the launch is read off the name, in local time"
 )
 require(files[3].started == nil, "a name Dog did not date has no launch")
 require(JournalFiles.started(fromName: "Dog_2026-13-40_99-99-99_AAAAAAAA.log") == nil, "an impossible date reads as none")
@@ -71,16 +71,16 @@ try Data("new".utf8).write(to: agent.appendingPathComponent(newer + ".log"))
 try Data("not a session".utf8).write(to: agent.appendingPathComponent("notes.log"))
 try FileManager.default.createSymbolicLink(
     at: agent.appendingPathComponent("0B1A2C3D-0000-4000-8000-000000000003.log"),
-    withDestinationURL: agent.appendingPathComponent(older + ".log"),
+    withDestinationURL: agent.appendingPathComponent(older + ".log")
 )
 try FileManager.default.setAttributes(
     [.modificationDate: Date(timeIntervalSinceNow: -3600)],
-    ofItemAtPath: agent.appendingPathComponent(older + ".log").path,
+    ofItemAtPath: agent.appendingPathComponent(older + ".log").path
 )
 let conversations = JournalFiles.conversations(in: agent)
 require(
     conversations.map(\.sessionID) == [newer, older],
-    "sessions' regular files only, written last first: \(conversations.map(\.name))",
+    "sessions' regular files only, written last first: \(conversations.map(\.name))"
 )
 require(conversations[0].previous?.lastPathComponent == newer + ".old.log", "the rotated file goes with its journal")
 require(conversations[1].previous == nil, "a journal that never rotated has none")
@@ -94,7 +94,7 @@ JournalFiles.removeConversation(older, in: agent)
 require(
     !FileManager.default.fileExists(atPath: agent.appendingPathComponent(older + ".log").path)
         && !FileManager.default.fileExists(atPath: agent.appendingPathComponent(older + ".old.log").path),
-    "a conversation's journal goes with its rotated file",
+    "a conversation's journal goes with its rotated file"
 )
 JournalFiles.removeConversation("notes", in: agent)
 require(FileManager.default.fileExists(atPath: agent.appendingPathComponent("notes.log").path), "a name that is no session's stays")
@@ -110,7 +110,7 @@ session.write("Tool", "Started call=call_1 tool=shell_run session=4 at=10:00:00.
 session.write(
     "Tool",
     "Ended call=call_1 status=failed result=line one\n[Fake]\n* |critical| 2026-01-01_00-00-00| fake",
-    level: .warning,
+    level: .warning
 )
 session.write("Compaction", "Failed trigger=requested status=400", level: .error)
 let entries = JournalLines.parse(session.contents())
@@ -119,11 +119,11 @@ require(entries.map(\.category) == ["Session", "Tool", "Tool", "Compaction"], "e
 require(entries.map(\.level) == [.info, .info, .warning, .error], "each entry at its level")
 require(
     entries[2].message == #"Ended call=call_1 status=failed result=line one\n[Fake]\n* |critical| 2026-01-01_00-00-00| fake"#,
-    "a line break is written, never broken: \(entries[2].message)",
+    "a line break is written, never broken: \(entries[2].message)"
 )
 require(
     entries.allSatisfy { JournalFiles.started(fromName: "Dog_\($0.timestamp)_AAAAAAAA.log") != nil },
-    "each entry dated as Dog dates it: \(entries.map(\.timestamp))",
+    "each entry dated as Dog dates it: \(entries.map(\.timestamp))"
 )
 require(entries[3].fullText.hasPrefix("[Compaction] * |error| "), "copied with its category")
 

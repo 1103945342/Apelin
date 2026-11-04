@@ -132,7 +132,7 @@ extension RunestoneLanguage {
                 indent: [
                     "protocol_body", "class_body", "computed_property", "computed_getter",
                     "computed_setter", "function_body", "if_statement", "lambda_literal",
-                    "array_literal", "dictionary_literal", "switch_entry",
+                    "array_literal", "dictionary_literal", "switch_entry"
                 ],
                 outdent: ["else", "}", "]"]
             )
@@ -140,7 +140,7 @@ extension RunestoneLanguage {
             TreeSitterIndentationScopes(
                 indent: [
                     "if_statement", "else", "while_statement", "for_statement",
-                    "function_definition", "do_group",
+                    "function_definition", "do_group"
                 ],
                 outdent: ["fi", "done"]
             )
@@ -148,7 +148,7 @@ extension RunestoneLanguage {
             TreeSitterIndentationScopes(
                 indent: [
                     "function_definition", "for_statement", "class_definition", "elif_clause",
-                    "else_clause", "except_clause", "while_statement", "if_statement", "try_statement",
+                    "else_clause", "except_clause", "while_statement", "if_statement", "try_statement"
                 ],
                 whitespaceDenotesBlocks: true
             )
@@ -156,7 +156,7 @@ extension RunestoneLanguage {
             TreeSitterIndentationScopes(
                 indent: [
                     "class", "method", "singleton_method", "module", "call", "if", "block",
-                    "do_block", "hash", "array", "argument_list", "case", "def", "while",
+                    "do_block", "hash", "array", "argument_list", "case", "def", "while"
                 ],
                 inheritIndent: ["elsif", "else"],
                 outdent: ["else", "elsif"]
@@ -178,7 +178,7 @@ extension RunestoneLanguage {
         // A package's control file reads as YAML's mappings, close enough to
         // colour its fields; Debian's maintainer scripts are shell.
         "control": .yaml,
-        "preinst": .bash, "postinst": .bash, "prerm": .bash, "postrm": .bash, "extrainst_": .bash,
+        "preinst": .bash, "postinst": .bash, "prerm": .bash, "postrm": .bash, "extrainst_": .bash
     ]
 
     /// Files known by their extension, lowercased.
@@ -200,7 +200,7 @@ extension RunestoneLanguage {
         "md": .markdown, "markdown": .markdown,
         "xml": .xml, "plist": .xml, "entitlements": .xml, "xcprivacy": .xml,
         "xib": .xml, "storyboard": .xml, "xcscheme": .xml,
-        "mk": .make, "mak": .make,
+        "mk": .make, "mak": .make
     ]
 
     /// Names an injection may give, lowercased.
@@ -219,7 +219,7 @@ extension RunestoneLanguage {
         "markdown": .markdown, "md": .markdown,
         "markdown_inline": .markdownInline,
         "xml": .xml, "plist": .xml,
-        "make": .make, "makefile": .make, "mk": .make,
+        "make": .make, "makefile": .make, "mk": .make
     ]
 }
 

@@ -46,7 +46,7 @@ public enum RunCodePresetRule {
     public static func pathArguments(
         _ arguments: [String],
         executable: String,
-        subcommand: String? = nil,
+        subcommand: String? = nil
     ) -> [String]? {
         var paths: [String] = []
         var options = true
@@ -97,7 +97,7 @@ public enum RunCodePresetRule {
         case "git":
             let long = [
                 "--ext-diff", "--textconv", "--no-index", "--output", "--exec-path", "--git-dir", "--work-tree",
-                "--submodule", "--ignore-submodules", "--recurse-submodules", "--show-signature",
+                "--submodule", "--ignore-submodules", "--recurse-submodules", "--show-signature"
             ]
             if names(argument, oneOf: long) || formatVerifiesSignature(argument) {
                 return true
@@ -132,7 +132,7 @@ public enum RunCodePresetRule {
     public static let fileShortOptions: Set<Character> = ["b", "i", "L", "h", "k", "N", "0"]
     public static let fileLongOptions: Set<String> = [
         "--brief", "--mime", "--mime-type", "--mime-encoding", "--dereference", "--no-dereference",
-        "--keep-going", "--no-pad", "--print0",
+        "--keep-going", "--no-pad", "--print0"
     ]
 
     /// Whether a short git option with something attached is one whose

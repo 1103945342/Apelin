@@ -64,7 +64,7 @@ public enum PlaceholderIdentifiers {
         return (
             subject: "\(found.joined(separator: " and ")) \(single ? "is a placeholder" : "are placeholders")",
             permanent: single ? "a permanent one" : "permanent ones",
-            them: single ? "it" : "them",
+            them: single ? "it" : "them"
         )
     }
 }

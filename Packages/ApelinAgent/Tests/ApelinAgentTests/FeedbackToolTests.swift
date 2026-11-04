@@ -10,7 +10,7 @@ struct FeedbackToolTests {
     private static let issue = FeedbackApproval(
         repository: "owngoal-dev/Apelin",
         title: "The build log stops early",
-        body: "It ends before the link step.",
+        body: "It ends before the link step."
     )
 
     @Test
@@ -41,7 +41,7 @@ struct FeedbackToolTests {
             policy: ApprovalPolicy(mode: .confirm),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            gate: ApprovalGate { _ in },
+            gate: ApprovalGate { _ in }
         ).agentTools(mcp: []).map(\.name)
         #expect(general.contains("apelin_feedback_send"), "General Chat too")
     }
@@ -120,7 +120,7 @@ struct FeedbackToolTests {
             ["title": "Two\nlines", "body": "Body"],
             ["title": "Title", "body": "From 192.168.1.20"],
             ["title": "Title", "body": "Saved in /var/mobile/Documents/wiki.qaq.apelin/Projects/Secret"],
-            ["title": "Title", "body": .string("token ghp_" + String(repeating: "A1b2", count: 9))],
+            ["title": "Title", "body": .string("token ghp_" + String(repeating: "A1b2", count: 9))]
         ]
         for arguments in refused {
             await #expect(throws: ToolArgumentError.self) { _ = try await harness.run(.feedbackSend, arguments) }

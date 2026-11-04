@@ -80,7 +80,7 @@ public struct ChannelHostBackend: AgentHostBackend {
         project: ApelinAgent.ProjectIdentity,
         projectURL: URL,
         projectsURL: URL? = nil,
-        modelChoice: SessionModelChoice = SessionModelChoice(),
+        modelChoice: SessionModelChoice = SessionModelChoice()
     ) {
         self.service = service
         self.sessionID = sessionID
@@ -101,7 +101,7 @@ public struct ChannelHostBackend: AgentHostBackend {
                 workingDirectory: request.workingDirectory,
                 timeoutSeconds: request.timeoutSeconds,
                 approval: Self.approval(request.context.approval),
-                asRoot: request.asRoot ? true : nil,
+                asRoot: request.asRoot ? true : nil
             ))
         } catch let error as ApelinError where error.code == .denied && error.reason == .notAPreset {
             // The host's preset rule does not count this call; the runner
@@ -116,7 +116,7 @@ public struct ChannelHostBackend: AgentHostBackend {
                 : response.stderr,
             truncated: response.truncated,
             durationMilliseconds: response.durationMilliseconds,
-            timedOut: response.timedOut,
+            timedOut: response.timedOut
         )
     }
 
@@ -154,7 +154,7 @@ public struct ChannelHostBackend: AgentHostBackend {
             handle = try await service.buildStart(
                 projectID: project.id,
                 configuration: configuration,
-                bootstrap: bootstrap,
+                bootstrap: bootstrap
             )
         } catch let refusal as ApelinError {
             throw await unreadProjectRefusal() ?? refusal
@@ -177,7 +177,7 @@ public struct ChannelHostBackend: AgentHostBackend {
                         id: artifact.artifactID,
                         kind: .package,
                         name: file ?? "\(artifact.packageID)_\(artifact.version)\(bootstrap).deb",
-                        digest: artifact.digest,
+                        digest: artifact.digest
                     ))
                     // The artifact names the APELIN_BUILD_ID apelin_package_confirm_loaded matches.
                     if let named = artifact.buildID, !named.isEmpty {
@@ -206,7 +206,7 @@ public struct ChannelHostBackend: AgentHostBackend {
             succeeded: end.state == .succeeded,
             diagnostics: Self.diagnostics(diagnostics),
             artifacts: artifacts,
-            logExcerpt: log.text,
+            logExcerpt: log.text
         )
     }
 
@@ -242,7 +242,7 @@ public struct ChannelHostBackend: AgentHostBackend {
             issues: Self.diagnostics(issues),
             note: check.buildSystem == .external
                 ? "This workspace's package is checked when its build script writes it: a release build lists what it finds among its diagnostics."
-                : nil,
+                : nil
         )
     }
 
@@ -271,9 +271,9 @@ public struct ChannelHostBackend: AgentHostBackend {
                             name: parameter.name,
                             kind: parameter.kind,
                             summary: parameter.summary,
-                            defaultValue: parameter.defaultValue.flatMap(Self.templateValue),
+                            defaultValue: parameter.defaultValue.flatMap(Self.templateValue)
                         )
-                    },
+                    }
                 )
             }
         })
@@ -290,12 +290,12 @@ public struct ChannelHostBackend: AgentHostBackend {
                 case let .integer(number): .number(Double(number))
                 case let .list(items): .array(items.map(ApelinCore.JSONValue.string))
                 }
-            },
+            }
         ))
         return ProjectCreateToolResponse(
             projectID: created.projectID,
             name: created.name,
-            identifierHint: createdRoot(created.name).flatMap(PlaceholderIdentifiers.createHint),
+            identifierHint: createdRoot(created.name).flatMap(PlaceholderIdentifiers.createHint)
         )
     }
 
@@ -313,13 +313,13 @@ public struct ChannelHostBackend: AgentHostBackend {
         let renamed = try await service.projectRename(ProjectRenameRequest(
             projectID: request.projectID,
             displayName: request.displayName,
-            onlyIfAutomatic: request.automatic,
+            onlyIfAutomatic: request.automatic
         ))
         return ProjectRenameToolResponse(
             projectID: renamed.projectID,
             folder: request.folder,
             displayName: renamed.displayName,
-            changed: renamed.changed,
+            changed: renamed.changed
         )
     }
 
@@ -341,7 +341,7 @@ public struct ChannelHostBackend: AgentHostBackend {
     }
 
     private func distributionCheck(
-        bootstrap: ApelinProtocol.BuildBootstrap?,
+        bootstrap: ApelinProtocol.BuildBootstrap?
     ) async throws -> (diagnostics: [ProjectDiagnostic], buildSystem: BuildSystemKind?) {
         let response = try await service.projectCheck(projectID: project.id, purpose: .distribution, bootstrap: bootstrap)
         return (response.diagnostics, response.buildSystem)
@@ -363,7 +363,7 @@ public struct ChannelHostBackend: AgentHostBackend {
             line: diagnostic.line,
             column: diagnostic.column,
             field: diagnostic.field,
-            message: diagnostic.message,
+            message: diagnostic.message
         )
     }
 
@@ -411,7 +411,7 @@ public struct ChannelHostBackend: AgentHostBackend {
             version: result?.version ?? "",
             succeeded: end.state == .succeeded,
             message: end.message ?? "",
-            conflicts: conflicts.isEmpty ? nil : conflicts,
+            conflicts: conflicts.isEmpty ? nil : conflicts
         )
     }
 
@@ -421,7 +421,7 @@ public struct ChannelHostBackend: AgentHostBackend {
         return RemovePackageResponse(
             transactionID: handle.taskID.rawValue,
             succeeded: end.state == .succeeded,
-            message: end.message ?? "",
+            message: end.message ?? ""
         )
     }
 
@@ -443,10 +443,10 @@ public struct ChannelHostBackend: AgentHostBackend {
                     buildID: row.buildID,
                     installedAt: row.installedAt,
                     removable: row.removable,
-                    reason: row.reason,
+                    reason: row.reason
                 )
             },
-            truncated: listed.count > Self.maximumInstallations,
+            truncated: listed.count > Self.maximumInstallations
         )
     }
 
@@ -454,14 +454,14 @@ public struct ChannelHostBackend: AgentHostBackend {
         try await service.respring()
         return RespringResponse(
             succeeded: true,
-            reconnectHint: "SpringBoard restarts; this session keeps running in the session host",
+            reconnectHint: "SpringBoard restarts; this session keeps running in the session host"
         )
     }
 
     // MARK: apelin_package_confirm_loaded
 
     public func confirmLoaded(
-        _ request: ApelinAgent.ConfirmLoadedRequest,
+        _ request: ApelinAgent.ConfirmLoadedRequest
     ) async throws -> ApelinAgent.ConfirmLoadedResponse {
         // The answer is the task's, in the session host: the respring this may
         // trigger takes the app down, not this worker.
@@ -469,7 +469,7 @@ public struct ChannelHostBackend: AgentHostBackend {
             buildID: request.buildID,
             targetID: request.target,
             projectID: project.id,
-            trigger: request.respring ? .respring : nil,
+            trigger: request.respring ? .respring : nil
         )
         let marker = response.evidence.first { $0.kind == "log" }
         let filter = response.evidence.first { $0.kind == "filter" }
@@ -487,7 +487,7 @@ public struct ChannelHostBackend: AgentHostBackend {
             markerLogged: marker?.passed ?? false,
             filterMatches: filterMatches,
             logEvidence: marker.map { [$0.detail] } ?? [],
-            notes: notes.joined(separator: "\n"),
+            notes: notes.joined(separator: "\n")
         )
     }
 
@@ -506,7 +506,7 @@ public struct ChannelHostBackend: AgentHostBackend {
             sdkID: record.id,
             rootPath: record.path,
             platform: "iphoneos",
-            version: record.version,
+            version: record.version
         )
     }
 
@@ -526,7 +526,7 @@ public struct ChannelHostBackend: AgentHostBackend {
         return GitStatusToolResponse(
             branch: status.branch,
             head: status.head,
-            entries: status.entries.map { GitStatusToolEntry(path: $0.path, index: $0.index, worktree: $0.worktree) },
+            entries: status.entries.map { GitStatusToolEntry(path: $0.path, index: $0.index, worktree: $0.worktree) }
         )
     }
 
@@ -553,7 +553,7 @@ public struct ChannelHostBackend: AgentHostBackend {
             try await service.gitCommit(GitCommitRequest(
                 projectID: project.id,
                 message: request.message,
-                all: request.all ? true : nil,
+                all: request.all ? true : nil
             ))
         }
         return GitCommitToolResponse(commitID: response.commitID)
@@ -582,7 +582,7 @@ public struct ChannelHostBackend: AgentHostBackend {
                 remote: request.remote,
                 branch: request.branch,
                 url: request.url,
-                forceWithLease: request.lease,
+                forceWithLease: request.lease
             ))
         }
     }
@@ -595,7 +595,7 @@ public struct ChannelHostBackend: AgentHostBackend {
                 count: request.count,
                 message: request.message,
                 expectedHead: request.expectedHead,
-                preview: request.preview ? true : nil,
+                preview: request.preview ? true : nil
             ))
         }
     }
@@ -606,7 +606,7 @@ public struct ChannelHostBackend: AgentHostBackend {
             try await service.gitCloneInto(GitCloneIntoRequest(
                 projectID: project.id,
                 url: request.url,
-                branch: request.branch,
+                branch: request.branch
             ))
         }
     }
@@ -625,7 +625,7 @@ public struct ChannelHostBackend: AgentHostBackend {
             try await service.gitCredentialSet(GitCredentialSetRequest(
                 host: request.host,
                 username: request.username,
-                token: request.token,
+                token: request.token
             ))
         }
         return try await gitSettings(context: request.context)
@@ -648,7 +648,7 @@ public struct ChannelHostBackend: AgentHostBackend {
                 name: request.name,
                 visibility: request.visibility,
                 owner: request.owner,
-                description: request.description,
+                description: request.description
             ))
         } catch let error as ApelinError where error.reason == .authenticationRequired {
             throw GitToolFailure(message: Self.repositorySignInNeeded)
@@ -657,7 +657,7 @@ public struct ChannelHostBackend: AgentHostBackend {
             fullName: response.fullName,
             cloneURL: response.cloneURL,
             url: response.url,
-            next: "It is empty. To publish the project there, git_push with url \(response.cloneURL): it adds the remote as origin (or as the remote you name, when the user wants another), and asks the user in Strict mode as every push does.",
+            next: "It is empty. To publish the project there, git_push with url \(response.cloneURL): it adds the remote as origin (or as the remote you name, when the user wants another), and asks the user in Strict mode as every push does."
         )
     }
 
@@ -722,7 +722,7 @@ public struct ChannelHostBackend: AgentHostBackend {
             author: issue.author,
             openedByUser: issue.isAuthor,
             body: issue.body,
-            footer: issue.footer,
+            footer: issue.footer
         )
     }
 
@@ -736,7 +736,7 @@ public struct ChannelHostBackend: AgentHostBackend {
                 title: request.title,
                 body: request.body,
                 expectedTitle: request.expectedTitle,
-                expectedBody: request.expectedBody,
+                expectedBody: request.expectedBody
             ))
         } catch let error as ApelinError where error.reason == .authenticationRequired {
             throw FeedbackToolFailure(message: "Nothing was changed: " + Self.issueSignInNeeded)
@@ -748,7 +748,7 @@ public struct ChannelHostBackend: AgentHostBackend {
             url: response.url,
             changed: changed,
             title: response.title,
-            body: response.body,
+            body: response.body
         )
     }
 
@@ -758,7 +758,7 @@ public struct ChannelHostBackend: AgentHostBackend {
         GitSettingsToolResponse(
             authorName: response.authorName,
             authorEmail: response.authorEmail,
-            credentials: response.credentials.map { .init(host: $0.host, username: $0.username) },
+            credentials: response.credentials.map { .init(host: $0.host, username: $0.username) }
         )
     }
 
@@ -768,7 +768,7 @@ public struct ChannelHostBackend: AgentHostBackend {
         _ operation: String,
         host: String? = nil,
         forced: Bool = false,
-        _ body: () async throws -> T,
+        _ body: () async throws -> T
     ) async throws -> T {
         do {
             return try await body()
@@ -779,7 +779,7 @@ public struct ChannelHostBackend: AgentHostBackend {
                 message: error.message,
                 reason: error.reason?.rawValue,
                 host: host,
-                forced: forced,
+                forced: forced
             )
         }
     }
@@ -790,7 +790,7 @@ public struct ChannelHostBackend: AgentHostBackend {
         _ operation: String,
         host: String? = nil,
         forced: Bool = false,
-        _ start: () async throws -> TaskHandle,
+        _ start: () async throws -> TaskHandle
     ) async throws -> GitTaskToolResponse {
         try await Self.gitResult(gitTaskResult(operation, host: host, forced: forced, start))
     }
@@ -801,7 +801,7 @@ public struct ChannelHostBackend: AgentHostBackend {
         _ operation: String,
         host: String? = nil,
         forced: Bool = false,
-        _ start: () async throws -> TaskHandle,
+        _ start: () async throws -> TaskHandle
     ) async throws -> ApelinCore.JSONValue? {
         let handle = try await git(operation, host: host, forced: forced, start)
         var result: ApelinCore.JSONValue?
@@ -854,7 +854,7 @@ public struct ChannelHostBackend: AgentHostBackend {
             updated: updates,
             comparison: try? json["comparison"]?.decode(GitBranchComparison.self),
             forced: forced,
-            projectFile: json["projectFile"]?.stringValue.flatMap(GitProjectFile.init(rawValue:)).flatMap(projectFileNote),
+            projectFile: json["projectFile"]?.stringValue.flatMap(GitProjectFile.init(rawValue:)).flatMap(projectFileNote)
         )
     }
 

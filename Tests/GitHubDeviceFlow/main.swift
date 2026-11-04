@@ -29,7 +29,7 @@ final class FakeGitHub: @unchecked Sendable {
             },
             wait: { seconds in
                 self.lock.withLock { self.waits.append(seconds) }
-            },
+            }
         )
     }
 
@@ -66,7 +66,7 @@ let github = FakeGitHub([
     (200, #"{"error":"authorization_pending","error_description":"The authorization request is still pending."}"#),
     (200, #"{"error":"slow_down","interval":10}"#),
     (200, #"{"access_token":"gho_example_not_a_token","token_type":"bearer","scope":"repo,workflow"}"#),
-    (200, #"{"login":"octocat","id":1}"#),
+    (200, #"{"login":"octocat","id":1}"#)
 ])
 let code = try await github.flow.requestCode()
 require(code.userCode == "WDJB-MJHT" && code.interval == 5 && code.expiresIn == 900, "The code reads")
@@ -82,7 +82,7 @@ require(github.waits == [6, 6, 14], "A fifth over the interval, then two fifths 
 require(github.form(1) == [
     "client_id": "178c6fc778ccc68e1d6a",
     "device_code": "3584d83530557fdd1f46af8289938c8ef79f9dc5",
-    "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
+    "grant_type": "urn:ietf:params:oauth:grant-type:device_code"
 ], "Each poll names the device code and the grant")
 let login = try await github.flow.login(token: token)
 require(login == "octocat", "The account's login")
@@ -111,7 +111,7 @@ await expectFailure(.expired) { _ = try await pending.flow.token(for: brief) }
 require(pending.waits == [6, 6], "No poll after the code has run out: \(pending.waits)")
 await expectFailure(.refused("The client is not enabled for device flow.")) {
     _ = try await FakeGitHub([
-        (200, #"{"error":"device_flow_disabled","error_description":"The client is not enabled for device flow."}"#),
+        (200, #"{"error":"device_flow_disabled","error_description":"The client is not enabled for device flow."}"#)
     ]).flow.requestCode()
 }
 

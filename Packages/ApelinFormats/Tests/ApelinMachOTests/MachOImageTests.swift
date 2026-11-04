@@ -24,7 +24,7 @@ struct MachOImageTests {
         #expect(slice.installName == "@rpath/ApelinFixture.dylib")
         #expect(slice.linkedLibraries == [
             "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
-            "/usr/lib/libSystem.B.dylib",
+            "/usr/lib/libSystem.B.dylib"
         ])
         #expect(slice.isCodeSigned)
         #expect(!slice.isEncrypted)
@@ -61,7 +61,7 @@ struct MachOImageTests {
         #expect(image.slices.map(\.architecture) == ["x86_64", "arm64"])
         #expect(image.slices.map(\.uuid) == [
             UUID(uuidString: "0CC81FA2-7A61-347B-AA43-6F7C2EA2722F"),
-            UUID(uuidString: "51905831-E7CA-3458-8C26-609F70FB2DDA"),
+            UUID(uuidString: "51905831-E7CA-3458-8C26-609F70FB2DDA")
         ])
         for slice in image.slices {
             #expect(slice.fileType == .executable)

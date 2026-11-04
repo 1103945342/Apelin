@@ -11,11 +11,11 @@ import UIKit
                 for: .libraryDirectory,
                 in: .userDomainMask,
                 appropriateFor: nil,
-                create: false,
+                create: false
             )
             try SceneRestorationReset.removeSavedState(
                 in: library,
-                bundleIdentifier: bundleIdentifier,
+                bundleIdentifier: bundleIdentifier
             )
         }
     } catch {
@@ -27,5 +27,5 @@ UIApplicationMain(
     CommandLine.argc,
     CommandLine.unsafeArgv,
     nil,
-    NSStringFromClass(AppDelegate.self),
+    NSStringFromClass(AppDelegate.self)
 )

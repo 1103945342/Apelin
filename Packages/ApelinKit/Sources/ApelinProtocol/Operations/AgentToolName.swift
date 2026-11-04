@@ -139,7 +139,7 @@ public extension AgentToolName {
         "toolchain_setup": .toolchainSetup,
         "sdk_import": .sdkImport,
         "toolchain_self_test": .toolchainSelfTest,
-        "project_environment_set": .projectSetEnvironment,
+        "project_environment_set": .projectSetEnvironment
     ]
 
     /// The tool a recorded name means: a current name or one an earlier

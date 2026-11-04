@@ -34,11 +34,11 @@ struct CopilotLiveTests {
                 provider: .githubCopilot(model: Self.model),
                 approval: ApprovalPolicy(mode: .confirm),
                 dataRoot: dataRoot,
-                maxTurns: 4,
+                maxTurns: 4
             ),
             backend: NoHostBackend(),
             digests: NoDigests(),
-            credentials: credentials,
+            credentials: credentials
         )
         let stream = try await session.events(afterSeq: 0)
         try await session.prompt("Use the file_read tool to read secret-word.txt, then reply with only the word it contains.")

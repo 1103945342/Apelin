@@ -164,7 +164,7 @@ final class ComposerRewriteBar: UIView {
             x: bounds.width - undoWidth,
             y: (bounds.height - height) / 2,
             width: undoWidth,
-            height: height,
+            height: height
         ))
     }
 }

@@ -48,7 +48,7 @@ public struct DistributionService: Sendable {
                 fullName: $0.fullName,
                 isPrivate: $0.isPrivate,
                 description: $0.description,
-                hasPages: $0.hasPages ?? false,
+                hasPages: $0.hasPages ?? false
             )
         }
         let listed = await (try? api.organizations()) ?? []
@@ -91,7 +91,7 @@ public struct DistributionService: Sendable {
         guard GitHubName.isRepository(name) else {
             throw ApelinError(
                 .badRequest,
-                "Use letters, digits, hyphens, underscores and periods for the repository's name, at most 100.",
+                "Use letters, digits, hyphens, underscores and periods for the repository's name, at most 100."
             )
         }
         if let owner = request.owner, !GitHubName.isLogin(owner) {
@@ -109,7 +109,7 @@ public struct DistributionService: Sendable {
     public func create(
         _ request: DistributionRepositoryCreateRequest,
         name: String,
-        reporter: TaskReporter,
+        reporter: TaskReporter
     ) async throws -> JSONValue {
         let api = try api()
         reporter.stage("creating")
@@ -121,7 +121,7 @@ public struct DistributionService: Sendable {
             isPrivate: false,
             organization: organization,
             // Issues for its users; neither a wiki nor a project board.
-            features: ["has_issues": true, "has_wiki": false, "has_projects": false],
+            features: ["has_issues": true, "has_wiki": false, "has_projects": false]
         )
         do {
             try reporter.checkCancelled()
@@ -144,7 +144,7 @@ public struct DistributionService: Sendable {
                 remote: created,
                 project: (project.projectID, project.name),
                 source: source,
-                reporter: reporter,
+                reporter: reporter
             )
         } catch {
             var failure = GitService.apelinError(error)
@@ -197,7 +197,7 @@ public struct DistributionService: Sendable {
                     url: url,
                     excluding: GitService.apelinFiles,
                     credentials: git.credentialLookup,
-                    progress: GitService.fetchProgress(reporter),
+                    progress: GitService.fetchProgress(reporter)
                 )
             } catch let error as GitError where error.kind == .notFound {
                 // An empty repository has no branch to check out: it takes
@@ -220,7 +220,7 @@ public struct DistributionService: Sendable {
             repository: remote.fullName,
             sourceURL: source,
             branch: branch,
-            overwrite: request.overwrite,
+            overwrite: request.overwrite
         )
         if !added.isEmpty {
             try repository.stage(added)
@@ -228,7 +228,7 @@ public struct DistributionService: Sendable {
                 message: request.overwrite
                     ? "Update the package repository from Apelin's template"
                     : "Add the package index and its GitHub Pages workflow",
-                author: author(repository, login: login),
+                author: author(repository, login: login)
             )
         }
         try reporter.checkCancelled()
@@ -243,7 +243,7 @@ public struct DistributionService: Sendable {
             remote: remote,
             project: (project.projectID, project.name),
             source: source,
-            reporter: reporter,
+            reporter: reporter
         )
     }
 
@@ -255,7 +255,7 @@ public struct DistributionService: Sendable {
         remote: GitHubAPI.Repository,
         project: (projectID: String, name: String),
         source: String,
-        reporter: TaskReporter,
+        reporter: TaskReporter
     ) async throws -> JSONValue {
         try reporter.checkCancelled()
         reporter.stage("publishing")
@@ -275,12 +275,12 @@ public struct DistributionService: Sendable {
             url: remote.htmlURL,
             sourceURL: sourceURL,
             projectID: project.projectID,
-            projectName: project.name,
+            projectName: project.name
         )
         try record(linked)
         return try .object([
             "repository": JSONValue(encoding: linked),
-            "warnings": .array(warnings.map(JSONValue.string)),
+            "warnings": .array(warnings.map(JSONValue.string))
         ])
     }
 
@@ -343,7 +343,7 @@ public struct DistributionService: Sendable {
         repository: String,
         sourceURL: String,
         branch: String,
-        overwrite: Bool = false,
+        overwrite: Bool = false
     ) throws -> [String] {
         var written: [String] = []
         for file in DistributionTemplate.files(repository: repository, sourceURL: sourceURL, branch: branch) {

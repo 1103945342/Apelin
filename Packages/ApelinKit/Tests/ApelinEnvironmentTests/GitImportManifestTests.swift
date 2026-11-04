@@ -125,7 +125,7 @@ final class GitImportManifestTests: XCTestCase {
             case "builds":
                 try FileManager.default.createDirectory(
                     at: home.layout.data.root.appendingPathComponent("Builds/\(theirID)"),
-                    withIntermediateDirectories: true,
+                    withIntermediateDirectories: true
                 )
             case "session":
                 let session = home.layout.data.sessions.appendingPathComponent("old", isDirectory: true)

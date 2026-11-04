@@ -15,20 +15,20 @@ enum DistributionTemplate {
     /// The files Apelin keeps up to date and Update Repository… replaces;
     /// every other template file is the user's once it exists.
     static let maintained: Set<String> = [
-        workflowPath, "scripts/update-repository.sh", "index.html", "README.md", "CydiaIcon.png",
+        workflowPath, "scripts/update-repository.sh", "index.html", "README.md", "CydiaIcon.png"
     ]
 
     static func files(
         repository: String,
         sourceURL: String,
-        branch: String,
+        branch: String
     ) -> [(path: String, contents: Data, executable: Bool)] {
         let fill = { (text: String) in
             Data(
                 text.replacingOccurrences(of: "__REPOSITORY__", with: repository)
                     .replacingOccurrences(of: "__SOURCE_URL__", with: sourceURL)
                     .replacingOccurrences(of: "__BRANCH__", with: branch)
-                    .utf8,
+                    .utf8
             )
         }
         return [
@@ -40,7 +40,7 @@ enum DistributionTemplate {
             ("debs/README.md", Data(debsReadme.utf8), false),
             ("depictions/README.md", Data(depictionsReadme.utf8), false),
             ("sileo-featured.json", Data(featured.utf8), false),
-            (".gitignore", Data(gitignore.utf8), false),
+            (".gitignore", Data(gitignore.utf8), false)
         ]
     }
 

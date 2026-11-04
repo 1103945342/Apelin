@@ -85,7 +85,7 @@ final class ComposerContextPanel: ComposerPanel {
             top: 6,
             leading: ComposerMetrics.Spacing.md,
             bottom: 6,
-            trailing: ComposerMetrics.Spacing.md,
+            trailing: ComposerMetrics.Spacing.md
         )
         configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
             var outgoing = incoming
@@ -114,7 +114,7 @@ final class ComposerContextPanel: ComposerPanel {
         usedTokens: Int,
         limitTokens: Int,
         compactable: Bool,
-        compacting: Bool,
+        compacting: Bool
     ) {
         self.usedTokens = usedTokens
         self.limitTokens = limitTokens
@@ -152,7 +152,7 @@ final class ComposerContextPanel: ComposerPanel {
     private func textColumnHeight(for width: CGFloat) -> CGFloat {
         [usedLabel, limitLabel, thresholdLabel].reduce(0) { total, label in
             total + label.sizeThatFits(
-                CGSize(width: max(0, width), height: .greatestFiniteMagnitude),
+                CGSize(width: max(0, width), height: .greatestFiniteMagnitude)
             ).height
         }
     }
@@ -164,7 +164,7 @@ final class ComposerContextPanel: ComposerPanel {
         usedLabel.text = String(localized: "\(Self.tokenText(usedTokens)) tokens used")
         if let ratio {
             limitLabel.text = String(
-                localized: "Limit \(Self.tokenText(limitTokens)) (\(Int((ratio * 100).rounded()))%)",
+                localized: "Limit \(Self.tokenText(limitTokens)) (\(Int((ratio * 100).rounded()))%)"
             )
         } else {
             limitLabel.text = String(localized: "Context limit unknown")
@@ -209,7 +209,7 @@ final class ComposerContextPanel: ComposerPanel {
     private static var boltImage: UIImage? {
         UIImage(
             systemName: "bolt.fill",
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold),
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .semibold)
         )
     }
 
@@ -218,7 +218,7 @@ final class ComposerContextPanel: ComposerPanel {
     private static func font(_ style: UIFont.TextStyle, weight: UIFont.Weight) -> UIFont {
         let base = UIFont.preferredFont(forTextStyle: style)
         let descriptor = base.fontDescriptor.addingAttributes([
-            .traits: [UIFontDescriptor.TraitKey.weight: weight],
+            .traits: [UIFontDescriptor.TraitKey.weight: weight]
         ])
         return UIFont(descriptor: descriptor, size: 0)
     }
@@ -256,7 +256,7 @@ final class ComposerContextPanel: ComposerPanel {
             x: min(max(0, width - 2), width * threshold - 1),
             y: 0,
             width: 2,
-            height: Self.barHeight,
+            height: Self.barHeight
         ))
 
         let buttonSize = compactButton.intrinsicContentSize
@@ -267,7 +267,7 @@ final class ComposerContextPanel: ComposerPanel {
         let textWidth = max(0, width - buttonSize.width - ComposerMetrics.Spacing.sm)
         for label in [usedLabel, limitLabel, thresholdLabel] {
             let height = label.sizeThatFits(
-                CGSize(width: textWidth, height: .greatestFiniteMagnitude),
+                CGSize(width: textWidth, height: .greatestFiniteMagnitude)
             ).height
             label.frame = CGRect(x: 0, y: y, width: textWidth, height: height)
             y = label.frame.maxY
@@ -277,7 +277,7 @@ final class ComposerContextPanel: ComposerPanel {
             x: width - buttonSize.width,
             y: rowTop + (row - buttonSize.height) / 2,
             width: buttonSize.width,
-            height: buttonSize.height,
+            height: buttonSize.height
         ))
 
         // The height published at the moment the panel opened was measured

@@ -102,7 +102,7 @@ extension UITableViewDiffableDataSource {
     func applyFirst(
         _ snapshot: NSDiffableDataSourceSnapshot<SectionIdentifierType, ItemIdentifierType>,
         to tableView: UITableView,
-        completion: (() -> Void)? = nil,
+        completion: (() -> Void)? = nil
     ) {
         guard let tableView = tableView as? FirstFillTableView else {
             assertionFailure("A table with a diffable data source is a FirstFillTableView")
@@ -125,7 +125,7 @@ extension UITableViewDiffableDataSource {
         _ snapshot: NSDiffableDataSourceSnapshot<SectionIdentifierType, ItemIdentifierType>,
         to tableView: UITableView,
         animated: Bool,
-        completion: (() -> Void)? = nil,
+        completion: (() -> Void)? = nil
     ) {
         guard !animated else {
             apply(snapshot, animatingDifferences: true, completion: completion)
@@ -143,7 +143,7 @@ extension UICollectionViewDiffableDataSource {
     /// `UITableViewDiffableDataSource.applyChange`'s, without animation.
     func applyChange(
         _ snapshot: NSDiffableDataSourceSnapshot<SectionIdentifierType, ItemIdentifierType>,
-        to collectionView: UICollectionView,
+        to collectionView: UICollectionView
     ) {
         UIView.performWithoutAnimation {
             apply(snapshot, animatingDifferences: false)
@@ -156,7 +156,7 @@ extension UICollectionViewDiffableDataSource {
     func applyFirst(
         _ snapshot: NSDiffableDataSourceSnapshot<SectionIdentifierType, ItemIdentifierType>,
         to collectionView: UICollectionView,
-        completion: (() -> Void)? = nil,
+        completion: (() -> Void)? = nil
     ) {
         guard let collectionView = collectionView as? FirstFillCollectionView else {
             assertionFailure("A collection view with a diffable data source is a FirstFillCollectionView")

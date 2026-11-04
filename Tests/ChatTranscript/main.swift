@@ -15,7 +15,7 @@ let events = [
     event(6, "approvalRequested", ["approvalID": .string("a1"), "tool": .string("shell_run"), "arguments": .string("{}")]),
     event(7, "approvalResolved", ["approvalID": .string("a1"), "decision": .string("deny")]),
     event(8, "messageStarted"), event(9, "text", ["text": .string("Partial")]),
-    event(10, "message", ["text": .string("Final text")]), event(11, "finished"),
+    event(10, "message", ["text": .string("Final text")]), event(11, "finished")
 ]
 let transcript = ChatTranscript(events: events) { _ in nil }
 precondition(!transcript.isWorking)
@@ -34,7 +34,7 @@ let toolLoop = [
     event(4, "toolResult", ["id": .string("t1")]), event(4, "message", ["text": .string("")]),
     event(5, "messageStarted"), event(6, "thinking", ["text": .string("Second thought")]),
     event(7, "toolCall", ["id": .string("t2"), "tool": .string("file_read")]),
-    event(8, "messageStarted"), event(9, "message", ["text": .string("Answer")]), event(10, "finished"),
+    event(8, "messageStarted"), event(9, "message", ["text": .string("Answer")]), event(10, "finished")
 ]
 let combined = ChatTranscript(events: toolLoop) { _ in nil }.messages
 precondition(combined.count == 2)
@@ -51,7 +51,7 @@ let fastThought = ChatTranscript(events: [
     TaskEvent(seq: EventSeq(1), kind: "messageStarted", time: Date(timeIntervalSince1970: 1)),
     TaskEvent(seq: EventSeq(2), kind: "thinking", time: Date(timeIntervalSince1970: 1.1), payload: .object(["text": .string("Reasoning")])),
     TaskEvent(seq: EventSeq(3), kind: "message", time: Date(timeIntervalSince1970: 1.2), payload: .object(["text": .string("Answer")])),
-    event(4, "finished"),
+    event(4, "finished")
 ]) { _ in nil }
 precondition(fastThought.messages.count == 1 && fastThought.messages[0].role == .assistant, "Zero-second, zero-tool summaries are hidden")
 precondition(!fastThought.isWorking)
@@ -61,7 +61,7 @@ let notified = ChatTranscript(events: [
     event(1, "toolCall", ["id": .string("n1"), "tool": .string("apelin_notification_send"), "arguments": .string("{\"body\":\"Built.\"}")]),
     event(2, "notice", ["body": .string("Built.")]),
     event(3, "toolResult", ["id": .string("n1"), "output": .string("Sent to Apelin as a notification.")]),
-    event(4, "finished"),
+    event(4, "finished")
 ]) { _ in nil }.messages
 precondition(notified.count == 1 && notified[0].trace.map(\.text) == ["Send a notification"],
              "a notice shows only as its call, named in the trace: \(notified.flatMap(\.trace).map(\.text))")
@@ -71,12 +71,12 @@ let shownFiles = ChatTranscript(events: [
     event(1, "prompt", ["text": .string("Let me see the notes")]),
     event(2, "toolCall", ["id": .string("s1"), "tool": .string("file_show"), "arguments": .string("{\"paths\":[\"Docs/notes.pdf\"]}")]),
     event(3, "toolResult", ["id": .string("s1"), "output": .string("Shown to the user in this conversation: Docs/notes.pdf."), "attachments": .array([
-        .object(["path": .string("Attachments/0f1e"), "name": .string("notes.pdf"), "mimeType": .string("application/pdf")]),
+        .object(["path": .string("Attachments/0f1e"), "name": .string("notes.pdf"), "mimeType": .string("application/pdf")])
     ])]),
     event(4, "toolCall", ["id": .string("s2"), "tool": .string("file_show"), "arguments": .string("{\"paths\":[\"a.png\",\"b.log\"]}")]),
     event(5, "toolCall", ["id": .string("s3"), "tool": .string("file_show"), "arguments": .string("{}")]),
     event(6, "message", ["text": .string("There they are.")]),
-    event(7, "finished"),
+    event(7, "finished")
 ]) { item in
     ComposerAttachment(name: item.name, data: Data(item.path.utf8), isImage: item.mimeType.hasPrefix("image/"))
 }.messages
@@ -95,9 +95,9 @@ let installApproval = ChatTranscript(events: [
         "approvalID": .string("a2"), "tool": .string("apelin_package_install"), "arguments": .string("{\"artifact_id\":\"x\"}"),
         "reason": .string("the packaging description changed since the template or the last approval"),
         "detail": .object(["descriptionChanged": .object([
-            "kind": .string("packaging"), "digest": .string("d"), "diff": .string("+postinst"),
-        ])]),
-    ]),
+            "kind": .string("packaging"), "digest": .string("d"), "diff": .string("+postinst")
+        ])])
+    ])
 ]) { _ in nil }.messages.first { $0.role.needsApproval }
 precondition(installApproval?.approvalTitle == "Install the package")
 let approvalDetail = installApproval?.approvalDetail ?? ""
@@ -106,7 +106,7 @@ let detailPositions = ["the packaging description changed", "+postinst", "artifa
 precondition(
     detailPositions.count == 3 && detailPositions == detailPositions.sorted()
         && !approvalDetail.contains("{\"artifact_id\""),
-    "the card names the reason, the diff, then the arguments by name, not as raw JSON: \(approvalDetail)",
+    "the card names the reason, the diff, then the arguments by name, not as raw JSON: \(approvalDetail)"
 )
 print("ok: an approval card carries the reason and the description diff before the arguments")
 
@@ -124,10 +124,10 @@ let publishApproval = ChatTranscript(events: [
                 .object(["packageID": .string("com.example.clock"), "version": .string("1.0"),
                          "architecture": .string("iphoneos-arm64e"), "digest": .string("sha256:aa")]),
                 .object(["packageID": .string("com.example.clock"), "version": .string("1.0"),
-                         "architecture": .string("iphoneos-arm64"), "digest": .string("sha256:bb")]),
-            ]),
-        ])]),
-    ]),
+                         "architecture": .string("iphoneos-arm64"), "digest": .string("sha256:bb")])
+            ])
+        ])])
+    ])
 ]) { _ in nil }.messages.first { $0.role.needsApproval }
 precondition(publishApproval?.approvalTitle == "Publish to the package repository")
 let publishDetail = publishApproval?.approvalDetail ?? ""
@@ -136,7 +136,7 @@ precondition(
         && publishDetail.contains("com.example.clock 1.0 (iphoneos-arm64e)\nsha256:aa")
         && publishDetail.contains("com.example.clock 1.0 (iphoneos-arm64)\nsha256:bb")
         && !publishDetail.contains("b-hide"),
-    "the card names the repository and each package's digest, not the build IDs: \(publishDetail)",
+    "the card names the repository and each package's digest, not the build IDs: \(publishDetail)"
 )
 print("ok: a publication's card names the repository and every package's digest")
 
@@ -153,9 +153,9 @@ let feedbackEditApproval = ChatTranscript(events: [
             "repository": .string("owngoal-dev/Apelin"), "number": .number(12),
             "url": .string("https://github.com/owngoal-dev/Apelin/issues/12"),
             "body": .string("It ends early on both bootstraps."),
-            "currentTitle": .string("The build log stops early"), "currentBody": .string("It ends early."),
-        ])]),
-    ]),
+            "currentTitle": .string("The build log stops early"), "currentBody": .string("It ends early.")
+        ])])
+    ])
 ]) { _ in nil }.messages.first { $0.role.needsApproval }
 precondition(feedbackEditApproval?.approvalTitle == "Edit a feedback issue")
 let feedbackEditDetail = feedbackEditApproval?.approvalDetail ?? ""
@@ -164,7 +164,7 @@ precondition(
         && feedbackEditDetail.contains("body\nIt ends early on both bootstraps.")
         && !feedbackEditDetail.contains("0123abcd") && !feedbackEditDetail.contains("title\n")
         && !feedbackEditDetail.contains("It ends early."),
-    "the card names the issue and the new body, not the revision or what it replaces: \(feedbackEditDetail)",
+    "the card names the issue and the new body, not the revision or what it replaces: \(feedbackEditDetail)"
 )
 print("ok: a feedback edit's card names the issue and the whole new text")
 
@@ -182,9 +182,9 @@ let rootApproval = ChatTranscript(events: [
         "arguments": .string("{\"argv\":[\"id\",\"-u\"],\"root\":true}"),
         "reason": .string(rootGateReason),
         "detail": .object(["rootCommand": .object([
-            "argv": .object(["_0": .array([.string("id"), .string("-u")])]),
-        ])]),
-    ]),
+            "argv": .object(["_0": .array([.string("id"), .string("-u")])])
+        ])])
+    ])
 ]) { _ in nil }.messages.first { $0.role.needsApproval }
 let rootDetail = rootApproval?.approvalDetail ?? ""
 precondition(rootApproval?.runsAsRoot == true, "a root command's card is marked")
@@ -206,16 +206,16 @@ let plainShell = ChatTranscript(events: [
         "arguments": .string("{\"argv\":[\"make\",\"-C\",\"My Tweak\"]}"),
         "reason": .string(shellGateReason),
         "detail": .object(["command": .object(["argv": .object(["_0": .array([
-            .string("make"), .string("-C"), .string("My Tweak"),
-        ])])])]),
-    ]),
+            .string("make"), .string("-C"), .string("My Tweak")
+        ])])])])
+    ])
 ]) { _ in nil }.messages.first { $0.role.needsApproval }
 let shellDetail = plainShell?.approvalDetail ?? ""
 precondition(plainShell?.runsAsRoot == false, "an ordinary command's card is not marked as root")
 let shellPositions = ["Build the tweak", shellGateReason, "make -C 'My Tweak'"].compactMap { shellDetail.range(of: $0)?.lowerBound }
 precondition(
     shellPositions.count == 3 && shellPositions == shellPositions.sorted(),
-    "the agent's reason, the gate's, then the command line: \(shellDetail)",
+    "the agent's reason, the gate's, then the command line: \(shellDetail)"
 )
 
 /// The card shows the command and directory the approval is bound to, the
@@ -227,14 +227,14 @@ let mismatched = ChatTranscript(events: [
         "approvalID": .string("m1"), "tool": .string("shell_run"), "workingDirectory": .string("Sources"),
         "arguments": .string("{\"argv\":[\"id\",\"-u\"],\"cwd\":\".\",\"root\":true}"),
         "detail": .object(["rootCommand": .object(["argv": .object(["_0": .array([
-            .string("rm"), .string("-rf"), .string("/var/mobile"),
-        ])])])]),
-    ]),
+            .string("rm"), .string("-rf"), .string("/var/mobile")
+        ])])])])
+    ])
 ]) { _ in nil }.messages.first { $0.role.needsApproval }
 let mismatchedDetail = mismatched?.approvalDetail ?? ""
 precondition(
     mismatchedDetail.contains("argv\nrm -rf /var/mobile") && !mismatchedDetail.contains("id -u"),
-    "the bound command is shown, not the arguments' own: \(mismatchedDetail)",
+    "the bound command is shown, not the arguments' own: \(mismatchedDetail)"
 )
 precondition(mismatchedDetail.contains("cwd\nSources"), "in the bound directory: \(mismatchedDetail)")
 
@@ -243,7 +243,7 @@ precondition(mismatchedDetail.contains("cwd\nSources"), "in the bound directory:
 let argvs: [[String]] = [
     ["id", "-u"], ["id -u"], ["id", "", "-u"], ["id", " -u"], ["a'b"], ["a\\'b"], ["*"], ["\\*"],
     ["a\tb"], ["a b"], ["a\nb"], ["a\u{200B}b"], ["ab"], ["a\u{00A0}b"], ["~"], ["$HOME"], ["'$HOME'"],
-    [""], ["", ""], ["x=1", "id"], ["x=1 id"],
+    [""], ["", ""], ["x=1", "id"], ["x=1 id"]
 ]
 let lines = argvs.map(CommandLineText.quoted)
 precondition(Set(lines).count == argvs.count, "two argvs read the same: \(lines)")
@@ -336,7 +336,7 @@ let running = [
     received(4, 12),
     event(5, "toolCall", ["id": .string("t1"), "tool": .string("file_edit"),
                           "arguments": .string("{\"reason\":\"Turn the hook on\",\"path\":\"Sources/Tweak.x\"}")]),
-    received(6, 1234),
+    received(6, 1234)
 ]
 let calling = ChatTranscript(events: running) { _ in nil }.messages.last
 precondition(calling?.role == .thinking(seconds: nil, tools: 1))
@@ -360,7 +360,7 @@ print("ok: a running summary stays running across calls and carries the run's re
 /// summary of its own leaves the last turn's summary without one.
 let replying = patched + [
     event(8, "messageStarted"), event(9, "text", ["text": .string("Done: the hook is on.")]),
-    received(10, 1400),
+    received(10, 1400)
 ]
 let settlingRows = ChatTranscript(events: replying) { _ in nil }.messages
 precondition(settlingRows.last?.role == .assistant, "the reply is the last row")
@@ -375,7 +375,7 @@ precondition(endedReply.allSatisfy { $0.receivedTokens == nil && !$0.receivedSet
 let directReply = replying + [
     event(11, "message", ["text": .string("Done: the hook is on.")]), event(12, "finished"),
     event(13, "prompt", ["text": .string("Thanks")]), event(14, "messageStarted"),
-    event(15, "text", ["text": .string("You're welcome.")]), received(16, 5),
+    event(15, "text", ["text": .string("You're welcome.")]), received(16, 5)
 ]
 precondition(ChatTranscript(events: directReply) { _ in nil }.messages.allSatisfy { $0.receivedTokens == nil },
              "no count goes above the turn's own message")
@@ -400,7 +400,7 @@ func banner(_ events: [TaskEvent]) -> ToolCallBanner? {
 let editing = [
     event(1, "prompt", ["text": .string("Change the hook")]),
     event(2, "messageStarted"), event(3, "thinking", ["text": .string("Look at the hook")]),
-    call(4, "t1", "file_edit", "{\"reason\":\"Turn the hook on\",\"path\":\"Sources/Tweak.x\"}"),
+    call(4, "t1", "file_edit", "{\"reason\":\"Turn the hook on\",\"path\":\"Sources/Tweak.x\"}")
 ]
 precondition(banner(editing) == ToolCallBanner(reason: "Turn the hook on", file: "Tweak.x"), "the reason and the file, no counts yet")
 let editedCall = editing + [result(5, "t1", "Patched Sources/Tweak.x (1 replacement, +3 -1)\n--- a/Sources/Tweak.x")]
@@ -411,7 +411,7 @@ let thinkingAfter = editedCall + [event(6, "messageStarted"), event(7, "thinking
 precondition(banner(thinkingAfter)?.reason == "Turn the hook on", "thinking leaves the newest call in place")
 let written = thinkingAfter + [
     call(8, "t2", "file_write", "{\"reason\":\"Add the preferences\",\"path\":\"Prefs/Root.plist\"}"),
-    result(9, "t2", "Created Prefs/Root.plist (812 bytes, +24 -0)"),
+    result(9, "t2", "Created Prefs/Root.plist (812 bytes, +24 -0)")
 ]
 precondition(banner(written) == ToolCallBanner(reason: "Add the preferences", file: "Root.plist", change: .init(added: 24, removed: 0)),
              "the newest call")
@@ -437,7 +437,7 @@ let cutOff = [
     event(1, "prompt", ["id": .string(askedID.uuidString), "text": .string("Explain the hook")]),
     event(2, "messageStarted"), event(3, "thinking", ["text": .string("It chains")]),
     event(4, "text", ["text": .string("The hook ch")]),
-    event(5, "messageDiscarded"), event(6, "reconnecting"),
+    event(5, "messageDiscarded"), event(6, "reconnecting")
 ]
 let answeringRows = ChatTranscript(events: Array(cutOff.prefix(2))) { _ in nil }.messages
 let cutOffRows = ChatTranscript(events: cutOff) { _ in nil }.messages
@@ -447,7 +447,7 @@ precondition(cutOffRows.last?.text.isEmpty == true, "and the given-up thought go
 precondition(cutOffRows.last?.isReconnecting == true && cutOffRows.last?.activityTitle == "Reconnecting…")
 let cutOffRetried = cutOff + [
     event(7, "messageStarted"), event(8, "text", ["text": .string("The hook chains to the original.")]),
-    event(9, "message", ["text": .string("The hook chains to the original.")]), event(10, "finished"),
+    event(9, "message", ["text": .string("The hook chains to the original.")]), event(10, "finished")
 ]
 let retriedRunning = ChatTranscript(events: Array(cutOffRetried.prefix(7))) { _ in nil }.messages.last
 precondition(retriedRunning?.id == answeringRows.last?.id && retriedRunning?.activityTitle == "Thinking…", "a new attempt ends it")
@@ -457,7 +457,7 @@ let callThenRetry = [
     event(1, "prompt", ["text": .string("Build it")]), event(2, "messageStarted"),
     event(3, "toolCall", ["id": .string("t1"), "tool": .string("apelin_project_build"), "arguments": .string("{}")]),
     event(4, "toolResult", ["id": .string("t1"), "output": .string("Built")]),
-    event(5, "reconnecting"),
+    event(5, "reconnecting")
 ]
 precondition(ChatTranscript(events: callThenRetry) { _ in nil }.messages.last?.activityTitle == "Reconnecting…")
 precondition(ChatTranscript(events: callThenRetry + [event(6, "finished")]) { _ in nil }.messages.allSatisfy { !$0.isReconnecting },
@@ -473,7 +473,7 @@ print("ok: a reply given up halfway is taken back, and a request made again read
 /// next thought takes, so that thought takes its place with no gap.
 let replied = [
     event(1, "prompt", ["text": .string("Write the tweak")]),
-    event(2, "messageStarted"), event(3, "text", ["text": .string("I'll write Tweak.x now.")]),
+    event(2, "messageStarted"), event(3, "text", ["text": .string("I'll write Tweak.x now.")])
 ]
 let replyAt = Date(timeIntervalSince1970: 3)
 let stillStreaming = ChatTranscript(events: replied, now: replyAt.addingTimeInterval(1)) { _ in nil }
@@ -488,7 +488,7 @@ for next in [
     [event(6, "toolCallPreparing")],
     [event(6, "messageStarted")],
     [event(6, "thinking", ["text": .string("Hooks first")])],
-    [event(6, "toolCall", ["id": .string("t1"), "tool": .string("file_write"), "arguments": .string("{\"path\":\"Tweak.x\"}")])],
+    [event(6, "toolCall", ["id": .string("t1"), "tool": .string("file_write"), "arguments": .string("{\"path\":\"Tweak.x\"}")])]
 ] {
     let resumed = ChatTranscript(events: replied + next, now: Date(timeIntervalSince1970: 6.5)) { _ in nil }.messages
     precondition(resumed.last?.id == standIn?.id && resumed.last?.role.isThinking == true,
@@ -508,7 +508,7 @@ let asking = [
     event(1, "prompt", ["text": .string("Install it")]), event(2, "messageStarted"),
     event(3, "message", ["text": .string("Installing.")]),
     event(4, "toolCall", ["id": .string("t1"), "tool": .string("apelin_package_install"), "arguments": .string("{}")]),
-    event(5, "approvalRequested", ["approvalID": .string("a1"), "tool": .string("apelin_package_install"), "arguments": .string("{}")]),
+    event(5, "approvalRequested", ["approvalID": .string("a1"), "tool": .string("apelin_package_install"), "arguments": .string("{}")])
 ]
 let waitingForUser = ChatTranscript(events: asking, now: Date(timeIntervalSince1970: 60)) { _ in nil }
 precondition(waitingForUser.messages.last?.role.needsApproval == true && waitingForUser.quietDeadline == nil,
@@ -537,7 +537,7 @@ let textBeforeCall = [
     event(2, "messageStarted"), event(3, "text", ["text": .string("I'll build the release")]),
     event(4, "toolCallPreparing"),
     event(5, "message", ["text": .string("I'll build the release, install it and open it.")]),
-    event(6, "toolCall", ["id": .string("t1"), "tool": .string("apelin_project_build"), "arguments": .string("{}")]),
+    event(6, "toolCall", ["id": .string("t1"), "tool": .string("apelin_project_build"), "arguments": .string("{}")])
 ]
 let building = ChatTranscript(events: textBeforeCall) { _ in nil }.messages
 precondition(building.filter { $0.role == .assistant }.map(\.text) == ["I'll build the release, install it and open it."], "One message's text is one row")
@@ -546,7 +546,7 @@ precondition(building.last?.role == .thinking(seconds: nil, tools: 1) && buildin
 precondition(countsOwnCalls(building), "No summary counts a call outside its trace")
 let built = ChatTranscript(events: textBeforeCall + [
     event(7, "toolResult", ["id": .string("t1"), "output": .string("Built")]),
-    event(8, "messageStarted"), event(9, "message", ["text": .string("Done.")]), event(10, "finished"),
+    event(8, "messageStarted"), event(9, "message", ["text": .string("Done.")]), event(10, "finished")
 ]) { _ in nil }.messages
 precondition(built.filter { $0.role == .assistant }.map(\.text) == ["I'll build the release, install it and open it.", "Done."])
 precondition(built.map(\.role) == [.user, .assistant, .thinking(seconds: 2, tools: 1), .assistant])
@@ -566,7 +566,7 @@ let twoSummaries = [
     event(12, "messageStarted"), event(13, "toolCallPreparing"), event(14, "message", ["text": .string("")]),
     event(15, "toolCall", ["id": .string("t3"), "tool": .string("apelin_project_build"), "arguments": .string("{}")]),
     event(16, "toolResult", ["id": .string("t3"), "output": .string("Built")]),
-    event(17, "messageStarted"), event(18, "message", ["text": .string("Built.")]), event(19, "finished"),
+    event(17, "messageStarted"), event(18, "message", ["text": .string("Built.")]), event(19, "finished")
 ]
 let summaries = ChatTranscript(events: twoSummaries) { _ in nil }.messages
 precondition(summaries.map(\.role) == [.user, .thinking(seconds: 3, tools: 1), .assistant, .thinking(seconds: 4, tools: 2), .assistant], "Each summary counts its own calls")
@@ -582,7 +582,7 @@ print("ok: each summary counts only the calls in its own trace")
 let fromEvents = [
     event(1, "prompt", ["text": .string("Review Tweak.x"), "from": .string("opener-session")]),
     event(2, "prompt", ["text": .string("My own words")]),
-    event(3, "prompt", ["text": .string("Unknown sender"), "from": .string("gone-session")]),
+    event(3, "prompt", ["text": .string("Unknown sender"), "from": .string("gone-session")])
 ]
 let fromTranscript = ChatTranscript(events: fromEvents, conversationTitle: { $0 == "opener-session" ? "Plan the tweak" : nil }) { _ in nil }
 let users = fromTranscript.messages.filter { $0.role == .user }
@@ -599,7 +599,7 @@ let opened: JSONValue = .object([
     "sessionID": .string(childSession),
     "task": .object(["taskID": .string("child-task"), "kind": .string("agent")]),
     "title": .string("Docs"),
-    "prompt": .string("Write the README\nand the changelog"),
+    "prompt": .string("Write the README\nand the changelog")
 ])
 let adopted = ChatAdoption.record(opened: opened, parent: opener, records: [opener], now: Date(timeIntervalSince1970: 7))
 precondition(adopted?.sessionID == childSession && adopted?.task == TaskHandle(taskID: TaskID("child-task"), kind: .agent))
@@ -735,7 +735,7 @@ precondition(TokenEstimate.tokens(in: "ok 好") == 1.75)
 let turnRows = ChatTranscript(events: [
     event(1, "prompt", ["id": .string(userID.uuidString), "text": .string("Write a long story")]),
     event(2, "messageStarted"), event(3, "thinking", ["text": .string("Planning the story out")]),
-    event(4, "text", ["text": .string("Once upon a time")]),
+    event(4, "text", ["text": .string("Once upon a time")])
 ]) { _ in nil }.messages
 precondition(TurnFollowing.replyTokens(in: turnRows, after: userID) == 4, "only the reply counts, not the prompt or thinking")
 
@@ -793,7 +793,7 @@ let history = [
     event(6, "text", ["text": .string(" a")]), event(7, "text", ["text": .string(" time")]),
     event(8, "finished"),
     event(9, "steer", ["text": .string("From another chat")]),
-    event(10, "messageStarted"), event(11, "message", ["text": .string("Noted.")]), event(12, "finished"),
+    event(10, "messageStarted"), event(11, "message", ["text": .string("Noted.")]), event(12, "finished")
 ]
 var reopened = ChatRecord(summary: ChatSummary(title: "Story", lastInteraction: Date()))
 reopened.task = TaskHandle(taskID: .make(), kind: .agent)
@@ -804,7 +804,7 @@ precondition(reopened.events == history && reopened.cursor == .start, "the histo
 // the replay, in two batches, coalesced and numbered its own way
 precondition(reopened.take([
     event(1, "prompt", ["id": .string(firstID.uuidString), "text": .string("Tell me a story")]),
-    event(2, "messageStarted"), event(3, "thinking", ["text": .string("A short one")]),
+    event(2, "messageStarted"), event(3, "thinking", ["text": .string("A short one")])
 ]).isEmpty)
 precondition(reopened.events == history && reopened.cursor == EventSeq(3))
 precondition(ChatTranscript(events: reopened.events, sending: [sent]) { _ in nil }.messages == before,
@@ -814,7 +814,7 @@ let restOfReplay = [
     event(6, "steer", ["text": .string("From another chat")]),
     event(7, "messageStarted"), event(8, "message", ["text": .string("Noted.")]), event(9, "finished"),
     event(10, "prompt", ["id": .string(sent.id.uuidString), "text": .string("Build it")]),
-    event(11, "text", ["text": .string("Done")]),
+    event(11, "text", ["text": .string("Done")])
 ]
 var relaunched = try JSONDecoder().decode(ChatRecord.self, from: JSONEncoder().encode(reopened))
 precondition(relaunched.cursor == EventSeq(3), "a replay half read is saved with the record")
@@ -860,9 +860,9 @@ let compactionSummary = "The user is building a tweak; <the hook> loads & logs."
 let compactedLog = history + [
     event(13, "compactionStarted"),
     event(14, "compactionFinished", [
-        "outcome": .string("compacted"), "messagesCompacted": .number(6), "summary": .string(compactionSummary),
+        "outcome": .string("compacted"), "messagesCompacted": .number(6), "summary": .string(compactionSummary)
     ]),
-    event(15, "prompt", ["id": .string(UUID().uuidString), "text": .string("Carry on")]),
+    event(15, "prompt", ["id": .string(UUID().uuidString), "text": .string("Carry on")])
 ]
 let compactedRows = ChatTranscript(events: compactedLog) { _ in nil }.messages
 let compactionIndex = compactedRows.firstIndex { $0.role == .compaction }
@@ -873,20 +873,20 @@ precondition(compactionIndex.map { compactedRows[$0 + 1].role } == .user, "befor
 precondition(ChatTranscript(events: compactedLog) { _ in nil }.messages.map(\.id) == compactedRows.map(\.id),
              "the row's id comes from its event, built again or not")
 let notCompacted = ChatTranscript(events: history + [
-    event(13, "compactionStarted"), event(14, "compactionFinished", ["outcome": .string("tooShort")]),
+    event(13, "compactionStarted"), event(14, "compactionFinished", ["outcome": .string("tooShort")])
 ]) { _ in nil }
 precondition(!notCompacted.messages.contains { $0.role == .compaction } && !notCompacted.isCompacting,
              "a compaction that left the chat as it was shows no row")
 let olderCompaction = ChatTranscript(events: history + [
     event(13, "compactionStarted"),
-    event(14, "compactionFinished", ["outcome": .string("compacted"), "messagesCompacted": .number(6)]),
+    event(14, "compactionFinished", ["outcome": .string("compacted"), "messagesCompacted": .number(6)])
 ]) { _ in nil }
 precondition(olderCompaction.messages.last?.role == .compaction && olderCompaction.messages.last?.text == "",
              "an older session's compaction has its row, with no summary")
 let textAfter = ChatTranscript(events: [
     event(1, "messageStarted"), event(2, "text", ["text": .string("Before")]),
     event(3, "compactionFinished", ["outcome": .string("compacted"), "summary": .string("S")]),
-    event(4, "text", ["text": .string("After")]),
+    event(4, "text", ["text": .string("After")])
 ]) { _ in nil }.messages
 precondition(textAfter.map(\.text) == ["Before", "S", "After"], "text after the row never lands above it")
 let olderResult = try JSONValue.object(["outcome": .string("compacted"), "messagesCompacted": .number(6)])
@@ -986,7 +986,7 @@ do {
         event(1, "prompt", ["id": .string(UUID().uuidString), "text": .string("From afar"), "from": .string("s1")]),
         event(2, "messageStarted"), event(3, "thinking", ["text": .string("Looking")]),
         event(4, "toolCall", ["id": .string("t1"), "tool": .string("file_list")]), event(5, "toolResult", ["id": .string("t1")]),
-        event(6, "message", ["text": .string("First reply")]), event(7, "finished"),
+        event(6, "message", ["text": .string("First reply")]), event(7, "finished")
     ]
     var titles = ["s1": "Docs"]
     var cache = ChatTranscriptCache()
@@ -1071,7 +1071,7 @@ do {
 func callTitles(_ tools: [String]) -> [String] {
     let calls = tools.enumerated().map { index, tool in
         event(UInt64(index + 1), "toolCall", [
-            "id": .string("c\(index)"), "tool": .string(tool), "arguments": .string("{\"path\":\"a.m\",\"name\":\"Demo\"}"),
+            "id": .string("c\(index)"), "tool": .string(tool), "arguments": .string("{\"path\":\"a.m\",\"name\":\"Demo\"}")
         ])
     }
     return ChatTranscript(events: calls + [event(UInt64(tools.count + 1), "finished")]) { _ in nil }
@@ -1088,7 +1088,7 @@ print("ok: calls recorded under the earlier tool names read as today's do")
 /// A web fetch is titled by the site it reads.
 func webFetchTitle(_ arguments: String) -> String? {
     let call = event(1, "toolCall", [
-        "id": .string("w"), "tool": .string(AgentToolName.webFetch.rawValue), "arguments": .string(arguments),
+        "id": .string("w"), "tool": .string(AgentToolName.webFetch.rawValue), "arguments": .string(arguments)
     ])
     return ChatTranscript(events: [call, event(2, "finished")]) { _ in nil }
         .messages.flatMap(\.trace).first { $0.role == .tool }?.text

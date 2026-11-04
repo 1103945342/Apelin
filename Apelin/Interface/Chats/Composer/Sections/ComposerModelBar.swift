@@ -97,7 +97,7 @@ final class ComposerModelBar: ComposerSectionView {
         // its shape at any of them, and the colour says the level anyway.
         effortButton.iconView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(
             pointSize: 23,
-            weight: .medium,
+            weight: .medium
         )
 
         setEfforts([], selected: nil)
@@ -291,14 +291,14 @@ final class ComposerModelBar: ComposerSectionView {
             x: bounds.width - sendSize,
             y: (bounds.height - sendSize) / 2,
             width: sendSize,
-            height: sendSize,
+            height: sendSize
         )
         sendButton.frame = directionalFrame(sendFrame)
         addButton.frame = directionalFrame(CGRect(
             x: sendFrame.minX - spacing - sendSize,
             y: sendFrame.minY,
             width: sendSize,
-            height: sendSize,
+            height: sendSize
         ))
 
         // The left side reads in the order it is decided in: what the run may
@@ -309,7 +309,7 @@ final class ComposerModelBar: ComposerSectionView {
             x: x,
             y: (bounds.height - pillSize.height) / 2,
             width: pillSize.width,
-            height: pillSize.height,
+            height: pillSize.height
         ))
         x += pillSize.width + ComposerMetrics.Spacing.sm
 
@@ -317,7 +317,7 @@ final class ComposerModelBar: ComposerSectionView {
         let markSize = ComposerMetrics.Send.iconSize + 6
         modelButton.iconInset = (iconSize - markSize) / 2
         modelButton.frame = directionalFrame(CGRect(
-            x: x, y: mid, width: iconSize, height: iconSize,
+            x: x, y: mid, width: iconSize, height: iconSize
         ))
         x += iconSize + spacing
 
@@ -328,7 +328,7 @@ final class ComposerModelBar: ComposerSectionView {
         let lightning = iconSize * 0.75
         effortButton.iconInset = 0
         effortButton.frame = directionalFrame(CGRect(
-            x: x, y: (bounds.height - lightning) / 2, width: lightning, height: lightning,
+            x: x, y: (bounds.height - lightning) / 2, width: lightning, height: lightning
         ))
         x += lightning + spacing
 
@@ -336,7 +336,7 @@ final class ComposerModelBar: ComposerSectionView {
         // the ring; hidden, it takes no room.
         if tierButton.alpha > 0 {
             tierButton.frame = directionalFrame(CGRect(
-                x: x, y: mid, width: iconSize, height: iconSize,
+                x: x, y: mid, width: iconSize, height: iconSize
             ))
             x += iconSize + spacing
         }
@@ -346,7 +346,7 @@ final class ComposerModelBar: ComposerSectionView {
             x: x,
             y: (bounds.height - ringSize) / 2,
             width: ringSize,
-            height: ringSize,
+            height: ringSize
         ))
     }
 }

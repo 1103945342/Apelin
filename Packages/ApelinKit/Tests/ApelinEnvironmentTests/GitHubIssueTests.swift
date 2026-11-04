@@ -69,13 +69,13 @@ final class GitHubIssueTests: XCTestCase {
         let request = GitIssueCreateRequest(
             repository: "Lakr233/Irisin",
             title: "  The installer stops at 90% ",
-            body: "Installing a package from the inbox stops at 90%.\n",
+            body: "Installing a package from the inbox stops at 90%.\n"
         )
         let response = try await service(home, github: github).create(request)
         XCTAssertEqual(response, GitIssueCreateResponse(
             number: 7,
             url: "https://github.com/Lakr233/Irisin/issues/7",
-            repository: "Lakr233/Irisin",
+            repository: "Lakr233/Irisin"
         ))
 
         XCTAssertEqual(github.requests.count, 1)
@@ -97,7 +97,7 @@ final class GitHubIssueTests: XCTestCase {
             (404, "Not Found", .notFound, ["no repository Lakr233/Irisin", "cannot see it"]),
             (410, "Issues are disabled for this repo", .denied, ["Issues are turned off on Lakr233/Irisin", "Issues are disabled for this repo"]),
             (403, "Repository was archived so is read-only.", .denied, ["does not let the signed-in account", "archived"]),
-            (422, "Validation Failed", .conflict, ["refused the issue on Lakr233/Irisin", "Validation Failed", "title is too long"]),
+            (422, "Validation Failed", .conflict, ["refused the issue on Lakr233/Irisin", "Validation Failed", "title is too long"])
         ]
         for refusal in refusals {
             github.status = refusal.status
@@ -161,7 +161,7 @@ final class GitHubIssueTests: XCTestCase {
             GitIssueCreateRequest(repository: "Lakr233/Irisin", title: "Title", body: "Built under \(home.layout.installRoot)/usr/lib"),
             GitIssueCreateRequest(repository: "Lakr233/Irisin", title: "Title", body: "It is Adas-iPhone that fails"),
             GitIssueCreateRequest(repository: "Lakr233/Irisin", title: "Title", body: "UDID 00008030-00112233445566AA"),
-            GitIssueCreateRequest(repository: "Lakr233/Irisin", title: "Title", body: "token ghp_" + String(repeating: "A1b2", count: 9)),
+            GitIssueCreateRequest(repository: "Lakr233/Irisin", title: "Title", body: "token ghp_" + String(repeating: "A1b2", count: 9))
         ]
         for request in refused {
             do {

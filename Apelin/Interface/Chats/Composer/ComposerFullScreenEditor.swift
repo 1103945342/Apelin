@@ -75,14 +75,14 @@ final class ComposerFullScreenEditor: UIViewController {
             top: inset.top + (navigationController?.navigationBar.frame.maxY ?? 0),
             left: inset.left,
             bottom: inset.bottom,
-            right: inset.right,
+            right: inset.right
         ))
         textView.frame = frame
         placeholderLabel.frame = CGRect(
             x: frame.minX + 16,
             y: frame.minY + 16,
             width: max(0, frame.width - 32),
-            height: 0,
+            height: 0
         )
         placeholderLabel.sizeToFit()
     }

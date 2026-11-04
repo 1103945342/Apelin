@@ -29,7 +29,7 @@ public final class BuildWorker: @unchecked Sendable {
         installRoot: String,
         home: String,
         registry: EnvironmentRegistry? = nil,
-        extensionDirectory: URL? = nil,
+        extensionDirectory: URL? = nil
     ) {
         self.extensionDirectory = extensionDirectory ?? ExtensionCatalog.directory(installRoot: installRoot)
         self.installRoot = installRoot
@@ -77,9 +77,9 @@ public final class BuildWorker: @unchecked Sendable {
                 return (
                     .failure(
                         request.request.requestID,
-                        ApelinError(.badRequest, "buildStart reaches apelin-build only as a task"),
+                        ApelinError(.badRequest, "buildStart reaches apelin-build only as a task")
                     ),
-                    [],
+                    []
                 )
             }
             return await WorkerMain.serve(BuildStartRequest.self, request) { start in
@@ -123,10 +123,10 @@ public final class BuildWorker: @unchecked Sendable {
                             id: Self.emptyWorkspaceTemplateID,
                             displayName: "Empty",
                             summary: "An empty workspace. No SDK or toolchain is required.",
-                            byteCount: 0,
-                        ),
-                    ],
-                ),
+                            byteCount: 0
+                        )
+                    ]
+                )
             ] + catalog.extensions.map { found in
                 guard let manifest = found.manifest else {
                     return DevelopmentExtension(
@@ -134,7 +134,7 @@ public final class BuildWorker: @unchecked Sendable {
                         version: "",
                         kind: Self.guessKind(found.folderName),
                         displayName: found.folderName,
-                        problems: found.problems,
+                        problems: found.problems
                     )
                 }
                 return DevelopmentExtension(
@@ -153,14 +153,14 @@ public final class BuildWorker: @unchecked Sendable {
                                     name: parameter.name,
                                     kind: parameter.type,
                                     summary: parameter.help ?? parameter.label,
-                                    defaultValue: parameter.default?.value.jsonValue,
+                                    defaultValue: parameter.default?.value.jsonValue
                                 )
-                            },
+                            }
                         )
                     },
-                    problems: found.problems,
+                    problems: found.problems
                 )
-            },
+            }
         )
     }
 
@@ -206,13 +206,13 @@ public final class BuildWorker: @unchecked Sendable {
             values: values,
             catalog: catalog,
             registry: registry,
-            automaticallyName: request.automaticallyName == true,
+            automaticallyName: request.automaticallyName == true
         )
         return ProjectCreateResponse(
             projectID: created.projectID,
             name: created.name,
             path: created.root.path,
-            baseline: created.baseline,
+            baseline: created.baseline
         )
     }
 
@@ -234,7 +234,7 @@ public final class BuildWorker: @unchecked Sendable {
         if request.purpose == .distribution {
             diagnostics += DistributionCheck(store: store, catalog: catalog).run(
                 projectID: request.projectID,
-                bootstrap: request.bootstrap.flatMap { Bootstrap(rawValue: $0.rawValue) },
+                bootstrap: request.bootstrap.flatMap { Bootstrap(rawValue: $0.rawValue) }
             )
         }
         return ProjectCheckResponse(
@@ -246,9 +246,9 @@ public final class BuildWorker: @unchecked Sendable {
             environment: result.project.map {
                 ProjectEnvironmentBinding(
                     toolchain: ProjectComponentBinding(id: $0.environment.toolchain.id, digest: $0.environment.toolchain.digest),
-                    sdk: ProjectComponentBinding(id: $0.environment.sdk.id, digest: $0.environment.sdk.digest),
+                    sdk: ProjectComponentBinding(id: $0.environment.sdk.id, digest: $0.environment.sdk.digest)
                 )
-            },
+            }
         )
     }
 
@@ -276,7 +276,7 @@ public final class BuildWorker: @unchecked Sendable {
         _ request: BuildStartRequest,
         taskID: TaskID,
         resumed: Bool = false,
-        emit: @escaping Emit,
+        emit: @escaping Emit
     ) throws {
         if resumed {
             // The lost run may have registered its package before the host
@@ -296,7 +296,7 @@ public final class BuildWorker: @unchecked Sendable {
             registry: registry,
             installRoot: installRoot,
             home: home,
-            bootstrap: request.bootstrap.flatMap { Bootstrap(rawValue: $0.rawValue) },
+            bootstrap: request.bootstrap.flatMap { Bootstrap(rawValue: $0.rawValue) }
         )
         resolved.approvedBuildDigest = request.approvedBuildDigest
         let inputs = resolved
@@ -317,12 +317,12 @@ public final class BuildWorker: @unchecked Sendable {
         manifest: JSONDocument,
         root: URL,
         taskID: TaskID,
-        emit: @escaping Emit,
+        emit: @escaping Emit
     ) throws {
         guard let declaration = try ExternalBuildDeclaration.read(manifest, root: root) else {
             throw ApelinError(
                 .badRequest,
-                "this workspace declares no build: add \"external\": {\"script\": \"<a project file>\"} to its apelin-project.json; the script writes one .deb into APELIN_PACKAGE_DIR",
+                "this workspace declares no build: add \"external\": {\"script\": \"<a project file>\"} to its apelin-project.json; the script writes one .deb into APELIN_PACKAGE_DIR"
             )
         }
         let inputs = ExternalBuild.Inputs(
@@ -337,7 +337,7 @@ public final class BuildWorker: @unchecked Sendable {
                 .appendingPathComponent(request.projectID, isDirectory: true)
                 .appendingPathComponent(taskID.rawValue, isDirectory: true),
             installRoot: installRoot,
-            home: home,
+            home: home
         )
         let store = store
         run(taskID, emit: emit) { reporter, cancellation in
@@ -351,7 +351,7 @@ public final class BuildWorker: @unchecked Sendable {
     private func run(
         _ taskID: TaskID,
         emit: @escaping Emit,
-        build: @escaping @Sendable (TaskReporter, BuildCancellation) throws -> ArtifactRecord,
+        build: @escaping @Sendable (TaskReporter, BuildCancellation) throws -> ArtifactRecord
     ) {
         let cancellation = BuildCancellation()
         lock.lock()
@@ -375,12 +375,12 @@ public final class BuildWorker: @unchecked Sendable {
                     "buildID": .string(record.buildID),
                     "packageID": .string(artifact.packageID),
                     "version": .string(artifact.version),
-                    "bootstrap": .string(record.bootstrap),
+                    "bootstrap": .string(record.bootstrap)
                 ]))
             } catch is BuildCancelled {
                 emit(taskID, TaskEvent.stateKind, .object([
                     "state": .string(TaskState.cancelled.rawValue),
-                    "message": .string("the build was cancelled"),
+                    "message": .string("the build was cancelled")
                 ]))
             } catch let failure as BuildFailure {
                 for diagnostic in failure.diagnostics where !reporter.reported(diagnostic) {
@@ -388,12 +388,12 @@ public final class BuildWorker: @unchecked Sendable {
                 }
                 emit(taskID, TaskEvent.stateKind, .object([
                     "state": .string(TaskState.failed.rawValue),
-                    "message": .string(failure.description),
+                    "message": .string(failure.description)
                 ]))
             } catch {
                 emit(taskID, TaskEvent.stateKind, .object([
                     "state": .string(TaskState.failed.rawValue),
-                    "message": .string(String(describing: error)),
+                    "message": .string(String(describing: error))
                 ]))
             }
         }

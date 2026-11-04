@@ -27,7 +27,7 @@ struct MemoryTests {
         _ home: TemporaryHome,
         _ store: MemoryStore,
         _ backend: MockBackend,
-        project: ProjectIdentity? = nil,
+        project: ProjectIdentity? = nil
     ) throws -> ToolRunner {
         try ToolRunner(sessionID: UUID().uuidString, project: project ?? home.project, root: ScopedRoot(home.projectURL),
                        policy: ApprovalPolicy(mode: .confirm), backend: backend, digests: MockDigestLedger(),
@@ -231,7 +231,7 @@ struct MemoryTests {
         let backend = MockBackend()
         await backend.setListedProjects(ProjectListToolResponse(projects: [
             ListedProject(folder: "Hello", projectID: home.project.id, displayName: "Clock", buildSystem: "apelin", isThisProject: true),
-            ListedProject(folder: "Weather", projectID: Self.weather.id, displayName: "Rain Radar", buildSystem: "external", isThisProject: false),
+            ListedProject(folder: "Weather", projectID: Self.weather.id, displayName: "Rain Radar", buildSystem: "external", isThisProject: false)
         ], truncated: false))
         let runner = try Self.runner(home, store, backend)
 
@@ -241,7 +241,7 @@ struct MemoryTests {
             .init(title: "Language"),
             .init(title: "Target", projectID: home.project.id, folder: "Hello", displayName: "Clock"),
             .init(title: "Units", projectID: Self.weather.id, folder: "Weather", displayName: "Rain Radar"),
-            .init(title: "Old", projectID: "gone-project", missing: true),
+            .init(title: "Old", projectID: "gone-project", missing: true)
         ])
         await #expect(throws: ToolArgumentError.self, "one project or every project, not both") {
             try await Self.run(runner, .memoryList, ["all_projects": true, "project": "Weather"])

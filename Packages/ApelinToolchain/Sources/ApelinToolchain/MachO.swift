@@ -93,18 +93,18 @@ struct MachOImage {
                 guard size == 16 else { throw ToolchainFailure("Invalid linkedit data command") }
                 try extent(
                     UInt64(command.bytes.number(8, as: UInt32.self)),
-                    UInt64(command.bytes.number(12, as: UInt32.self)),
+                    UInt64(command.bytes.number(12, as: UInt32.self))
                 )
             }
             if command.kind == 2 {
                 guard size == 24 else { throw ToolchainFailure("Invalid symbol table command") }
                 try extent(
                     UInt64(command.bytes.number(8, as: UInt32.self)),
-                    UInt64(command.bytes.number(12, as: UInt32.self)) * 16,
+                    UInt64(command.bytes.number(12, as: UInt32.self)) * 16
                 )
                 try extent(
                     UInt64(command.bytes.number(16, as: UInt32.self)),
-                    UInt64(command.bytes.number(20, as: UInt32.self)),
+                    UInt64(command.bytes.number(20, as: UInt32.self))
                 )
             }
             if Self.dyldInfo.contains(command.kind) {
@@ -112,7 +112,7 @@ struct MachOImage {
                 for field in stride(from: 8, to: 48, by: 8) {
                     try extent(
                         UInt64(command.bytes.number(field, as: UInt32.self)),
-                        UInt64(command.bytes.number(field + 4, as: UInt32.self)),
+                        UInt64(command.bytes.number(field + 4, as: UInt32.self))
                     )
                 }
             }
@@ -219,13 +219,13 @@ struct MachOImage {
                 try weakenChainedImports(
                     at: Int(command.bytes.number(8, as: UInt32.self)),
                     size: Int(command.bytes.number(12, as: UInt32.self)),
-                    ordinals: ordinals,
+                    ordinals: ordinals
                 )
             } else if Self.dyldInfo.contains(command.kind) {
                 try weakenBindOpcodes(
                     at: Int(command.bytes.number(16, as: UInt32.self)),
                     size: Int(command.bytes.number(20, as: UInt32.self)),
-                    ordinals: ordinals,
+                    ordinals: ordinals
                 )
             }
         }
@@ -295,7 +295,7 @@ struct MachOImage {
                 replaced.append(Data(count: span.count - replaced.count))
                 bytes.replaceSubrange(
                     bytes.startIndex + span.lowerBound ..< bytes.startIndex + span.upperBound,
-                    with: replaced,
+                    with: replaced
                 )
                 renamed.append(name)
             }
@@ -347,7 +347,7 @@ struct MachOImage {
             Int(bytes.number(offset + 12, as: UInt32.self)),
             Int(bytes.number(offset + 16, as: UInt32.self)),
             format,
-            format == 1 ? 4 : format == 2 ? 8 : format == 3 ? 16 : 0,
+            format == 1 ? 4 : format == 2 ? 8 : format == 3 ? 16 : 0
         )
     }
 
@@ -543,7 +543,7 @@ struct MachOImage {
         let oldLength = try Int(bytes.number(20, as: UInt32.self))
         result.replaceSubrange(
             32 ..< 32 + max(oldLength, all.count),
-            with: all + Data(count: max(0, oldLength - all.count)),
+            with: all + Data(count: max(0, oldLength - all.count))
         )
         result.put(UInt32(commands.count), at: 16); result.put(UInt32(all.count), at: 20)
         let blob = signature.blob(code: result, executable: executable)

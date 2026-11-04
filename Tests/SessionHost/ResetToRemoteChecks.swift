@@ -27,7 +27,7 @@ func resetToRemoteChecks(scratch: URL, scratchPath: String) async {
             task: registry.create(kind: .agent, owner: .agent, ownerKey: id),
             project: project,
             mode: mode,
-            createdAt: Date(),
+            createdAt: Date()
         )
         await sessions.add(entry)
         return entry
@@ -41,7 +41,7 @@ func resetToRemoteChecks(scratch: URL, scratchPath: String) async {
         branch: "main",
         expectedRemoteCommit: remoteCommit,
         expectedHead: head,
-        expectedURL: url,
+        expectedURL: url
     )
     // What apelin-agent writes into git_reset_to_remote's approvalRequested
     // (ApelinAgentWorker's tests hold that shape).
@@ -52,17 +52,17 @@ func resetToRemoteChecks(scratch: URL, scratchPath: String) async {
         projectID: String = "p-reset",
         remoteCommit card: String? = nil,
         head cardHead: String? = nil,
-        url cardURL: String? = nil,
+        url cardURL: String? = nil
     ) async {
         var detail: [String: JSONValue] = [
             "projectID": .string(projectID), "remote": .string("origin"), "url": .string(cardURL ?? url),
             "branch": .string("main"), "remoteCommit": .string(card ?? remoteCommit),
-            "unrelatedHistories": .bool(true), "lostCommitCount": .number(3), "projectFile": .string("repositoryWithProjectID"),
+            "unrelatedHistories": .bool(true), "lostCommitCount": .number(3), "projectFile": .string("repositoryWithProjectID")
         ]
         detail["head"] = .string(cardHead ?? head)
         await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object([
             "approvalID": .string(approvalID), "tool": .string(tool), "allowsSessionScope": .bool(false),
-            "detail": .object([AgentResetToRemoteRules.detailKey: .object(detail)]),
+            "detail": .object([AgentResetToRemoteRules.detailKey: .object(detail)])
         ]))
     }
     func authorized(_ entry: AgentSessionTable.Entry?, _ request: GitResetToRemoteRequest = reset) async -> ApelinError? {
@@ -90,7 +90,7 @@ func resetToRemoteChecks(scratch: URL, scratchPath: String) async {
         ("moved HEAD", { await ask(strict, "head", head: String(repeating: "d", count: 40)) }),
         ("another address", { await ask(strict, "address", url: "https://github.com/someone/else.git") }),
         ("another project", { await ask(strict, "project", projectID: "p-other") }),
-        ("another tool", { await ask(strict, "tool", tool: "git_push") }),
+        ("another tool", { await ask(strict, "tool", tool: "git_push") })
     ]
     for (_, card) in cards {
         await card()

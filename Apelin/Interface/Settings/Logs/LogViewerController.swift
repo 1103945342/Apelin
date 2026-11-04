@@ -205,7 +205,7 @@ final class LogViewerController: UIViewController, UITableViewDelegate, UISearch
         var content = UIListContentConfiguration.subtitleCell()
         let font = UIFont.monospacedSystemFont(
             ofSize: UIFont.preferredFont(forTextStyle: .caption2).pointSize,
-            weight: .regular,
+            weight: .regular
         )
         content.text = logLine.message
         content.textProperties.font = font

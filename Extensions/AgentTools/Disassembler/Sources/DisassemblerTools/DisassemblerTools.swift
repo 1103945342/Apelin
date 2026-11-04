@@ -20,12 +20,12 @@ public enum DisassemblerTools {
     static let binaryParameter: JSONValue = [
         "type": "string",
         "minLength": 1,
-        "description": "Path to a Mach-O file (thin or fat) this process can read.",
+        "description": "Path to a Mach-O file (thin or fat) this process can read."
     ]
     static let archParameter: JSONValue = [
         "type": "string",
         "enum": ["arm64", "arm64e", "x86_64"],
-        "description": "Slice of a fat file to read. Defaults to arm64e, then arm64, then the first slice.",
+        "description": "Slice of a fat file to read. Defaults to arm64e, then arm64, then the first slice."
     ]
 
     static let disassembleDescriptor = ToolDescriptor(
@@ -39,21 +39,21 @@ public enum DisassemblerTools {
                 "address": [
                     "type": "string",
                     "minLength": 1,
-                    "description": "Start: a virtual address in hex (0x100003f50) or decimal, or a symbol name (_main or main).",
+                    "description": "Start: a virtual address in hex (0x100003f50) or decimal, or a symbol name (_main or main)."
                 ],
                 "count": [
                     "type": "integer",
                     "minimum": 1,
                     "maximum": .number(Double(maxInstructions)),
-                    "description": "Instructions to disassemble. Default 32.",
+                    "description": "Instructions to disassemble. Default 32."
                 ],
-                "arch": archParameter,
+                "arch": archParameter
             ],
             "required": ["binary", "address"],
-            "additionalProperties": false,
+            "additionalProperties": false
         ],
         risk: .readOnly,
-        timeoutSeconds: 30,
+        timeoutSeconds: 30
     )
 
     static let symbolsDescriptor = ToolDescriptor(
@@ -65,36 +65,36 @@ public enum DisassemblerTools {
                 "binary": binaryParameter,
                 "filter": [
                     "type": "string",
-                    "description": "Only symbols whose name contains this text (case-insensitive).",
+                    "description": "Only symbols whose name contains this text (case-insensitive)."
                 ],
                 "kind": [
                     "type": "string",
                     "enum": ["all", "defined", "undefined"],
-                    "description": "Defined, undefined (imports), or all. Default all.",
+                    "description": "Defined, undefined (imports), or all. Default all."
                 ],
                 "limit": [
                     "type": "integer",
                     "minimum": 1,
                     "maximum": .number(Double(maxSymbols)),
-                    "description": "Symbols to return. Default 200.",
+                    "description": "Symbols to return. Default 200."
                 ],
                 "offset": [
                     "type": "integer",
                     "minimum": 0,
-                    "description": "Matching symbols to skip, for paging. Default 0.",
+                    "description": "Matching symbols to skip, for paging. Default 0."
                 ],
                 "arch": archParameter,
                 "output": [
                     "type": "string",
                     "enum": ["text", "file"],
-                    "description": "text: the page inline (default). file: every matching symbol, unpaged, as a text/plain attachment, with a one-line summary inline.",
-                ],
+                    "description": "text: the page inline (default). file: every matching symbol, unpaged, as a text/plain attachment, with a one-line summary inline."
+                ]
             ],
             "required": ["binary"],
-            "additionalProperties": false,
+            "additionalProperties": false
         ],
         risk: .readOnly,
-        timeoutSeconds: 30,
+        timeoutSeconds: 30
     )
 
     public static func server() -> ToolExtensionServer {
@@ -104,9 +104,9 @@ public enum DisassemblerTools {
             peer: ToolPeer(name: id, version: version),
             tools: [
                 ToolHandler(disassembleDescriptor) { call in try disassemble(call) },
-                ToolHandler(symbolsDescriptor) { call in try symbols(call) },
+                ToolHandler(symbolsDescriptor) { call in try symbols(call) }
             ],
-            limits: ToolProtocolLimits(maxAttachmentBytes: maxBinaryBytes),
+            limits: ToolProtocolLimits(maxAttachmentBytes: maxBinaryBytes)
         )
     }
 
@@ -199,7 +199,7 @@ public enum DisassemblerTools {
             let file = try listingFile(lines.joined(separator: "\n") + "\n", name: name)
             return ToolOutput([
                 .text("\(matching.count) matching symbols of \(heading), in the attached \(name)"),
-                .file(file),
+                .file(file)
             ])
         }
 

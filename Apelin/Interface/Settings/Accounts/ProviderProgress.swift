@@ -10,14 +10,14 @@ enum ProviderProgress {
         message: String.LocalizationValue = "",
         from presenter: UIViewController,
         cancel: (@MainActor () async -> Void)? = nil,
-        operation: @escaping @MainActor () async throws -> T,
+        operation: @escaping @MainActor () async throws -> T
     ) async throws -> T {
         if let cancel {
             return try await ProgressCard.run(
                 title: String(localized: title),
                 message: String(localized: message),
                 cancellable: true,
-                from: presenter,
+                from: presenter
             ) { _ in
                 try await withTaskCancellationHandler {
                     try await operation()

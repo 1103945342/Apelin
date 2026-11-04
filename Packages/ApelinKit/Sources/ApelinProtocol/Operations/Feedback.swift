@@ -110,7 +110,7 @@ public enum FeedbackRules {
     private static let footerPattern = pattern(
         #"(?:\r?\n){2}---[ \t]*\r?\n(Sent with Apelin [^\r\n]* · iOS [^\r\n]* · (?:"#
             + BuildBootstrap.allCases.map(\.rawValue).joined(separator: "|")
-            + #"))[ \t\r\n]*\z"#,
+            + #"))[ \t\r\n]*\z"#
     )
 
     static func trimmingTrailingWhitespace(_ text: String) -> String {

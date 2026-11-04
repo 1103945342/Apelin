@@ -48,9 +48,9 @@ final class NewProjectController: TableController, UITextFieldDelegate {
         template: TemplateSummary(
             id: "wiki.qaq.apelin.workspace/empty",
             displayName: "Empty",
-            summary: "An empty workspace. No SDK or toolchain is required.",
+            summary: "An empty workspace. No SDK or toolchain is required."
         ),
-        kind: .workspace,
+        kind: .workspace
     )
 
     private var choices = [NewProjectController.emptyWorkspace]
@@ -73,7 +73,7 @@ final class NewProjectController: TableController, UITextFieldDelegate {
                 field.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor),
                 field.trailingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.trailingAnchor),
                 field.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 12),
-                field.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -12),
+                field.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor, constant: -12)
             ])
         }
     }
@@ -82,7 +82,7 @@ final class NewProjectController: TableController, UITextFieldDelegate {
 
     private lazy var dataSource = TableDataSource<Section, String, Row>(
         tableView: tableView,
-        identifier: \.id,
+        identifier: \.id
     ) { [weak self] table, indexPath, row in
         guard let self else { return nil }
         switch row {
@@ -194,7 +194,7 @@ final class NewProjectController: TableController, UITextFieldDelegate {
 
     private lazy var createButton = UIBarButtonItem(
         title: String(localized: "Create"),
-        primaryAction: UIAction { [weak self] _ in self?.createProject() },
+        primaryAction: UIAction { [weak self] _ in self?.createProject() }
     )
 
     private lazy var creatingIndicator = UIBarButtonItem(customView: UIActivityIndicatorView(style: .medium).then {
@@ -333,7 +333,7 @@ final class NewProjectController: TableController, UITextFieldDelegate {
                 let created = try await ApelinService.app.projectCreate(ProjectCreateRequest(
                     templateID: entry.template.id,
                     name: name,
-                    automaticallyName: automaticallyName,
+                    automaticallyName: automaticallyName
                 ))
                 NotificationCenter.default.post(name: .apelinProjectsChanged, object: nil)
                 let project = ProjectSummary(
@@ -341,7 +341,7 @@ final class NewProjectController: TableController, UITextFieldDelegate {
                     kind: entry.kind,
                     displayName: created.name,
                     projectID: created.projectID,
-                    automaticallyNamed: automaticallyName,
+                    automaticallyNamed: automaticallyName
                 )
                 if dismissesOnCreate {
                     dismiss(animated: true) { [onCreate] in onCreate?(project, firstPrompt) }

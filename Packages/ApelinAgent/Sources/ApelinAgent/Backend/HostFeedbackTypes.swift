@@ -70,7 +70,7 @@ public struct FeedbackReadToolResponse: Sendable, Hashable, Codable {
         author: String,
         openedByUser: Bool,
         body: String,
-        footer: String?,
+        footer: String?
     ) {
         self.repository = repository
         self.issue = issue
@@ -101,7 +101,7 @@ public struct FeedbackEditToolRequest: Sendable, Hashable, Codable {
         title: String?,
         body: String?,
         expectedTitle: String,
-        expectedBody: String,
+        expectedBody: String
     ) {
         self.context = context
         self.number = number

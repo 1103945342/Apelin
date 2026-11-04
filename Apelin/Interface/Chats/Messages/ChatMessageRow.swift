@@ -23,7 +23,7 @@ final class ChatMessageRow: ListRowView {
             top: ChatMarkdownView.blockSpacing / 2,
             left: side,
             bottom: ChatMarkdownView.blockSpacing / 2,
-            right: side,
+            right: side
         )
     }
 
@@ -230,7 +230,7 @@ final class ChatMessageRow: ListRowView {
             width: attachmentWidth,
             documentWidthLimit: documentWidth,
             maximumPreviewHeight: attachmentHeightLimit,
-            displayScale: displayScale,
+            displayScale: displayScale
         )
         let gap = hasText && attachmentHeight > 0 ? ChatMarkdownView.blockSpacing : 0
         if isUser {
@@ -243,20 +243,20 @@ final class ChatMessageRow: ListRowView {
                 x: content.minX,
                 y: content.minY,
                 width: content.width,
-                height: ceil(Self.senderFont.lineHeight),
+                height: ceil(Self.senderFont.lineHeight)
             )
             let top = content.minY + senderHeight
             attachmentsView.frame = directionalFrame(CGRect(
                 x: content.maxX - attachmentWidth,
                 y: top,
                 width: attachmentWidth,
-                height: attachmentHeight,
+                height: attachmentHeight
             ))
             bubble.frame = directionalFrame(CGRect(
                 x: content.maxX - width,
                 y: top + attachmentHeight + gap,
                 width: width,
-                height: textHeight,
+                height: textHeight
             ))
             label.frame = bubble.frame.insetBy(dx: Self.textPadding, dy: Self.textPadding)
         } else {
@@ -267,7 +267,7 @@ final class ChatMessageRow: ListRowView {
                 x: content.minX,
                 y: content.minY + textHeight + gap,
                 width: content.width,
-                height: attachmentHeight,
+                height: attachmentHeight
             )
         }
     }
@@ -276,7 +276,7 @@ final class ChatMessageRow: ListRowView {
         for message: ChatMessage,
         width: CGFloat,
         maximumAttachmentHeight: CGFloat,
-        displayScale: CGFloat,
+        displayScale: CGFloat
     ) -> CGFloat {
         let user = message.role == .user
         let available = textWidth(for: width, user: user)
@@ -299,7 +299,7 @@ final class ChatMessageRow: ListRowView {
             width: attachmentWidth,
             documentWidthLimit: documentWidth,
             maximumPreviewHeight: maximumAttachmentHeight,
-            displayScale: displayScale,
+            displayScale: displayScale
         )
         let gap = textHeight > 0 && attachmentHeight > 0 ? ChatMarkdownView.blockSpacing : 0
         let senderHeight = user && message.sender != nil ? Self.senderHeight : 0
@@ -348,7 +348,7 @@ extension ChatMessageRow: TextLabelViewDelegate {
     func textLabelView(
         _ label: TextLabelView,
         editMenuForSelection selection: NSRange,
-        suggestedActions: [UIMenuElement],
+        suggestedActions: [UIMenuElement]
     ) -> UIMenu? {
         ChatSelectionMenu.menu(for: label, selection: selection, suggestedActions: suggestedActions)
     }

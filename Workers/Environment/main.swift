@@ -14,7 +14,7 @@ let box = WorkerBox()
 WorkerMain.run(
     role: .environment,
     onCancel: { taskID, context in box.worker(context).cancel(taskID) },
-    handler: { request, context in await box.worker(context).handle(request) },
+    handler: { request, context in await box.worker(context).handle(request) }
 )
 
 /// The one EnvironmentWorker, made on the first request, once the

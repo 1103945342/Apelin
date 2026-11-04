@@ -31,14 +31,14 @@ private struct FixtureSDKSupplier: SDKSupplier {
         try SDKFixture.make(at: root, canonicalName: "iphoneos\(version)", version: version)
         return try await SDKManager(layout: layout).run(
             .inboxFolder(root, relative: "fixture.sdk"), staging: staging,
-            hasSwiftToolchain: hasSwiftToolchain, reporter: reporter,
+            hasSwiftToolchain: hasSwiftToolchain, reporter: reporter
         )
     }
 }
 
 final class SDKResolutionTests: XCTestCase {
     private static let release = ToolchainProduct(
-        productID: "001-00015", version: "15.3", url: "https://example.invalid/15.pkg", size: 1, newestSDK: "17.4",
+        productID: "001-00015", version: "15.3", url: "https://example.invalid/15.pkg", size: 1, newestSDK: "17.4"
     )
 
     private func home() throws -> TemporaryHome {
@@ -84,7 +84,7 @@ final class SDKResolutionTests: XCTestCase {
         }
         let statuses = [
             SDKSourceStatus(name: "Disabled", url: "https://example.invalid/disabled.git", enabled: false, branches: ["sdk/iPhoneOS99.0"]),
-            SDKSourceStatus(name: "Enabled", url: "https://example.invalid/sdks.git", enabled: true, branches: ["main", "sdk/iPhoneOS17.4"]),
+            SDKSourceStatus(name: "Enabled", url: "https://example.invalid/sdks.git", enabled: true, branches: ["main", "sdk/iPhoneOS17.4"])
         ]
         XCTAssertEqual(SDKOffer.offers(from: statuses).map(\.version), ["17.4"])
     }
@@ -142,7 +142,7 @@ final class SDKResolutionTests: XCTestCase {
     func testNoCompatibleSourceAndOfflineSourcesExplainTheFailureBeforeInstalling() async throws {
         for (available, expected) in [
             (SDKOffers(offers: [offer("18.5")]), ApelinError.Code.badRequest),
-            (SDKOffers(problems: ["Fixture: offline"]), ApelinError.Code.unavailable),
+            (SDKOffers(problems: ["Fixture: offline"]), ApelinError.Code.unavailable)
         ] {
             let home = try home()
             let calls = EventLog()
@@ -188,7 +188,7 @@ final class SDKResolutionTests: XCTestCase {
             beforeFetch: { reporter in
                 reporter.cancellation.cancel()
                 try reporter.checkCancelled()
-            },
+            }
         )
         let service = ToolchainService(layout: home.layout, backend: FakeBackend(products: [Self.release]), supplier: supplier)
         let installer = FakeInstaller(installRoot: home.layout.installRoot)

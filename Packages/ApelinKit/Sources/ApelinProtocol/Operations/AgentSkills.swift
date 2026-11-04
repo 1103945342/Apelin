@@ -26,7 +26,7 @@ public struct AgentSkill: Codable, Sendable, Equatable {
         source: AgentSkillSource,
         body: String,
         files: [String] = [],
-        location: String? = nil,
+        location: String? = nil
     ) {
         self.name = name
         self.description = description
@@ -78,7 +78,7 @@ public extension ApelinService {
     func agentRewritePrompt(
         text: String,
         provider: AgentProvider?,
-        model: String?,
+        model: String?
     ) async throws -> AgentRewritePromptResponse {
         try await send(AgentRewritePromptRequest(text: text, provider: provider, model: model))
     }

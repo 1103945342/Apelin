@@ -81,7 +81,7 @@ final class Proxy {
             XPCEnvelope.fill(
                 reply,
                 with: .success(request.requestID, HelloResponse(installRoot: installRoot)),
-                descriptors: [],
+                descriptors: []
             )
             xpc_connection_send_message(peer, reply)
             return

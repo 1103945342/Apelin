@@ -40,7 +40,7 @@ final class GitSettingsController: TableController {
 
     private lazy var dataSource = TableDataSource<Section, Row, Row>(
         tableView: tableView,
-        identifier: { $0 },
+        identifier: { $0 }
     ) { [weak self] _, _, row in
         self?.cell(for: row)
     }
@@ -60,7 +60,7 @@ final class GitSettingsController: TableController {
 
     private lazy var saveItem = UIBarButtonItem(
         title: String(localized: "Save"),
-        primaryAction: UIAction { [weak self] _ in self?.saveAuthor() },
+        primaryAction: UIAction { [weak self] _ in self?.saveAuthor() }
     )
 
     private var gitHubAccount: GitCredentialSummary? {
@@ -94,7 +94,7 @@ final class GitSettingsController: TableController {
         nameField.returnKeyType = .next
         nameField.addAction(
             UIAction { [weak self] _ in self?.emailField.becomeFirstResponder() },
-            for: .editingDidEndOnExit,
+            for: .editingDidEndOnExit
         )
         configure(emailField, label: String(localized: "Email"), placeholder: String(localized: "Email"))
         emailField.textContentType = .emailAddress
@@ -181,7 +181,7 @@ final class GitSettingsController: TableController {
         let signedIn = gitHubAccount != nil
         var sections: [(Section, [Row])] = [
             (.author, [.name, .email]),
-            (.gitHub, [gitHubAccount.map { .gitHubAccount($0.username) } ?? .gitHubSignIn]),
+            (.gitHub, [gitHubAccount.map { .gitHubAccount($0.username) } ?? .gitHubSignIn])
         ]
         if let linked {
             sections.append((.published, [.repository(linked), .repositoryCard(linked), .updateRepository(linked)]))
@@ -225,7 +225,7 @@ final class GitSettingsController: TableController {
             do {
                 try await ApelinService.app.gitAuthorSet(
                     name: name.isEmpty ? nil : name,
-                    email: email.isEmpty ? nil : email,
+                    email: email.isEmpty ? nil : email
                 )
                 guard let self else { return }
                 settings?.authorName = name.isEmpty ? nil : name
@@ -252,7 +252,7 @@ final class GitSettingsController: TableController {
             title: "Sign Out of GitHub?",
             message: "Clones, pulls and pushes to github.com stop working until you sign in again. The package repository stays linked.",
             confirmTitle: "Sign Out",
-            destructive: true,
+            destructive: true
         ) { [weak self] in
             self?.remove(host: GitHubDeviceFlow.host)
         }
@@ -263,7 +263,7 @@ final class GitSettingsController: TableController {
             title: "Remove Credential for \(credential.host)?",
             message: "Git can no longer sign in to this host until you add a credential for it again.",
             confirmTitle: "Remove",
-            destructive: true,
+            destructive: true
         ) { [weak self] in
             self?.remove(host: credential.host)
         }
@@ -318,7 +318,7 @@ final class GitSettingsController: TableController {
                 field.trailingAnchor.constraint(equalTo: margins.trailingAnchor),
                 field.topAnchor.constraint(equalTo: margins.topAnchor),
                 field.bottomAnchor.constraint(equalTo: margins.bottomAnchor),
-                cell.contentView.heightAnchor.constraint(greaterThanOrEqualToConstant: 52),
+                cell.contentView.heightAnchor.constraint(greaterThanOrEqualToConstant: 52)
             ])
         }
     }
@@ -358,7 +358,7 @@ final class GitSettingsController: TableController {
                 },
                 UIAccessibilityCustomAction(name: String(localized: "Unlink")) { [weak self] _ in
                     self?.flow.confirmUnlink(repository); return true
-                },
+                }
             ]
             return cell
         case let .credential(credential):
@@ -434,7 +434,7 @@ final class GitSettingsController: TableController {
     override func tableView(
         _: UITableView,
         contextMenuConfigurationForRowAt indexPath: IndexPath,
-        point _: CGPoint,
+        point _: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard case let .repository(repository)? = dataSource.value(at: indexPath) else { return nil }
         return UIContextMenuConfiguration(actionProvider: { [weak self] _ in
@@ -454,10 +454,10 @@ final class GitSettingsController: TableController {
                 UIAction(
                     title: String(localized: "Unlink"),
                     image: UIImage(systemName: "link"),
-                    attributes: .destructive,
+                    attributes: .destructive
                 ) { _ in
                     self?.flow.confirmUnlink(repository)
-                },
+                }
             ])
         })
     }
@@ -471,7 +471,7 @@ final class GitSettingsController: TableController {
 
     override func tableView(
         _: UITableView,
-        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
     ) -> UISwipeActionsConfiguration? {
         let action: UIContextualAction
         switch dataSource.value(at: indexPath) {

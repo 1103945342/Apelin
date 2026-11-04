@@ -13,7 +13,7 @@ struct SkillToolTests {
     private static let skill: JSONValue = [
         "name": "release-notes",
         "description": "Use when writing a release's notes.",
-        "instructions": "# Release notes\nSymptom first, one bullet per change.",
+        "instructions": "# Release notes\nSymptom first, one bullet per change."
     ]
 
     private static func text(_ result: AgentToolResult) -> String {

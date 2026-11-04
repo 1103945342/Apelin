@@ -56,7 +56,7 @@ public struct FrameHeader: Codable, Sendable, Equatable {
         error: ApelinError? = nil,
         taskID: TaskID? = nil,
         descriptorCount: Int = 0,
-        resumed: Bool? = nil,
+        resumed: Bool? = nil
     ) {
         self.kind = kind
         self.id = id
@@ -158,7 +158,7 @@ public final class WorkerChannel: @unchecked Sendable {
         _ request: WireRequest,
         descriptors: [OwnedDescriptor] = [],
         taskID: TaskID? = nil,
-        resumed: Bool = false,
+        resumed: Bool = false
     ) async throws -> (WireReply, [OwnedDescriptor]) {
         let id: UInt64 = stateLock.withLock {
             defer { nextID += 1 }
@@ -172,7 +172,7 @@ public final class WorkerChannel: @unchecked Sendable {
             requestID: request.requestID,
             taskID: taskID,
             descriptorCount: descriptors.count,
-            resumed: resumed ? true : nil,
+            resumed: resumed ? true : nil
         )
         let frame: ChannelFrame = try await withCheckedThrowingContinuation { continuation in
             let registered: Bool = stateLock.withLock {
@@ -207,7 +207,7 @@ public final class WorkerChannel: @unchecked Sendable {
     public func sendControl(_ name: String, body: some Encodable, taskID: TaskID? = nil) throws {
         try send(ChannelFrame(
             header: FrameHeader(kind: .control, name: name, taskID: taskID),
-            body: JSONCoding.encode(body),
+            body: JSONCoding.encode(body)
         ))
     }
 
@@ -241,7 +241,7 @@ public final class WorkerChannel: @unchecked Sendable {
                         socket,
                         buffer.baseAddress! + offset,
                         buffer.count - offset,
-                        descriptors: descriptors,
+                        descriptors: descriptors
                     )
                     if written < 0 {
                         if errno == EINTR {
@@ -305,7 +305,7 @@ public final class WorkerChannel: @unchecked Sendable {
 
     private static func takeFrame(
         from buffer: inout Data,
-        descriptors: inout [OwnedDescriptor],
+        descriptors: inout [OwnedDescriptor]
     ) -> Result<ChannelFrame, ApelinError>? {
         guard buffer.count >= 8 else { return nil }
         let start = buffer.startIndex
@@ -345,9 +345,9 @@ public final class WorkerChannel: @unchecked Sendable {
                     id: id,
                     .failure(
                         requestID,
-                        ApelinError(.unsupportedVersion, "protocol \(frame.header.protocolVersion ?? 0)"),
+                        ApelinError(.unsupportedVersion, "protocol \(frame.header.protocolVersion ?? 0)")
                     ),
-                    [],
+                    []
                 )
                 return
             }
@@ -355,7 +355,7 @@ public final class WorkerChannel: @unchecked Sendable {
                 request: WireRequest(operation: operation, requestID: requestID, payload: frame.body),
                 descriptors: frame.descriptors,
                 taskID: frame.header.taskID,
-                resumed: frame.header.resumed == true,
+                resumed: frame.header.resumed == true
             )
             guard let handler else {
                 reply(id: id, .failure(requestID, .unimplemented(operation)), [])
@@ -401,7 +401,7 @@ public final class WorkerChannel: @unchecked Sendable {
         _ socket: Int32,
         _ base: UnsafeRawPointer,
         _ length: Int,
-        descriptors: [Int32],
+        descriptors: [Int32]
     ) -> Int {
         var vector = iovec(iov_base: UnsafeMutableRawPointer(mutating: base), iov_len: length)
         return withUnsafeMutablePointer(to: &vector) { vectorPointer in
@@ -455,7 +455,7 @@ public final class WorkerChannel: @unchecked Sendable {
                             memcpy(
                                 &descriptor,
                                 control + offset + headerSpace + index * MemoryLayout<Int32>.size,
-                                MemoryLayout<Int32>.size,
+                                MemoryLayout<Int32>.size
                             )
                             _ = fcntl(descriptor, F_SETFD, FD_CLOEXEC)
                             descriptors.append(descriptor)
@@ -481,7 +481,7 @@ public struct ChannelTransport: ApelinTransport {
 
     public func call(
         _ request: WireRequest,
-        descriptors: [OwnedDescriptor],
+        descriptors: [OwnedDescriptor]
     ) async throws -> (WireReply, [OwnedDescriptor]) {
         try await channel.call(request, descriptors: descriptors)
     }

@@ -47,11 +47,11 @@ final class FeedbackRulesTests: XCTestCase {
             ("UDID 00008030-00112233445566AA", "identifier"),
             ("UDID " + String(repeating: "a1b2c3d4e5", count: 4), "identifier"),
             ("serial AB12CD34EF56", "identifier"),
-            ("MAC 02:00:00:00:00:01", "identifier"),
+            ("MAC 02:00:00:00:00:01", "identifier")
         ]
         let words = [
             "token": "token or key", "home": "home or install path",
-            "network": "local network", "identifier": "device identifier",
+            "network": "local network", "identifier": "device identifier"
         ]
         for (text, kind) in refused {
             let found = try XCTUnwrap(problem("Steps:\n" + text), text)
@@ -85,11 +85,11 @@ final class FeedbackRulesTests: XCTestCase {
     func testTheFooterNamesTheVersionTheSystemAndTheBootstrapOnly() {
         XCTAssertEqual(
             FeedbackRules.footer(appVersion: "0.2.7", appBuild: "18", osVersion: "17.3.1", bootstrap: .roothide),
-            "Sent with Apelin 0.2.7 (18) · iOS 17.3.1 · roothide",
+            "Sent with Apelin 0.2.7 (18) · iOS 17.3.1 · roothide"
         )
         XCTAssertEqual(
             FeedbackRules.footer(appVersion: nil, appBuild: "18", osVersion: "26.0", bootstrap: .rootless),
-            "Sent with Apelin (version unknown) · iOS 26.0 · rootless",
+            "Sent with Apelin (version unknown) · iOS 26.0 · rootless"
         )
         XCTAssertEqual(FeedbackRules.issueBody("Body.\n\n ", footer: "F"), "Body.\n\n---\nF")
     }
@@ -137,7 +137,7 @@ final class FeedbackRulesTests: XCTestCase {
             "Quoted:\n\n---\n" + footer + "\n\nand more below it.",
             "Sent with Apelin 0.2.7 (18) · iOS 17.3.1 · rootless",
             "Body\n---\n" + footer,
-            "Body\n\n---\nSent with Apelin 0.2.7 · iOS 17.3.1 · jailbroken",
+            "Body\n\n---\nSent with Apelin 0.2.7 · iOS 17.3.1 · jailbroken"
         ] {
             let split = FeedbackRules.split(issueBody: body)
             XCTAssertNil(split.footer, body)

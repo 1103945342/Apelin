@@ -46,7 +46,7 @@ public struct InstalledToolchain: Sendable, Hashable, Codable {
         selfTests: String? = nil,
         isDefault: Bool = false,
         problem: String? = nil,
-        boundByThisProject: Bool = false,
+        boundByThisProject: Bool = false
     ) {
         self.id = id
         self.version = version
@@ -90,7 +90,7 @@ public struct AvailableToolchain: Sendable, Hashable, Codable {
         swift: String? = nil,
         swiftUnavailable: String? = nil,
         unavailable: String? = nil,
-        installedAs: [String] = [],
+        installedAs: [String] = []
     ) {
         self.productID = productID
         self.version = version
@@ -119,7 +119,7 @@ public struct ToolchainListToolResponse: Sendable, Hashable, Codable {
         available: [AvailableToolchain] = [],
         catalogProblem: String? = nil,
         runningTasks: Int = 0,
-        project: ProjectEnvironmentSummary? = nil,
+        project: ProjectEnvironmentSummary? = nil
     ) {
         self.installed = installed
         self.available = available
@@ -144,7 +144,7 @@ public struct InstalledSDK: Sendable, Hashable, Codable {
         targets: [String] = [],
         swiftCompilerVersion: String? = nil,
         readBy: [String] = [],
-        boundByThisProject: Bool = false,
+        boundByThisProject: Bool = false
     ) {
         self.id = id
         self.version = version
@@ -184,7 +184,7 @@ public struct SDKListToolResponse: Sendable, Hashable, Codable {
         installed: [InstalledSDK],
         available: [AvailableSDK] = [],
         sourceProblems: [String] = [],
-        project: ProjectEnvironmentSummary? = nil,
+        project: ProjectEnvironmentSummary? = nil
     ) {
         self.installed = installed
         self.available = available
@@ -231,7 +231,7 @@ public struct ToolchainTaskToolResponse: Sendable, Hashable, Codable {
         stages: [String] = [],
         failedTests: [String] = [],
         warnings: [String] = [],
-        message: String? = nil,
+        message: String? = nil
     ) {
         self.succeeded = succeeded
         self.toolchain = toolchain
@@ -265,7 +265,7 @@ public struct SDKImportToolResponse: Sendable, Hashable, Codable {
         sdk: InstalledSDK? = nil,
         stages: [String] = [],
         warnings: [String] = [],
-        message: String? = nil,
+        message: String? = nil
     ) {
         self.succeeded = succeeded
         self.sdk = sdk

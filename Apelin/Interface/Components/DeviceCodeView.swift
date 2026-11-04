@@ -14,7 +14,7 @@ final class DeviceCodeView: UIControl {
         let label = UILabel().then {
             $0.attributedText = NSAttributedString(string: code, attributes: [
                 .kern: 4,
-                .font: UIFont.monospacedSystemFont(ofSize: 34, weight: .semibold),
+                .font: UIFont.monospacedSystemFont(ofSize: 34, weight: .semibold)
             ])
             $0.adjustsFontSizeToFitWidth = true
             $0.minimumScaleFactor = 0.5

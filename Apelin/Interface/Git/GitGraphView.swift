@@ -75,7 +75,7 @@ struct GitGraphLayout: Equatable {
                 active[lane] = nil
                 rows.append(GitGraphRow(
                     lane: lane, edges: [], top: top, bottom: liveColumns(),
-                    isMerge: commit.parents.count > 1,
+                    isMerge: commit.parents.count > 1
                 ))
                 continue
             }
@@ -87,7 +87,7 @@ struct GitGraphLayout: Equatable {
             let firstParentLane = active.firstIndex(of: firstParent) ?? -1
             if firstParentLane >= 0, firstParentLane != lane {
                 edges.append(GitGraphEdge(
-                    fromLane: lane, toLane: firstParentLane, lane: lane, isMergeIn: false,
+                    fromLane: lane, toLane: firstParentLane, lane: lane, isMergeIn: false
                 ))
                 active[lane] = nil
             } else {
@@ -117,14 +117,14 @@ struct GitGraphLayout: Equatable {
                 }
                 maxLane = max(maxLane, parentLane)
                 edges.append(GitGraphEdge(
-                    fromLane: lane, toLane: parentLane, lane: parentLane, isMergeIn: true,
+                    fromLane: lane, toLane: parentLane, lane: parentLane, isMergeIn: true
                 ))
             }
 
             // 6. Below the node, the columns still held have a line leaving.
             rows.append(GitGraphRow(
                 lane: lane, edges: edges, top: top, bottom: liveColumns(),
-                isMerge: commit.parents.count > 1,
+                isMerge: commit.parents.count > 1
             ))
         }
 
@@ -154,7 +154,7 @@ final class GitGraphView: UIView {
         UIColor(hex: 0x06B6D4),
         UIColor(hex: 0xEF4444),
         UIColor(hex: 0xEC4899),
-        UIColor(hex: 0xEAB308),
+        UIColor(hex: 0xEAB308)
     ]
 
     /// A lane's colour, cycled through the eight. The hash pill in the row
@@ -293,14 +293,14 @@ final class GitGraphView: UIView {
                 context.addCurve(
                     to: CGPoint(x: centreX(edge.fromLane), y: centreY),
                     control1: CGPoint(x: centreX(edge.toLane), y: midY),
-                    control2: CGPoint(x: centreX(edge.fromLane), y: midY),
+                    control2: CGPoint(x: centreX(edge.fromLane), y: midY)
                 )
             } else {
                 context.move(to: CGPoint(x: centreX(edge.fromLane), y: centreY))
                 context.addCurve(
                     to: CGPoint(x: centreX(edge.toLane), y: height),
                     control1: CGPoint(x: centreX(edge.fromLane), y: midY),
-                    control2: CGPoint(x: centreX(edge.toLane), y: midY),
+                    control2: CGPoint(x: centreX(edge.toLane), y: midY)
                 )
             }
             context.strokePath()

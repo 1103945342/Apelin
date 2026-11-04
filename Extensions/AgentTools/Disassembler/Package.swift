@@ -16,18 +16,18 @@ let package = Package(
     name: "ApelinAgentToolsDisassembler",
     platforms: [
         .iOS(.v16),
-        .macOS(.v13),
+        .macOS(.v13)
     ],
     products: [
         .executable(name: "apelin-disassembler", targets: ["apelin-disassembler"]),
-        .executable(name: "apelin-assembler", targets: ["apelin-assembler"]),
+        .executable(name: "apelin-assembler", targets: ["apelin-assembler"])
     ],
     dependencies: [
         .package(path: "../../../Packages/ApelinToolHost"),
         .package(url: "https://github.com/Lakr233/libcapstone-spm.git", exact: "0.1.3"),
         // Tag 0.1.2, pinned by revision: CoreKeystone carries `unsafeFlags`,
         // which SwiftPM refuses in a dependency required by version.
-        .package(url: "https://github.com/Lakr233/libkeystone-spm.git", revision: "3ff184008e1ba49577b944579cd32d32c78451b5"),
+        .package(url: "https://github.com/Lakr233/libkeystone-spm.git", revision: "3ff184008e1ba49577b944579cd32d32c78451b5")
     ],
     targets: [
         .target(name: "MachOReader"),
@@ -36,16 +36,16 @@ let package = Package(
             dependencies: [
                 "MachOReader",
                 .product(name: "Capstone", package: "libcapstone-spm"),
-                .product(name: "ApelinToolExtension", package: "ApelinToolHost"),
-            ],
+                .product(name: "ApelinToolExtension", package: "ApelinToolHost")
+            ]
         ),
         .executableTarget(name: "apelin-disassembler", dependencies: ["DisassemblerTools"]),
         .target(
             name: "AssemblerTools",
             dependencies: [
                 .product(name: "Keystone", package: "libkeystone-spm"),
-                .product(name: "ApelinToolExtension", package: "ApelinToolHost"),
-            ],
+                .product(name: "ApelinToolExtension", package: "ApelinToolHost")
+            ]
         ),
         .executableTarget(name: "apelin-assembler", dependencies: ["AssemblerTools"]),
         .testTarget(
@@ -54,9 +54,9 @@ let package = Package(
                 "MachOReader",
                 "apelin-disassembler",
                 "apelin-assembler",
-                .product(name: "ApelinToolHost", package: "ApelinToolHost"),
-            ],
-        ),
+                .product(name: "ApelinToolHost", package: "ApelinToolHost")
+            ]
+        )
     ],
-    swiftLanguageModes: [.v5],
+    swiftLanguageModes: [.v5]
 )

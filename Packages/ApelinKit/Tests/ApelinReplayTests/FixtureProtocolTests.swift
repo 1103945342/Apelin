@@ -20,7 +20,7 @@ import XCTest
 final class FixtureProtocolTests: XCTestCase {
     /// Recordings whose task was still open when the capture ended, and why.
     private static let stillOpen: [String: String] = [
-        "d1-pty": "the run read the terminal once and closed it; its exit was never read",
+        "d1-pty": "the run read the terminal once and closed it; its exit was never read"
     ]
 
     private func fixtures() throws -> ReplayFixtures {
@@ -125,7 +125,7 @@ final class FixtureProtocolTests: XCTestCase {
             ("an IPv4 address", #"(?<![\d.])(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)(?![\d.])"#),
             ("a MAC address", #"\b(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}\b"#),
             ("a device identifier", #"\b[0-9A-F]{8}-[0-9A-F]{16}\b|\b[0-9a-f]{40}\b|(?i:\becid\b|\bserial ?number\b)"#),
-            ("an e-mail address", #"[\w.+-]+@[\w-]+\.[A-Za-z]{2,}"#),
+            ("an e-mail address", #"[\w.+-]+@[\w-]+\.[A-Za-z]{2,}"#)
         ]
         let root = try XCTUnwrap(ReplayFixtures.bundledDirectory)
         let files = try XCTUnwrap(FileManager.default.enumerator(atPath: root.path)).compactMap { $0 as? String }.filter { $0.hasSuffix(".json") }
@@ -287,12 +287,12 @@ final class FixtureProtocolTests: XCTestCase {
             "approvalRequested": Shape(
                 required: fields("approvalID", "toolCallID", "tool", "arguments", "workingDirectory", "projectID", "fingerprint", "reason", as: .string)
                     .merging(["allowsSessionScope": .bool]) { a, _ in a },
-                optional: ["detail": .object],
+                optional: ["detail": .object]
             ),
             "approvalResolved": Shape(required: ["approvalID": .string, "decision": .word { ApprovalDecision(rawValue: $0) != nil }]),
             "error": Shape(required: ["message": .string]),
             "finished": Shape(required: ["reason": .words(["completed", "aborted", "failed"])]),
-            "state": state([:]),
+            "state": state([:])
         ],
         // ApelinAgentWorker ▸ SignIn/AccountDesk.swift: what the user must see
         // or open, and the fields of a key; never a secret.
@@ -300,7 +300,7 @@ final class FixtureProtocolTests: XCTestCase {
             "deviceCode": Shape(required: ["code": .string, "verificationURL": .string, "pageHoldsCode": .bool]),
             "authorize": Shape(required: ["url": .string, "acceptsCallbackURL": .bool]),
             "input": Shape(required: ["fields": .array]),
-            "state": state([:]),
+            "state": state([:])
         ],
         // ApelinBuild ▸ the build worker; artifact and diagnostic are protocol types.
         .build: [
@@ -309,48 +309,48 @@ final class FixtureProtocolTests: XCTestCase {
             "log": Shape(required: ["line": .string]),
             "diagnostic": Shape(type: .typed(ProjectDiagnostic.self)),
             "artifact": Shape(type: .typed(BuildArtifact.self)),
-            "state": state(fields("artifactID", "digest", "buildID", "packageID", "version", "bootstrap", as: .string)),
+            "state": state(fields("artifactID", "digest", "buildID", "packageID", "version", "bootstrap", as: .string))
         ],
         // Apelind ▸ Session/Install/InstallBridge.swift.
         .install: [
             "stage": Shape(
                 required: ["stage": .string],
                 optional: fields("digest", "installationID", "packageID", "transactionID", "version", as: .string)
-                    .merging(["duplicate": .bool]) { a, _ in a },
+                    .merging(["duplicate": .bool]) { a, _ in a }
             ),
             "irisin": Shape(
                 required: ["seq": .number, "kind": .string, "text": .string],
                 optional: fields("phase", "step", "package", "version", "problem", as: .string)
-                    .merging(fields("done", "total", "exit", as: .number)) { a, _ in a },
+                    .merging(fields("done", "total", "exit", as: .number)) { a, _ in a }
             ),
             "result": Shape(type: .typed(InstallResult.self)),
             "conflict": Shape(type: .typed(InstallConflict.self)),
-            "state": state(["result": .typed(InstallResult.self)]),
+            "state": state(["result": .typed(InstallResult.self)])
         ],
         // Apelind ▸ Session/Terminal/TerminalHost.swift.
         .terminal: [
             "started": Shape(required: ["pid": .number, "shell": .string, "cwd": .string], optional: fields("uid", "gid", as: .number)),
             "output": Shape(required: ["base64": .string], optional: ["text": .string]),
             "exit": Shape(optional: fields("status", "signal", as: .number)),
-            "state": state([:]),
+            "state": state([:])
         ],
         // ApelinDiagnostics ▸ the log readers' pump.
         .logStream: [
             "log": Shape(
                 required: fields("time", "process", "subsystem", "category", "level", "message", as: .string)
-                    .merging(["pid": .number]) { a, _ in a },
+                    .merging(["pid": .number]) { a, _ in a }
             ),
             "truncated": Shape(required: ["limit": .number], optional: ["reason": .string]),
-            "state": state([:]),
+            "state": state([:])
         ],
         // ApelinDiagnosticsWorker ▸ the load check.
         .confirmLoaded: [
             "stage": Shape(
                 required: ["stage": .string],
-                optional: fields("marker", "process", "trigger", as: .string).merging(["windowSeconds": .number]) { a, _ in a },
+                optional: fields("marker", "process", "trigger", as: .string).merging(["windowSeconds": .number]) { a, _ in a }
             ),
-            "state": state([ConfirmLoadedResponse.stateMember: .typed(ConfirmLoadedResponse.self)]),
-        ],
+            "state": state([ConfirmLoadedResponse.stateMember: .typed(ConfirmLoadedResponse.self)])
+        ]
     ]
 }
 

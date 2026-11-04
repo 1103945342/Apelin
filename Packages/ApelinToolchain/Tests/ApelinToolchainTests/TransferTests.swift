@@ -26,7 +26,7 @@ struct ToolchainTransferTests {
             files: ["usr/bin/tool": sha256(tool)],
             links: ["usr/bin/alias": "tool"],
             stage: .packaging,
-            selfTests: [],
+            selfTests: []
         )
         try writeJSON(manifest, to: root.appendingPathComponent("manifest.json"))
         return manifest
@@ -91,7 +91,7 @@ struct ToolchainTransferTests {
         let forged = ToolchainManifest(
             id: String(repeating: "0", count: 24), source: manifest.source, sourceSHA256: manifest.sourceSHA256,
             retargetSchemeVersion: manifest.retargetSchemeVersion, minimumOS: manifest.minimumOS,
-            components: manifest.components, files: manifest.files, links: manifest.links, stage: .packaging, selfTests: [],
+            components: manifest.components, files: manifest.files, links: manifest.links, stage: .packaging, selfTests: []
         )
         try writeJSON(forged, to: tree.appendingPathComponent("manifest.json"))
         #expect(throws: (any Error).self) { try ToolchainTransfer.verifyImported(tree) }

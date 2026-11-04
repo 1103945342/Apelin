@@ -54,7 +54,7 @@ enum StarPrompt {
                 title: "Do You Like Apelin?",
                 message: "Please star us on GitHub. It helps us go further.",
                 cancelTitle: "Maybe Later",
-                confirmTitle: "Star Now",
+                confirmTitle: "Star Now"
             ) {
                 state.finish()
                 star(from: page)
@@ -80,7 +80,7 @@ enum StarPrompt {
                     title: String(localized: "Thank You"),
                     message: String(localized: "Starred on GitHub"),
                     preset: star.map { .custom($0) } ?? .done,
-                    haptic: .success,
+                    haptic: .success
                 )
             } catch {
                 (topPage(over: page) ?? page).presentNotice(title: "Unable to Star Apelin", message: error.readableMessage)

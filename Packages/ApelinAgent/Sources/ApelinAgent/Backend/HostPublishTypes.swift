@@ -69,7 +69,7 @@ public struct PackageBuildRecord: Sendable, Hashable, Codable {
         architecture: String,
         file: String,
         digest: String,
-        present: Bool,
+        present: Bool
     ) {
         self.buildID = buildID
         self.projectID = projectID
@@ -114,7 +114,7 @@ public struct PackagePublishToolResponse: Sendable, Hashable, Codable {
         published: [String],
         alreadyPublished: [String],
         commit: String?,
-        next: String,
+        next: String
     ) {
         self.repository = repository
         self.sourceURL = sourceURL

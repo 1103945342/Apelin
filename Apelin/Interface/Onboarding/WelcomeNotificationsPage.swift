@@ -25,7 +25,7 @@ final class WelcomeNotificationsPage: UIViewController {
         title: String(localized: "Turn On Notifications"),
         secondaryTitle: String(localized: "Not Now"),
         action: { [weak self] in self?.turnOn() },
-        secondaryAction: { [weak self] in self?.decline() },
+        secondaryAction: { [weak self] in self?.decline() }
     )
 
     init(flow: WelcomeFlow) {
@@ -48,7 +48,7 @@ final class WelcomeNotificationsPage: UIViewController {
             self,
             selector: #selector(refreshAuthorization),
             name: UIApplication.didBecomeActiveNotification,
-            object: nil,
+            object: nil
         )
     }
 

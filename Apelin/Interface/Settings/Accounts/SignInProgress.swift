@@ -60,7 +60,7 @@ struct SignInProgress {
                     required: entry["required"] == .bool(true),
                     secure: entry["secure"] == .bool(true),
                     defaultValue: entry["defaultValue"]?.stringValue,
-                    placeholder: entry["placeholder"]?.stringValue,
+                    placeholder: entry["placeholder"]?.stringValue
                 )
             })
         case TaskEvent.stateKind:

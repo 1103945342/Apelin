@@ -42,7 +42,7 @@ enum AgentSquashRules {
         guard covered else {
             return ApelinError(
                 .denied,
-                "approval required: the user has not approved squashing these commits after \(squash.base ?? "the base") into one with this message",
+                "approval required: the user has not approved squashing these commits after \(squash.base ?? "the base") into one with this message"
             )
         }
         return nil

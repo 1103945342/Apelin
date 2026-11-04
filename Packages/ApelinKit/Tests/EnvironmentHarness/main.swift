@@ -55,7 +55,7 @@ func serveWorker() -> Never {
                 layout: EnvironmentLayout(assignment: assignment),
                 backend: HarnessBackend(),
                 installer: HostPackageInstaller(host: ApelinService(transport: ChannelTransport(channel: channel))),
-                emit: { taskID, kind, payload in try? channel.sendEvent(taskID: taskID, kind: kind, payload: payload) },
+                emit: { taskID, kind, payload in try? channel.sendEvent(taskID: taskID, kind: kind, payload: payload) }
             )
             try? channel.sendControl(WorkerControl.ready)
         case WorkerControl.cancel?:

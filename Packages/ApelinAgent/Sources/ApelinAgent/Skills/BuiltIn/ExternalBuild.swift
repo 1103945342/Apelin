@@ -121,6 +121,6 @@ extension BuiltInSkills {
         packaged for that target, and a package other than the other
         target's latest release. Fix those in the script or the repository,
         never by renaming one target's package to pass as the other.
-        """,
+        """
     )
 }

@@ -20,7 +20,7 @@ final class ProjectPickerController: UIViewController {
 
     private lazy var collectionView = FirstFillCollectionView(
         frame: .zero,
-        collectionViewLayout: makeLayout(),
+        collectionViewLayout: makeLayout()
     )
 
     private func makeLayout() -> UICollectionViewLayout {
@@ -30,7 +30,7 @@ final class ProjectPickerController: UIViewController {
             guard let self, let project = dataSource.itemIdentifier(for: indexPath) else { return nil }
             let delete = UIContextualAction(
                 style: .destructive,
-                title: String(localized: "Delete"),
+                title: String(localized: "Delete")
             ) { [weak self] _, _, completion in
                 completion(false)
                 self?.confirmDelete(project)
@@ -62,7 +62,7 @@ final class ProjectPickerController: UIViewController {
             cell.accessibilityTraits = isOpen ? [.button, .selected] : .button
         }
         let header = UICollectionView.SupplementaryRegistration<UICollectionViewListCell>(
-            elementKind: UICollectionView.elementKindSectionHeader,
+            elementKind: UICollectionView.elementKindSectionHeader
         ) { [weak self] view, _, indexPath in
             guard let self else { return }
             let kind = dataSource.snapshot().sectionIdentifiers[indexPath.section]
@@ -75,7 +75,7 @@ final class ProjectPickerController: UIViewController {
             view.accessibilityTraits = .header
         }
         let source = UICollectionViewDiffableDataSource<String, ProjectSummary>(
-            collectionView: collectionView,
+            collectionView: collectionView
         ) { collection, indexPath, project in
             collection.dequeueConfiguredReusableCell(using: row, for: indexPath, item: project)
         }
@@ -102,19 +102,19 @@ final class ProjectPickerController: UIViewController {
             self,
             selector: #selector(reloadProjects),
             name: .apelinProjectsChanged,
-            object: nil,
+            object: nil
         )
         title = String(localized: "Projects")
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "plus"),
-            primaryAction: UIAction { [weak self] _ in self?.openNewProject() },
+            primaryAction: UIAction { [weak self] _ in self?.openNewProject() }
         ).then { $0.accessibilityLabel = String(localized: "New Project") }
         collectionView.delegate = self
         collectionView.backgroundView = EmptyStateView(
             symbolName: "folder.fill",
             title: String(localized: "No Projects Yet"),
-            text: String(localized: "Tap “+” to create a project."),
+            text: String(localized: "Tap “+” to create a project.")
         )
         collectionView.backgroundView?.isHidden = !projects.isEmpty
         view.addSubview(collectionView)
@@ -181,7 +181,7 @@ final class ProjectPickerController: UIViewController {
             title: "Delete Project?",
             message: "This permanently deletes “\(project.displayTitle)” and its files and chats from this device.",
             confirmTitle: "Delete",
-            destructive: true,
+            destructive: true
         ) { [weak self] in
             guard let self, let onDelete else { return }
             navigationController?.isModalInPresentation = true
@@ -212,14 +212,14 @@ extension ProjectPickerController: UICollectionViewDelegate {
     func collectionView(
         _: UICollectionView,
         contextMenuConfigurationForItemAt indexPath: IndexPath,
-        point _: CGPoint,
+        point _: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard let project = dataSource.itemIdentifier(for: indexPath) else { return nil }
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
             UIMenu(children: [
                 UIAction(
                     title: String(localized: "Rename Project…"),
-                    image: UIImage(systemName: "pencil"),
+                    image: UIImage(systemName: "pencil")
                 ) { [weak self] _ in
                     guard let self else { return }
                     ProjectActions.rename(project.name, from: self)
@@ -227,10 +227,10 @@ extension ProjectPickerController: UICollectionViewDelegate {
                 UIAction(
                     title: String(localized: "Delete"),
                     image: UIImage(systemName: "trash"),
-                    attributes: .destructive,
+                    attributes: .destructive
                 ) { _ in
                     self?.confirmDelete(project)
-                },
+                }
             ])
         }
     }

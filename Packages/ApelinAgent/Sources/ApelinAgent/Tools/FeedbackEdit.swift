@@ -57,7 +57,7 @@ enum FeedbackEdit {
             title: newTitle,
             body: newBody,
             currentTitle: issue.title,
-            currentBody: issue.body,
+            currentBody: issue.body
         )
     }
 }

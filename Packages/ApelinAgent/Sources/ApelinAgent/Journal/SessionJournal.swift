@@ -121,7 +121,7 @@ public final class SessionJournal: @unchecked Sendable {
         _ configuration: AgentSessionConfiguration,
         model: Model,
         reopened: Bool,
-        historyMessages: Int,
+        historyMessages: Int
     ) {
         perform { journal in
             let tier = configuration.serviceTier?.rawValue ?? "default"
@@ -182,7 +182,7 @@ public final class SessionJournal: @unchecked Sendable {
                 .model,
                 "Run \(run.number) ended reason=\(reason.rawValue) duration=\(Self.seconds(since: run.started, to: now)) tools=\(run.calls)",
                 level: reason == .failed ? .warning : .info,
-                at: now,
+                at: now
             )
         }
     }
@@ -209,7 +209,7 @@ public final class SessionJournal: @unchecked Sendable {
             journal.write(
                 .model,
                 "Retrying the request (attempt \(attempt + 2)) in \(JournalRedaction.grouped(Int(delayMs))) ms: \(journal.errorText(reason))",
-                level: .warning,
+                level: .warning
             )
         }
     }
@@ -259,7 +259,7 @@ public final class SessionJournal: @unchecked Sendable {
             journal.write(
                 .model,
                 "Request failed \(Self.failureFields(failure)) \(Self.describe(model)) error=\(journal.errorText(error))",
-                level: .warning,
+                level: .warning
             )
         }
     }
@@ -475,7 +475,7 @@ public final class SessionJournal: @unchecked Sendable {
                     .compaction,
                     "Failed \(fields) summary=\(summary)\(status) error=\(journal.errorText(reason))",
                     level: .error,
-                    at: now,
+                    at: now
                 )
             }
         }

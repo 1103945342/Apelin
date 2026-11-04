@@ -69,7 +69,7 @@ public extension GitService {
             name: entry.name,
             url: fetch?.url,
             pushURL: push?.url,
-            hidesCredential: hidden ? true : nil,
+            hidesCredential: hidden ? true : nil
         )
     }
 }

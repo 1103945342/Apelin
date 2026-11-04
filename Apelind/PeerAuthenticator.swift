@@ -9,7 +9,7 @@ struct PeerAuthenticator {
     private static let requiredEntitlements = [
         AppProtocol.clientEntitlement,
         "com.apple.private.security.no-sandbox",
-        "platform-application",
+        "platform-application"
     ]
 
     let installRoot: String

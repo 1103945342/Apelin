@@ -40,7 +40,7 @@ public struct DeviceFacts: Sendable, Equatable {
             osVersion: os,
             machine: machine() ?? "unknown",
             arm64e: arm64e,
-            cpuFeatures: Dictionary(uniqueKeysWithValues: toolchainFeatures.map { ($0, HostCPU.has($0)) }),
+            cpuFeatures: Dictionary(uniqueKeysWithValues: toolchainFeatures.map { ($0, HostCPU.has($0)) })
         )
     }()
 
@@ -99,7 +99,7 @@ enum EnvironmentPrompt {
         _ configuration: AgentSessionConfiguration,
         root: ScopedRoot,
         device: DeviceFacts,
-        toolExtensions: [OfferedToolExtension] = [],
+        toolExtensions: [OfferedToolExtension] = []
     ) -> Inputs {
         let inProject = !configuration.project.isTemporary
         return Inputs(
@@ -111,7 +111,7 @@ enum EnvironmentPrompt {
             home: configuration.dataRoot.home.path,
             commandsFound: configuration.installRoot.map(commandsFound(installRoot:)),
             readOnlyRoots: ReadOnlyRoots(installRoot: configuration.installRoot, dataRoot: configuration.dataRoot),
-            toolExtensions: toolExtensions,
+            toolExtensions: toolExtensions
         )
     }
 
@@ -128,7 +128,7 @@ enum EnvironmentPrompt {
         lines += bindingLines(inputs, environment: environment)
         lines.append(preparedLine(inputs, environment: environment))
         lines.append(
-            "- shell_run's environment is already set: run a command directly or with `bash -c`, never through a login shell (`bash -l`, `sh -l`), whose profile builds PATH again.",
+            "- shell_run's environment is already set: run a command directly or with `bash -c`, never through a login shell (`bash -l`, `sh -l`), whose profile builds PATH again."
         )
         if bootstrap == .roothide {
             // The bootstrap's own tools see the bootstrap as / and the real
@@ -137,12 +137,12 @@ enum EnvironmentPrompt {
             // folder printed /var/mobile/Documents/…, the system's folder to
             // clang.
             lines.append(
-                "- On roothide the bootstrap's shell and tools see the bootstrap as `/` and the real root as `/rootfs`, so `pwd -P`, `realpath` and the like print `/var/mobile/…` or `/rootfs/…` for a path the toolchain's compilers know by another name: give the compilers paths relative to the working directory, or under `$APELIN_PROJECT_ROOT`, the project's real path.",
+                "- On roothide the bootstrap's shell and tools see the bootstrap as `/` and the real root as `/rootfs`, so `pwd -P`, `realpath` and the like print `/var/mobile/…` or `/rootfs/…` for a path the toolchain's compilers know by another name: give the compilers paths relative to the working directory, or under `$APELIN_PROJECT_ROOT`, the project's real path."
             )
             // The jbroot was renamed on a device between two runs of one
             // chat, which trusted the paths it had written down.
             lines.append(
-                "- roothide can rename the install root when the device is rebooted or jailbroken again, and everything under it moves: Apelin's data folder (in the jbroot's own `var/mobile`), the project's real path, `$APELIN_PROJECT_ROOT`, `$APELIN_TOOLCHAIN_BIN`, `SDKROOT`, every toolchain and SDK path above. Never write such a path into anything that outlives this run (project files, build scripts, Makefiles, AGENTS.md or CLAUDE.md, memory, skills, package scripts, code): code finds it at run time as roothide's `jbroot()` does (the apelin-bootstrap-paths skill's `ApelinBootstrapPath()`), plists and maintainer scripts use `@PREFIX@` and `@ROOTFS@`, and a script uses the variables Apelin sets when it runs or paths relative to the project.",
+                "- roothide can rename the install root when the device is rebooted or jailbroken again, and everything under it moves: Apelin's data folder (in the jbroot's own `var/mobile`), the project's real path, `$APELIN_PROJECT_ROOT`, `$APELIN_TOOLCHAIN_BIN`, `SDKROOT`, every toolchain and SDK path above. Never write such a path into anything that outlives this run (project files, build scripts, Makefiles, AGENTS.md or CLAUDE.md, memory, skills, package scripts, code): code finds it at run time as roothide's `jbroot()` does (the apelin-bootstrap-paths skill's `ApelinBootstrapPath()`), plists and maintainer scripts use `@PREFIX@` and `@ROOTFS@`, and a script uses the variables Apelin sets when it runs or paths relative to the project."
             )
         }
         if let found = inputs.commandsFound {

@@ -14,7 +14,7 @@ struct UnavailableIcli: IcliSurface {
         filter _: IcliSyslogFilter,
         seconds _: Double,
         handler _: @escaping @Sendable (LogEntry) -> Bool,
-        onEnd _: @escaping @Sendable (String) -> Void,
+        onEnd _: @escaping @Sendable (String) -> Void
     ) throws -> any IcliSyslogStream {
         throw missing()
     }
@@ -44,7 +44,7 @@ struct UnavailableIcli: IcliSurface {
         identifier _: String?,
         role _: String?,
         match _: String,
-        index _: Int,
+        index _: Int
     ) throws -> [String: Any] {
         throw missing()
     }
@@ -57,7 +57,7 @@ struct UnavailableIcli: IcliSurface {
         index _: Int,
         appear _: Bool,
         timeout _: Double,
-        interval _: Double,
+        interval _: Double
     ) throws -> [String: Any] {
         throw missing()
     }

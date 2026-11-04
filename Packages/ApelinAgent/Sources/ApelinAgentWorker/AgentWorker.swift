@@ -44,7 +44,7 @@ public enum AgentWorker {
     static func handle(
         _ request: ChannelRequest,
         context: WorkerContext,
-        state: WorkerState,
+        state: WorkerState
     ) async -> (WireReply, [OwnedDescriptor]) {
         switch request.request.operation {
         case .agentOpen:
@@ -55,7 +55,7 @@ public enum AgentWorker {
                 try await state.open(open, taskID: taskID, context: context)
                 return AgentOpenResponse(
                     sessionID: context.assignment.sessionID ?? "",
-                    task: TaskHandle(taskID: taskID, kind: .agent),
+                    task: TaskHandle(taskID: taskID, kind: .agent)
                 )
             }
         case .agentPrompt:
@@ -76,14 +76,14 @@ public enum AgentWorker {
                         thinking: .init(rawValue: prompt.reasoningEffort?.rawValue ?? "off") ?? .off,
                         serviceTier: AgentWorker.serviceTier(prompt.serviceTier),
                         modelParameters: prompt.modelParameters ?? .init(),
-                        credentials: KeychainCredentialSource(accessGroup: keychainAccessGroup),
+                        credentials: KeychainCredentialSource(accessGroup: keychainAccessGroup)
                     )
                     await state.modelChoice.set(
                         provider: provider,
                         model: prompt.model,
                         reasoningEffort: prompt.reasoningEffort,
                         serviceTier: prompt.serviceTier,
-                        modelParameters: prompt.modelParameters,
+                        modelParameters: prompt.modelParameters
                     )
                 }
                 guard (prompt.attachments?.count ?? 0) <= 8 else {
@@ -101,7 +101,7 @@ public enum AgentWorker {
                     else {
                         throw ApelinError(
                             .badRequest,
-                            "attachments must be regular files no larger than \(limit >> 20) MB",
+                            "attachments must be regular files no larger than \(limit >> 20) MB"
                         )
                     }
                     let handle = FileHandle(fileDescriptor: descriptor.rawValue, closeOnDealloc: false)
@@ -164,7 +164,7 @@ public enum AgentWorker {
                     query,
                     home: URL(fileURLWithPath: context.assignment.home, isDirectory: true),
                     installRoot: context.assignment.installRoot,
-                    credentials: KeychainCredentialSource(accessGroup: keychainAccessGroup),
+                    credentials: KeychainCredentialSource(accessGroup: keychainAccessGroup)
                 )
             }
         case .agentAPIConfiguration:
@@ -238,7 +238,7 @@ public enum AgentWorker {
     /// rewrite asks the model a session would, without opening one.
     static func provider(
         provider: AgentProvider,
-        model requested: String?,
+        model requested: String?
     ) throws -> ProviderConfiguration {
         let model = requested.flatMap { $0.isEmpty ? nil : $0 }
         switch provider {
@@ -314,14 +314,14 @@ actor WorkerState {
                     provider: AgentWorker.provider(open),
                     approval: ApprovalPolicy(
                         mode: AgentWorker.approvalMode(open.approvalMode),
-                        asksBeforeScreen: ScreenConsent.asks(open.asksBeforeScreen),
+                        asksBeforeScreen: ScreenConsent.asks(open.asksBeforeScreen)
                     ),
                     dataRoot: dataRoot,
                     thinking: .init(rawValue: open.reasoningEffort?.rawValue ?? "off") ?? .off,
                     serviceTier: AgentWorker.serviceTier(open.serviceTier),
                     modelParameters: open.modelParameters ?? .init(),
                     installRoot: context.assignment.installRoot,
-                    hostRestarted: open.hostRestarted == true,
+                    hostRestarted: open.hostRestarted == true
                 ),
                 backend: ChannelHostBackend(
                     service: context.host,
@@ -329,10 +329,10 @@ actor WorkerState {
                     project: identity,
                     projectURL: projectURL,
                     projectsURL: dataRoot.projects,
-                    modelChoice: modelChoice,
+                    modelChoice: modelChoice
                 ),
                 digests: ledger,
-                credentials: keychain,
+                credentials: keychain
             )
         } catch let error as ProviderResolutionError {
             var message = error.localizedDescription
@@ -355,7 +355,7 @@ actor WorkerState {
             model: open.model,
             reasoningEffort: open.reasoningEffort,
             serviceTier: open.serviceTier,
-            modelParameters: open.modelParameters,
+            modelParameters: open.modelParameters
         )
 
         let events = try await session.events(afterSeq: 0)
@@ -528,13 +528,13 @@ actor EventRelay {
             return [("prompt", .object([
                 "id": .string(id.uuidString),
                 "text": .string(text),
-                "attachments": (try? ApelinCore.JSONValue(encoding: attachments)) ?? .array([]),
+                "attachments": (try? ApelinCore.JSONValue(encoding: attachments)) ?? .array([])
             ]))]
         case let .userMessageQueued(id, text, attachments):
             return [("queued", .object([
                 "id": .string(id.uuidString),
                 "text": .string(text),
-                "attachments": (try? ApelinCore.JSONValue(encoding: attachments)) ?? .array([]),
+                "attachments": (try? ApelinCore.JSONValue(encoding: attachments)) ?? .array([])
             ]))]
         case let .queuedMessagesDropped(ids):
             return [("queueDropped", .object(["ids": .array(ids.map { .string($0.uuidString) })]))]
@@ -569,13 +569,13 @@ actor EventRelay {
         case let .contextUsage(tokens, window):
             return [("contextUsage", .object([
                 "tokens": .number(Double(tokens)),
-                "window": .number(Double(window)),
+                "window": .number(Double(window))
             ]))]
         case let .toolCallStarted(call):
             return [("toolCall", .object([
                 "id": .string(call.id),
                 "tool": .string(call.name),
-                "arguments": .string(ToolArgumentRedaction.redacted(call.arguments, tool: call.name)),
+                "arguments": .string(ToolArgumentRedaction.redacted(call.arguments, tool: call.name))
             ]))]
         case let .toolCallFinished(result):
             return [("toolResult", .object([
@@ -583,19 +583,19 @@ actor EventRelay {
                 "tool": .string(result.name),
                 "output": .string(result.output),
                 "isError": .bool(result.isError),
-                "attachments": (try? ApelinCore.JSONValue(encoding: result.attachments ?? [])) ?? .array([]),
+                "attachments": (try? ApelinCore.JSONValue(encoding: result.attachments ?? [])) ?? .array([])
             ]))]
         case let .approvalRequested(request):
             waiting += 1
             return [
                 ("approvalRequested", approvalPayload(request)),
-                (TaskEvent.stateKind, .object(["state": .string(TaskState.waitingForApproval.rawValue)])),
+                (TaskEvent.stateKind, .object(["state": .string(TaskState.waitingForApproval.rawValue)]))
             ]
         case let .approvalResolved(requestID, decision):
             waiting = max(0, waiting - 1)
             var resolved: [(String, ApelinCore.JSONValue?)] = [("approvalResolved", .object([
                 "approvalID": .string(requestID),
-                "decision": .string(decisionName(decision)),
+                "decision": .string(decisionName(decision))
             ]))]
             if waiting == 0 {
                 resolved.append((TaskEvent.stateKind, .object(["state": .string(TaskState.running.rawValue)])))
@@ -628,7 +628,7 @@ actor EventRelay {
             "projectID": .string(request.projectID),
             "fingerprint": .string(request.fingerprint),
             "reason": .string(request.reason),
-            "allowsSessionScope": .bool(request.allowsSessionScope),
+            "allowsSessionScope": .bool(request.allowsSessionScope)
         ]
         switch request.detail {
         case .none:
@@ -637,7 +637,7 @@ actor EventRelay {
             payload["detail"] = .object(["descriptionChanged": .object([
                 "kind": .string(kind.rawValue),
                 "digest": .string(digest),
-                "diff": .string(diff),
+                "diff": .string(diff)
             ])])
         case let .command(invocation):
             payload["detail"] = .object(["command": (try? ApelinCore.JSONValue(encoding: invocation)) ?? .null])
@@ -645,7 +645,7 @@ actor EventRelay {
         // approval, nor the other way round.
         case let .rootCommand(invocation):
             payload["detail"] = .object([
-                RunCodeApproval.rootCommandDetail: (try? ApelinCore.JSONValue(encoding: invocation)) ?? .null,
+                RunCodeApproval.rootCommandDetail: (try? ApelinCore.JSONValue(encoding: invocation)) ?? .null
             ])
         case let .packageRemoval(installationID):
             payload["detail"] = .object(["packageRemoval": .object(["installationID": .string(installationID)])])
@@ -742,7 +742,7 @@ actor EventRelay {
             let key = asRoot ? RunCodeApproval.rootCommandDetail : "command"
             return [
                 ScreenConsent.detailKey: marker(.agentRunCode),
-                key: (try? ApelinCore.JSONValue(encoding: invocation)) ?? .null,
+                key: (try? ApelinCore.JSONValue(encoding: invocation)) ?? .null
             ]
         }
     }

@@ -43,7 +43,7 @@ public struct GitService: Sendable {
             // The page says to set an author instead of failing at the
             // commit button.
             hasIdentity: (try? author(name: nil, email: nil, repository: repository)) != nil,
-            mergeInProgress: repository.isMerging,
+            mergeInProgress: repository.isMerging
         )
     }
 
@@ -140,7 +140,7 @@ public struct GitService: Sendable {
         _ request: GitCloneRequest,
         into root: URL,
         taskID: TaskID? = nil,
-        reporter: TaskReporter,
+        reporter: TaskReporter
     ) throws -> JSONValue {
         let marker = try taskID.map { try markClone(root, taskID: $0) }
         defer { marker.map { try? FileManager.default.removeItem(at: $0) } }
@@ -151,7 +151,7 @@ public struct GitService: Sendable {
                 branch: request.branch,
                 into: root,
                 credentials: credentialLookup,
-                progress: Self.fetchProgress(reporter),
+                progress: Self.fetchProgress(reporter)
             )
             // Written while the marker is still there: a clone stopped
             // before this is swept, never taken for a finished one.
@@ -173,7 +173,7 @@ public struct GitService: Sendable {
     public func sweepInterruptedClones() {
         let markers = (try? FileManager.default.contentsOfDirectory(
             at: layout.cloneMarkers,
-            includingPropertiesForKeys: nil,
+            includingPropertiesForKeys: nil
         )) ?? []
         for marker in markers {
             defer { try? FileManager.default.removeItem(at: marker) }
@@ -204,7 +204,7 @@ public struct GitService: Sendable {
         guard project.kind == "workspace" else {
             throw ApelinError(
                 .badRequest,
-                "only a workspace takes a repository, and \(project.name) is \(project.kind.map { "a \($0) project" } ?? "not one")",
+                "only a workspace takes a repository, and \(project.name) is \(project.kind.map { "a \($0) project" } ?? "not one")"
             )
         }
         var metadata = stat()
@@ -241,13 +241,13 @@ public struct GitService: Sendable {
                 excluding: Self.apelinFiles,
                 replacing: manifest.map { [$0.replacement] } ?? [],
                 credentials: credentialLookup,
-                progress: Self.fetchProgress(reporter),
+                progress: Self.fetchProgress(reporter)
             )
         }
         var payload: [String: JSONValue] = [
             "branch": .string(result.branch),
             "commit": .string(result.commit),
-            "projectFile": .string((manifest?.file ?? .project).rawValue),
+            "projectFile": .string((manifest?.file ?? .project).rawValue)
         ]
         let projectID = manifest?.projectID ?? (try? ProjectFiles.read(RepositoryManifest.fileName, in: root))
             .flatMap(ProjectManifestIdentity.projectID(in:))
@@ -318,7 +318,7 @@ public struct GitService: Sendable {
                 throw ApelinError(
                     .conflict,
                     "\(branch) is at \(commit) now, not \(approved), the commit this push was to send: nothing was pushed.",
-                    reason: .localChanged,
+                    reason: .localChanged
                 )
             }
         }
@@ -356,7 +356,7 @@ public struct GitService: Sendable {
                 throw ApelinError(
                     .conflict,
                     "\(remote) already points to\(shown). Push to it without a URL, or name another remote.",
-                    reason: .remoteURLDiffers,
+                    reason: .remoteURLDiffers
                 )
             }
             return false
@@ -374,7 +374,7 @@ public struct GitService: Sendable {
                 remote: target.remote,
                 comparing: target.branch,
                 credentials: credentialLookup,
-                progress: Self.fetchProgress(reporter),
+                progress: Self.fetchProgress(reporter)
             )
         }
         let updated: [JSONValue] = result.updated.map { update in
@@ -398,7 +398,7 @@ public struct GitService: Sendable {
                 remote: compared.remote,
                 pushURL: pushURL,
                 remoteOnly: compared.remoteOnly.map { GitCommitSummary(commit: $0.commit, subject: $0.subject) },
-                remoteOnlyCount: compared.remoteOnlyCount,
+                remoteOnlyCount: compared.remoteOnlyCount
             )
             payload["comparison"] = try? JSONValue(encoding: comparison)
         }
@@ -413,13 +413,13 @@ public struct GitService: Sendable {
             try target.repository.pull(
                 remote: target.remote,
                 credentials: credentialLookup,
-                progress: Self.fetchProgress(reporter),
+                progress: Self.fetchProgress(reporter)
             )
         }
         var payload: [String: JSONValue] = [
             "branch": .string(result.branch),
             "to": .string(result.to),
-            "upToDate": .bool(result.upToDate),
+            "upToDate": .bool(result.upToDate)
         ]
         if let from = result.from {
             payload["from"] = .string(from)
@@ -444,14 +444,14 @@ public struct GitService: Sendable {
                 remoteCommit: { found in
                     guard let lease = target.lease else { return }
                     reporter.emit("lease", Self.leaseEvent(lease, branch: target.branch, found: found))
-                },
+                }
             ) { progress in
                 if throttle.shouldEmit(force: progress.total > 0 && progress.current == progress.total) {
                     reporter.progress(
                         "pushing",
                         completed: Int64(progress.current),
                         total: Int64(progress.total),
-                        detail: "\(progress.bytes) bytes",
+                        detail: "\(progress.bytes) bytes"
                     )
                 }
                 return !reporter.isCancelled
@@ -460,7 +460,7 @@ public struct GitService: Sendable {
         var payload: [String: JSONValue] = [
             "remote": .string(result.remote),
             "branch": .string(result.branch),
-            "commit": .string(result.commit),
+            "commit": .string(result.commit)
         ]
         payload["from"] = result.from.map { .string($0) }
         if result.forced {
@@ -475,7 +475,7 @@ public struct GitService: Sendable {
     static func leaseEvent(_ lease: GitLease, branch: String?, found: String?) -> JSONValue {
         var event: [String: JSONValue] = [
             "expectedCommit": .string(lease.expectedCommit),
-            "held": .bool(found == lease.expectedCommit),
+            "held": .bool(found == lease.expectedCommit)
         ]
         event["branch"] = branch.map { .string($0) }
         event["localCommit"] = lease.localCommit.map { .string($0) }
@@ -504,7 +504,7 @@ public struct GitService: Sendable {
     public func setAuthor(_ request: GitAuthorSetRequest) throws -> Acknowledged {
         let file = try SettingsFile(
             authorName: Self.authorField(request.authorName, "authorName"),
-            authorEmail: Self.authorField(request.authorEmail, "authorEmail"),
+            authorEmail: Self.authorField(request.authorEmail, "authorEmail")
         )
         try layout.make(layout.settings)
         do {
@@ -534,7 +534,7 @@ public struct GitService: Sendable {
         guard !request.token.contains(where: \.isNewline), !request.token.utf8.contains(0) else {
             throw ApelinError(
                 .badRequest,
-                "The token contains a line break or an invalid character. Paste the token again.",
+                "The token contains a line break or an invalid character. Paste the token again."
             )
         }
         try credentials.save(GitCredential(username: username, token: request.token), forHost: host)
@@ -555,7 +555,7 @@ public struct GitService: Sendable {
         let host = raw.lowercased()
         let refusal = ApelinError(
             .badRequest,
-            "\(raw.debugDescription) is not a valid host. Enter a name such as github.com, adding :port if the URL has one.",
+            "\(raw.debugDescription) is not a valid host. Enter a name such as github.com, adding :port if the URL has one."
         )
         guard !host.isEmpty, !host.contains("/"), !host.contains("@"), !host.utf8.contains(0),
               !host.unicodeScalars.contains(where: { CharacterSet.whitespacesAndNewlines.contains($0) })
@@ -568,7 +568,7 @@ public struct GitService: Sendable {
         else {
             throw ApelinError(
                 .badRequest,
-                "The port in \(raw.debugDescription) is not valid. Check the port number and try again.",
+                "The port in \(raw.debugDescription) is not valid. Check the port number and try again."
             )
         }
         return "\(name):\(port)"
@@ -584,7 +584,7 @@ public struct GitService: Sendable {
         else {
             throw ApelinError(
                 .badRequest,
-                "\(name) is longer than \(limit) characters or has <, > or a control character",
+                "\(name) is longer than \(limit) characters or has <, > or a control character"
             )
         }
         return value
@@ -608,13 +608,13 @@ public struct GitService: Sendable {
         let throttle = ProgressThrottle()
         return { progress in
             if throttle.shouldEmit(
-                force: progress.totalObjects > 0 && progress.indexedObjects == progress.totalObjects,
+                force: progress.totalObjects > 0 && progress.indexedObjects == progress.totalObjects
             ) {
                 reporter.progress(
                     "fetching",
                     completed: Int64(progress.indexedObjects),
                     total: Int64(progress.totalObjects),
-                    detail: "\(progress.receivedBytes) bytes",
+                    detail: "\(progress.receivedBytes) bytes"
                 )
             }
             return !reporter.isCancelled
@@ -663,7 +663,7 @@ public struct GitService: Sendable {
         .object([
             "projectName": .string(request.projectName),
             "branch": .string(request.branch),
-            "commit": .string(commit),
+            "commit": .string(commit)
         ])
     }
 
@@ -750,7 +750,7 @@ public struct GitService: Sendable {
         guard let name, let email else {
             throw ApelinError(
                 .badRequest,
-                "Set an author name and email in Settings ▸ Git, then try again.",
+                "Set an author name and email in Settings ▸ Git, then try again."
             )
         }
         return GitSignature(name: name, email: email)

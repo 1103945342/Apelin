@@ -23,7 +23,7 @@ extension ChannelHostBackend {
         return PackagePublication(
             repository: repository,
             signedIn: signedIn,
-            builds: request.buildIDs.map { packageRecord($0) },
+            builds: request.buildIDs.map { packageRecord($0) }
         )
     }
 
@@ -37,7 +37,7 @@ extension ChannelHostBackend {
             handle = try await service.distributionPublish(
                 files: publication.packages.map(\.file),
                 digests: publication.packages.map(\.digest),
-                repository: publication.repository,
+                repository: publication.repository
             )
         } catch let error as ApelinError {
             throw Self.publishFailure(message: error.message, reason: error.reason?.rawValue)
@@ -89,7 +89,7 @@ extension ChannelHostBackend {
             published: published,
             alreadyPublished: names("skipped"),
             commit: result?["commit"]?.stringValue,
-            next: next,
+            next: next
         )
     }
 
@@ -132,7 +132,7 @@ extension ChannelHostBackend {
             architecture: architecture,
             file: file,
             digest: digest,
-            present: present,
+            present: present
         )
     }
 

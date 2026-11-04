@@ -13,7 +13,7 @@ final class ExtensionAndProjectTests: XCTestCase {
         // The repository folder also holds Packaging/, which no package
         // installs; the scanner sets it aside like any folder without a manifest.
         XCTAssertEqual(catalog.extensions.map(\.folderName).sorted(), [
-            "Packaging", "wiki.qaq.apelin.dev.app", "wiki.qaq.apelin.dev.cli", "wiki.qaq.apelin.dev.preferences", "wiki.qaq.apelin.dev.tweak",
+            "Packaging", "wiki.qaq.apelin.dev.app", "wiki.qaq.apelin.dev.cli", "wiki.qaq.apelin.dev.preferences", "wiki.qaq.apelin.dev.tweak"
         ])
         XCTAssertFalse(try XCTUnwrap(catalog.extensions.first { $0.folderName == "Packaging" }?.isUsable))
         for item in catalog.extensions where item.folderName != "Packaging" {
@@ -77,7 +77,7 @@ final class ExtensionAndProjectTests: XCTestCase {
                 let projectID = "00000000-0000-4000-8000-000000000001"
                 let name = "Sample \(template.id)"
                 let created = try store.create(templateID: "\(manifest.id)/\(template.id)", name: name, values: [
-                    "packageID": .string("com.example.sample"), "bundleID": .string("com.example.sample"),
+                    "packageID": .string("com.example.sample"), "bundleID": .string("com.example.sample")
                 ], catalog: catalog, registry: sampleRegistry(), projectID: projectID)
                 XCTAssertEqual(created.root.lastPathComponent, name)
                 XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: store.projectsDirectory.path), [name], "staging left behind")
@@ -85,7 +85,7 @@ final class ExtensionAndProjectTests: XCTestCase {
                 XCTAssertEqual(
                     try store.locate(projectID).project.package.icon,
                     "https://owngoal-dev.github.io/Apelin/icons/\(manifest.id).png",
-                    template.id,
+                    template.id
                 )
 
                 let reference = scratch.appendingPathComponent("reference")
@@ -120,13 +120,13 @@ final class ExtensionAndProjectTests: XCTestCase {
                 XCTAssertEqual(
                     try String(contentsOf: created.root.appendingPathComponent(".git/HEAD"), encoding: .utf8),
                     "ref: refs/heads/main\n",
-                    template.id,
+                    template.id
                 )
                 // and keeps Apelin's own files out of it
                 XCTAssertEqual(
                     try String(contentsOf: created.root.appendingPathComponent(".git/info/exclude"), encoding: .utf8),
                     "/Attachments/\n/.apelin-metadata-*\n.*.apelin-*\n",
-                    template.id,
+                    template.id
                 )
             }
         }
@@ -361,6 +361,6 @@ func macRegistry() throws -> StaticEnvironmentRegistry {
     let version = try run(["--sdk", "iphoneos", "--show-sdk-version"])
     return StaticEnvironmentRegistry(
         toolchains: [RegisteredToolchain(id: "xcode-default", digest: "sha256:" + String(repeating: "a", count: 64), version: "xcode", path: toolchain, components: ["c-family", "swift"])],
-        sdks: [RegisteredSDK(id: "iPhoneOS\(version)-xcode", digest: "sha256:" + String(repeating: "b", count: 64), version: version, path: sdk)],
+        sdks: [RegisteredSDK(id: "iPhoneOS\(version)-xcode", digest: "sha256:" + String(repeating: "b", count: 64), version: version, path: sdk)]
     )
 }

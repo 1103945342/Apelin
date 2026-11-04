@@ -60,7 +60,7 @@ public struct LogEntry: Codable, Hashable, Sendable {
         subsystem: String,
         category: String,
         level: LogLevel,
-        message: String,
+        message: String
     ) {
         self.date = date
         self.process = process
@@ -105,7 +105,7 @@ public struct LogFilter: Codable, Hashable, Sendable {
         minimumLevel: LogLevel = .debug,
         duration: TimeInterval = 3,
         since: Date? = nil,
-        maxEntries: Int = 500,
+        maxEntries: Int = 500
     ) {
         self.subsystem = subsystem
         self.process = process
@@ -122,7 +122,7 @@ public struct LogFilter: Codable, Hashable, Sendable {
         guard duration.isFinite, Self.durationRange.contains(duration) else {
             let range = Self.durationRange
             throw DiagnosticsError.invalidParameter(
-                String(format: "duration must be %g–%g seconds", range.lowerBound, range.upperBound),
+                String(format: "duration must be %g–%g seconds", range.lowerBound, range.upperBound)
             )
         }
         guard Self.maxEntriesRange.contains(maxEntries) else {

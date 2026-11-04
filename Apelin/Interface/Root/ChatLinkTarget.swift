@@ -74,7 +74,7 @@ enum ChatLinkTarget {
               ?? projects.first(where: { $0.name == id })
         else { return nil }
         let latest = SidebarOrder.newest(
-            runtime.records.values.map(\.summary).filter { $0.projectName == project.name },
+            runtime.records.values.map(\.summary).filter { $0.projectName == project.name }
         )
         return latest.map(Destination.chat) ?? .newChat(project: project.name)
     }

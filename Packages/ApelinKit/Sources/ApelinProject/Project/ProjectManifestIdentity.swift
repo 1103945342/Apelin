@@ -9,7 +9,7 @@ public enum ProjectManifestIdentity {
     /// The members a new workspace's manifest has (`ProjectStore.createEmpty`):
     /// its identity and its name, nothing that describes a build.
     static let workspaceIdentityMembers: Set<String> = [
-        "schemaVersion", "projectID", "kind", "buildSystem", "displayName", "autoName",
+        "schemaVersion", "projectID", "kind", "buildSystem", "displayName", "autoName"
     ]
 
     /// The `projectID` of `data`, or nil when it does not read as a project's

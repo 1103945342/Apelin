@@ -29,7 +29,7 @@ enum AgentProjects {
         home: String,
         projectID: String?,
         projectName: String?,
-        temporaryID: String? = nil,
+        temporaryID: String? = nil
     ) throws -> ResolvedProject {
         if let temporaryID {
             guard UUID(uuidString: temporaryID) != nil, projectID == nil, projectName == nil else {
@@ -98,7 +98,7 @@ enum AgentProjects {
         guard let id = manifest["projectID"]?.stringValue, !id.isEmpty else {
             throw ApelinError(
                 .badRequest,
-                "The project “\(name)” cannot be opened. Its project details are incomplete.",
+                "The project “\(name)” cannot be opened. Its project details are incomplete."
             )
         }
         return ResolvedProject(id: id, name: name, path: path)

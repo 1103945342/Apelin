@@ -23,7 +23,7 @@ let package = Package(
         .library(name: "ApelinMachO", targets: ["ApelinMachO"]),
         .library(name: "ApelinDebian", targets: ["ApelinDebian"]),
         .library(name: "ApelinDebArchive", targets: ["ApelinDebArchive"]),
-        .library(name: "ApelinCodeSign", targets: ["ApelinCodeSign"]),
+        .library(name: "ApelinCodeSign", targets: ["ApelinCodeSign"])
     ],
     dependencies: [
         // The same package and version Irisin's reader and Fila's archive jobs
@@ -32,7 +32,7 @@ let package = Package(
         // binary. Through the package rather than a binary target of our own,
         // because icli brings the same package into the app's graph and two
         // targets named `libarchive` do not resolve.
-        .package(url: "https://github.com/Lakr233/libarchive.xcframework.git", from: "1.0.0"),
+        .package(url: "https://github.com/Lakr233/libarchive.xcframework.git", from: "1.0.0")
     ],
     targets: [
         .target(name: "ApelinMachO"),
@@ -42,30 +42,30 @@ let package = Package(
             name: "ApelinDebArchive",
             dependencies: [
                 "ApelinDebian",
-                .product(name: "ArchiveKit", package: "libarchive.xcframework"),
-            ],
+                .product(name: "ArchiveKit", package: "libarchive.xcframework")
+            ]
         ),
         .testTarget(
             name: "ApelinMachOTests",
             dependencies: ["ApelinMachO"],
             exclude: ["Fixtures/build.sh", "Fixtures/fixture.c", "Fixtures/pointer-auth.c"],
-            resources: [.copy("Fixtures/binaries")],
+            resources: [.copy("Fixtures/binaries")]
         ),
         .testTarget(
             name: "ApelinDebianTests",
             dependencies: ["ApelinDebian"],
-            resources: [.copy("Fixtures")],
+            resources: [.copy("Fixtures")]
         ),
         .testTarget(
             name: "ApelinCodeSignTests",
             dependencies: ["ApelinCodeSign", "ApelinMachO"],
             exclude: ["Fixtures/build.sh", "Fixtures/fixture.c"],
-            resources: [.copy("Fixtures/input"), .copy("Fixtures/expected"), .copy("Fixtures/entitlements.plist")],
+            resources: [.copy("Fixtures/input"), .copy("Fixtures/expected"), .copy("Fixtures/entitlements.plist")]
         ),
         .testTarget(
             name: "ApelinDebArchiveTests",
-            dependencies: ["ApelinDebArchive", "ApelinDebian"],
-        ),
+            dependencies: ["ApelinDebArchive", "ApelinDebian"]
+        )
     ],
-    swiftLanguageModes: [.v6],
+    swiftLanguageModes: [.v6]
 )

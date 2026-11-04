@@ -8,7 +8,7 @@ struct DebianControlFileTests {
             package: "com.example.tool",
             version: "1.0-1",
             architecture: "iphoneos-arm64",
-            description: "An example tool\nIt does one thing.\n\n  verbatim line",
+            description: "An example tool\nIt does one thing.\n\n  verbatim line"
         )
         control["Maintainer"] = "Example <example@example.com>"
         control["Depends"] = "firmware (>= 16.0)"
@@ -64,7 +64,7 @@ struct DebianControlFileTests {
         ("Version", "1.0-"), ("Version", ""), ("Version", "1 0"),
         ("Architecture", "two words"),
         ("Description", "\nno synopsis"),
-        ("Depends", "a\rb"), ("Depends", "a\u{0}b"), ("Depends", ""),
+        ("Depends", "a\rb"), ("Depends", "a\u{0}b"), ("Depends", "")
     ])
     func `refuses what dpkg would not read`(_ field: String, _ value: String) {
         var control = DebianControlFile(package: "com.example", version: "1.0", architecture: "all", description: "x")
@@ -132,7 +132,7 @@ struct PackageLayoutTests {
 
     @Test(arguments: [
         "usr/bin/x", "/usr//bin", "/usr/bin/", "/usr/./bin", "/usr/../etc", "/var/jb/usr/bin/x",
-        "/rootfs/usr/lib", "/a\u{0}b", "/a\nb", "",
+        "/rootfs/usr/lib", "/a\u{0}b", "/a\nb", ""
     ])
     func `refuses non canonical logical paths`(_ path: String) {
         #expect(throws: PackageFormatError.self) { try PackageLayout.rootless.packagePath(for: path) }

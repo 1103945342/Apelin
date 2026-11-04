@@ -15,25 +15,25 @@ final class SymbolicatorTests: XCTestCase {
             path: Fixture.dylib.path,
             uuid: uuid.uuidString,
             base: base,
-            size: 0x4000,
+            size: 0x4000
         )]
         var thread = ReportThread(index: 0)
         thread.frames = [Frame(
             imageIndex: 0,
             imageOffset: Fixture.insideBeta,
-            address: base + Fixture.insideBeta,
+            address: base + Fixture.insideBeta
         )]
         crash.threads = [thread]
         crash.lastExceptionBacktrace = [Frame(
             imageIndex: 0,
             imageOffset: Fixture.insideAlpha,
-            address: base + Fixture.insideAlpha,
+            address: base + Fixture.insideAlpha
         )]
         return crash
     }
 
     private func symbolicator(
-        dsyms: (any DSYMLookup)? = nil,
+        dsyms: (any DSYMLookup)? = nil
     ) -> Symbolicator {
         Symbolicator(
             dsyms: dsyms ?? DSYMStore(directory: Fixture.temporaryDirectory(self)),
@@ -42,7 +42,7 @@ final class SymbolicatorTests: XCTestCase {
                     throw CocoaError(.fileNoSuchFile)
                 }
                 return handle
-            },
+            }
         )
     }
 

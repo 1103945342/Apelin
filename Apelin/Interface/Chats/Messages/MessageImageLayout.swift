@@ -16,7 +16,7 @@ enum MessageImageLayout {
         aspectRatios: [CGFloat],
         naturalSizes: [CGSize?],
         width: CGFloat,
-        maximumHeight: CGFloat = .greatestFiniteMagnitude,
+        maximumHeight: CGFloat = .greatestFiniteMagnitude
     ) -> [CGRect] {
         let full = frames(aspectRatios: aspectRatios, width: width, maximumHeight: maximumHeight)
         guard !full.isEmpty, naturalSizes.count == full.count else { return full }
@@ -55,7 +55,7 @@ enum MessageImageLayout {
     static func frames(
         aspectRatios: [CGFloat],
         width: CGFloat,
-        maximumHeight: CGFloat = .greatestFiniteMagnitude,
+        maximumHeight: CGFloat = .greatestFiniteMagnitude
     ) -> [CGRect] {
         guard maximumHeight > 0 else { return [] }
         let frames = naturalFrames(aspectRatios: aspectRatios, width: width)

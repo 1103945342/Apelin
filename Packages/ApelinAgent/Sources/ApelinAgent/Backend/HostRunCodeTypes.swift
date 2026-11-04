@@ -40,7 +40,7 @@ public struct RunCodeRequest: Sendable, Hashable, Codable {
         invocation: RunCodeInvocation,
         workingDirectory: String,
         timeoutSeconds: Int,
-        asRoot: Bool = false,
+        asRoot: Bool = false
     ) {
         self.context = context
         self.invocation = invocation
@@ -80,7 +80,7 @@ public struct RunCodeResponse: Sendable, Hashable, Codable {
         stderr: String,
         truncated: Bool = false,
         durationMilliseconds: Int = 0,
-        timedOut: Bool = false,
+        timedOut: Bool = false
     ) {
         self.exitCode = exitCode
         self.stdout = stdout

@@ -67,7 +67,7 @@ extension Color {
             red: Double((hex >> 16) & 0xFF) / 255,
             green: Double((hex >> 8) & 0xFF) / 255,
             blue: Double(hex & 0xFF) / 255,
-            opacity: 1,
+            opacity: 1
         )
     }
 }
@@ -148,7 +148,7 @@ struct MarkView: View {
         ZStack {
             BracesShape().stroke(
                 braces,
-                style: StrokeStyle(lineWidth: max(1.5, 62 * size / Self.crop), lineCap: .round, lineJoin: .round),
+                style: StrokeStyle(lineWidth: max(1.5, 62 * size / Self.crop), lineCap: .round, lineJoin: .round)
             )
             LeafShape().fill(Self.leaf, style: FillStyle(eoFill: true))
         }

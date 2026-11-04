@@ -40,7 +40,7 @@ struct ProviderKeyVerificationTests {
             var iterator = ports.makeAsyncIterator()
             let port = try #require(await iterator.next())
             let credentials = OAuthCredentials(access: "candidate-secret", refresh: "", expires: .max, extras: [
-                "baseUrl": .string("http://127.0.0.1:\(port)/v1"), "defaultModel": .string("verification-model"),
+                "baseUrl": .string("http://127.0.0.1:\(port)/v1"), "defaultModel": .string("verification-model")
             ])
             if succeeds {
                 try await ProviderKeyVerification.verify(provider, credentials)

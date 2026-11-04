@@ -16,7 +16,7 @@ enum ChatAdoption {
         opened payload: JSONValue?,
         parent: ChatRecord,
         records: [ChatRecord],
-        now: Date = Date(),
+        now: Date = Date()
     ) -> ChatRecord? {
         guard let project = payload?["projectName"]?.stringValue ?? parent.summary.projectName,
               let sessionID = payload?["sessionID"]?.stringValue, UUID(uuidString: sessionID) != nil,
@@ -27,7 +27,7 @@ enum ChatAdoption {
         return ChatRecord(
             summary: ChatSummary(title: title, lastInteraction: now, projectName: project, isWorking: true),
             sessionID: sessionID,
-            task: task,
+            task: task
         )
     }
 
@@ -45,10 +45,10 @@ enum ChatAdoption {
             summary: ChatSummary(
                 title: title(session.title, prompt: nil),
                 lastInteraction: now,
-                projectName: project,
+                projectName: project
             ),
             sessionID: session.sessionID,
-            task: session.task,
+            task: session.task
         )
     }
 
@@ -60,7 +60,7 @@ enum ChatAdoption {
         linked session: AgentSessionSummary,
         projectName: String,
         records: [ChatRecord],
-        now: Date = Date(),
+        now: Date = Date()
     ) -> ChatRecord? {
         guard !records.contains(where: { $0.sessionID == session.sessionID }) else { return nil }
         return ChatRecord(
@@ -68,10 +68,10 @@ enum ChatAdoption {
                 title: title(session.title, prompt: nil),
                 lastInteraction: now,
                 projectName: projectName,
-                isWorking: !session.state.isTerminal,
+                isWorking: !session.state.isTerminal
             ),
             sessionID: session.sessionID,
-            task: session.task,
+            task: session.task
         )
     }
 

@@ -22,7 +22,7 @@ struct RootRunToolTests {
                 ["argv": ["make"], "root": false],
                 ["argv": ["make"], "root": .null],
                 ["argv": ["make"], "root": "true"],
-                ["argv": ["make"], "root": 1],
+                ["argv": ["make"], "root": 1]
             ]
             for arguments in shapes {
                 let (_, asked) = try await harness.run(.shellRun, arguments)
@@ -46,7 +46,7 @@ struct RootRunToolTests {
             (["script": "print(1)", "interpreter": "python3", "root": true], .script(interpreter: "python3", source: "print(1)"), "."),
             (["script": "id -u", "root": true], .script(interpreter: "sh", source: "id -u"), "."),
             (["argv": ["id"], "cwd": "", "root": true], .argv(["id"]), "."),
-            (["argv": ["id"], "cwd": "Sources", "root": true], .argv(["id"]), "Sources"),
+            (["argv": ["id"], "cwd": "Sources", "root": true], .argv(["id"]), "Sources")
         ]
         for mode in [ApprovalMode.confirm, .relaxed] {
             for (arguments, invocation, directory) in cases {

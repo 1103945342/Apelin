@@ -18,7 +18,7 @@ struct ConversationBackendTests {
             title: "Docs",
             state: state,
             updatedAt: Date(timeIntervalSince1970: 100),
-            parentSessionID: "11111111-2222-4333-8444-555555555555",
+            parentSessionID: "11111111-2222-4333-8444-555555555555"
         )
     }
 
@@ -32,7 +32,7 @@ struct ConversationBackendTests {
             events: numbered,
             state: state,
             lastSeq: numbered.last?.seq ?? EventSeq(first - 1),
-            finished: state.isTerminal,
+            finished: state.isTerminal
         )
     }
 
@@ -47,13 +47,13 @@ struct ConversationBackendTests {
             provider: .openAICodex,
             model: "gpt-6.1-sol",
             reasoningEffort: .high,
-            serviceTier: .ultrafast,
+            serviceTier: .ultrafast
         )
         fixture.host.on(.agentOpen, reply: AgentOpenResponse(sessionID: Self.child, task: Self.childTask))
         let opened = try await fixture.backend.conversationCreate(ConversationCreateToolRequest(
             context: fixture.context(),
             prompt: "Write the README",
-            title: "Docs",
+            title: "Docs"
         ))
         #expect(fixture.host.requests.map(\.operation) == [.agentOpen], "nothing is read: it answers at once")
         let sent = try #require(fixture.host.requests(AgentOpenRequest.self).first)
@@ -72,7 +72,7 @@ struct ConversationBackendTests {
         let response = try await fixture.backend.conversationSend(ConversationSendToolRequest(
             context: fixture.context(),
             sessionID: Self.child,
-            text: "Also the changelog",
+            text: "Also the changelog"
         ))
         let sent = try #require(fixture.host.requests(AgentPromptRequest.self).first)
         #expect(sent.sessionID == Self.child && sent.text == "Also the changelog")
@@ -88,7 +88,7 @@ struct ConversationBackendTests {
         fixture.host.on(.agentList, reply: AgentListResponse(sessions: [
             AgentSessionSummary(sessionID: fixture.backend.sessionID, task: TaskHandle(taskID: TaskID("t0"), kind: .agent), state: .running, updatedAt: Date()),
             summary(state: .waitingForApproval),
-            AgentSessionSummary(sessionID: "old", task: TaskHandle(taskID: TaskID("t2"), kind: .agent), state: .succeeded, updatedAt: Date()),
+            AgentSessionSummary(sessionID: "old", task: TaskHandle(taskID: TaskID("t2"), kind: .agent), state: .succeeded, updatedAt: Date())
         ]))
         let list = try await fixture.backend.conversationList(ConversationListToolRequest(context: fixture.context())).conversations
         #expect(list.map(\.state) == ["open", "waitingForApproval", "ended"])
@@ -108,7 +108,7 @@ struct ConversationBackendTests {
                     projectID: "far-id",
                     projectName: "Far",
                     state: .interrupted,
-                    updatedAt: Date(),
+                    updatedAt: Date()
                 ),
                 AgentSessionSummary(
                     sessionID: fixture.backend.sessionID,
@@ -116,10 +116,10 @@ struct ConversationBackendTests {
                     projectID: fixture.project.id,
                     projectName: "Hello",
                     state: .running,
-                    updatedAt: Date(),
-                ),
+                    updatedAt: Date()
+                )
             ],
-            unreachedProjects: 2,
+            unreachedProjects: 2
         ))
         let listed = try await fixture.backend.conversationList(ConversationListToolRequest(context: fixture.context()))
         #expect(listed.conversations.map(\.project) == ["Far", nil])
@@ -141,7 +141,7 @@ struct ConversationBackendTests {
             ("message", text("Removing it")),
             ("approvalRequested", .object(["approvalID": .string("a1"), "tool": .string("apelin_package_remove"), "reason": .string("Removing a package")])),
             (TaskEvent.stateKind, .object(["state": .string("waitingForApproval")])),
-            (TaskEvent.stateKind, .object(["state": .string("interrupted")])),
+            (TaskEvent.stateKind, .object(["state": .string("interrupted")]))
         ], state: .interrupted)
         fixture.host.on(.agentAttach) { request in
             let attach = try request.decode(AgentAttachRequest.self)
@@ -185,7 +185,7 @@ struct ConversationBackendTests {
         let listed = try await fixture.backend.projects()
         #expect(listed.projects.map(\.folder) == ["Hello", "Workspace"], "no link out, no unreadable or id-less manifest, nothing hidden")
         #expect(listed.projects.first == ListedProject(
-            folder: "Hello", projectID: "6f1c5b0e-0000-4000-8000-000000000001", displayName: "Hello Tweak", buildSystem: "apelin", isThisProject: true,
+            folder: "Hello", projectID: "6f1c5b0e-0000-4000-8000-000000000001", displayName: "Hello Tweak", buildSystem: "apelin", isThisProject: true
         ))
         #expect(listed.projects.last == ListedProject(folder: "Workspace", projectID: "w-1", displayName: "Workspace", buildSystem: "external", isThisProject: false))
         #expect(listed.projects.last?.link == "apelin://project/w-1")
@@ -223,7 +223,7 @@ struct ConversationBackendTests {
             ("approvalRequested", .object(["approvalID": .string("a1"), "tool": .string("shell_run"), "reason": .string("Scripts require approval")])),
             (TaskEvent.stateKind, .object(["state": .string("waitingForApproval")])),
             ("message", text("Shorter draft")),
-            ("error", .object(["message": .string("the provider returned an error")])),
+            ("error", .object(["message": .string("the provider returned an error")]))
         ], state: .waitingForApproval)
         fixture.host.on(.agentAttach) { request in
             let attach = try request.decode(AgentAttachRequest.self)
@@ -233,7 +233,7 @@ struct ConversationBackendTests {
         #expect(read.state == .waitingForApproval)
         #expect(read.messages == [
             ConversationMessage(seq: 8, role: "assistant", text: "Shorter draft"),
-            ConversationMessage(seq: 9, role: "error", text: "the provider returned an error"),
+            ConversationMessage(seq: 9, role: "error", text: "the provider returned an error")
         ], "only what came after seq 4")
         #expect(read.pendingApprovals == [ConversationApproval(approvalID: "a1", tool: "shell_run", reason: "Scripts require approval")])
         #expect(read.lastSeq == 9 && !read.truncated && !read.timedOut && read.title == "Docs")
@@ -257,7 +257,7 @@ struct ConversationBackendTests {
         let history = batch([("prompt", text("Write the README")), ("finished", .object(["reason": .string("completed")]))])
         let later = [
             batch([("prompt", text("Also the changelog")), ("messageStarted", nil)], from: 3),
-            batch([("message", text("Done: README and CHANGELOG")), ("finished", .object(["reason": .string("completed")]))], from: 5),
+            batch([("message", text("Done: README and CHANGELOG")), ("finished", .object(["reason": .string("completed")]))], from: 5)
         ]
         let waits = Counter()
         fixture.host.on(.agentAttach) { request in
@@ -274,7 +274,7 @@ struct ConversationBackendTests {
             context: fixture.context(),
             sessionID: Self.child,
             afterSeq: 2,
-            waitSeconds: 30,
+            waitSeconds: 30
         ))
         #expect(read.state == .idle && !read.timedOut)
         #expect(read.messages.map(\.text) == ["Done: README and CHANGELOG"])
@@ -312,7 +312,7 @@ struct ConversationBackendTests {
             ("message", text(String(repeating: "a", count: 60))),
             ("message", text(String(repeating: "b", count: 60))),
             ("message", text("c")),
-            ("finished", .object(["reason": .string("completed")])),
+            ("finished", .object(["reason": .string("completed")]))
         ]))
         var read = reader.response(sessionID: "s", title: nil, timedOut: false)
         #expect(read.truncated && read.messages.map(\.seq) == [1] && read.lastSeq == 1)
@@ -323,7 +323,7 @@ struct ConversationBackendTests {
             ("message", text(String(repeating: "a", count: 60))),
             ("message", text(String(repeating: "b", count: 60))),
             ("message", text("c")),
-            ("finished", .object(["reason": .string("completed")])),
+            ("finished", .object(["reason": .string("completed")]))
         ]))
         read = next.response(sessionID: "s", title: nil, timedOut: false)
         #expect(!read.truncated && read.messages.map(\.seq) == [2, 3] && read.lastSeq == 4)

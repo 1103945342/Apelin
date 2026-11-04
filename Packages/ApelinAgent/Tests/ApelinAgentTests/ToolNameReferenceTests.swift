@@ -28,7 +28,7 @@ struct ToolNameReferenceTests {
         let environment = try EnvironmentPrompt.section(EnvironmentPrompt.inputs(
             AgentSessionConfiguration(project: home.project, provider: .githubCopilot(model: "m"), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot),
             root: ScopedRoot(home.projectURL),
-            device: .current,
+            device: .current
         ))
         var prompts: [String] = []
         for (project, buildSystem) in [(home.project, ProjectBuildSystem.apelin), (home.project, .external), (temporary, .apelin)] {
@@ -39,7 +39,7 @@ struct ToolNameReferenceTests {
                 mcpServers: [server],
                 buildSystem: buildSystem,
                 memory: MemoryTools.prompt(nil),
-                environment: environment,
+                environment: environment
             ))
         }
         // and the block before each message, in every mode

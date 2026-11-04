@@ -10,7 +10,7 @@ struct DeepSeekProviderTests {
     @Test
     func `DeepSeek has independent credentials and defaults to the vision catalog model`() async throws {
         let source = DeliveredCredentialSource([
-            CredentialProviderID.openAICompatible: OAuthCredentials(access: "other-key", refresh: "", expires: .max),
+            CredentialProviderID.openAICompatible: OAuthCredentials(access: "other-key", refresh: "", expires: .max)
         ])
         let configuration = ProviderConfiguration.stored(storeID: CredentialProviderID.deepSeek, model: nil)
         await #expect(throws: ProviderResolutionError.missingCredentials(CredentialProviderID.deepSeek)) {
@@ -45,7 +45,7 @@ struct DeepSeekProviderTests {
             ("https://api.deepseek.com", "deepseek-v4-pro"),
             ("https://api.deepseek.com", "unknown-model"),
             ("https://api.deepseek.com.example.org/v1", "deepseek-flash"),
-            ("https://example.org/v1", "deepseek-flash"),
+            ("https://example.org/v1", "deepseek-flash")
         ] {
             let source = DeliveredCredentialSource([CredentialProviderID.openAICompatible:
                     OAuthCredentials(access: "key", refresh: "", expires: .max, extras: ["baseUrl": .string(base)])])
@@ -58,7 +58,7 @@ struct DeepSeekProviderTests {
     @Test(arguments: [CredentialProviderID.deepSeek, CredentialProviderID.openAICompatible])
     func `user and tool images reach the Chat Completions request after resolution`(storeID: String) async throws {
         let key = OAuthCredentials(access: "key", refresh: "", expires: .max, extras: [
-            "baseUrl": .string("https://api.deepseek.com"),
+            "baseUrl": .string("https://api.deepseek.com")
         ])
         let source = DeliveredCredentialSource([storeID: key])
         let resolved = try await ProviderResolver.resolve(.stored(storeID: storeID, model: "deepseek-flash"), credentials: source)
@@ -67,7 +67,7 @@ struct DeepSeekProviderTests {
             .user(UserMessage(content: [.text(TextContent(text: "Read these screenshots.")), .image(image), .image(image)])),
             .assistant(fauxAssistantMessage(blocks: [fauxToolCall(name: "capture", arguments: [:], id: "capture-1")], stopReason: .toolUse)),
             .toolResult(ToolResultMessage(toolCallId: "capture-1", toolName: "capture", content: [.image(image)])),
-            .user(UserMessage(text: "Compare them.")),
+            .user(UserMessage(text: "Compare them."))
         ])
         let client = ImageRequestCapture()
         let auth = try #require(try await resolved.authResolver?(resolved.model, nil))
@@ -100,7 +100,7 @@ private actor ImageRequestCapture: HTTPClient {
     var request: Request?
 
     func stream(
-        url: URL, method: String, headers: [String: String], body: Data?, cancellation _: CancellationHandle?,
+        url: URL, method: String, headers: [String: String], body: Data?, cancellation _: CancellationHandle?
     ) async throws -> (HTTPURLResponse, AsyncThrowingStream<Data, Error>) {
         #expect(method == "POST")
         request = Request(url: url, headers: headers, body: body)

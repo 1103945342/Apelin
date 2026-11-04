@@ -153,6 +153,6 @@ extension BuiltInSkills {
         (`com.icli.icli`). Once that repository is among their sources you
         may also offer to install it as the apelin-package-dependencies
         skill says. Go on after it is installed.
-        """,
+        """
     )
 }

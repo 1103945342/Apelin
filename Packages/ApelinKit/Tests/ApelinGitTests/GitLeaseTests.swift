@@ -85,14 +85,14 @@ final class GitLeaseTests: XCTestCase {
         XCTAssertEqual(
             try remote.seed.fetch(comparing: "main").comparison,
             GitRemoteComparison(branch: "main", local: first, localSubject: "First", remote: first),
-            "the same commit: nothing to lose",
+            "the same commit: nothing to lose"
         )
 
         let ahead = try commit("two\n", "README", in: remote.seed, message: "Second")
         XCTAssertEqual(
             try remote.seed.fetch(comparing: "main").comparison,
             GitRemoteComparison(branch: "main", local: ahead, localSubject: "Second", remote: first),
-            "the remote's branch is part of this one: an ordinary push",
+            "the remote's branch is part of this one: an ordinary push"
         )
 
         let other = try clone(remote)
@@ -106,12 +106,12 @@ final class GitLeaseTests: XCTestCase {
             localSubject: "Second",
             remote: later,
             remoteOnly: [GitLogEntry(commit: later, subject: "Later")],
-            remoteOnlyCount: 2,
+            remoteOnlyCount: 2
         ), "newest first, listed as far as asked, all of them counted")
         XCTAssertTrue(fetched.updated.contains(GitRefUpdate(ref: "refs/remotes/origin/main", from: first, to: later)))
         XCTAssertEqual(
             try remote.seed.fetch(comparing: "main").comparison?.remoteOnly.map(\.commit),
-            [later, theirs],
+            [later, theirs]
         )
 
         XCTAssertThrowsError(try remote.seed.fetch(comparing: "feature")) {
@@ -126,7 +126,7 @@ final class GitLeaseTests: XCTestCase {
         try remote.seed.createBranch("feature", at: first)
         XCTAssertEqual(
             try remote.seed.fetch(comparing: "feature").comparison,
-            GitRemoteComparison(branch: "feature", local: first, localSubject: "First", remote: nil),
+            GitRemoteComparison(branch: "feature", local: first, localSubject: "First", remote: nil)
         )
     }
 
@@ -138,14 +138,14 @@ final class GitLeaseTests: XCTestCase {
         var seen: [String?] = []
         let result = try seed.push(
             lease: GitLease(expectedCommit: diverged.theirs, localCommit: diverged.mine),
-            remoteCommit: { seen.append($0) },
+            remoteCommit: { seen.append($0) }
         )
         XCTAssertEqual(result, GitPushResult(
             remote: "origin",
             branch: "main",
             commit: diverged.mine,
             from: diverged.theirs,
-            forced: true,
+            forced: true
         ))
         XCTAssertEqual(seen, [diverged.theirs], "told what the remote had before anything was sent")
         XCTAssertEqual(try remoteMain(diverged.remote), diverged.mine, "the remote's main is this one now")
@@ -170,7 +170,7 @@ final class GitLeaseTests: XCTestCase {
         var seen: [String?] = []
         XCTAssertThrowsError(try diverged.remote.seed.push(
             lease: GitLease(expectedCommit: diverged.theirs),
-            remoteCommit: { seen.append($0) },
+            remoteCommit: { seen.append($0) }
         )) { error in
             XCTAssertEqual((error as? GitError)?.kind, .remoteChanged, "\(error)")
             XCTAssertTrue("\(error)".contains("is at \(later) now, not \(diverged.theirs)"), "\(error)")
@@ -185,7 +185,7 @@ final class GitLeaseTests: XCTestCase {
         try diverged.remote.seed.createBranch("feature", at: diverged.mine)
         XCTAssertThrowsError(try diverged.remote.seed.push(
             branch: "feature",
-            lease: GitLease(expectedCommit: diverged.theirs),
+            lease: GitLease(expectedCommit: diverged.theirs)
         )) { error in
             XCTAssertEqual((error as? GitError)?.kind, .remoteChanged, "\(error)")
             XCTAssertTrue("\(error)".contains("is gone"), "\(error)")
@@ -199,7 +199,7 @@ final class GitLeaseTests: XCTestCase {
         let diverged = try diverged()
         let newer = try commit("newer\n", "Newer.txt", in: diverged.remote.seed, message: "Newer")
         XCTAssertThrowsError(try diverged.remote.seed.push(
-            lease: GitLease(expectedCommit: diverged.theirs, localCommit: diverged.mine),
+            lease: GitLease(expectedCommit: diverged.theirs, localCommit: diverged.mine)
         )) { error in
             XCTAssertEqual((error as? GitError)?.kind, .localChanged, "\(error)")
             XCTAssertTrue("\(error)".contains("is at \(newer) now, not \(diverged.mine)"), "\(error)")
@@ -213,7 +213,7 @@ final class GitLeaseTests: XCTestCase {
         for lease in [
             GitLease(expectedCommit: String(diverged.theirs.prefix(12))),
             GitLease(expectedCommit: upper),
-            GitLease(expectedCommit: diverged.theirs, localCommit: "HEAD"),
+            GitLease(expectedCommit: diverged.theirs, localCommit: "HEAD")
         ] {
             XCTAssertThrowsError(try diverged.remote.seed.push(lease: lease)) {
                 XCTAssertEqual(($0 as? GitError)?.kind, .invalid, "\(lease)")
@@ -245,7 +245,7 @@ final class GitLeaseTests: XCTestCase {
                 // The check passed; the branch moves before the update lands.
                 XCTAssertEqual(found, diverged.theirs)
                 moved = Self.git(["--git-dir", diverged.remote.bare.path, "update-ref", "refs/heads/main", sneaked])
-            },
+            }
         )) { error in
             XCTAssertEqual((error as? GitError)?.kind, .rejected, "\(error)")
         }
@@ -283,7 +283,7 @@ private final class GitDaemon {
             process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
             process.arguments = [
                 "daemon", "--reuseaddr", "--listen=127.0.0.1", "--port=\(port)", "--export-all",
-                "--enable=receive-pack", "--informative-errors", "--base-path=\(base.path)", base.path,
+                "--enable=receive-pack", "--informative-errors", "--base-path=\(base.path)", base.path
             ]
             process.standardOutput = FileHandle.nullDevice
             process.standardError = FileHandle.nullDevice

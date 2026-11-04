@@ -43,7 +43,7 @@ public struct ProjectCheck: Sendable {
             return run(root: root, environment: environment)
         } catch {
             return Result(diagnostics: [
-                ProjectDiagnostic(code: "project.notFound", severity: .error, message: String(describing: error)),
+                ProjectDiagnostic(code: "project.notFound", severity: .error, message: String(describing: error))
             ])
         }
     }
@@ -53,7 +53,7 @@ public struct ProjectCheck: Sendable {
     /// `notFound`. A nil component keeps the one `current` binds.
     public func binding(
         _ choice: ProjectEnvironmentChoice,
-        replacing current: ProjectDocument.EnvironmentBinding,
+        replacing current: ProjectDocument.EnvironmentBinding
     ) throws -> ProjectDocument.EnvironmentBinding {
         var binding = current
         if let id = choice.toolchainID {
@@ -79,7 +79,7 @@ public struct ProjectCheck: Sendable {
             _ message: String,
             file: String? = nil,
             field: String? = nil,
-            fixes: [String] = [],
+            fixes: [String] = []
         ) {
             out.append(ProjectDiagnostic(
                 code: code,
@@ -87,7 +87,7 @@ public struct ProjectCheck: Sendable {
                 message: message,
                 file: file,
                 field: field,
-                fixes: fixes,
+                fixes: fixes
             ))
         }
 
@@ -126,7 +126,7 @@ public struct ProjectCheck: Sendable {
                 .error,
                 "the build or packaging description cannot be computed: \(error)",
                 file: ProjectStore.projectFileName,
-                fixes: ["openProjectFile"],
+                fixes: ["openProjectFile"]
             )
         }
 
@@ -154,7 +154,7 @@ public struct ProjectCheck: Sendable {
                             .error,
                             "\(path) is not a property list",
                             file: path,
-                            field: "\(field)/\(key)",
+                            field: "\(field)/\(key)"
                         )
                     }
                 } catch {
@@ -164,7 +164,7 @@ public struct ProjectCheck: Sendable {
                         String(describing: error),
                         file: path,
                         field: "\(field)/\(key)",
-                        fixes: ["openProjectFile"],
+                        fixes: ["openProjectFile"]
                     )
                 }
             }
@@ -176,7 +176,7 @@ public struct ProjectCheck: Sendable {
                     .error,
                     "\(file) is not a regular file inside the project",
                     file: file,
-                    field: "/package/layout/\(index)/file",
+                    field: "/package/layout/\(index)/file"
                 )
             }
         }
@@ -187,7 +187,7 @@ public struct ProjectCheck: Sendable {
                     .error,
                     "\(path) is not a regular file inside the project",
                     file: path,
-                    field: "/package/maintainerScripts/\(script)",
+                    field: "/package/maintainerScripts/\(script)"
                 )
                 continue
             }
@@ -197,7 +197,7 @@ public struct ProjectCheck: Sendable {
                     .error,
                     "\(path) is not UTF-8 text",
                     file: path,
-                    field: "/package/maintainerScripts/\(script)",
+                    field: "/package/maintainerScripts/\(script)"
                 )
             }
         }
@@ -209,7 +209,7 @@ public struct ProjectCheck: Sendable {
                         .error,
                         "script \(id): \(file) is not a regular file inside the project",
                         file: file,
-                        field: "/build/steps/\(index)/file",
+                        field: "/build/steps/\(index)/file"
                     )
                 }
                 add(
@@ -217,7 +217,7 @@ public struct ProjectCheck: Sendable {
                     .note,
                     "script \(id) runs project code as the mobile user in the project folder; in Strict mode, its contents are reviewed with the build description",
                     file: file,
-                    field: "/build/steps/\(index)",
+                    field: "/build/steps/\(index)"
                 )
             }
         }
@@ -234,7 +234,7 @@ public struct ProjectCheck: Sendable {
                     .error,
                     "toolchain \(toolchain.id) was registered again with other contents; rebind the project to use it",
                     field: "/environment/toolchain",
-                    fixes: ["rebindToolchain"],
+                    fixes: ["rebindToolchain"]
                 )
             }
             let tools = ["clang", "lipo", "dsymutil", "strip"] + (project.language == .swift ? ["swiftc"] : [])
@@ -244,7 +244,7 @@ public struct ProjectCheck: Sendable {
                     .error,
                     "toolchain \(toolchain.id) has no runnable \(tool)",
                     field: "/environment/toolchain",
-                    fixes: ["repairToolchain"],
+                    fixes: ["repairToolchain"]
                 )
             }
             if project.language == .swift, !toolchain.components.contains("swift") {
@@ -253,7 +253,7 @@ public struct ProjectCheck: Sendable {
                     .error,
                     "toolchain \(toolchain.id) was set up without the Swift component",
                     field: "/language",
-                    fixes: ["addSwiftComponent"],
+                    fixes: ["addSwiftComponent"]
                 )
             }
         } else {
@@ -262,7 +262,7 @@ public struct ProjectCheck: Sendable {
                 .error,
                 "toolchain \(project.environment.toolchain.id) is not registered",
                 field: "/environment/toolchain",
-                fixes: ["setUpToolchain", "rebindToolchain"],
+                fixes: ["setUpToolchain", "rebindToolchain"]
             )
         }
         // The tools' machine code is the M1's (`HostCPU`): on an older CPU
@@ -286,7 +286,7 @@ public struct ProjectCheck: Sendable {
                 .error,
                 "clang modules (-fmodules, @import) cannot be built on this device: Apple's clang uses an "
                     + "instruction its CPU lacks (FEAT_SHA3, from the A13 on); drop the flag and #import headers",
-                field: "/configurations",
+                field: "/configurations"
             )
         }
         let sdk = (try? registry.sdk(project.environment.sdk.id)) ?? nil
@@ -297,7 +297,7 @@ public struct ProjectCheck: Sendable {
                     .error,
                     "SDK \(sdk.id) was registered again with other contents; rebind the project to use it",
                     field: "/environment/sdk",
-                    fixes: ["rebindSDK"],
+                    fixes: ["rebindSDK"]
                 )
             }
             var isDirectory: ObjCBool = false
@@ -307,7 +307,7 @@ public struct ProjectCheck: Sendable {
                     .error,
                     "SDK \(sdk.id) is registered at \(sdk.path), which no longer exists; import the SDK again",
                     field: "/environment/sdk",
-                    fixes: ["importSDK"],
+                    fixes: ["importSDK"]
                 )
             }
             if sdk.version.compare(project.deploymentTarget, options: .numeric) == .orderedAscending {
@@ -316,7 +316,7 @@ public struct ProjectCheck: Sendable {
                     .warning,
                     "SDK \(sdk.version) is older than the deployment target \(project.deploymentTarget); only APIs declared by that SDK are available",
                     field: "/deploymentTarget",
-                    fixes: ["rebindSDK", "rebindToolchain"],
+                    fixes: ["rebindSDK", "rebindToolchain"]
                 )
             }
             if let toolchain, !toolchain.reads(sdkVersion: sdk.version) {
@@ -326,7 +326,7 @@ public struct ProjectCheck: Sendable {
                     "toolchain \(toolchain.id) (Command Line Tools \(toolchain.version)) supports iPhoneOS SDKs up to "
                         + "\(toolchain.newestSDK ?? sdk.version); SDK \(sdk.version) is outside that supported range",
                     field: "/environment/sdk",
-                    fixes: ["rebindSDK", "rebindToolchain"],
+                    fixes: ["rebindSDK", "rebindToolchain"]
                 )
             }
             if project.language == .swift, let toolchain, let newest = toolchain.newestSDK,
@@ -338,7 +338,7 @@ public struct ProjectCheck: Sendable {
                     "toolchain \(toolchain.id)'s Swift macros are those of the iPhoneOS \(newest) SDK; with SDK "
                         + "\(sdk.version) a macro such as @Observable can expand to code that SDK does not declare",
                     field: "/environment/sdk",
-                    fixes: ["rebindSDK"],
+                    fixes: ["rebindSDK"]
                 )
             }
             if project.language == .swift {
@@ -346,7 +346,7 @@ public struct ProjectCheck: Sendable {
                 let module = sdk.path + "/usr/lib/swift/Swift.swiftmodule/"
                 for bootstrap in project.architectures.bootstraps {
                     for arch in project.architectures[bootstrap] ?? [] where !FileManager.default.fileExists(
-                        atPath: module + "\(arch.rawValue)-apple-ios.swiftinterface",
+                        atPath: module + "\(arch.rawValue)-apple-ios.swiftinterface"
                     ) {
                         add(
                             "environment.sdk.noSwiftArchitecture",
@@ -354,7 +354,7 @@ public struct ProjectCheck: Sendable {
                             "SDK \(sdk.id) has no Swift interface for \(arch.rawValue), so the \(bootstrap.rawValue) "
                                 + "build cannot compile Swift for it; drop \(arch.rawValue) there or bind an SDK that has one",
                             field: "/architectures/\(bootstrap.rawValue)",
-                            fixes: ["rebindSDK"],
+                            fixes: ["rebindSDK"]
                         )
                     }
                 }
@@ -370,7 +370,7 @@ public struct ProjectCheck: Sendable {
                         "environment.sdk.framework",
                         .warning,
                         "\(framework).framework is not in SDK \(sdk.id)",
-                        field: "/products",
+                        field: "/products"
                     )
                 }
             }
@@ -380,7 +380,7 @@ public struct ProjectCheck: Sendable {
                 .error,
                 "SDK \(project.environment.sdk.id) is not registered",
                 field: "/environment/sdk",
-                fixes: ["importSDK", "rebindSDK"],
+                fixes: ["importSDK", "rebindSDK"]
             )
         }
 
@@ -390,7 +390,7 @@ public struct ProjectCheck: Sendable {
                 "extension.template.missing",
                 .note,
                 "the extension \(project.template.extensionID) that made this project is not installed; the project still edits and builds",
-                field: "/template",
+                field: "/template"
             )
         }
         var runtimeDependencies: Set<String> = []
@@ -405,7 +405,7 @@ public struct ProjectCheck: Sendable {
                         .error,
                         "\(support.extension) (\(support.component)) is not installed; install it with your preferred package manager to build",
                         field: field,
-                        fixes: ["installExtension"],
+                        fixes: ["installExtension"]
                     )
                     continue
                 }
@@ -415,7 +415,7 @@ public struct ProjectCheck: Sendable {
                             "extension.support.bootstrap",
                             .error,
                             "\(support.extension) (\(support.component)) has no link stubs for \(bootstrap.rawValue)",
-                            field: field,
+                            field: field
                         )
                     }
                     for dependency in component.runtimeDependencies?[bootstrap] ?? [] {
@@ -436,7 +436,7 @@ public struct ProjectCheck: Sendable {
                 .warning,
                 "a support component needs \(dependency) at run time; add it to package.depends",
                 field: "/package/depends",
-                fixes: ["addDependency"],
+                fixes: ["addDependency"]
             )
         }
         if let filter = project.package.tweakFilter, (filter.bundles ?? []).isEmpty,
@@ -456,7 +456,7 @@ public struct ProjectCheck: Sendable {
                         "space.exhausted",
                         .error,
                         "only \(freeText) free for the \(label) folder; free up space to build",
-                        fixes: ["freeSpace"],
+                        fixes: ["freeSpace"]
                     )
                 } else if free < lowSpace {
                     add("space.low", .warning, "only \(freeText) free for the \(label) folder", fixes: ["freeSpace"])
@@ -474,7 +474,7 @@ public struct ProjectCheck: Sendable {
         _ pattern: String,
         root: URL,
         field: String,
-        add: (String, DiagnosticSeverity, String, String?, String?, [String]) -> Void,
+        add: (String, DiagnosticSeverity, String, String?, String?, [String]) -> Void
     ) {
         do {
             let matches = try ProjectGlob.expand(pattern, in: root)
@@ -490,7 +490,7 @@ public struct ProjectCheck: Sendable {
         _ path: String,
         root: URL,
         field: String,
-        add: (String, DiagnosticSeverity, String, String?, String?, [String]) -> Void,
+        add: (String, DiagnosticSeverity, String, String?, String?, [String]) -> Void
     ) {
         do {
             let real = try ProjectFiles.resolve(path, in: root)

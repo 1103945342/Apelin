@@ -126,7 +126,7 @@ extension BuiltInSkills {
         - Writing a path into a file, a note or memory → its logical spelling
           or a variable, never the jbroot's real path.
         """,
-        files: ["ApelinBootstrap.h": bootstrapHeader],
+        files: ["ApelinBootstrap.h": bootstrapHeader]
     )
 
     /// A C/Objective-C helper the tweak and apelin-bootstrap-paths skills point at.

@@ -30,7 +30,7 @@ final class WelcomeProjectPage: WelcomeListPage {
     private var loader: Task<Void, Never>?
     private lazy var dataSource = TableDataSource<Section, String, Item>(
         tableView: tableView,
-        identifier: { $0.id },
+        identifier: { $0.id }
     ) { [weak self] _, _, row in
         switch row {
         case .introduction:
@@ -119,7 +119,7 @@ final class WelcomeProjectPage: WelcomeListPage {
                 let created = try await ApelinService.app.projectCreate(ProjectCreateRequest(
                     templateID: row.template.id,
                     name: draft.trimmedName,
-                    automaticallyName: true,
+                    automaticallyName: true
                 ))
                 NotificationCenter.default.post(name: .apelinProjectsChanged, object: nil)
                 flow.project = ProjectSummary(
@@ -127,14 +127,14 @@ final class WelcomeProjectPage: WelcomeListPage {
                     kind: row.kind,
                     displayName: created.name,
                     projectID: created.projectID,
-                    automaticallyNamed: true,
+                    automaticallyNamed: true
                 )
                 flow.projectTemplateID = row.template.id
                 updateRows()
                 presentNotice(
                     title: "Project Ready",
                     message: String(localized: "Your new project “\(created.name)” is ready. Your agent will give it a better name later."),
-                    dismissTitle: "Continue",
+                    dismissTitle: "Continue"
                 ) { [weak self] in self?.flow.showNotifications() }
             } catch { presentNotice(title: "Unable to Create Project", message: error.readableMessage) }
         }
@@ -149,7 +149,7 @@ private extension DevelopmentExtension {
         version: "1",
         kind: .workspace,
         displayName: String(localized: "Workspace"),
-        templates: [TemplateSummary(id: "wiki.qaq.apelin.workspace/empty", displayName: String(localized: "Empty"))],
+        templates: [TemplateSummary(id: "wiki.qaq.apelin.workspace/empty", displayName: String(localized: "Empty"))]
     )
 }
 

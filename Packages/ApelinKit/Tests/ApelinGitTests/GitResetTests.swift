@@ -88,7 +88,7 @@ final class GitResetTests: XCTestCase {
 
         let result = try project.reset(
             toRemote: "origin", branch: "main", expectedRemoteCommit: theirs, expectedHead: mine,
-            backupAuthor: author, now: stamp,
+            backupAuthor: author, now: stamp
         )
         XCTAssertEqual(result.commit, theirs)
         XCTAssertEqual(result.previousHead, mine)
@@ -138,7 +138,7 @@ final class GitResetTests: XCTestCase {
         XCTAssertEqual(plan.changedFiles, [])
         let result = try project.reset(
             toRemote: "origin", branch: "main", expectedRemoteCommit: plan.remoteCommit, expectedHead: mine,
-            backupAuthor: author, now: stamp,
+            backupAuthor: author, now: stamp
         )
         XCTAssertEqual(result.backupBranch, "apelin-backup/" + Self.formatted(stamp))
         let saved = try branches(of: project, in: base).1[XCTUnwrap(result.backupBranch)]
@@ -150,7 +150,7 @@ final class GitResetTests: XCTestCase {
         XCTAssertTrue(try project.resetPlan(remote: "origin", branch: "main").upToDate)
         let again = try project.reset(
             toRemote: "origin", branch: "main", expectedRemoteCommit: plan.remoteCommit, expectedHead: plan.remoteCommit,
-            backupAuthor: author, now: stamp,
+            backupAuthor: author, now: stamp
         )
         XCTAssertEqual(again.backupBranch, "apelin-backup/" + Self.formatted(stamp) + "-2")
     }
@@ -170,12 +170,12 @@ final class GitResetTests: XCTestCase {
         _ = try seed.push()
         _ = try project.fetchBranch(remote: "origin", branch: "main")
         XCTAssertThrowsError(try project.reset(
-            toRemote: "origin", branch: "main", expectedRemoteCommit: shown.remoteCommit, expectedHead: mine, backupAuthor: author,
+            toRemote: "origin", branch: "main", expectedRemoteCommit: shown.remoteCommit, expectedHead: mine, backupAuthor: author
         )) { XCTAssertEqual(($0 as? GitError)?.kind, .conflict, "\($0)") }
         // HEAD moves.
         let moved = try project.resetPlan(remote: "origin", branch: "main")
         XCTAssertThrowsError(try project.reset(
-            toRemote: "origin", branch: "main", expectedRemoteCommit: moved.remoteCommit, expectedHead: nil, backupAuthor: author,
+            toRemote: "origin", branch: "main", expectedRemoteCommit: moved.remoteCommit, expectedHead: nil, backupAuthor: author
         )) { XCTAssertEqual(($0 as? GitError)?.kind, .conflict) }
         XCTAssertEqual(project.head().commit, mine)
         XCTAssertEqual(read("Mine.m", in: project.workdir), "// unsaved\n", "nothing changed")

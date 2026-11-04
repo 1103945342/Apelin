@@ -64,7 +64,7 @@ public struct LdidEntitlements: Equatable, Sendable {
         let flags: [(key: String, bit: UInt64)] = [
             ("get-task-allow", 0x10), ("run-unsigned-code", 0x10), ("com.apple.private.cs.debugger", 0x20),
             ("dynamic-codesigning", 0x40), ("com.apple.private.skip-library-validation", 0x80),
-            ("com.apple.private.amfi.can-load-cdhash", 0x100), ("com.apple.private.amfi.can-execute-cdhash", 0x100),
+            ("com.apple.private.amfi.can-load-cdhash", 0x100), ("com.apple.private.amfi.can-execute-cdhash", 0x100)
         ]
         return flags.reduce(mainBinary ? 1 : 0) { result, flag in
             entries.first { $0.key.utf8.elementsEqual(flag.key.utf8) }?.value == .boolean(true)
@@ -85,7 +85,7 @@ public struct LdidEntitlements: Equatable, Sendable {
         let foundation = try? PropertyListSerialization.data(
             fromPropertyList: Self.foundation(.dictionary(entries)),
             format: .xml,
-            options: 0,
+            options: 0
         )
         guard Self.document(.dictionary(entries), sorted: true) == foundation else {
             throw CodeSignFailure.unsupportedEntitlements
@@ -136,7 +136,7 @@ public struct LdidEntitlements: Equatable, Sendable {
         case let .dictionary(entries):
             NSDictionary(
                 objects: entries.map { foundation($0.value) },
-                forKeys: entries.map { NSString(string: $0.key) },
+                forKeys: entries.map { NSString(string: $0.key) }
             )
         }
     }
@@ -216,7 +216,7 @@ public struct LdidEntitlements: Equatable, Sendable {
                 0x31,
                 entries.map { tagged(0x30, tagged(0x0C, Array($0.key.utf8)) + der($0.value)) }
                     .sorted { $0.lexicographicallyPrecedes($1) }
-                    .flatMap(\.self),
+                    .flatMap(\.self)
             )
         }
     }
@@ -351,7 +351,7 @@ extension LdidEntitlements {
                     // reads back the same is what the two agree on
                     let encoded = try empty ? "" : String(
                         decoding: text(closing: name, skippingSpace: true).filter { !Self.isSpace($0) },
-                        as: UTF8.self,
+                        as: UTF8.self
                     )
                     guard let value = Data(base64Encoded: encoded), value.base64EncodedString() == encoded else {
                         throw CodeSignFailure.unsupportedEntitlements

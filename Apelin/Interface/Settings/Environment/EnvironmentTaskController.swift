@@ -40,7 +40,7 @@ final class EnvironmentTaskController: TableController {
 
     private lazy var dataSource = TableDataSource<Section, String, Row>(
         tableView: tableView,
-        identifier: { $0.id },
+        identifier: { $0.id }
     ) { [weak self] _, _, row in
         self?.cell(for: row)
     }
@@ -217,13 +217,13 @@ final class EnvironmentTaskController: TableController {
             cell.show(
                 progress.state(of: cell.stage),
                 status: status(of: cell.stage),
-                animated: !structureChanged && !UIAccessibility.isReduceMotionEnabled,
+                animated: !structureChanged && !UIAccessibility.isReduceMotionEnabled
             )
         }
         var sections: [(Section, [Row])] = []
         if showsStatusSummary {
             sections.append((.summary, [
-                .value(id: "status", title: String(localized: "Status"), value: statusTitle),
+                .value(id: "status", title: String(localized: "Status"), value: statusTitle)
             ]))
         }
         if showsDownload {
@@ -241,7 +241,7 @@ final class EnvironmentTaskController: TableController {
             } ?? "—" : "—"
             sections.append((.transfer, [
                 .value(id: "downloaded", title: String(localized: "Downloaded"), value: amount),
-                .value(id: "speed", title: String(localized: "Speed"), value: speed),
+                .value(id: "speed", title: String(localized: "Speed"), value: speed)
             ]))
         }
         sections.append((.stages, stages.map(Row.stage)))
@@ -294,7 +294,7 @@ final class EnvironmentTaskController: TableController {
     /// Closes the sheet; the task is the host's and goes on.
     private lazy var backgroundBarItem = UIBarButtonItem(
         title: String(localized: "Continue in Background"),
-        primaryAction: UIAction { [weak self] _ in self?.leave() },
+        primaryAction: UIAction { [weak self] _ in self?.leave() }
     )
 
     private var isSheetRoot: Bool {
@@ -314,7 +314,7 @@ final class EnvironmentTaskController: TableController {
     private func doneItem() -> UIBarButtonItem {
         UIBarButtonItem(
             image: UIImage(systemName: "checkmark"),
-            primaryAction: UIAction { [weak self] _ in self?.leave() },
+            primaryAction: UIAction { [weak self] _ in self?.leave() }
         ).then {
             $0.style = .done
             $0.accessibilityLabel = String(localized: "Done")
@@ -326,7 +326,7 @@ final class EnvironmentTaskController: TableController {
             image: UIImage(systemName: "ellipsis"),
             menu: UIMenu(children: [UIDeferredMenuElement.uncached { [weak self] completion in
                 completion(self?.menuElements() ?? [])
-            }]),
+            }])
         ).then { $0.accessibilityLabel = String(localized: "More") }
     }
 
@@ -334,16 +334,16 @@ final class EnvironmentTaskController: TableController {
         var elements: [UIMenuElement] = [
             UIAction(
                 title: String(localized: "View Full Log"),
-                image: UIImage(systemName: "text.alignleft"),
+                image: UIImage(systemName: "text.alignleft")
             ) { [weak self] _ in
                 self?.openLog()
-            },
+            }
         ]
         if !progress.isFinished {
             elements.append(UIMenu(options: .displayInline, children: [UIAction(
                 title: String(localized: "Stop"),
                 image: UIImage(systemName: "stop.circle"),
-                attributes: cancelRequested ? [.destructive, .disabled] : .destructive,
+                attributes: cancelRequested ? [.destructive, .disabled] : .destructive
             ) { [weak self] _ in self?.confirmStop() }]))
         }
         return elements
@@ -371,7 +371,7 @@ final class EnvironmentTaskController: TableController {
             content.secondaryTextProperties.color = .secondaryLabel
 
             content.image = UIImage(
-                systemName: state == .cancelled ? "stop.circle.fill" : "exclamationmark.triangle.fill",
+                systemName: state == .cancelled ? "stop.circle.fill" : "exclamationmark.triangle.fill"
             )
             content.imageProperties.tintColor = state == .cancelled ? .secondaryLabel : .systemRed
             cell.contentConfiguration = content
@@ -406,7 +406,7 @@ final class EnvironmentTaskController: TableController {
             title: "Stop This Task?",
             message: "Progress so far is discarded. Starting again begins from scratch.",
             confirmTitle: "Stop",
-            destructive: true,
+            destructive: true
         ) { [weak self] in
             self?.stop()
         }

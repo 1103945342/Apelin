@@ -38,7 +38,7 @@ enum ProgressCard {
         message: String,
         cancellable: Bool,
         from presenter: UIViewController,
-        operation: @escaping @MainActor (_ update: @escaping @MainActor (Status) -> Void) async throws -> T,
+        operation: @escaping @MainActor (_ update: @escaping @MainActor (Status) -> Void) async throws -> T
     ) async throws -> T {
         let card = ProgressCardController(title: title, status: Status(subtitle: message), cancellable: cancellable)
         let work = Task { @MainActor in
@@ -216,7 +216,7 @@ private final class ProgressCardController: UIViewController {
         }, for: .touchUpInside)
 
         let stack = UIStackView(arrangedSubviews: [
-            artwork, titleLabel, subtitleLabel, separator, gauge, countLabel, cancelButton,
+            artwork, titleLabel, subtitleLabel, separator, gauge, countLabel, cancelButton
         ]).then {
             $0.axis = .vertical
             $0.alignment = .center

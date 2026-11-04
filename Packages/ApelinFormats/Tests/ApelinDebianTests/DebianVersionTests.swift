@@ -20,7 +20,7 @@ final class DebianVersionTests: XCTestCase {
         for version in [
             "1", "1.0", "1.0-1", "1:1.0", "1:1.0-1", "0:0", "1.0~beta1", "1.0+dfsg-1",
             "2.30-1ubuntu1", "1.2.3~rc1-0+deb10u1", "1.0-1-1", "0.0.0.1", "1:2:3-4",
-            "abc", "a-1", "~", "1.0.0~", "99999999999999",
+            "abc", "a-1", "~", "1.0.0~", "99999999999999"
         ] {
             XCTAssertTrue(DebianVersion.isValid(version), version)
         }
@@ -28,7 +28,7 @@ final class DebianVersionTests: XCTestCase {
 
     func testInvalidVersions() {
         for version in [
-            "", " ", "1 0", "1:", ":1", "a:1", "-1:1", "1-", "1.0-", "1.0-a-", "1:-1", "1 :0", "1.0-1:2",
+            "", " ", "1 0", "1:", ":1", "a:1", "-1:1", "1-", "1.0-", "1.0-a-", "1:-1", "1 :0", "1.0-1:2"
         ] {
             XCTAssertFalse(DebianVersion.isValid(version), version.debugDescription)
         }
@@ -132,7 +132,7 @@ final class DebianVersionTests: XCTestCase {
         let ascending = [
             "0.9~", "0.9", "1~~", "1~", "1~a", "1", "1a", "1+", "1.0~beta1", "1.0~beta2", "1.0~rc1", "1.0",
             "1.0-1~bpo1", "1.0-1", "1.0-1+deb9u1", "1.0-1+deb10u1", "1.0-2", "1.0.1", "1.1", "1.9", "1.10",
-            "2", "10", "1:0", "1:1.0", "2:0",
+            "2", "10", "1:0", "1:1.0", "2:0"
         ]
         for i in ascending.indices {
             for j in ascending.indices {

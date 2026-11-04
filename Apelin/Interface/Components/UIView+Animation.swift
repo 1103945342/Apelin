@@ -13,7 +13,7 @@ extension UIView {
     func doWithAnimation(
         duration: TimeInterval = 0.5,
         _ execute: @escaping () -> Void,
-        completion: @escaping () -> Void = {},
+        completion: @escaping () -> Void = {}
     ) {
         let root = window ?? self
         let nested = UIView.inheritedAnimationDuration > 0
@@ -32,7 +32,7 @@ extension UIView {
             // ends. `beginFromCurrentState` then lets each new sample retarget
             // the animation already in flight, instead of discarding what is on
             // screen and restarting from a target nothing ever displayed.
-            options: [.curveEaseInOut, .beginFromCurrentState, .allowUserInteraction],
+            options: [.curveEaseInOut, .beginFromCurrentState, .allowUserInteraction]
         ) {
             execute()
             if !nested {
@@ -60,8 +60,8 @@ extension UIView {
             delay: visible ? 0.15 : 0,
             options: [
                 .curveEaseInOut, .beginFromCurrentState, .allowUserInteraction,
-                .overrideInheritedDuration, .overrideInheritedCurve,
-            ],
+                .overrideInheritedDuration, .overrideInheritedCurve
+            ]
         ) {
             self.alpha = alpha
         }

@@ -33,7 +33,7 @@ final class WorkerChannelTests: XCTestCase {
         XCTAssertEqual(old, ApelinError(.denied, "m"))
         let newer = try JSONCoding.decode(
             ApelinError.self,
-            from: Data(#"{"code":"denied","message":"m","reason":"later"}"#.utf8),
+            from: Data(#"{"code":"denied","message":"m","reason":"later"}"#.utf8)
         )
         XCTAssertEqual(newer.reason?.rawValue, "later")
         XCTAssertFalse(try String(decoding: JSONCoding.encode(old), as: UTF8.self).contains("reason"))

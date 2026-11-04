@@ -126,7 +126,7 @@ public struct ScopedRoot: Sendable, Hashable {
                 missingDirectories: [],
                 fileName: (final as NSString).lastPathComponent,
                 exists: true,
-                gitPointers: findingGitPointers ? gitPointers(refusing: final, requested: relative) : nil,
+                gitPointers: findingGitPointers ? gitPointers(refusing: final, requested: relative) : nil
             )
         }
 
@@ -145,7 +145,7 @@ public struct ScopedRoot: Sendable, Hashable {
             missingDirectories: Array(remainder.dropLast()),
             fileName: remainder.last!,
             exists: false,
-            gitPointers: findingGitPointers ? gitPointers(refusing: final, requested: relative) : nil,
+            gitPointers: findingGitPointers ? gitPointers(refusing: final, requested: relative) : nil
         )
     }
 
@@ -230,7 +230,7 @@ public struct WriteTarget: Sendable {
             directory = (directory as NSString).appendingPathComponent(component)
             if mkdir(directory, 0o755) != 0, errno != EEXIST {
                 throw PathPolicyError.io(
-                    "could not create \(root.relative(directory)): \(String(cString: strerror(errno)))",
+                    "could not create \(root.relative(directory)): \(String(cString: strerror(errno)))"
                 )
             }
             var info = stat()
@@ -287,7 +287,7 @@ public struct WriteTarget: Sendable {
                     throw PathPolicyError.alreadyExists(root.relative(target))
                 }
                 throw PathPolicyError.io(
-                    "could not create \(root.relative(target)): \(String(cString: strerror(linkErrno)))",
+                    "could not create \(root.relative(target)): \(String(cString: strerror(linkErrno)))"
                 )
             }
         } else if rename(temporary, target) != 0 {

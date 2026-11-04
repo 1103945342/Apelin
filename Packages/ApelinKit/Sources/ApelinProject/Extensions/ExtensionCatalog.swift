@@ -49,7 +49,7 @@ public struct ExtensionCatalog: Sendable {
 
     /// `<extension-id>/<template-id>`.
     public func template(
-        _ qualifiedID: String,
+        _ qualifiedID: String
     ) -> (DiscoveredExtension, ExtensionManifest, ExtensionManifest.Template)? {
         let parts = qualifiedID.split(separator: "/", omittingEmptySubsequences: false)
         guard parts.count == 2, let found = usableExtension(String(parts[0])), let manifest = found.manifest,
@@ -71,7 +71,7 @@ public struct ExtensionCatalog: Sendable {
                     folderName: name,
                     root: root,
                     manifest: nil,
-                    problems: ["\(name) is a symbolic link"],
+                    problems: ["\(name) is a symbolic link"]
                 ))
                 continue
             }
@@ -102,7 +102,7 @@ public struct ExtensionCatalog: Sendable {
                 folderName: name,
                 root: root,
                 manifest: nil,
-                problems: ["manifest.json: \(error)"],
+                problems: ["manifest.json: \(error)"]
             )
         }
         if let version = document["schemaVersion"], version != .integer(1) {
@@ -110,7 +110,7 @@ public struct ExtensionCatalog: Sendable {
                 folderName: name,
                 root: root,
                 manifest: nil,
-                problems: ["manifest schema version \(version) is not one this Apelin reads"],
+                problems: ["manifest schema version \(version) is not one this Apelin reads"]
             )
         }
         var problems = ManifestValidation.errors(document)
@@ -119,7 +119,7 @@ public struct ExtensionCatalog: Sendable {
                 folderName: name,
                 root: root,
                 manifest: nil,
-                problems: problems.isEmpty ? ["manifest.json does not decode"] : problems,
+                problems: problems.isEmpty ? ["manifest.json does not decode"] : problems
             )
         }
         if manifest.id != name {

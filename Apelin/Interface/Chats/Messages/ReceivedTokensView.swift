@@ -130,13 +130,13 @@ final class ReceivedTokensView: UIView {
             x: bounds.width - symbolWidth,
             y: 0,
             width: symbolWidth,
-            height: bounds.height,
+            height: bounds.height
         ))
         label.frame = directionalFrame(CGRect(
             x: 0,
             y: ((bounds.height - ceil(figureFont.lineHeight)) / 2).rounded(),
             width: max(0, bounds.width - symbolWidth - Self.spacing),
-            height: ceil(figureFont.lineHeight),
+            height: ceil(figureFont.lineHeight)
         ))
     }
 
@@ -169,7 +169,7 @@ final class ReceivedTokensView: UIView {
         let text = NSAttributedString(string: Self.figure(figure), attributes: [
             .font: figureFont,
             .foregroundColor: Self.color,
-            .paragraphStyle: paragraph,
+            .paragraphStyle: paragraph
         ])
         label.setAttributedText(text, animated: rolls && window != nil && !UIAccessibility.isReduceMotionEnabled)
     }

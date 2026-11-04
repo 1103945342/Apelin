@@ -22,7 +22,7 @@ enum DroppedMessages {
         _ ids: Set<UUID>,
         from events: [TaskEvent],
         to draft: ComposerDraft,
-        attachment: (AgentAttachment) -> ComposerAttachment?,
+        attachment: (AgentAttachment) -> ComposerAttachment?
     ) -> Returned? {
         var remaining = ids
         var parts: [ComposerDraft] = []

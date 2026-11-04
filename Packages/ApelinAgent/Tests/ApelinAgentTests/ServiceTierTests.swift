@@ -28,11 +28,11 @@ struct ServiceTierTests {
                 provider: provider,
                 approval: ApprovalPolicy(mode: .relaxed),
                 dataRoot: home.dataRoot,
-                serviceTier: .priority,
+                serviceTier: .priority
             ),
             backend: MockBackend(),
             digests: MockDigestLedger(),
-            credentials: credentials,
+            credentials: credentials
         )
         try await session.prompt("One", messageID: UUID())
         await session.waitForIdle()

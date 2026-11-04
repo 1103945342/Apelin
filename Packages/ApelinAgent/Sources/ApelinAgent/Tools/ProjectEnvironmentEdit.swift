@@ -23,7 +23,7 @@ enum ProjectEnvironmentEdit {
             ("environment.toolchain.id", toolchain.id),
             ("environment.toolchain.digest", toolchain.digest),
             ("environment.sdk.id", sdk.id),
-            ("environment.sdk.digest", sdk.digest),
+            ("environment.sdk.digest", sdk.digest)
         ]
         var scanner = Scanner(bytes: [UInt8](data), targets: Set(wanted.map(\.path)))
         try scanner.document()
@@ -46,7 +46,7 @@ enum ProjectEnvironmentEdit {
         try verify(original: data, result: result, wanted: wanted)
         return Result(
             data: ProjectManifestFormat.formatted(result) ?? result,
-            changed: ["toolchain", "sdk"].filter(changed.contains),
+            changed: ["toolchain", "sdk"].filter(changed.contains)
         )
     }
 

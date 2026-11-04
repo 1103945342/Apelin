@@ -20,7 +20,7 @@ struct PackageListToolTests {
         project: "DockFlip",
         buildID: "build-7",
         installedAt: Date(timeIntervalSince1970: 1_790_000_000),
-        removable: true,
+        removable: true
     )
     private static let changedElsewhere = ListedInstallation(
         installationID: "22222222-2222-4222-8222-222222222222",
@@ -30,7 +30,7 @@ struct PackageListToolTests {
         project: "Nailong",
         installedAt: Date(timeIntervalSince1970: 1_780_000_000),
         removable: false,
-        reason: "local.apelin.nailong is now version 2.0, not version 1.0 that Apelin installed. Remove it with your preferred package manager.",
+        reason: "local.apelin.nailong is now version 2.0, not version 1.0 that Apelin installed. Remove it with your preferred package manager."
     )
 
     private func text(_ result: AgentToolResult) -> String {
@@ -122,12 +122,12 @@ struct PackageListToolTests {
         }
         await #expect(throws: ToolArgumentError.self) {
             _ = try await harness.run(.packageRemove, [
-                "installation_id": .string(Self.removable.installationID), "package_id": "local.apelin.dockflip",
+                "installation_id": .string(Self.removable.installationID), "package_id": "local.apelin.dockflip"
             ])
         }
         // An empty one is one left out, as a model fills it.
         let (_, asked) = try await harness.run(.packageRemove, [
-            "installation_id": .string(Self.removable.installationID), "package_id": "",
+            "installation_id": .string(Self.removable.installationID), "package_id": ""
         ])
         #expect(asked.first?.detail == .packageRemoval(installationID: Self.removable.installationID))
         #expect(asked.first?.reason.contains("local.apelin.dockflip 1.2") == true, "an id the list shows is named on the card")
@@ -169,7 +169,7 @@ struct PackageListToolTests {
         await harness.backend.setInstallations([Self.removable, Self.changedElsewhere], truncated: true)
         await harness.backend.setRemovalRefusal(ApelinError(
             .notFound,
-            "Apelin did not install this package. Remove it with your preferred package manager.",
+            "Apelin did not install this package. Remove it with your preferred package manager."
         ))
         do {
             _ = try await harness.run(.packageRemove, ["installation_id": "33333333-3333-4333-8333-333333333333"])

@@ -112,7 +112,7 @@ final class ComposerTodoPanel: ComposerPanel {
             x: body.frame.minX,
             y: y,
             width: width,
-            height: min(max(0, body.frame.maxY - y), ComposerMetrics.Panel.maxBodyHeight),
+            height: min(max(0, body.frame.maxY - y), ComposerMetrics.Panel.maxBodyHeight)
         )
     }
 }
@@ -194,13 +194,13 @@ private final class TodoRow: UIView {
             x: 0,
             y: (bounds.height - markSize) / 2,
             width: markSize,
-            height: markSize,
+            height: markSize
         )
         titleLabel.frame = directionalFrame(CGRect(
             x: markSize + ComposerMetrics.Spacing.sm,
             y: 0,
             width: max(0, bounds.width - markSize - ComposerMetrics.Spacing.sm),
-            height: bounds.height,
+            height: bounds.height
         ))
     }
 }

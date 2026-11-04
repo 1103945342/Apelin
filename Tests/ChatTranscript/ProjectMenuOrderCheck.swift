@@ -17,7 +17,7 @@ func checkProjectMenuOrder() {
         ["Alarm", "Clock", "Dock"],
         created: [:],
         chats: [chat("Alarm", 1), chat("Dock", 3), chat("Alarm", 2)],
-        open: nil,
+        open: nil
     )
     precondition(few == .init(top: ["Dock", "Alarm", "Clock"], more: []), "five or fewer all at the top, newest first")
 
@@ -25,7 +25,7 @@ func checkProjectMenuOrder() {
     let chats = [
         chat("Alarm", 7), chat("Clock", 6), chat("Dock", 5), chat("Fan", 4),
         chat("Gear", 3), chat("Hook", 2), chat("Alarm", -10), chat(nil, 9),
-        chat("Gone", 8),
+        chat("Gone", 8)
     ]
     let created = ["Ink": at(1), "Alarm": at(-20), "Hook": at(-30)]
     let many = ProjectMenuOrder.split(projects, created: created, chats: chats, open: nil)

@@ -135,7 +135,7 @@ enum ApelinLink: Hashable, Sendable {
     /// script — parses it alike, and nothing in it hides or reorders what
     /// is shown: a name in another script comes percent-encoded.
     private static let addressCharacters = CharacterSet(
-        charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/[]@!$&'()*+,;=%",
+        charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/[]@!$&'()*+,;=%"
     )
 
     /// A repository an import may name: what the host clones (HTTPS, a host,

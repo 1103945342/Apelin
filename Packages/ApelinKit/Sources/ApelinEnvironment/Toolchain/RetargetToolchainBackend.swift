@@ -34,7 +34,7 @@
                     minimumHost: $0.minimumHost,
                     cpuFeatures: $0.cpuFeatures,
                     minimumHostBasis: $0.minimumHostBasis,
-                    verifiedHosts: $0.verifiedHosts,
+                    verifiedHosts: $0.verifiedHosts
                 )
             }
             let compatibility = try release.map { try Self.compatibility($0.compatibility) }
@@ -56,7 +56,7 @@
                     : nil),
                 clangModuleCPUFeatures: release?.clangModuleCPUFeatures,
                 compatibility: compatibility,
-                reviewed: release?.sourceProductIDs.contains(source.productID) == true,
+                reviewed: release?.sourceProductIDs.contains(source.productID) == true
             )
         }
 
@@ -71,7 +71,7 @@
             components: [ToolchainComponentKind],
             staging: URL,
             output: URL,
-            progress: @escaping @Sendable (ToolchainBackendProgress) -> Void,
+            progress: @escaping @Sendable (ToolchainBackendProgress) -> Void
         ) async throws -> PreparedToolchain {
             guard let url = URL(string: product.url) else {
                 throw ApelinError(.badRequest, "bad package URL \(product.url)")
@@ -82,14 +82,14 @@
                 url: url,
                 size: product.size,
                 upstreamDigest: product.upstreamDigest,
-                upstreamDigestAlgorithm: product.upstreamDigestAlgorithm,
+                upstreamDigestAlgorithm: product.upstreamDigestAlgorithm
             )
             let manifest = try await ToolchainSetup().run(
                 source: source,
                 components: Self.components(components),
                 staging: staging,
                 output: output,
-                progress: { progress(Self.progress($0)) },
+                progress: { progress(Self.progress($0)) }
             )
             return try PreparedToolchain(
                 id: manifest.id,
@@ -98,7 +98,7 @@
                 tree: output,
                 files: manifest.files,
                 installRelativePath: manifest.installRelativePath,
-                manifest: JSONEncoder().encode(manifest),
+                manifest: JSONEncoder().encode(manifest)
             )
         }
 
@@ -109,7 +109,7 @@
             journal: URL,
             scratch: URL,
             install: @escaping ToolchainInstallStep,
-            progress: @escaping @Sendable (ToolchainBackendProgress) -> Void,
+            progress: @escaping @Sendable (ToolchainBackendProgress) -> Void
         ) async throws -> [ToolchainSelfTestResult] {
             let manifest = try JSONDecoder().decode(ToolchainManifest.self, from: prepared.manifest)
             do {
@@ -121,7 +121,7 @@
                     journal: journal,
                     scratch: scratch,
                     install: { _, _, _ in try await install(prepared) },
-                    progress: { progress(Self.progress($0)) },
+                    progress: { progress(Self.progress($0)) }
                 )
                 return ready.selfTests.map(Self.result)
             } catch {
@@ -145,7 +145,7 @@
             do {
                 return try Self.prepared(
                     ToolchainTransfer.exportCopy(installed: installed, to: destination),
-                    tree: destination,
+                    tree: destination
                 )
             } catch let error as ApelinError {
                 throw error
@@ -170,7 +170,7 @@
                 productID: toolchain.productID,
                 sourceSHA256: toolchain.sourceSHA256,
                 scheme: toolchain.retargetScheme,
-                swift: toolchain.record.components.contains { $0.kind == .swift },
+                swift: toolchain.record.components.contains { $0.kind == .swift }
             )
         }
 
@@ -184,7 +184,7 @@
                 tree: tree,
                 files: manifest.files,
                 installRelativePath: manifest.installRelativePath,
-                manifest: JSONEncoder().encode(manifest),
+                manifest: JSONEncoder().encode(manifest)
             )
         }
 
@@ -192,13 +192,13 @@
             installed: URL,
             sdk: URL,
             scratch: URL,
-            progress: @escaping @Sendable (ToolchainBackendProgress) -> Void,
+            progress: @escaping @Sendable (ToolchainBackendProgress) -> Void
         ) async throws -> [ToolchainSelfTestResult] {
             try await ToolchainSelfTest().run(
                 toolchain: installed,
                 sdk: sdk,
                 scratch: scratch,
-                progress: { progress(Self.progress($0)) },
+                progress: { progress(Self.progress($0)) }
             ).map(Self.result)
         }
 
@@ -215,7 +215,7 @@
                 stage: progress.stage.rawValue,
                 completed: progress.completedBytes,
                 total: progress.totalBytes,
-                detail: progress.detail,
+                detail: progress.detail
             )
         }
 
@@ -225,7 +225,7 @@
                 architecture: test.architecture,
                 passed: test.passed,
                 detail: test.detail,
-                seconds: test.seconds,
+                seconds: test.seconds
             )
         }
     }

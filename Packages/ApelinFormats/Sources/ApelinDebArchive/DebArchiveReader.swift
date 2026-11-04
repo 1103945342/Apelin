@@ -157,7 +157,7 @@ public enum DebArchiveReader {
     public static func contents(
         of source: Source,
         contentsLimit: Int64 = 0,
-        maximumEntryCount: Int = 1_000_000,
+        maximumEntryCount: Int = 1_000_000
     ) throws -> Contents {
         try withUTF8Names {
             try readContents(source, contentsLimit: contentsLimit, maximumEntryCount: maximumEntryCount)
@@ -167,7 +167,7 @@ public enum DebArchiveReader {
     private static func readContents(
         _ source: Source,
         contentsLimit: Int64,
-        maximumEntryCount: Int,
+        maximumEntryCount: Int
     ) throws -> Contents {
         try withOuter(source) { outer in
             var result = Contents(members: [], controlFiles: [:], entries: [])
@@ -236,7 +236,7 @@ public enum DebArchiveReader {
                             entry!,
                             path: "/" + relative,
                             inner,
-                            contentsLimit: contentsLimit,
+                            contentsLimit: contentsLimit
                         ))
                     }
                 }
@@ -260,7 +260,7 @@ public enum DebArchiveReader {
         _ entry: OpaquePointer,
         path: String,
         _ inner: OpaquePointer,
-        contentsLimit: Int64,
+        contentsLimit: Int64
     ) throws -> Entry {
         let kind: EntryKind
         if let target = archive_entry_hardlink(entry) {
@@ -292,7 +292,7 @@ public enum DebArchiveReader {
             groupName: archive_entry_gname(entry).map { String(cString: $0) },
             size: size,
             modificationTime: Int64(archive_entry_mtime(entry)),
-            contents: contents,
+            contents: contents
         )
     }
 
@@ -360,7 +360,7 @@ public enum DebArchiveReader {
                 buffer?.pointee = UnsafeRawPointer(member.buffer)
                 return archive_read_data(member.outer, member.buffer, DebArchiveReader.chunkSize)
             }, nil),
-            inner,
+            inner
         )
         try withExtendedLifetime(member) { try body(inner) }
     }

@@ -76,7 +76,7 @@ public struct DWARFLineTable: Sendable {
                 to: unitEnd,
                 isDWARF64: isDWARF64,
                 debugLineStr: debugLineStr,
-                debugStr: debugStr,
+                debugStr: debugStr
             )
             cursor = unitEnd
         }
@@ -156,7 +156,7 @@ public struct DWARFLineTable: Sendable {
         to end: Int,
         isDWARF64: Bool,
         debugLineStr: Data?,
-        debugStr: Data?,
+        debugStr: Data?
     ) throws {
         var reader = try ByteReader(section, start: start, count: end - start)
         let version = try reader.integer(UInt16.self)
@@ -193,7 +193,7 @@ public struct DWARFLineTable: Sendable {
                 into: &header,
                 isDWARF64: isDWARF64,
                 debugLineStr: debugLineStr,
-                debugStr: debugStr,
+                debugStr: debugStr
             )
         } else {
             try readEarlyFiles(&reader, into: &header)
@@ -238,20 +238,20 @@ public struct DWARFLineTable: Sendable {
         into header: inout Header,
         isDWARF64: Bool,
         debugLineStr: Data?,
-        debugStr: Data?,
+        debugStr: Data?
     ) throws {
         let directories = try readEntries(
             &reader,
             isDWARF64: isDWARF64,
             debugLineStr: debugLineStr,
-            debugStr: debugStr,
+            debugStr: debugStr
         )
         .map(\.path)
         let entries = try readEntries(
             &reader,
             isDWARF64: isDWARF64,
             debugLineStr: debugLineStr,
-            debugStr: debugStr,
+            debugStr: debugStr
         )
         header.fileIndices = entries.map { entry in
             let directory = entry.directory.flatMap { directories.indices.contains($0) ? directories[$0] : nil }
@@ -272,7 +272,7 @@ public struct DWARFLineTable: Sendable {
         _ reader: inout ByteReader,
         isDWARF64: Bool,
         debugLineStr: Data?,
-        debugStr: Data?,
+        debugStr: Data?
     ) throws -> [FileEntry] {
         let formatCount = try Int(reader.byte())
         var formats = [(content: UInt64, form: UInt64)]()
@@ -294,7 +294,7 @@ public struct DWARFLineTable: Sendable {
                     form: format.form,
                     isDWARF64: isDWARF64,
                     debugLineStr: debugLineStr,
-                    debugStr: debugStr,
+                    debugStr: debugStr
                 )
                 switch format.content {
                 case contentTypePath:
@@ -325,7 +325,7 @@ public struct DWARFLineTable: Sendable {
         form: UInt64,
         isDWARF64: Bool,
         debugLineStr: Data?,
-        debugStr: Data?,
+        debugStr: Data?
     ) throws -> FormValue {
         switch form {
         case formString:
@@ -407,7 +407,7 @@ public struct DWARFLineTable: Sendable {
                 sequences.append(Sequence(
                     start: rows[sequenceStart].address,
                     end: address,
-                    rows: sequenceStart ..< rows.count - 1,
+                    rows: sequenceStart ..< rows.count - 1
                 ))
                 rows.removeLast()
             } else {

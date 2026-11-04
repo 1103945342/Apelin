@@ -85,7 +85,7 @@ final class SidebarController: UIViewController {
                 guard let self, let control else { return }
                 page = Page(rawValue: control.selectedSegmentIndex) ?? .sessions
             },
-            for: .valueChanged,
+            for: .valueChanged
         )
         return control
     }()
@@ -96,7 +96,7 @@ final class SidebarController: UIViewController {
 
     private lazy var settingsRow = SidebarFooterRow(
         symbol: "gearshape",
-        title: String(localized: "Settings"),
+        title: String(localized: "Settings")
     ) { [weak self] in
         guard let self else { return }
         presentPageAsFormSheet(SettingsViewController())
@@ -173,7 +173,7 @@ final class SidebarController: UIViewController {
             self,
             selector: #selector(projectsChanged),
             name: .apelinProjectsChanged,
-            object: nil,
+            object: nil
         )
         applyPage()
         Task { await refreshProjects() }
@@ -313,7 +313,7 @@ final class SidebarController: UIViewController {
             title: "Delete Workspace?",
             message: "“\(summary.displayTitle)” and every conversation in it will be deleted. This cannot be undone.",
             confirmTitle: "Delete",
-            destructive: true,
+            destructive: true
         ) { [weak self] in
             guard let self else { return }
             Task { [weak self] in

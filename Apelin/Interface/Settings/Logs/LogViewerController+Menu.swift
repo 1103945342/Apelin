@@ -7,7 +7,7 @@ extension LogViewerController {
             image: UIImage(systemName: "ellipsis"),
             menu: UIMenu(children: [UIDeferredMenuElement.uncached { [weak self] completion in
                 completion(self?.createMenu().children ?? [])
-            }]),
+            }])
         ).then { $0.accessibilityLabel = String(localized: "More") }
     }
 
@@ -18,13 +18,13 @@ extension LogViewerController {
                 state: selectedLevels.contains(level) ? .on : .off,
                 handler: { [weak self] _ in
                     self?.toggleLevel(level)
-                },
+                }
             )
         }
         let levelMenu = UIMenu(
             title: String(localized: "Filter by Level"),
             image: UIImage(systemName: "slider.horizontal.3"),
-            children: levelActions,
+            children: levelActions
         )
 
         var categoryActions: [UIAction] = []
@@ -36,7 +36,7 @@ extension LogViewerController {
                 handler: { [weak self] _ in
                     self?.selectedCategories.removeAll()
                     self?.applyFilters(stickToBottom: false)
-                },
+                }
             ))
             categoryActions.append(contentsOf: categories.sorted().map { category in
                 UIAction(
@@ -44,7 +44,7 @@ extension LogViewerController {
                     state: selectedCategories.contains(category) ? .on : .off,
                     handler: { [weak self] _ in
                         self?.toggleCategory(category)
-                    },
+                    }
                 )
             })
         }
@@ -52,7 +52,7 @@ extension LogViewerController {
         let categoryMenu = UIMenu(
             title: String(localized: "Filter by Category"),
             image: UIImage(systemName: "tag"),
-            children: categoryActions.isEmpty ? emptyCategories : categoryActions,
+            children: categoryActions.isEmpty ? emptyCategories : categoryActions
         )
 
         let onlyFailuresAction = UIAction(
@@ -67,7 +67,7 @@ extension LogViewerController {
                     : [.error, .critical]
                 action.state = selectedLevels == [.error, .critical] ? .on : .off
                 applyFilters(stickToBottom: false)
-            },
+            }
         )
 
         var fileActions = [UIAction(
@@ -75,7 +75,7 @@ extension LogViewerController {
             image: UIImage(systemName: "square.and.arrow.up"),
             handler: { [weak self] _ in
                 self?.shareLog()
-            },
+            }
         )]
         // an earlier launch's file is deleted from the list instead
         if isCurrent {
@@ -85,7 +85,7 @@ extension LogViewerController {
                 attributes: .destructive,
                 handler: { [weak self] _ in
                     self?.clearLog()
-                },
+                }
             ))
         }
 
@@ -93,7 +93,7 @@ extension LogViewerController {
             levelMenu,
             categoryMenu,
             UIMenu(options: .displayInline, children: [onlyFailuresAction]),
-            UIMenu(options: .displayInline, children: fileActions),
+            UIMenu(options: .displayInline, children: fileActions)
         ])
     }
 
@@ -151,21 +151,21 @@ extension LogViewerController {
     func tableView(
         _: UITableView,
         contextMenuConfigurationForRowAt indexPath: IndexPath,
-        point _: CGPoint,
+        point _: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard let logLine = dataSource.itemIdentifier(for: indexPath)?.line else { return nil }
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
             let copyAction = UIAction(
                 title: String(localized: "Copy"),
-                image: UIImage(systemName: "doc.on.doc"),
+                image: UIImage(systemName: "doc.on.doc")
             ) { _ in
                 UIPasteboard.general.string = logLine.fullText
             }
 
             let copyMessageAction = UIAction(
                 title: String(localized: "Copy Message"),
-                image: UIImage(systemName: "text.quote"),
+                image: UIImage(systemName: "text.quote")
             ) { _ in
                 UIPasteboard.general.string = logLine.message
             }

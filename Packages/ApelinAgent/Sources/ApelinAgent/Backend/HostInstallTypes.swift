@@ -16,7 +16,7 @@ public struct InstallRequest: Sendable, Hashable, Codable {
         context: HostCallContext,
         artifactID: String,
         artifactDigest: String,
-        packagingDescriptionDigest: String,
+        packagingDescriptionDigest: String
     ) {
         self.context = context
         self.artifactID = artifactID
@@ -49,7 +49,7 @@ public struct InstallResponse: Sendable, Hashable, Codable {
         succeeded: Bool,
         message: String = "",
         conflicts: [InstallConflict]? = nil,
-        relaunchHint: String? = nil,
+        relaunchHint: String? = nil
     ) {
         self.transactionID = transactionID
         self.installationID = installationID
@@ -138,7 +138,7 @@ public struct ListedInstallation: Sendable, Hashable, Codable {
         buildID: String? = nil,
         installedAt: Date,
         removable: Bool,
-        reason: String? = nil,
+        reason: String? = nil
     ) {
         self.installationID = installationID
         self.packageID = packageID

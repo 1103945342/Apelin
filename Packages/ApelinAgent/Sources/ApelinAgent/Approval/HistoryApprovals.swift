@@ -30,7 +30,7 @@ public struct ForcePushApproval: Sendable, Hashable, Codable {
         localCommit: String,
         localSubject: String,
         overwritten: [GitCommitSummary],
-        overwrittenCount: Int,
+        overwrittenCount: Int
     ) {
         self.projectID = projectID
         self.remote = remote
@@ -70,7 +70,7 @@ public struct SquashApproval: Sendable, Hashable, Codable {
         commits: [GitCommitSummary],
         count: Int,
         upstream: String?,
-        published: Int,
+        published: Int
     ) {
         self.projectID = projectID
         self.branch = branch

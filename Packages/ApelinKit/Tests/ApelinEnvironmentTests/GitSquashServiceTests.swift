@@ -42,14 +42,14 @@ final class GitSquashServiceTests: XCTestCase {
             commits: [
                 GitCommitSummary(commit: commits[3], subject: "Four"),
                 GitCommitSummary(commit: commits[2], subject: "Three"),
-                GitCommitSummary(commit: commits[1], subject: "Two"),
+                GitCommitSummary(commit: commits[1], subject: "Two")
             ],
-            count: 3,
+            count: 3
         ))
         XCTAssertEqual(repository.head().commit, commits[3], "a preview changes nothing")
 
         let done = try git.squash(GitSquashRequest(
-            projectID: id, base: preview.base, message: "Add the files", expectedHead: preview.previousHead,
+            projectID: id, base: preview.base, message: "Add the files", expectedHead: preview.previousHead
         ))
         let commit = try XCTUnwrap(done.commit)
         XCTAssertEqual(repository.head().commit, commit)

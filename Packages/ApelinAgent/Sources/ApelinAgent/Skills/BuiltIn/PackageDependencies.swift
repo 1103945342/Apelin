@@ -79,6 +79,6 @@ extension BuiltInSkills {
         sources), or bind the project to an installed one with
         `apelin_project_set_environment`. The environment section of the prompt lists
         what is installed; do not look for compilers on the device.
-        """,
+        """
     )
 }

@@ -90,7 +90,7 @@ final class ComposerApprovalSection: ComposerSectionView {
                     UIView.transition(
                         with: label,
                         duration: 0.25,
-                        options: [.transitionCrossDissolve, .allowUserInteraction],
+                        options: [.transitionCrossDissolve, .allowUserInteraction]
                     ) {}
                 }
                 setText(of: message)
@@ -173,13 +173,13 @@ final class ComposerApprovalSection: ComposerSectionView {
     private func layoutContent() -> CGFloat {
         let contentWidth = max(1, bounds.width)
         let titleHeight = ceil(
-            titleLabel.sizeThatFits(CGSize(width: contentWidth, height: .greatestFiniteMagnitude)).height,
+            titleLabel.sizeThatFits(CGSize(width: contentWidth, height: .greatestFiniteMagnitude)).height
         )
         titleLabel.frame = CGRect(x: 0, y: ChatMarkdownView.blockSpacing, width: contentWidth, height: titleHeight)
         var textBottom = titleLabel.frame.maxY
         if !rootLabel.isHidden {
             let rootHeight = ceil(
-                rootLabel.sizeThatFits(CGSize(width: contentWidth, height: .greatestFiniteMagnitude)).height,
+                rootLabel.sizeThatFits(CGSize(width: contentWidth, height: .greatestFiniteMagnitude)).height
             )
             rootLabel.frame = CGRect(x: 0, y: textBottom + ChatMarkdownView.blockSpacing / 2, width: contentWidth, height: rootHeight)
             textBottom = rootLabel.frame.maxY
@@ -196,7 +196,7 @@ final class ComposerApprovalSection: ComposerSectionView {
             x: 0,
             y: 0,
             width: contentWidth,
-            height: min(textHeight, (window?.bounds.height ?? .greatestFiniteMagnitude) / 2),
+            height: min(textHeight, (window?.bounds.height ?? .greatestFiniteMagnitude) / 2)
         )
         let buttonWidth = (contentWidth - ChatMarkdownView.blockSpacing) / 2
         let actionY = textScroll.frame.maxY + ChatMarkdownView.blockSpacing
@@ -207,7 +207,7 @@ final class ComposerApprovalSection: ComposerSectionView {
         denyButton.frame = directionalFrame(deny, across: row)
         approveButton.frame = directionalFrame(
             CGRect(x: deny.maxX + ChatMarkdownView.blockSpacing, y: actionY, width: buttonWidth, height: buttonHeight),
-            across: row,
+            across: row
         )
         return approveButton.frame.maxY + ChatMarkdownView.blockSpacing
     }

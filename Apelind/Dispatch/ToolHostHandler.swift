@@ -16,7 +16,7 @@ enum ToolHostHandler: DomainHandler {
                 let (response, descriptors) = try await host.toolHosts.call(
                     call,
                     descriptors: request.descriptors,
-                    caller: request.caller,
+                    caller: request.caller
                 )
                 return (.success(request.requestID, response), descriptors)
             } catch {
