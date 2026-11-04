@@ -82,12 +82,15 @@ class ComposerView: ComposerSectionView {
     private var submissionID: UUID?
     var fittingHeightConstraint: NSLayoutConstraint = .init()
 
+    /// The card the bands sit on, before iOS 26's glass. At night it is a
+    /// solid deep grey: a 10% grey let the conversation behind show through
+    /// the text being typed into it, which made the card unreadable.
     private let handlerColor: UIColor = .init {
         switch $0.userInterfaceStyle {
         case .light:
             .white
         default:
-            .gray.withAlphaComponent(0.1)
+            UIColor(white: 0.13, alpha: 1)
         }
     }
 

@@ -268,17 +268,30 @@ final class SidebarFilesController: UIViewController {
     private func open(_ file: ProjectFile) {
         guard let files else { return }
         let url = files.url(of: file.relativePath)
-        let editor = FileEditorController(
-            url: url,
-            relativePath: file.relativePath,
-            line: contentHitsByPath[file.relativePath]?.line,
-        )
-        let folder = parent(of: file.relativePath)
-        editor.onSaved = { [weak self] in
-            self?.files?.reload(folder)
-            self?.rebuild()
+        let relativePath = file.relativePath
+        let folder = parent(of: relativePath)
+        let line = contentHitsByPath[relativePath]?.line
+        // The page is read before it is shown: a sheet that opens before its
+        // text is ready flashes a blank page, which at night is a white one.
+        Task { [weak self] in
+            guard let self else { return }
+            guard let editor = await FileEditorController.prepare(
+                url: url,
+                relativePath: relativePath,
+                line: line,
+            ) else {
+                presentNotice(
+                    title: "Unable to Open File",
+                    message: String(localized: "The file could not be read."),
+                )
+                return
+            }
+            editor.onSaved = { [weak self] in
+                self?.files?.reload(folder)
+                self?.rebuild()
+            }
+            onPresent?(editor)
         }
-        onPresent?(editor)
     }
 
     private func parent(of path: String) -> String {

@@ -50,6 +50,11 @@ final class FileEditorController: UIViewController {
     /// `nil` until the file is on screen, and for a file that failed to load.
     private var openedText: String?
 
+    /// The text and its highlighted state, read before the sheet is on screen:
+    /// a sheet that arrives empty and fills in a moment later reads as a
+    /// flash, and at night that flash is a white page.
+    private var preloaded: (text: String, state: TextViewState)?
+
     /// Whether the file is open for writing. Not `isEditing`: that is
     /// `UIViewController`'s own, and this one says the file is being
     /// written, not the view.
@@ -110,6 +115,36 @@ final class FileEditorController: UIViewController {
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    /// Reads the file and builds its highlighted state before there is a sheet
+    /// to put them in. The page then has its text on the first frame it draws,
+    /// instead of a blank one that fills in a moment later.
+    static func prepare(url: URL, relativePath: String, line: Int?) async -> FileEditorController? {
+        guard let text = try? await Task.detached(priority: .userInitiated) {
+            try ProjectFileContent.read(at: url)
+        }.value else { return nil }
+        let theme = ApelinEditorTheme()
+        let state = await Task.detached(priority: .userInitiated) {
+            highlightedState(for: text, theme: theme, fileName: relativePath)
+        }.value
+        let controller = FileEditorController(url: url, relativePath: relativePath, line: line)
+        controller.preloaded = (text, state)
+        return controller
+    }
+
+    /// The text drawn in its language's colours: built off the main thread,
+    /// because a large file parsed for the first time would otherwise hold the
+    /// page blank while it did.
+    nonisolated private static func highlightedState(
+        for text: String,
+        theme: ApelinEditorTheme,
+        fileName: String,
+    ) -> TextViewState {
+        if let language = RunestoneLanguage(fileName: fileName) {
+            return TextViewState(text: text, theme: theme, language: language.treeSitterLanguage)
+        }
+        return TextViewState(text: text, theme: theme)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -176,8 +211,16 @@ final class FileEditorController: UIViewController {
             object: nil
         )
 
-        spinner.startAnimating()
-        load()
+        // A white text view under a dark page is the flash the sheet opens
+        // with: it takes the theme's ground before anything is drawn on it.
+        textView.backgroundColor = theme.backgroundColor
+
+        if let preloaded {
+            show(preloaded.text, state: preloaded.state)
+        } else {
+            spinner.startAnimating()
+            load()
+        }
     }
 
     deinit {
@@ -233,28 +276,30 @@ final class FileEditorController: UIViewController {
     }
 
     /// Builds the highlighted state off the main thread: a large file parsed
-    /// for the first time would otherwise hold the sheet blank while it did.
+    /// for the first time would otherwise hold the page blank while it did.
     private func show(_ text: String) {
-        openedText = text
         let theme = theme
         let fileName = relativePath
         Task { [weak self] in
             let state = await Task.detached(priority: .userInitiated) {
-                if let language = RunestoneLanguage(fileName: fileName) {
-                    return TextViewState(text: text, theme: theme, language: language.treeSitterLanguage)
-                }
-                return TextViewState(text: text, theme: theme)
+                Self.highlightedState(for: text, theme: theme, fileName: fileName)
             }.value
-            guard let self else { return }
-            spinner.stopAnimating()
-            textView.backgroundColor = theme.backgroundColor
-            textView.setState(state)
-            textView.editorDelegate = self
-            // shown to be read: the keyboard is the pencil's, not the file's
-            textView.isEditable = isWriting
-            applyBarItem()
-            if let line { reveal(line: line) }
+            self?.show(text, state: state)
         }
+    }
+
+    /// The file, ready to draw. A sheet `prepare` made arrives here on its
+    /// first frame; one that started empty arrives once its state is built.
+    private func show(_ text: String, state: TextViewState) {
+        openedText = text
+        spinner.stopAnimating()
+        textView.backgroundColor = theme.backgroundColor
+        textView.setState(state)
+        textView.editorDelegate = self
+        // shown to be read: the keyboard is the pencil's, not the file's
+        textView.isEditable = isWriting
+        applyBarItem()
+        if let line { reveal(line: line) }
     }
 
     /// Puts the caret on a line and brings it into view: what a content search
