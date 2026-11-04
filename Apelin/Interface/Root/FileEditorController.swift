@@ -34,6 +34,14 @@ final class FileEditorController: UIViewController {
         if #available(iOS 16, *) { $0.isFindInteractionEnabled = true }
     }
 
+    private let searchBar = UISearchBar().then {
+        $0.placeholder = String(localized: "Search")
+        $0.searchBarStyle = .minimal
+        $0.showsBookmarkButton = true
+        // The bookmark button becomes the case-sensitive toggle
+        $0.setImage(UIImage(systemName: "textformat"), for: .bookmark, state: .normal)
+    }
+
     private let theme = ApelinEditorTheme()
     /// What the file held when it was opened, to tell an edit from a redraw.
     /// `nil` until the file is on screen, and for a file that failed to load.
@@ -55,6 +63,12 @@ final class FileEditorController: UIViewController {
     private var isSaving = false {
         didSet { applyBarItem() }
     }
+
+    /// The keyboard's bottom inset, tracked to avoid covering the text.
+    private var keyboardHeight: CGFloat = 0
+
+    /// Whether case-sensitive search is on.
+    private var isCaseSensitive = false
 
     /// The bar while nothing is unsaved: the way into writing, and out of it
     /// again before anything is typed.
@@ -106,11 +120,34 @@ final class FileEditorController: UIViewController {
             primaryAction: UIAction { [weak self] _ in self?.close() }
         ).then { $0.accessibilityLabel = String(localized: "Close") }
 
+        // Keyboard toolbar with Done button
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        let doneButton = UIBarButtonItem(
+            title: String(localized: "Done"),
+            style: .done,
+            target: self,
+            action: #selector(dismissKeyboard)
+        )
+        toolbar.items = [UIBarButtonItem.flexibleSpace(), doneButton]
+        textView.inputAccessoryView = toolbar
+
+        // Search bar setup
+        searchBar.delegate = self
+        view.addSubview(searchBar)
+
         view.addSubview(textView)
         view.addSubview(spinner)
         view.addSubview(failureLabel)
+        
+        searchBar.snp.makeConstraints { x in
+            x.top.equalTo(view.safeAreaLayoutGuide)
+            x.leading.trailing.equalTo(view.safeAreaLayoutGuide)
+        }
         textView.snp.makeConstraints { x in
-            x.edges.equalTo(view.safeAreaLayoutGuide)
+            x.top.equalTo(searchBar.snp.bottom)
+            x.leading.trailing.equalTo(view.safeAreaLayoutGuide)
+            x.bottom.equalTo(view.safeAreaLayoutGuide)
         }
         spinner.snp.makeConstraints { x in x.center.equalTo(view.safeAreaLayoutGuide) }
         failureLabel.snp.makeConstraints { x in
@@ -118,8 +155,50 @@ final class FileEditorController: UIViewController {
             x.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(24)
         }
 
+        // Keyboard notifications for avoiding obstruction
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+
         spinner.startAnimating()
         load()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func dismissKeyboard() {
+        textView.resignFirstResponder()
+    }
+
+    @objc private func keyboardWillShow(_ notification: Notification) {
+        guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+        keyboardHeight = frame.height
+        updateTextViewInsets()
+    }
+
+    @objc private func keyboardWillHide(_ notification: Notification) {
+        keyboardHeight = 0
+        updateTextViewInsets()
+    }
+
+    private func updateTextViewInsets() {
+        textView.snp.updateConstraints { x in
+            x.bottom.equalTo(view.safeAreaLayoutGuide).inset(keyboardHeight)
+        }
+        UIView.animate(withDuration: 0.25) {
+            self.view.layoutIfNeeded()
+        }
     }
 
     private func load() {
@@ -178,9 +257,9 @@ final class FileEditorController: UIViewController {
         navigationItem.rightBarButtonItem = item
     }
 
-    /// The pencil: the file becomes writable and the keyboard comes up.
-    /// Tapped again before anything is typed, it puts both away, which is
-    /// the way out of a file opened by mistake.
+    /// The pencil: the file becomes writable, but keyboard doesn't pop up
+    /// automatically. Tapped again before anything is typed, it puts the state
+    /// back to reading.
     private func beginEditing() {
         guard openedText != nil, !isSaving else { return }
         guard !isWriting else {
@@ -189,7 +268,7 @@ final class FileEditorController: UIViewController {
         }
         isWriting = true
         textView.isEditable = true
-        textView.becomeFirstResponder()
+        // No automatic keyboard: user taps where they want to edit
         applyBarItem()
     }
 
@@ -261,5 +340,43 @@ extension FileEditorController: TextViewDelegate {
     func textViewDidChange(_ textView: TextView) {
         guard let openedText else { return }
         isDirty = textView.text != openedText
+    }
+}
+
+extension FileEditorController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+        performSearch()
+    }
+
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText.isEmpty {
+            clearSearch()
+        }
+    }
+
+    func searchBarBookmarkButtonClicked(_ searchBar: UISearchBar) {
+        isCaseSensitive.toggle()
+        let iconName = isCaseSensitive ? "textformat.abc" : "textformat"
+        searchBar.setImage(UIImage(systemName: iconName), for: .bookmark, state: .normal)
+        if let text = searchBar.text, !text.isEmpty {
+            performSearch()
+        }
+    }
+
+    private func performSearch() {
+        guard let searchText = searchBar.text, !searchText.isEmpty else { return }
+        let text = textView.text
+        let options: String.CompareOptions = isCaseSensitive ? [] : [.caseInsensitive]
+        
+        if let range = text.range(of: searchText, options: options) {
+            let nsRange = NSRange(range, in: text)
+            textView.selectedRange = nsRange
+            textView.scrollRangeToVisible(nsRange)
+        }
+    }
+
+    private func clearSearch() {
+        textView.selectedRange = NSRange(location: 0, length: 0)
     }
 }

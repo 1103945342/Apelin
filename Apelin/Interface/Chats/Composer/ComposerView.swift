@@ -165,7 +165,6 @@ class ComposerView: ComposerSectionView {
         modelBar.onSendTapped = { [weak self] in self?.delegate?.onComposerSendTapped() }
         modelBar.onStopTapped = { [weak self] in self?.delegate?.onComposerStopTapped() }
         modelBar.onModelTapped = { [weak self] in self?.delegate?.onComposerModelPickerTapped() }
-        inputEditor.expandButton.accessibilityHint = String(localized: "Opens the whole draft on a page.")
 
         addSubview(commandMenu)
         addSubview(mentionMenu)
@@ -635,10 +634,6 @@ extension ComposerView: ComposerInputView.Delegate {
 
     func onComposerInputSubmitButtonTapped() {
         submitValues()
-    }
-
-    func onComposerInputExpandButtonTapped() {
-        delegate?.onComposerExpandTapped()
     }
 
     func onComposerInputRewriteRequested(draft: String) {

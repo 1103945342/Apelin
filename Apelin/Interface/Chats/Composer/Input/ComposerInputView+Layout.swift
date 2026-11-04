@@ -57,63 +57,37 @@ extension ComposerInputView {
         )
     }
 
-    /// The text's end, on the band's own row: the wand first, then the expand.
-    /// Both sit beside the words they act on — a rewrite works on what is
-    /// typed, the expand on a draft that has outgrown the band — and neither
-    /// gives up its place to the other, because each has its own.
-    private func placeTools(after textWidth: CGFloat) {
+    /// The wand at the band's trailing corner, visible when there is something
+    /// to rewrite and no run to interrupt.
+    private func placeRewriteButton() {
         let showsRewrite = hasContent && !isBusy
         rewriteButton.alpha = showsRewrite ? 1 : 0
         rewriteButton.isUserInteractionEnabled = showsRewrite
 
-        expandButton.alpha = isOverflowing ? 1 : 0
-        expandButton.isUserInteractionEnabled = isOverflowing
-
-        // The wand is a 36 pt disc, the same measure as the send under it; the
-        // expand, the one that leaves when there is room, keeps the band's icon
-        // size. Both at the text's end, the wand first, the expand beside it.
         let rewriteSize = ComposerMetrics.Send.diameter
+        let x = bounds.width - inset.right - rewriteSize
         rewriteButton.frame = CGRect(
-            x: textWidth + iconSpacing,
+            x: x,
             y: inset.top,
             width: rewriteSize,
             height: rewriteSize
         )
-        expandButton.frame = CGRect(
-            x: rewriteButton.frame.maxX + iconSpacing,
-            y: inset.top,
-            width: iconSize.width,
-            height: iconSize.height
-        )
     }
 
     /// One shape, whatever the state: the text takes the band's row, and the
-    /// two tools that act on it take the end of that row when they have
-    /// something to do. What happens to a finished draft — the send and the
-    /// plus — lives on the row beneath, which the model bar draws.
+    /// wand sits at the trailing corner when there is something to rewrite.
     func layoutTextBand() {
-        // The tools' room is only taken when one of them is there to take it:
-        // a band with nothing to rewrite gives the words the whole row. The
-        // wand takes the send's diameter, the expand the band's icon size.
-        let toolsShown = (hasContent && !isBusy) || isOverflowing
+        // The wand takes the send's diameter when visible; text uses the rest.
+        let toolsShown = hasContent && !isBusy
         let rewriteRoom = toolsShown ? ComposerMetrics.Send.diameter + iconSpacing : 0
-        let expandRoom = toolsShown ? iconSize.width + iconSpacing : 0
-        let toolsRoom = rewriteRoom + expandRoom
-        let width = bounds.width - inset.left - inset.right - toolsRoom
+        let width = bounds.width - inset.left - inset.right - rewriteRoom
         let frame = textFrame(width: width)
         textView.frame = frame
         placeholderLabel.frame = frame
-        placeTools(after: frame.maxX)
+        placeRewriteButton()
     }
 
-    /// The text outgrew the band: rewrite what is drawn, then measure up. Called
-    /// on every edit, from `textViewDidChange`.
     func updateOverflowState() {
-        let overflows = measuredTextHeight() > textRoomHeight
-        guard overflows != isOverflowing else { return }
-        isOverflowing = overflows
-        expandButton.accessibilityLabel = overflows
-            ? String(localized: "Expand")
-            : nil
+        // No-op: expand button removed, overflow state no longer tracked
     }
 }

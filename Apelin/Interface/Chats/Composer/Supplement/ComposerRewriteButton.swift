@@ -63,9 +63,14 @@ final class ComposerRewriteButton: ComposerIconButton {
     override func layoutSubviews() {
         super.layoutSubviews()
         // The ring is drawn in the button's own coordinates and turns about
-        // its centre, so it keeps the same circle at any size the row gives it.
-        spinner.frame = bounds
-        spinner.path = UIBezierPath(ovalIn: bounds.insetBy(dx: 1.5, dy: 1.5)).cgPath
+        // its centre: a smaller ring that sits tight around the stop icon.
+        // The diameter matches the icon size plus a 4pt margin.
+        let iconDiameter = ComposerMetrics.Send.iconSize
+        let spinnerDiameter = iconDiameter + 4
+        let spinnerInset = (bounds.width - spinnerDiameter) / 2
+        let spinnerBounds = bounds.insetBy(dx: spinnerInset, dy: spinnerInset)
+        spinner.frame = spinnerBounds
+        spinner.path = UIBezierPath(ovalIn: spinnerBounds.insetBy(dx: 1, dy: 1)).cgPath
     }
 
     override func didMoveToWindow() {

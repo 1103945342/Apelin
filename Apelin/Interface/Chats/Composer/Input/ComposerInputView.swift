@@ -21,12 +21,6 @@ class ComposerInputView: ComposerSectionView {
     /// Rewrites the draft, beside the text's end on the band's own row:
     /// visible while there is something to rewrite and no run to interrupt.
     let rewriteButton = ComposerRewriteButton()
-    /// At the text's trailing corner, once the draft has outgrown the band:
-    /// the same text, on a page tall enough to see it.
-    let expandButton = ComposerIconButton(
-        symbolName: "arrow.up.left.and.arrow.down.right",
-        label: String(localized: "Expand")
-    )
 
     let inset: UIEdgeInsets = ComposerMetrics.Input.inset
     let iconSpacing: CGFloat = ComposerMetrics.Input.iconSpacing
@@ -66,16 +60,6 @@ class ComposerInputView: ComposerSectionView {
         didSet {
             guard hasContent != oldValue else { return }
             updateSendButton()
-            // The wand is drawn at the text's end, and appears only now:
-            // without this the frame it would take is never laid out.
-            setNeedsLayout()
-        }
-    }
-
-    /// The draft is longer than the band: Expand shows.
-    var isOverflowing = false {
-        didSet {
-            guard isOverflowing != oldValue else { return }
             setNeedsLayout()
         }
     }
@@ -154,11 +138,6 @@ class ComposerInputView: ComposerSectionView {
         // the text view is named by it instead; read twice otherwise
         placeholderLabel.isAccessibilityElement = false
         elementClipper.addSubview(placeholderLabel)
-        expandButton.tapAction = { [weak self] in
-            self?.delegate?.onComposerInputExpandButtonTapped()
-        }
-        expandButton.alpha = 0
-        elementClipper.addSubview(expandButton)
         elementClipper.addSubview(rewriteButton)
         rewriteButton.draftProvider = { [weak self] in self?.textView.text ?? "" }
         rewriteButton.onRewrite = { [weak self] draft in
@@ -195,10 +174,8 @@ class ComposerInputView: ComposerSectionView {
         elementClipper.frame = bounds
 
         layoutTextBand()
-        // laid out left to right; right to left the band is mirrored, and the
-        // tools follow the text's end as the placeholder reads
         elementClipper.mirrorForLayoutDirection(
-            [textView, placeholderLabel, expandButton, rewriteButton]
+            [textView, placeholderLabel, rewriteButton]
         )
 
         updatePlaceholderAlpha()
@@ -209,7 +186,6 @@ class ComposerInputView: ComposerSectionView {
         updatePlaceholderAlpha()
         switchToRequiredStatus()
         updateTextHeight()
-        updateOverflowState()
     }
 
     /// The send is drawn on the row beneath the band; this band only reports
