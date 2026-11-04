@@ -14,6 +14,48 @@ struct ToolCallDetail: Equatable {
         let value: String
         /// The call's own result rather than one of its arguments.
         let isResult: Bool
+
+        /// How the value is drawn. A call's arguments are not all the same
+        /// thing: a path deserves a monospaced line, a file's content deserves
+        /// a code block, and a diff deserves its own colours.
+        enum Kind: Equatable {
+            /// Prose: a reason, a short answer.
+            case text
+            /// Where something lives.
+            case path
+            /// What was run.
+            case command
+            /// Several lines of something, drawn monospaced.
+            case code
+            /// Added and removed lines, each in the colour it means.
+            case diff
+            /// What the call answered.
+            case result
+        }
+
+        /// The argument names that hold a place rather than a sentence.
+        private static let pathNames: Set<String> = [
+            "path", "file", "files", "url", "target", "source", "destination",
+            "directory", "project", "root", "cwd",
+        ]
+        private static let commandNames: Set<String> = ["argv", "command", "cmd"]
+
+        var kind: Kind {
+            if isResult { return looksLikeDiff ? .diff : .result }
+            if looksLikeDiff { return .diff }
+            guard let name else { return value.contains("\n") ? .code : .text }
+            if Self.commandNames.contains(name) { return .command }
+            if Self.pathNames.contains(name), !value.contains("\n") { return .path }
+            return value.contains("\n") ? .code : .text
+        }
+
+        /// A unified diff, as git writes one: the header lines are what tell
+        /// it apart from a file that happens to start with a minus.
+        private var looksLikeDiff: Bool {
+            guard value.contains("\n") else { return false }
+            return value.contains("\n@@ ") || value.hasPrefix("@@ ")
+                || value.contains("\n+++ ") || value.contains("\ndiff --git ")
+        }
     }
 
     let sections: [Section]
