@@ -20,6 +20,9 @@ final class FileEditorController: UIViewController {
 
     private let url: URL
     private let relativePath: String
+    /// The line to put the caret on once the file is on screen: a content
+    /// search opens a file where its text is, not at its first line.
+    private let line: Int?
     private let textView = TextView().then {
         $0.showLineNumbers = true
         // opened to be read: the pencil on the bar makes it writable
@@ -98,9 +101,10 @@ final class FileEditorController: UIViewController {
         $0.isHidden = true
     }
 
-    init(url: URL, relativePath: String) {
+    init(url: URL, relativePath: String, line: Int? = nil) {
         self.url = url
         self.relativePath = relativePath
+        self.line = line
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -143,6 +147,9 @@ final class FileEditorController: UIViewController {
         searchBar.snp.makeConstraints { x in
             x.top.equalTo(view.safeAreaLayoutGuide)
             x.leading.trailing.equalTo(view.safeAreaLayoutGuide)
+            // A search bar has no height of its own to trust: without this it
+            // can lay out as a hairline the reader never sees.
+            x.height.equalTo(52)
         }
         textView.snp.makeConstraints { x in
             x.top.equalTo(searchBar.snp.bottom)
@@ -246,7 +253,28 @@ final class FileEditorController: UIViewController {
             // shown to be read: the keyboard is the pencil's, not the file's
             textView.isEditable = isWriting
             applyBarItem()
+            if let line { reveal(line: line) }
         }
+    }
+
+    /// Puts the caret on a line and brings it into view: what a content search
+    /// opens a file for.
+    private func reveal(line: Int) {
+        let text = textView.text as NSString
+        var number = 1
+        var location = 0
+        while number < line, location < text.length {
+            let found = text.range(
+                of: "\n",
+                range: NSRange(location: location, length: text.length - location),
+            )
+            guard found.location != NSNotFound else { break }
+            location = found.location + 1
+            number += 1
+        }
+        let range = NSRange(location: min(location, text.length), length: 0)
+        textView.selectedRange = range
+        textView.scrollRangeToVisible(range)
     }
 
     private func show(_ error: Error) {
@@ -373,9 +401,9 @@ extension FileEditorController: UISearchBarDelegate {
     }
 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        if searchText.isEmpty {
-            clearSearch()
-        }
+        // Every letter searches: a field that only answers the keyboard's
+        // Search key looks like a field that does nothing.
+        performSearch()
     }
 
     func searchBarBookmarkButtonClicked(_ searchBar: UISearchBar) {
@@ -388,10 +416,13 @@ extension FileEditorController: UISearchBarDelegate {
     }
 
     private func performSearch() {
-        guard let searchText = searchBar.text, !searchText.isEmpty else { return }
+        guard let searchText = searchBar.text, !searchText.isEmpty else {
+            clearSearch()
+            return
+        }
         let text = textView.text
         let options: String.CompareOptions = isCaseSensitive ? [] : [.caseInsensitive]
-        
+
         if let range = text.range(of: searchText, options: options) {
             let nsRange = NSRange(range, in: text)
             textView.selectedRange = nsRange

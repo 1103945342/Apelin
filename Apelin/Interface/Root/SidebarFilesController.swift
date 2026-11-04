@@ -19,6 +19,11 @@ final class SidebarFilesController: UIViewController {
     private var files: ProjectFiles?
     private var rows: [ProjectFile] = []
     private var query = ""
+    /// What a `#` search found: one row per file, and the line to open at.
+    private var contentHits: [FileContentHit] = []
+    private var contentHitsByPath: [String: FileContentHit] = [:]
+    private var isSearchingContent = false
+    private var contentSearchTask: Task<Void, Never>?
     /// For each row that sits inside a folder, one flag per folder above it:
     /// whether that folder has another row under it, which decides where its
     /// line stops.
@@ -29,12 +34,33 @@ final class SidebarFilesController: UIViewController {
     /// every rebuild.
     private var emptyState: String?
 
-    private lazy var searchField = SidebarSearchField(placeholder: "Search files").then {
+    /// A query that starts with `#` asks where the text lives rather than what
+    /// a name is: everything after the sign is searched inside every file, and
+    /// each file that has it is one row. The rest of the field keeps matching
+    /// names, as a file browser does.
+    private var contentNeedle: String? {
+        guard query.hasPrefix("#") else { return nil }
+        return String(query.dropFirst()).trimmingCharacters(in: .whitespaces)
+    }
+
+    private lazy var searchField = SidebarSearchField(placeholder: "Search files, # for text").then {
         $0.onChange = { [weak self] text in
             guard let self else { return }
             let trimmed = text.trimmingCharacters(in: .whitespaces)
             guard trimmed != query else { return }
             query = trimmed
+            // Whatever was in flight belongs to the query before this one.
+            contentSearchTask?.cancel()
+            contentSearchTask = nil
+            contentHits = []
+            contentHitsByPath = [:]
+            isSearchingContent = false
+            if let needle = contentNeedle {
+                isSearchingContent = !needle.isEmpty
+                rebuild()
+                if !needle.isEmpty { scheduleContentSearch(needle) }
+                return
+            }
             rebuild()
         }
     }
@@ -66,11 +92,14 @@ final class SidebarFilesController: UIViewController {
     ) { [unowned self] tableView, indexPath, path in
         let cell = tableView.dequeueReusableCell(withIdentifier: "file", for: indexPath) as! SidebarFileCell
         let file = rows.first { $0.relativePath == path }
+        // A content hit says where in the file the text is, under its name.
+        let hit = contentHitsByPath[path]
         cell.configure(
             file: file,
             depth: query.isEmpty ? (file?.depth ?? 0) : 0,
             expanded: files?.isExpanded(path) ?? false,
             columns: query.isEmpty ? (guideColumns[path] ?? []) : [],
+            subtitle: hit.map { String(localized: "Line \($0.line) · \($0.preview)") },
         )
         return cell
     }
@@ -98,6 +127,11 @@ final class SidebarFilesController: UIViewController {
             x.leading.trailing.bottom.equalToSuperview()
         }
         tableView.delegate = self
+        // The plus opens its menu on the first tap: `showsMenuAsPrimaryAction`
+        // has nothing to show until the menu is built, and the menu was only
+        // being built after a pick — which a menu that never appeared cannot
+        // produce.
+        refreshMenu()
         rebuild()
     }
 
@@ -114,6 +148,11 @@ final class SidebarFilesController: UIViewController {
         clipboard = nil
         query = ""
         searchField.text = ""
+        contentSearchTask?.cancel()
+        contentSearchTask = nil
+        contentHits = []
+        contentHitsByPath = [:]
+        isSearchingContent = false
         guard isViewLoaded else { return }
         rebuild()
     }
@@ -137,6 +176,23 @@ final class SidebarFilesController: UIViewController {
             return
         }
         searchField.isUserInteractionEnabled = true
+        if contentNeedle != nil {
+            // A content search has no tree to indent and no folder to open:
+            // every row is a file that holds the text.
+            rows = contentHits.map(\.file)
+            guideColumns = [:]
+            applyRows()
+            tableView.backgroundView?.isHidden = !rows.isEmpty
+            setEmptyState(
+                symbol: isSearchingContent ? "magnifyingglass" : "text.magnifyingglass",
+                text: isSearchingContent
+                    ? String(localized: "Searching…")
+                    : (query == "#"
+                        ? String(localized: "Type what to look for after #.")
+                        : String(localized: "No files contain that text.")),
+            )
+            return
+        }
         rows = query.isEmpty ? files.rows() : files.search(query)
         guideColumns = query.isEmpty ? makeGuideColumns() : [:]
         applyRows()
@@ -149,6 +205,25 @@ final class SidebarFilesController: UIViewController {
                 ? String(localized: "No files yet. Long press to make one.")
                 : String(localized: "No files match."),
         )
+    }
+
+    /// Walks the project off the main actor for a `#` search, once the reader
+    /// stops typing: one walk of the folder per word, not one per letter.
+    private func scheduleContentSearch(_ needle: String) {
+        guard let files else { return }
+        let root = files.root
+        contentSearchTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 250_000_000)
+            guard !Task.isCancelled else { return }
+            let hits = await Task.detached(priority: .userInitiated) {
+                ProjectFiles.scanContent(root: root, needle: needle)
+            }.value
+            guard !Task.isCancelled, let self else { return }
+            contentHits = hits
+            contentHitsByPath = Dictionary(hits.map { ($0.file.relativePath, $0) }, uniquingKeysWith: { first, _ in first })
+            isSearchingContent = false
+            rebuild()
+        }
     }
 
     /// Which folders have more under them, for each row that sits inside
@@ -193,7 +268,11 @@ final class SidebarFilesController: UIViewController {
     private func open(_ file: ProjectFile) {
         guard let files else { return }
         let url = files.url(of: file.relativePath)
-        let editor = FileEditorController(url: url, relativePath: file.relativePath)
+        let editor = FileEditorController(
+            url: url,
+            relativePath: file.relativePath,
+            line: contentHitsByPath[file.relativePath]?.line,
+        )
         let folder = parent(of: file.relativePath)
         editor.onSaved = { [weak self] in
             self?.files?.reload(folder)
@@ -425,6 +504,28 @@ final class SidebarFileCell: UITableViewCell {
         $0.font = UIFont.preferredFont(forTextStyle: .subheadline)
         $0.adjustsFontForContentSizeCategory = true
         $0.lineBreakMode = .byTruncatingMiddle
+        // The row's height is the icon's unless a second line arrives: a name
+        // never stretches to fill the stack it sits in.
+        $0.setContentHuggingPriority(.required, for: .vertical)
+    }
+
+    /// The second line a content search adds under a name: the line the text
+    /// was found on, and what that line says. A row that is only a name leaves
+    /// it out, and takes its height back.
+    private let subtitle = UILabel().then {
+        $0.font = UIFont.preferredFont(forTextStyle: .caption1)
+        $0.adjustsFontForContentSizeCategory = true
+        $0.textColor = .secondaryLabel
+        $0.lineBreakMode = .byTruncatingTail
+        $0.numberOfLines = 1
+        $0.setContentHuggingPriority(.required, for: .vertical)
+        $0.isHidden = true
+    }
+
+    private let titles = UIStackView().then {
+        $0.axis = .vertical
+        $0.spacing = 2
+        $0.alignment = .fill
     }
 
     private let chevron = UIImageView(image: UIImage(systemName: "chevron.forward")).then {
@@ -443,7 +544,9 @@ final class SidebarFileCell: UITableViewCell {
         contentView.addSubview(guides)
         contentView.addSubview(chevron)
         contentView.addSubview(icon)
-        contentView.addSubview(name)
+        titles.addArrangedSubview(name)
+        titles.addArrangedSubview(subtitle)
+        contentView.addSubview(titles)
 
         guides.snp.makeConstraints { x in x.edges.equalToSuperview() }
         icon.snp.makeConstraints { x in
@@ -455,10 +558,10 @@ final class SidebarFileCell: UITableViewCell {
             x.centerY.equalToSuperview()
             x.size.equalTo(18)
         }
-        // The name is bound top and bottom, not just centred: a label with
-        // only a centre is a label of no height, and every row collapses to
+        // The names are bound top and bottom, not just centred: a stack with
+        // only a centre is a stack of no height, and every row collapses to
         // the icon's.
-        name.snp.makeConstraints { x in
+        titles.snp.makeConstraints { x in
             x.leading.equalTo(icon.snp.trailing).offset(8)
             x.top.equalToSuperview().offset(10)
             x.bottom.equalToSuperview().offset(-10)
@@ -474,9 +577,17 @@ final class SidebarFileCell: UITableViewCell {
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
-    func configure(file: ProjectFile?, depth: Int, expanded: Bool, columns: [Bool]) {
+    func configure(
+        file: ProjectFile?,
+        depth: Int,
+        expanded: Bool,
+        columns: [Bool],
+        subtitle: String? = nil,
+    ) {
         guard let file else {
             name.text = nil
+            self.subtitle.text = nil
+            self.subtitle.isHidden = true
             guides.depth = 1
             guides.continues = []
             isAccessibilityElement = false
@@ -489,6 +600,8 @@ final class SidebarFileCell: UITableViewCell {
         guides.depth = level
         guides.continues = columns
         name.text = file.name
+        self.subtitle.text = subtitle
+        self.subtitle.isHidden = subtitle == nil
         icon.image = UIImage(systemName: file.isDirectory
             ? (expanded ? "folder.fill" : "folder")
             : "doc.text")
@@ -498,9 +611,12 @@ final class SidebarFileCell: UITableViewCell {
         chevron.transform = expanded ? CGAffineTransform(rotationAngle: .pi / 2) : .identity
         isAccessibilityElement = true
         accessibilityLabel = file.name
-        accessibilityValue = file.isDirectory
+        // Drawn state is spoken state: which way a folder stands, or where a
+        // content search found the text, reads as the row's value.
+        let state = file.isDirectory
             ? String(localized: expanded ? "Folder, open" : "Folder, closed")
             : nil
+        accessibilityValue = [state, subtitle].compactMap { $0 }.joined(separator: ". ")
         accessibilityTraits = file.isDirectory ? .button : []
     }
 }

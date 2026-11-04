@@ -19,6 +19,15 @@ struct ProjectFile: Hashable, Sendable {
     }
 }
 
+/// One file whose text holds the search, with the first line that does.
+struct FileContentHit: Sendable {
+    var file: ProjectFile
+    /// 1-based, as the editor counts lines.
+    var line: Int
+    /// The matching line, trimmed, for the row's second line.
+    var preview: String
+}
+
 /// A project's folder, read a directory at a time.
 ///
 /// Reading on demand rather than walking the whole tree: a project can hold
@@ -158,6 +167,69 @@ final class ProjectFiles {
 
     func url(of path: String) -> URL {
         path.isEmpty ? root : root.appendingPathComponent(path)
+    }
+
+    /// Every file under `root` whose text has `needle` in it, one row per file.
+    ///
+    /// Run off the main actor: the page stays live while a project of any size
+    /// is walked. A file that cannot be read as text — too large, binary, gone
+    /// since the listing — is skipped rather than failing the search.
+    nonisolated static func scanContent(root: URL, needle: String, limit: Int = 100) -> [FileContentHit] {
+        let query = needle.trimmingCharacters(in: .whitespaces)
+        guard !query.isEmpty else { return [] }
+        var found: [FileContentHit] = []
+        var pending: [String] = [""]
+        while let directory = pending.popLast(), found.count < limit {
+            let directoryURL = directory.isEmpty ? root : root.appendingPathComponent(directory)
+            guard let names = try? FileManager.default.contentsOfDirectory(atPath: directoryURL.path) else {
+                continue
+            }
+            for name in names.sorted() where name != "." && name != ".." && !name.contains("/") {
+                let relative = directory.isEmpty ? name : directory + "/" + name
+                let fileURL = directoryURL.appendingPathComponent(name)
+                let isDirectory = (try? fileURL.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory ?? false
+                if isDirectory {
+                    // A checkout's history is not the project's text.
+                    if name != ".git" { pending.append(relative) }
+                    continue
+                }
+                guard let text = try? ProjectFileContent.read(at: fileURL) else { continue }
+                guard let hit = firstLine(in: text, matching: query) else { continue }
+                let size = (try? fileURL.resourceValues(forKeys: [.fileSizeKey]))?.fileSize.map(Int64.init)
+                let modified = (try? fileURL.resourceValues(forKeys: [.contentModificationDateKey]))?
+                    .contentModificationDate
+                found.append(FileContentHit(
+                    file: ProjectFile(
+                        relativePath: relative,
+                        name: name,
+                        isDirectory: false,
+                        modified: modified,
+                        byteCount: size,
+                    ),
+                    line: hit.line,
+                    preview: hit.preview,
+                ))
+                if found.count >= limit { break }
+            }
+        }
+        return found
+    }
+
+    /// The first line of `text` with `needle` in it, counted from one.
+    private nonisolated static func firstLine(
+        in text: String,
+        matching needle: String,
+    ) -> (line: Int, preview: String)? {
+        var number = 0
+        for line in text.split(separator: "\n", omittingEmptySubsequences: false) {
+            number += 1
+            guard line.range(of: needle, options: [.caseInsensitive, .diacriticInsensitive]) != nil else {
+                continue
+            }
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            return (number, trimmed.count > 120 ? String(trimmed.prefix(120)) : trimmed)
+        }
+        return nil
     }
 
     // MARK: - Changing the folder
