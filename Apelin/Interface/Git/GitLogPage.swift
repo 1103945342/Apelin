@@ -892,6 +892,13 @@ private final class GitCommitDetailController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .clear
+        // The sheet's own glass, as every other sheet here has: Liquid Glass
+        // on iOS 26, the thick material before it. A clear view alone is not
+        // a sheet — before iOS 26 nothing fills it, and the commit list shows
+        // through the page.
+        let glass = GitGlassBackground()
+        view.addSubview(glass)
+        glass.snp.makeConstraints { make in make.edges.equalToSuperview() }
         let scroll = UIScrollView()
         scroll.alwaysBounceVertical = true
         scroll.contentInsetAdjustmentBehavior = .never
