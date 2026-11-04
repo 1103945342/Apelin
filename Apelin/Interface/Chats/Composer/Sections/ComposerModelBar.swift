@@ -3,7 +3,7 @@ import UIKit
 
 /// The row under the draft: what the run may do, which model answers it, how
 /// hard that model thinks, and how full the context is — all on the left, in
-/// reading order; the plus and the send on the right.
+/// reading order; the wand, the plus and the send on the right.
 ///
 /// The left controls are icons rather than words, because the row is read at a
 /// glance between typing and sending: a mark says whose model it is faster than
@@ -35,6 +35,11 @@ final class ComposerModelBar: ComposerSectionView {
     /// and closes them again.
     let addButton = ComposerIconButton(symbolName: "plus", label: String(localized: "Add Attachment"))
 
+    /// The magic wand: asks for the draft to be rewritten, and is the stop
+    /// that ends the rewrite while one runs. It keeps the disc the plus and
+    /// the send are drawn on, so the row ends in one line of marks.
+    let rewriteButton = ComposerRewriteButton()
+
     /// The send, and the stop it becomes while a run is going.
     let sendButton = ComposerIconButton(iconName: "ComposerSend", label: String(localized: "Send"))
 
@@ -49,6 +54,11 @@ final class ComposerModelBar: ComposerSectionView {
     var onAddTapped: (() -> Void)?
     var onSendTapped: (() -> Void)?
     var onStopTapped: (() -> Void)?
+    /// The wand was tapped, with the draft as it stands: the owner asks for
+    /// the rewrite and reports back with `setRewriting`.
+    var onRewriteRequested: ((String) -> Void)?
+    /// The stop was tapped while a rewrite ran.
+    var onRewriteCancelled: (() -> Void)?
 
     /// The efforts this model offers, kept so a tap can redraw the menu against
     /// the level it took.
@@ -59,11 +69,18 @@ final class ComposerModelBar: ComposerSectionView {
     private var selectedTier: AgentServiceTier?
     /// The run is going: with nothing typed the send becomes a stop.
     private var sendIsStop = false
+    /// There is a draft: the wand is offered for it, unless a run is taking it.
+    private var draftHasContent = false
+    /// A run is going, so the draft is not there to be rewritten.
+    private var runIsGoing = false
+    /// The wand is drawn: kept beside the two above, because what shows it is
+    /// their answer together.
+    private var rewriteShown = false
 
     override func initializeViews() {
         super.initializeViews()
 
-        for control in [modePill, modelButton, effortButton, tierButton, usageButton, addButton, sendButton] {
+        for control in [modePill, modelButton, effortButton, tierButton, usageButton, addButton, rewriteButton, sendButton] {
             addSubview(control)
         }
 
@@ -78,6 +95,8 @@ final class ComposerModelBar: ComposerSectionView {
         modelButton.tapAction = { [weak self] in self?.onModelTapped?() }
         addButton.tapAction = { [weak self] in self?.onAddTapped?() }
         sendButton.tapAction = { [weak self] in self?.tapSend() }
+        rewriteButton.onRewrite = { [weak self] draft in self?.onRewriteRequested?(draft) }
+        rewriteButton.onCancel = { [weak self] in self?.onRewriteCancelled?() }
         effortButton.showsMenuAsPrimaryAction = true
         tierButton.showsMenuAsPrimaryAction = true
 
@@ -85,8 +104,15 @@ final class ComposerModelBar: ComposerSectionView {
         // follow the one measure, so a smaller row keeps them apart.
         sendButton.iconInset = (ComposerMetrics.Send.diameter - ComposerMetrics.Send.iconSize) / 2
         addButton.iconInset = sendButton.iconInset
+        // The wand acts on the words rather than on the run, so it is drawn a
+        // size up from the plus, as the model's own mark is.
+        rewriteButton.iconInset = (ComposerMetrics.Send.diameter - (ComposerMetrics.Send.iconSize + 6)) / 2
         sendButton.fillColor = ComposerPalette.inert
         sendButton.iconView.tintColor = .secondaryLabel
+        // Nothing to rewrite until there is a draft: it keeps its slot from the
+        // first pass, and `setRewriteShown` is what offers it.
+        rewriteButton.alpha = 0
+        rewriteButton.isUserInteractionEnabled = false
 
         // A brain's folds turn to mud at a row's size; a pair of sparks keeps
         // its shape at any of them, and the colour says the level anyway.
@@ -97,6 +123,7 @@ final class ComposerModelBar: ComposerSectionView {
 
         setEfforts([], selected: nil)
         setVisible(true)
+        setRewriteShown()
     }
 
     // MARK: - State
@@ -177,6 +204,8 @@ final class ComposerModelBar: ComposerSectionView {
     func setSendState(isBusy: Bool, hasContent: Bool) {
         // Sent while the state is unchanged too: the disc is drawn here, and the
         // first call after the row is built is the one that decides its colour.
+        runIsGoing = isBusy
+        draftHasContent = hasContent
         let stop = isBusy && !hasContent
         sendIsStop = stop
         let able = stop || hasContent
@@ -192,6 +221,30 @@ final class ComposerModelBar: ComposerSectionView {
         sendButton.accessibilityLabel = stop
             ? String(localized: "Stop Generating")
             : String(localized: "Send")
+        setRewriteShown()
+    }
+
+    /// A rewrite is running, or it has stopped: the wand is the stop with a
+    /// ring turning round it, and back again.
+    func setRewriting(_ rewriting: Bool) {
+        rewriteButton.isRewriting = rewriting
+        setRewriteShown()
+    }
+
+    /// The wand is offered while there is a draft to rewrite and no run is
+    /// taking it — and stays while its own rewrite runs, so that the stop can
+    /// be tapped. Faded rather than hidden, so the row never moves.
+    private func setRewriteShown() {
+        let shown = draftHasContent && (!runIsGoing || rewriteButton.isRewriting)
+        guard shown != rewriteShown else { return }
+        rewriteShown = shown
+        rewriteButton.alpha = shown ? 1 : 0
+        rewriteButton.isUserInteractionEnabled = shown
+        rewriteButton.accessibilityElementsHidden = !shown
+        // It is on the row already, so nothing measured changes: laid out now
+        // rather than at the next pass, so it is there the moment it is offered.
+        setNeedsLayout()
+        layoutIfNeeded()
     }
 
     /// The context's fill, from the agent's last record of it; nothing to
@@ -291,6 +344,15 @@ final class ComposerModelBar: ComposerSectionView {
         sendButton.frame = directionalFrame(sendFrame)
         addButton.frame = directionalFrame(CGRect(
             x: sendFrame.minX - spacing - sendSize,
+            y: sendFrame.minY,
+            width: sendSize,
+            height: sendSize,
+        ))
+        // Leading to trailing: the wand for the words, the plus for what goes
+        // with them, the send that takes them away — one line of discs, the
+        // wand and the send drawn alike.
+        rewriteButton.frame = directionalFrame(CGRect(
+            x: sendFrame.minX - (spacing + sendSize) * 2,
             y: sendFrame.minY,
             width: sendSize,
             height: sendSize,

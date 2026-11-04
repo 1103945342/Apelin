@@ -57,31 +57,16 @@ extension ComposerInputView {
         )
     }
 
-    /// The text's end, on the band's own row: the wand first, then the expand.
-    /// Both sit beside the words they act on — a rewrite works on what is
-    /// typed, the expand on a draft that has outgrown the band — and neither
-    /// gives up its place to the other, because each has its own.
+    /// The text's end, on the band's own row: the expand, once a draft has
+    /// outgrown the band. It sits beside the words it acts on — the expand on
+    /// a draft too long to see — and keeps its frame while faded out, so the
+    /// band never moves the words as it appears.
     private func placeTools(after textWidth: CGFloat) {
-        let showsRewrite = hasContent && !isBusy && showsComposerSend
-        rewriteButton.alpha = showsRewrite ? 1 : 0
-        rewriteButton.isUserInteractionEnabled = showsRewrite
-
         expandButton.alpha = isOverflowing ? 1 : 0
         expandButton.isUserInteractionEnabled = isOverflowing
 
-        // Leading to trailing: the wand, then the expand, at the text's end.
-        // Both keep their frames even while faded out, so the band never moves
-        // the words as either appears. The two gaps between the three things
-        // are what `toolsRoom` set aside, so the expand ends where the band's
-        // inset begins.
-        rewriteButton.frame = CGRect(
-            x: textWidth + iconSpacing,
-            y: inset.top,
-            width: iconSize.width,
-            height: iconSize.height,
-        )
         expandButton.frame = CGRect(
-            x: rewriteButton.frame.maxX + iconSpacing,
+            x: textWidth + iconSpacing,
             y: inset.top,
             width: iconSize.width,
             height: iconSize.height,
@@ -89,16 +74,14 @@ extension ComposerInputView {
     }
 
     /// One shape, whatever the state: the text takes the band's row, and the
-    /// two tools that act on it take the end of that row when they have
+    /// one tool that acts on it takes the end of that row when it has
     /// something to do. What happens to a finished draft — the send and the
-    /// plus — lives on the row beneath, which the model bar draws.
+    /// plus — lives on the row beneath, which the model bar draws, and the
+    /// wand lives there with them.
     func layoutTextBand() {
-        // The tools' room is only taken when one of them is there to take it:
-        // a band with nothing to rewrite gives the words the whole row.
-        let toolsShown = (hasContent && !isBusy && showsComposerSend) || isOverflowing
-        let toolsRoom: CGFloat = toolsShown
-            ? iconSize.width * 2 + iconSpacing * 2
-            : 0
+        // The tool's room is only taken when it is there to take it: a band
+        // that fits its words gives them the whole row.
+        let toolsRoom: CGFloat = isOverflowing ? iconSize.width + iconSpacing : 0
         let width = bounds.width - inset.left - inset.right - toolsRoom
         let frame = textFrame(width: width)
         textView.frame = frame

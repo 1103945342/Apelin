@@ -165,6 +165,16 @@ class ComposerView: ComposerSectionView {
         modelBar.onSendTapped = { [weak self] in self?.delegate?.onComposerSendTapped() }
         modelBar.onStopTapped = { [weak self] in self?.delegate?.onComposerStopTapped() }
         modelBar.onModelTapped = { [weak self] in self?.delegate?.onComposerModelPickerTapped() }
+        // The wand reads the band it sits under, and answers through the same
+        // conversation the band used to: the delegate is asked once, wherever
+        // the button is drawn.
+        modelBar.rewriteButton.draftProvider = { [weak self] in self?.inputEditor.textView.text ?? "" }
+        modelBar.onRewriteRequested = { [weak self] draft in
+            self?.delegate?.onComposerRewriteRequested(draft: draft)
+        }
+        modelBar.onRewriteCancelled = { [weak self] in
+            self?.delegate?.onComposerRewriteCancelled()
+        }
         inputEditor.expandButton.accessibilityHint = String(localized: "Opens the whole draft on a page.")
 
         addSubview(commandMenu)
@@ -177,6 +187,9 @@ class ComposerView: ComposerSectionView {
 
         addSubview(rewriteBar)
         rewriteBar.isHidden = true
+
+        // Last, so it sees touches that no control above it took.
+        installFocusTap()
 
         heightPublisher
             .removeDuplicates()
@@ -357,7 +370,7 @@ class ComposerView: ComposerSectionView {
     /// The rewrite button's state, held by whoever owns the request: the
     /// composer only draws it.
     func setRewriting(_ rewriting: Bool) {
-        inputEditor.rewriteButton.isRewriting = rewriting
+        modelBar.setRewriting(rewriting)
     }
 
     /// A rewrite came back: the draft takes the new text, and the old one is
@@ -636,14 +649,6 @@ extension ComposerView: ComposerInputView.Delegate {
 
     func onComposerInputExpandButtonTapped() {
         delegate?.onComposerExpandTapped()
-    }
-
-    func onComposerInputRewriteRequested(draft: String) {
-        delegate?.onComposerRewriteRequested(draft: draft)
-    }
-
-    func onComposerInputRewriteCancelled() {
-        delegate?.onComposerRewriteCancelled()
     }
 
     func onComposerInputEndEditing() {

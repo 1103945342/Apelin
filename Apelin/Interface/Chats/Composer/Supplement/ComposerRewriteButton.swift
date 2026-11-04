@@ -24,9 +24,22 @@ final class ComposerRewriteButton: ComposerIconButton {
     /// The text the draft will be read from, asked at the moment of the tap.
     var draftProvider: (() -> String)?
 
+    /// The ring that turns round the stop while a rewrite runs: the stop says
+    /// what a tap does, the ring says the answer is still on its way.
+    private let spinner = CAShapeLayer()
+    private static let spinnerKey = "rewriteSpinner"
+
     required init() {
         super.init()
         iconInset = 5
+        spinner.fillColor = nil
+        spinner.lineWidth = 2
+        spinner.lineCap = .round
+        spinner.strokeStart = 0
+        spinner.strokeEnd = 0.72
+        spinner.isHidden = true
+        // Under the mark, so the stop is drawn on top of the ring's opening.
+        layer.insertSublayer(spinner, below: iconView.layer)
         tapAction = { [weak self] in self?.tap() }
         updateAppearance()
     }
@@ -45,6 +58,31 @@ final class ComposerRewriteButton: ComposerIconButton {
         onRewrite?(draft)
     }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // The ring is drawn in the button's own coordinates and turns about
+        // its centre, so it keeps the same circle at any size the row gives it.
+        spinner.frame = bounds
+        spinner.path = UIBezierPath(ovalIn: bounds.insetBy(dx: 1.5, dy: 1.5)).cgPath
+    }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        // Off screen the ring has nobody to tell: it stops, and picks the turn
+        // up again when the composer is back.
+        guard window != nil else {
+            spinner.removeAnimation(forKey: Self.spinnerKey)
+            return
+        }
+        updateAppearance()
+    }
+
+    override func traitCollectionDidChange(_ previous: UITraitCollection?) {
+        super.traitCollectionDidChange(previous)
+        guard traitCollection.hasDifferentColorAppearance(comparedTo: previous) else { return }
+        updateAppearance()
+    }
+
     private func updateAppearance() {
         iconView.image = UIImage(systemName: isRewriting ? "stop.fill" : "wand.and.stars")?
             .withRenderingMode(.alwaysTemplate)
@@ -52,6 +90,30 @@ final class ComposerRewriteButton: ComposerIconButton {
         accessibilityLabel = isRewriting
             ? String(localized: "Stop Rewriting")
             : String(localized: "Rewrite This Message")
+
+        spinner.strokeColor = (isRewriting ? UIColor.systemRed : UIColor.clear)
+            .resolvedColor(with: traitCollection).cgColor
+        spinner.isHidden = !isRewriting
+        guard isRewriting else {
+            spinner.removeAnimation(forKey: Self.spinnerKey)
+            return
+        }
+        startSpinning()
+    }
+
+    /// The ring turns one way for as long as the rewrite runs, and rests for
+    /// anyone who asked the system not to animate: it is then a still circle,
+    /// which is the same thing said without movement.
+    private func startSpinning() {
+        spinner.removeAnimation(forKey: Self.spinnerKey)
+        guard !UIAccessibility.isReduceMotionEnabled else { return }
+        let turn = CABasicAnimation(keyPath: "transform.rotation.z")
+        turn.fromValue = 0
+        turn.toValue = CGFloat.pi * 2
+        turn.duration = 0.9
+        turn.repeatCount = .infinity
+        turn.isRemovedOnCompletion = false
+        spinner.add(turn, forKey: Self.spinnerKey)
     }
 }
 
