@@ -39,8 +39,10 @@ final class FileEditorController: UIViewController {
     /// `nil` until the file is on screen, and for a file that failed to load.
     private var openedText: String?
 
-    /// Whether the file is open for writing.
-    private var isEditing = false
+    /// Whether the file is open for writing. Not `isEditing`: that is
+    /// `UIViewController`'s own, and this one says the file is being
+    /// written, not the view.
+    private var isWriting = false
 
     private var isDirty = false {
         didSet {
@@ -153,7 +155,7 @@ final class FileEditorController: UIViewController {
             textView.setState(state)
             textView.editorDelegate = self
             // shown to be read: the keyboard is the pencil's, not the file's
-            textView.isEditable = isEditing
+            textView.isEditable = isWriting
             applyBarItem()
         }
     }
@@ -181,11 +183,11 @@ final class FileEditorController: UIViewController {
     /// the way out of a file opened by mistake.
     private func beginEditing() {
         guard openedText != nil, !isSaving else { return }
-        guard !isEditing else {
+        guard !isWriting else {
             stopEditing()
             return
         }
-        isEditing = true
+        isWriting = true
         textView.isEditable = true
         textView.becomeFirstResponder()
         applyBarItem()
@@ -194,7 +196,7 @@ final class FileEditorController: UIViewController {
     /// Back to reading: the keyboard away, the file no longer writable, and
     /// the bar showing the pencil again.
     private func stopEditing() {
-        isEditing = false
+        isWriting = false
         textView.isEditable = false
         textView.resignFirstResponder()
         applyBarItem()
