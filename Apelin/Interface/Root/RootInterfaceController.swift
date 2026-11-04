@@ -592,25 +592,49 @@ final class RootInterfaceController: UIViewController {
             // edge, and the two shortcuts sit inside it — Git first, then
             // New Chat — so the bar reads, left to right, New Chat, Git,
             // and the menu.
-            trailing.append(
-                RootBarItem(
-                    image: UIImage(systemName: "arrow.triangle.branch"),
-                    primaryAction: UIAction { [weak self] _ in self?.openGit() },
-                ).then {
-                    $0.accessibilityLabel = String(localized: "Git")
-                },
-            )
-            trailing.append(
-                RootBarItem(
-                    image: UIImage(systemName: "square.and.pencil"),
-                    primaryAction: UIAction { [weak self] _ in self?.sidebar.startNewChat() },
-                ).then {
-                    $0.accessibilityLabel = String(localized: "New Chat")
-                },
-            )
+            let git = UIAction { [weak self] _ in self?.openGit() }
+            let newChat = UIAction { [weak self] _ in self?.sidebar.startNewChat() }
+            if #available(iOS 26.0, *) {
+                // Liquid Glass puts the bar's own controls in one capsule,
+                // as close as they should be.
+                trailing.append(
+                    RootBarItem(
+                        image: UIImage(systemName: "arrow.triangle.branch"),
+                        primaryAction: git,
+                    ).then {
+                        $0.accessibilityLabel = String(localized: "Git")
+                    },
+                )
+                trailing.append(
+                    RootBarItem(
+                        image: UIImage(systemName: "square.and.pencil"),
+                        primaryAction: newChat,
+                    ).then {
+                        $0.accessibilityLabel = String(localized: "New Chat")
+                    },
+                )
+            } else {
+                // Before it, the bar sets a gap of its own between items, and
+                // three of them took the room the conversation's name needs:
+                // the two shortcuts share one item and sit a couple of
+                // points apart in it.
+                trailing.append(RootBarItem(customView: rootToolGroup(git: git, newChat: newChat)))
+            }
         }
         item.leftBarButtonItems = leading.isEmpty ? nil : leading
         item.rightBarButtonItems = trailing.isEmpty ? nil : trailing
+    }
+
+    // MARK: - Root tools
+
+    /// The root's two shortcuts as one bar item, their glyphs a couple of
+    /// points apart: the gap the bar sets between items of its own is wider
+    /// than the room the conversation's name beside them can spare.
+    private func rootToolGroup(git: UIAction, newChat: UIAction) -> UIView {
+        RootToolGroup(tools: [
+            (symbol: "arrow.triangle.branch", label: String(localized: "Git"), action: git),
+            (symbol: "square.and.pencil", label: String(localized: "New Chat"), action: newChat),
+        ])
     }
 
     /// The visual Git page for the conversation's project, full screen —
@@ -684,6 +708,53 @@ extension RootInterfaceController: UIGestureRecognizerDelegate {
 
 /// The bar items `RootInterfaceController` puts on a page and takes back.
 private final class RootBarItem: UIBarButtonItem {}
+
+/// The root's own shortcuts on the chat page, in one bar item: the bar lays
+/// separate items out with a gap of its own, and three of them took the room
+/// the conversation's name needs. Two glyphs share a frame this close
+/// instead, each still a button of its own to a reader and to VoiceOver.
+private final class RootToolGroup: UIView {
+    /// One button's square, and the points between two of them.
+    private static let buttonSize: CGFloat = 34
+    private static let gap: CGFloat = 2
+
+    init(tools: [(symbol: String, label: String, action: UIAction)]) {
+        super.init(frame: CGRect(origin: .zero, size: Self.size(for: tools.count)))
+        for (index, tool) in tools.enumerated() {
+            var configuration = UIButton.Configuration.plain()
+            configuration.image = UIImage(systemName: tool.symbol)
+            configuration.contentInsets = .zero
+            let button = UIButton(configuration: configuration)
+            button.frame = CGRect(
+                x: CGFloat(index) * (Self.buttonSize + Self.gap),
+                y: 0,
+                width: Self.buttonSize,
+                height: Self.buttonSize,
+            )
+            button.autoresizingMask = [.flexibleTopMargin, .flexibleBottomMargin]
+            button.accessibilityLabel = tool.label
+            button.addAction(tool.action, for: .touchUpInside)
+            addSubview(button)
+        }
+    }
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
+        fatalError("Use init(tools:)")
+    }
+
+    override var intrinsicContentSize: CGSize {
+        Self.size(for: subviews.count)
+    }
+
+    private static func size(for count: Int) -> CGSize {
+        guard count > 0 else { return .zero }
+        return CGSize(
+            width: CGFloat(count) * buttonSize + CGFloat(count - 1) * gap,
+            height: buttonSize,
+        )
+    }
+}
 
 private extension UIScrollView {
     /// Whether a pan to the right (or left) would scroll this sideways: to
