@@ -488,6 +488,9 @@ public struct AgentApproveRequest: OperationRequest {
     /// an approval of a shell_run as root only with it; the console never
     /// sends it, so a script file cannot approve one.
     public var ownerVerified: Bool?
+    /// The reader's answer, with `approve`, to a request whose
+    /// `detail.question` asked one (`AgentQuestion`); absent for any other.
+    public var answer: AgentQuestionAnswer?
 
     public init(
         sessionID: String,
@@ -495,12 +498,14 @@ public struct AgentApproveRequest: OperationRequest {
         decision: ApprovalDecision,
         scope: ApprovalScope? = nil,
         ownerVerified: Bool? = nil,
+        answer: AgentQuestionAnswer? = nil,
     ) {
         self.sessionID = sessionID
         self.approvalID = approvalID
         self.decision = decision
         self.scope = scope
         self.ownerVerified = ownerVerified
+        self.answer = answer
     }
 }
 
@@ -582,6 +587,7 @@ public extension ApelinService {
         decision: ApprovalDecision,
         scope: ApprovalScope? = nil,
         ownerVerified: Bool? = nil,
+        answer: AgentQuestionAnswer? = nil,
     ) async throws {
         _ = try await send(AgentApproveRequest(
             sessionID: sessionID,
@@ -589,6 +595,7 @@ public extension ApelinService {
             decision: decision,
             scope: scope,
             ownerVerified: ownerVerified,
+            answer: answer,
         ))
     }
 

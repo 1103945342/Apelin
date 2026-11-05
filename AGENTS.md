@@ -615,7 +615,8 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     `initWithBundleIdentifier:`, looked up at run time) when an agent
     session relays `approvalRequested` (title the conversation, subtitle
     "Approval Required", body the call's `reason` from its `toolCall`, else
-    the gate's) or `finished` with `completed` (body the turn's last
+    the gate's; for a question, `detail.question`, subtitle "Answer Needed"
+    and body the question) or `finished` with `completed` (body the turn's last
     `message` with text, its first paragraph as plain text in at most 180
     characters, else "Done") or `failed` (subtitle "Failed", body the last
     `error`), and for the agent's own `notice` {title?, body} (2026-10-24:
@@ -1739,6 +1740,29 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   characters or empty, a title past 40, a fourth in one run — and one
   sent within 30 s of the session's last; the host cuts and counts again
   (`AgentNoticeRules`).
+  Questions (2026-11-05, `Tools/UserQuestions.swift`, `AgentQuestion` in
+  ApelinProtocol), in any chat: apelin_question_ask {question, options:
+  [{label, detail?}] (2 to 4), multiple?} → no host request: the call
+  waits on the gate as an approval does, its `approvalRequested` carrying
+  `detail.question` {question, options, multiple}, and the app shows the
+  options in the approval card's place, with Other… for an answer of the
+  reader's own and Skip in Deny's. `agentApprove` brings the reply back:
+  `approve` with `answer` {selected, other?}, or `deny` for a skip. The
+  gate takes an answer only for a question and only one that fits it
+  (`AgentQuestionRules.accepts`: labels of its options, each once,
+  something given, one choice unless `multiple`), and leaves the question
+  waiting otherwise; the host matches nothing to it, since the answer
+  reaches only the model, as the call's result. Owner's decision
+  (2026-11-05): the call blocks rather than ending the turn, so the answer
+  is the same turn's; it rides the approval path so a question survives a
+  closed app, a reconnect and a new attach, and the banner says "Answer
+  Needed" with the question. It is a read (`ToolRisk.readOnly`), so a plan
+  run may ask; Strict lets it through without a card of its own; it is
+  never granted for the session. A picked option is never consent to a
+  step the prompt says needs explicit consent in the reader's reply; the
+  result and the prompt both say so. The journal keeps a result's size
+  only. Tested by `QuestionToolTests` and `Tests/ChatTranscript/
+  QuestionCardCheck.swift`.
   Web pages (2026-10-29, `Tools/WebFetch.swift`, `HTMLText.swift`,
   `PublicHost.swift`), in any chat: apelin_web_fetch {url, offset?} → no
   host request: the worker fetches one public http or https page itself,

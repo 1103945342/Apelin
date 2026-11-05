@@ -76,6 +76,10 @@ struct ChatMessage: Identifiable, Hashable {
     /// the card says so, and Approve checks the device owner first.
     var runsAsRoot = false
     var approvalSections: [ApprovalCardText.Section] = []
+    /// An approval that is a question the agent asked
+    /// (`apelin_question_ask`): the card offers its options instead of
+    /// Approve and Deny, and the decision sends the answer.
+    var question: AgentQuestion?
 
     var activityTitle: String {
         guard case let .thinking(seconds, tools) = role else { return text }

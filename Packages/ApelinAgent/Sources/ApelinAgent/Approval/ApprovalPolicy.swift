@@ -385,6 +385,11 @@ public struct ApprovalPolicy: Sendable, Hashable {
         case .notificationSend:
             return .allow(.notRequired)
 
+        // The question is itself the card the reader answers: asking first
+        // whether to ask would be a second card for the same thing.
+        case .questionAsk:
+            return .allow(.notRequired)
+
         // Instructions every later conversation, in every project, lists
         // and may follow: each change asks, the card showing the whole
         // skill, and none is granted for the session.

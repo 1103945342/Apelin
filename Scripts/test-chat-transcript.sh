@@ -7,8 +7,8 @@
 # how often it asks, the order the sidebar lists conversations in, which
 # projects the project menu lists at its top, which conversations offer
 # Delete and when it asks first, which replies leave a conversation
-# unread, and what a forced push's and a squash's approval cards show,
-# against the harness modules.
+# unread, and what a forced push's, a squash's and a question's approval
+# cards show, against the harness modules.
 # Usage: test-chat-transcript.sh <ApelinKit modules directory>
 set -euo pipefail
 
@@ -53,6 +53,7 @@ sources=(
     "$root/Tests/ChatTranscript/ChatUnreadCheck.swift"
     "$root/Tests/ChatTranscript/ForcePushCardCheck.swift"
     "$root/Tests/ChatTranscript/SquashCardCheck.swift"
+    "$root/Tests/ChatTranscript/QuestionCardCheck.swift"
     "$root/Tests/ChatTranscript/main.swift"
 )
 

@@ -848,6 +848,16 @@ console now goes on after a restart only past a successful respring.
       Still to run: opening the conversation removes its banner; a fourth
       call in one turn refused by the tool and the host; a reopened
       session's replay posts nothing.
+- [ ] The agent's apelin_question_ask (2026-11-05): the card in the message
+      box's place with the question, each option and Other…; one tap
+      answers a single-choice question and the turn goes on with it;
+      several checks then Send for a multiple one, Send disabled until one
+      is checked; Other… with typed text, and with nothing typed sending
+      nothing; Skip; the "Answer Needed" banner with the question while
+      Apelin is in the background, its tap opening the conversation; the
+      card still there after Apelin is closed and opened again; Stop while
+      it waits; VoiceOver reading each option as one button, checked ones
+      selected; Arabic laying the checks out on the right.
 - [ ] The renamed tools (2026-10-24): a conversation recorded on build 37,
       before the rename, took a message through an OpenAI-compatible key
       with no provider error, and its old calls keep their titles, on

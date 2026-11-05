@@ -407,7 +407,7 @@ actor ToolRunner {
         switch detail {
         case .gitSettings, .descriptionChanged, .toolchainSetup, .sdkImport, .otherProject, .externalBuild, .skillChange,
              .projectRename, .rootCommand, .feedback, .feedbackEdit, .repositoryCreate, .issueCreate, .projectDelete,
-             .packagePublish, .screenControl, .forcePush, .squash, .resetToRemote:
+             .packagePublish, .screenControl, .forcePush, .squash, .resetToRemote, .question:
             return false
         case .none, .command, .packageRemoval, .gitPush:
             return true
@@ -479,6 +479,9 @@ actor ToolRunner {
             let notice = try notices.take(arguments, now: Date())
             try await record(.notice(title: notice.title, body: notice.body))
             return text(notices.sentMessage)
+
+        case .questionAsk:
+            return try await askQuestion(arguments, toolCallID: context.toolCallID, cancellation: cancellation)
 
         case .webFetch:
             // No host request either: the worker fetches the page itself,

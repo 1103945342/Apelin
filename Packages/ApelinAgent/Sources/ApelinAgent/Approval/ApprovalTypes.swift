@@ -1,3 +1,4 @@
+import struct ApelinProtocol.AgentQuestion
 import enum ApelinProtocol.GitRepositoryVisibility
 import Foundation
 
@@ -143,6 +144,11 @@ public enum ApprovalDetail: Sendable, Hashable, Codable {
     /// never granted for the session; the host lets through only the
     /// reset it names, once.
     case resetToRemote(ResetToRemoteApproval)
+    /// A question the agent asks the reader (`apelin_question_ask`): the
+    /// card shows its options in place of Approve and Deny, and the reply
+    /// carries the answer (`ApprovalGate.request(question:)`). Asked in
+    /// every mode, a plan run included, and never granted for the session.
+    case question(AgentQuestion)
 }
 
 /// What a card asks while Ask Before Using the Screen is on (owner,

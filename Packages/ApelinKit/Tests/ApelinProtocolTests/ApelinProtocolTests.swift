@@ -120,6 +120,13 @@ final class OperationTableTests: XCTestCase {
         XCTAssertEqual(try request(for: approve).ownerVerified, true)
         let old = try JSONCoding.decode(AgentApproveRequest.self, from: Data(#"{"sessionID":"s","approvalID":"a","decision":"approve"}"#.utf8))
         XCTAssertNil(old.ownerVerified, "an approve without the field claims no owner check")
+        XCTAssertNil(old.answer, "nor any answer")
+        let answered = AgentApproveRequest(
+            sessionID: "s", approvalID: "q", decision: .approve,
+            answer: AgentQuestionAnswer(selected: ["A"], other: "and B"),
+        )
+        XCTAssertEqual(try request(for: answered).answer, AgentQuestionAnswer(selected: ["A"], other: "and B"))
+        XCTAssertEqual(AgentQuestionRules.detailKey, "question")
 
         XCTAssertEqual(RunCodeApproval.rootCommandDetail, "rootCommand")
     }

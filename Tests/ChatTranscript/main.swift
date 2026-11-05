@@ -1123,3 +1123,5 @@ try checkChatUnread()
 checkForcePushCard()
 
 checkSquashCard()
+
+checkQuestionCard()

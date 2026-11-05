@@ -26,8 +26,8 @@ struct AgentNotice: Equatable, Sendable {
         /// A key of the app's catalogue, which the system resolves when it
         /// shows the banner, in the app's language. The app spells each one
         /// too, so none is an orphan: "New Chat" (ChatRuntime), "Approval
-        /// Required" and "Root Approval Required" (ChatApprovalRow), "Done"
-        /// and "Failed" (EnvironmentTaskController).
+        /// Required", "Root Approval Required" and "Answer Needed"
+        /// (TraceStep), "Done" and "Failed" (EnvironmentTaskController).
         case key(String)
     }
 }
@@ -125,14 +125,22 @@ struct AgentNoticeTrack: Sendable {
         case "approvalRequested":
             marks.approvals += 1
             guard !headless, marks.approvals > posted.approvals else { return nil }
-            // The agent's words for the call, else why the gate asked.
-            let reason = payload?["toolCallID"]?.stringValue.flatMap { reasons[$0] }
+            // A question shows itself; any other request the agent's words
+            // for the call, else why the gate asked.
+            let question = payload?["detail"]?[AgentQuestionRules.detailKey]?["question"]?.stringValue
+            let reason = question
+                ?? payload?["toolCallID"]?.stringValue.flatMap { reasons[$0] }
                 ?? payload?["reason"]?.stringValue.flatMap { $0.isEmpty ? nil : $0 }
+            let subtitle = if question != nil {
+                "Answer Needed"
+            } else {
+                AgentApprovals.isRootRequest(payload) ? "Root Approval Required" : "Approval Required"
+            }
             return AgentNotice(
                 identifier: "\(sessionID).approval.\(marks.approvals)",
                 sessionID: sessionID,
                 title: conversation(title),
-                subtitle: .key(AgentApprovals.isRootRequest(payload) ? "Root Approval Required" : "Approval Required"),
+                subtitle: .key(subtitle),
                 body: reason.map(AgentNotice.Text.verbatim),
             )
         case "finished":

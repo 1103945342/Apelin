@@ -77,8 +77,9 @@ struct ApprovalMatrixTests {
         for tool in [AgentToolName.fileWrite, .fileEdit, .fileCreate] {
             #expect(verdict(.confirm, InvocationFacts(tool: .local(tool), pathCheck: .inside)) == .allow(.notRequired))
         }
-        // Preset reads run, sensitive reads ask.
-        for tool in AgentToolName.allCases where tool.risk == .readOnly {
+        // Preset reads run, sensitive reads ask. A question is its own card,
+        // so it runs without one before it.
+        for tool in AgentToolName.allCases where tool.risk == .readOnly && tool != .questionAsk {
             let result = verdict(.confirm, InvocationFacts(tool: .local(tool), pathCheck: .inside))
             if tool.isSensitiveRead {
                 #expect(isAsk(result), "\(tool.rawValue) should ask by default")
@@ -86,6 +87,7 @@ struct ApprovalMatrixTests {
                 #expect(result == .allow(.preset(tool.rawValue)), "\(tool.rawValue)")
             }
         }
+        #expect(verdict(.confirm, InvocationFacts(tool: .local(.questionAsk))) == .allow(.notRequired))
         // respring is preset; apelin_screen_interact and apelin_package_remove ask.
         #expect(verdict(.confirm, InvocationFacts(tool: .local(.deviceRespring))) == .allow(.preset("apelin_device_respring")))
         #expect(isAsk(verdict(.confirm, InvocationFacts(tool: .local(.screenInteract)))))

@@ -786,8 +786,9 @@ public actor AgentSession {
 
     /// Answers a waiting approval. The host relays this from the app after
     /// its own check, and records digest approvals in its ledger itself.
-    public func approve(requestID: String, decision: ApprovalDecision) async throws {
-        try await gate.resolve(requestID, decision: decision)
+    /// `answer` goes with an approval of a question (`detail.question`).
+    public func approve(requestID: String, decision: ApprovalDecision, answer: AgentQuestionAnswer? = nil) async throws {
+        try await gate.resolve(requestID, decision: decision, answer: answer)
     }
 
     public var pendingApprovals: [ApprovalRequest] {

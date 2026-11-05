@@ -29,7 +29,7 @@ struct TraceStep: Hashable {
             hasDetail = !subtitle.isEmpty
         case let .approval(decision):
             title = message.approvalTitle
-            subtitle = Self.decisionText(decision, runsAsRoot: message.runsAsRoot)
+            subtitle = Self.decisionText(decision, runsAsRoot: message.runsAsRoot, isQuestion: message.question != nil)
             hasDetail = !message.approvalDetail.isEmpty
         default:
             let detail = ToolCallDetail(detail: message.detail, title: message.text)
@@ -72,9 +72,17 @@ struct TraceStep: Hashable {
         return line
     }
 
-    /// An approval's decision, or that it waits for one.
-    static func decisionText(_ decision: ApprovalDecision?, runsAsRoot: Bool) -> String {
-        switch decision {
+    /// An approval's decision, or that it waits for one; for a question,
+    /// whether it was answered.
+    static func decisionText(_ decision: ApprovalDecision?, runsAsRoot: Bool, isQuestion: Bool = false) -> String {
+        if isQuestion {
+            return switch decision {
+            case nil: String(localized: "Answer Needed")
+            case .approve: String(localized: "Answered")
+            case .deny: String(localized: "Skipped")
+            }
+        }
+        return switch decision {
         case nil: runsAsRoot ? String(localized: "Root Approval Required") : String(localized: "Approval Required")
         case .approve: String(localized: "Allowed Once")
         case .deny: String(localized: "Denied")

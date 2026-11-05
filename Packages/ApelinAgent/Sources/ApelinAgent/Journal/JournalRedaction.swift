@@ -90,7 +90,7 @@ struct JournalRedaction: Sendable {
     /// only by size (owner, 2026-10-31).
     static let contentTools: Set<AgentToolName> = [
         .fileRead, .fileList, .fileGrep, .fileFind, .fileShow, .memoryList, .memorySave, .memoryDelete,
-        .todoList, .todoWrite,
+        .todoList, .todoWrite, .questionAsk,
         .skillList, .skillRead, .skillSave, .skillRemove, .conversationRead, .webFetch, .logRead,
         .crashList, .crashRead, .crashSymbolicate, .screenCapture, .screenReadTree, .screenInteract,
     ]

@@ -147,6 +147,14 @@ final class ChatController: UIViewController {
             guard let self, let chat else { return }
             Task { await self.decide(request, decision, in: chat.id) }
         }
+        composer.approvalSection.onAnswer = { [weak self] request, answer in
+            guard let self, let chat else { return }
+            Task { await self.answer(request, answer, in: chat.id) }
+        }
+        composer.approvalSection.onAnswerOther = { [weak self] request, chosen in
+            guard let self, let chat else { return }
+            askForOwnAnswer(to: request, chosen: chosen, in: chat.id)
+        }
         composer.modelBar.onEffortChanged = { ComposerModelPreferences.effort = $0 }
         composer.modelBar.onTierChanged = { ComposerModelPreferences.tier = $0 }
         composer.onModeChanged = { mode in
@@ -602,6 +610,37 @@ final class ChatController: UIViewController {
             try await runtime.approve(request.id, in: chatID, decision: decision, ownerVerified: ownerVerified)
         } catch {
             presentNotice(title: "Unable to Send Decision", message: error.readableMessage)
+        }
+    }
+
+    /// Sends the reader's answer to the agent's question, or that they
+    /// skipped it (nil).
+    private func answer(_ request: ChatMessage, _ answer: AgentQuestionAnswer?, in chatID: UUID) async {
+        do {
+            try await runtime.approve(
+                request.id,
+                in: chatID,
+                decision: answer == nil ? .deny : .approve,
+                answer: answer,
+            )
+        } catch {
+            presentNotice(title: "Unable to Send Decision", message: error.readableMessage)
+        }
+    }
+
+    /// Other…: the reader writes an answer of their own, sent with the
+    /// options they had already chosen. Nothing typed sends nothing, and
+    /// the question goes on waiting.
+    private func askForOwnAnswer(to request: ChatMessage, chosen: [String], in chatID: UUID) {
+        presentTextInput(
+            title: "Other…",
+            message: String.LocalizationValue(request.approvalTitle),
+            placeholder: "Your answer",
+            doneTitle: "Send",
+        ) { [weak self] text in
+            let written = String(text.trimmingCharacters(in: .whitespacesAndNewlines).prefix(AgentQuestionRules.maximumOtherLength))
+            guard let self, !written.isEmpty else { return }
+            Task { await self.answer(request, AgentQuestionAnswer(selected: chosen, other: written), in: chatID) }
         }
     }
 

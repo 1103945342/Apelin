@@ -419,7 +419,14 @@ final class ChatRuntime {
 
     /// `ownerVerified`: the reader passed the device owner's check for this
     /// decision, which the host requires to approve a command as root.
-    func approve(_ messageID: UUID, in id: UUID, decision: ApprovalDecision, ownerVerified: Bool? = nil) async throws {
+    /// `answer`: the reader's answer, with approve, to a question.
+    func approve(
+        _ messageID: UUID,
+        in id: UUID,
+        decision: ApprovalDecision,
+        ownerVerified: Bool? = nil,
+        answer: AgentQuestionAnswer? = nil,
+    ) async throws {
         guard let sessionID = records[id]?.sessionID,
               let approvalID = transcript(id).approvalIDs[messageID]
         else { return }
@@ -428,6 +435,7 @@ final class ChatRuntime {
             approvalID: approvalID,
             decision: decision,
             ownerVerified: ownerVerified,
+            answer: answer,
         )
     }
 

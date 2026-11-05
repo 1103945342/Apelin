@@ -395,8 +395,9 @@ actor WorkerState {
             throw ApelinError(.notFound, "This approval request is no longer waiting for a decision.")
         }
         // The host records a description or removal approval in its own
-        // ledger as it relays this decision; the agent keeps nothing.
-        try await session.approve(requestID: approve.approvalID, decision: Self.decision(approve))
+        // ledger as it relays this decision; the agent keeps nothing. An
+        // answer to a question goes with it, checked by the session's gate.
+        try await session.approve(requestID: approve.approvalID, decision: Self.decision(approve), answer: approve.answer)
     }
 
     /// The app's decision as the session's gate takes it: "for this
@@ -713,6 +714,10 @@ actor EventRelay {
         // (AgentResetToRemoteRules).
         case let .resetToRemote(reset):
             payload["detail"] = .object(["resetToRemote": (try? ApelinCore.JSONValue(encoding: reset)) ?? .null])
+        // The question the app shows in the card's place; the host matches
+        // nothing to it, since the answer reaches only the model.
+        case let .question(question):
+            payload["detail"] = .object([AgentQuestionRules.detailKey: (try? ApelinCore.JSONValue(encoding: question)) ?? .null])
         }
         return .object(payload)
     }

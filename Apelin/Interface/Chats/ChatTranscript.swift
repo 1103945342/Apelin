@@ -248,10 +248,16 @@ struct ChatTranscript {
                     )
                     var request = ChatMessage(id: rowID, role: .approval(nil), text: title + "\n\n" + detail)
                     request.runsAsRoot = ApprovalCardText.isRoot(payload)
-                    request.approvalSections = ApprovalCardText.sections(
+                    request.question = ApprovalCardText.question(payload)
+                    // A question's card is its options: the call's
+                    // arguments, which name them again, are not shown.
+                    request.approvalSections = request.question != nil ? [] : ApprovalCardText.sections(
                         payload, title: title,
                         callReason: payload?["toolCallID"]?.stringValue.flatMap { callReasons[$0] },
                     )
+                    if let question = request.question {
+                        request.text = title + "\n\n" + question.options.map(\.label).joined(separator: "\n")
+                    }
                     add(request)
                 }
             case "approvalResolved":
@@ -608,6 +614,7 @@ struct ChatTranscript {
         case .conversationRead: return String(localized: "Read a chat")
         case .conversationStop: return String(localized: "Stop a chat")
         case .notificationSend: return String(localized: "Send a notification")
+        case .questionAsk: return String(localized: "Ask a question")
         case .webFetch:
             let host = values?["url"]?.stringValue.flatMap { URLComponents(string: $0)?.host } ?? ""
             return host.isEmpty ? String(localized: "Read a webpage") : String(localized: "Read \(host)")
