@@ -21,20 +21,20 @@ public actor AgentSession {
     /// The conversation's diagnostic journal, `Journal/Agent/<id>.log`.
     nonisolated let journal: SessionJournal
 
-    private let agent: Agent
+    let agent: Agent
     private let gate: ApprovalGate
-    private let runner: ToolRunner
+    let runner: ToolRunner
     private let mcpManager: MCPManager?
     private let mcpTools: [AgentTool]
     /// The agent tool extensions whose tools the agent has now.
     private var toolExtensions: ToolExtensionOffer
     private var unsubscribe: Unsubscribe?
-    private var runTask: Task<Void, Never>?
+    var runTask: Task<Void, Never>?
     /// From the moment a run's loop returns until its end is recorded: a
     /// message steered into it or followed up now would never be taken.
     private var runEnding = false
     /// A compaction the app asked for; no run starts until it ends.
-    private var compaction: Task<Void, Never>?
+    var compaction: Task<Void, Never>?
     /// What the model was last resolved from. The same provider and stored
     /// sign-in keep that resolution: resolving again exchanges some
     /// providers' tokens over the network, before the message is recorded.
@@ -50,7 +50,7 @@ public actor AgentSession {
     private var titleMisses = 0
     static let maximumTitleMisses = 3
     /// The project's context went with a message that started a run.
-    private var projectContextGiven = false
+    var projectContextGiven = false
     private var aborted = false
     private let workspace: ScopedRoot
     private var submitted: Set<UUID> = []
@@ -80,7 +80,7 @@ public actor AgentSession {
     private var restartUntold: Bool
     /// A compaction rewrote the conversation: the next run takes the system
     /// prompt afresh, since its prefix is written anew anyway.
-    private var snapshotStale = false
+    var snapshotStale = false
     /// What this run may do, from the composer's pill; nil leaves the line out
     /// of `<system-state>`. Kept here rather than in the prompt, which is the
     /// session's snapshot.
@@ -89,6 +89,12 @@ public actor AgentSession {
     private var ownCalls: [String: (tool: AgentToolName, arguments: KWWKAI.JSONValue)] = [:]
     /// What the current run has received, for the app's counter.
     private var output = OutputTally()
+    /// Where each message of the reader's is in the model's conversation,
+    /// by message id (`HistoryAnchor`, `anchors.json`).
+    var anchors: [String: HistoryAnchor] = [:]
+    /// How long a message waits for its work tree to be saved before its
+    /// run starts without a checkpoint.
+    private static let checkpointWait: Double = 5
 
     /// Opens a session. When `sessions/<id>/` already exists, its transcript
     /// is resumed and its event sequence continues; approvals that were left
@@ -236,6 +242,7 @@ public actor AgentSession {
         // read in the log's opening pass, so the log is not read again
         submitted = log.opened.userMessageIDs
         hasTitle = log.opened.hasTitle
+        anchors = await log.readAnchors()
         for diagnostic in skills.diagnostics {
             _ = try? await log.append(.error(message: "A skill has a problem. \(diagnostic)"))
         }
@@ -619,8 +626,16 @@ public actor AgentSession {
         let images = files
             .filter { $0.mimeType.hasPrefix("image/") }
             .map { ImageContent(data: $0.data.base64EncodedString(), mimeType: $0.mimeType) }
-        let paths = attachments.map { "\($0.name): \($0.path)" }.joined(separator: "\n")
-        let typed = paths.isEmpty ? text : text + "\n\nAttached files in the workspace:\n" + paths
+        let suffix = ConversationHistory.attachmentSuffix(attachments.map { (name: $0.name, path: $0.path) })
+        let typed = text + suffix
+        // The work tree as it is before this message's run, saved while the
+        // waits below go on and offered only when saved before the run
+        // starts: a message that joins a run going has none.
+        var checkpoint: Task<Bool, Never>?
+        if !queues, let messageID, !configuration.project.isTemporary {
+            let runner = runner
+            checkpoint = Task { await runner.saveCheckpoint(messageID: messageID, within: Self.checkpointWait) }
+        }
         if !queues {
             // A compaction going rewrites the system prompt for the run
             // this message starts; the message says what changed after it.
@@ -635,6 +650,9 @@ public actor AgentSession {
         let repository = !queues && needsProjectContext
             ? await runner.repositoryStatus(within: Self.repositoryStatusWait)
             : nil
+        if let checkpoint, let messageID, await checkpoint.value {
+            await record(.checkpointSaved(id: messageID))
+        }
         let (prompt, toldBefore, restartUntoldBefore) = await withSystemState(
             sender.map { $0.prefix + "\n" + typed } ?? typed,
             delta: true,
@@ -652,6 +670,8 @@ public actor AgentSession {
                     restartUntold: restartUntoldBefore,
                 ))
                 agent.steer(message)
+                saveAnchor(messageID, modelText: prompt, typed: text, suffix: suffix, timestamp: message.timestamp)
+                await persistAnchors()
                 return
             }
             // The run ended while this was recorded: it starts the next one.
@@ -664,11 +684,18 @@ public actor AgentSession {
         }
         if runTask != nil {
             agent.followUp(message)
+            if let messageID {
+                saveAnchor(messageID, modelText: prompt, typed: text, suffix: suffix, timestamp: message.timestamp)
+                await persistAnchors()
+            }
             return
         }
         aborted = false
         let agent = agent
         let opening = withProjectContext(prompt, repository: repository)
+        if let messageID {
+            saveAnchor(messageID, modelText: opening, typed: text, suffix: suffix, timestamp: KWWKAI.Timestamp.now())
+        }
         runTask = Task { [weak self] in
             do {
                 try await agent.prompt(opening, images: images)
@@ -676,6 +703,10 @@ public actor AgentSession {
                 await self?.recordRunError(error)
             }
             await self?.runEnded()
+        }
+        // the run has started: this wait holds nothing up
+        if messageID != nil {
+            await persistAnchors()
         }
     }
 
@@ -870,6 +901,15 @@ public actor AgentSession {
             output.endMessage(reported: assistant.usage.output)
             await recordOutput(messageEnded: true)
             await record(.messageFinished(text: Self.text(of: assistant.content)))
+            let usage = assistant.usage
+            if usage.input > 0 || usage.output > 0 || usage.cacheRead > 0 || usage.cacheWrite > 0 {
+                await record(.usage(
+                    input: usage.input,
+                    output: usage.output,
+                    cacheRead: usage.cacheRead,
+                    cacheWrite: usage.cacheWrite,
+                ))
+            }
             if assistant.stopReason == .error {
                 journal.replyFailed(assistant)
                 await record(.error(
@@ -968,7 +1008,7 @@ public actor AgentSession {
         await record(.queuedMessagesDropped(ids: ids))
     }
 
-    private func record(_ event: AgentSessionEvent) async {
+    func record(_ event: AgentSessionEvent) async {
         _ = try? await log.append(event)
     }
 
@@ -987,7 +1027,7 @@ public actor AgentSession {
 
     /// How full the context is, for the ring beside the composer: kwwk's own
     /// measure, the one compaction goes by.
-    private func recordContextUsage() async {
+    func recordContextUsage() async {
         let usage = contextUsage
         await record(.contextUsage(tokens: usage.tokens, window: usage.window))
     }

@@ -23,6 +23,9 @@ final class ChatController: UIViewController {
     /// Delete Conversation… in the `…` menu: the sidebar asks and deletes,
     /// as its own Delete does.
     var onDelete: ((UUID) -> Void)?
+    /// A conversation to show instead, picked as the sidebar picks one: a
+    /// fork Fork from Here made.
+    var onOpenChat: ((ChatSummary) -> Void)?
     private let titleView = ChatTitleView()
     private var messageList = ListView<ChatMessage>()
     private let composer = ComposerView()
@@ -318,6 +321,12 @@ final class ChatController: UIViewController {
                         messageList.invalidateLayout(forRowWith: message.id)
                     }
                     row.onPreview = { [weak self] item in self?.onComposerPreviewAttachment(item) }
+                    row.onCopy = { [weak self, weak row] in
+                        self?.copyText(of: message)
+                        row?.showCopied()
+                    }
+                    row.onRewind = { [weak self] in self?.presentRewind(for: message.id) }
+                    row.onMore = { [weak self] in self?.presentMessageMenu(for: message.id) }
                     row.onPreviewImages = { [weak self] images, selectedID in
                         do {
                             try self?.present(
@@ -1205,5 +1214,231 @@ extension ChatController: UIGestureRecognizerDelegate {
     func gestureRecognizer(_: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         guard let touched = touch.view else { return true }
         return !(touched === composer || touched.isDescendant(of: composer))
+    }
+}
+
+/// A message's own actions: Copy, Checkpoint & Rewind, and More's edit,
+/// copy, fork and delete. Each change goes to the conversation's session,
+/// whose event then shows it; one it refuses is said as it said it.
+extension ChatController {
+    /// The message as the page shows it now, the row's copy being older.
+    private func shownMessage(_ id: UUID) -> ChatMessage? {
+        messages.first { $0.id == id }
+    }
+
+    fileprivate func copyText(of message: ChatMessage) {
+        UIPasteboard.general.string = shownMessage(message.id)?.text ?? message.text
+        UIAccessibility.post(notification: .announcement, argument: String(localized: "Copied"))
+    }
+
+    /// What a sheet shows of the message it acts on.
+    private func preview(of message: ChatMessage) -> String {
+        let text = message.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        return text.isEmpty ? String(localized: "Attachment") : String(text.prefix(300))
+    }
+
+    // MARK: Checkpoint & Rewind
+
+    fileprivate func presentRewind(for id: UUID) {
+        guard let chat, let message = shownMessage(id), let messageID = message.turnMessageID else { return }
+        let saved = message.hasCheckpoint && chat.projectName != nil
+        let noCode = String(localized: "No code was saved before this message.")
+        let sheet = MessageActionSheet(title: String(localized: "Checkpoint & Rewind"), preview: preview(of: message), actions: [
+            MessageActionSheet.Action(
+                title: String(localized: "Restore Code and Conversation"),
+                subtitle: saved ? String(localized: "Puts the code and the chat back to before this message.") : noCode,
+                symbol: "arrow.counterclockwise",
+                enabled: saved,
+            ) { [weak self] in self?.confirmRestore(message, messageID: messageID, conversation: true) },
+            MessageActionSheet.Action(
+                title: String(localized: "Restore Conversation Only"),
+                subtitle: String(localized: "Keeps the code as it is and takes the chat back to before this message."),
+                symbol: "text.bubble",
+            ) { [weak self] in self?.restoreConversation(message, messageID: messageID) },
+            MessageActionSheet.Action(
+                title: String(localized: "Restore Code Only"),
+                subtitle: saved ? String(localized: "Puts the code back to before this message and keeps the chat.") : noCode,
+                symbol: "chevron.left.forwardslash.chevron.right",
+                enabled: saved,
+            ) { [weak self] in self?.confirmRestore(message, messageID: messageID, conversation: false) },
+        ])
+        MessageActionSheet.present(sheet, from: self)
+    }
+
+    /// Putting code back changes files on disk: asked first.
+    private func confirmRestore(_ message: ChatMessage, messageID: UUID, conversation: Bool) {
+        presentConfirmation(
+            title: "Restore Code?",
+            message: "The project's files go back to how they were before this message. What they hold now is saved on a backup branch first.",
+            confirmTitle: "Restore",
+            destructive: true,
+        ) { [weak self] in
+            self?.restore(message, messageID: messageID, conversation: conversation)
+        }
+    }
+
+    private func restore(_ message: ChatMessage, messageID: UUID, conversation: Bool) {
+        guard let chat else { return }
+        let chatID = chat.id
+        Task {
+            do {
+                if conversation {
+                    try await runtime.rewind(messageID, in: chatID, truncate: true)
+                }
+                let restored = try await runtime.restoreCode(before: messageID, in: chatID)
+                if conversation {
+                    refillComposer(with: message, in: chatID)
+                }
+                if let branch = restored.backupBranch {
+                    SPIndicator.present(
+                        title: String(localized: "Code Restored"),
+                        message: String(localized: "Saved what was there on the branch \(branch) first."),
+                        preset: .done,
+                        haptic: .success,
+                    )
+                } else {
+                    SPIndicator.present(
+                        title: String(localized: "Nothing to Restore"),
+                        message: String(localized: "The code is already as it was before this message."),
+                        preset: .done,
+                        haptic: .success,
+                    )
+                }
+            } catch {
+                presentNotice(title: "Unable to Restore", message: error.readableMessage)
+            }
+        }
+    }
+
+    private func restoreConversation(_ message: ChatMessage, messageID: UUID) {
+        guard let chat else { return }
+        let chatID = chat.id
+        Task {
+            do {
+                try await runtime.rewind(messageID, in: chatID, truncate: true)
+                refillComposer(with: message, in: chatID)
+            } catch {
+                presentNotice(title: "Unable to Restore", message: error.readableMessage)
+            }
+        }
+    }
+
+    /// The message taken back goes into the composer again, to send as it
+    /// was or changed: under a new id, since the session has seen its own.
+    private func refillComposer(with message: ChatMessage, in chatID: UUID) {
+        let draft = ComposerDraft(text: message.text, attachments: message.attachments)
+        runtime.saveDraft(draft, for: chatID)
+        guard chat?.id == chatID else { return }
+        composer.restore(draft: draft)
+        composer.beginEditing()
+    }
+
+    // MARK: More
+
+    fileprivate func presentMessageMenu(for id: UUID) {
+        guard let chat, let message = shownMessage(id), let messageID = message.turnMessageID else { return }
+        let reply = message.role != .user
+        let busy = chat.isWorking
+        var actions: [MessageActionSheet.Action] = []
+        if !busy {
+            actions.append(MessageActionSheet.Action(
+                title: String(localized: "Edit Message"),
+                symbol: "pencil",
+            ) { [weak self] in self?.editMessage(message, messageID: messageID, reply: reply) })
+        }
+        if !message.text.isEmpty {
+            actions.append(MessageActionSheet.Action(
+                title: String(localized: "Copy Text"),
+                symbol: "doc.on.doc",
+            ) { [weak self] in self?.copyText(of: message) })
+        }
+        if !busy, runtime.canFork(chat.id) {
+            actions.append(MessageActionSheet.Action(
+                title: String(localized: "Fork from Here"),
+                symbol: "arrow.triangle.branch",
+            ) { [weak self] in self?.fork(through: messageID) })
+        }
+        if !busy {
+            actions.append(MessageActionSheet.Action(
+                title: String(localized: "Delete Message"),
+                symbol: "trash",
+                destructive: true,
+            ) { [weak self] in self?.confirmDelete(message, messageID: messageID, reply: reply) })
+        }
+        guard !actions.isEmpty else { return }
+        let sheet = MessageActionSheet(title: String(localized: "More"), preview: preview(of: message), actions: actions)
+        MessageActionSheet.present(sheet, from: self)
+    }
+
+    private func editMessage(_ message: ChatMessage, messageID: UUID, reply: Bool) {
+        let sheet = EditMessageSheet(title: String(localized: "Edit Message"), text: message.text) { [weak self] text in
+            self?.saveEdit(text, of: message, messageID: messageID, reply: reply)
+        }
+        EditMessageSheet.present(sheet, from: self)
+    }
+
+    private func saveEdit(_ text: String, of message: ChatMessage, messageID: UUID, reply: Bool) {
+        guard let chat else { return }
+        let chatID = chat.id
+        Task {
+            do {
+                try await runtime.edit(messageID, in: chatID, reply: reply, text: text, expected: reply ? message.text : nil)
+            } catch {
+                presentNotice(title: "Unable to Edit", message: error.readableMessage)
+            }
+        }
+    }
+
+    private func fork(through messageID: UUID) {
+        guard let chat else { return }
+        let chatID = chat.id
+        Task {
+            do {
+                if let forked = try await runtime.fork(chatID, through: messageID) {
+                    onOpenChat?(forked)
+                }
+            } catch {
+                presentNotice(title: "Unable to Fork", message: error.readableMessage)
+            }
+        }
+    }
+
+    private func confirmDelete(_ message: ChatMessage, messageID: UUID, reply: Bool) {
+        if reply {
+            presentConfirmation(
+                title: "Delete Reply?",
+                message: "This reply leaves the chat. The rest of the chat stays.",
+                confirmTitle: "Delete",
+                destructive: true,
+            ) { [weak self] in
+                self?.deleteFromChat(message, messageID: messageID, reply: true)
+            }
+        } else {
+            presentConfirmation(
+                title: "Delete Message?",
+                message: "This message and everything after it leave the chat. The code stays as it is.",
+                confirmTitle: "Delete",
+                destructive: true,
+            ) { [weak self] in
+                self?.deleteFromChat(message, messageID: messageID, reply: false)
+            }
+        }
+    }
+
+    /// A reply goes alone; a message of the reader's takes what follows it.
+    private func deleteFromChat(_ message: ChatMessage, messageID: UUID, reply: Bool) {
+        guard let chat else { return }
+        let chatID = chat.id
+        Task {
+            do {
+                if reply {
+                    try await runtime.deleteReply(of: messageID, in: chatID, expected: message.text)
+                } else {
+                    try await runtime.rewind(messageID, in: chatID, truncate: true)
+                }
+            } catch {
+                presentNotice(title: "Unable to Delete", message: error.readableMessage)
+            }
+        }
     }
 }

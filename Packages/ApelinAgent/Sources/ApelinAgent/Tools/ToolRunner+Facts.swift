@@ -449,6 +449,22 @@ extension ToolRunner {
         }
     }
 
+    /// Saves the work tree before message `messageID`'s run, waiting at most
+    /// `seconds`: whether it was saved in that time. One that answers later
+    /// is not offered, since the run may have changed the files by then.
+    nonisolated func saveCheckpoint(messageID: UUID, within seconds: Double) async -> Bool {
+        let backend = backend
+        let answer = FirstAnswer<Bool>()
+        return await withCheckedContinuation { continuation in
+            answer.continuation = continuation
+            Task { await answer.give((try? backend.gitCheckpointSave(messageID: messageID)) ?? false) }
+            Task {
+                try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+                answer.give(false)
+            }
+        }
+    }
+
     /// `.outside` when resolution refuses the path as leaving the project
     /// (including a symbolic link it will not write through); `.inside`
     /// otherwise — a missing file is the tool's error to report.

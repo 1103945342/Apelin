@@ -212,6 +212,10 @@ public final class EnvironmentWorker: @unchecked Sendable {
             await WorkerMain.serve(GitStashDropRequest.self, request) { [self] in try git.stashDrop($0) }
         case .gitStashClear:
             await WorkerMain.serve(GitStashClearRequest.self, request) { [self] in try git.stashClear($0) }
+        case .gitCheckpointSave:
+            await WorkerMain.serve(GitCheckpointSaveRequest.self, request) { [self] in try git.checkpointSave($0) }
+        case .gitCheckpointRestore:
+            await WorkerMain.serve(GitCheckpointRestoreRequest.self, request) { [self] in try git.checkpointRestore($0) }
         case .distributionRepositoryList:
             await WorkerMain.serve(DistributionRepositoryListRequest.self, request) { [self] in
                 try await distribution.list($0)

@@ -46,6 +46,30 @@ final class ChatMessageRow: ListRowView {
     private var finishesStreamWhenStill = false
     private var revealObservation: NSKeyValueObservation?
     private let attachmentsView = MessageAttachmentsView()
+    /// The line under the message (`MessageFooterView`).
+    private let footer = MessageFooterView()
+    private var showsFooter = false
+    /// Between what the message shows and the line under it.
+    private static let footerSpacing: CGFloat = 4
+    var onCopy: (() -> Void)? {
+        get { footer.onCopy }
+        set { footer.onCopy = newValue }
+    }
+
+    var onRewind: (() -> Void)? {
+        get { footer.onRewind }
+        set { footer.onRewind = newValue }
+    }
+
+    var onMore: (() -> Void)? {
+        get { footer.onMore }
+        set { footer.onMore = newValue }
+    }
+
+    /// Copy said Copied, under this message.
+    func showCopied() {
+        footer.showCopied()
+    }
     var attachmentHeightLimit: CGFloat = 0 {
         didSet {
             if attachmentHeightLimit != oldValue {
@@ -112,6 +136,8 @@ final class ChatMessageRow: ListRowView {
         attachmentsView.onPreviewImages = { [weak self] items, selectedID in self?.onPreviewImages?(items, selectedID) }
         attachmentsView.onSizeChange = { [weak self] in self?.onAttachmentLayoutChanged?() }
         addSubview(attachmentsView)
+        footer.isHidden = true
+        addSubview(footer)
         revealObservation = markdownView.streamLabel.observe(\.isAnimating) { [weak self] _, _ in
             // Called while the label is still taking its animation down.
             DispatchQueue.main.async { [weak self] in
@@ -145,6 +171,9 @@ final class ChatMessageRow: ListRowView {
         onAttachmentLayoutChanged = nil
         onPreview = nil
         onPreviewImages = nil
+        footer.reset()
+        footer.isHidden = true
+        showsFooter = false
     }
 
     func show(_ message: ChatMessage, isStreaming: Bool = false) {
@@ -205,6 +234,11 @@ final class ChatMessageRow: ListRowView {
         }
         attachments = message.attachments
         attachmentsView.show(attachments, trailing: isUser, animated: isSameMessage)
+        showsFooter = MessageFooterView.shows(message)
+        footer.isHidden = !showsFooter
+        if showsFooter {
+            footer.show(message)
+        }
         setNeedsLayout()
     }
 
@@ -233,6 +267,7 @@ final class ChatMessageRow: ListRowView {
             displayScale: displayScale,
         )
         let gap = hasText && attachmentHeight > 0 ? ChatMarkdownView.blockSpacing : 0
+        let footerHeight = showsFooter ? MessageFooterView.height + Self.footerSpacing : 0
         if isUser {
             let textHeight = textSize.map { ceil($0.height) + Self.textPadding * 2 } ?? 0
             let width = documentWidth
@@ -259,8 +294,18 @@ final class ChatMessageRow: ListRowView {
                 height: textHeight,
             ))
             label.frame = bubble.frame.insetBy(dx: Self.textPadding, dy: Self.textPadding)
+            if showsFooter {
+                // under the bubble, at its trailing edge
+                let footerWidth = min(footer.contentWidth, content.width)
+                footer.frame = directionalFrame(CGRect(
+                    x: content.maxX - footerWidth,
+                    y: top + attachmentHeight + gap + textHeight + Self.footerSpacing,
+                    width: footerWidth,
+                    height: MessageFooterView.height,
+                ))
+            }
         } else {
-            let textHeight = hasText ? max(0, content.height - attachmentHeight - gap) : 0
+            let textHeight = hasText ? max(0, content.height - attachmentHeight - gap - footerHeight) : 0
             markdownView.frame = CGRect(x: content.minX, y: content.minY, width: content.width, height: textHeight)
             markdownView.trackedScrollView = superview as? UIScrollView
             attachmentsView.frame = CGRect(
@@ -269,6 +314,16 @@ final class ChatMessageRow: ListRowView {
                 width: content.width,
                 height: attachmentHeight,
             )
+            if showsFooter {
+                // under the reply, at its leading edge
+                let footerWidth = min(footer.contentWidth, content.width)
+                footer.frame = directionalFrame(CGRect(
+                    x: content.minX,
+                    y: content.minY + textHeight + gap + attachmentHeight + Self.footerSpacing,
+                    width: footerWidth,
+                    height: MessageFooterView.height,
+                ))
+            }
         }
     }
 
@@ -303,7 +358,8 @@ final class ChatMessageRow: ListRowView {
         )
         let gap = textHeight > 0 && attachmentHeight > 0 ? ChatMarkdownView.blockSpacing : 0
         let senderHeight = user && message.sender != nil ? Self.senderHeight : 0
-        return senderHeight + textHeight + attachmentHeight + gap + insets.top + insets.bottom
+        let footerHeight = MessageFooterView.shows(message) ? MessageFooterView.height + footerSpacing : 0
+        return senderHeight + textHeight + attachmentHeight + gap + footerHeight + insets.top + insets.bottom
     }
 
     private static var senderFont: UIFont {

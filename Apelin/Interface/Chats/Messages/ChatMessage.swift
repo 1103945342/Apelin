@@ -80,6 +80,26 @@ struct ChatMessage: Identifiable, Hashable {
     /// (`apelin_question_ask`): the card offers its options instead of
     /// Approve and Deny, and the decision sends the answer.
     var question: AgentQuestion?
+    /// When the reader sent it: a user message's, for the line under it.
+    var sentAt: Date?
+    /// Text the model wrote (`text`, `message`), not an error or a tool's
+    /// images: the rows a reply's menu acts on.
+    var isReply = false
+    /// The message whose turn this row is in, by its own id: a user
+    /// message's, and a reply's. Nil for a message without one (another
+    /// conversation's), which the history's changes cannot name.
+    var turnMessageID: UUID?
+    /// A user message whose run saved the code first: Checkpoint & Rewind
+    /// can put it back.
+    var hasCheckpoint = false
+    /// On a turn's last reply: what the turn cost and how long it took.
+    var turnStats: ChatTurnStats?
+    /// The conversation's newest reply, while no run goes: Copy and More
+    /// under it.
+    var offersActions = false
+    /// A reply the reader deleted (`replyDeleted`): left out of the rows
+    /// shown.
+    var isRemoved = false
 
     var activityTitle: String {
         guard case let .thinking(seconds, tools) = role else { return text }
@@ -127,5 +147,33 @@ struct ChatMessage: Identifiable, Hashable {
         self.role = role
         self.text = text
         self.attachments = attachments
+    }
+}
+
+/// What one turn of the conversation cost, as the provider counted it
+/// (the `usage` of each reply in it, summed), and how long it ran.
+struct ChatTurnStats: Hashable {
+    /// Read fresh, not from the provider's prompt cache.
+    var inputTokens = 0
+    var outputTokens = 0
+    var cacheReadTokens = 0
+    var cacheWriteTokens = 0
+    /// From the message to the turn's end; nil while it has not ended.
+    var seconds: Int?
+
+    /// Everything the model read: fresh, from the cache and into it.
+    var promptTokens: Int {
+        inputTokens + cacheReadTokens + cacheWriteTokens
+    }
+
+    /// The share of what it read that came from the cache, 0 ... 1; nil
+    /// when nothing did.
+    var cacheHitRate: Double? {
+        guard promptTokens > 0, cacheReadTokens > 0 else { return nil }
+        return min(1, Double(cacheReadTokens) / Double(promptTokens))
+    }
+
+    var hasTokens: Bool {
+        promptTokens > 0 || outputTokens > 0
     }
 }

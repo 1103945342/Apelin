@@ -179,6 +179,16 @@ final class ServiceTableTests: XCTestCase {
             return Row(reply: ack) { try await $0.agentSignInCancel(taskID: id) }
         case .agentSignOut:
             return Row(reply: ack) { try await $0.agentSignOut(provider: .anthropic) }
+        case .agentRewind:
+            return Row(reply: ack) { try await $0.agentRewind(sessionID: "s", messageID: UUID()) }
+        case .agentEditMessage:
+            return Row(reply: ack) { try await $0.agentEditMessage(sessionID: "s", messageID: UUID(), text: "t") }
+        case .agentDeleteReply:
+            return Row(reply: ack) { try await $0.agentDeleteReply(sessionID: "s", messageID: UUID()) }
+        case .agentFork:
+            return Row(reply: ack) {
+                try await $0.agentFork(sessionID: "s", newSessionID: UUID().uuidString, messageID: UUID())
+            }
         case .distributionRepositoryList:
             return Row(reply: DistributionRepositoryListResponse()) { _ = try await $0.distributionRepositoryList() }
         case .distributionRepositoryCreate:
@@ -290,6 +300,14 @@ final class ServiceTableTests: XCTestCase {
                 expectedHead: nil,
             )
             return Row(reply: handle) { _ = try await $0.gitResetToRemote(reset) }
+        case .gitCheckpointSave:
+            return Row(reply: GitCheckpointSaveResponse(commit: nil)) {
+                _ = try await $0.gitCheckpointSave(projectID: "p", messageID: UUID())
+            }
+        case .gitCheckpointRestore:
+            return Row(reply: GitCheckpointRestoreResponse(backupBranch: nil, written: 0, removed: 0)) {
+                _ = try await $0.gitCheckpointRestore(projectID: "p", messageID: UUID())
+            }
         }
     }
 

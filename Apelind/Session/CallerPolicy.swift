@@ -91,6 +91,10 @@ enum CallerPolicy {
         // keeps an agent to its own project, and to the sessions it opened
         // for abort and close. Approving, steering and compacting stay the app's.
         .agentOpen, .agentPrompt, .agentList, .agentAttach, .agentAbort, .agentClose,
+        // Its own project's work tree saved before a run, for the reader's
+        // Checkpoint & Rewind; putting one back, and every change to a
+        // conversation's history, stay the app's.
+        .gitCheckpointSave,
     ]
 
     /// The diagnostics worker asks the host for a protected crash report by

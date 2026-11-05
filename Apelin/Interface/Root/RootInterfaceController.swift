@@ -38,6 +38,11 @@ final class RootInterfaceController: UIViewController {
         page.onDelete = { [weak self, weak page] id in
             self?.sidebar.delete(id, from: .moreMenu, presenter: page)
         }
+        page.onOpenChat = { [weak self] summary in
+            guard let self else { return }
+            sidebar.select(summary)
+            setDrawerOpen(false)
+        }
         return page
     }()
 

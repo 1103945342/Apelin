@@ -25,6 +25,11 @@ enum GitHandler: DomainHandler {
              .gitRestore, .gitDeletePaths, .gitIgnoreAppend, .gitReset,
              .gitStashList, .gitStashSave, .gitStashApply, .gitStashDrop, .gitStashClear:
             return await host.forward(request, to: .environment)
+        // Checkpoint & Rewind's code: the agent saves its own project's
+        // work tree before a run (the scope check above holds it to that
+        // project); only the app puts one back, as CallerPolicy decides.
+        case .gitCheckpointSave, .gitCheckpointRestore:
+            return await host.forward(request, to: .environment)
         case .gitRepositoryCreate:
             return await createRepository(request, host: host)
         case .gitIssueCreate:

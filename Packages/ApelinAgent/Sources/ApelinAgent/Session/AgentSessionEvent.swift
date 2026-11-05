@@ -61,6 +61,22 @@ public enum AgentSessionEvent: Sendable, Hashable, Codable {
     case compactionStarted
     /// The compaction ended; a message sent meanwhile starts its run now.
     case compactionFinished(AgentCompactionResult)
+    /// What one reply of the model's cost, as the provider counted it:
+    /// `input` is what it read fresh, `cacheRead` and `cacheWrite` what it
+    /// read from its prompt cache and wrote to it. Recorded as the reply ends.
+    case usage(input: Int, output: Int, cacheRead: Int, cacheWrite: Int)
+    /// The work tree was saved before the run of message `id`
+    /// (`GitCheckpointRules.reference(for:)`), so its code can be put back.
+    case checkpointSaved(id: UUID)
+    /// The reader edited message `id`'s text.
+    case messageEdited(id: UUID, text: String)
+    /// The reader edited the reply that ends message `id`'s turn.
+    case replyEdited(id: UUID, text: String)
+    /// The reader deleted the reply that ends message `id`'s turn.
+    case replyDeleted(id: UUID)
+    /// The reader took message `id` back: it and everything after it are
+    /// no longer in the conversation.
+    case historyRewound(id: UUID)
 }
 
 public enum FinishReason: String, Sendable, Hashable, Codable {

@@ -29,6 +29,10 @@ struct ChatRecord: Codable, Sendable {
 struct SessionReplay: Codable, Sendable {
     private static let userMessageKinds: Set<String> = ["prompt", "steer"]
     private static let compactionKind = "compactionStarted"
+    /// The reader's changes to the history (`agentRewind` and the rest),
+    /// which a stopped session reopened for them records with no message
+    /// after it, as Compact… does.
+    private static let historyKinds: Set<String> = ["historyRewound", "messageEdited", "replyEdited", "replyDeleted"]
 
     /// How far the task has been read.
     var cursor = EventSeq.start
@@ -39,6 +43,9 @@ struct SessionReplay: Codable, Sendable {
     /// The compactions still to come again. Absent from older files, which
     /// have none.
     private var compactions: Int?
+    /// The history's changes still to come again, by kind. Absent from
+    /// older files, which have none.
+    private var historyChanges: [String: Int]?
 
     /// The replay of a session whose history is `events`.
     init(of events: [TaskEvent]) {
@@ -50,6 +57,11 @@ struct SessionReplay: Codable, Sendable {
             }
         }
         compactions = events.count { $0.kind == Self.compactionKind }
+        var changes: [String: Int] = [:]
+        for event in events where Self.historyKinds.contains(event.kind) {
+            changes[event.kind, default: 0] += 1
+        }
+        historyChanges = changes
     }
 
     /// Whether `event` is still part of the replay, counting off the user
@@ -64,6 +76,11 @@ struct SessionReplay: Codable, Sendable {
         if event.kind == Self.compactionKind {
             guard let remaining = compactions, remaining > 0 else { return false }
             compactions = remaining - 1
+            return true
+        }
+        if Self.historyKinds.contains(event.kind) {
+            guard let remaining = historyChanges?[event.kind], remaining > 0 else { return false }
+            historyChanges?[event.kind] = remaining - 1
             return true
         }
         guard Self.userMessageKinds.contains(event.kind) else { return true }

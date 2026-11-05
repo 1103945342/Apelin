@@ -83,6 +83,11 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
     case agentSignInRespond
     case agentSignInCancel
     case agentSignOut
+    /// The reader's changes to a conversation's history (`AgentHistory`).
+    case agentRewind
+    case agentEditMessage
+    case agentDeleteReply
+    case agentFork
 
     case toolHostOpen
     case toolHostClose
@@ -133,6 +138,10 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
     case gitStashApply
     case gitStashDrop
     case gitStashClear
+    /// The work tree before a message's run, saved and put back
+    /// (`GitCheckpoint`).
+    case gitCheckpointSave
+    case gitCheckpointRestore
 
     case distributionRepositoryList
     case distributionRepositoryCreate
@@ -167,7 +176,8 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
              .agentClose, .agentRunCode, .agentCredentialImport, .agentAccountList, .agentSkillList,
              .agentRewritePrompt,
              .agentAPIConfiguration, .agentModelList,
-             .agentModelActivate, .agentSignIn, .agentSignInRespond, .agentSignInCancel, .agentSignOut:
+             .agentModelActivate, .agentSignIn, .agentSignInRespond, .agentSignInCancel, .agentSignOut,
+             .agentRewind, .agentEditMessage, .agentDeleteReply, .agentFork:
             .agent
         case .toolHostOpen, .toolHostClose, .toolHostCall: .toolHost
         case .gitStatus, .gitDiff, .gitStage, .gitUnstage, .gitCommit, .gitInit, .gitClone, .gitCloneInto, .gitFetch,
@@ -178,7 +188,7 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
              .gitBranchRename, .gitMerge, .gitMergeAbort, .gitTagCreate, .gitTagDelete, .gitLog,
              .gitCommitDetail, .gitCommitFileDiff, .gitFileVersions, .gitRestore, .gitDeletePaths,
              .gitIgnoreAppend, .gitReset, .gitStashList, .gitStashSave, .gitStashApply, .gitStashDrop,
-             .gitStashClear:
+             .gitStashClear, .gitCheckpointSave, .gitCheckpointRestore:
             .git
         case .transferExport, .transferInspect, .transferImport: .transfer
         case .distributionRepositoryList, .distributionRepositoryCreate, .distributionRepositoryLink,
@@ -253,6 +263,10 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .agentSignInRespond: AgentSignInRespondRequest.self
         case .agentSignInCancel: AgentSignInCancelRequest.self
         case .agentSignOut: AgentSignOutRequest.self
+        case .agentRewind: AgentRewindRequest.self
+        case .agentEditMessage: AgentEditMessageRequest.self
+        case .agentDeleteReply: AgentDeleteReplyRequest.self
+        case .agentFork: AgentForkRequest.self
         case .toolHostOpen: ToolHostOpenRequest.self
         case .toolHostClose: ToolHostCloseRequest.self
         case .toolHostCall: ToolHostCallRequest.self
@@ -301,6 +315,8 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .gitStashApply: GitStashApplyRequest.self
         case .gitStashDrop: GitStashDropRequest.self
         case .gitStashClear: GitStashClearRequest.self
+        case .gitCheckpointSave: GitCheckpointSaveRequest.self
+        case .gitCheckpointRestore: GitCheckpointRestoreRequest.self
         case .distributionRepositoryList: DistributionRepositoryListRequest.self
         case .distributionRepositoryCreate: DistributionRepositoryCreateRequest.self
         case .distributionRepositoryLink: DistributionRepositoryLinkRequest.self

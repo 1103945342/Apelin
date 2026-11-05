@@ -530,6 +530,16 @@ public struct ChannelHostBackend: AgentHostBackend {
         )
     }
 
+    /// A project with no repository has nothing to save, and says so as
+    /// `notFound`; that is no failure.
+    public func gitCheckpointSave(messageID: UUID) async throws -> Bool {
+        do {
+            return try await service.gitCheckpointSave(projectID: project.id, messageID: messageID).commit != nil
+        } catch let error as ApelinError where error.code == .notFound {
+            return false
+        }
+    }
+
     public func gitDiff(_ request: GitDiffToolRequest) async throws -> GitDiffToolResponse {
         let response = try await git("git diff") {
             try await service.gitDiff(projectID: project.id, path: request.path, staged: request.staged)

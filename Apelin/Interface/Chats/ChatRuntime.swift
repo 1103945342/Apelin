@@ -444,6 +444,72 @@ final class ChatRuntime {
         try await ApelinService.app.agentAbort(sessionID: sessionID)
     }
 
+    // MARK: The history's changes (Checkpoint & Rewind, a message's menu)
+
+    /// Takes message `messageID` back: the run going stops first, and with
+    /// `truncate` the message and everything after it leave the
+    /// conversation. The session is opened again for it when it has ended.
+    func rewind(_ messageID: UUID, in id: UUID, truncate: Bool) async throws {
+        let opened = try await open(id)
+        try await ApelinService.app.agentRewind(sessionID: opened.sessionID, messageID: messageID, truncate: truncate)
+    }
+
+    /// Puts the project's code back as it was before message `messageID`'s
+    /// run. A run going is stopped first; the conversation stays.
+    func restoreCode(before messageID: UUID, in id: UUID) async throws -> GitCheckpointRestoreResponse {
+        guard let project = records[id]?.summary.projectName else {
+            throw ApelinError(.notFound, String(localized: "No code was saved before this message."))
+        }
+        if records[id]?.summary.isWorking == true {
+            try await rewind(messageID, in: id, truncate: false)
+        }
+        return try await ApelinService.app.gitCheckpointRestore(projectID: project, messageID: messageID)
+    }
+
+    /// Gives message `messageID`, or with `reply` the reply that ends its
+    /// turn, the text `text`; `expected` is the reply's text as shown.
+    func edit(_ messageID: UUID, in id: UUID, reply: Bool, text: String, expected: String?) async throws {
+        let opened = try await open(id)
+        try await ApelinService.app.agentEditMessage(
+            sessionID: opened.sessionID,
+            messageID: messageID,
+            reply: reply,
+            text: text,
+            expected: expected,
+        )
+    }
+
+    /// Deletes the reply that ends message `messageID`'s turn.
+    func deleteReply(of messageID: UUID, in id: UUID, expected: String?) async throws {
+        let opened = try await open(id)
+        try await ApelinService.app.agentDeleteReply(sessionID: opened.sessionID, messageID: messageID, expected: expected)
+    }
+
+    /// A project's conversation can be forked; a temporary one, whose
+    /// folder is its own, cannot.
+    func canFork(_ id: UUID) -> Bool {
+        records[id]?.summary.projectName != nil
+    }
+
+    /// A new conversation holding `id`'s history through the turn of
+    /// message `messageID`, named after it and listed first; nil when it
+    /// has no such message. Its session opens once the reader writes in it.
+    func fork(_ id: UUID, through messageID: UUID) async throws -> ChatSummary? {
+        guard let source = records[id], canFork(id),
+              ChatFork.events(source.events, through: messageID) != nil
+        else { return nil }
+        let opened = try await open(id)
+        let newSessionID = UUID().uuidString.lowercased()
+        try await ApelinService.app.agentFork(sessionID: opened.sessionID, newSessionID: newSessionID, messageID: messageID)
+        // the events as they are now, the worker's cut made from the same
+        guard let current = records[id], let events = ChatFork.events(current.events, through: messageID) else { return nil }
+        var summary = ChatSummary.untitled(lastInteraction: Date(), projectName: current.summary.projectName)
+        summary.rename(to: String(localized: "Fork of \(current.summary.displayTitle)"))
+        records[summary.id] = ChatRecord(summary: summary, sessionID: newSessionID, events: events)
+        changed(summary.id)
+        return records[summary.id]?.summary
+    }
+
     /// Between runs only: a session to compact, nothing running, waiting
     /// for an approval or on its way to the host.
     func canCompact(_ id: UUID) -> Bool {

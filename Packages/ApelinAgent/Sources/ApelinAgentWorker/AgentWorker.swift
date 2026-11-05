@@ -133,6 +133,31 @@ public enum AgentWorker {
                 try await state.session(compact.sessionID).compact()
                 return Acknowledged()
             }
+        case .agentRewind:
+            await WorkerMain.serve(AgentRewindRequest.self, request) { rewind in
+                try await state.session(rewind.sessionID).rewind(to: rewind.messageID, truncate: rewind.truncate)
+                return Acknowledged()
+            }
+        case .agentEditMessage:
+            await WorkerMain.serve(AgentEditMessageRequest.self, request) { edit in
+                try await state.session(edit.sessionID).edit(
+                    edit.messageID,
+                    reply: edit.reply,
+                    text: edit.text,
+                    expected: edit.expected,
+                )
+                return Acknowledged()
+            }
+        case .agentDeleteReply:
+            await WorkerMain.serve(AgentDeleteReplyRequest.self, request) { delete in
+                try await state.session(delete.sessionID).deleteReply(delete.messageID, expected: delete.expected)
+                return Acknowledged()
+            }
+        case .agentFork:
+            await WorkerMain.serve(AgentForkRequest.self, request) { fork in
+                try await state.session(fork.sessionID).fork(through: fork.messageID, as: fork.newSessionID)
+                return Acknowledged()
+            }
         case .agentApprove:
             await WorkerMain.serve(AgentApproveRequest.self, request) { approve in
                 try await state.approve(approve)
@@ -616,6 +641,23 @@ actor EventRelay {
             return [("compactionStarted", nil)]
         case let .compactionFinished(result):
             return [("compactionFinished", (try? ApelinCore.JSONValue(encoding: result)) ?? .null)]
+        case let .usage(input, output, cacheRead, cacheWrite):
+            return [("usage", .object([
+                "input": .number(Double(input)),
+                "output": .number(Double(output)),
+                "cacheRead": .number(Double(cacheRead)),
+                "cacheWrite": .number(Double(cacheWrite)),
+            ]))]
+        case let .checkpointSaved(id):
+            return [("checkpoint", .object(["id": .string(id.uuidString)]))]
+        case let .messageEdited(id, text):
+            return [("messageEdited", .object(["id": .string(id.uuidString), "text": .string(text)]))]
+        case let .replyEdited(id, text):
+            return [("replyEdited", .object(["id": .string(id.uuidString), "text": .string(text)]))]
+        case let .replyDeleted(id):
+            return [("replyDeleted", .object(["id": .string(id.uuidString)]))]
+        case let .historyRewound(id):
+            return [("historyRewound", .object(["id": .string(id.uuidString)]))]
         }
     }
 

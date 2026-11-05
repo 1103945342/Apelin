@@ -52,6 +52,19 @@ struct ChatTranscript {
     private var unanswered: UUID?
     /// The run's output so far, from its latest `received`.
     private var receivedTokens: Int?
+    /// Each turn the events started, in order: from a `prompt` to the next
+    /// one or to its run's end, with what its replies cost.
+    private var turns: [Turn] = []
+
+    private struct Turn {
+        /// Where its message is among `rows`.
+        var start: Int
+        /// The message's own id, when it has one.
+        var messageID: UUID?
+        var began: Date
+        var ended: Date?
+        var stats = ChatTurnStats()
+    }
     /// Where the message streaming now began among `rows`, and the row it
     /// answered then, from its `messageStarted` until anything but its
     /// stream comes: a `messageDiscarded` (kwwk asks for it again) takes
@@ -123,6 +136,13 @@ struct ChatTranscript {
                         attachments: files.compactMap(attachment),
                     )
                     message.sender = payload?["from"]?.stringValue.map { Self.senderLine(conversationTitle($0)) }
+                    message.sentAt = event.time
+                    if event.kind == "prompt" {
+                        let named = Self.userMessageID(of: event)
+                        message.turnMessageID = named
+                        endTurn(at: event.time)
+                        turns.append(Turn(start: rows.count, messageID: named, began: event.time))
+                    }
                     add(message)
                 }
                 unanswered = messageID
@@ -183,7 +203,10 @@ struct ChatTranscript {
                 unanswered = nil
                 if assistant == nil {
                     assistant = rows.count
-                    add(ChatMessage(id: id, role: .assistant, text: ""))
+                    var reply = ChatMessage(id: id, role: .assistant, text: "")
+                    reply.isReply = true
+                    reply.turnMessageID = turns.last?.messageID
+                    add(reply)
                 }
                 if let assistant {
                     if event.kind == "message" {
@@ -283,6 +306,35 @@ struct ChatTranscript {
                 assistant = nil
                 isWorking = false
                 receivedTokens = nil
+                endTurn(at: event.time)
+            case "usage":
+                let count = { (key: String) in payload?[key]?.doubleValue.map { Int($0) } ?? 0 }
+                if !turns.isEmpty {
+                    turns[turns.count - 1].stats.inputTokens += count("input")
+                    turns[turns.count - 1].stats.outputTokens += count("output")
+                    turns[turns.count - 1].stats.cacheReadTokens += count("cacheRead")
+                    turns[turns.count - 1].stats.cacheWriteTokens += count("cacheWrite")
+                }
+            case "checkpoint":
+                if let messageID = Self.payloadID(payload), let index = firstRows[messageID] {
+                    rows[index].hasCheckpoint = true
+                }
+            case "messageEdited":
+                if let messageID = Self.payloadID(payload), let index = firstRows[messageID], rows[index].role == .user {
+                    rows[index].text = text
+                }
+            case "replyEdited":
+                if let messageID = Self.payloadID(payload), let index = lastReply(ofTurn: messageID) {
+                    rows[index].text = text
+                }
+            case "replyDeleted":
+                if let messageID = Self.payloadID(payload), let index = lastReply(ofTurn: messageID) {
+                    rows[index].isRemoved = true
+                }
+            case "historyRewound":
+                if let messageID = Self.payloadID(payload), let index = firstRows[messageID] {
+                    rewind(to: index)
+                }
             case "compactionStarted":
                 isCompacting = true
             case "compactionFinished":
@@ -298,6 +350,7 @@ struct ChatTranscript {
                     isWorking = false
                     isCompacting = false
                     receivedTokens = nil
+                    endTurn(at: event.time)
                 }
             default: break
             }
@@ -309,7 +362,7 @@ struct ChatTranscript {
     /// The rows as shown, made afresh from the fold's: what it holds and
     /// `sending` and `now` decide them, never what was shown before.
     private mutating func show(sending: [ComposerDraft], now: Date?) {
-        messages = Self.presentationRows(rows)
+        messages = Self.presentationRows(rowsWithTurns().filter { !$0.isRemoved })
         quietDeadline = nil
         if isWorking {
             if let unanswered, messages.last?.id == unanswered {
@@ -341,6 +394,70 @@ struct ChatTranscript {
             firstRows[row.id] = rows.count
         }
         rows.append(row)
+    }
+
+    /// Ends the turn still open, at `date`.
+    private mutating func endTurn(at date: Date) {
+        guard let last = turns.indices.last, turns[last].ended == nil else { return }
+        turns[last].ended = date
+    }
+
+    /// The last reply shown in the turn of message `id`, deleted ones left out.
+    private func lastReply(ofTurn id: UUID) -> Int? {
+        guard let turn = turns.lastIndex(where: { $0.messageID == id }) else { return nil }
+        let end = turns.indices.contains(turn + 1) ? turns[turn + 1].start : rows.count
+        let range = turns[turn].start ..< min(end, rows.count)
+        return range.last { rows[$0].isReply && !rows[$0].isRemoved && !rows[$0].text.isEmpty }
+    }
+
+    /// Message `rows[index]` taken back: it and every row after it go, and
+    /// whatever the fold kept of them.
+    private mutating func rewind(to index: Int) {
+        guard index < rows.count else { return }
+        rows.removeSubrange(index...)
+        firstRows = firstRows.filter { $0.value < index }
+        toolRows = toolRows.filter { $0.value < index }
+        turns = turns.filter { $0.start < index }
+        if let row = assistant, row >= index {
+            assistant = nil
+        }
+        if let row = thinking, row >= index {
+            thinking = nil
+            thinkingStarted = nil
+        }
+        if let current = attempt, current.rows >= index {
+            attempt = nil
+        }
+        if let row = unanswered, firstRows[row] == nil {
+            unanswered = nil
+        }
+    }
+
+    /// The rows with each turn's cost on its last reply, and the
+    /// conversation's newest reply offering its actions while no run goes.
+    private func rowsWithTurns() -> [ChatMessage] {
+        var shown = rows
+        for (position, turn) in turns.enumerated() {
+            var stats = turn.stats
+            stats.seconds = turn.ended.map { max(0, Int($0.timeIntervalSince(turn.began).rounded())) }
+            guard stats.hasTokens || stats.seconds != nil else { continue }
+            let end = turns.indices.contains(position + 1) ? turns[position + 1].start : shown.count
+            let range = turn.start ..< min(end, shown.count)
+            if let reply = range.last(where: { shown[$0].isReply && !shown[$0].isRemoved }) {
+                shown[reply].turnStats = stats
+            }
+        }
+        if !isWorking, let newest = shown.lastIndex(where: { $0.isReply && !$0.isRemoved }),
+           shown[newest].turnMessageID != nil
+        {
+            shown[newest].offersActions = true
+        }
+        return shown
+    }
+
+    /// The message id an event of the history's changes names.
+    private static func payloadID(_ payload: JSONValue?) -> UUID? {
+        payload?["id"]?.stringValue.flatMap(UUID.init(uuidString:))
     }
 
     /// The attachments an event lists, read off its payload as decoding

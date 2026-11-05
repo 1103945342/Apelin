@@ -250,7 +250,8 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `readUITree`, `uiAction`; `agentOpen`, `agentPrompt`, `agentSteer`,
   `agentAbort`, `agentCompact`, `agentApprove`, `agentAttach`, `agentList`, `agentClose`,
   `agentRunCode`, `agentCredentialImport`, `agentAccountList`, `agentSkillList`, `agentAPIConfiguration`, `agentModelList`, `agentModelActivate`, `agentSignIn`,
-  `agentSignInRespond`, `agentSignInCancel`, `agentSignOut`; `toolHostOpen`, `toolHostClose`,
+  `agentSignInRespond`, `agentSignInCancel`, `agentSignOut`, `agentRewind`, `agentEditMessage`,
+  `agentDeleteReply`, `agentFork`; `toolHostOpen`, `toolHostClose`,
   `toolHostCall`;
   `gitStatus`, `gitDiff`, `gitStage`, `gitUnstage`, `gitCommit`, `gitInit`,
   `gitClone`, `gitCloneInto`, `gitFetch`, `gitPull`, `gitPush`, `gitSettings`,
@@ -262,7 +263,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `gitTagDelete`, `gitLog`, `gitCommitDetail`, `gitCommitFileDiff`,
   `gitFileVersions`, `gitRestore`, `gitDeletePaths`, `gitIgnoreAppend`,
   `gitReset`, `gitStashList`, `gitStashSave`, `gitStashApply`,
-  `gitStashDrop`, `gitStashClear`;
+  `gitStashDrop`, `gitStashClear`, `gitCheckpointSave`, `gitCheckpointRestore`;
   `distributionRepositoryList`, `distributionRepositoryCreate`,
   `distributionRepositoryLink`, `distributionRepositoryUnlink`,
   `distributionPublish`, `feedbackSend`, `feedbackRead`, `feedbackEdit`,
@@ -1372,7 +1373,30 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   its file ledger (`CompactionRecap`; a recap of another shape whole),
   bounded by the recap's budget, about 1,800 tokens; it stays in the
   session's log, so a reopened session's replay carries it, and an event
-  recorded before it has none. A failure kwwk
+  recorded before it has none. The reader's own changes (2026-11-06):
+  `usage` {input, output, cacheRead, cacheWrite} after each reply's
+  `message`, as the provider counted it (`input` is what it read fresh), which
+  the transcript sums per turn under the turn's last reply with the turn's
+  time; `checkpoint` {id} once the work tree is saved before message `id`'s
+  run (`gitCheckpointSave`, by the agent before the run starts, at most 5 s,
+  under `refs/apelin/checkpoints/<id>`, never for a message that joins a run
+  going); and the history's changes, each the app's alone and between runs,
+  each recorded after what it changes so the log stays append-only:
+  `historyRewound` {id} (`agentRewind`: the run stops, and the message and
+  everything after it leave the model's conversation), `messageEdited` {id,
+  text} and `replyEdited` {id, text} (`agentEditMessage`; nothing is sent
+  again), `replyDeleted` {id} (`agentDeleteReply`: the reply ending message
+  `id`'s turn). Each message is found in the model's conversation by its
+  anchor (`anchors.json`: the digest of the text the model got, what the
+  reader typed in it), or for one sent before anchors by its text; one a
+  compaction summarised is refused. A reopened session's replay ends at a
+  change of the history it has not seen, as at a compaction (`SessionReplay`).
+  `agentFork` writes a new session's folder from the source's log through
+  message `id`'s turn, cut as the app cuts its events (`ChatFork`,
+  `AgentSession.forkRecords`), so the fork's replay reads past message for
+  message; `gitCheckpointRestore` (the app's) writes the checkpoint's files
+  back and removes the rest, ignored files left, after committing the work
+  tree on `apelin-backup/checkpoint-<time>`. A failure kwwk
   kept as an NSError's whole `description` (`Error Domain=… Code=…
   "…" UserInfo={…}`, a lost connection: every one before kwwk 0.1.106,
   since then only one with no text of its own) is cut to its localized

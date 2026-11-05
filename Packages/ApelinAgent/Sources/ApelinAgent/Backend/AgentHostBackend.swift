@@ -159,6 +159,18 @@ public protocol AgentHostBackend: Sendable {
     /// Builds' packages published to the linked package repository as they
     /// were built, read to the end; the host checks they were approved.
     func publishPackages(_ request: PackagePublishToolRequest) async throws -> PackagePublishToolResponse
+    /// Saves the project's work tree before message `messageID`'s run
+    /// (`gitCheckpointSave`), for the reader's Checkpoint & Rewind. Answers
+    /// whether it was saved: not for a project without a repository, nor
+    /// for a work tree too large to save.
+    func gitCheckpointSave(messageID: UUID) async throws -> Bool
+}
+
+/// A backend with no repository behind it saves no checkpoint.
+public extension AgentHostBackend {
+    func gitCheckpointSave(messageID _: UUID) async throws -> Bool {
+        false
+    }
 }
 
 /// A backend without the device's toolchains, SDKs, installations or other
