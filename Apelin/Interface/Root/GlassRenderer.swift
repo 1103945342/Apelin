@@ -2,51 +2,31 @@ import Metal
 import QuartzCore
 import UIKit
 
-/// The lens of a hand-made Liquid Glass, for the systems that have no
-/// `UIGlassEffect`: one fragment shader draws the edge of a rounded surface
-/// and bends what lies behind it, the way thick glass does, leaving the face
-/// itself to the system's material underneath.
+/// Real liquid glass, the way iOS 26 draws it: thick rounded glass over a live
+/// backdrop, refracting what lies behind it hardest at the edge, colour
+/// fringing where red and blue bend at different angles, a band of light across
+/// the top where the surface catches it, and the middle darker where the glass
+/// is thick (2026-11-06).
 ///
-/// Only the rim is drawn here, for a reason that decides the whole design: the
-/// backdrop has to be photographed to be bent, and a photograph taken by the
-/// window holds the surface itself. Keeping the shader to the band just inside
-/// the edge means every sample it takes falls outside the surface, on content
-/// that is really there, and the face between the rims stays the live material
-/// the system draws for free.
+/// The face is drawn here in full, not just the rim, because the refraction and
+/// the shading that give it depth need every point of the surface. The backdrop
+/// is `CABackdropLayer`, the private layer UIKit's own materials read: it is
+/// live, costs nothing, and is read by Metal without a snapshot each frame.
 final class GlassRenderer {
-    /// What a surface asks for: where it is in the snapshot, how round, and
-    /// how the light finds it.
     struct Request {
-        /// The surface's own rect, in the drawable's pixels.
-        var rect: CGRect
-        /// The drawable's size, in pixels: the surface's own bounds.
-        var canvas: CGSize
-        /// The snapshot's size, in pixels, and where the surface starts in it.
-        var texture: CGSize
-        var origin: CGPoint
-        /// The snapshot, with the surface somewhere inside it.
-        var backdrop: CGImage
+        var bounds: CGRect          // in points
         var radius: CGFloat
-        var tint: SIMD4<Float>
-        var specular: Float
-        var shade: Float
+        var backdrop: CALayer       // the backdrop layer to sample from
+        var scale: CGFloat
+        var dark: Bool
     }
 
     static let shared = GlassRenderer()
 
-    /// Set once the shader has compiled; a surface draws its material until
-    /// then, and asks to be drawn again when `prepare` says it is ready.
     private(set) var isReady = false
-
-    /// The device a surface must give its layer, since a `CAMetalLayer`
-    /// draws nothing without one.
     private(set) var device: MTLDevice?
     private var queue: MTLCommandQueue?
     private var pipeline: MTLRenderPipelineState?
-    /// Kept between frames, since a surface redraws at most a few times a
-    /// second and a fresh texture each time would throw the old one away.
-    private var staging: MTLTexture?
-    private var stagingSize = CGSize.zero
     private let lock = NSLock()
     private var readyWork: [() -> Void] = []
 
@@ -56,8 +36,6 @@ final class GlassRenderer {
         }
     }
 
-    /// Runs `work` on the main queue once the shader can draw, at once if it
-    /// already can.
     func prepare(_ work: @escaping () -> Void) {
         lock.lock()
         if isReady {
@@ -74,18 +52,19 @@ final class GlassRenderer {
               let queue = device.makeCommandQueue()
         else { return }
         guard let library = try? device.makeLibrary(source: Self.shader, options: nil),
-              let function = library.makeFunction(name: "glassEdge"),
-              let vertex = library.makeFunction(name: "glassVertex")
+              let vertex = library.makeFunction(name: "liquidVertex"),
+              let fragment = library.makeFunction(name: "liquidFragment")
         else { return }
         let descriptor = MTLRenderPipelineDescriptor()
         descriptor.vertexFunction = vertex
-        descriptor.fragmentFunction = function
+        descriptor.fragmentFunction = fragment
         descriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
         descriptor.colorAttachments[0].isBlendingEnabled = true
-        descriptor.colorAttachments[0].sourceRGBBlendFactor = .sourceAlpha
+        descriptor.colorAttachments[0].sourceRGBBlendFactor = .one
         descriptor.colorAttachments[0].sourceAlphaBlendFactor = .one
         descriptor.colorAttachments[0].destinationRGBBlendFactor = .oneMinusSourceAlpha
         descriptor.colorAttachments[0].destinationAlphaBlendFactor = .oneMinusSourceAlpha
+
         guard let pipeline = try? device.makeRenderPipelineState(descriptor: descriptor) else { return }
 
         self.device = device
@@ -102,9 +81,7 @@ final class GlassRenderer {
         }
     }
 
-    /// Draws the rim of `request` into `layer`, whose drawable is the surface's
-    /// own bounds.
-    func draw(_ request: Request, in layer: CAMetalLayer) {
+    func draw(_ request: Request, into layer: CAMetalLayer) {
         guard isReady,
               let device,
               let queue,
@@ -112,9 +89,46 @@ final class GlassRenderer {
               let drawable = layer.nextDrawable(),
               let command = queue.makeCommandBuffer()
         else { return }
-        let size = request.texture
-        guard size.width >= 1, size.height >= 1 else { return }
-        guard let backdrop = texture(for: request.backdrop, size: size, device: device) else { return }
+
+        // Capture the backdrop layer into a texture Metal can read: render the
+        // backdrop into a context, then upload.
+        let scale = request.scale
+        let size = CGSize(width: request.bounds.width * scale, height: request.bounds.height * scale)
+        let width = Int(size.width), height = Int(size.height)
+        guard width > 0, height > 0 else { return }
+
+        var pixels = [UInt8](repeating: 0, count: width * height * 4)
+        pixels.withUnsafeMutableBytes { raw in
+            guard let ctx = CGContext(
+                data: raw.baseAddress,
+                width: width,
+                height: height,
+                bitsPerComponent: 8,
+                bytesPerRow: width * 4,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
+            ) else { return }
+            ctx.scaleBy(x: scale, y: scale)
+            ctx.translateBy(x: 0, y: request.bounds.height)
+            ctx.scaleBy(x: 1, y: -1)
+            request.backdrop.render(in: ctx)
+        }
+
+        let descriptor = MTLTextureDescriptor.texture2DDescriptor(
+            pixelFormat: .bgra8Unorm,
+            width: width,
+            height: height,
+            mipmapped: false
+        )
+        descriptor.usage = [.shaderRead]
+        descriptor.storageMode = .shared
+        guard let texture = device.makeTexture(descriptor: descriptor) else { return }
+        texture.replace(
+            region: MTLRegionMake2D(0, 0, width, height),
+            mipmapLevel: 0,
+            withBytes: pixels,
+            bytesPerRow: width * 4
+        )
 
         let pass = MTLRenderPassDescriptor()
         pass.colorAttachments[0].texture = drawable.texture
@@ -122,24 +136,30 @@ final class GlassRenderer {
         pass.colorAttachments[0].storeAction = .store
         pass.colorAttachments[0].clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
         guard let encoder = command.makeRenderCommandEncoder(descriptor: pass) else { return }
+
+        struct Uniforms {
+            var size: SIMD2<Float>
+            var radius: Float
+            var bevel: Float
+            var pull: Float
+            var tint: SIMD4<Float>
+            var specular: Float
+            var thickness: Float
+        }
+
+        let dark = request.dark
         var uniforms = Uniforms(
-            rect: SIMD4<Float>(
-                Float(request.rect.minX), Float(request.rect.minY),
-                Float(request.rect.width), Float(request.rect.height),
-            ),
-            params: SIMD4<Float>(Float(request.radius), Self.bevel, Self.pull, Self.blur),
-            tint: request.tint,
-            light: SIMD4<Float>(-0.55, -0.75, request.specular, request.shade),
-            size: SIMD4<Float>(
-                Float(request.texture.width), Float(request.texture.height),
-                Float(request.origin.x), Float(request.origin.y),
-            ),
-            canvas: SIMD4<Float>(
-                Float(request.canvas.width), Float(request.canvas.height), 0, 0,
-            ),
+            size: SIMD2<Float>(Float(width), Float(height)),
+            radius: Float(request.radius * scale),
+            bevel: Float(28 * scale),
+            pull: Float(32 * scale),
+            tint: dark ? SIMD4(0.02, 0.02, 0.03, 0.45) : SIMD4(0.98, 0.98, 0.99, 0.40),
+            specular: dark ? 0.65 : 0.90,
+            thickness: dark ? 0.40 : 0.25
         )
+
         encoder.setRenderPipelineState(pipeline)
-        encoder.setFragmentTexture(backdrop, index: 0)
+        encoder.setFragmentTexture(texture, index: 0)
         encoder.setFragmentBytes(&uniforms, length: MemoryLayout<Uniforms>.size, index: 0)
         encoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: 4)
         encoder.endEncoding()
@@ -147,72 +167,18 @@ final class GlassRenderer {
         command.commit()
     }
 
-    /// The band the shader draws, in points: how far in from the edge the lens
-    /// reaches, how hard it pulls, and how much of it is blurred.
-    private static let bevel: Float = 12
-    private static let pull: Float = 12
-    private static let blur: Float = 3
-
-    private struct Uniforms {
-        var rect: SIMD4<Float>
-        var params: SIMD4<Float>
-        var tint: SIMD4<Float>
-        var light: SIMD4<Float>
-        var size: SIMD4<Float>
-        var canvas: SIMD4<Float>
-    }
-
-    /// The snapshot as a texture, drawn into a bitmap first because Metal
-    /// takes bytes and a `CGImage` is not bytes.
-    private func texture(for image: CGImage, size: CGSize, device: MTLDevice) -> MTLTexture? {
-        let width = Int(size.width), height = Int(size.height)
-        if staging == nil || stagingSize != size {
-            let descriptor = MTLTextureDescriptor.texture2DDescriptor(
-                pixelFormat: .bgra8Unorm,
-                width: width,
-                height: height,
-                mipmapped: false,
-            )
-            descriptor.usage = [.shaderRead]
-            descriptor.storageMode = .shared
-            staging = device.makeTexture(descriptor: descriptor)
-            stagingSize = size
-        }
-        guard let texture = staging else { return nil }
-        var pixels = [UInt8](repeating: 0, count: width * height * 4)
-        pixels.withUnsafeMutableBytes { raw in
-            guard let context = CGContext(
-                data: raw.baseAddress,
-                width: width,
-                height: height,
-                bitsPerComponent: 8,
-                bytesPerRow: width * 4,
-                space: CGColorSpaceCreateDeviceRGB(),
-                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue
-                    | CGBitmapInfo.byteOrder32Little.rawValue,
-            ) else { return }
-            context.draw(image, in: CGRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(height)))
-        }
-        texture.replace(
-            region: MTLRegionMake2D(0, 0, width, height),
-            mipmapLevel: 0,
-            withBytes: pixels,
-            bytesPerRow: width * 4,
-        )
-        return texture
-    }
-
     private static let shader = """
     #include <metal_stdlib>
     using namespace metal;
 
     struct Uniforms {
-        float4 rect;      // x, y, w, h in snapshot pixels, top left origin
-        float4 params;    // radius, bevel, pull, blur
-        float4 tint;      // rgba
-        float4 light;     // dir.x, dir.y, specular, shade
-        float4 size;      // snapshot w, h, where the surface starts in it
-        float4 canvas;    // drawable w, h, -, -
+        float2 size;
+        float radius;
+        float bevel;
+        float pull;
+        float4 tint;
+        float specular;
+        float thickness;
     };
 
     float sdRoundBox(float2 p, float2 b, float r) {
@@ -221,88 +187,97 @@ final class GlassRenderer {
     }
 
     float2 sdfNormal(float2 p, float2 b, float r) {
-        const float e = 0.75;
+        const float e = 1.0;
         float dx = sdRoundBox(p + float2(e, 0), b, r) - sdRoundBox(p - float2(e, 0), b, r);
         float dy = sdRoundBox(p + float2(0, e), b, r) - sdRoundBox(p - float2(0, e), b, r);
-        return normalize(float2(dx, dy) + 1e-6);
+        return normalize(float2(dx, dy));
     }
 
     struct VertOut {
         float4 position [[position]];
         float2 uv;
-        float2 px;
     };
 
-    vertex VertOut glassVertex(uint vid [[vertex_id]]) {
+    vertex VertOut liquidVertex(uint vid [[vertex_id]]) {
         float2 corners[4] = { float2(0, 0), float2(1, 0), float2(0, 1), float2(1, 1) };
         float2 c = corners[vid];
         VertOut out;
-        out.position = float4(c * 2.0 - 1.0, 0.0, 1.0);
+        out.position = float4(c * 2.0 - 1.0, 0, 1);
         out.uv = float2(c.x, 1.0 - c.y);
-        out.px = c;
         return out;
     }
 
-    fragment float4 glassEdge(VertOut in [[stage_in]],
-                              texture2d<float> backdrop [[texture(0)]],
-                              constant Uniforms &u [[buffer(0)]]) {
+    fragment float4 liquidFragment(
+        VertOut in [[stage_in]],
+        texture2d<float> backdrop [[texture(0)]],
+        constant Uniforms &u [[buffer(0)]]
+    ) {
         constexpr sampler s(filter::linear, address::clamp_to_edge);
-        float2 pixel = float2(in.px.x, 1.0 - in.px.y) * u.canvas.xy;
-
-        float2 centre = u.rect.xy + u.rect.zw * 0.5;
-        float2 halfSize = u.rect.zw * 0.5;
+        float2 pixel = in.uv * u.size;
+        float2 centre = u.size * 0.5;
+        float2 half = u.size * 0.5;
         float2 rel = pixel - centre;
-        float d = sdRoundBox(rel, halfSize, u.params.x);
+        float d = sdRoundBox(rel, half, u.radius);
+
+        // Outside the glass: transparent, so the view behind shows.
+        if (d > 0.5) { discard_fragment(); }
+
         float t = max(0.0, -d);
-        // The face is the material's: this shader owns the rim alone.
-        float bevel = 1.0 - smoothstep(0.0, u.params.y, t);
-        if (t > u.params.y + 1.0) { discard_fragment(); }
+        float2 n = sdfNormal(rel, half, u.radius);
 
-        float2 n = sdfNormal(rel, halfSize, u.params.x);
+        // The glass is thick at the middle and thin at the edge: refraction
+        // is hardest where it thins, pulling the backdrop into the rim.
+        float edge = smoothstep(u.bevel, 0.0, t);
+        float middle = 1.0 - smoothstep(0.0, u.bevel * 0.6, t);
 
-        // Thick glass bends what is behind it, hardest at the edge, and each
-        // colour by a little more or less, which leaves the fringe. Every
-        // sample lands outside the surface, where the snapshot holds the page
-        // rather than this surface's own last frame.
-        float2 pull = n * (bevel * bevel * u.params.z);
-        float2 sC = pixel + pull;
-        float2 sR = pixel + pull * 1.06;
-        float2 sB = pixel + pull * 0.94;
-        // Whatever the pull, nothing is read from inside the surface.
-        float sdC = sdRoundBox(sC - centre, halfSize, u.params.x);
-        if (sdC < 0.75) { sC += n * (0.75 - sdC); }
-        float sdR = sdRoundBox(sR - centre, halfSize, u.params.x);
-        if (sdR < 0.75) { sR += n * (0.75 - sdR); }
-        float sdB = sdRoundBox(sB - centre, halfSize, u.params.x);
-        if (sdB < 0.75) { sB += n * (0.75 - sdB); }
-        float2 uvC = (sC + u.size.zw) / u.size.xy;
-        float2 uvR = (sR + u.size.zw) / u.size.xy;
-        float2 uvB = (sB + u.size.zw) / u.size.xy;
+        // Displacement: each colour bends a little differently.
+        float strength = edge * edge * u.pull;
+        float2 offset = n * strength;
+        float2 uvC = (pixel + offset) / u.size;
+        float2 uvR = (pixel + offset * 1.10) / u.size;
+        float2 uvB = (pixel + offset * 0.90) / u.size;
 
-        const float2 taps[8] = {
-            float2(-0.61, 0.35), float2(0.42, 0.72), float2(0.74, -0.31), float2(-0.28, -0.78),
-            float2(0.12, 0.15), float2(-0.83, -0.22), float2(0.55, 0.28), float2(0.05, -0.5)
+        // Sample with a small blur where the glass is thick.
+        const float2 taps[12] = {
+            float2(-0.326, -0.406), float2(-0.840, -0.074), float2(-0.696, 0.457),
+            float2(-0.203, 0.621), float2(0.962, -0.195), float2(0.473, -0.480),
+            float2(0.519, 0.767), float2(0.185, -0.893), float2(0.507, 0.064),
+            float2(0.896, 0.412), float2(-0.321, -0.937), float2(0.052, 0.119)
         };
-        float3 sum = float3(0.0);
-        for (int i = 0; i < 8; i++) {
-            sum += backdrop.sample(s, uvC + taps[i] * u.params.w / u.size.xy).rgb;
+        float3 sum = float3(0);
+        float blurRadius = middle * 4.5 / u.size.x;
+        for (int i = 0; i < 12; i++) {
+            sum += backdrop.sample(s, uvC + taps[i] * blurRadius).rgb;
         }
-        float3 colour = sum / 8.0;
-        colour.r = mix(colour.r, backdrop.sample(s, uvR).r, 0.6);
-        colour.b = mix(colour.b, backdrop.sample(s, uvB).b, 0.6);
+        float3 colour = sum / 12.0;
+        colour.r = mix(colour.r, backdrop.sample(s, uvR).r, 0.7);
+        colour.b = mix(colour.b, backdrop.sample(s, uvB).b, 0.7);
 
+        // Desaturate and tint.
         float lum = dot(colour, float3(0.299, 0.587, 0.114));
-        colour = mix(colour, float3(lum), 0.22);
+        colour = mix(colour, float3(lum), 0.28);
         colour = mix(colour, u.tint.rgb, u.tint.a);
 
-        float3 lit = normalize(float3(u.light.x, u.light.y, 0.75));
-        float facing = saturate(dot(normalize(float3(n, 0.55)), lit));
-        float rim = 1.0 - smoothstep(0.0, 1.6, t);
-        colour += u.light.z * rim * (0.25 + 0.75 * facing);
-        colour *= 1.0 - u.light.w * (1.0 - facing) * exp(-t / 2.5);
+        // Specular highlight: a soft band across the top where the glass catches
+        // the light, brightest at the leading corner.
+        float2 toTop = float2(-rel.x, -rel.y + half.y * 0.6);
+        float topDist = length(toTop);
+        float highlight = exp(-topDist / (u.size.y * 0.15)) * u.specular;
+        float cornerBias = 1.0 - smoothstep(0.0, half.x * 0.4, abs(rel.x));
+        colour += highlight * (0.5 + 0.5 * cornerBias);
 
-        // Away from the rim the band fades into the material, so no edge shows.
-        return float4(colour, saturate(bevel * 1.6));
+        // The rim: bright where the normal faces the light.
+        float3 lit = normalize(float3(-0.5, -0.7, 0.6));
+        float facing = saturate(dot(normalize(float3(n, 0.5)), lit));
+        float rim = smoothstep(3.0, 0.0, t);
+        colour += rim * facing * u.specular * 0.8;
+
+        // Thickness: the middle is darker where the glass is thick.
+        colour *= 1.0 - middle * u.thickness;
+
+        // Alpha ramps at the very edge so the rounded corners blend.
+        float alpha = smoothstep(-1.0, 1.0, -d);
+        return float4(colour, alpha);
     }
     """
 }
