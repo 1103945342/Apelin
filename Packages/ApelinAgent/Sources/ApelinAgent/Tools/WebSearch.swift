@@ -140,7 +140,7 @@ struct WebSearch: Sendable {
 struct WebSearchResult: Sendable {
     var query: String
     /// Structured results if available: each with title, url, snippet
-    var results: [[String: Any]]?
+    var results: [[String: String]]?
     /// Raw text response from the service
     var raw: String
     
@@ -155,11 +155,11 @@ struct WebSearchResult: Sendable {
             lines.append("")
             
             for (index, result) in results.enumerated() {
-                lines.append("\(index + 1). **\(result["title"] as? String ?? "Untitled")**")
-                if let url = result["url"] as? String {
+                lines.append("\(index + 1). **\(result["title"] ?? "Untitled")**")
+                if let url = result["url"] {
                     lines.append("   \(url)")
                 }
-                if let snippet = result["snippet"] as? String, !snippet.isEmpty {
+                if let snippet = result["snippet"], !snippet.isEmpty {
                     lines.append("   \(snippet)")
                 }
                 lines.append("")

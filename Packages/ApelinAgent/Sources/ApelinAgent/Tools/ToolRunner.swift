@@ -485,7 +485,7 @@ actor ToolRunner {
 
         case .webSearch:
             let result = try await WebSearch.shared.search(arguments)
-            return .text(result.answer)
+            return text(result.answer)
         case .webFetch:
             // No host request either: the worker fetches the page itself,
             // as mobile, and answers its text.
