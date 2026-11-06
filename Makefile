@@ -406,7 +406,7 @@ check:
 	@# nor turns into an empty state the next save writes (issue #33).
 	@"$(PERSISTED_READS_CHECK)" "$(ROOT_DIR)"
 	@# The system prompt is edited in Prompts/*.md; the Swift it compiles to
-	@# is generated, never edited by hand.
+	@# is generated (CI regenerates it first, sync-prompts.sh), never by hand.
 	@"$(PROMPTS_EMBEDDER)" --check
 
 # The Mac half of "where things get tested": what can run without a device.

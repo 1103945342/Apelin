@@ -1,14 +1,18 @@
 # The agent's system prompt
 
 Each file here is one section of the system prompt the agent reads, in
-English. Edit the text here, never in Swift; then run
-
-    Packages/ApelinAgent/Scripts/embed-prompts.py
-
-which writes `Sources/ApelinAgent/Session/SystemPromptText.swift`, and commit
-both. `make check` fails when the two differ. The text is compiled in rather
-than shipped as a resource: a resource bundle's accessor would carry the build
-machine's path into the binary.
+English. Edit the text here, never in Swift, and push: the Debug build
+workflow runs `Packages/ApelinAgent/Scripts/sync-prompts.sh` before it
+builds, which regenerates `Sources/ApelinAgent/Session/SystemPromptText.swift`
+with `embed-prompts.py`, builds with it, and on a push to main commits the
+regenerated file as github-actions[bot] and pushes it back. Pull before the
+next push of your own. That commit starts no build of its own (a push with
+the workflow's token never does); when main has moved on meanwhile, nothing
+is pushed and the newer run regenerates for itself. CI's jobs regenerate the
+same way without committing. Run `embed-prompts.py` yourself to see the
+Swift before pushing; `make check` fails when the two differ. The text is
+compiled in rather than shipped as a resource: a resource bundle's accessor
+would carry the build machine's path into the binary.
 
 - `NN-name.md`: `NN` orders the files, `name` becomes the Swift member
   (`20-working.md` → `SystemPromptText.working`).

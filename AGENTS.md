@@ -3696,8 +3696,11 @@ The agent's system prompt (`ApelinAgent/Session/SystemPrompt.swift`) is kept
 short, after pi's. Its text is `Packages/ApelinAgent/Prompts/*.md`, one file
 per section, compiled in as `SystemPromptText.swift` by
 `Packages/ApelinAgent/Scripts/embed-prompts.py` (never a resource bundle,
-whose accessor carries the build path); edit the Markdown, run the script and
-commit both, and `make check` fails when they differ. `SystemPrompt.make`
+whose accessor carries the build path); edit the Markdown and push: the Debug
+build runs `Scripts/sync-prompts.sh` before building, which regenerates the
+Swift, builds with it, and on a push to main commits it as github-actions[bot]
+and pushes it back (not when main has moved on meanwhile); CI's jobs
+regenerate without committing, and `make check` fails when the two differ. `SystemPrompt.make`
 picks the sections and their order; `# Environment`, the MCP servers and the
 skills list stay Swift, made from facts. What it says: the language the user writes in, for the reply, every
 progress note between tool calls and every question, even after English

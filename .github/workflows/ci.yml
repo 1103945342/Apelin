@@ -96,6 +96,10 @@ jobs:
           xcodebuild -version
           echo "iPhoneOS SDK $(xcrun --sdk iphoneos --show-sdk-version)"
 
+      - name: Regenerate the system prompt
+        shell: bash
+        run: Packages/ApelinAgent/Scripts/sync-prompts.sh
+
       - name: Run host tests
         run: make harness SWIFTPM_SCRATCH="$RUNNER_TEMP/apelin-spm"
 
@@ -134,6 +138,10 @@ jobs:
           if (( ${#formulae[@]} > 0 )); then
             brew install "${formulae[@]}"
           fi
+
+      - name: Regenerate the system prompt
+        shell: bash
+        run: Packages/ApelinAgent/Scripts/sync-prompts.sh
 
       # The harness runs in the job beside this one. deb-all packages the IDE
       # for both flavours, then every extension: the development extensions

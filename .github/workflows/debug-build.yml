@@ -51,6 +51,15 @@ jobs:
             brew install "${formulae[@]}"
           fi
 
+      # The system prompt is edited as Markdown: the Swift it compiles to is
+      # written here from it, before the build, and on a push to main a change
+      # is committed and pushed back so the repository holds it too.
+      - name: Regenerate the system prompt
+        shell: bash
+        env:
+          PUSH_TOKEN: ${{ github.token }}
+        run: Packages/ApelinAgent/Scripts/sync-prompts.sh
+
       - name: Build and package
         shell: bash
         run: |
