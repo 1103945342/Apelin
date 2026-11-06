@@ -7,5 +7,6 @@
 
 # vendored code keeps its upstream form; templates ship with pinned digests
 # (Extensions/Development/*/manifest.json); generated code is written by its
-# script (Packages/ApelinKit/Scripts/embed-schemas.py), not by hand
---exclude Packages/Runestone,Extensions/Development,Apelind/Vendor,Packages/ApelinKit/Sources/ApelinProject/JSON/EmbeddedSchemas.swift,**/.build,build
+# script (Packages/ApelinKit/Scripts/embed-schemas.py,
+# Packages/ApelinAgent/Scripts/embed-prompts.py), not by hand
+--exclude Packages/Runestone,Extensions/Development,Apelind/Vendor,Packages/ApelinKit/Sources/ApelinProject/JSON/EmbeddedSchemas.swift,Packages/ApelinAgent/Sources/ApelinAgent/Session/SystemPromptText.swift,**/.build,build

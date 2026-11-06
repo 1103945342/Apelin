@@ -72,6 +72,9 @@ SHELL_DELETES_CHECK := $(ROOT_DIR)/Scripts/check-shell-deletes.py
 PERSISTED_READS_CHECK := $(ROOT_DIR)/Scripts/check-persisted-reads.py
 SYMBOL_CHECK        := $(ROOT_DIR)/Scripts/check-symbol-availability.py
 RPATH_CHECK         := $(ROOT_DIR)/Scripts/check-rpath-dependencies.py
+# The agent's system prompt is Packages/ApelinAgent/Prompts/*.md, compiled in
+# as SystemPromptText.swift; --check fails when the two differ.
+PROMPTS_EMBEDDER    := $(ROOT_DIR)/Packages/ApelinAgent/Scripts/embed-prompts.py
 # The device harness: console scripts and suites on a vphone or a device,
 # from the Mac (Documents/Console.md ▸ From the Mac).
 DEVICE_TOOL         := $(ROOT_DIR)/Scripts/device.py
@@ -256,7 +259,7 @@ check:
 	@for script in "$(DEB_PACKAGER)" "$(DEVICE_INSTALLER)" "$(VERSION_APPLIER)" "$(XCODEBUILD_WRAPPER)" \
 		"$(LICENSE_COLLECTOR)" "$(ACCESSIBILITY_CHECK)" "$(STALE_STRINGS_CHECK)" "$(FORMAT_STRINGS_CHECK)" "$(TRANSLATIONS_CHECK)" \
 		"$(CATALOG_KEYS_CHECK)" "$(SHELL_DELETES_CHECK)" "$(PERSISTED_READS_CHECK)" \
-		"$(SYMBOL_CHECK)" "$(RPATH_CHECK)" "$(SCHEMA_FIXTURES_CHECK)" "$(TEMPLATES_CHECK)" \
+		"$(SYMBOL_CHECK)" "$(RPATH_CHECK)" "$(PROMPTS_EMBEDDER)" "$(SCHEMA_FIXTURES_CHECK)" "$(TEMPLATES_CHECK)" \
 		"$(EXTENSIONS_PACKAGER)" "$(AGENT_TOOLS_BUILDER)" "$(DEVICE_TOOL)"; do \
 		test -x "$$script" || { echo "error: $${script#$(ROOT_DIR)/} is not executable" >&2; exit 66; }; \
 	done
@@ -402,6 +405,9 @@ check:
 	@# One saved entry that does not decode never takes the others with it,
 	@# nor turns into an empty state the next save writes (issue #33).
 	@"$(PERSISTED_READS_CHECK)" "$(ROOT_DIR)"
+	@# The system prompt is edited in Prompts/*.md; the Swift it compiles to
+	@# is generated, never edited by hand.
+	@"$(PROMPTS_EMBEDDER)" --check
 
 # The Mac half of "where things get tested": what can run without a device.
 # RoothideRoot against libroothide's own name rule, ExecutableWatch against a

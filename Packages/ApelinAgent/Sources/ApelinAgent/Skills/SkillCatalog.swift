@@ -104,12 +104,8 @@ public enum SkillCatalog {
 
     static func promptSection(_ skills: [SkillDocument]) -> String {
         guard !skills.isEmpty else { return "" }
-        var lines = [
-            "# Skills",
-            "Skills hold detailed instructions for particular tasks. When a task matches a skill's description, call apelin_skill_read with its name before you start, and follow it.",
-            "",
-            "<available_skills>",
-        ]
+        // The head is Prompts/90-skills.md.
+        var lines = [SystemPromptText.skills, "", "<available_skills>"]
         for skill in skills {
             let source = skill.isUserSkill ? " source=\"user\"" : ""
             lines.append("<skill name=\"\(escape(skill.name))\"\(source)>\(escape(skill.description))</skill>")
