@@ -3,7 +3,7 @@ import UIKit
 /// The line under a message: under the reader's, when it was sent, Copy,
 /// Checkpoint & Rewind and More; under a turn's last reply, what the turn
 /// cost (tokens in and out, the share read from the provider's cache behind
-/// a cylinder, the time it took behind a clock), Copy and More, as aimini's
+/// a stack of layers, the time it took behind a clock), Copy and More, as aimini's
 /// message footer has it. The reply of a turn still running has neither
 /// Copy nor More until it ends.
 ///
@@ -31,7 +31,7 @@ final class MessageFooterView: UIView {
 
     private let timeLabel = UILabel()
     private let tokensLabel = UILabel()
-    private let cacheIcon = MessageFooterView.icon("cylinder")
+    private let cacheIcon = MessageFooterView.icon("square.stack.3d.up")
     private let cacheLabel = UILabel()
     private let durationIcon = MessageFooterView.icon("clock")
     private let durationLabel = UILabel()
