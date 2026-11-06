@@ -170,6 +170,7 @@ final class ChatController: UIViewController {
             guard let self, let chat else { return }
             ChatActions.askToCompact(for: chat.id, runtime: runtime, from: self)
         }
+        composer.todoPanel.onHide = { [weak self] in self?.confirmHideTodoList() }
         composer.onRunCommand = { [weak self] command, arguments in
             guard let self else { return }
             command.run(arguments: arguments, in: self)
@@ -556,9 +557,11 @@ final class ChatController: UIViewController {
             // The agent writes the list through a tool; reading it here is what
             // makes a change the app never saw an event for show up.
             if let sessionID = runtime.records[chat.id]?.sessionID {
-                composer.todoPanel.show(TodoStore(root: DataFolder.app.root).list(for: sessionID))
+                let list = TodoStore(root: DataFolder.app.root).list(for: sessionID)
+                let shown = TodoListHiding.isHidden(list, for: sessionID) ? TodoList() : list
+                composer.todoPanel.show(shown, for: sessionID)
             } else {
-                composer.todoPanel.show(TodoList())
+                composer.todoPanel.show(TodoList(), for: nil)
             }
             // The conversation's project decides what an `@` can offer; a
             // temporary chat has no files of its own to name.
@@ -1334,6 +1337,22 @@ extension ChatController {
     }
 
     // MARK: More
+
+    /// The to-do panel's ✕: asked first, since the agent's list stays and a
+    /// new one brings the panel back.
+    private func confirmHideTodoList() {
+        guard let chat, let sessionID = runtime.records[chat.id]?.sessionID else { return }
+        let list = TodoStore(root: DataFolder.app.root).list(for: sessionID)
+        guard !list.items.isEmpty else { return }
+        presentConfirmation(
+            title: "Hide To-Do List?",
+            message: "The list leaves this chat until the agent writes a new one. The agent keeps its own copy.",
+            confirmTitle: "Hide",
+        ) { [weak self] in
+            TodoListHiding.hide(list, for: sessionID)
+            self?.refreshRuntime()
+        }
+    }
 
     fileprivate func presentMessageMenu(for id: UUID) {
         guard let chat, let message = shownMessage(id), let messageID = message.turnMessageID else { return }

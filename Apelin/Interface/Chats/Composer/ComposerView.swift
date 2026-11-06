@@ -484,6 +484,9 @@ class ComposerView: ComposerSectionView {
             controlPanel.close()
         }
         approvalSection.show(message)
+        // A request takes the composer's attention, as typing does: the
+        // to-do list folds while either goes on.
+        todoPanel.holdFolded(approvalSection.isPresentingRequest || inputEditor.textView.isFirstResponder)
         updateModelBarVisibility()
     }
 
@@ -628,6 +631,7 @@ extension ComposerView: ComposerInputView.Delegate {
 
     func onComposerInputBeginEditing() {
         controlPanel.close()
+        todoPanel.holdFolded(true)
         delegate?.onComposerBeginEditing()
     }
 
@@ -648,6 +652,7 @@ extension ComposerView: ComposerInputView.Delegate {
     }
 
     func onComposerInputEndEditing() {
+        todoPanel.holdFolded(approvalSection.isPresentingRequest)
         publishNewEditorStatus()
     }
 

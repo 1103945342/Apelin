@@ -116,12 +116,29 @@ class ComposerPanel: UIView {
 
     private func updateExpansion() {
         let shown = isExpanded && !isSuppressed
-        let height = shown ? preferredHeight : 0
         chevron.transform = CGAffineTransform(rotationAngle: shown ? 0 : -.pi / 2)
         body.isHidden = !shown
-        heightPublisher.send(height)
+        publishHeight()
+        expansionDidChange()
         setNeedsLayout()
     }
+
+    /// Opened, folded, covered or uncovered, whoever asked. A subclass whose
+    /// own drawing follows the state overrides it.
+    func expansionDidChange() {}
+
+    /// Tells the composer the height the panel takes now: all of it while
+    /// open, `foldedHeight` while folded, nothing while something covers the
+    /// composer. A subclass calls it when what it holds changes.
+    func publishHeight() {
+        let height = isSuppressed ? 0 : isExpanded ? preferredHeight : foldedHeight
+        heightPublisher.send(height)
+    }
+
+    /// The height the panel keeps while folded. Zero takes it out of the
+    /// layout until something opens it; a panel whose folded line is worth
+    /// reading on its own (the to-do list's) keeps that line.
+    var foldedHeight: CGFloat { 0 }
 
     /// What the panel measures once it is built. A subclass overrides it when
     /// its body has a fixed height of its own.
