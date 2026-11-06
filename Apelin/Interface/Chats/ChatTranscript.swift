@@ -744,6 +744,9 @@ struct ChatTranscript {
         case .conversationStop: return String(localized: "Stop a chat")
         case .notificationSend: return String(localized: "Send a notification")
         case .questionAsk: return String(localized: "Ask a question")
+        case .webSearch:
+            let query = values?["query"]?.stringValue ?? ""
+            return query.isEmpty ? String(localized: "Search the web") : String(localized: "Search for "\(query)"")
         case .webFetch:
             let host = values?["url"]?.stringValue.flatMap { URLComponents(string: $0)?.host } ?? ""
             return host.isEmpty ? String(localized: "Read a webpage") : String(localized: "Read \(host)")
