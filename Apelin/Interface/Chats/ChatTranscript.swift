@@ -434,18 +434,20 @@ struct ChatTranscript {
     }
 
     /// The rows with each turn's cost on its last reply, and Copy and More
-    /// there too, as aimini's chat has them: on every turn that ended, the
-    /// last one's only once no run goes.
+    /// there too, as aimini's chat has them: on every turn that ended, and
+    /// on the last one only once no run goes; until then the figures are not
+    /// the turn's yet, and the reply is still being written.
     private func rowsWithTurns() -> [ChatMessage] {
         var shown = rows
         for (position, turn) in turns.enumerated() {
+            guard position < turns.count - 1 || !isWorking else { continue }
             let end = turns.indices.contains(position + 1) ? turns[position + 1].start : shown.count
             let range = turn.start ..< min(end, shown.count)
             guard let reply = range.last(where: { shown[$0].isReply && !shown[$0].isRemoved }) else { continue }
             // The reply the history's changes act on: the turn's last with
             // text, as the agent finds it.
             if let target = range.last(where: { shown[$0].isReply && !shown[$0].isRemoved && !shown[$0].text.isEmpty }),
-               shown[target].turnMessageID != nil, position < turns.count - 1 || !isWorking
+               shown[target].turnMessageID != nil
             {
                 shown[target].offersActions = true
             }
