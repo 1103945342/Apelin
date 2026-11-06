@@ -1,15 +1,19 @@
 import UIKit
 
 /// The line under a message: under the reader's, when it was sent, Copy,
-/// Checkpoint & Rewind and More; under the newest reply, what its turn cost
-/// (tokens in and out, the share read from the provider's cache, the time
-/// it took), Copy and More. An older reply keeps only what it cost.
+/// Checkpoint & Rewind and More; under a turn's last reply, what the turn
+/// cost (tokens in and out, the share read from the provider's cache behind
+/// a cylinder, the time it took behind a clock), Copy and More, as aimini's
+/// message footer has it. The reply of a turn still running has neither
+/// Copy nor More until it ends.
 ///
 /// Laid out left to right and mirrored right to left, item by item, as the
-/// bubble above it is. Each label and button is an element of its own.
+/// bubble above it is. Each label and button is an element of its own; an
+/// icon is drawn only, its label saying what it stands for.
 final class MessageFooterView: UIView {
     static let buttonSize: CGFloat = 28
     private static let labelSpacing: CGFloat = 8
+    private static let iconSpacing: CGFloat = 2
     private static let buttonSpacing: CGFloat = 2
 
     /// The line's height, the same for every message.
@@ -27,7 +31,9 @@ final class MessageFooterView: UIView {
 
     private let timeLabel = UILabel()
     private let tokensLabel = UILabel()
+    private let cacheIcon = MessageFooterView.icon("cylinder")
     private let cacheLabel = UILabel()
+    private let durationIcon = MessageFooterView.icon("clock")
     private let durationLabel = UILabel()
     private let copyButton = UIButton(type: .system)
     private let rewindButton = UIButton(type: .system)
@@ -44,6 +50,10 @@ final class MessageFooterView: UIView {
             label.textColor = .secondaryLabel
             label.isHidden = true
             addSubview(label)
+        }
+        for icon in [cacheIcon, durationIcon] {
+            icon.isHidden = true
+            addSubview(icon)
         }
         Self.style(copyButton, symbol: "doc.on.doc")
         copyButton.accessibilityLabel = String(localized: "Copy")
@@ -75,6 +85,18 @@ final class MessageFooterView: UIView {
         configuration.baseForegroundColor = .secondaryLabel
         configuration.contentInsets = .zero
         button.configuration = configuration
+    }
+
+    /// A symbol drawn before a figure, in the figures' colour and at their
+    /// size. Not an element: the figure's label names what it is.
+    private static func icon(_ symbol: String) -> UIImageView {
+        let view = UIImageView(image: UIImage(systemName: symbol))
+        view.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .caption1, scale: .small)
+        view.adjustsImageSizeForAccessibilityContentSizeCategory = true
+        view.tintColor = .secondaryLabel
+        view.contentMode = .center
+        view.isAccessibilityElement = false
+        return view
     }
 
     /// Whether `message` has a line under it at all.
@@ -118,15 +140,18 @@ final class MessageFooterView: UIView {
         tokensLabel.isHidden = stats?.hasTokens != true
         if let rate = stats?.cacheHitRate {
             let percent = rate.formatted(.percent.precision(.fractionLength(0)))
-            cacheLabel.text = String(localized: "Cache \(percent)")
+            cacheLabel.text = percent
             cacheLabel.accessibilityLabel = String(localized: "\(percent) of input read from the cache")
         }
         cacheLabel.isHidden = stats?.cacheHitRate == nil
-        if let seconds = stats?.seconds, let duration = Self.duration(seconds) {
+        cacheIcon.isHidden = cacheLabel.isHidden
+        let duration = stats?.seconds.flatMap(Self.duration)
+        if let duration {
             durationLabel.text = duration
             durationLabel.accessibilityLabel = String(localized: "Took \(duration)")
         }
-        durationLabel.isHidden = stats?.seconds == nil
+        durationLabel.isHidden = duration == nil
+        durationIcon.isHidden = durationLabel.isHidden
 
         let acts = user ? message.turnMessageID != nil : message.offersActions
         copyButton.isHidden = !(hasText && (user || message.offersActions))
@@ -175,7 +200,10 @@ final class MessageFooterView: UIView {
 
     /// The items shown, in reading order.
     private var items: [UIView] {
-        [timeLabel, tokensLabel, cacheLabel, durationLabel, copyButton, rewindButton, moreButton].filter { !$0.isHidden }
+        [
+            timeLabel, tokensLabel, cacheIcon, cacheLabel, durationIcon, durationLabel,
+            copyButton, rewindButton, moreButton,
+        ].filter { !$0.isHidden }
     }
 
     /// The width the items take.
@@ -216,11 +244,18 @@ final class MessageFooterView: UIView {
         if item is UIButton {
             return CGSize(width: Self.buttonSize, height: Self.buttonSize)
         }
+        if item is UIImageView {
+            let fitted = item.intrinsicContentSize
+            return CGSize(width: ceil(max(0, fitted.width)), height: ceil(max(0, fitted.height)))
+        }
         let fitted = item.sizeThatFits(CGSize(width: CGFloat.greatestFiniteMagnitude, height: bounds.height))
         return CGSize(width: ceil(fitted.width), height: ceil(fitted.height))
     }
 
     private func spacing(between first: UIView, and second: UIView) -> CGFloat {
-        first is UIButton && second is UIButton ? Self.buttonSpacing : Self.labelSpacing
+        if first is UIImageView {
+            return Self.iconSpacing
+        }
+        return first is UIButton && second is UIButton ? Self.buttonSpacing : Self.labelSpacing
     }
 }

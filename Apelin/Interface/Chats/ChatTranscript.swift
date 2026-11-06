@@ -433,22 +433,32 @@ struct ChatTranscript {
         }
     }
 
-    /// The rows with each turn's cost on its last reply, and the
-    /// conversation's newest reply offering its actions while no run goes.
+    /// The rows with each turn's cost on its last reply, and Copy and More
+    /// there too, as aimini's chat has them: on every turn that ended, the
+    /// last one's only once no run goes.
     private func rowsWithTurns() -> [ChatMessage] {
         var shown = rows
         for (position, turn) in turns.enumerated() {
-            var stats = turn.stats
-            stats.seconds = turn.ended.map { max(0, Int($0.timeIntervalSince(turn.began).rounded())) }
-            guard stats.hasTokens || stats.seconds != nil else { continue }
             let end = turns.indices.contains(position + 1) ? turns[position + 1].start : shown.count
             let range = turn.start ..< min(end, shown.count)
-            if let reply = range.last(where: { shown[$0].isReply && !shown[$0].isRemoved }) {
+            guard let reply = range.last(where: { shown[$0].isReply && !shown[$0].isRemoved }) else { continue }
+            // The reply the history's changes act on: the turn's last with
+            // text, as the agent finds it.
+            if let target = range.last(where: { shown[$0].isReply && !shown[$0].isRemoved && !shown[$0].text.isEmpty }),
+               shown[target].turnMessageID != nil, position < turns.count - 1 || !isWorking
+            {
+                shown[target].offersActions = true
+            }
+            var stats = turn.stats
+            stats.seconds = turn.ended.map { max(0, Int($0.timeIntervalSince(turn.began).rounded())) }
+            if stats.hasTokens || stats.seconds != nil {
                 shown[reply].turnStats = stats
             }
         }
+        // A reply before the first turn (another conversation's, or one
+        // made before turns were kept) offers them as the newest reply.
         if !isWorking, let newest = shown.lastIndex(where: { $0.isReply && !$0.isRemoved }),
-           shown[newest].turnMessageID != nil
+           shown[newest].turnMessageID != nil, !shown[newest].text.isEmpty
         {
             shown[newest].offersActions = true
         }
