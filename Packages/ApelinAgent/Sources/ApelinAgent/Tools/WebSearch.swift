@@ -110,8 +110,19 @@ struct WebSearch: Sendable {
                 // Try to parse the result text as JSON for structured results
                 if let resultData = resultText.data(using: .utf8),
                    let resultJSON = try? JSONSerialization.jsonObject(with: resultData) as? [String: Any],
-                   let results = resultJSON["results"] as? [[String: Any]] {
-                    return WebSearchResult(query: query, results: results, raw: resultText)
+                   let rawResults = resultJSON["results"] as? [[String: Any]] {
+                    // Convert [[String: Any]] to [[String: String]]
+                    let stringResults = rawResults.map { dict -> [String: String] in
+                        dict.compactMapValues { value in
+                            if let str = value as? String {
+                                return str
+                            } else if let num = value as? CustomStringConvertible {
+                                return num.description
+                            }
+                            return nil
+                        }
+                    }
+                    return WebSearchResult(query: query, results: stringResults, raw: resultText)
                 }
                 
                 // If not structured, return as plain text
