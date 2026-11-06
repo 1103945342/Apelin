@@ -484,7 +484,7 @@ actor ToolRunner {
             return try await askQuestion(arguments, toolCallID: context.toolCallID, cancellation: cancellation)
 
         case .webSearch:
-            let result = try await WebSearch.shared.search(call.arguments.json)
+            let result = try await WebSearch.shared.search(arguments)
             return .text(result.answer)
         case .webFetch:
             // No host request either: the worker fetches the page itself,
