@@ -1583,7 +1583,7 @@ extension ChatController {
             let forward = predicate.searchDirection == .next
             let start: Int
             if let element = predicate.currentItem.targetElement as? UIView,
-               let at = entries.firstIndex(where: { (messageList.rowView(for: $0.id) as? ChatMessageRow)?.spokenElement === element })
+               let at = entries.firstIndex(where: { (self.messageList.rowView(for: $0.id) as? ChatMessageRow)?.spokenElement === element })
             {
                 start = forward ? at + 1 : at - 1
             } else {
