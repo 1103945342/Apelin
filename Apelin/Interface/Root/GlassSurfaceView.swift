@@ -109,6 +109,18 @@ final class GlassSurfaceView: UIView {
         drawLens()
     }
 
+    /// Anywhere up the tree, hidden or faded out: nothing to draw the page
+    /// from, and no one to see it. UIKit keeps this answer private, so it is
+    /// walked here.
+    private var isShown: Bool {
+        var view: UIView? = self
+        while let current = view {
+            if current.isHidden || current.alpha < 0.01 { return false }
+            view = current.superview
+        }
+        return true
+    }
+
     // MARK: Drawing
 
     private func drawLens() {
@@ -116,7 +128,7 @@ final class GlassSurfaceView: UIView {
               !lens.isHidden,
               window != nil,
               alpha > 0,
-              !isHiddenOrHasHiddenAncestor,
+              isShown,
               bounds.width > 1,
               bounds.height > 1,
               GlassRenderer.shared.isReady
