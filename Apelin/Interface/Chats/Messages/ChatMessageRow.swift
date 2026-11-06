@@ -40,6 +40,9 @@ final class ChatMessageRow: ListRowView {
     /// row taking another message out of the pool.
     private var shownID: UUID?
     private let label = TextLabelView()
+    /// The element VoiceOver reads a message by: where the chat's "Your
+    /// Messages" rotor puts the cursor.
+    var spokenElement: UIView { label }
     private let markdownView = ChatMarkdownView()
     private var markdownText: String?
     /// The reply has finished, but its last text is still fading in.

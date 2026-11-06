@@ -59,6 +59,10 @@ class ComposerPanel: UIView {
         header.isAccessibilityElement = true
         header.accessibilityTraits = .button
         header.addTarget(self, action: #selector(toggled), for: .primaryActionTriggered)
+        // `primaryActionTriggered` reaches a plain UIControl only when the
+        // system decides it is a button; on some versions it does not. The
+        // touch itself is the one event that always arrives.
+        header.addTarget(self, action: #selector(toggled), for: .touchUpInside)
 
         for view in [header, body] {
             addSubview(view)

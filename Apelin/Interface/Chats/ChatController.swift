@@ -34,6 +34,9 @@ final class ChatController: UIViewController {
     /// away; the tap still reaches what it landed on.
     private let keyboardDismissTap = UITapGestureRecognizer()
     private let latestMessageButton = UIButton(type: .system)
+    /// One tick per message the reader sent, at the list's trailing edge
+    /// while it scrolls: dragged, it moves the list between them.
+    private let messageRuler = ChatMessageRuler()
     private weak var tracePage: TraceController?
     /// Builds the rows again once a running turn has gone quiet.
     private let quietWatch = ChatQuietWatch()
@@ -263,6 +266,14 @@ final class ChatController: UIViewController {
             make.bottom.equalTo(composer.snp.top).offset(-8)
             make.size.equalTo(44)
         }
+
+        // Under the composer, which the preview card never covers.
+        view.insertSubview(messageRuler, belowSubview: composer)
+        messageRuler.onScrubBegan = { [weak self] in self?.beginRulerScrub() }
+        messageRuler.onSelect = { [weak self] index, settled in
+            self?.showRulerEntry(index, settled: settled)
+        }
+        view.accessibilityCustomRotors = [yourMessagesRotor()]
     }
 
     private func replaceMessageList() {
@@ -467,6 +478,7 @@ final class ChatController: UIViewController {
             width: view.bounds.width,
             height: min(view.bounds.height, view.safeAreaInsets.top + 20),
         )
+        layoutMessageRuler()
     }
 
     /// Shows `chat`. The same conversation again only takes its new name;
@@ -724,6 +736,7 @@ final class ChatController: UIViewController {
         }
         let visible = items.filter { !$0.role.isApproval }
         messageList.apply(visible, animated: !isSwitchingChat && !UIAccessibility.isReduceMotionEnabled)
+        updateMessageRuler(visible)
         // a request its stopped session left can no longer be answered
         showApproval(chat?.isWorking == true ? items.first { $0.role.needsApproval } : nil)
     }
@@ -1131,6 +1144,7 @@ extension ChatController: UIScrollViewDelegate {
         // The reader has the list: only the next turn is followed again.
         followedTurn = nil
         setComposerFaded(true)
+        messageRuler.listMoved(true)
     }
 
     func scrollViewWillBeginDecelerating(_: UIScrollView) {
@@ -1138,11 +1152,15 @@ extension ChatController: UIScrollViewDelegate {
     }
 
     func scrollViewDidEndDragging(_: UIScrollView, willDecelerate decelerate: Bool) {
-        if !decelerate { setComposerFaded(false) }
+        if !decelerate {
+            setComposerFaded(false)
+            messageRuler.listMoved(false)
+        }
     }
 
     func scrollViewDidEndDecelerating(_: UIScrollView) {
         setComposerFaded(false)
+        messageRuler.listMoved(false)
     }
 
     func scrollViewDidEndScrollingAnimation(_: UIScrollView) {
@@ -1174,6 +1192,9 @@ extension ChatController: UIScrollViewDelegate {
             holdLatestMessage()
         }
         updateLatestMessageButton()
+        if messageRuler.alpha > 0 {
+            messageRuler.setCurrent(rulerIndexAtTop())
+        }
     }
 
     private func holdLatestMessage() {

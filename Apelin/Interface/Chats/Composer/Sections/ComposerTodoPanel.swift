@@ -15,7 +15,7 @@ final class ComposerTodoPanel: ComposerPanel {
     /// The ✕ was tapped: the controller asks, then hides this list.
     var onHide: (() -> Void)?
 
-    private let summary = UIControl()
+    private let summary = TodoSummaryControl()
     private let checkMark = UIImageView()
     private let nameLabel = UILabel()
     private let badge = UILabel()
@@ -77,7 +77,7 @@ final class ComposerTodoPanel: ComposerPanel {
         summary.isAccessibilityElement = true
         summary.accessibilityTraits = .button
         summary.accessibilityLabel = String(localized: "To Do")
-        summary.addTarget(self, action: #selector(summaryTapped), for: .primaryActionTriggered)
+        summary.onTap = { [weak self] in self?.summaryTapped() }
         addSubview(summary)
 
         var configuration = UIButton.Configuration.plain()
@@ -311,6 +311,37 @@ final class ComposerTodoPanel: ComposerPanel {
 private extension TodoList {
     var isAllDone: Bool {
         !items.isEmpty && items.allSatisfy { $0.status == .completed }
+    }
+}
+
+/// The folded line: a tap opens the list, and VoiceOver's double tap too.
+/// `primaryActionTriggered` is not sent to a plain `UIControl`, so the touch
+/// itself is the event it answers.
+private final class TodoSummaryControl: UIControl {
+    var onTap: (() -> Void)?
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        addTarget(self, action: #selector(tapped), for: .touchUpInside)
+    }
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
+        fatalError("Use init(frame:)")
+    }
+
+    override var isHighlighted: Bool {
+        didSet { alpha = isHighlighted ? 0.6 : 1 }
+    }
+
+    @objc private func tapped() {
+        onTap?()
+    }
+
+    override func accessibilityActivate() -> Bool {
+        guard !isHidden else { return false }
+        onTap?()
+        return true
     }
 }
 
