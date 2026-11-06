@@ -196,8 +196,11 @@ final class ComposerContextPanel: ComposerPanel {
         configuration.title = isCompacting
             ? String(localized: "Compressing context")
             : String(localized: "Compact Now")
+        // The fill is the window's tint, which on a monochrome accent is the
+        // text's own colour: white in the dark. So is the title, unless it
+        // asks the accent what sits on it.
         configuration.baseBackgroundColor = enabled ? .tintColor : UIColor.tertiarySystemFill
-        configuration.baseForegroundColor = enabled ? .white : .secondaryLabel
+        configuration.baseForegroundColor = enabled ? AppAccent.foreground(glass: .white) : .secondaryLabel
         compactButton.configuration = configuration
         compactButton.isUserInteractionEnabled = enabled
         compactButton.accessibilityLabel = isCompacting
