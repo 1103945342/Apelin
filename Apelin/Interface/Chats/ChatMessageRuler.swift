@@ -1,16 +1,19 @@
 import UIKit
 
-/// The ruler at the list's trailing edge while the chat scrolls: one tick
-/// for each message the reader sent, evenly spaced (owner, 2026-11-06), the
-/// one at the top of the page drawn longer and tinted. Dragging along it
-/// moves the list from one of the reader's messages to the next, with a
-/// card beside the finger saying which one and how it began.
+/// The floating rail at the list's trailing edge while the chat scrolls: a
+/// capsule of glass standing off the edge, one tick for each message the
+/// reader sent, evenly spaced (owner, 2026-11-06), the one at the top of the
+/// page drawn longer and tinted. Dragging along it moves the list from one of
+/// the reader's messages to the next, with a card beside the finger saying
+/// which one and how it began.
 ///
-/// It shows while the reader moves the list or the ruler, and fades a moment
-/// after; with fewer than two of the reader's messages there is nothing to
-/// move between, and the system's scroll indicator is left in its place.
-/// VoiceOver reaches the same messages through the chat's "Your Messages"
-/// rotor, so the ruler itself is drawn only.
+/// It comes and goes as the system's own scroll indicator does (owner,
+/// 2026-11-06): it opens out of its middle by a few points as it arrives,
+/// promptly, and leaves more slowly once the reader stops. With fewer than
+/// two of the reader's messages there is nothing to move between, and the
+/// system's scroll indicator is left in its place. VoiceOver reaches the same
+/// messages through the chat's "Your Messages" rotor, so the rail itself is
+/// drawn only.
 final class ChatMessageRuler: UIView {
     struct Entry: Equatable {
         let id: ChatMessage.ID
@@ -30,7 +33,7 @@ final class ChatMessageRuler: UIView {
     private(set) var isScrubbing = false
     private var currentIndex = 0
 
-    private let track = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
+    private let track = GlassSurfaceView(cornerRadius: ChatMessageRuler.railWidth / 2)
     private let ticks = CAShapeLayer()
     private let current = CAShapeLayer()
     private let preview = RulerPreview()
@@ -39,7 +42,12 @@ final class ChatMessageRuler: UIView {
     private var shown = false
 
     private static let maximumSpacing: CGFloat = 22
-    private static let trackInset: CGFloat = 6
+    /// The rail: how wide, how far it stands off the edge, the room its round
+    /// ends leave, and how far it stays from this view's own ends.
+    private static let railWidth: CGFloat = 16
+    private static let railInset: CGFloat = 7
+    private static let railPadding: CGFloat = 10
+    private static let railMargin: CGFloat = 6
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -48,13 +56,17 @@ final class ChatMessageRuler: UIView {
         isUserInteractionEnabled = false
         accessibilityElementsHidden = true
 
-        track.layer.cornerRadius = 4
-        track.layer.cornerCurve = .continuous
-        track.clipsToBounds = true
         track.isUserInteractionEnabled = false
         addSubview(track)
 
-        ticks.strokeColor = UIColor.secondaryLabel.cgColor
+        // The rail floats over the page rather than being part of it: its
+        // shadow is this view's, cast from the shape `layoutSubviews` gives it.
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.16
+        layer.shadowRadius = 8
+        layer.shadowOffset = CGSize(width: 0, height: 2)
+
+        ticks.strokeColor = UIColor.label.withAlphaComponent(0.35).cgColor
         ticks.lineCap = .round
         layer.addSublayer(ticks)
         current.strokeColor = UIColor.tintColor.cgColor
@@ -117,21 +129,29 @@ final class ChatMessageRuler: UIView {
 
     private func setShown(_ shown: Bool, animated: Bool) {
         hideWork?.cancel()
-        let alpha: CGFloat = shown ? 1 : 0
-        guard shown != self.shown || self.alpha != alpha else { return }
+        guard shown != self.shown else { return }
         self.shown = shown
-        // Only a ruler that can be seen takes a touch: the list keeps its edge
+        // Only a rail that can be seen takes a touch: the list keeps its edge
         // the rest of the time.
         isUserInteractionEnabled = shown
-        let change = { self.alpha = alpha }
+        let change = {
+            self.alpha = shown ? 1 : 0
+            self.layer.transform = shown
+                ? CATransform3DIdentity
+                : CATransform3DMakeScale(1, 0.94, 1)
+        }
         guard animated, !UIAccessibility.isReduceMotionEnabled else {
             change()
             return
         }
+        // Arriving promptly, out of its own middle, and leaving more slowly,
+        // is how the system's scroll indicator behaves; it is the one thing at
+        // this edge the reader already knows.
+        let curve: UIView.AnimationOptions = shown ? .curveEaseOut : .curveEaseIn
         UIView.animate(
-            withDuration: shown ? 0.15 : 0.3,
+            withDuration: shown ? 0.24 : 0.32,
             delay: 0,
-            options: [.beginFromCurrentState, .allowUserInteraction],
+            options: [.beginFromCurrentState, .allowUserInteraction, curve],
             animations: change,
         )
     }
@@ -139,17 +159,29 @@ final class ChatMessageRuler: UIView {
     // MARK: Layout
 
     /// The y of entry `index`, in this view: evenly spaced, at most
-    /// `maximumSpacing` apart, the whole set centred on the track.
+    /// `maximumSpacing` apart, the whole set centred in the room the rail
+    /// keeps from this view's ends.
     private func position(of index: Int) -> CGFloat {
-        let span = trackSpan
+        let span = bounds.insetBy(dx: 0, dy: Self.railPadding + Self.railMargin)
         guard entries.count > 1 else { return span.midY }
         let spacing = min(Self.maximumSpacing, span.height / CGFloat(entries.count - 1))
         let used = spacing * CGFloat(entries.count - 1)
         return span.midY - used / 2 + spacing * CGFloat(index)
     }
 
-    private var trackSpan: CGRect {
-        bounds.insetBy(dx: 0, dy: Self.trackInset + 4)
+    /// The rail's frame in this view: a capsule standing off the edge, as long
+    /// as the ticks it holds plus the room its round ends need.
+    private var railFrame: CGRect {
+        let width = Self.railWidth
+        let x = laysOutRightToLeft
+            ? Self.railInset
+            : bounds.width - Self.railInset - width
+        guard !entries.isEmpty else {
+            return CGRect(x: x, y: bounds.midY - width / 2, width: width, height: width)
+        }
+        let top = position(of: 0) - Self.railPadding
+        let bottom = position(of: entries.count - 1) + Self.railPadding
+        return CGRect(x: x, y: top, width: width, height: max(width, bottom - top))
     }
 
     /// The entry nearest `y`.
@@ -161,21 +193,14 @@ final class ChatMessageRuler: UIView {
         return min(max(Int((fraction * CGFloat(entries.count - 1)).rounded()), 0), entries.count - 1)
     }
 
-    /// The edge the ticks hang from: the trailing one.
-    private var edgeX: CGFloat {
-        laysOutRightToLeft ? 6 : bounds.width - 6
-    }
-
     override func layoutSubviews() {
         super.layoutSubviews()
-        let first = position(of: 0) - Self.trackInset
-        let last = position(of: max(0, entries.count - 1)) + Self.trackInset
-        track.frame = CGRect(
-            x: laysOutRightToLeft ? 1 : bounds.width - 15,
-            y: first,
-            width: 14,
-            height: max(0, last - first),
-        )
+        let rail = railFrame
+        track.frame = rail
+        layer.shadowPath = UIBezierPath(
+            roundedRect: rail,
+            cornerRadius: rail.width / 2,
+        ).cgPath
         drawTicks()
         placePreview()
     }
@@ -185,22 +210,26 @@ final class ChatMessageRuler: UIView {
         CATransaction.setDisableActions(true)
         let spacing = entries.count > 1 ? abs(position(of: 1) - position(of: 0)) : Self.maximumSpacing
         ticks.lineWidth = spacing >= 4 ? 2 : 1
-        let outward: CGFloat = laysOutRightToLeft ? 1 : -1
+        // The marks sit in the rail, centred, so a tick reads the same in
+        // either writing direction.
+        let middle = railFrame.midX
         let path = UIBezierPath()
         for index in entries.indices where index != currentIndex {
             let y = position(of: index)
-            path.move(to: CGPoint(x: edgeX, y: y))
-            path.addLine(to: CGPoint(x: edgeX + outward * 6, y: y))
+            path.move(to: CGPoint(x: middle - 3, y: y))
+            path.addLine(to: CGPoint(x: middle + 3, y: y))
         }
         ticks.path = path.cgPath
         let mark = UIBezierPath()
         if entries.indices.contains(currentIndex) {
             let y = position(of: currentIndex)
-            mark.move(to: CGPoint(x: edgeX, y: y))
-            mark.addLine(to: CGPoint(x: edgeX + outward * 12, y: y))
+            mark.move(to: CGPoint(x: middle - 5, y: y))
+            mark.addLine(to: CGPoint(x: middle + 5, y: y))
         }
         current.path = mark.cgPath
-        ticks.strokeColor = UIColor.secondaryLabel.resolvedColor(with: traitCollection).cgColor
+        ticks.strokeColor = UIColor.label
+            .withAlphaComponent(0.35)
+            .resolvedColor(with: traitCollection).cgColor
         current.strokeColor = tintColor.resolvedColor(with: traitCollection).cgColor
         CATransaction.commit()
     }
@@ -263,13 +292,14 @@ final class ChatMessageRuler: UIView {
         UIView.animate(withDuration: shown ? 0.12 : 0.2, delay: 0, options: [.beginFromCurrentState], animations: change)
     }
 
-    /// The card beside the ruler, level with the entry, kept on the track.
+    /// The card beside the rail, level with the entry, kept on the track.
     private func placePreview() {
         guard entries.indices.contains(currentIndex) else { return }
         let width = min(260, max(160, (superview?.bounds.width ?? 320) * 0.62))
         let size = preview.size(forWidth: width)
         let y = min(max(position(of: currentIndex) - size.height / 2, 0), max(0, bounds.height - size.height))
-        let x = laysOutRightToLeft ? bounds.width + 8 : -size.width - 8
+        let rail = railFrame
+        let x = laysOutRightToLeft ? rail.maxX + 8 : rail.minX - size.width - 8
         preview.frame = CGRect(x: x, y: y, width: size.width, height: size.height)
     }
 
