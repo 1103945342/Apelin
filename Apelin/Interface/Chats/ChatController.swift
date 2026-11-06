@@ -1482,3 +1482,119 @@ extension ChatController {
         }
     }
 }
+
+/// The ruler of the reader's messages (`ChatMessageRuler`) and the VoiceOver
+/// rotor that reaches the same messages.
+extension ChatController {
+    private func updateMessageRuler(_ rows: [ChatMessage]) {
+        let entries = rows
+            .filter { $0.role == .user && !$0.isQueued }
+            .map { ChatMessageRuler.Entry(id: $0.id, text: $0.text, sentAt: $0.sentAt) }
+        messageRuler.show(entries)
+        // The ruler is the list's indicator once it has two messages to move
+        // between; with fewer, the system's stays.
+        let systemIndicator = entries.count < 2
+        if messageList.showsVerticalScrollIndicator != systemIndicator {
+            messageList.showsVerticalScrollIndicator = systemIndicator
+        }
+        if messageRuler.alpha > 0 {
+            messageRuler.setCurrent(rulerIndexAtTop())
+        }
+    }
+
+    /// At the list's trailing edge, from under the bar's blur to above the
+    /// composer.
+    private func layoutMessageRuler() {
+        let list = messageList.frame
+        let top = max(topBlur.frame.maxY, view.safeAreaInsets.top) + 8
+        let bottom = composer.frame.minY - 12
+        let width = ChatMessageRuler.width
+        let x = view.effectiveUserInterfaceLayoutDirection == .rightToLeft ? list.minX : list.maxX - width
+        let frame = CGRect(x: x, y: top, width: width, height: max(0, bottom - top))
+        if messageRuler.frame != frame {
+            messageRuler.frame = frame
+        }
+    }
+
+    /// The last of the reader's messages whose top is at or above the top of
+    /// the page: the one being read under.
+    private func rulerIndexAtTop() -> Int {
+        let entries = messageRuler.entries
+        guard !entries.isEmpty else { return 0 }
+        let line = messageList.contentOffset.y + max(messageList.adjustedContentInset.top, topBlur.frame.maxY) + 1
+        // The rows are in order, so their tops are too.
+        var low = 0
+        var high = entries.count - 1
+        var found = 0
+        while low <= high {
+            let middle = (low + high) / 2
+            if messageList.rectForRow(with: entries[middle].id).minY <= line {
+                found = middle
+                low = middle + 1
+            } else {
+                high = middle - 1
+            }
+        }
+        return found
+    }
+
+    /// A drag on the ruler takes the list from the reader as a drag on it
+    /// would: whatever it was following, it stops following, and a fling
+    /// still moving stops where it is.
+    private func beginRulerScrub() {
+        holdsLatestMessage = false
+        readingPlace = nil
+        followedTurn = nil
+        messageList.setContentOffset(messageList.contentOffset, animated: false)
+        setComposerFaded(true)
+    }
+
+    /// Puts entry `index` at the top of the page, under the bar's blur. While
+    /// the finger moves it jumps; once it lifts, the list settles there, with
+    /// the rows on the way measured, since a row not yet shown was placed by
+    /// an estimate.
+    private func showRulerEntry(_ index: Int, settled: Bool) {
+        let entries = messageRuler.entries
+        guard entries.indices.contains(index) else { return }
+        let id = entries[index].id
+        let topLine = max(messageList.adjustedContentInset.top, topBlur.frame.maxY) + 8
+        func target() -> CGPoint {
+            let row = messageList.rectForRow(with: id)
+            let y = min(max(row.minY - topLine, messageList.minimumContentOffset.y), messageList.maximumContentOffset.y)
+            return CGPoint(x: messageList.contentOffset.x, y: y)
+        }
+        messageList.setContentOffset(target(), animated: false)
+        messageList.layoutIfNeeded()
+        // Measured on arrival, the row may have moved: once more puts it in place.
+        messageList.setContentOffset(target(), animated: false)
+        updateLatestMessageButton()
+        if settled {
+            setComposerFaded(false)
+        }
+    }
+
+    /// "Your Messages": VoiceOver steps from one of the reader's messages to
+    /// the next, the way the ruler does for a finger.
+    private func yourMessagesRotor() -> UIAccessibilityCustomRotor {
+        UIAccessibilityCustomRotor(name: String(localized: "Your Messages")) { [weak self] predicate in
+            guard let self else { return nil }
+            let entries = messageRuler.entries
+            guard !entries.isEmpty else { return nil }
+            let forward = predicate.searchDirection == .next
+            let start: Int
+            if let element = predicate.currentItem.targetElement as? UIView,
+               let at = entries.firstIndex(where: { (messageList.rowView(for: $0.id) as? ChatMessageRow)?.spokenElement === element })
+            {
+                start = forward ? at + 1 : at - 1
+            } else {
+                let top = rulerIndexAtTop()
+                start = forward ? top : top - 1
+            }
+            guard entries.indices.contains(start) else { return nil }
+            showRulerEntry(start, settled: false)
+            messageList.layoutIfNeeded()
+            guard let row = messageList.rowView(for: entries[start].id) as? ChatMessageRow else { return nil }
+            return UIAccessibilityCustomRotorItemResult(targetElement: row.spokenElement, targetRange: nil)
+        }
+    }
+}
