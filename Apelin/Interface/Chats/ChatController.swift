@@ -94,9 +94,6 @@ final class ChatController: UIViewController {
     private var skillsLoading = false
     /// The rewrite in flight, so a second tap stops it rather than racing it.
     private var rewriteTask: Task<Void, Never>?
-    private var modelButton: UIButton {
-        composer.modelBar.modelButton
-    }
 
     private var attachmentHeightLimit: CGFloat {
         (view.window?.bounds.height ?? view.bounds.height) * 0.3
@@ -161,8 +158,8 @@ final class ChatController: UIViewController {
             guard let self, let chat else { return }
             askForOwnAnswer(to: request, chosen: chosen, in: chat.id)
         }
-        composer.modelBar.onEffortChanged = { ComposerModelPreferences.effort = $0 }
-        composer.modelBar.onTierChanged = { ComposerModelPreferences.tier = $0 }
+        composer.modelBar.onEffortTapped = { [weak self] in self?.presentEffortSheet() }
+        composer.modelBar.onTierTapped = { [weak self] in self?.presentTierSheet() }
         composer.onModeChanged = { mode in
             // The store is what the next prompt reads; the pill has already
             // taken its own colour. Written here so the write and the read
@@ -210,11 +207,6 @@ final class ChatController: UIViewController {
             object: nil,
         )
         updateModelSelection()
-        modelButton.showsMenuAsPrimaryAction = true
-        modelButton.menu = UIMenu(children: [UIDeferredMenuElement.uncached { [weak self] completion in
-            guard let self else { completion([]); return }
-            loadModelMenu(completion: completion)
-        }])
         view.addSubview(composer)
         composer.snp.makeConstraints { make in
             if #available(iOS 17.0, *) {
@@ -786,39 +778,97 @@ final class ChatController: UIViewController {
         }
     }
 
-    /// The menu re-reads enabled accounts each time, including after setup.
-    private func loadModelMenu(completion: @escaping ([UIMenuElement]) -> Void) {
-        guard let chat else { completion([]); return }
+    /// The mark was tapped: what the signed-in providers have enabled, read
+    /// again at each tap, including after setup, and shown in the sheet every
+    /// picker of this row opens in.
+    private func presentModelSheet() {
+        guard let chat else { return }
         modelLoader?.cancel()
         modelLoader = Task { [weak self] in
-            guard let self else { completion([]); return }
+            guard let self else { return }
             do {
                 let accounts = try await EnabledModels.accounts(from: ApelinService.app.agentAccountList().accounts)
-                guard !Task.isCancelled, self.chat?.id == chat.id else { completion([]); return }
+                guard !Task.isCancelled, self.chat?.id == chat.id else { return }
+                // Nothing enabled is nothing to pick: the accounts page is.
                 guard !accounts.isEmpty else {
-                    completion([])
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self, presentedViewController == nil else { return }
-                        presentPageAsFormSheet(ModelProvidersController())
-                    }
+                    guard presentedViewController == nil else { return }
+                    presentPageAsFormSheet(ModelProvidersController())
                     return
                 }
-                let selected = ComposerModelSelection.current
-                completion(accounts.map { account in
-                    UIMenu(title: account.account ?? account.provider.displayName, options: .displayInline,
-                           children: (account.models ?? []).map { model in
-                               let checked = account.provider == selected?.provider && model == selected?.model
-                               return UIAction(title: model, state: checked ? .on : .off) { _ in
-                                   ComposerModelSelection.current = Self.selection(of: model, in: account)
-                               }
-                           })
-                })
+                showModels(accounts)
             } catch {
-                completion([])
                 guard !Task.isCancelled, self.chat?.id == chat.id else { return }
                 presentNotice(title: "Models Unavailable", message: error.readableMessage)
             }
         }
+    }
+
+    /// One group of models per signed-in provider, the one in use marked.
+    private func showModels(_ accounts: [AgentAccount]) {
+        guard presentedViewController == nil else { return }
+        let selected = ComposerModelSelection.current
+        let groups = accounts.map { account in
+            ComposerChoiceSheet.Group(
+                title: account.account ?? account.provider.displayName,
+                choices: (account.models ?? []).map { model in
+                    ComposerChoiceSheet.Choice(
+                        title: model,
+                        isSelected: account.provider == selected?.provider && model == selected?.model,
+                    ) { ComposerModelSelection.current = Self.selection(of: model, in: account) }
+                },
+            )
+        }
+        ComposerChoiceSheet.present(
+            ComposerChoiceSheet(heading: String(localized: "Model"), groups: groups),
+            from: self,
+        )
+    }
+
+    /// The sparks were tapped: the levels this model offers, in the same sheet.
+    /// The pick is the reader's own, kept apart from the model, so a later
+    /// model that offers it gets it back.
+    private func presentEffortSheet() {
+        guard let selection = ComposerModelSelection.current,
+              !selection.supportedEfforts.isEmpty,
+              presentedViewController == nil
+        else { return }
+        let current = selection.effort
+        let choices = selection.supportedEfforts.map { effort in
+            ComposerChoiceSheet.Choice(
+                title: ComposerModelBar.title(for: effort),
+                isSelected: effort == current,
+            ) { ComposerModelPreferences.effort = effort }
+        }
+        ComposerChoiceSheet.present(
+            ComposerChoiceSheet(
+                heading: String(localized: "Reasoning Effort"),
+                groups: [ComposerChoiceSheet.Group(choices: choices)],
+            ),
+            from: self,
+        )
+    }
+
+    /// The hare was tapped: the standard speed and the faster tiers this model
+    /// offers. A model with one tier hides the control, so this is never empty.
+    private func presentTierSheet() {
+        guard let selection = ComposerModelSelection.current,
+              let tiers = selection.supportedTiers, !tiers.isEmpty,
+              presentedViewController == nil
+        else { return }
+        let current = selection.tier
+        let choices = ([nil] + tiers.map { $0 as AgentServiceTier? }).map { tier in
+            ComposerChoiceSheet.Choice(
+                title: ComposerModelBar.title(for: tier),
+                isSelected: tier == current,
+            ) { ComposerModelPreferences.tier = tier }
+        }
+        ComposerChoiceSheet.present(
+            ComposerChoiceSheet(
+                heading: String(localized: "Speed"),
+                groups: [ComposerChoiceSheet.Group(choices: choices)],
+            ),
+            from: self,
+        )
     }
 }
 
@@ -990,10 +1040,7 @@ extension ChatController: ComposerView.Delegate {
     }
 
     func onComposerModelPickerTapped() {
-        // The mark carries the picker already: a menu that reads the accounts
-        // live. Asking it to open is the one way in, and `performPrimaryAction`
-        // would be the iOS 17.4 one: the trigger is what a tap sends.
-        modelButton.sendActions(for: .primaryActionTriggered)
+        presentModelSheet()
     }
 
     func onComposerBeginEditing() {

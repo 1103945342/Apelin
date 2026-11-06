@@ -38,9 +38,13 @@ final class ComposerModelBar: ComposerSectionView {
     /// The send, and the stop it becomes while a run is going.
     let sendButton = ComposerIconButton(iconName: "ComposerSend", label: String(localized: "Send"))
 
-    var onEffortChanged: ((AgentReasoningEffort) -> Void)?
+    /// The effort was tapped: the owner opens the sheet of levels the model
+    /// offers and writes the pick, which comes back through
+    /// `composerModelSelectionChanged`.
+    var onEffortTapped: (() -> Void)?
     var onModeChanged: ((ComposerMode) -> Void)?
-    var onTierChanged: ((AgentServiceTier?) -> Void)?
+    /// The speed was tapped: the same, for the tiers this model offers.
+    var onTierTapped: (() -> Void)?
     /// The mark was tapped: the owner opens its model picker, which reads the
     /// accounts live. This row only reports the tap.
     var onModelTapped: (() -> Void)?
@@ -55,13 +59,6 @@ final class ComposerModelBar: ComposerSectionView {
     /// The stop was tapped while a rewrite ran.
     var onRewriteCancelled: (() -> Void)?
 
-    /// The efforts this model offers, kept so a tap can redraw the menu against
-    /// the level it took.
-    private var efforts: [AgentReasoningEffort] = []
-    /// The tiers this model offers, the standard one being none of them.
-    private var tiers: [AgentServiceTier] = []
-    /// Which tier the next message is sent at.
-    private var selectedTier: AgentServiceTier?
     /// The run is going: with nothing typed the send becomes a stop.
     private var sendIsStop = false
 
@@ -83,8 +80,8 @@ final class ComposerModelBar: ComposerSectionView {
         modelButton.tapAction = { [weak self] in self?.onModelTapped?() }
         addButton.tapAction = { [weak self] in self?.onAddTapped?() }
         sendButton.tapAction = { [weak self] in self?.tapSend() }
-        effortButton.showsMenuAsPrimaryAction = true
-        tierButton.showsMenuAsPrimaryAction = true
+        effortButton.tapAction = { [weak self] in self?.onEffortTapped?() }
+        tierButton.tapAction = { [weak self] in self?.onTierTapped?() }
 
         // The disc is the reach and the mark is what is drawn on it: both
         // follow the one measure, so a smaller row keeps them apart.
@@ -134,7 +131,6 @@ final class ComposerModelBar: ComposerSectionView {
     }
 
     func setEfforts(_ efforts: [AgentReasoningEffort], selected: AgentReasoningEffort?) {
-        self.efforts = efforts
         updateControls { [self] in
             let shown = !efforts.isEmpty
             effortButton.alpha = shown ? 1 : 0
@@ -144,22 +140,11 @@ final class ComposerModelBar: ComposerSectionView {
             effortButton.iconView.tintColor = ComposerPalette.effort(selected ?? .high)
             effortButton.accessibilityValue = Self.title(for: selected ?? .high)
         }
-        // The menu is the button's action, rebuilt with the levels it took so a
-        // tick follows the choice that was made.
-        effortButton.menu = UIMenu(children: efforts.map { effort in
-            UIAction(title: Self.title(for: effort), state: effort == selected ? .on : .off) { [weak self] _ in
-                guard let self else { return }
-                self.setEfforts(self.efforts, selected: effort)
-                self.onEffortChanged?(effort)
-            }
-        })
     }
 
     /// The tiers the model offers: none of them is the standard one, so an
     /// empty list hides the control.
     func setTiers(_ tiers: [AgentServiceTier], selected: AgentServiceTier?) {
-        self.tiers = tiers
-        selectedTier = selected
         updateControls { [self] in
             let shown = !tiers.isEmpty
             tierButton.alpha = shown ? 1 : 0
@@ -167,14 +152,6 @@ final class ComposerModelBar: ComposerSectionView {
             tierButton.accessibilityElementsHidden = !shown
             tierButton.accessibilityValue = Self.title(for: selected)
         }
-        // Rebuilt with the level it took, so the tick follows the choice.
-        tierButton.menu = UIMenu(children: ([nil] + tiers).map { tier in
-            UIAction(title: Self.title(for: tier), state: tier == selected ? .on : .off) { [weak self] _ in
-                guard let self else { return }
-                self.setTiers(self.tiers, selected: tier)
-                self.onTierChanged?(tier)
-            }
-        })
     }
 
     /// Nothing to send: the disc greys; a run going and nothing typed: it is
@@ -257,7 +234,8 @@ final class ComposerModelBar: ComposerSectionView {
         }
     }
 
-    private static func title(for effort: AgentReasoningEffort) -> String {
+    /// The word for a level, as the sheet of levels lists it.
+    static func title(for effort: AgentReasoningEffort) -> String {
         switch effort {
         case .off: String(localized: "Off")
         case .minimal: String(localized: "Minimal")
@@ -270,7 +248,7 @@ final class ComposerModelBar: ComposerSectionView {
     }
 
     /// The speed's name; nil is the standard tier, which every model has.
-    private static func title(for tier: AgentServiceTier?) -> String {
+    static func title(for tier: AgentServiceTier?) -> String {
         switch tier {
         case nil: String(localized: "Standard")
         case .priority: String(localized: "Fast")
