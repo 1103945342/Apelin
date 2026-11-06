@@ -48,6 +48,7 @@ public enum AgentToolName: String, Sendable, Hashable, Codable, CaseIterable {
     case notificationSend = "apelin_notification_send"
     /// A question for the reader, which the call waits on (`AgentQuestion`).
     case questionAsk = "apelin_question_ask"
+    case webSearch = "web_search"
     case webFetch = "apelin_web_fetch"
     case feedbackSend = "apelin_feedback_send"
     case feedbackRead = "apelin_feedback_read"
