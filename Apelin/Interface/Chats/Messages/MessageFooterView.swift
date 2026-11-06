@@ -145,12 +145,12 @@ final class MessageFooterView: UIView {
         }
         cacheLabel.isHidden = stats?.cacheHitRate == nil
         cacheIcon.isHidden = cacheLabel.isHidden
-        let duration = stats?.seconds.flatMap(Self.duration)
-        if let duration {
-            durationLabel.text = duration
-            durationLabel.accessibilityLabel = String(localized: "Took \(duration)")
+        if let seconds = stats?.seconds {
+            durationLabel.text = Self.duration(seconds)
+            let spoken = Self.spokenDuration(seconds) ?? Self.duration(seconds)
+            durationLabel.accessibilityLabel = String(localized: "Took \(spoken)")
         }
-        durationLabel.isHidden = duration == nil
+        durationLabel.isHidden = stats?.seconds == nil
         durationIcon.isHidden = durationLabel.isHidden
 
         let acts = user ? message.turnMessageID != nil : message.offersActions
@@ -189,13 +189,30 @@ final class MessageFooterView: UIView {
         onMore = nil
     }
 
-    /// "1m 5s", in the reader's language.
-    private static func duration(_ seconds: Int) -> String? {
+    /// aimini's `formatTaskDuration`: "12s" under a minute, "2:05" under an
+    /// hour, "1:02:05" beyond, never under a second.
+    private static func duration(_ seconds: Int) -> String {
+        let total = max(1, seconds)
+        let hours = total / 3600
+        let minutes = total % 3600 / 60
+        let rest = total % 60
+        if hours > 0 {
+            return String(format: "%ld:%02ld:%02ld", hours, minutes, rest)
+        }
+        if minutes > 0 {
+            return String(format: "%ld:%02ld", minutes, rest)
+        }
+        return "\(rest)s"
+    }
+
+    /// The same time as VoiceOver says it, "2 minutes, 5 seconds", in the
+    /// reader's language: "2:05" read aloud is a time of day.
+    private static func spokenDuration(_ seconds: Int) -> String? {
         let formatter = DateComponentsFormatter()
-        formatter.unitsStyle = .abbreviated
-        formatter.allowedUnits = seconds >= 3600 ? [.hour, .minute] : [.minute, .second]
-        formatter.zeroFormattingBehavior = .dropLeading
-        return formatter.string(from: TimeInterval(seconds))
+        formatter.unitsStyle = .full
+        formatter.allowedUnits = [.hour, .minute, .second]
+        formatter.zeroFormattingBehavior = .dropAll
+        return formatter.string(from: TimeInterval(max(1, seconds)))
     }
 
     /// The items shown, in reading order.
