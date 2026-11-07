@@ -3438,6 +3438,17 @@ manifest.json            the owngoal-packages entry
   scripts), the system-only check, and apelind and
   every worker typechecked for macOS. Run this first. `SWIFTPM_SCRATCH`
   moves the package's build directory (default `Packages/ApelinKit/.build`).
+- `bash Scripts/test-application-install.sh` — standalone IPA signing regression
+  on the Mac, also run by `make harness`. It compiles the production installer
+  with its two core path utilities, checks roothide/rootless argument spelling
+  and keeps the entitlements file alive through signing, cleaning it on success,
+  a refused signature and a thrown runner error. On a prepared device use
+  `bash Scripts/test-application-install.sh --device build/Tool.entitlements`
+  after placing the device-executables skill's tool entitlements there. The
+  script signs the test runner and tests real `ldid` on a project-local fixture;
+  it installs nothing. This does not replace a full app build or an IPA install
+  on each bootstrap. The full app still needs the Xcode/SDK tier above; the
+  standalone check can run with Swift 5.10 and the registered iPhoneOS SDK.
 - `make check` — project and packaging validation, including the floor greps.
 - `make old-runtime` — on Apple's iOS 15.5 runtime, unbooted: what one call
   through an `@objc` thunk leaves behind, by bridged type, and the real

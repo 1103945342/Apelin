@@ -1,5 +1,4 @@
 import ApelinCore
-import ApelinProtocol
 import Darwin
 import Foundation
 
@@ -14,7 +13,7 @@ import Foundation
 /// handed to one goes through `toolPath(_:)`.
 enum ApplicationInstall {
     struct Layout: Sendable {
-        /// The bootstrap root: `/` for rootless, the `.jbroot-…` folder on roothide.
+        /// The bootstrap root: `/var/jb` on rootless, the `.jbroot-…` folder on roothide.
         var installRoot: String
         /// `<install root>/Applications`, where a private app lives.
         var applications: String
@@ -99,25 +98,32 @@ enum ApplicationInstall {
     /// the bootstrap's own private apps are signed the same way. Answers the
     /// files it signed, for the task log.
     @discardableResult
-    static func sign(_ bundle: URL, layout: Layout, scratch: URL) throws -> [String] {
+    static func sign(
+        _ bundle: URL, layout: Layout, scratch: URL,
+        runTool: (String, [String]) throws -> ToolResult = run
+    ) throws -> [String] {
         var signed: [String] = []
         for file in try MachO.files(in: bundle) {
             // ldid is a bootstrap tool: it reads the path the bootstrap
             // shows, so the root's own name comes off first.
             let shown = toolPath(file, installRoot: layout.installRoot)
-            let entitlements = (try? run(layout.ldid, ["-e", shown]))?.output ?? ""
+            let entitlements = (try? runTool(layout.ldid, ["-e", shown]))?.output ?? ""
             let arguments: [String]
+            var entitlementFile: URL?
+            // The file must outlive the if branch: ldid opens it below.
+            // Clean up once this binary's signing attempt ends, even on throw.
+            defer { if let entitlementFile { unlink(entitlementFile.path) } }
             if entitlements.contains("<plist"), !entitlements.isEmpty {
                 let path = scratch.appendingPathComponent(UUID().uuidString + ".plist")
+                entitlementFile = path
                 guard (try? entitlements.write(to: path, atomically: true, encoding: .utf8)) != nil else {
                     throw Failure.io("\(path.lastPathComponent) could not be written")
                 }
-                defer { unlink(path.path) }
                 arguments = ["-S" + toolPath(path.path, installRoot: layout.installRoot), shown]
             } else {
                 arguments = ["-S", shown]
             }
-            let result = try run(layout.ldid, arguments)
+            let result = try runTool(layout.ldid, arguments)
             guard result.status == 0 else {
                 throw Failure.tool("ldid refused \(file.split(separator: "/").suffix(2).joined(separator: "/")): \(result.output)")
             }

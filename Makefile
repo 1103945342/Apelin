@@ -436,6 +436,7 @@ check:
 # module maps; passing those too redefines every C module, so they are left
 # out.
 harness:
+	@bash "$(ROOT_DIR)/Scripts/test-application-install.sh"
 	@python3 -I -B "$(ROOT_DIR)/Tests/ToolchainAudit/test_inventory.py"
 	@harness_dir="$$(mktemp -d /private/tmp/apelin-harness.XXXXXX)"; \
 	trap 'rm -rf -- "$${harness_dir:?}"' EXIT; \
