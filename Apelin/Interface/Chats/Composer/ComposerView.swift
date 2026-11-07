@@ -206,8 +206,10 @@ class ComposerView: ComposerSectionView {
 
         let inputTop = place(attachmentsBar, at: spacing)
         // The panels and the two draft menus sit above the card, in the bands'
-        // own column, and push it down rather than covering what is typed.
-        var bandsTop = placePanel(queuePanel, at: inputTop)
+        // own column, and push it down rather than covering what is typed. That
+        // is as true of the card a request turns into: it starts under them,
+        // never at the top of the composer, where they would be drawn over it.
+        var bandsTop = placePanel(queuePanel, at: presentingRequest ? spacing : inputTop)
         bandsTop = placePanel(todoPanel, at: bandsTop)
         if !rewriteBar.isHidden {
             let height = max(20, UIFont.preferredFont(forTextStyle: .caption1).lineHeight)
@@ -242,10 +244,11 @@ class ComposerView: ComposerSectionView {
 
         // One card morphs between the input and the request: the request's
         // band is cut off at the card's edge, shown or fading, never
-        // collapsed to nothing.
+        // collapsed to nothing. Shown, it takes the place the input would
+        // have had, under the panels — not the top of the composer.
         place(
             approvalSection,
-            at: spacing,
+            at: presentingRequest ? bandsTop : spacing,
             height: presentingRequest ? approvalSection.heightPublisher.value : inputFrame.height,
         )
         shadowContainer.frame = presentingRequest
@@ -482,6 +485,12 @@ class ComposerView: ComposerSectionView {
         if message != nil {
             inputEditor.endEditing(true)
             controlPanel.close()
+            // The card takes the composer, and the row whose ring opens the
+            // context panel goes with it: a panel left open would have no
+            // way back, so it folds as the card arrives.
+            if contextPanel.isExpanded {
+                toggleContextPanel()
+            }
         }
         approvalSection.show(message)
         // A request takes the composer's attention, as typing does: the
