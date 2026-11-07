@@ -18,6 +18,7 @@ enum BuiltInSkills {
         externalBuild,
         deviceExecutables,
         packagingAndInstall,
+        ipaDevelopment,
         packageDependencies,
         crashTriage,
         deviceCLI,

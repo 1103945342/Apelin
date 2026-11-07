@@ -568,6 +568,7 @@ actor ToolRunner {
                 templateID: arguments.requireString("template"),
                 name: arguments.requireString("name"),
                 values: Self.templateValues(arguments),
+                outputFormat: arguments.argString("output_format"),
             )))
 
         case .sdkAnalyzeFramework, .sdkReadHeader:

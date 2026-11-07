@@ -180,6 +180,51 @@ final class ExtensionAndProjectTests: XCTestCase {
         XCTAssertEqual(leftovers, ["Hello"])
     }
 
+    /// Asking an app template for an `.ipa` writes the description an ipa
+    /// build reads — one app, no install layout, no Debian relations, arm64
+    /// alone, a container app's entitlements — before anything is validated
+    /// or recorded. Asked for nothing, the same template is still the deb it
+    /// always was, and a template that is not an app has no ipa to make.
+    func testAnAppTemplateMakesAnIPA() throws {
+        let scratch = try scratchDirectory()
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        try FileManager.default.createDirectory(at: scratch.appendingPathComponent("Documents/wiki.qaq.apelin"), withIntermediateDirectories: true)
+        let store = ProjectStore(dataFolder: DataFolder(home: scratch.path))
+        let catalog = ExtensionCatalog(directory: Repository.extensions)
+        let template = "wiki.qaq.apelin.dev.app/uikit-swift"
+
+        let ordinary = try store.locate(store.create(templateID: template, name: "Ordinary App", values: [:], catalog: catalog, registry: sampleRegistry()).projectID).project
+        XCTAssertEqual(ordinary.package.effectiveFormat, .deb)
+        XCTAssertFalse(ordinary.package.layout.isEmpty)
+
+        let created = try store.create(templateID: template, name: "IPA App", values: [:], catalog: catalog, registry: sampleRegistry(), outputFormat: .ipa)
+        let located = try store.locate(created.projectID)
+        let project = located.project
+        XCTAssertEqual(project.kind, .app)
+        XCTAssertEqual(project.package.format, .ipa)
+        XCTAssertEqual(project.package.effectiveFormat, .ipa)
+        XCTAssertEqual(project.products.filter { $0.type == .app }.count, 1)
+        XCTAssertEqual(project.architectures.rootless, [.arm64])
+        XCTAssertEqual(project.architectures.roothide, [.arm64])
+        XCTAssertTrue(project.package.layout.isEmpty)
+        XCTAssertNil(project.package.depends)
+        XCTAssertNil(project.package.dependsByBootstrap)
+        XCTAssertNil(project.package.maintainerScripts)
+        XCTAssertNil(project.package.tweakFilter)
+
+        // A bootstrap app's entitlements would make the same .ipa install nowhere.
+        let app = try XCTUnwrap(project.products.first { $0.type == .app })
+        let path = try XCTUnwrap(app.entitlements)
+        let entitlements = try String(contentsOf: located.root.appendingPathComponent(path), encoding: .utf8)
+        XCTAssertTrue(entitlements.contains("<key>get-task-allow</key>"), entitlements)
+        XCTAssertFalse(entitlements.contains("platform-application"), entitlements)
+        XCTAssertFalse(entitlements.contains("no-sandbox"), entitlements)
+
+        XCTAssertThrowsError(try store.create(templateID: "wiki.qaq.apelin.dev.tweak/objc-hook", name: "Not An App", values: [:], catalog: catalog, registry: sampleRegistry(), outputFormat: .ipa)) { error in
+            XCTAssertTrue(String(describing: error).contains("only an app template builds an .ipa"), "\(error)")
+        }
+    }
+
     /// Two tweak projects made with the template's defaults installed the
     /// same `ApelinTweak.dylib`, and irisind refused the second (iOS 26.4
     /// vphone, 2026-10-17): the product is named after the project unless the

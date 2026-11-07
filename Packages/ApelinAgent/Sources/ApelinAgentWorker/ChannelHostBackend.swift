@@ -280,6 +280,12 @@ public struct ChannelHostBackend: AgentHostBackend {
     }
 
     public func createProject(_ request: ProjectCreateToolRequest) async throws -> ProjectCreateToolResponse {
+        let format = try request.outputFormat.map { raw -> ProjectOutputFormat in
+            guard let format = ProjectOutputFormat(rawValue: raw) else {
+                throw ApelinError(.badRequest, "unknown output_format \(raw); use deb or ipa")
+            }
+            return format
+        }
         let created = try await service.projectCreate(ProjectCreateRequest(
             templateID: request.templateID,
             name: request.name,
@@ -291,6 +297,7 @@ public struct ChannelHostBackend: AgentHostBackend {
                 case let .list(items): .array(items.map(ApelinCore.JSONValue.string))
                 }
             },
+            outputFormat: format,
         ))
         return ProjectCreateToolResponse(
             projectID: created.projectID,

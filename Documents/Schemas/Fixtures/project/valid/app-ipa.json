@@ -22,11 +22,10 @@
   "deploymentTarget": "16.0",
   "architectures": {
     "rootless": [
-      "arm64",
-      "arm64e"
+      "arm64"
     ],
     "roothide": [
-      "arm64e"
+      "arm64"
     ]
   },
   "configurations": {

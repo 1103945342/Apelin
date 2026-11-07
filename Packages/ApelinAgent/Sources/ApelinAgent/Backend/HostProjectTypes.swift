@@ -85,11 +85,21 @@ public struct ProjectCreateToolRequest: Sendable, Hashable, Codable {
     public var name: String
     /// Parameters the template asks for; Apelin fills the rest.
     public var values: [String: TemplateValue]
-    public init(context: HostCallContext, templateID: String, name: String, values: [String: TemplateValue] = [:]) {
+    /// `ipa` builds the app template as an `.ipa` the device's installer or
+    /// another signing tool takes; `deb`, or nothing, as the template says.
+    public var outputFormat: String?
+    public init(
+        context: HostCallContext,
+        templateID: String,
+        name: String,
+        values: [String: TemplateValue] = [:],
+        outputFormat: String? = nil,
+    ) {
         self.context = context
         self.templateID = templateID
         self.name = name
         self.values = values
+        self.outputFormat = outputFormat
     }
 }
 

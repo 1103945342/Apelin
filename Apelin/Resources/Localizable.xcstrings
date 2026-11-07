@@ -3456,6 +3456,172 @@
         }
       }
     },
+    ".deb Package": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حزمة .deb"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".deb-Paket"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".deb Package"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paquete .deb"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paquet .deb"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pacchetto .deb"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".deb パッケージ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".deb 패키지"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pacote .deb"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пакет .deb"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gói .deb"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".deb 软件包"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".deb 套件"
+          }
+        }
+      }
+    },
+    ".ipa": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".ipa"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".ipa"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".ipa"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".ipa"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".ipa"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".ipa"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".ipa"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".ipa"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".ipa"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".ipa"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".ipa"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".ipa"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".ipa"
+          }
+        }
+      }
+    },
     "1 Message Waiting": {
       "extractionState": "manual",
       "localizations": {
@@ -4591,6 +4757,89 @@
         }
       }
     },
+    "A minimal iOS app, zipped. Installs on this device, or signs for another with a certificate.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تطبيق iOS بسيط داخل ملف مضغوط. يُثبَّت على هذا الجهاز، أو يُوقَّع بشهادة لجهاز آخر."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine minimale iOS-App im ZIP. Lässt sich hier installieren oder mit einem Zertifikat für ein anderes Gerät signieren."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A minimal iOS app, zipped. Installs on this device, or signs for another with a certificate."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una app iOS mínima comprimida. Se instala en este dispositivo o se firma con un certificado para otro."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une app iOS minimale, zippée. S’installe ici ou se signe avec un certificat pour un autre appareil."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un’app iOS minimale, zippata. Si installa qui o si firma con un certificato per un altro dispositivo."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最小限の iOS アプリを ZIP にしたもの。このデバイスにインストールするか、証明書で別のデバイス向けに署名します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최소한의 iOS 앱을 ZIP으로 묶은 것입니다. 이 기기에 설치하거나 인증서로 다른 기기에 맞게 서명할 수 있습니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um app iOS mínimo, compactado. Instala neste dispositivo ou é assinado com um certificado para outro."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Минимальное приложение iOS в архиве. Устанавливается здесь или подписывается сертификатом для другого устройства."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Một ứng dụng iOS tối giản, nén lại. Cài trên thiết bị này, hoặc ký bằng chứng chỉ cho thiết bị khác."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "压缩后的极简 iOS 应用。可安装到本机，也可用证书签名后安装到另一台设备。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "壓縮後的極簡 iOS 應用程式。可安裝到本機，也可用憑證簽名後安裝到另一台裝置。"
+          }
+        }
+      }
+    },
     "A name cannot hold a slash or a colon.": {
       "localizations": {
         "ar": {
@@ -4891,6 +5140,89 @@
           "stringUnit": {
             "state": "translated",
             "value": "套件儲存庫是託管在 GitHub Pages 上的 APT 來源：「發佈…」會把專案的發佈建置發佈到這裡。"
+          }
+        }
+      }
+    },
+    "A package your package manager installs on a jailbroken device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حزمة يثبّتها مدير الحزم على جهاز مكسور الحماية."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein Paket, das dein Paketmanager auf einem jailbroken Gerät installiert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A package your package manager installs on a jailbroken device."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un paquete que tu gestor de paquetes instala en un dispositivo con jailbreak."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un paquet que votre gestionnaire de paquets installe sur un appareil jailbreaké."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un pacchetto che il tuo gestore di pacchetti installa su un dispositivo jailbroken."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "脱獄したデバイスにパッケージマネージャがインストールするパッケージ。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "탈옥한 기기에 패키지 관리자가 설치하는 패키지입니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um pacote que seu gerenciador de pacotes instala em um dispositivo com jailbreak."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пакет, который ваш менеджер пакетов установит на устройство с джейлбрейком."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gói mà trình quản lý gói của bạn cài trên thiết bị đã jailbreak."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "由包管理器安装到越狱设备上的软件包。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "由套件管理器安裝到越獄裝置上的套件。"
           }
         }
       }
@@ -61617,6 +61949,89 @@
         }
       }
     },
+    "Output": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإخراج"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ausgabe"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Output"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salida"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sortie"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Output"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "出力"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "출력"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saída"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вывод"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đầu ra"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "输出"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "輸出"
+          }
+        }
+      }
+    },
     "Packages": {
       "localizations": {
         "ar": {
@@ -90346,6 +90761,172 @@
           "stringUnit": {
             "state": "translated",
             "value": "提交的作者、你的 GitHub 帳號，以及發佈版本所在的套件儲存庫。"
+          }
+        }
+      }
+    },
+    "The build makes a .deb your package manager installs on a jailbroken device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يبني المشروع حزمة .deb يثبّتها مدير الحزم على جهاز مكسور الحماية."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Build erzeugt ein .deb, das dein Paketmanager auf einem jailbroken Gerät installiert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The build makes a .deb your package manager installs on a jailbroken device."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La compilación genera un .deb que tu gestor de paquetes instala en un dispositivo con jailbreak."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La compilation produit un .deb que votre gestionnaire de paquets installe sur un appareil jailbreaké."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La build produce un .deb che il tuo gestore di pacchetti installa su un dispositivo jailbroken."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ビルドは、脱獄したデバイスにパッケージマネージャがインストールする .deb を出力します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "빌드는 탈옥한 기기에 패키지 관리자가 설치하는 .deb를 만듭니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A compilação gera um .deb que seu gerenciador de pacotes instala em um dispositivo com jailbreak."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сборка создаёт .deb, который ваш менеджер пакетов установит на устройство с джейлбрейком."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bản dựng tạo một .deb mà trình quản lý gói của bạn cài trên thiết bị đã jailbreak."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "构建会生成 .deb 软件包，由包管理器安装到越狱设备上。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "建置會產生 .deb 套件，由套件管理器安裝到越獄裝置上。"
+          }
+        }
+      }
+    },
+    "The build makes one minimal app as an .ipa. Install it on this device, or export it in Distribute… to sign it for another.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يبني المشروع تطبيقًا بسيطًا واحدًا بصيغة .ipa. ثبّته على هذا الجهاز، أو صدّره من «توزيع…» لتوقيعه لجهاز آخر."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Build erzeugt eine minimale App als .ipa. Installiere sie hier oder exportiere sie in „Verteilen…“, um sie für ein anderes Gerät zu signieren."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The build makes one minimal app as an .ipa. Install it on this device, or export it in Distribute… to sign it for another."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La compilación genera una app mínima como .ipa. Instálala aquí o expórtala en «Distribuir…» para firmarla para otro."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La compilation produit une app minimale au format .ipa. Installez-la ici ou exportez-la dans « Distribuer… » pour la signer pour un autre appareil."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La build produce un’app minima come .ipa. Installala qui o esportala in «Distribuisci…» per firmarla per un altro dispositivo."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ビルドは最小限のアプリを .ipa として出力します。このデバイスにインストールするか、「配布…」で書き出して別のデバイス向けに署名します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "빌드는 최소한의 앱을 .ipa로 만듭니다. 이 기기에 설치하거나 ‘배포…’에서 내보내 다른 기기에 맞게 서명하세요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A compilação gera um app mínimo como .ipa. Instale aqui ou exporte em “Distribuir…” para assiná-lo para outro dispositivo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сборка создаёт минимальное приложение в виде .ipa. Установите его здесь или экспортируйте в «Распространить…», чтобы подписать для другого устройства."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bản dựng tạo một ứng dụng tối giản dưới dạng .ipa. Cài trên thiết bị này, hoặc xuất trong “Phân phối…” để ký cho thiết bị khác."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "构建会生成一个最简 iOS 应用的 .ipa。可安装到本机，或在「分发…」中导出，为另一台设备签名。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "建置會產生一個最簡 iOS 應用程式的 .ipa。可安裝到本機，或在「分發…」中匯出，為另一台裝置簽名。"
           }
         }
       }

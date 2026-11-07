@@ -122,11 +122,13 @@ Swift gets the bootstrap and configuration names as `-D` conditions.
 - `format` is `deb` (absent or `deb`) or `ipa`. An `ipa` package is an app
   project's build handing back an `.ipa` — the one app product it built,
   inside `Payload/<name>.app/`, zipped with the bytes the `sign` step
-  wrote — and it installs nothing, so it carries exactly one `app` product
-  and an empty `layout`, and no relations, `tweakFilter` or
+  wrote — and no package manager installs it, so it carries exactly one `app`
+  product and an empty `layout`, and no relations, `tweakFilter` or
   `maintainerScripts` (the check says which). The build writes
   `<id>_<version>.ipa` into the build's folder and records it with
-  `format: "ipa"`; the session host refuses to install one, no package
+  `format: "ipa"`; `apelin_package_install` installs one as an app — unpacked
+  under `<install root>/Applications`, signed with `ldid`, registered with
+  `uicache -p`, and taken off again by `apelin_package_remove` — no package
   repository takes one, and Distribute… offers Share `.ipa` alone. The
   archive is read back after writing: every member under `Payload/<name>.app/`,
   an `Info.plist` among them, nothing absolute or leading outside. Members are

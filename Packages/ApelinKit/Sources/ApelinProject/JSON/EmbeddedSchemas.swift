@@ -625,7 +625,7 @@ enum EmbeddedSchemas {
           "items": { "$ref": "#/$defs/layoutEntry" }
         },
         "format": {
-          "description": "What the build hands back: a Debian package a package manager installs (the default), or an .ipa — the app project's built .app in Payload/, zipped with the bytes the sign step wrote, for a signing tool of one's own. An .ipa project installs nothing, so it has an empty layout and no relations, tweak filter or maintainer scripts.",
+          "description": "What the build hands back: a Debian package a package manager installs (the default), or an .ipa — the app project's built .app in Payload/, zipped with the bytes the sign step wrote, for a signing tool of one's own. An .ipa installs as an app, never through a package manager, so it has an empty layout and no relations, tweak filter or maintainer scripts.",
           "enum": ["deb", "ipa"]
         },
         "maintainerScripts": {

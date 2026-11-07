@@ -206,6 +206,7 @@ public final class BuildWorker: @unchecked Sendable {
             values: values,
             catalog: catalog,
             registry: registry,
+            outputFormat: request.outputFormat.flatMap { ProjectDocument.Package.Format(rawValue: $0.rawValue) },
             automaticallyName: request.automaticallyName == true,
         )
         return ProjectCreateResponse(

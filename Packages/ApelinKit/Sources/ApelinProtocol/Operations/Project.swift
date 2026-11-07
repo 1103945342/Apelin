@@ -90,6 +90,13 @@ public struct ExtensionListResponse: Codable, Sendable, Equatable {
     }
 }
 
+/// What a new app project builds, chosen at the New Project screen: a deb a
+/// package manager installs, or an `.ipa`. Absent, the template's own.
+public enum ProjectOutputFormat: String, Codable, Sendable, CaseIterable {
+    case deb
+    case ipa
+}
+
 public struct ProjectCreateRequest: OperationRequest {
     public typealias Response = ProjectCreateResponse
     public static let operation = AppOperation.projectCreate
@@ -99,12 +106,22 @@ public struct ProjectCreateRequest: OperationRequest {
     public var values: [String: JSONValue]
     /// A generated placeholder may be named once from the first user intent.
     public var automaticallyName: Bool?
+    /// `ipa` turns the template's app into an `.ipa` project before anything
+    /// is recorded; `deb` or nothing leaves the template as it is.
+    public var outputFormat: ProjectOutputFormat?
 
-    public init(templateID: String, name: String, values: [String: JSONValue] = [:], automaticallyName: Bool? = nil) {
+    public init(
+        templateID: String,
+        name: String,
+        values: [String: JSONValue] = [:],
+        automaticallyName: Bool? = nil,
+        outputFormat: ProjectOutputFormat? = nil,
+    ) {
         self.templateID = templateID
         self.name = name
         self.values = values
         self.automaticallyName = automaticallyName
+        self.outputFormat = outputFormat
     }
 }
 

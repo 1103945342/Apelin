@@ -8,6 +8,9 @@ extension BuiltInSkills {
         `apelin_project_build` compiles, links, makes the dSYM, strips and signs (signing is
         last; nothing touches the binary after it), then writes the `.deb`. Its
         result lists artifacts with an `id`, a `kind` and a `digest`.
+        An `ipa` project writes an `.ipa` in the same place instead, and
+        installs and removes as an app rather than through the package
+        manager: the apelin-ipa-development skill has that loop.
 
         ## Where the package goes
         - The `.deb` stays in Apelin's folder for that build, outside the

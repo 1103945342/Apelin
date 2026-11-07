@@ -121,6 +121,7 @@ public struct ProjectStore: Sendable {
         catalog: ExtensionCatalog,
         registry: EnvironmentRegistry,
         projectID: String = UUID().uuidString.lowercased(),
+        outputFormat: ProjectDocument.Package.Format? = nil,
         automaticallyName: Bool = false,
     ) throws -> Created {
         if let problem = ProjectName.validate(name) {
@@ -246,12 +247,19 @@ public struct ProjectStore: Sendable {
                 }
                 try Self.writeNew(data, to: relative, in: staging, mode: file.mode == "0755" ? 0o755 : 0o644)
             }
-            let generated = try ProjectMetadata.initial(
+            var generated = try ProjectMetadata.initial(
                 ProjectFiles.read(Self.projectFileName, in: staging),
                 name: name,
                 automaticallyName: automaticallyName,
             )
             try generated.write(to: staging.appendingPathComponent(Self.projectFileName), options: .atomic)
+            // The New Project screen's other choice, applied before anything
+            // is validated or recorded, so the baseline is the ipa's own
+            // description and not the deb the template wrote.
+            if outputFormat == .ipa {
+                generated = try Self.makeIPA(generated, in: staging)
+                try generated.write(to: staging.appendingPathComponent(Self.projectFileName), options: .atomic)
+            }
             let document: JSONDocument
             do {
                 document = try ProjectValidation.load(generated).document
@@ -285,6 +293,78 @@ public struct ProjectStore: Sendable {
                 throw apelin
             }
             throw ApelinError(.badRequest, String(describing: error))
+        }
+    }
+
+    /// The project an app template becomes when the user asked for an `.ipa`
+    /// instead of a deb: one app product, no layout and no Debian relations,
+    /// `arm64` alone (an app that installs on ordinary iOS), and the
+    /// entitlements a container app carries rather than the jailbreak ones a
+    /// bootstrap installation needs. Returns the description to write; the
+    /// app's entitlements file is rewritten in `root` beside it.
+    static func makeIPA(_ data: Data, in root: URL) throws -> Data {
+        var document: ProjectDocument
+        do {
+            document = try JSONDecoder().decode(ProjectDocument.self, from: data)
+        } catch {
+            throw TemplateError("generated apelin-project.json: \(error)")
+        }
+        guard document.kind == .app, document.products.filter({ $0.type == .app }).count == 1 else {
+            throw TemplateError("only an app template builds an .ipa")
+        }
+        document.architectures = ProjectDocument.ArchitectureMap(rootless: [.arm64], roothide: [.arm64])
+        document.package.format = .ipa
+        document.package.layout = []
+        document.package.depends = nil
+        document.package.dependsByBootstrap = nil
+        document.package.recommends = nil
+        document.package.suggests = nil
+        document.package.conflicts = nil
+        document.package.breaks = nil
+        document.package.replaces = nil
+        document.package.provides = nil
+        document.package.maintainerScripts = nil
+        document.package.tweakFilter = nil
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.withoutEscapingSlashes]
+        let encoded: Data
+        do {
+            encoded = try encoder.encode(document)
+        } catch {
+            throw TemplateError("apelin-project.json: \(error)")
+        }
+        if let relative = document.products.first(where: { $0.type == .app })?.entitlements {
+            try Self.writeContainerEntitlements(relative, in: root)
+        }
+        // The written form every manifest is kept in, so the file reads like
+        // the one the template wrote and no later pass rewrites it.
+        return ProjectManifestFormat.formatted(encoded) ?? encoded
+    }
+
+    /// What a signed app carries outside the bootstrap: no
+    /// `platform-application`, no `no-sandbox`, which only a jailbroken
+    /// installation wants and which would make the `.ipa` install nowhere.
+    static let containerEntitlements = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+    \t<key>get-task-allow</key>
+    \t<true/>
+    </dict>
+    </plist>
+
+    """
+
+    static func writeContainerEntitlements(_ relative: String, in root: URL) throws {
+        let parts = relative.split(separator: "/")
+        guard !parts.isEmpty, !parts.contains(where: { $0.isEmpty || $0 == "." || $0 == ".." }) else {
+            throw TemplateError("\(relative): an unusable entitlements path")
+        }
+        do {
+            try Data(containerEntitlements.utf8).write(to: root.appendingPathComponent(relative), options: .atomic)
+        } catch {
+            throw TemplateError("\(relative): \(error.localizedDescription)")
         }
     }
 

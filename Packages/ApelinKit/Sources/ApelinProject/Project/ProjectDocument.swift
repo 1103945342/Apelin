@@ -293,8 +293,9 @@ public struct ProjectDocument: Codable, Sendable, Equatable {
         /// What the build hands back. `deb` when the description says
         /// nothing: a package a package manager installs, laid out by
         /// `layout`. `ipa`: this project's app in `Payload/`, zipped, which
-        /// installs nothing — `layout` stays empty and relations, a tweak
-        /// filter and maintainer scripts are refused.
+        /// installs as an app and never through a package manager — `layout`
+        /// stays empty and relations, a tweak filter and maintainer scripts
+        /// have nothing to say.
         public enum Format: String, Codable, Sendable, CaseIterable {
             case deb
             case ipa
