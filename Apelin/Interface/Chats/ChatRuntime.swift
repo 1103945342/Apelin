@@ -63,7 +63,19 @@ final class ChatRuntime {
     private var compactions: [UUID: CheckedContinuation<AgentCompactionResult, Error>] = [:]
 
     var summaries: [ChatSummary] {
-        records.values.map(\.summary)
+        ChatLineage.projected(records.values.map(\.summary))
+    }
+
+    /// Only the presentation changes; each branch keeps its creation-time
+    /// title on disk in case its direct parent is later deleted.
+    func summary(_ id: UUID) -> ChatSummary? {
+        summaries.first { $0.id == id }
+    }
+
+    private func restoreLineage(sessions: [AgentSessionSummary] = []) {
+        for id in ChatAdoption.restoreLineage(in: &records, sessions: sessions) {
+            persist(id, urgent: true)
+        }
     }
 
     /// The conversation the reader is looking at, nil while they look at
@@ -109,6 +121,7 @@ final class ChatRuntime {
         }
         // a project deleted while the app was away
         await forget(DeletedProjects.gone(from: summaries, in: .app))
+        restoreLineage()
         isLoaded = true
         onChange?()
         // A host that does not answer yet is not an error, and runs
@@ -123,13 +136,21 @@ final class ChatRuntime {
                 changed(record.summary.id)
             }
         }
+        // What agents opened while the app was not following their openers.
+        // Resolve parents before children without relying on the host's order.
+        var remaining = live
+        while !remaining.isEmpty {
+            let count = records.count
+            remaining.removeAll { session in
+                guard let record = ChatAdoption.record(session: session, records: Array(records.values)) else { return false }
+                adopt(record)
+                return true
+            }
+            if records.count == count { break }
+        }
+        restoreLineage(sessions: live)
         isReconciled = true
         onChange?()
-        // What agents opened while the app was not following their
-        // openers; the list is oldest first, so an opener comes first.
-        for session in live {
-            adopt(ChatAdoption.record(session: session, records: Array(records.values)))
-        }
     }
 
     /// Lists and follows a conversation an agent opened, leaving the
@@ -137,6 +158,7 @@ final class ChatRuntime {
     private func adopt(_ record: ChatRecord?) {
         guard let record, let task = record.task else { return }
         records[record.summary.id] = record
+        restoreLineage()
         changed(record.summary.id)
         follow(record.summary.id, task: task)
     }
@@ -185,6 +207,9 @@ final class ChatRuntime {
     /// `name` as the conversation's title from now on: the agent's titles
     /// no longer replace it (`ChatSummary.rename(to:)`).
     @objc dynamic func rename(_ id: UUID, to name: String) {
+        if let chat = records[id]?.summary, chat.relationship == .branch,
+           let parentID = chat.parentChatID, let parent = records[parentID]?.summary,
+           parent.projectName == chat.projectName { return }
         guard records[id]?.summary.rename(to: name) == true else { return }
         changed(id)
     }
@@ -294,7 +319,8 @@ final class ChatRuntime {
     /// The title of the conversation `sessionID` is, which names a message
     /// its agent sent, and its journal in Settings ▸ Logs.
     @objc dynamic func title(ofSession sessionID: String) -> String? {
-        records.values.first { $0.sessionID == sessionID }?.summary.displayTitle
+        guard let id = records.values.first(where: { $0.sessionID == sessionID })?.summary.id else { return nil }
+        return summary(id)?.displayTitle
     }
 
     /// A message's attachment, read from its file once and kept. One that
@@ -343,11 +369,12 @@ final class ChatRuntime {
     /// composer before the task throws.
     func submit(_ draft: ComposerDraft, to id: UUID) -> Task<Void, Error> {
         guard records[id] != nil else { return Task {} }
+        let selection = ComposerModelSelection.selection(for: id)
         records[id]?.submit(draft)
         changed(id)
         return Task {
             do {
-                try await send(draft, to: id)
+                try await send(draft, to: id, selection: selection)
             } catch {
                 takeBack(draft, from: id)
                 throw error
@@ -365,9 +392,9 @@ final class ChatRuntime {
         }
     }
 
-    private func send(_ draft: ComposerDraft, to id: UUID) async throws {
+    private func send(_ draft: ComposerDraft, to id: UUID, selection: ComposerModelSelection?) async throws {
         guard records[id] != nil else { return }
-        let opened = try await open(id)
+        let opened = try await open(id, selection: selection)
         guard records[id] != nil else { return }
         var descriptors: [OwnedDescriptor] = []
         var inputs: [AgentInputAttachment] = []
@@ -395,21 +422,21 @@ final class ChatRuntime {
             ))
             descriptors.append(OwnedDescriptor(adopting: fd))
         }
-        let selection = ComposerModelSelection.current
+        let selected = selection ?? ComposerModelSelection.selection(for: id)
         _ = try await ApelinService.app.send(
             AgentPromptRequest(
                 sessionID: opened.sessionID,
                 text: draft.text,
                 messageID: draft.id,
                 attachments: inputs,
-                provider: selection?.provider,
-                model: selection?.model,
-                reasoningEffort: selection?.effort,
-                serviceTier: selection?.tier,
+                provider: selected?.provider,
+                model: selected?.model,
+                reasoningEffort: selected?.effort,
+                serviceTier: selected?.tier,
                 approvalMode: AgentPermissions.mode,
                 asksBeforeScreen: AgentPermissions.asksBeforeScreen,
                 runMode: ComposerModeStore.mode.runMode,
-                modelParameters: ModelParameters.values(for: selection?.provider, model: selection?.model).wire,
+                modelParameters: ModelParameters.values(for: selected?.provider, model: selected?.model).wire,
             ),
             descriptors: descriptors,
         )
@@ -500,11 +527,15 @@ final class ChatRuntime {
         // replays the sealed model snapshot and marks those events historical;
         // the UI must not copy the source's possibly edited event list.
         let opened = try await open(id)
+        guard let number = try await reserveBranchNumber(id), records[id] != nil else { return nil }
         let newSessionID = UUID().uuidString.lowercased()
         try await ApelinService.app.agentFork(sessionID: opened.sessionID, newSessionID: newSessionID, messageID: messageID)
-        guard let current = records[id] else { return nil }
-        var summary = ChatSummary.untitled(lastInteraction: Date(), projectName: current.summary.projectName)
-        summary.rename(to: String(localized: "Fork of \(current.summary.displayTitle)"))
+        guard let current = summary(id) else { return nil }
+        var summary = ChatSummary.untitled(lastInteraction: Date(), projectName: current.projectName)
+        summary.title = current.title
+        summary.parentChatID = id
+        summary.relationship = .branch
+        summary.branchNumber = number
         let newID = summary.id
         records[newID] = ChatRecord(summary: summary, sessionID: newSessionID)
         // Save the row before opening it. If the new session cannot be opened,
@@ -516,7 +547,31 @@ final class ChatRuntime {
             // Keep the saved record; opening is retried when the conversation is
             // used again, rather than creating another fork row.
         }
-        return records[newID]?.summary
+        return self.summary(newID)
+    }
+
+    /// Durably reserve on the parent before asking the host to fork. A
+    /// best-effort child save must not let a deleted branch's number be reused
+    /// after a restart. Store revisions prevent an older queued save from
+    /// replacing this snapshot; concurrent forks reserve on the main actor
+    /// before either suspends. Failed reservations/forks never roll it back.
+    private func reserveBranchNumber(_ id: UUID) async throws -> Int? {
+        guard var record = records[id],
+              let number = ChatLineage.reserveBranchNumber(in: &record.summary, summaries: records.values.map(\.summary))
+        else { return nil }
+        records[id]?.summary.lastBranchNumber = number
+        revision += 1
+        let reservationRevision = revision
+        do {
+            try await store.save(record, revision: reservationRevision)
+            saved(id)
+        } catch {
+            unsaved.insert(id)
+            onSaveFailure?(error)
+            throw error
+        }
+        guard records[id] != nil else { throw CancellationError() }
+        return number
     }
 
     /// Between runs only: a session to compact, nothing running, waiting
@@ -561,7 +616,7 @@ final class ChatRuntime {
         (try? event.payload?.decode(AgentCompactionResult.self)) ?? AgentCompactionResult(outcome: .failed)
     }
 
-    private func open(_ id: UUID) async throws -> AgentOpenResponse {
+    private func open(_ id: UUID, selection: ComposerModelSelection? = nil) async throws -> AgentOpenResponse {
         if let pending = opening[id] {
             return try await pending.value
         }
@@ -569,7 +624,7 @@ final class ChatRuntime {
         if let sessionID = record.sessionID, let task = record.task, readers[id] != nil {
             return AgentOpenResponse(sessionID: sessionID, task: task)
         }
-        let selected = ComposerModelSelection.current
+        let selected = selection ?? ComposerModelSelection.selection(for: id)
         let mode = AgentPermissions.mode
         let request = AgentOpenRequest(
             projectName: record.summary.projectName,
@@ -637,6 +692,11 @@ final class ChatRuntime {
                                 records: Array(records.values),
                             ))
                         }
+                    }
+                    if realtime.contains(where: { $0.kind == AgentConversations.openedEventKind }) {
+                        // The child may already have been adopted from a link
+                        // or agentList, so a duplicate open still supplies an edge.
+                        restoreLineage()
                     }
                     let dropped = realtime.filter { $0.kind == "queueDropped" }
                         // persisted-read: one event's field, nothing written back from it

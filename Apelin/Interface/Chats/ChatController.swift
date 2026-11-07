@@ -547,7 +547,7 @@ final class ChatController: UIViewController {
 
     func refreshRuntime() {
         guard let chat else { return }
-        if let summary = runtime.records[chat.id]?.summary {
+        if let summary = runtime.summary(chat.id) {
             self.chat = summary
             if title != summary.displayTitle {
                 // a rename, or the agent's title: the back button's too
@@ -739,7 +739,7 @@ final class ChatController: UIViewController {
     }
 
     @objc private func updateModelSelection() {
-        let selection = ComposerModelSelection.current
+        let selection = chat.flatMap { ComposerModelSelection.selection(for: $0.id) }
         composer.modelBar.setProvider(selection?.provider)
         composer.modelBar.setEfforts(selection?.supportedEfforts ?? [], selected: selection?.effort)
         composer.modelBar.setTiers(selection?.supportedTiers ?? [], selected: selection?.tier)
@@ -805,8 +805,8 @@ final class ChatController: UIViewController {
 
     /// One group of models per signed-in provider, the one in use marked.
     private func showModels(_ accounts: [AgentAccount]) {
-        guard presentedViewController == nil else { return }
-        let selected = ComposerModelSelection.current
+        guard let id = chat?.id, presentedViewController == nil else { return }
+        let selected = ComposerModelSelection.selection(for: id)
         let groups = accounts.map { account in
             ComposerChoiceSheet.Group(
                 title: account.account ?? account.provider.displayName,
@@ -814,7 +814,7 @@ final class ChatController: UIViewController {
                     ComposerChoiceSheet.Choice(
                         title: model,
                         isSelected: account.provider == selected?.provider && model == selected?.model,
-                    ) { ComposerModelSelection.current = Self.selection(of: model, in: account) }
+                    ) { ComposerModelSelection.choose(Self.selection(of: model, in: account), for: id) }
                 },
             )
         }
@@ -828,7 +828,7 @@ final class ChatController: UIViewController {
     /// The pick is the reader's own, kept apart from the model, so a later
     /// model that offers it gets it back.
     private func presentEffortSheet() {
-        guard let selection = ComposerModelSelection.current,
+        guard let id = chat?.id, let selection = ComposerModelSelection.selection(for: id),
               !selection.supportedEfforts.isEmpty,
               presentedViewController == nil
         else { return }
@@ -837,7 +837,7 @@ final class ChatController: UIViewController {
             ComposerChoiceSheet.Choice(
                 title: ComposerModelBar.title(for: effort),
                 isSelected: effort == current,
-            ) { ComposerModelPreferences.effort = effort }
+            ) { ComposerModelSelection.setEffort(effort, for: id) }
         }
         ComposerChoiceSheet.present(
             ComposerChoiceSheet(
@@ -851,7 +851,7 @@ final class ChatController: UIViewController {
     /// The hare was tapped: the standard speed and the faster tiers this model
     /// offers. A model with one tier hides the control, so this is never empty.
     private func presentTierSheet() {
-        guard let selection = ComposerModelSelection.current,
+        guard let id = chat?.id, let selection = ComposerModelSelection.selection(for: id),
               let tiers = selection.supportedTiers, !tiers.isEmpty,
               presentedViewController == nil
         else { return }
@@ -860,7 +860,7 @@ final class ChatController: UIViewController {
             ComposerChoiceSheet.Choice(
                 title: ComposerModelBar.title(for: tier),
                 isSelected: tier == current,
-            ) { ComposerModelPreferences.tier = tier }
+            ) { ComposerModelSelection.setTier(tier, for: id) }
         }
         ComposerChoiceSheet.present(
             ComposerChoiceSheet(
@@ -892,18 +892,21 @@ extension ChatController {
     /// models; its model is kept rather than swapped for another's.
     func ensureModelSelection() {
         selectionCheck?.cancel()
+        guard let id = chat?.id else { return }
         selectionCheck = Task {
             guard let listed = try? await ApelinService.app.agentAccountList().accounts,
-                  !Task.isCancelled
+                  !Task.isCancelled, self.chat?.id == id
             else { return }
             let accounts = EnabledModels.accounts(from: listed)
-            if let current = ComposerModelSelection.current {
+            if let current = ComposerModelSelection.selection(for: id) {
                 if let account = accounts.first(where: { account in
                     account.provider == current.provider && (account.models ?? []).contains(current.model)
                 }) {
                     let refreshed = Self.selection(of: current.model, in: account)
-                    if refreshed != current {
-                        ComposerModelSelection.current = refreshed
+                    if refreshed.supportedEfforts != current.supportedEfforts
+                        || refreshed.supportedTiers != current.supportedTiers
+                    {
+                        ComposerModelSelection.choose(refreshed, for: id)
                     }
                     return
                 }
@@ -912,7 +915,7 @@ extension ChatController {
                 }
             }
             guard let account = accounts.first, let model = account.models?.first else { return }
-            ComposerModelSelection.current = Self.selection(of: model, in: account)
+            ComposerModelSelection.choose(Self.selection(of: model, in: account), for: id)
         }
     }
 
@@ -1052,7 +1055,7 @@ extension ChatController: ComposerView.Delegate {
         rewriteTask?.cancel()
         // Nothing chosen is nothing to rewrite with: said here rather than
         // after a request the worker would refuse.
-        guard let selection = ComposerModelSelection.current else {
+        guard let id = chat?.id, let selection = ComposerModelSelection.selection(for: id) else {
             presentNotice(
                 title: "Unable to Rewrite",
                 message: String(localized: "Choose a model before rewriting."),
