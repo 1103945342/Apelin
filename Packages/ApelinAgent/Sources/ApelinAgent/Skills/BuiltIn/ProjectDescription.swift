@@ -97,8 +97,11 @@ extension BuiltInSkills {
           instead: the app the build made, inside `Payload/`, zipped and
           left as it was signed, to be signed again for a certificate and a
           device. An `ipa` project has exactly one app product, no `layout`,
-          relations, `tweakFilter` or `maintainerScripts`, and its build
-          installs nothing: Share `.ipa` in Distribute… hands the file out.
+          relations, `tweakFilter` or `maintainerScripts`, and installs
+          nothing as a package: `apelin_package_install` on the ipa artifact
+          puts the app on the device instead — unpacked, signed with ldid and
+          registered with uicache — and `apelin_package_remove` takes it off
+          again. Share `.ipa` in Distribute… hands the file out.
           Never publish one to a package repository.
         - `icon`: the image a package manager shows beside the package, its
           control `Icon`: an `https://` URL in printable ASCII, at most 2048

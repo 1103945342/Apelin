@@ -114,7 +114,7 @@ final class DistributionBuildController: TableController {
     }
 
     /// Share Package and Publish to Repository; an `.ipa` is only shared,
-    /// since no package manager installs one. The share sheet points at
+    /// since a package repository takes no app. The share sheet points at
     /// `anchor`, the item whose menu they were chosen from.
     private func distributionActions(anchor: UIBarButtonItem) -> [UIMenuElement] {
         let attributes: UIMenuElement.Attributes = isPreparingPackage ? .disabled : []

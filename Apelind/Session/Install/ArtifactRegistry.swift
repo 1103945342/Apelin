@@ -32,7 +32,8 @@ actor ArtifactRegistry {
         /// The deb's files as dpkg lists them, for explaining a refused install.
         var packageFiles: [String]?
 
-        /// Whether this is an `.ipa`, which nothing installs.
+        /// Whether this is an `.ipa`: an app no package manager installs, and
+        /// the one the bridge puts on the device itself.
         var isIPA: Bool { format == BuildArtifact.ipaFormat }
     }
 

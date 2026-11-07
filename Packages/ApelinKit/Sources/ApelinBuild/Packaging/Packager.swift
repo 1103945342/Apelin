@@ -50,7 +50,7 @@ public struct ArtifactRecord: Codable, Sendable, Equatable {
     /// record written before it was kept.
     public var packageFiles: [String]?
 
-    /// Whether this is an `.ipa`, which nothing installs.
+    /// Whether this is an `.ipa`, which no package manager installs.
     public var isIPA: Bool {
         format == BuildArtifact.ipaFormat
     }

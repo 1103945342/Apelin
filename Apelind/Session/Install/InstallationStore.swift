@@ -40,6 +40,15 @@ struct InstallationRecord: Codable, Equatable, Sendable {
         var finishedAt: Date
     }
 
+    /// An app this bridge put on the device from an `.ipa`: the bundle a
+    /// removal takes away again. nil for a package, which dpkg owns.
+    struct Application: Codable, Equatable, Sendable {
+        var bundleID: String
+        var name: String
+        /// `<install root>/Applications/<name>.app`, as it was copied.
+        var bundlePath: String
+    }
+
     var installationID: String
     var origin: Origin
     var artifactID: String
@@ -62,6 +71,8 @@ struct InstallationRecord: Codable, Equatable, Sendable {
     var removalTransactionID: String?
     var removalTaskID: String?
     var removalReceipt: Receipt?
+    /// Set once an `.ipa` is on the device; `packageID` is then its bundle ID.
+    var application: Application?
 }
 
 /// `<state>/installations/<installationID>.json`, root's and 0700.

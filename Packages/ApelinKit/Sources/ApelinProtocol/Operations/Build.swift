@@ -34,13 +34,13 @@ public struct BuildArtifact: Codable, Sendable, Equatable {
     /// `maximumPackageFiles`: what the host looks up in the package
     /// database when irisind refuses the install.
     public var packageFiles: [String]?
-    /// `deb`, or `ipa` for an app project that asks for one: an `.ipa` is
-    /// not installed, only shared to be signed again. Nil is a deb, from a
-    /// build that could not make one.
+    /// `deb`, or `ipa` for an app project that asks for one: an `.ipa` is an
+    /// app the host installs itself, never a package dpkg sees. Nil is a deb,
+    /// from a build that could not make one.
     public var format: String?
 
-    /// Whether this is an `.ipa`, which no package manager installs: shared
-    /// to be signed for a device instead.
+    /// Whether this is an `.ipa`: an app, which no package manager installs
+    /// and the host puts on the device itself.
     public var isIPA: Bool { format == BuildArtifact.ipaFormat }
 
     /// What `format` says for an `.ipa`; every reader spells it from here.

@@ -45,10 +45,14 @@ the same executable in session mode; the workers are its children.
   `.ipa`.** `package.format` is `deb` (absent, the default) or `ipa`; an
   `ipa` project builds one app and `IPAPackager` writes `Payload/<name>.app/`
   zipped, the bytes the `sign` step left, read back with libarchive before
-  it is recorded (`format: "ipa"`). Nothing installs an ipa: the session
-  host refuses one by that field, no package repository takes one, and the
-  Distribute… page offers Share `.ipa` alone. The two formats are never one
-  renamed into the other, and a deb keeps every check it had.
+  it is recorded (`format: "ipa"`). An `.ipa` installs as an app, never as a
+  package: `installPackage` on an ipa artifact unpacks it inside the host,
+  copies its one `Payload/*.app` under `<install root>/Applications`, signs
+  every Mach-O with the bootstrap's `ldid`, registers it with `uicache`, and
+  keeps the bundle in the installation record so a removal unregisters and
+  deletes it. dpkg and irisind never see one, no package repository takes
+  one, and the Distribute… page offers Share `.ipa` alone. The two formats
+  are never one renamed into the other, and a deb keeps every check it had.
 - **roothide is recognised by the process's own path** (`RoothideRoot`,
   libroothide's own name rule), never by loading libroothide through the
   `.jbroot` link, which is not promised, and never by falling back to
