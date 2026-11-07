@@ -290,6 +290,16 @@ public struct ProjectDocument: Codable, Sendable, Equatable {
     }
 
     public struct Package: Codable, Sendable, Equatable {
+        /// What the build hands back. `deb` when the description says
+        /// nothing: a package a package manager installs, laid out by
+        /// `layout`. `ipa`: this project's app in `Payload/`, zipped, which
+        /// installs nothing — `layout` stays empty and relations, a tweak
+        /// filter and maintainer scripts are refused.
+        public enum Format: String, Codable, Sendable, CaseIterable {
+            case deb
+            case ipa
+        }
+
         public var id: String
         public var name: String
         public var version: String
@@ -310,8 +320,13 @@ public struct ProjectDocument: Codable, Sendable, Equatable {
         public var replaces: [String]?
         public var provides: [String]?
         public var layout: [LayoutEntry]
+        public var format: Format?
         public var maintainerScripts: MaintainerScripts?
         public var tweakFilter: TweakFilter?
+
+        public var effectiveFormat: Format {
+            format ?? .deb
+        }
     }
 
     public func configuration(_ name: ConfigurationName) -> Configuration {

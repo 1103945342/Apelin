@@ -113,19 +113,24 @@ final class DistributionBuildController: TableController {
         return elements
     }
 
-    /// Share Package and Publish to Repository; the share sheet points at
+    /// Share Package and Publish to Repository; an `.ipa` is only shared,
+    /// since no package manager installs one. The share sheet points at
     /// `anchor`, the item whose menu they were chosen from.
     private func distributionActions(anchor: UIBarButtonItem) -> [UIMenuElement] {
         let attributes: UIMenuElement.Attributes = isPreparingPackage ? .disabled : []
+        let share = UIAction(
+            title: artifact?.isIPA == true
+                ? String(localized: "Share .ipa")
+                : String(localized: "Share Package"),
+            image: UIImage(systemName: "square.and.arrow.up"),
+            attributes: attributes,
+        ) { [weak self, weak anchor] _ in
+            guard let anchor else { return }
+            self?.sharePackage(from: anchor)
+        }
+        guard artifact?.isIPA != true else { return [share] }
         return [
-            UIAction(
-                title: String(localized: "Share Package"),
-                image: UIImage(systemName: "square.and.arrow.up"),
-                attributes: attributes,
-            ) { [weak self, weak anchor] _ in
-                guard let anchor else { return }
-                self?.sharePackage(from: anchor)
-            },
+            share,
             UIAction(
                 title: String(localized: "Publish to Repository"),
                 image: UIImage(systemName: "shippingbox"),
@@ -290,7 +295,9 @@ final class DistributionBuildController: TableController {
                 try Task.checkCancellation()
                 artifact = try await build(projectID: id)
                 finishedState = .succeeded
-                outcome = String(localized: "The package is ready to export.")
+                outcome = artifact?.isIPA == true
+                    ? String(localized: "The .ipa is ready to share and sign for a device.")
+                    : String(localized: "The package is ready to export.")
                 StarPrompt.buildsCompleted(1, from: self)
             } catch is CancellationError {
                 finishedState = .cancelled

@@ -19,14 +19,17 @@ public struct ArtifactRecord: Codable, Sendable, Equatable {
     public var projectID: String
     public var configuration: String
     public var bootstrap: String
-    /// The deb.
+    /// The package: the deb, or the `.ipa`.
     public var path: String
-    /// `sha256:` of the deb's bytes.
+    /// `sha256:` of the package's bytes.
     public var digest: String
     public var byteCount: Int64
     public var packageID: String
     public var packageVersion: String
     public var architecture: String
+    /// `deb`, or `ipa` for an app project that asks for one; nil in a record
+    /// written before a build could make an ipa, which is a deb.
+    public var format: String?
     /// Both description digests as they were when this was built. A
     /// workspace's build has no build description; its packaging digest is
     /// cut from the package it made (`ExternalBuild`).
@@ -47,6 +50,11 @@ public struct ArtifactRecord: Codable, Sendable, Equatable {
     /// record written before it was kept.
     public var packageFiles: [String]?
 
+    /// Whether this is an `.ipa`, which nothing installs.
+    public var isIPA: Bool {
+        format == BuildArtifact.ipaFormat
+    }
+
     public var wireArtifact: BuildArtifact {
         BuildArtifact(
             artifactID: artifactID,
@@ -60,6 +68,7 @@ public struct ArtifactRecord: Codable, Sendable, Equatable {
             path: path,
             projectID: projectID,
             packageFiles: packageFiles,
+            format: format,
         )
     }
 

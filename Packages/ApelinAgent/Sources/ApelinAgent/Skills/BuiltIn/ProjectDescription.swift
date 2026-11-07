@@ -92,6 +92,14 @@ extension BuiltInSkills {
           identity). `version`: a Debian version.
           `section`: Tweaks, Utilities, Development, System, Applications or
           Addons. Optional: `maintainer`, `longDescription` (a list of lines).
+        - `format`: `deb` (the default, what a package manager installs) or
+          `ipa`, for an app project whose build should hand back an `.ipa`
+          instead: the app the build made, inside `Payload/`, zipped and
+          left as it was signed, to be signed again for a certificate and a
+          device. An `ipa` project has exactly one app product, no `layout`,
+          relations, `tweakFilter` or `maintainerScripts`, and its build
+          installs nothing: Share `.ipa` in Distribute… hands the file out.
+          Never publish one to a package repository.
         - `icon`: the image a package manager shows beside the package, its
           control `Icon`: an `https://` URL in printable ASCII, at most 2048
           bytes. Every template writes its extension's icon on Apelin's

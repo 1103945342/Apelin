@@ -125,6 +125,19 @@ enum EmbeddedSchemas {
           "products": { "contains": { "properties": { "type": { "const": "bundle" } }, "required": ["type"] } }
         }
       }
+    },
+    {
+      "if": { "properties": { "package": { "required": ["format"], "properties": { "format": { "const": "ipa" } } } } },
+      "then": {
+        "properties": {
+          "kind": { "const": "app" },
+          "products": {
+            "minItems": 1,
+            "maxItems": 1,
+            "items": { "required": ["type"], "properties": { "type": { "const": "app" } } }
+          }
+        }
+      }
     }
   ],
   "$defs": {
@@ -566,7 +579,7 @@ enum EmbeddedSchemas {
     "package": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "name", "version", "description", "author", "section", "layout"],
+      "required": ["id", "name", "version", "description", "author", "section"],
       "properties": {
         "id": { "$ref": "#/$defs/packageID" },
         "name": { "$ref": "#/$defs/singleLine" },
@@ -608,9 +621,12 @@ enum EmbeddedSchemas {
         "provides": { "$ref": "#/$defs/relationList" },
         "layout": {
           "type": "array",
-          "minItems": 1,
           "maxItems": 64,
           "items": { "$ref": "#/$defs/layoutEntry" }
+        },
+        "format": {
+          "description": "What the build hands back: a Debian package a package manager installs (the default), or an .ipa — the app project's built .app in Payload/, zipped with the bytes the sign step wrote, for a signing tool of one's own. An .ipa project installs nothing, so it has an empty layout and no relations, tweak filter or maintainer scripts.",
+          "enum": ["deb", "ipa"]
         },
         "maintainerScripts": {
           "description": "Shown in full on the install card. @PREFIX@ and @ROOTFS@ are substituted; nothing else is.",
@@ -625,7 +641,36 @@ enum EmbeddedSchemas {
           }
         },
         "tweakFilter": { "$ref": "#/$defs/tweakFilter" }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["format"],
+            "properties": { "format": { "const": "ipa" } }
+          },
+          "then": {
+            "properties": { "layout": { "maxItems": 0 } },
+            "not": {
+              "anyOf": [
+                { "required": ["tweakFilter"] },
+                { "required": ["maintainerScripts"] },
+                { "required": ["depends"] },
+                { "required": ["dependsByBootstrap"] },
+                { "required": ["recommends"] },
+                { "required": ["suggests"] },
+                { "required": ["conflicts"] },
+                { "required": ["breaks"] },
+                { "required": ["replaces"] },
+                { "required": ["provides"] }
+              ]
+            }
+          },
+          "else": {
+            "required": ["layout"],
+            "properties": { "layout": { "minItems": 1 } }
+          }
+        }
+      ]
     }
   }
 }

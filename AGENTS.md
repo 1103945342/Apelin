@@ -41,6 +41,14 @@ the same executable in session mode; the workers are its children.
 - **No install prefix is written in Swift.** Derive it from the daemon's own
   `proc_pidpath`; anything that needs it asks the daemon. Packaging fails on
   `libvroot` in the app, daemon or helper.
+- **A build's package is a deb unless the project's description asks for an
+  `.ipa`.** `package.format` is `deb` (absent, the default) or `ipa`; an
+  `ipa` project builds one app and `IPAPackager` writes `Payload/<name>.app/`
+  zipped, the bytes the `sign` step left, read back with libarchive before
+  it is recorded (`format: "ipa"`). Nothing installs an ipa: the session
+  host refuses one by that field, no package repository takes one, and the
+  Distribute… page offers Share `.ipa` alone. The two formats are never one
+  renamed into the other, and a deb keeps every check it had.
 - **roothide is recognised by the process's own path** (`RoothideRoot`,
   libroothide's own name rule), never by loading libroothide through the
   `.jbroot` link, which is not promised, and never by falling back to

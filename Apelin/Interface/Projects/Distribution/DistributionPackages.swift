@@ -65,6 +65,11 @@ enum DistributionPackages {
         var packageVersion: String
         var architecture: String
         var createdAt: Date
+        /// `deb` or `ipa`; nil in a record from before an ipa could be built.
+        var format: String?
+
+        /// Whether this is an `.ipa`, which a package repository never takes.
+        var isIPA: Bool { format == BuildArtifact.ipaFormat }
     }
 
     private static var buildsFolder: URL {
@@ -88,6 +93,9 @@ enum DistributionPackages {
             let releases = records().filter { record in
                 // ApelinProject's `ConfigurationName` spelling, not the wire's
                 record.projectID == projectID && record.configuration == "Release"
+                    // An .ipa goes nowhere a package repository takes: only a
+                    // deb is published, so it is not offered here.
+                    && !record.isIPA
                     && (package.map { record.packageID == $0.id && record.packageVersion == $0.version } ?? true)
             }
             let debs = repository.flatMap(debsFolder(of:))

@@ -58,7 +58,7 @@ other hidden configuration.
 | `configurations` | `Debug` and `Release`, each `{optimization: "0"…"3"/"s"/"z", debugInfo, defines?, cFlags?, swiftFlags?, linkFlags?}`. A define's name may not start with `APELIN_`. A flag is one argv element starting with `-`; nothing here is ever given to a shell. |
 | `products` | 1–8 of `{id, type, name, sources, headerSearchPaths?, resources?, infoPlist?, entitlements?, installName?, objcARC?, frameworks?, weakFrameworks?, libraries?, frameworkSearchPaths?, librarySearchPaths?, extensionSupport?}`. `app` and `bundle` require `infoPlist`; only they may have `resources`; only `dylib` may set `installName` (default `@rpath/<name>.dylib`). `extensionSupport` names `{extension, component}` from an installed extension's manifest; the build adds that component's include directories, link-stub directories for the bootstrap being built and rpaths. Ids and names are unique (beyond the schema). |
 | `build.steps` | The typed steps, below. |
-| `package` | `{id, name, version, description, longDescription?, icon?, author, maintainer?, section, depends?, dependsByBootstrap?, recommends?, suggests?, conflicts?, breaks?, replaces?, provides?, layout, maintainerScripts?, tweakFilter?}`. |
+| `package` | `{id, name, version, description, longDescription?, icon?, author, maintainer?, section, format?, depends?, dependsByBootstrap?, recommends?, suggests?, conflicts?, breaks?, replaces?, provides?, layout, maintainerScripts?, tweakFilter?}`. |
 
 ### Build steps
 
@@ -119,6 +119,19 @@ Swift gets the bootstrap and configuration names as `-D` conditions.
 - `maintainerScripts` are project files; the packager substitutes `@PREFIX@`
   and `@ROOTFS@` and nothing else, requires `sh -n` to pass, and the install
   card shows them in full.
+- `format` is `deb` (absent or `deb`) or `ipa`. An `ipa` package is an app
+  project's build handing back an `.ipa` — the one app product it built,
+  inside `Payload/<name>.app/`, zipped with the bytes the `sign` step
+  wrote — and it installs nothing, so it carries exactly one `app` product
+  and an empty `layout`, and no relations, `tweakFilter` or
+  `maintainerScripts` (the check says which). The build writes
+  `<id>_<version>.ipa` into the build's folder and records it with
+  `format: "ipa"`; the session host refuses to install one, no package
+  repository takes one, and Distribute… offers Share `.ipa` alone. The
+  archive is read back after writing: every member under `Payload/<name>.app/`,
+  an `Info.plist` among them, nothing absolute or leading outside. Members are
+  sorted by name and carry the build's start as their time, so the same bytes
+  write the same archive.
 - `tweakFilter {dylib, bundles?, executables?, classes?}` (at least one list)
   is written as `<dylib file name without .dylib>.plist`, an XML plist with a
   single `Filter` dictionary, beside the dylib's layout path, which must be

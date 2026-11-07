@@ -20,13 +20,13 @@ public struct BuildArtifact: Codable, Sendable, Equatable {
     public var dsymUUIDs: [String]
     /// `APELIN_BUILD_ID` of the build that made it: what `confirmLoaded` takes.
     public var buildID: String?
-    /// `rootless` or `roothide`: the layout the deb was written for.
+    /// `rootless` or `roothide`: the layout the package was written for.
     public var bootstrap: String?
     /// The packaging description's digest at build time, for the host's
     /// Confirm decision on install (Documents/Schemas/README.md ▸ Approval digests).
     public var packagingDigest: String?
-    /// The deb, absolute, inside `~/Documents/wiki.qaq.apelin/Builds/`; the
-    /// host copies it to private staging and checks `digest` there.
+    /// The package file, absolute, inside `~/Documents/wiki.qaq.apelin/Builds/`;
+    /// the host copies it to private staging and checks `digest` there.
     public var path: String?
     public var projectID: String?
     /// The regular files and links the deb installs, as dpkg lists them
@@ -34,6 +34,17 @@ public struct BuildArtifact: Codable, Sendable, Equatable {
     /// `maximumPackageFiles`: what the host looks up in the package
     /// database when irisind refuses the install.
     public var packageFiles: [String]?
+    /// `deb`, or `ipa` for an app project that asks for one: an `.ipa` is
+    /// not installed, only shared to be signed again. Nil is a deb, from a
+    /// build that could not make one.
+    public var format: String?
+
+    /// Whether this is an `.ipa`, which no package manager installs: shared
+    /// to be signed for a device instead.
+    public var isIPA: Bool { format == BuildArtifact.ipaFormat }
+
+    /// What `format` says for an `.ipa`; every reader spells it from here.
+    public static let ipaFormat = "ipa"
 
     public static let maximumPackageFiles = 256
 
@@ -49,6 +60,7 @@ public struct BuildArtifact: Codable, Sendable, Equatable {
         path: String? = nil,
         projectID: String? = nil,
         packageFiles: [String]? = nil,
+        format: String? = nil,
     ) {
         self.artifactID = artifactID
         self.digest = digest
@@ -61,6 +73,7 @@ public struct BuildArtifact: Codable, Sendable, Equatable {
         self.path = path
         self.projectID = projectID
         self.packageFiles = packageFiles
+        self.format = format
     }
 }
 

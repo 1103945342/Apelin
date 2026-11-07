@@ -106,6 +106,12 @@ actor InstallBridge {
             guard found.digest == digest else {
                 throw ApelinError(.conflict, "artifact \(request.artifactID) is \(found.digest), not \(digest)")
             }
+            guard !found.isIPA else {
+                throw ApelinError(
+                    .badRequest,
+                    "artifact \(request.artifactID) is an .ipa, which no package manager installs; share it and sign it for a device, or build a deb",
+                )
+            }
             guard caller == .app || caller.isAgent else {
                 throw ApelinError(.denied, "build artifacts are installed by the app or the agent")
             }

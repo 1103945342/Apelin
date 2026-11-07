@@ -59,20 +59,40 @@ public enum BuildService {
         }
 
         reporter.stage("package", product: nil)
-        let packager = Packager(inputs: inputs, products: products)
-        let output = try packager.write()
+        let format = inputs.project.package.effectiveFormat
+        let output: Packager.Output
+        let architecture: String
+        if format == .ipa {
+            output = try IPAPackager(inputs: inputs, products: products).write()
+            architecture = PackageLayout(flavor: inputs.bootstrap == .rootless ? .rootless : .roothide).architecture
+        } else {
+            let packager = Packager(inputs: inputs, products: products)
+            output = try packager.write()
+            architecture = packager.layout.architecture
+        }
         if cancellation.isCancelled {
             throw BuildCancelled()
         }
         reporter.stage("verify", product: nil)
-        let contents = try DebArchiveReader.contents(of: .path(output.path))
-        let control = try contents.control()
-        guard control.package == inputs.project.package.id,
-              control.version == inputs.project.package.version,
-              control.architecture == packager.layout.architecture,
-              try CanonicalJSON.sha256Tag(Data(contentsOf: URL(fileURLWithPath: output.path))) == output.digest
-        else {
+        guard try CanonicalJSON.sha256Tag(Data(contentsOf: URL(fileURLWithPath: output.path))) == output.digest else {
             throw BuildFailure("the packaged artifact does not match its build")
+        }
+        // What the package installs; an ipa installs nothing.
+        var packageFiles: [String]?
+        if format == .ipa {
+            let bundle = try IPAPackager.bundleName(of: try IPAPackager.app(in: products))
+            let count = try IPAPackager.verify(path: output.path, bundle: bundle)
+            reporter.log("Payload/\(bundle) holds \(count) files")
+        } else {
+            let contents = try DebArchiveReader.contents(of: .path(output.path))
+            let control = try contents.control()
+            guard control.package == inputs.project.package.id,
+                  control.version == inputs.project.package.version,
+                  control.architecture == architecture
+            else {
+                throw BuildFailure("the packaged artifact does not match its build")
+            }
+            packageFiles = ArtifactRecord.packageFiles(of: contents)
         }
         if cancellation.isCancelled {
             throw BuildCancelled()
@@ -89,7 +109,8 @@ public enum BuildService {
             byteCount: output.byteCount,
             packageID: inputs.project.package.id,
             packageVersion: inputs.project.package.version,
-            architecture: packager.layout.architecture,
+            architecture: architecture,
+            format: format.rawValue,
             buildDigest: digests.build.digest,
             packagingDigest: digests.packaging.digest,
             toolchain: inputs.project.environment.toolchain,
@@ -100,7 +121,7 @@ public enum BuildService {
             log: products.log,
             loadCheck: output.loadCheck,
             createdAt: Date(timeIntervalSince1970: TimeInterval(inputs.timestamp)),
-            packageFiles: ArtifactRecord.packageFiles(of: contents),
+            packageFiles: packageFiles,
         )
         try ArtifactStore(store: store).save(record)
         return Result(record: record, products: products)

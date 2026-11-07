@@ -93,6 +93,15 @@ public enum ProjectValidation {
             }
         }
         let package = project.package
+        if package.effectiveFormat == .ipa {
+            if project.kind != .app {
+                errors.append("/package/format: an .ipa is built from an app project")
+            }
+            let apps = project.products.filter { $0.type == .app }
+            if apps.count != 1 {
+                errors.append("/package/format: an .ipa carries exactly one app product, and this project has \(apps.count)")
+            }
+        }
         for (index, entry) in package.layout.enumerated() {
             if let product = entry.product, products[product] == nil {
                 errors.append("/package/layout/\(index): unknown product \(product)")
