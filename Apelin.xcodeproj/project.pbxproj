@@ -52,6 +52,7 @@
 		A30000000000000000000161 /* Dog in Frameworks */ = {isa = PBXBuildFile; productRef = A30000000000000000000160 /* Dog */; };
 		A40000000000000000000101 /* ScrubberKit in Frameworks */ = {isa = PBXBuildFile; productRef = A40000000000000000000102 /* ScrubberKit */; };
 		A50000000000000000000101 /* ApelinWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A50000000000000000000102 /* ApelinWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A60000000000000000000101 /* LiquidGlassKit in Frameworks */ = {isa = PBXBuildFile; productRef = A60000000000000000000102 /* LiquidGlassKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -270,6 +271,7 @@
 				A30000000000000000000151 /* SwifterSwift in Frameworks */,
 				A30000000000000000000161 /* Dog in Frameworks */,
 				A40000000000000000000101 /* ScrubberKit in Frameworks */,
+				A60000000000000000000101 /* LiquidGlassKit in Frameworks */,
 			);
 		};
 		AA0000000000000000000043 /* Frameworks */ = {
@@ -418,6 +420,7 @@
 				A30000000000000000000150 /* SwifterSwift */,
 				A30000000000000000000160 /* Dog */,
 				A40000000000000000000102 /* ScrubberKit */,
+				A60000000000000000000102 /* LiquidGlassKit */,
 			);
 			productName = Apelin;
 			productReference = AA0000000000000000000031 /* Apelin.app */;
@@ -642,6 +645,7 @@
 				A30000000000000000000005 /* XCRemoteSwiftPackageReference "SwifterSwift" */,
 				A30000000000000000000006 /* XCRemoteSwiftPackageReference "Dog" */,
 				A40000000000000000000103 /* XCRemoteSwiftPackageReference "ScrubberKit" */,
+				A60000000000000000000103 /* XCRemoteSwiftPackageReference "LiquidGlassKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AA0000000000000000000015 /* Products */;
@@ -1289,6 +1293,14 @@
 				revision = b69932dc44461dd4a73aafeb78d514222f68d3e1;
 			};
 		};
+		A60000000000000000000103 /* XCRemoteSwiftPackageReference "LiquidGlassKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/1103945342/LiquidGlassKit.git";
+			requirement = {
+				kind = revision;
+				revision = 2eb41c5d0115d23179d7a3eb133cb07bac7bb7d8;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1511,6 +1523,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A40000000000000000000103 /* XCRemoteSwiftPackageReference "ScrubberKit" */;
 			productName = ScrubberKit;
+		};
+		A60000000000000000000102 /* LiquidGlassKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A60000000000000000000103 /* XCRemoteSwiftPackageReference "LiquidGlassKit" */;
+			productName = LiquidGlassKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -4265,10 +4265,41 @@ fragment. The chat's ListViewKit keeps its own update mechanism.
   `install-device.sh --app` signs it too, and the rpath check takes an
   `.appex` as its own `@executable_path`.
 
+## LiquidGlassKit integration
+
+`GlassSurfaceView` uses the owner's fork,
+`https://github.com/1103945342/LiquidGlassKit.git`, pinned to
+`2eb41c5d0115d23179d7a3eb133cb07bac7bb7d8`. The dependency is linked by the
+app target only. It replaces the application-owned legacy refraction path:
+maintaining capture and shader code here has already required a rewrite, while
+this library supplies the rounded effect behind a small UIKit adapter. Do not
+copy its shaders into the app or make the daemon depend on it.
+
+The adapter creates Apple's `UIGlassEffect` directly on iOS 26. Earlier systems
+use the library for active rounded surfaces and a system material for flat,
+inactive, Low Power Mode or no-Metal cases; Reduce Transparency takes priority
+and uses an opaque surface. Controls remain siblings above the background.
+The adapter pauses the library's Metal views before replacing/removing them.
+This is integration code, not proof of pixel output or frame pacing.
+
+The pinned fork has no LICENSE file. Its copyright notice is not a reviewed
+license, and no license has been invented or substituted in this repository.
+Keep Collect Licenses and Licenses/review.json unchanged for this dependency
+until an actual authorization text can be reviewed. The Xcode package resource
+bundle and shader loading also require verification in a full build; the
+manifest does not explicitly declare resources, which alone is not proof that
+Xcode's Metal resource handling fails.
+
+`sh Scripts/test-glass-adapter-device.sh` runs all 64 production policy cases
+and typechecks the adapter using explicit test-only API/SDK stand-ins. It does
+not build the real dependency or test native/Metal rendering. See
+`Tests/GlassAdapter/README.md` for full-build and page acceptance steps.
+
 ## Building without a Mac
 
 The app cannot be built on the device. `make build` needs `xcodebuild`, the
-iPhoneOS SDK in `IOS_SDK_TIER` and SwiftPM 6.1, and a jailbroken iPhone has
+iPhoneOS SDK in `IOS_SDK_TIER` and the Swift tools required by its pinned packages
+(LiquidGlassKit requires 6.2), and a jailbroken iPhone has
 none of them: its own toolchain reads an older SDK, and `sdk-tier` stops the
 build before anything is compiled. CI is the build. `.github/workflows/ci.yml`
 runs on every push to `main` — `make harness` in one job, and in the other

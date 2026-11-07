@@ -100,6 +100,14 @@
       }
     },
     {
+      "identity" : "liquidglasskit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/1103945342/LiquidGlassKit.git",
+      "state" : {
+        "revision" : "2eb41c5d0115d23179d7a3eb133cb07bac7bb7d8"
+      }
+    },
+    {
       "identity" : "listviewkit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Lakr233/ListViewKit",
