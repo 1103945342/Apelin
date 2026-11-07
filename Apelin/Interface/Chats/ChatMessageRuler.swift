@@ -312,7 +312,9 @@ final class ChatMessageRuler: UIView {
 /// The card shown while the ruler is dragged: which of the reader's messages
 /// it is, when it was sent, and how it began.
 private final class RulerPreview: UIView {
-    private let ground = GlassSurfaceView(cornerRadius: 12)
+    // A preview overlays message text: glass lets those glyphs show through
+    // in both appearances. Keep the reading surface opaque instead.
+    private let ground = UIView()
     private let headLabel = UILabel()
     private let textLabel = UILabel()
     private static let padding = UIEdgeInsets(top: 8, left: 12, bottom: 9, right: 12)
@@ -324,6 +326,10 @@ private final class RulerPreview: UIView {
         layer.shadowOpacity = 0.12
         layer.shadowRadius = 10
         layer.shadowOffset = CGSize(width: 0, height: 3)
+        ground.backgroundColor = .secondarySystemBackground
+        ground.layer.cornerRadius = 12
+        ground.layer.cornerCurve = .continuous
+        ground.clipsToBounds = true
         addSubview(ground)
 
         headLabel.font = .preferredFont(forTextStyle: .caption2)
