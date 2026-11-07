@@ -9,7 +9,7 @@ import UIKit
 class ComposerIconButton: UIButton {
     let iconView = UIImageView()
 
-    var tapAction: () -> Void = {}
+    @objc dynamic var tapAction: () -> Void = {}
 
     var iconInset: CGFloat = 2 {
         didSet { setNeedsLayout() }
@@ -74,11 +74,11 @@ class ComposerIconButton: UIButton {
 
     /// Hidden or faded out, it is not there: the composer keeps its unused
     /// icons laid out but invisible.
-    private var isShown: Bool {
+    @objc dynamic private var isShown: Bool {
         !isHidden && alpha > 0
     }
 
-    @objc private func buttonAction() {
+    @objc dynamic private func buttonAction() {
         guard isShown else { return }
         tapAction()
     }
@@ -87,7 +87,7 @@ class ComposerIconButton: UIButton {
         didSet { iconView.alpha = isHighlighted ? 0.4 : 1 }
     }
 
-    func change(iconName: String) {
+    @objc dynamic func change(iconName: String) {
         UIView.transition(with: iconView, duration: 0.3, options: [.transitionCrossDissolve, .allowUserInteraction, .beginFromCurrentState]) {
             self.iconView.image = UIImage(named: iconName)?.withRenderingMode(.alwaysTemplate)
         }

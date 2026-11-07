@@ -852,6 +852,8 @@ print("ok: a reopened session's replay is read past, and the conversation keeps 
 
 checkReplayEnd()
 
+checkAbandonedApproval()
+
 /// A Compact… that compacted leaves a row where it happened, carrying the
 /// summary the conversation goes on from; one that did not leaves none.
 /// An older session recorded its compaction without the summary: the row
@@ -1107,6 +1109,8 @@ checkTraceStep()
 checkDroppedMessages()
 
 checkDeletedProjects()
+
+checkContainerDataFolder()
 
 checkCompletedBuilds()
 

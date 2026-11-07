@@ -50,14 +50,7 @@ public struct ToolchainCatalog: Sendable {
                 upstreamDigestAlgorithm: source.upstreamDigestAlgorithm,
             ))
         }
-        // Newest first, a package that names no version last.
-        let unknown = CommandLineToolsSupport.unknownVersion
-        return result.sorted {
-            if ($0.version == unknown) != ($1.version == unknown) {
-                return $1.version == unknown
-            }
-            return $0.version.compare($1.version, options: .numeric) == .orderedDescending
-        }
+        return CommandLineToolsSupport.catalog(adding: result)
     }
 
     /// The version a product's English distribution names, or nil.
@@ -300,9 +293,9 @@ private final class RangeReceiver: NSObject, URLSessionDataDelegate, @unchecked 
     private let expected: Int
     private let lock = NSLock()
     private var data = Data()
-    private var response: URLResponse?
-    private var overrun = false
-    private var rejected = false
+    @objc private dynamic var response: URLResponse?
+    @objc private dynamic var overrun = false
+    @objc private dynamic var rejected = false
     private var continuation: CheckedContinuation<(Data, URLResponse), Error>?
     /// The answer, once the request completed. A request cancelled before `run` stored its
     /// continuation can complete first; `run` then answers with this instead of waiting.
@@ -333,7 +326,7 @@ private final class RangeReceiver: NSObject, URLSessionDataDelegate, @unchecked 
         } onCancel: { task.cancel() }
     }
 
-    func urlSession(
+    @objc dynamic func urlSession(
         _: URLSession,
         dataTask _: URLSessionDataTask,
         didReceive response: URLResponse,
@@ -365,7 +358,7 @@ private final class RangeReceiver: NSObject, URLSessionDataDelegate, @unchecked 
         }
     }
 
-    func urlSession(_: URLSession, task _: URLSessionTask, didCompleteWithError error: Error?) {
+    @objc dynamic func urlSession(_: URLSession, task _: URLSessionTask, didCompleteWithError error: Error?) {
         let (continuation, result) = lock.withLock { () -> (CheckedContinuation<(Data, URLResponse), Error>?, Result<(Data, URLResponse), Error>) in
             let result: Result<(Data, URLResponse), Error> =
                 if overrun {

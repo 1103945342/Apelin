@@ -135,6 +135,21 @@ Each was fixed with a test before the results above.
    `toolchainRemove` refused them forever ("no longer installed"), since
    the folder still existed. A tree with no regular file left now counts
    as gone in both (`ToolchainService.exists`), so the record is dropped.
+10. Users reported that 0.3.6 and 0.3.7 could not unpack a toolchain, and no
+    vphone showed it: on the iOS 26.4 iPhone and iPad vphones 0.3.6 and 0.3.7
+    set up 16.4, 15.3, 15.0 and 14.2 from the console and from the Settings
+    page, a fresh iPad included, and a worker paused for 100 s while it
+    unpacked went on. The reader's `Data` crossing `@objc dynamic` thunks stays
+    in the autorelease pool on an older Foundation: 2.4 GB for CLT 27.0 and
+    5.5 GB for 16.4 on the iOS 15.5 runtime, 102 and 104 MB with the members
+    plain, and nothing on the iOS 26.4 vphone (AGENTS.md ▸ Gotchas;
+    `make old-runtime`). The same day Apple's catalog turned out to have
+    dropped 27.0 for 27.2, which left 16.4, the largest package, at the top
+    of the list; reviewed releases now keep their own address. Build 280 of
+    that fix, roothide: smoke and a whole 27.0 setup with Swift, through the
+    recorded address, on the iOS 26.4 and 27.0.1 iPhone vphones and the iOS
+    26.4 iPad vphone; `t6-toolchain-beside` on both iPhones; and the first
+    setup of a device with no toolchain or SDK on the iPad, which picked 27.0.
 
 ## The image list is never read: three kernel panics
 
@@ -182,6 +197,23 @@ console now goes on after a restart only past a successful respring.
   a Settings row and its icon are seen only on an older iOS.
 
 ## Still to run on the owner's devices
+
+- [ ] A toolchain unpacked on a real device (2026-11-06, Bugs ▸ 10). The fix
+      was measured on the iOS 15.5 runtime and run on iOS 26 and 27 vphones;
+      no iOS 16, 17 or 18 Foundation has run it, and which of them holds the
+      bytes is not known. On the iPhone 15 Pro on iOS 17.3.1, or better an
+      iOS 16 device: Settings ▸ Toolchains ▸ From Apple… ▸ 16.4, the largest
+      package, reaches Toolchain Ready, and the staging folder holds no
+      leftover `extracted`.
+- [ ] roothide Bootstrap (2026-11-04, issue #35, AGENTS.md ▸ Toolchains;
+      the Mac harness ran, and a roothide vphone with Bootstrap's mark
+      written into its root by hand, which runs ad hoc code, showed the
+      refusal). On an iPhone running roothide Bootstrap (iOS 15–17.0):
+      Settings ▸ Toolchains lists every release struck through, and a
+      tap says Apelin cannot build there; the welcome page's Build Tools
+      says the same; nothing downloads. Then, as the reporter did, an
+      ad hoc-signed copy of a bootstrap binary is killed, so the refusal
+      still stands on that Bootstrap version.
 
 - [ ] Each conversation's diagnostic journal (2026-10-31, issue #27,
       AGENTS.md ▸ Agent sessions; only the Mac's `SessionJournalTests`,
@@ -769,6 +801,12 @@ console now goes on after a restart only past a successful respring.
       red line, then the text. The text is covered on the Mac by
       `Tests/ChatTranscript`.
 - [ ] A rootless bootstrap: install, hello, `i1-smoke`, `t1`, `i3-chain`.
+      Then over a 0.3.5 install that kept its data folder in the app's data
+      container (#37): the projects listed and a project link opening,
+      the container's conversations, memories and skills moved into
+      `/var/mobile/Documents/wiki.qaq.apelin`, the container's folder
+      renamed `wiki.qaq.apelin.migrated`, and the journal's list of what
+      moved. Only `ContainerDataFolderCheck` has run (on the Mac).
 - [ ] Real hardware (not a vphone): the same, plus a real respring and
       confirmLoaded. Toolchain setup and removal, SDK import and builds
       run on an iPhone 15 Pro and an A12Z iPad on 2026-10-21 (▸ Real
@@ -1067,6 +1105,17 @@ console now goes on after a restart only past a successful respring.
       key fails verification without the key in what the app shows. Kimi
       For Coding Global signs in with its code on kimi.ai, a chat answers,
       and a sign-in again keeps the device id the first one recorded.
+- [ ] Antigravity's Google sign-in (2026-11-04, kwwk 0.1.111, AGENTS.md ▸
+      Agent sign-in; no Google account has signed in on a device). With a
+      Google account, Settings ▸ Model Providers ▸ Antigravity opens
+      Google's page in Safari, which comes back to
+      `localhost:51121/oauth-callback` (or the address pasted from
+      Safari's address bar where it cannot), and Antigravity is listed
+      signed in. A chat on `gemini-4-argon` and one on `claude-sonnet-5-5`
+      read a file with file_read and answer, Compact… compacts one, and the
+      chat still answers after the hour Google's token lasts. A free
+      account and a Google AI Pro one say which of the listed models each
+      serves; one it does not serve fails in Google's words.
 
 ## SDK and toolchain matrix (2026-10-19)
 
@@ -1397,6 +1446,40 @@ the arm64 and arm64e Swift cases, each a cold build of the SDK's modules,
 side by side; both are left for a measurement of memory first), and the
 retarget itself (1–3 s).
 
+## CLT 27.2 (2026-11-06)
+
+Apple's catalog replaced 27.0 with 27.2 (`142-50405`,
+`27.2.0.0.1792721180`, posted 2026-10-29). Against 27.0 on the Mac, without
+running a host tool: the same 51 host images and system libraries, and four
+new `libobjc` and four new `libswiftCore` imports, all in the Swift tools, which
+resolved on both systems below; the
+zippered availability check and `__libcpp_verbose_abort` still imported, so
+27.0's rename and C++ requirement carry over; `eor3` 97, `udot` 4729, `sdot` 5
+(swift-frontend only, which needs DotProd anyway) and clang's and libLTO's
+counts as they were; the A13 decoder takes every word and, unlike 27.0's, the
+reference decoder too (`compatibility-audit.json`).
+
+Through the product path, build 281, roothide, with nothing changed but the
+release's row: the iOS 26.4 iPhone vphone ran `t4-toolchain-swift` (ten
+self-test cases against SDK 27.0, the `uikit-swift` app built debug and
+release, installed and removed), the same ten against SDK 27.1 by
+`toolchainSelfTest`, and the six C cases against SDK 26.4 on a setup without
+Swift. The iOS 27.0.1 iPhone vphone ran smoke, `t6-toolchain-beside` and
+`t4-toolchain-swift`, and the iOS 26.4 iPad vphone, with no toolchain or SDK,
+picked 27.2 by itself and set it up with Swift, its SDK fetched.
+
+No problem was found, so nothing else changed. Not run: 27.2 on a real
+device, or on an A12, where as with 27.0 the C family should work without
+Clang modules and Swift is refused.
+
+CI's own packages before their tags: 0.3.8 (31) on the iOS 26.4 iPhone
+vphone, smoke and 27.0 with Swift through its recorded address; 0.3.9 (32) on
+the iOS 27.0.1 iPhone vphone, smoke, the catalog, `t6-toolchain-beside` and
+`t4-toolchain-swift`; 0.4.0 (33, kwwk 0.1.112) on the iOS 26.4 iPhone vphone,
+smoke, the catalog and a real agent turn that called shell_run. A conversation
+holding a tool call with no name has not run on a device; kwwk's own tests
+cover it.
+
 ## Kept releases and their Swift (2026-10-21)
 
 The owner kept 27.0, 16.4, 15.3, 15.0 and 14.2 and dropped 16.2, 14.3,
@@ -1411,6 +1494,7 @@ Which Swift each kept package ships, read from Apple's own payload
 
 | CLT | Swift | swift-frontend built for | Imports macOS's zippered `_stdlib_isOSVersionAtLeastOrVariantVersion` | SHA3 / DotProd in swift-frontend |
 |---|---|---|---|---|
+| 27.2 | 6.4.2 (swiftlang-6.4.2.1.9) | not read | swift-driver, two SwiftSyntax libraries | yes / yes |
 | 27.0 | 6.4 (swiftlang-6.4.0.34.1) | macOS 14.0, SDK 16.0 | swift-driver, two SwiftSyntax libraries | yes / yes |
 | 16.4 | 6.1.2 (swiftlang-6.1.2.1.2) | macOS 14.0, SDK 15.4 | swift-driver, two SwiftSyntax libraries | 5 eor3 (4 in XXH3, 1 symbol graph) / 3,754 udot |
 | 15.3 | 5.10 (swiftlang-5.10.0.13) | macOS 13.0, SDK 14.4 | none | 2 eor3 (BLAKE3 hash_many, symbol graph) / none |
@@ -2780,3 +2864,81 @@ iPhone vphones and the iOS 26.4 iPad vphone:
   toolchain or tweak extension for `files`. `i1-smoke` was not run: it
   needs the harness's fixtures, which `Scripts/device.py` pushes, and the
   vphones were driven from their hosts, which have no Python.
+
+## Restarts, rootless's data folder, Bootstrap and hooks (2026-11-04, 0.3.6)
+
+CI's packages of `1034f89`, roothide, over 0.3.5 on the iOS 26.4 iPhone
+vphone and the iOS 26.4 iPad vphone, then the release commit `c6a5da9`
+on the iPad:
+
+- The smoke suite (`hello`, `terminal`, `files`, `logs`, `diagnostics`,
+  `i3-image-check-refused`, `i1-smoke`) passed on the iPhone, and all but
+  `files` on the iPad, which has no tweak extension, toolchain or SDK.
+  `i1-smoke` ran this time: a shell stand-in for `Scripts/device.py` on
+  the guests set up and checked its fixture package and
+  `/etc/apelin-smoke.conf`.
+- Issue #38, on the iPhone (Strict, deepseek-v4-pro): with the session
+  host and the app killed while a `shell_run` card waited, the reopened
+  conversation had no card and a normal composer, and the next message was
+  answered. On 0.3.5 the card stayed, and Approve answered "This approval
+  request is no longer waiting for a decision." Killing the host
+  and the app otherwise brought back the same list with the same
+  conversation open; an approval card asked and approved ran `uname -a`.
+  Still seen: the interrupted turn's summary reads "Executing tool…" until
+  the next message is sent.
+- Issue #38's restart, reproduced on 0.3.5 on the iPhone in four of six
+  device restarts: the Live Activity launched Apelin in the background and
+  it opened on a new chat. On the fixed build the conversation open before
+  the restart was the one shown, and no new chat was added.
+- Issue #35, on the iPad with a regular file `.thebootstrapped` made at the
+  bootstrap's root: the welcome flow's Build Tools page showed only "Apelin
+  cannot build on roothide Bootstrap. Bootstrap runs only programs it signs
+  itself, and it does not sign Apelin's build tools or the programs they
+  build." and Next; Settings ▸ Toolchains ▸ From Apple… struck through every
+  release, and picking one said Not Supported and started nothing. With the
+  mark removed, the page recommended Command Line Tools 15.3 and iOS SDK
+  17.4 again and the catalog offered every release. No roothide Bootstrap
+  device has run it.
+- Issue #37 has no rootless device here: 0.3.5's wrong data folder was
+  reproduced on the Mac by launching the app as rootless uicache does, and
+  the fix's one-time move only by `ContainerDataFolderCheck`. On the iPad,
+  a conversation with a draft in a project survived a launch that read a
+  `Projects/` the app had not read before; on 0.3.5 it was removed.
+- `apelin://project/<folder>` opened the project on both; on the iPad its
+  conversation, with a draft, was the one shown after a relaunch.
+- The release commit's package (CI build 116 of `c6a5da9`), whose Settings
+  screens gained `@objc dynamic` after the round above, on the iPad: every
+  Settings page opened with its content (Model Providers and DeepSeek's key
+  form, Permission Mode, Memories and the editor, Skills and one skill's
+  text, Git, Toolchains and the Apple catalog, SDKs and their catalog,
+  Templates, the licenses, Logs with its level and category menus), and no
+  crash report was written. Git's Publishing, the repository picker and
+  the Repository Card need a GitHub sign-in the vphone does not have.
+- Hooks: the app's executable carries an `objc_msgSend$<selector>` stub for
+  each of Apelin's own methods its Swift code calls (1,243 before the
+  change, 1,989 in 0.3.6's, `startNewChatWithPicked:` and
+  `reloadIfFileGrew` among them), so those calls go through the runtime.
+  The selector audit of `c6a5da9`'s packages found nothing but the two
+  accepted `ComposerAttachmentPreview` data source methods.
+
+## Antigravity (2026-11-04, 0.3.7)
+
+The release commit `108ba4d` built on the Mac (roothide, build 274), over
+0.3.6 on the iOS 26.4 iPhone vphone:
+
+- The smoke suite (`hello`, `terminal`, `files`, `logs`, `diagnostics`,
+  `i3-image-check-refused`, `i1-smoke`) and `accounts` passed, the latter
+  with its Antigravity steps: the sign-in's page is Google's
+  `accounts.google.com/o/oauth2/v2/auth` with Antigravity's client, a
+  pasted address with no code is refused, and the cancel ends it
+  `cancelled`.
+- Settings ▸ Model Providers lists Antigravity after Cursor with its mark.
+  Its page says "Sign in with the Google account you use for Antigravity."
+  and opens the system's sign-in browser on Google's "Sign in to continue
+  to Google Antigravity"; closing it leaves the page on Continue, signed in
+  to nothing.
+- A message to the device's existing OpenAI-compatible sign-in
+  (deepseek-v4-pro) was answered.
+
+No Google account has signed in: the Antigravity entry under Still to run
+stands.
