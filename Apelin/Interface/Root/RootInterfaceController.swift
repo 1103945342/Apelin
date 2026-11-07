@@ -144,7 +144,7 @@ final class RootInterfaceController: UIViewController {
             sidebar.startNewChat(picked: false)
             return
         }
-        if let saved = Self.savedChatID, let summary = chatRuntime.records[saved]?.summary {
+        if let saved = Self.savedChatID, let summary = chatRuntime.summary(saved) {
             restore(summary)
         } else if sidebar.hasLoadedProjects {
             // Nothing was open last, or its record is gone: the conversation

@@ -2626,9 +2626,10 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   conversation is restored, its first layout comes inside the restore's
   own showing of it, and a New Chat took its place (issue #38). The
   drawer's pan yields to content scrolled sideways (a
-  code block, a table, the attachments) and to a text selection. Pinned
-  conversations come first, the rest under the day the reader last started
-  or wrote in each (Today, Yesterday, the weekday
+  code block, a table, the attachments) and to a text selection. Conversations
+  form a tree (owner, 2026-11-07): only roots participate in pinned/day
+  sections, under the day the reader last started or wrote in the root
+  (Today, Yesterday, the weekday
   within the week, then the date), newest first (owner, 2026-10-29:
   `SidebarOrder` by `ChatSummary.lastInteraction`, saved as `updated`).
   New Chat sets that time, on an untouched conversation it reuses too, and
@@ -4448,6 +4449,44 @@ fragment. The chat's ListViewKit keeps its own update mechanism.
   signs it with `Packaging/ApelinWidgets.entitlements` and reads them back;
   `install-device.sh --app` signs it too, and the rpath check takes an
   `.appex` as its own `@executable_path`.
+
+## Conversation tree
+
+`ChatSummary` keeps optional `parentChatID`, `relationship` (`branch` or
+`derived`), `branchNumber` and `lastBranchNumber`. These are sidebar relationships,
+never the host's authorization lineage or permission to open more agents. A fork
+reserves its parent's next number on disk before asking the host; deleted or
+failed branches do not release numbers. `ChatLineage.projected` follows direct
+parents for branch titles, without appending ancestor numbers. Attached branches
+cannot be renamed separately; derived chats keep their task titles. A missing
+parent leaves the saved title and promotes the subtree rather than deleting it.
+
+`ChatAdoption.restoreLineage` repairs existing derived chats only from unambiguous
+saved, non-historical `conversationOpened` events or host `parentSessionID`.
+Cross-project edges, duplicate session IDs, conflicting evidence and cycles are
+not adopted. Old forks did not record a parent and remain roots; a title is never
+used to guess one. Host results are adopted to a fixed point so nested children
+are not lost just because they were listed before their parents.
+
+`SidebarTree` projects each root into chat rows and nonempty Branches / Delegated
+Chats categories, recursively. `SidebarTreeCell` draws indentation, continuing
+ancestor guides, a superscript branch number, and a disclosure with a VoiceOver
+custom action. Conversation taps open; category taps and disclosure taps toggle.
+Expansion keys are saved in `sidebar.expandedConversations.v1` in preferences.
+Search reveals matches and their ancestors without overwriting those preferences;
+a conversation link clears search and reveals only the selected path. Collapsed
+ancestors keep descendants' working/unread indicators. Pinning a descendant
+promotes the root to Pinned without duplicating the descendant. Deleting one
+conversation still deletes only that conversation, never its whole subtree.
+
+`Scripts/test-chat-transcript.sh` includes `SidebarTreeCheck` and
+`ChatLineageCheck`. The smaller `bash Scripts/test-sidebar-tree.sh` runs the pure
+production tree/title rules on a Mac. On a prepared device use
+`bash Scripts/test-sidebar-tree.sh --device Extensions/Development/wiki.qaq.apelin.dev.cli/templates/objc/Packaging/Tool.entitlements`;
+it compiles and signs its project-local harness, also type-checks the UIKit tree
+cell, and installs nothing. It does not replace the full app build, controller
+integration tests, or device UI testing (expansion, guides, Dynamic Type, RTL and
+VoiceOver).
 
 ## Building without a Mac
 

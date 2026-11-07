@@ -31,6 +31,10 @@ final class SidebarSessionsController: UIViewController {
     private var chats: [ChatSummary] = []
     private var query = ""
     private var selectedID: UUID?
+    private var tree = SidebarTree([])
+    private var rows: [SidebarTree.Item: SidebarTree.Row] = [:]
+    /// IDs are globally unique; switching projects keeps each one's choices.
+    private var expanded = Set(UserDefaults.standard.stringArray(forKey: "sidebar.expandedConversations.v1") ?? [])
     private let pacing = ListPacing()
 
     /// "Today" and "Yesterday" in the reader's language, capitalised as a
@@ -81,7 +85,7 @@ final class SidebarSessionsController: UIViewController {
 
     private let tableView = FirstFillTableView(frame: .zero, style: .insetGrouped).then {
         $0.backgroundColor = .clear
-        $0.register(UITableViewCell.self, forCellReuseIdentifier: "chat")
+        $0.register(SidebarTreeCell.self, forCellReuseIdentifier: "chat")
         // The first conversation is picked at launch, and after that a tap
         // picks: in a primary column the selection would otherwise follow
         // a keyboard's focus.
@@ -101,38 +105,21 @@ final class SidebarSessionsController: UIViewController {
         dark: UIColor.white.withAlphaComponent(0.1),
     )
 
-    /// The rows are conversation IDs.
-    private lazy var dataSource = SwipeableTableDataSource<Section, UUID>(
+    /// Conversations and their nonempty relationship categories have separate IDs.
+    private lazy var dataSource = SwipeableTableDataSource<Section, SidebarTree.Item>(
         tableView: tableView,
-    ) { [unowned self] tableView, indexPath, id in
-        let cell = tableView.dequeueReusableCell(withIdentifier: "chat", for: indexPath)
-        let summary = chat(id)
-        var content = UIListContentConfiguration.cell()
-        content.text = summary?.displayTitle
-        content.textProperties.numberOfLines = 1
-        cell.contentConfiguration = content
-        // working wins; the dot shows once it is at rest
-        let status: ChatRowStatusView.Status? = if summary?.isWorking == true {
-            .working
-        } else if summary?.showsUnread == true {
-            .unread
-        } else {
-            nil
+    ) { [unowned self] tableView, indexPath, item in
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "chat", for: indexPath) as? SidebarTreeCell,
+              let row = rows[item] else { return nil }
+        let summary = item.chatID.flatMap(chat)
+        let title: String
+        switch item {
+        case .chat: title = summary?.displayTitle ?? ""
+        case .group(_, .branch): title = String(localized: "Branches")
+        case .group(_, .derived): title = String(localized: "Delegated Chats")
         }
-        if let status {
-            let view = cell.accessoryView as? ChatRowStatusView ?? ChatRowStatusView()
-            view.show(status)
-            cell.accessoryView = view
-        } else {
-            (cell.accessoryView as? ChatRowStatusView)?.show(nil)
-            cell.accessoryView = nil
-        }
-        cell.isAccessibilityElement = true
-        cell.accessibilityValue = switch status {
-        case .working: String(localized: "Working")
-        case .unread: String(localized: "Unread")
-        case nil: nil
-        }
+        cell.configure(row: row, summary: summary, title: title)
+        cell.onToggle = { [weak self] in self?.toggle(item) }
         cell.configurationUpdateHandler = { cell, state in
             var background = UIBackgroundConfiguration.listGroupedCell().updated(for: state)
             if state.isSelected || state.isHighlighted {
@@ -194,7 +181,7 @@ final class SidebarSessionsController: UIViewController {
         }
         let changedRows = chats.compactMap { chat -> UUID? in
             guard let old = previous[chat.id],
-                  old.title != chat.title || old.isWorking != chat.isWorking || old.showsUnread != chat.showsUnread
+                  old != chat
             else { return nil }
             return chat.id
         }
@@ -205,8 +192,17 @@ final class SidebarSessionsController: UIViewController {
     func select(_ summary: ChatSummary) {
         selectedID = summary.id
         guard isViewLoaded else { return }
+        // A link to a hidden descendant must reveal it even through a search.
+        if !query.isEmpty {
+            query = ""
+            searchField.text = ""
+        }
+        chats = runtime.summaries.filter { $0.projectName == projectName }
+        tree = SidebarTree(chats)
+        expanded = tree.revealing(summary.id, in: expanded)
+        saveExpansion()
         applySnapshot()
-        guard let indexPath = dataSource.indexPath(for: summary.id) else { return }
+        guard let indexPath = dataSource.indexPath(for: .chat(summary.id)) else { return }
         if tableView.indexPathsForVisibleRows?.contains(indexPath) != true {
             tableView.scrollToRow(at: indexPath, at: .none, animated: !UIAccessibility.isReduceMotionEnabled)
         }
@@ -220,7 +216,7 @@ final class SidebarSessionsController: UIViewController {
         presenter: UIViewController,
         onDeleted: @escaping () -> Void,
     ) {
-        guard let chat = runtime.records[id]?.summary else { return }
+        guard let chat = runtime.summary(id) else { return }
         guard let confirmation = ChatDeletion.confirmation(for: chat, from: origin) else {
             delete(id, onDeleted: onDeleted)
             return
@@ -284,23 +280,52 @@ final class SidebarSessionsController: UIViewController {
         chats.first { $0.id == id }
     }
 
-    private func applySnapshot(changedRows: [UUID] = [], restoreSelection: Bool = true, animateMove: Bool = false) {
-        var snapshot = NSDiffableDataSourceSnapshot<Section, UUID>()
-        let shown = query.isEmpty ? chats : chats.filter {
-            $0.displayTitle.range(of: query, options: [.caseInsensitive, .diacriticInsensitive]) != nil
+    private func toggle(_ item: SidebarTree.Item) {
+        guard rows[item]?.expandable == true else { return }
+        // Search temporarily reveals paths. Clear it before a manual collapse
+        // and retain the visible expansion so that the requested node closes.
+        if !query.isEmpty {
+            expanded.formUnion(rows.values.filter(\.expanded).map { $0.item.storageKey })
+            query = ""
+            searchField.text = ""
         }
+        if !expanded.insert(item.storageKey).inserted { expanded.remove(item.storageKey) }
+        saveExpansion()
+        pacing.begin()
+        applySnapshot()
+    }
+
+    @objc dynamic private func saveExpansion() {
+        UserDefaults.standard.set(expanded.sorted(), forKey: "sidebar.expandedConversations.v1")
+    }
+
+    private func applySnapshot(changedRows: [UUID] = [], restoreSelection: Bool = true, animateMove: Bool = false) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, SidebarTree.Item>()
+        tree = SidebarTree(chats)
+        let shown = tree.roots(query: query)
         let order = SidebarOrder.sections(of: shown)
-        // Pinning moves a row between existing sections. Inserting or deleting
-        // its section in the same diff turns that move into a section fade.
+        let previousRows = rows
+        rows = [:]
+        func append(_ roots: [UUID]) {
+            for root in roots {
+                let branch = tree.rows(under: root, expanded: expanded, query: query)
+                snapshot.appendItems(branch.map(\.item))
+                for row in branch { rows[row.item] = row }
+            }
+        }
+        // A pinned descendant promotes the whole tree; it never appears twice.
         snapshot.appendSections([.pinned])
-        snapshot.appendItems(order.pinned)
+        append(order.pinned)
         for day in order.days {
             snapshot.appendSections([.day(day.start)])
-            snapshot.appendItems(day.chats)
+            append(day.chats)
         }
         let current = dataSource.snapshot()
         let old = Set(current.itemIdentifiers)
-        let reconfigured = changedRows.filter { old.contains($0) && snapshot.indexOfItem($0) != nil }
+        let changed = Set(changedRows.map { SidebarTree.Item.chat($0) })
+        let reconfigured = snapshot.itemIdentifiers.filter {
+            old.contains($0) && (changed.contains($0) || previousRows[$0] != rows[$0])
+        }
         snapshot.reconfigureItems(reconfigured)
         let hasChanges = !reconfigured.isEmpty || current.sectionIdentifiers != snapshot.sectionIdentifiers
             || current.itemIdentifiers != snapshot.itemIdentifiers
@@ -328,8 +353,13 @@ final class SidebarSessionsController: UIViewController {
     }
 
     private func selectPicked() {
-        if let selectedID, let indexPath = dataSource.indexPath(for: selectedID) {
-            tableView.selectRow(at: indexPath, animated: false, scrollPosition: .none)
+        if let selectedID {
+            // Keep the collapsed ancestor highlighted without changing which
+            // conversation is open, or reopening it on every streamed update.
+            let candidates = [selectedID] + tree.ancestors(of: selectedID)
+            if let indexPath = candidates.compactMap({ dataSource.indexPath(for: .chat($0)) }).first {
+                tableView.selectRow(at: indexPath, animated: false, scrollPosition: .none)
+            }
         }
     }
 
@@ -363,10 +393,19 @@ extension SidebarSessionsController: UITableViewDelegate {
         tableView.numberOfRows(inSection: section) == 0 ? .leastNormalMagnitude : UITableView.automaticDimension
     }
 
-    /// Again on the row already picked, which puts a drawer away.
+    func tableView(_: UITableView, heightForRowAt _: IndexPath) -> CGFloat {
+        max(48, UIFont.preferredFont(forTextStyle: .body).lineHeight + 24)
+    }
+
+    /// Categories expand in place; selecting a chat still opens it.
     func tableView(_: UITableView, didSelectRowAt indexPath: IndexPath) {
-        selectedID = dataSource.itemIdentifier(for: indexPath)
-        onSelect?(selectedID.flatMap(chat), true)
+        guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
+        guard let id = item.chatID else {
+            toggle(item)
+            return
+        }
+        selectedID = id
+        onSelect?(chat(id), true)
     }
 
     // MARK: Pin, stop and delete
@@ -375,7 +414,7 @@ extension SidebarSessionsController: UITableViewDelegate {
         _: UITableView,
         leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath,
     ) -> UISwipeActionsConfiguration? {
-        guard let id = dataSource.itemIdentifier(for: indexPath), let chat = chat(id) else { return nil }
+        guard let id = dataSource.itemIdentifier(for: indexPath)?.chatID, let chat = chat(id) else { return nil }
         return UISwipeActionsConfiguration(actions: ChatRowAction.leadingSwipe(for: chat).map { swipeAction($0, for: id) })
     }
 
@@ -385,7 +424,7 @@ extension SidebarSessionsController: UITableViewDelegate {
         _: UITableView,
         trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath,
     ) -> UISwipeActionsConfiguration? {
-        guard let id = dataSource.itemIdentifier(for: indexPath), let chat = chat(id) else {
+        guard let id = dataSource.itemIdentifier(for: indexPath)?.chatID, let chat = chat(id) else {
             return UISwipeActionsConfiguration(actions: [])
         }
         let actions = UISwipeActionsConfiguration(
@@ -450,7 +489,7 @@ extension SidebarSessionsController: UITableViewDelegate {
         contextMenuConfigurationForRowAt indexPath: IndexPath,
         point _: CGPoint,
     ) -> UIContextMenuConfiguration? {
-        guard let id = dataSource.itemIdentifier(for: indexPath), let chat = chat(id) else { return nil }
+        guard let id = dataSource.itemIdentifier(for: indexPath)?.chatID, let chat = chat(id) else { return nil }
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
             guard let self else { return nil }
             var actions: [UIAction] = []

@@ -74,16 +74,16 @@ enum ChatLinkTarget {
               ?? projects.first(where: { $0.name == id })
         else { return nil }
         let latest = SidebarOrder.newest(
-            runtime.records.values.map(\.summary).filter { $0.projectName == project.name },
+            runtime.summaries.filter { $0.projectName == project.name },
         )
         return latest.map(Destination.chat) ?? .newChat(project: project.name)
     }
 
     private static func summary(for id: String, in runtime: ChatRuntime) -> ChatSummary? {
         if let record = runtime.records.values.first(where: { $0.sessionID.map { sameID($0, id) } ?? false }) {
-            return record.summary
+            return runtime.summary(record.summary.id)
         }
-        return UUID(uuidString: id).flatMap { runtime.records[$0]?.summary }
+        return UUID(uuidString: id).flatMap { runtime.summary($0) }
     }
 
     /// Identifiers are UUIDs, written in either case.

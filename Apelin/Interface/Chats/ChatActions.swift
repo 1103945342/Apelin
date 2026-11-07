@@ -77,8 +77,9 @@ enum ChatActions {
         UIKit.UIAction(
             title: String(localized: "Rename…"),
             image: UIImage(systemName: "character.cursor.ibeam"),
+            attributes: inheritsParentTitle(id, runtime: runtime) ? .disabled : [],
         ) { [weak presenter, weak runtime] _ in
-            guard let presenter, let runtime, let chat = runtime.records[id]?.summary else { return }
+            guard let presenter, let runtime, let chat = runtime.summary(id) else { return }
             presenter.present(AlertInputViewController(
                 title: "Rename Chat",
                 message: "Choose a name for this chat. Your agent will no longer rename it.",
@@ -88,6 +89,13 @@ enum ChatActions {
                 onConfirm: { [weak runtime] name in runtime?.rename(id, to: name) },
             ), animated: true)
         }
+    }
+
+    private static func inheritsParentTitle(_ id: UUID, runtime: ChatRuntime) -> Bool {
+        guard let chat = runtime.summary(id), chat.relationship == .branch,
+              let parentID = chat.parentChatID, let parent = runtime.summary(parentID)
+        else { return false }
+        return parent.projectName == chat.projectName
     }
 
     /// The agent reads a summary of the earlier messages from then on; the

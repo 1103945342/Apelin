@@ -65,13 +65,6 @@ enum ChatUnread {
 }
 
 extension ChatSummary {
-    /// What the sidebar's dot and the project menu's counts show: a reply
-    /// waits unread, and the conversation is at rest. While it works, its
-    /// spinner shows instead.
-    var showsUnread: Bool {
-        isUnread && !isWorking
-    }
-
     /// Takes `events`, just read from the conversation's task, and marks it
     /// unread when one is a reply (`ChatUnread.isReply`) and the reader is
     /// not looking at it. Returns whether that changed it.
