@@ -452,7 +452,15 @@ extension SidebarSessionsController: UITableViewDelegate {
     ) -> UIContextMenuConfiguration? {
         guard let id = dataSource.itemIdentifier(for: indexPath), let chat = chat(id) else { return nil }
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
-            UIMenu(children: ChatRowAction.menu(for: chat).compactMap { self?.menuAction($0, for: id) })
+            guard let self else { return nil }
+            var actions: [UIAction] = []
+            for action in ChatRowAction.menu(for: chat) {
+                if action == .delete {
+                    actions.append(ChatActions.renameAction(for: id, runtime: runtime, from: self))
+                }
+                actions.append(menuAction(action, for: id))
+            }
+            return UIMenu(children: actions)
         }
     }
 

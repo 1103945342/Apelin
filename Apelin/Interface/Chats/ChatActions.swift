@@ -69,7 +69,7 @@ enum ChatActions {
     /// The conversation's name, typed into the alert Rename Project… uses.
     /// It is kept for good: the agent's titles no longer replace it
     /// (`ChatRuntime.rename`).
-    private static func renameAction(
+    static func renameAction(
         for id: UUID,
         runtime: ChatRuntime,
         from presenter: UIViewController,
