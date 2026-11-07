@@ -465,6 +465,12 @@ public struct ApprovalPolicy: Sendable, Hashable {
              .gitRemoteSet, .gitRemoteRemove:
             return .allow(.notRequired)
 
+        case .gitBranchCreate, .gitBranchCheckout, .gitBranchRename, .gitMerge, .gitMergeAbort:
+            return .ask(
+                reason: "This changes the project's branches or merge state. Review the named operation before running; each call needs your approval.",
+                detail: .none,
+            )
+
         // Another conversation of the project, opened, sent to or stopped:
         // its agent runs under this session's mode, so whatever it does
         // that would ask, asks there.
@@ -554,6 +560,7 @@ public struct ApprovalPolicy: Sendable, Hashable {
              .packageList, .packageConfirmLoaded, .logRead, .crashList, .crashRead, .crashSymbolicate,
              .screenCapture, .screenReadTree, .memoryList, .skillList, .skillRead, .projectCheckDistribution,
              .templateList, .projectList, .gitStatus, .gitDiff, .gitReadSettings, .gitRemoteList,
+             .gitBranches, .gitLog, .gitCommitDetail,
              .conversationList, .conversationRead, .toolchainList, .sdkList, .webSearch, .webFetch, .feedbackRead,
              .todoList:
             if presets.readTools.contains(tool) {

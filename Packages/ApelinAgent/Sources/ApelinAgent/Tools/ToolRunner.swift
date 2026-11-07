@@ -399,7 +399,9 @@ actor ToolRunner {
         case .local(.packageRemove), .local(.gitPush), .local(.toolchainSetup), .local(.sdkImport),
              .local(.skillSave), .local(.skillRemove), .local(.feedbackSend), .local(.gitCreateRepository),
              .local(.projectDelete), .local(.packagePublish), .local(.feedbackEdit), .local(.gitCreateIssue),
-             .local(.gitSquash), .local(.gitResetToRemote):
+             .local(.gitSquash), .local(.gitResetToRemote),
+             .local(.gitBranchCreate), .local(.gitBranchCheckout), .local(.gitBranchRename),
+             .local(.gitMerge), .local(.gitMergeAbort):
             return false
         default:
             break
@@ -799,6 +801,54 @@ actor ToolRunner {
                 context: context,
                 url: arguments.requireString("url"),
                 branch: arguments.argNonEmptyString("branch"),
+            )))
+
+        case .gitBranches:
+            return try await json(backend.gitBranches(GitBranchesToolRequest(context: context)))
+
+        case .gitBranchCreate:
+            return try await json(backend.gitBranchCreate(GitBranchCreateToolRequest(
+                context: context,
+                name: try arguments.requireString("name"),
+                startPoint: arguments.argNonEmptyString("start_point"),
+                checkout: arguments.argBool("checkout") ?? false,
+            )))
+
+        case .gitBranchCheckout:
+            return try await json(backend.gitBranchCheckout(GitBranchCheckoutToolRequest(
+                context: context,
+                name: try arguments.requireString("name"),
+                remote: arguments.argNonEmptyString("remote"),
+            )))
+
+        case .gitBranchRename:
+            return try await json(backend.gitBranchRename(GitBranchRenameToolRequest(
+                context: context,
+                from: try arguments.requireString("from"),
+                to: try arguments.requireString("to"),
+            )))
+
+        case .gitMerge:
+            return try await json(backend.gitMerge(GitMergeToolRequest(
+                context: context,
+                branch: try arguments.requireString("branch"),
+                noFastForward: arguments.argBool("no_fast_forward") ?? false,
+            )))
+
+        case .gitMergeAbort:
+            return try await json(backend.gitMergeAbort(GitMergeAbortToolRequest(context: context)))
+
+        case .gitLog:
+            return try await json(backend.gitLog(GitLogToolRequest(
+                context: context,
+                limit: arguments.argInt("limit") ?? 50,
+                skip: arguments.argInt("skip") ?? 0,
+            )))
+
+        case .gitCommitDetail:
+            return try await json(backend.gitCommitDetail(GitCommitDetailToolRequest(
+                context: context,
+                commit: try arguments.requireString("commit"),
             )))
 
         case .gitRemoteList:

@@ -77,6 +77,25 @@ extension ToolRunner {
             // An address that would never be fetched is refused before
             // anyone is asked about it.
             _ = try WebFetch.target(arguments.requireString("url"))
+        case .gitBranchCreate, .gitBranchCheckout:
+            try GitBranchTools.checkName(arguments.requireString("name"))
+            if let start = arguments.argNonEmptyString("start_point") {
+                try GitBranchTools.checkRevision(start)
+            }
+            try GitRemoteTools.checkName(arguments.argNonEmptyString("remote"))
+        case .gitBranchRename:
+            try GitBranchTools.checkName(arguments.requireString("from"))
+            try GitBranchTools.checkName(arguments.requireString("to"))
+        case .gitMerge:
+            try GitBranchTools.checkRevision(arguments.requireString("branch"))
+        case .gitCommitDetail:
+            try GitBranchTools.checkRevision(arguments.requireString("commit"))
+        case .gitLog:
+            let limit = arguments.argInt("limit") ?? 50
+            let skip = arguments.argInt("skip") ?? 0
+            guard (1 ... 1000).contains(limit), skip >= 0 else {
+                throw ToolArgumentError("git_log needs limit from 1 to 1000 and a nonnegative skip.")
+            }
         case .gitRemoteSet:
             try GitRemoteTools.checkSet(arguments)
         case .gitResetToRemote:

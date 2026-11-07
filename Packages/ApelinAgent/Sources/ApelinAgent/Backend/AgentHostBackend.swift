@@ -1,4 +1,4 @@
-import struct ApelinProtocol.GitSquashResponse
+import ApelinProtocol
 import Foundation
 
 /// Everything the agent asks of the session host.
@@ -64,6 +64,14 @@ public protocol AgentHostBackend: Sendable {
     func gitCommit(_ request: GitCommitToolRequest) async throws -> GitCommitToolResponse
     /// A repository on main for a project that has none.
     func gitInit(_ request: GitInitToolRequest) async throws -> GitInitToolResponse
+    func gitBranches(_ request: GitBranchesToolRequest) async throws -> GitBranchesResponse
+    func gitBranchCreate(_ request: GitBranchCreateToolRequest) async throws -> GitBranchCreateResponse
+    func gitBranchCheckout(_ request: GitBranchCheckoutToolRequest) async throws -> GitBranchCheckoutResponse
+    func gitBranchRename(_ request: GitBranchRenameToolRequest) async throws -> GitBranchRenameResponse
+    func gitMerge(_ request: GitMergeToolRequest) async throws -> GitMergeResponse
+    func gitMergeAbort(_ request: GitMergeAbortToolRequest) async throws -> GitMergeAbortResponse
+    func gitLog(_ request: GitLogToolRequest) async throws -> GitLogResponse
+    func gitCommitDetail(_ request: GitCommitDetailToolRequest) async throws -> GitCommitDetailResponse
     /// The remote's branches into remote-tracking refs, read to the end.
     func gitFetch(_ request: GitRemoteToolRequest) async throws -> GitTaskToolResponse
     /// Fetch, then fast-forward only, read to the end.

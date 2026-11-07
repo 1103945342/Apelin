@@ -34,7 +34,9 @@ public extension AgentToolName {
         switch self {
         case .gitStatus, .gitDiff, .gitStage, .gitUnstage, .gitCommit, .gitInit,
              .gitFetch, .gitPull, .gitPush, .gitClone, .gitSquash, .projectSetEnvironment,
-             .gitRemoteList, .gitRemoteSet, .gitRemoteRemove, .gitResetToRemote:
+             .gitRemoteList, .gitRemoteSet, .gitRemoteRemove, .gitResetToRemote,
+             .gitBranches, .gitBranchCreate, .gitBranchCheckout, .gitBranchRename,
+             .gitMerge, .gitMergeAbort, .gitLog, .gitCommitDetail:
             true
         default:
             false
@@ -70,6 +72,7 @@ public extension AgentToolName {
         case .fileWrite, .fileEdit, .fileCreate, .memorySave, .memoryDelete, .projectCreate, .projectRename,
              .gitStage, .gitUnstage, .gitCommit, .gitInit, .gitFetch, .gitPull, .gitClone,
              .gitRemoteSet, .gitRemoteRemove,
+             .gitBranchCreate, .gitBranchCheckout, .gitBranchRename, .gitMerge, .gitMergeAbort,
              .conversationCreate, .conversationSend, .conversationStop, .projectSetEnvironment, .notificationSend,
              .todoWrite:
             .writeProject
@@ -82,6 +85,7 @@ public extension AgentToolName {
              .packageList, .packageConfirmLoaded, .logRead, .crashList, .crashRead, .crashSymbolicate,
              .screenCapture, .screenReadTree, .memoryList, .skillList, .skillRead, .projectCheckDistribution,
              .templateList, .projectList, .gitStatus, .gitDiff, .gitReadSettings, .gitRemoteList,
+             .gitBranches, .gitLog, .gitCommitDetail,
              .conversationList, .conversationRead, .toolchainList, .sdkList, .webSearch, .webFetch, .feedbackRead,
              .todoList, .questionAsk:
             .readOnly
@@ -163,6 +167,14 @@ public extension AgentToolName {
         case .projectList: "List the projects on this device: each one's folder name and projectID (what a project argument takes), the name the sidebar shows, whether it builds from Apelin's description or its own script, its link, and which is this conversation's."
         case .templateList: "List the templates a new project can start from, with each template's id, kind and the parameters it asks for."
         case .projectCreate: "Create a new project from a template id from apelin_template_list. Apelin fills the identifiers, toolchain and SDK; pass values only for parameters the user cares about, and packageID and bundleID when the user has chosen permanent identifiers. When the user wants an .ipa, create the app template with output_format: ipa — never an empty workspace renamed into a project — and the build makes one app product, arm64, with a container app's entitlements, which apelin_package_install installs on this device or Distribute… exports. The project appears in the Projects menu with its link; this chat stays where it is and its file tools do not reach the new project, so hand the work on with apelin_conversation_create naming it. A git repository is imported into a workspace, never rebuilt from another template: create wiki.qaq.apelin.workspace/empty, then open its conversation with apelin_conversation_create naming it, the repository's URL and branch in the prompt, and that conversation imports it with git_clone."
+        case .gitBranches: "List local and remote-tracking branches, their commits and upstreams, and tags. Shows the checked-out branch and detached HEAD state; changes nothing."
+        case .gitBranchCreate: "Create a local branch at start_point (default HEAD), optionally switching to it. Never replaces an existing branch or discards work. Read git_status and git_branches first. Asks every time in Strict mode."
+        case .gitBranchCheckout: "Switch to a local branch. With remote, use that remote-tracking branch to create a local branch only if the local name is absent; an existing local branch keeps its commit and upstream. Does not fetch. Read git_status and git_branches first; a refusal is never a reason to force checkout or discard changes. Asks every time in Strict mode."
+        case .gitBranchRename: "Rename a local branch without overwriting an existing name. Changes no remote branch and pushes nothing. Only when the user asks for the rename. Asks every time in Strict mode."
+        case .gitMerge: "Merge a branch, tag or commit into the checked-out branch: fast-forward when possible, otherwise a merge commit; no_fast_forward requests a merge commit even when a fast-forward is possible. Only for a merge the user requested or agreed to. Review git_status, git_branches and the relevant history first. Conflicts are returned as paths, not success: read and resolve each, git_stage the resolved paths, then git_commit to finish. Never blindly pick one side, reset or force past a refusal. Nothing is pushed. Asks every time in Strict mode."
+        case .gitMergeAbort: "Abort an in-progress merge and restore the tracked files to HEAD. This discards all uncommitted tracked-file edits, including conflict resolutions and unrelated tracked edits: only when the user explicitly asks to abandon this merge, never to get past a conflict or a refusal. It refuses when no merge is in progress. Asks every time in Strict mode."
+        case .gitLog: "Read a page of the project's commit history, with parent IDs, authors and branch/tag labels. Use skip to read the next page when hasMore is true. Changes nothing."
+        case .gitCommitDetail: "Read one commit's full message, author and changed-file list. Takes a commit ID or revision; changes nothing."
         case .gitStatus: "Show the project repository's branch, HEAD commit and changed files."
         case .gitDiff: "Show a unified diff of the worktree against the index, or with staged: true of the index against HEAD; optionally one path."
         case .gitStage: "Stage project files for the next commit."
@@ -305,6 +317,38 @@ public extension AgentToolName {
                 "title": Schema.string("The issue's title: one line of at most \(FeedbackRules.maximumTitleLength) characters saying what went wrong or what is asked."),
                 "body": Schema.string("The issue in Markdown, at most \(FeedbackRules.maximumBodyBytes / 1024) KB: what the user did, what happened, what they expected, and the steps to see it again, from what the user said and what you saw."),
             ], required: ["repository", "title", "body"])
+        case .gitBranchCreate:
+            Schema.object([
+                "name": Schema.string("Local branch name."),
+                "start_point": Schema.string("Branch, tag or commit to start from; omit for HEAD."),
+                "checkout": Schema.boolean("Also switch to the new branch. Default false."),
+            ], required: ["name"])
+        case .gitBranchCheckout:
+            Schema.object([
+                "name": Schema.string("Local branch name, or the remote branch's short name when remote is supplied."),
+                "remote": Schema.string("Remote name when creating a local tracking branch; omit for a local branch."),
+            ], required: ["name"])
+        case .gitBranchRename:
+            Schema.object([
+                "from": Schema.string("Existing local branch name."),
+                "to": Schema.string("New local branch name."),
+            ], required: ["from", "to"])
+        case .gitMerge:
+            Schema.object([
+                "branch": Schema.string("Branch, tag or commit to merge into the checked-out branch."),
+                "no_fast_forward": Schema.boolean("Create a merge commit even when a fast-forward is possible. Default false."),
+            ], required: ["branch"])
+        case .gitMergeAbort, .gitBranches:
+            Schema.object([:], required: [])
+        case .gitLog:
+            Schema.object([
+                "limit": Schema.integer("Number of commits, from 1 to 1000; default 50."),
+                "skip": Schema.integer("Number of newest commits to skip; default 0."),
+            ], required: [])
+        case .gitCommitDetail:
+            Schema.object([
+                "commit": Schema.string("Commit ID or revision to inspect."),
+            ], required: ["commit"])
         case .gitDiff:
             Schema.object([
                 "path": Schema.string("Path relative to the project root; omit for every change."),

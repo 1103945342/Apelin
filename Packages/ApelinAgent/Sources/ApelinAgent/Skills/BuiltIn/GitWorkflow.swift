@@ -1,7 +1,7 @@
 extension BuiltInSkills {
     static let gitWorkflow = SkillDocument(
         name: "apelin-git-workflow",
-        description: "Keeping a project's history in git for the user: when to commit on your own, how (git_commit with all, messages, .gitignore), git_init for a project without a repository, importing a repository into a workspace, pushing only when asked, and a squash or a forced push only when the user explicitly asks for one.",
+        description: "Keeping a project's history in git for the user: inspecting history, creating and switching branches, merging and resolving conflicts, when to commit, importing a workspace, pushing only when asked, and a squash or forced push only when explicitly requested.",
         body: """
         # Keeping the project in git
 
@@ -47,6 +47,41 @@ extension BuiltInSkills {
         - A project with no repository, made before Apelin made them: start one
           with `git_init`, which begins `main`, then commit.
         - Never commit a folder that holds a `.git` of its own.
+
+        ## Branches and merges
+        - Inspect `git_status` and `git_branches` before changing branches.
+          `git_log` reads commit history with parents and refs;
+          `git_commit_detail` reads a commit's message and changed files.
+        - `git_branch_create` makes a branch at HEAD or `start_point`, with
+          `checkout: true` to switch too. `git_branch_checkout` switches to a
+          local branch; with `remote` it creates a local tracking branch if
+          the local name is absent. An existing local branch keeps its commit
+          and upstream; this is not a reset to the remote.
+          `git_branch_rename` renames a local branch only when asked; none of
+          these pushes or deletes a remote branch. Never force a checkout or
+          discard local changes to get past a refusal.
+        - A merge the user requested or agreed to uses `git_merge`, into the
+          checked-out branch. It fast-forwards when possible, otherwise makes
+          a merge commit; `no_fast_forward: true` requests one even when a
+          fast-forward is possible. Review the source and destination first.
+        - `outcome: conflict` is unfinished, not success. Read each conflicting
+          file, resolve it deliberately, stage only the resolved paths with
+          `git_stage`, then finish with `git_commit` (not `all: true` when
+          unrelated edits exist). The merge commit keeps both parents. Never
+          blindly select one side or use a reset to hide a conflict.
+        - `git_merge_abort` restores tracked files to HEAD and discards ALL
+          uncommitted tracked edits, including unrelated changes made during
+          the merge. Explain that loss first. Use it only when the user
+          explicitly asks to abandon that merge, never just because it has
+          conflicts. It refuses when no merge is in progress.
+        - Creation, checkout, rename, merge and abort ask every time in Strict
+          mode. A declined call never falls back to shell git. These tools
+          do not rebase, amend, delete branches or manipulate stashes.
+        - To merge a reviewed branch into main and push, check out main with
+          `git_branch_checkout`, merge the reviewed branch with `git_merge`,
+          inspect `git_status` and `git_diff`, and only then `git_push` when
+          the user asked for it. Do not ask the user to run shell git in place
+          of a tool the session offers.
 
         ## Remotes
         - `git_clone` imports a repository into a workspace, also one that has

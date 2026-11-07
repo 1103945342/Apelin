@@ -1,5 +1,6 @@
 import ApelinCore
 import ApelinProtocol
+import Foundation
 
 /// The git service on a project, served by apelin-environment (libgit2),
 /// and an empty repository made on GitHub, or an issue opened on one the
@@ -14,14 +15,20 @@ enum GitHandler: DomainHandler {
         switch request.operation {
         case .gitStatus, .gitDiff, .gitStage, .gitUnstage, .gitCommit, .gitInit,
              .gitRemoteList, .gitRemoteSet, .gitRemoteRemove,
+             .gitBranches, .gitLog, .gitCommitDetail,
              .gitSettings, .gitAuthorSet, .gitCredentialSet, .gitCredentialRemove:
             return await host.forward(request, to: .environment)
-        // The git page's own screens: the refs, the history, the work tree's
-        // changes taken back, a reset and the stashes. None of them is an
-        // agent's, and CallerPolicy names none, so only the app reaches here.
-        case .gitBranches, .gitBranchCreate, .gitBranchCheckout, .gitBranchDelete, .gitBranchRename,
-             .gitMerge, .gitMergeAbort, .gitTagCreate, .gitTagDelete,
-             .gitLog, .gitCommitDetail, .gitCommitFileDiff, .gitFileVersions,
+        case .gitBranchCreate, .gitBranchCheckout, .gitBranchRename, .gitMerge, .gitMergeAbort:
+            if case let .worker(.agent, instance) = request.caller,
+               let refusal = await AgentGitBranchRules.authorize(request.request, session: instance, registry: host.registry)
+            {
+                return request.fail(refusal)
+            }
+            return await host.forward(request, to: .environment)
+        // Destructive work-tree, tag, deletion and stash operations remain
+        // app-only: CallerPolicy does not expose them to the agent.
+        case .gitBranchDelete, .gitTagCreate, .gitTagDelete,
+             .gitCommitFileDiff, .gitFileVersions,
              .gitRestore, .gitDeletePaths, .gitIgnoreAppend, .gitReset,
              .gitStashList, .gitStashSave, .gitStashApply, .gitStashDrop, .gitStashClear:
             return await host.forward(request, to: .environment)
@@ -164,3 +171,4 @@ enum GitHandler: DomainHandler {
         return await host.forward(request, to: .environment)
     }
 }
+
