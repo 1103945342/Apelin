@@ -20,10 +20,17 @@ struct ComposerModelSelection: Codable, Equatable {
     /// selection saved before there were any.
     var supportedTiers: [AgentServiceTier]?
 
+    /// A conversation keeps its own picks, including a preference its current
+    /// model cannot offer. Absent only in the old, global default.
+    var conversationScoped: Bool? = nil
+    var preferredEffort: AgentReasoningEffort? = nil
+    var preferredTier: AgentServiceTier? = nil
+
     /// The effort sent: the reader's where the model offers it, else High,
     /// else its strongest; nil for a model that offers none.
     var effort: AgentReasoningEffort? {
-        if let chosen = ComposerModelPreferences.effort, supportedEfforts.contains(chosen) {
+        let chosen = conversationScoped == true ? preferredEffort : ComposerModelPreferences.effort
+        if let chosen, supportedEfforts.contains(chosen) {
             return chosen
         }
         return supportedEfforts.contains(.high) ? .high : supportedEfforts.last
@@ -32,7 +39,51 @@ struct ComposerModelSelection: Codable, Equatable {
     /// The tier sent: the reader's where the model offers it, else the
     /// standard one (nil).
     var tier: AgentServiceTier? {
-        ComposerModelPreferences.tier.flatMap { (supportedTiers ?? []).contains($0) ? $0 : nil }
+        let chosen = conversationScoped == true ? preferredTier : ComposerModelPreferences.tier
+        return chosen.flatMap { (supportedTiers ?? []).contains($0) ? $0 : nil }
+    }
+
+    /// The old global choice is only a seed. No conversation writes it back,
+    /// so even an old chat opened later cannot inherit another chat's edits.
+    static func selection(for id: UUID, defaults: UserDefaults = .standard) -> Self? {
+        let scopedKey = key + ".conversation." + id.uuidString
+        if let data = defaults.data(forKey: scopedKey) {
+            return try? JSONDecoder().decode(Self.self, from: data)
+        }
+        guard var seed = current else { return nil }
+        seed.conversationScoped = true
+        seed.preferredEffort = ComposerModelPreferences.effort
+        seed.preferredTier = ComposerModelPreferences.tier
+        save(seed, for: id, defaults: defaults)
+        return seed
+    }
+
+    /// Changing models or refreshing the catalog keeps this chat's picks.
+    static func choose(_ model: Self, for id: UUID, defaults: UserDefaults = .standard) {
+        let previous = selection(for: id, defaults: defaults)
+        var next = model
+        next.conversationScoped = true
+        next.preferredEffort = previous?.preferredEffort ?? ComposerModelPreferences.effort
+        next.preferredTier = previous == nil ? ComposerModelPreferences.tier : previous?.preferredTier
+        save(next, for: id, defaults: defaults)
+    }
+
+    static func setEffort(_ effort: AgentReasoningEffort, for id: UUID, defaults: UserDefaults = .standard) {
+        guard var selected = selection(for: id, defaults: defaults) else { return }
+        selected.preferredEffort = effort
+        save(selected, for: id, defaults: defaults)
+    }
+
+    static func setTier(_ tier: AgentServiceTier?, for id: UUID, defaults: UserDefaults = .standard) {
+        guard var selected = selection(for: id, defaults: defaults) else { return }
+        selected.preferredTier = tier
+        save(selected, for: id, defaults: defaults)
+    }
+
+    private static func save(_ selection: Self, for id: UUID, defaults: UserDefaults) {
+        guard let data = try? JSONEncoder().encode(selection) else { return }
+        defaults.set(data, forKey: key + ".conversation." + id.uuidString)
+        NotificationCenter.default.post(name: .composerModelSelectionChanged, object: id)
     }
 
     static var current: Self? {
