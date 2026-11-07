@@ -130,7 +130,15 @@ final class GlassSurfaceView: UIView {
             // Do not use the library's factory: Apelin owns the native/legacy
             // decision explicitly, and leaves the library's shaders untouched.
             view = LiquidGlassEffectView(effect: LiquidGlassEffect(style: .regular, isNative: false))
-            visitMetalViews(in: view) { $0.isPaused = true }
+            // The library captures its superview's backdrop and waits for the
+            // GPU on every frame, on the main thread: at its own 60 Hz one
+            // surface alone costs more than a scroll. Small or decorative
+            // surfaces show no visible refraction difference at 15.
+            let frames = GlassSurfaceStyle.framesPerSecond(forArea: bounds.width * bounds.height)
+            visitMetalViews(in: view) {
+                $0.isPaused = true
+                $0.preferredFramesPerSecond = frames
+            }
         case .material:
             view = UIVisualEffectView(effect: UIBlurEffect(style: .systemChromeMaterial))
         case .opaque:

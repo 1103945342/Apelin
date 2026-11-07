@@ -47,7 +47,10 @@ final class WelcomeActionBar: UIView {
         secondaryAction: @escaping () -> Void = {},
     ) {
         super.init(frame: .zero)
-        let blur = UIVisualEffectView(effect: UIBlurEffect(style: .regular))
+        // Native glass on iOS 26, the library's glass before it, and the
+        // system's own material when neither applies: the bar is a background
+        // only, so the buttons above it keep their own hit areas.
+        let blur = GlassSurfaceView()
         self.action = action
         addSubview(blur)
         addSubview(rule)

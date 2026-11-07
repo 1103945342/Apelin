@@ -42,10 +42,19 @@ struct GlassPolicyChecks {
         if counts != ["opaque": 32, "native": 16, "legacy": 1, "material": 15] {
             failures.append("unexpected distribution: \(counts)")
         }
+        // The legacy renderer captures its backdrop every frame: big surfaces
+        // keep 30, small or decorative ones drop to 15.
+        let rates = [(0.0, 15), (39_999.0, 15), (40_000.0, 30), (500_000.0, 30)]
+        for (area, expected) in rates where GlassSurfaceStyle.framesPerSecond(forArea: area) != expected {
+            failures.append("area \(area): \(GlassSurfaceStyle.framesPerSecond(forArea: area)), expected \(expected)")
+        }
+        if GlassSurfaceStyle.framesPerSecond(forArea: .infinity) != 15 {
+            failures.append("a non-finite area must fall back to the slow rate")
+        }
         guard failures.isEmpty else {
             print(failures.joined(separator: "\n"))
             exit(1)
         }
-        print("PASS: 64 production glass policy combinations (no rendering tested)")
+        print("PASS: 64 production glass policy combinations and the frame-rate policy (no rendering tested)")
     }
 }

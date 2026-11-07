@@ -234,9 +234,7 @@ final class ChatController: UIViewController {
             latestConfiguration = .glass()
         } else {
             latestConfiguration = .plain()
-            latestConfiguration.background.customView = UIVisualEffectView(
-                effect: UIBlurEffect(style: .systemMaterial),
-            )
+            latestConfiguration.background.customView = GlassSurfaceView(cornerRadius: 999)
         }
         latestConfiguration.image = UIImage(systemName: "chevron.down")
         latestConfiguration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
