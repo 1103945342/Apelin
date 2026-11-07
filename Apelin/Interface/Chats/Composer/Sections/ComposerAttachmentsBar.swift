@@ -107,7 +107,7 @@ private final class AttachmentCell: UICollectionViewCell {
         } else {
             configuration = .plain()
             configuration.baseForegroundColor = .white
-            let blur = GlassSurfaceView(cornerRadius: 999)
+            let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
             blur.isUserInteractionEnabled = false
             configuration.background.customView = blur
         }

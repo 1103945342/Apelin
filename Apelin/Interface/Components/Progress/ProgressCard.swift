@@ -145,7 +145,7 @@ private final class ProgressCardController: UIViewController {
 
     private func build() {
         view.backgroundColor = AlertControllerConfiguration.backgroundColor.withAlphaComponent(0.5)
-        let material = GlassSurfaceView()
+        let material = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
         view.addSubview(material)
         material.snp.makeConstraints { $0.edges.equalToSuperview() }
 

@@ -1,8 +1,9 @@
 import SnapKit
 import UIKit
 
-/// A picker's choices in a sheet: iOS 26 keeps the system's own glass;
-/// older systems use the shared glass background. Every picker opens at one
+/// A picker's choices in a sheet of the system's own: on iOS 26 its Liquid
+/// Glass shows through, the page's background being clear, and before that the
+/// grouped background, as the message's sheet does. Every picker opens at one
 /// height (owner, 2026-11-06) and the choices scroll inside it, so a provider
 /// listing twenty models opens the card a provider listing two does, and the
 /// row above the keyboard does not jump from one picker to the next.
@@ -52,13 +53,10 @@ final class ComposerChoiceSheet: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .clear
         if #available(iOS 26, *) {
-            // The system sheet already supplies native glass.
+            view.backgroundColor = .clear
         } else {
-            let glass = GlassSurfaceView(cornerRadius: 24)
-            view.addSubview(glass)
-            glass.snp.makeConstraints { make in make.edges.equalToSuperview() }
+            view.backgroundColor = .systemGroupedBackground
         }
 
         let titleLabel = UILabel()

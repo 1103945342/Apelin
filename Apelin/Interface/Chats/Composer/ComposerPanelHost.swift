@@ -40,11 +40,7 @@ class ComposerPanel: UIView {
         translatesAutoresizingMaskIntoConstraints = false
         clipsToBounds = false
 
-        backgroundColor = .clear
-        let glass = GlassSurfaceView(cornerRadius: ComposerMetrics.Radius.lg)
-        glass.frame = bounds
-        glass.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        addSubview(glass)
+        backgroundColor = .secondarySystemGroupedBackground
         layer.cornerRadius = ComposerMetrics.Radius.lg
         layer.cornerCurve = .continuous
         layer.borderWidth = 1 / UIScreen.main.scale

@@ -53,7 +53,7 @@ class ComposerView: ComposerSectionView {
     private var panelHost = ComposerPanelHost()
 
     let shadowContainer = UIView()
-    private let glassEffectView = GlassSurfaceView(cornerRadius: 16, isInteractive: true)
+    private var glassEffectView: UIVisualEffectView?
     /// Over the ground and everything on it, taking only drags; its colour
     /// shows while one is over it.
     let dropContainer = ComposerDropView()
@@ -82,6 +82,18 @@ class ComposerView: ComposerSectionView {
     private var submissionID: UUID?
     var fittingHeightConstraint: NSLayoutConstraint = .init()
 
+    /// The card the bands sit on, before iOS 26's glass. At night it is a
+    /// solid deep grey: a 10% grey let the conversation behind show through
+    /// the text being typed into it, which made the card unreadable.
+    private let handlerColor: UIColor = .init {
+        switch $0.userInterfaceStyle {
+        case .light:
+            .white
+        default:
+            UIColor(white: 0.13, alpha: 1)
+        }
+    }
+
     override func initializeViews() {
         super.initializeViews()
 
@@ -90,7 +102,16 @@ class ComposerView: ComposerSectionView {
         shadowContainer.clipsToBounds = false
         addSubview(shadowContainer)
 
-        addSubview(glassEffectView)
+        if #available(iOS 26, *) {
+            let glass = UIGlassEffect()
+            glass.isInteractive = true
+            let effectView = UIVisualEffectView(effect: glass)
+            effectView.layer.cornerRadius = shadowContainer.layer.cornerRadius
+            effectView.layer.cornerCurve = .continuous
+            effectView.clipsToBounds = true
+            addSubview(effectView)
+            glassEffectView = effectView
+        }
 
         applyShadowStyle()
         approvalSection.horizontalAdjustment = -ChatMarkdownView.blockSpacing
@@ -495,15 +516,32 @@ class ComposerView: ComposerSectionView {
         dropColorView.backgroundColor = tintColor.withAlphaComponent(0.05)
     }
 
-    /// The glass wrapper owns the opaque/material accessibility fallbacks too.
+    /// The ground under the composer's bands: glass on iOS 26, a white card
+    /// with a soft shadow before it.
     private func applyShadowStyle() {
-        shadowContainer.backgroundColor = .clear
-        shadowContainer.layer.shadowOpacity = 0
+        if let glassEffectView {
+            shadowContainer.backgroundColor = .clear
+            shadowContainer.layer.shadowOpacity = 0
+            glassEffectView.isHidden = false
+        } else {
+            shadowContainer.backgroundColor = handlerColor
+            shadowContainer.layer.shadowColor = UIColor.black.cgColor
+            shadowContainer.layer.shadowOpacity = 0.08
+            shadowContainer.layer.shadowRadius = 8
+            shadowContainer.layer.shadowOffset = .zero
+        }
     }
 
     private func updateShadowGeometry() {
-        shadowContainer.layer.shadowPath = nil
-        glassEffectView.frame = shadowContainer.frame
+        if let glassEffectView {
+            shadowContainer.layer.shadowPath = nil
+            glassEffectView.frame = shadowContainer.frame
+        } else {
+            shadowContainer.layer.shadowPath = UIBezierPath(
+                roundedRect: CGRect(origin: .zero, size: shadowContainer.frame.size),
+                cornerRadius: shadowContainer.layer.cornerRadius,
+            ).cgPath
+        }
     }
 
     /// Back to empty and at rest.

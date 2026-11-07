@@ -15,11 +15,7 @@ final class ComposerCommandMenu: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        backgroundColor = .clear
-        let glass = GlassSurfaceView(cornerRadius: ComposerMetrics.Radius.lg)
-        glass.frame = bounds
-        glass.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        addSubview(glass)
+        backgroundColor = .secondarySystemGroupedBackground
         layer.cornerRadius = ComposerMetrics.Radius.lg
         layer.cornerCurve = .continuous
         layer.borderWidth = 1 / UIScreen.main.scale

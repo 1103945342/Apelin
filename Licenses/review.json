@@ -338,10 +338,6 @@
       "sha256": "ec86fb473b04f6ed4ed9a820f6366355ddbbe69a1673a0d776410971dd0b227c",
       "license": "MIT (iTerm2-Color-Schemes)"
     },
-    "liquidglasskit/NOTICE": {
-      "sha256": "4375504b7a48f024cd68a92cf7b9a9f19da2b0ccd049446d0563fc6e90bdf65d",
-      "license": "No license text provided upstream; the fork's NOTICE records its origin and grants nothing"
-    },
     "listviewkit/LICENSE": {
       "sha256": "9c04c6104c56ef2c231c1ca7790a8146d96b880b5c0b04bfc69a3148113458fb",
       "license": "MIT"

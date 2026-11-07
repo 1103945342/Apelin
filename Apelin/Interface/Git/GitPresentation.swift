@@ -8,15 +8,21 @@ import UIKit
 
 // MARK: - Glass
 
-/// The shared glass background. Flat sheets keep a system material on old
-/// systems; rounded controls use the library, and iOS 26 always stays native.
-final class GitGlassBackground: UIView {
+/// The platform's own material: Liquid Glass where the system has it, a
+/// thick material before that. The sheets and the controls in them sit on it.
+final class GitGlassBackground: UIVisualEffectView {
     init(cornerRadius: CGFloat? = nil) {
-        super.init(frame: .zero)
+        if #available(iOS 26.0, *) {
+            super.init(effect: UIGlassEffect(style: .regular))
+        } else {
+            super.init(effect: UIBlurEffect(style: .systemThickMaterial))
+        }
         isUserInteractionEnabled = false
-        let glass = GlassSurfaceView(cornerRadius: cornerRadius ?? 0)
-        addSubview(glass)
-        glass.snp.makeConstraints { make in make.edges.equalToSuperview() }
+        if let cornerRadius {
+            layer.cornerRadius = cornerRadius
+            layer.cornerCurve = .continuous
+            clipsToBounds = true
+        }
     }
 
     @available(*, unavailable)
