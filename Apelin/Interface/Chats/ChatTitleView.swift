@@ -8,13 +8,14 @@ import UIKit
 /// conversation is picked.
 ///
 /// It asks the bar for all the room it has, so its frame holds still while
-/// one name rolls into the next, and places the text itself: centred on the
-/// bar, as the bar's own title is, slid aside only as far as the items
-/// beside it need, and cut short with an ellipsis when it does not fit.
+/// one name rolls into the next, and places the text itself at the leading
+/// edge of that room, right beside the item that opens the sidebar, cut
+/// short with an ellipsis when it does not fit.
 ///
 /// A name longer than that one line is carried on two, in a smaller face,
-/// centred on the bar as the one line is, and cut with an ellipsis after
-/// the second: the length a name is shown at is the bar's, not the name's.
+/// kept to the leading edge as the one line is, and cut with an ellipsis
+/// after the second: the length a name is shown at is the bar's, not the
+/// name's.
 final class ChatTitleView: UIView {
     private let label = LTXAnimatableLabel()
     private(set) var title = ""
@@ -92,7 +93,7 @@ final class ChatTitleView: UIView {
         let twoLines = room > 0 && Self.width(of: title, font: Self.font) > room
         let lineHeight = ceil((twoLines ? Self.twoLineFont : Self.font).lineHeight)
         let textHeight = twoLines ? lineHeight * 2 : lineHeight
-        let box = textFrame(width: room, height: textHeight, twoLines: twoLines)
+        let box = textFrame(width: room, height: textHeight)
         label.frame = box
         let attributed = attributedTitle(twoLines: twoLines, room: room, box: box)
         let animated = animatesNextChange
@@ -109,22 +110,20 @@ final class ChatTitleView: UIView {
 
     // MARK: - Text
 
-    /// `title` as it is drawn: one line, fitted to the room and slid onto
-    /// the bar's centre, or two smaller lines centred over it.
+    /// `title` as it is drawn: one line, fitted to the room and starting at
+    /// its leading edge, or two smaller lines kept to that edge.
     private func attributedTitle(twoLines: Bool, room: CGFloat, box: CGRect) -> NSAttributedString {
         guard twoLines else {
-            let text = fittedText(width: room)
-            let indent = leadingIndent(forTextWidth: Self.width(of: text), in: room)
-            return NSAttributedString(string: text, attributes: Self.attributes(indent: indent))
+            return NSAttributedString(string: fittedText(width: room), attributes: Self.attributes)
         }
         let text = Self.fitted(twoLine: title, width: box.width, height: box.height)
         return NSAttributedString(string: Self.isolated(text), attributes: Self.twoLineAttributes)
     }
 
     /// `text` between a first-strong isolate and its end: laid out in the
-    /// direction of its own first letter inside the left-to-right line the
-    /// indent needs, so an Arabic name reads right to left as a whole and
-    /// its ellipsis lands on its left. The marks take no room.
+    /// direction of its own first letter inside the left-to-right line it
+    /// starts on, so an Arabic name reads right to left as a whole and its
+    /// ellipsis lands on its left. The marks take no room.
     private static func isolated(_ text: String) -> String {
         "\u{2068}" + text + "\u{2069}"
     }
@@ -195,52 +194,21 @@ final class ChatTitleView: UIView {
 
     // MARK: - Placement
 
-    /// Where the label goes: the bar's whole room for one line, which the
-    /// indent then slides the text inside, and the widest box centred on the
-    /// bar for two, so both lines sit over its centre.
-    private func textFrame(width: CGFloat, height: CGFloat, twoLines: Bool) -> CGRect {
-        let y = floor((bounds.height - height) / 2)
-        guard twoLines else { return CGRect(x: 0, y: y, width: width, height: height) }
-        let centre = barCentreX(in: width)
-        let boxWidth = max(min(width, 2 * min(centre, width - centre)), 0)
-        return CGRect(x: floor(centre - boxWidth / 2), y: y, width: boxWidth, height: height)
-    }
-
-    /// The bar's centre line, in this view's coordinates.
-    private func barCentreX(in width: CGFloat) -> CGFloat {
-        guard let bar = enclosingNavigationBar else { return width / 2 }
-        let centre = convert(CGPoint(x: bar.bounds.midX, y: 0), from: bar).x
-        return min(max(centre, 0), width)
-    }
-
-    /// Where the text starts so that it sits centred on the bar, kept
-    /// inside this view.
-    private func leadingIndent(forTextWidth textWidth: CGFloat, in width: CGFloat) -> CGFloat {
-        let room = max(width - textWidth, 0)
-        return floor(min(max(barCentreX(in: width) - textWidth / 2, 0), room))
-    }
-
-    private var enclosingNavigationBar: UINavigationBar? {
-        var view = superview
-        while let current = view {
-            if let bar = current as? UINavigationBar {
-                return bar
-            }
-            view = current.superview
-        }
-        return nil
+    /// Where the label goes: all of the bar's room the view was given, at
+    /// the text's own height about the middle of it, so a name on one line
+    /// and on two both start at the same leading edge.
+    private func textFrame(width: CGFloat, height: CGFloat) -> CGRect {
+        CGRect(x: 0, y: floor((bounds.height - height) / 2), width: width, height: height)
     }
 
     // MARK: - Attributes
 
-    private static func attributes(indent: CGFloat) -> [NSAttributedString.Key: Any] {
+    private static var attributes: [NSAttributedString.Key: Any] {
         let paragraph = NSMutableParagraphStyle()
-        // placed from the left whatever the script: the indent is measured
-        // from the left edge, and one line in either direction fits it
+        // placed from the leading edge whatever the script: the text is
+        // measured there, and one line in either direction fits it
         paragraph.alignment = .left
         paragraph.baseWritingDirection = .leftToRight
-        paragraph.firstLineHeadIndent = indent
-        paragraph.headIndent = indent
         paragraph.lineBreakMode = .byClipping
         return [
             .font: font,
@@ -249,11 +217,11 @@ final class ChatTitleView: UIView {
         ]
     }
 
-    /// Two lines of the smaller face, each centred in the box, broken where
-    /// they must be: the text handed here is already cut to the room.
+    /// Two lines of the smaller face, each starting at the same edge, broken
+    /// where they must be: the text handed here is already cut to the room.
     private static var twoLineAttributes: [NSAttributedString.Key: Any] {
         let paragraph = NSMutableParagraphStyle()
-        paragraph.alignment = .center
+        paragraph.alignment = .left
         paragraph.baseWritingDirection = .leftToRight
         paragraph.lineBreakMode = .byCharWrapping
         return [
@@ -265,7 +233,7 @@ final class ChatTitleView: UIView {
 
     /// The width CoreText, which draws the label, gives `text` on one line.
     private static func width(of text: String, font: UIFont) -> CGFloat {
-        var textAttributes = attributes(indent: 0)
+        var textAttributes = attributes
         textAttributes[.font] = font
         let line = CTLineCreateWithAttributedString(
             NSAttributedString(string: text, attributes: textAttributes),
