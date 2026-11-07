@@ -26,12 +26,11 @@ extension BuiltInSkills {
 
         ## What the create path writes
         - `package.format: "ipa"` with `kind: "app"` and exactly one app
-          product — the two things the check's ipa rule enforces — and, as the
-          create path writes it, `layout: []` and no `depends`,
-          `conflicts`, `breaks`, `replaces`, `provides`, `recommends`,
-          `suggests`, `maintainerScripts` or `tweakFilter`: an `.ipa` reads none
-          of them, so a description that carries one says something the build
-          never hands back. Never add one by hand.
+          product — the two things the check's ipa rule enforces — `layout: []`,
+          and none of `depends`, `dependsByBootstrap`, `recommends`,
+          `suggests`, `conflicts`, `breaks`, `replaces`, `provides`,
+          `maintainerScripts` or `tweakFilter`: the schema refuses each of them
+          on an ipa project, so one that carries any does not open.
         - `arm64` for both bootstraps: an app that runs on ordinary iOS, not
           `arm64e`.
         - The entitlements are a container app's: `get-task-allow` and nothing

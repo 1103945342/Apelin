@@ -295,7 +295,7 @@ public struct ProjectDocument: Codable, Sendable, Equatable {
         /// `layout`. `ipa`: this project's app in `Payload/`, zipped, which
         /// installs as an app and never through a package manager — `layout`
         /// stays empty and relations, a tweak filter and maintainer scripts
-        /// have nothing to say.
+        /// are refused.
         public enum Format: String, Codable, Sendable, CaseIterable {
             case deb
             case ipa
