@@ -491,23 +491,32 @@ final class ChatRuntime {
         records[id]?.summary.projectName != nil
     }
 
-    /// A new conversation holding `id`'s history through the turn of
-    /// message `messageID`, named after it and listed first; nil when it
-    /// has no such message. Its session opens once the reader writes in it.
+    /// A new conversation holding `id`'s model history through the turn of
+    /// message `messageID`, named after it and listed first. Its new session
+    /// is opened immediately; a failed open leaves the same row to retry.
     func fork(_ id: UUID, through messageID: UUID) async throws -> ChatSummary? {
-        guard let source = records[id], canFork(id),
-              ChatFork.events(source.events, through: messageID) != nil
-        else { return nil }
+        guard records[id] != nil, canFork(id) else { return nil }
+        // The session log is the source of truth for a fork. Its worker
+        // replays the sealed model snapshot and marks those events historical;
+        // the UI must not copy the source's possibly edited event list.
         let opened = try await open(id)
         let newSessionID = UUID().uuidString.lowercased()
         try await ApelinService.app.agentFork(sessionID: opened.sessionID, newSessionID: newSessionID, messageID: messageID)
-        // the events as they are now, the worker's cut made from the same
-        guard let current = records[id], let events = ChatFork.events(current.events, through: messageID) else { return nil }
+        guard let current = records[id] else { return nil }
         var summary = ChatSummary.untitled(lastInteraction: Date(), projectName: current.summary.projectName)
         summary.rename(to: String(localized: "Fork of \(current.summary.displayTitle)"))
-        records[summary.id] = ChatRecord(summary: summary, sessionID: newSessionID, events: events)
-        changed(summary.id)
-        return records[summary.id]?.summary
+        let newID = summary.id
+        records[newID] = ChatRecord(summary: summary, sessionID: newSessionID)
+        // Save the row before opening it. If the new session cannot be opened,
+        // the same row remains and its next send can retry the open.
+        changed(newID)
+        do {
+            _ = try await open(newID)
+        } catch {
+            // Keep the saved record; opening is retried when the conversation is
+            // used again, rather than creating another fork row.
+        }
+        return records[newID]?.summary
     }
 
     /// Between runs only: a session to compact, nothing running, waiting
@@ -610,15 +619,17 @@ final class ChatRuntime {
                     let batch = try await ApelinService.app.attach(task, afterSeq: cursor)
                     guard !Task.isCancelled, records[id]?.task == task else { return }
                     let fresh = records[id]?.take(batch.events) ?? []
-                    // never the replay, which `take` reads past
-                    records[id]?.summary.noteReplies(in: fresh, isViewed: id == viewedChat)
-                    ConversationJournal.note(fresh, session: records[id]?.sessionID)
-                    settleSending(in: id, against: fresh)
-                    let builds = CompletedBuilds.count(in: fresh)
+                    let realtime = fresh.filter { !ChatFork.isHistorical($0) }
+                    // Historical replay belongs in the transcript and cursor,
+                    // but must not replay reader-visible side effects.
+                    records[id]?.summary.noteReplies(in: realtime, isViewed: id == viewedChat)
+                    ConversationJournal.note(realtime, session: records[id]?.sessionID)
+                    settleSending(in: id, against: realtime)
+                    let builds = CompletedBuilds.count(in: realtime)
                     if builds > 0 {
                         onBuildsCompleted?(builds)
                     }
-                    for event in fresh where event.kind == AgentConversations.openedEventKind {
+                    for event in realtime where event.kind == AgentConversations.openedEventKind {
                         if let parent = records[id] {
                             adopt(ChatAdoption.record(
                                 opened: event.payload,
@@ -627,16 +638,16 @@ final class ChatRuntime {
                             ))
                         }
                     }
-                    let dropped = fresh.filter { $0.kind == "queueDropped" }
+                    let dropped = realtime.filter { $0.kind == "queueDropped" }
                         // persisted-read: one event's field, nothing written back from it
                         .flatMap { (try? $0.payload?["ids"]?.decode([UUID].self)) ?? [] }
                     if !dropped.isEmpty {
                         restoreDropped(Set(dropped), in: id)
                     }
-                    if let title = batch.events.last(where: { $0.kind == "title" })?.payload?["text"]?.stringValue {
+                    if let title = realtime.last(where: { $0.kind == "title" })?.payload?["text"]?.stringValue {
                         records[id]?.summary.suggestTitle(title)
                     }
-                    if let proposed = batch.events
+                    if let proposed = realtime
                         .last(where: { $0.kind == "projectNameSuggested" })?.payload?["name"]?.stringValue,
                        let project = records[id]?.summary.projectName,
                        let name = ProjectDisplayName.candidate(proposed)
@@ -649,7 +660,7 @@ final class ChatRuntime {
                             }
                         }
                     }
-                    if let finished = fresh.last(where: { $0.kind == "compactionFinished" }) {
+                    if let finished = realtime.last(where: { $0.kind == "compactionFinished" }) {
                         endCompaction(id, with: .success(Self.compactionResult(finished)))
                     }
                     let wasWorking = records[id]?.summary.isWorking

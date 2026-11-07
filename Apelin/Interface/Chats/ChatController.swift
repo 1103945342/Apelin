@@ -1439,7 +1439,7 @@ extension ChatController {
                 symbol: "doc.on.doc",
             ) { [weak self] in self?.copyText(of: message) })
         }
-        if !busy, runtime.canFork(chat.id) {
+        if runtime.canFork(chat.id) {
             actions.append(MessageActionSheet.Action(
                 title: String(localized: "Fork from Here"),
                 symbol: "arrow.triangle.branch",

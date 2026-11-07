@@ -733,13 +733,16 @@ public actor AgentSession {
     /// between runs. It returns once started; `compactionFinished` says how
     /// it went, with the summary when compacted (`CompactionRecap`), `abort`
     /// stops it, and a message sent meanwhile waits for it.
-    public func compact() throws {
+    public func compact() async throws {
         guard runTask == nil, compaction == nil else {
             throw ApelinError(.conflict, "Wait for the current reply to finish, then compact the chat.")
         }
         aborted = false
         let agent = agent
         let sessionID = id
+        let messages = agent.state.messages
+        let anchors = anchors
+        let log = log
         journal.compactionStarted(
             .requested,
             model: agent.state.model,
@@ -748,6 +751,16 @@ public actor AgentSession {
         )
         compaction = Task { [weak self] in
             await self?.record(.compactionStarted)
+            do {
+                try await log.writeHistorySnapshot(messages, anchors: anchors, seal: true)
+            } catch {
+                await self?.compactionArchiveFailed(error)
+                return
+            }
+            if await self?.aborted == true {
+                await self?.compactionEnded(.failed("aborted"))
+                return
+            }
             let outcome = await Self.runCompaction(agent, sessionID: sessionID)
             await self?.compactionEnded(outcome)
         }
@@ -769,6 +782,12 @@ public actor AgentSession {
         } catch {
             return .refusedAgentBusy
         }
+    }
+
+    private func compactionArchiveFailed(_ error: Error) async {
+        let message = "Unable to preserve the pre-compaction conversation: \(error.localizedDescription)"
+        await record(.error(message: message))
+        await compactionEnded(.failed(message))
     }
 
     private func compactionEnded(_ outcome: AgentContextCompactionOutcome) async {
@@ -824,6 +843,11 @@ public actor AgentSession {
 
     public var pendingApprovals: [ApprovalRequest] {
         get async { await gate.pending }
+    }
+
+    /// The worker tags records through this sequence as initial replay.
+    public func replayBoundary() async throws -> UInt64 {
+        try await log.replayBoundary()
     }
 
     /// Events after `afterSeq`, then live ones. Pass 0 for everything. It
@@ -897,7 +921,10 @@ public actor AgentSession {
                 break
             }
         case let .messageEnd(message):
-            guard case let .assistant(assistant) = message else { break }
+            guard case let .assistant(assistant) = message else {
+                await captureForkBoundary()
+                break
+            }
             output.endMessage(reported: assistant.usage.output)
             await recordOutput(messageEnded: true)
             await record(.messageFinished(text: Self.text(of: assistant.content)))
@@ -917,6 +944,7 @@ public actor AgentSession {
                         ?? "The model provider returned an error. Try again.",
                 ))
             }
+            await captureForkBoundary()
         case .streamRewind:
             // kwwk gave up the message it was streaming; the next one replaces it
             journal.replyDiscarded()
@@ -925,6 +953,16 @@ public actor AgentSession {
             journal.retrying(attempt: attempt, delayMs: delayMs, reason: reason)
             await record(.reconnecting)
         case let .compactStart(messagesCount, usage):
+            // kwwk emits this immediately before it rewrites the conversation.
+            // Keep the exact pre-compaction context so an older message can
+            // still be forked after automatic compaction.
+            do {
+                try await log.writeHistorySnapshot(agent.state.messages, anchors: anchors)
+            } catch {
+                await record(.error(message: "Unable to preserve the pre-compaction conversation: \(error.localizedDescription)"))
+                aborted = true
+                agent.abort()
+            }
             journal.compactionStarted(.automatic, model: agent.state.model, messages: messagesCount, usage: usage)
         case let .compactEnd(outcome):
             // kwwk compacted on its own, as the context filled
@@ -1073,6 +1111,11 @@ public actor AgentSession {
         // the turn's messages are in: what compaction would now go by
         await recordContextUsage()
         await record(.finished(reason: reason))
+        do {
+            try await log.writeHistorySnapshot(agent.state.messages, anchors: anchors, seal: true)
+        } catch {
+            await record(.error(message: "Unable to preserve the completed conversation for future forks: \(error.localizedDescription)"))
+        }
         // a stop meanwhile dropped them
         runTask = next.isEmpty || aborted ? nil : carryOver(next)
         runEnding = false

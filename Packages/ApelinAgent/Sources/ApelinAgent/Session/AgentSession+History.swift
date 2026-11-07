@@ -8,7 +8,7 @@ import KWWKAI
 /// taken back, a message's or a reply's text edited, a reply deleted, a
 /// fork written. Each one changes the conversation the model reads, writes
 /// it to `transcript.json`, and records an event the app shows it by.
-/// Only between runs: a run reads the conversation as it goes.
+/// Edits require an idle session; forks read an immutable saved boundary.
 extension AgentSession {
     // MARK: Anchors
 
@@ -129,18 +129,23 @@ extension AgentSession {
         await recordContextUsage()
     }
 
-    /// Writes session `newSessionID`'s folder: this conversation through the
-    /// turn of message `id`, with the edits made to it since.
+    /// Writes the historical model/UI snapshot, not today's edited prefix.
+    /// Sealed snapshots can be read while the source is running or compacting.
     public func fork(through id: UUID, as newSessionID: String) async throws {
         guard SessionEventLog.isValidSessionID(newSessionID), newSessionID.lowercased() != self.id.lowercased() else {
             throw ApelinError(.badRequest, "a fork's session ID must be a new UUID")
         }
-        try requireIdle()
-        let messages = agent.state.messages
-        guard let index = try await located(id, in: messages)?.index else { throw Self.notInHistory }
-        let end = ConversationHistory.nextReaderMessage(after: index, in: messages)
-        let records = try await log.records(afterSeq: 0)
-        guard let forked = Self.forkRecords(records, through: id) else { throw Self.notInHistory }
+        var context = try await log.readForkContext(id)
+        if context == nil {
+            // Seed legacy sessions only from their surviving model messages;
+            // a UI log is not a lossless substitute for a lost transcript.
+            try requireIdle()
+            try await log.writeHistorySnapshot(agent.state.messages, anchors: anchors, seal: true)
+            context = try await log.readForkContext(id)
+        }
+        guard let context else {
+            throw ApelinError(.conflict, "No saved model context exists for this message. Older versions did not preserve context removed by compaction or rewind; queued messages have no model context until taken.")
+        }
         guard var metadata = try await log.readMetadata() else {
             throw ApelinError(.notFound, "This chat's record could not be read.")
         }
@@ -150,12 +155,28 @@ extension AgentSession {
             try SessionEventLog.writeFork(
                 sessionsRoot: configuration.dataRoot.sessions,
                 metadata: metadata,
-                records: forked,
-                transcript: Array(messages[..<end]),
-                anchors: anchors,
+                records: context.records,
+                transcript: context.messages,
+                anchors: context.anchors,
+                historySource: log.directory,
+                through: id,
             )
         } catch let error as SessionStoreError {
             throw ApelinError(.conflict, error.localizedDescription)
+        }
+    }
+
+    /// Save only a complete model-message boundary. A call without its
+    /// result is not a resumable context; the last good snapshot stays.
+    func captureForkBoundary() async {
+        // kwwk's processEvent appends messageEnd to state before awaiting
+        // listeners. Read that exact state; never synthesize a message here.
+        let messages = agent.state.messages
+        guard ForkContext.hasCompleteToolResults(messages) else { return }
+        do {
+            try await log.writeHistorySnapshot(messages, anchors: anchors)
+        } catch {
+            await record(.error(message: "Unable to preserve this conversation boundary for future forks: \(error.localizedDescription)"))
         }
     }
 
@@ -183,6 +204,10 @@ extension AgentSession {
     /// be written leaves it as it was.
     private func replaceHistory(_ messages: [Message]) async throws {
         let before = agent.state.messages
+        // Refuse a destructive edit when the original context cannot be
+        // preserved. A later fork reads this version, not the edited one.
+        try await log.writeHistorySnapshot(before, anchors: anchors, seal: true)
+        try requireIdle()
         agent.state.messages = messages
         do {
             try await log.writeTranscript(messages)
@@ -228,12 +253,10 @@ extension AgentSession {
         return (index, anchor)
     }
 
-    /// A fork's events: the log up to the first message after `id`'s
-    /// turn, less messages queued there that no run took; a `finished`
-    /// when the turn was cut off without one; then the edits made later to
-    /// what it kept. Numbered from 1. Nil when no message has that id. The
-    /// app's own copy of the events is cut the same way (`ChatFork`), so a
-    /// reopened fork's replay is read past message for message.
+    /// Historical UI events through this turn's first finish or the next
+    /// prompt, without untaken queued messages or later maintenance. A
+    /// partial boundary gets an aborted finish. Numbered from 1; the app
+    /// replays this new log rather than cutting its current UI a second time.
     static func forkRecords(_ records: [SessionEventRecord], through id: UUID) -> [SessionEventRecord]? {
         guard let start = records.firstIndex(where: {
             if case let .userMessage(messageID, _, _) = $0.event { return messageID == id }
@@ -247,7 +270,14 @@ extension AgentSession {
                 return false
             }
         }
-        let end = records[(start + 1)...].firstIndex(where: startsTurn) ?? records.count
+        let next = records[(start + 1)...].firstIndex(where: startsTurn) ?? records.count
+        // Compaction, edits and other later maintenance are not part of
+        // the historical turn, even when no new prompt followed it yet.
+        let finished = records[(start + 1) ..< next].firstIndex {
+            if case .finished = $0.event { return true }
+            return false
+        }
+        let end = finished.map { $0 + 1 } ?? next
         var taken: Set<UUID> = []
         for record in records[..<end] {
             if case let .userMessage(messageID, _, _) = record.event {
@@ -265,17 +295,6 @@ extension AgentSession {
         }
         if !ended {
             kept.append(SessionEventRecord(seq: 0, date: kept.last?.date ?? Date(), event: .finished(reason: .aborted)))
-        }
-        for record in records[end...] {
-            switch record.event {
-            case let .messageEdited(messageID, _), let .replyEdited(messageID, _), let .replyDeleted(messageID),
-                 let .checkpointSaved(messageID):
-                if taken.contains(messageID) {
-                    kept.append(record)
-                }
-            default:
-                break
-            }
         }
         return kept.enumerated().map { offset, record in
             SessionEventRecord(seq: UInt64(offset + 1), date: record.date, event: record.event)

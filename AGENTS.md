@@ -1496,10 +1496,26 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   reader typed in it), or for one sent before anchors by its text; one a
   compaction summarised is refused. A reopened session's replay ends at a
   change of the history it has not seen, as at a compaction (`SessionReplay`).
-  `agentFork` writes a new session's folder from the source's log through
-  message `id`'s turn, cut as the app cuts its events (`ChatFork`,
-  `AgentSession.forkRecords`), so the fork's replay reads past message for
-  message; `gitCheckpointRestore` (the app's) writes the checkpoint's files
+  `agentFork` reads a saved model/UI context for message `id`, including
+  image bytes, untruncated tool results and provider metadata, rather than
+  reconstructing model messages from the visible log. `forks/<message-id>.json`
+  references immutable SHA-256 objects under `forks/objects/`; each completed
+  turn is sealed, so later edits, rewind and compaction cannot rewrite it.
+  The session captures complete model-message boundaries, then seals at run
+  end and before destructive edits/manual compaction. An outstanding tool
+  call cannot replace the last resumable boundary. A fork copies its selected
+  version and its ancestors' objects, so removing the source session does not
+  remove the fork's model context. A missing legacy snapshot is seeded only
+  from surviving messages, never invented from a truncated UI log.
+  The app starts the new session with an empty event projection and replays
+  its own log; historical events must not repeat business side effects.
+  General Chat, a picker for turns removed by rewind, and historical system
+  prompt/tool-configuration provenance are not implemented by this change.
+  `ForkContextTests` covers preservation and independent forks; the production
+  object store also has an on-device check at `Tests/HistoryObjects/Check.swift`.
+  Full verification still needs `make harness` on the supported Swift/Xcode
+  host and an installed-device check; the on-device object test is not an
+  end-to-end branching test. `gitCheckpointRestore` (the app's) writes the checkpoint's files
   back and removes the rest, ignored files left, after committing the work
   tree on `apelin-backup/checkpoint-<time>`. A failure kwwk
   kept as an NSError's whole `description` (`Error Domain=… Code=…

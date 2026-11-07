@@ -383,12 +383,13 @@ actor WorkerState {
             modelParameters: open.modelParameters,
         )
 
+        let boundary = try await session.replayBoundary()
         let events = try await session.events(afterSeq: 0)
         let relay = EventRelay(context: context, taskID: taskID)
         self.relay = Task { [weak self] in
             for await record in events {
-                await relay.relay(record.event)
-                if case let .finished(reason) = record.event {
+                await relay.relay(record.event, historical: record.seq <= boundary)
+                if record.seq > boundary, case let .finished(reason) = record.event {
                     await relay.flush()
                     await self?.runFinished(reason)
                 }
@@ -478,6 +479,7 @@ actor EventRelay {
     private var lastFlush = Date()
     private var flushScheduled = false
     private var waiting = 0
+    private var historical: Bool?
 
     init(context: WorkerContext, taskID: TaskID) {
         self.init { kind, payload in context.emit(taskID, kind, payload) }
@@ -488,7 +490,11 @@ actor EventRelay {
         self.emit = emit
     }
 
-    func relay(_ event: AgentSessionEvent) {
+    func relay(_ event: AgentSessionEvent, historical: Bool = false) {
+        if self.historical != nil, self.historical != historical {
+            flush()
+        }
+        self.historical = historical
         switch event {
         case let .textDelta(delta):
             text += delta
@@ -506,20 +512,33 @@ actor EventRelay {
             flush()
         }
         for (kind, payload) in Self.events(for: event, waiting: &waiting) {
-            emit(kind, payload)
+            emitEvent(kind, payload)
         }
+    }
+
+    private func emitEvent(_ kind: String, _ payload: ApelinCore.JSONValue?) {
+        var marked = payload
+        if historical == true {
+            if case var .object(values) = marked {
+                values["historical"] = .bool(true)
+                marked = .object(values)
+            } else {
+                marked = .object(["historical": .bool(true)])
+            }
+        }
+        emit(kind, marked)
     }
 
     func flush() {
         if !thinking.isEmpty {
-            emit("thinking", .object(["text": .string(thinking)]))
+            emitEvent("thinking", .object(["text": .string(thinking)]))
         }
         if !text.isEmpty {
-            emit("text", .object(["text": .string(text)]))
+            emitEvent("text", .object(["text": .string(text)]))
         }
         if let received {
             for (kind, payload) in Self.events(for: .received(tokens: received), waiting: &waiting) {
-                emit(kind, payload)
+                emitEvent(kind, payload)
             }
         }
         text = ""

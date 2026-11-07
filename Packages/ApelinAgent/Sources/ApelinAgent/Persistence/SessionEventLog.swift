@@ -218,6 +218,12 @@ public actor SessionEventLog {
         return stream
     }
 
+    /// The on-disk boundary a worker marks as historical when reopening.
+    public func replayBoundary() throws -> UInt64 {
+        try flush()
+        return nextSeq - 1
+    }
+
     /// Every record after `afterSeq`, read at once with the pending delta
     /// written first: for tests and small logs. A damaged line anywhere but
     /// last is an error here.

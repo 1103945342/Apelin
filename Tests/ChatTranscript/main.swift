@@ -1129,3 +1129,5 @@ checkForcePushCard()
 checkSquashCard()
 
 checkQuestionCard()
+
+checkChatForkHistory()

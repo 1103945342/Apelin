@@ -1,8 +1,8 @@
 import Foundation
 
-// A conversation's history changed by the reader, between runs: a message
-// taken back with everything after it, a message's or a reply's text
-// edited, a reply deleted, and a new conversation forked from a message.
+// A conversation's history changed by the reader: a message taken back
+// with everything after it, a message's or a reply's text edited, a reply
+// deleted, and a new conversation forked from a saved message boundary.
 // The app's alone (CallerPolicy names none of them for an agent).
 //
 // A message is named by the id its `prompt` event carries; a reply by the
@@ -77,9 +77,10 @@ public struct AgentDeleteReplyRequest: OperationRequest {
 }
 
 /// A new conversation `newSessionID` (a UUID the app chose, of no session
-/// yet) holding this one's history through the turn of `messageID`, with
-/// the edits made to it since. The source session writes it; the app opens
-/// it as it opens any saved session, with `agentOpen` naming it.
+/// yet) holding the saved model/UI context through `messageID`'s turn,
+/// without edits made after that boundary. Saved contexts remain available
+/// while the source runs or compacts. The app opens the new log with
+/// `agentOpen`, rather than cloning its current UI projection.
 public struct AgentForkRequest: OperationRequest {
     public typealias Response = Acknowledged
     public static let operation = AppOperation.agentFork

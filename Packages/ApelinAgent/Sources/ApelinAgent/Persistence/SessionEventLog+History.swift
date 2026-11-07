@@ -49,6 +49,8 @@ extension SessionEventLog {
         records: [SessionEventRecord],
         transcript: [Message],
         anchors: [String: HistoryAnchor],
+        historySource: URL,
+        through messageID: UUID,
     ) throws {
         guard isValidSessionID(metadata.id) else { throw SessionStoreError.invalidSessionID(metadata.id) }
         let encoder = historyEncoder()
@@ -62,6 +64,15 @@ extension SessionEventLog {
             attributes: [.posixPermissions: 0o700],
         )
         do {
+            let ids = Set(records.compactMap { record -> UUID? in
+                if case let .userMessage(id, _, _) = record.event { return id }
+                return nil
+            }).subtracting([messageID])
+            try copyForkHistory(from: historySource, to: folder, ids: ids)
+            try writeForkContext(
+                ForkContext(messages: transcript, records: records, anchors: anchors),
+                id: messageID, directory: folder,
+            )
             var events = Data()
             for record in records {
                 let line = try encoder.encode(record)

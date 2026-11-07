@@ -44,6 +44,30 @@ struct EventRelayTests {
     }
 
     @Test
+    func `historical and realtime streaming never share a coalesced event`() async throws {
+        let emitted = Emitted()
+        let relay = EventRelay { emitted.append($0, $1) }
+        await relay.relay(.textDelta("from snapshot"), historical: true)
+        await relay.relay(.textDelta("from live"), historical: false)
+        await relay.flush()
+
+        let payloads = emitted.payloads(of: "text")
+        let texts = payloads.compactMap { $0?["text"]?.stringValue }
+        #expect(texts == ["from snapshot", "from live"])
+        try #require(payloads.count == 2)
+        #expect(payloads[0]?["historical"]?.boolValue == true)
+        #expect(payloads[1]?["historical"] == nil)
+    }
+
+    @Test
+    func `historical events with no payload still carry the marker`() async {
+        let emitted = Emitted()
+        let relay = EventRelay { emitted.append($0, $1) }
+        await relay.relay(.messageStarted, historical: true)
+        #expect(emitted.payloads(of: "messageStarted").compactMap { $0 }.first?["historical"]?.boolValue == true)
+    }
+
+    @Test
     func `the received count goes out with the streamed text, only its latest and only when new`() async {
         let emitted = Emitted()
         let relay = EventRelay { emitted.append($0, $1) }
