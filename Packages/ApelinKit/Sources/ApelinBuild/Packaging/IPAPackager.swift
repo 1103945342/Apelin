@@ -185,7 +185,7 @@ enum ZipWriter {
         archive_entry_set_filetype(entry, numericCast(S_IFDIR))
         archive_entry_set_perm(entry, numericCast(0o755))
         archive_entry_set_size(entry, 0)
-        archive_entry_set_mtime(entry, modificationTime, 0)
+        archive_entry_set_mtime(entry, Int(modificationTime), 0)
         try status(archive_write_header(archive, entry), archive, "add \(name)")
     }
 
@@ -196,7 +196,7 @@ enum ZipWriter {
         }
         guard let entry = archive_entry_new() else { throw BuildFailure("libarchive: no memory for an entry") }
         defer { _ = archive_entry_free(entry) }
-        archive_entry_set_mtime(entry, modificationTime, 0)
+        archive_entry_set_mtime(entry, Int(modificationTime), 0)
 
         switch metadata.st_mode & S_IFMT {
         case S_IFDIR:
