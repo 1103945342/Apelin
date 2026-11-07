@@ -1,5 +1,6 @@
 import AlertController
 import ApelinCore
+import QuickLook
 import SnapKit
 import Then
 import UIKit
@@ -276,10 +277,28 @@ final class SidebarFilesController: UIViewController {
         // A file opened from a content search opens on the word it was found
         // by, marked wherever it appears.
         let highlight = contentHitsByPath[relativePath] == nil ? nil : contentNeedle
-        // The page is read before it is shown: a sheet that opens before its
-        // text is ready flashes a blank page, which at night is a white one.
+        // Read first to distinguish text by its contents rather than by its
+        // extension: source files without a registered UTI still use the
+        // editor, while images, audio, video and documents go to Quick Look.
         Task { [weak self] in
             guard let self else { return }
+            let isText = (try? await Task.detached(priority: .userInitiated) {
+                try ProjectFileContent.read(at: url)
+            }.value) != nil
+            guard isText else {
+                guard QLPreviewController.canPreview(url as NSURL) else {
+                    presentNotice(
+                        title: "Unable to Open File",
+                        message: String(localized: "The file could not be read."),
+                    )
+                    return
+                }
+                let preview = ProjectFilePreviewController(url: url)
+                onPresent?(preview)
+                return
+            }
+            // The page is read before it is shown: a sheet that opens before
+            // its text is ready flashes a blank page, which at night is white.
             guard let editor = await FileEditorController.prepare(
                 url: url,
                 relativePath: relativePath,
