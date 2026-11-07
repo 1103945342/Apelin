@@ -157,7 +157,7 @@ final class SidebarWorkspacesController: UIViewController {
         cell.accessoryView = runningChip(for: row)
         // A row the reader can act on from a long press; the swipes carry
         // the two destructive ones.
-        cell.accessibilityValue = cell.accessoryView == nil ? nil : String(localized: "Working")
+        cell.accessibilityValue = cell.accessoryView?.accessibilityLabel
         cell.configurationUpdateHandler = { cell, state in
             var background = UIBackgroundConfiguration.listGroupedCell().updated(for: state)
             if state.isSelected || state.isHighlighted {
@@ -183,20 +183,24 @@ final class SidebarWorkspacesController: UIViewController {
         }
         let count = chats.filter { $0.projectName == name && $0.isWorking }.count
         guard count > 0 else { return nil }
-        let label = UILabel().then {
-            $0.text = "\(count)"
-            $0.font = UIFont.preferredFont(forTextStyle: .caption2)
-            $0.textColor = .secondaryLabel
-        }
-        let capsule = UIView().then {
-            $0.backgroundColor = .quaternarySystemFill
-            $0.layer.cornerRadius = 9
-            $0.layer.cornerCurve = .continuous
-        }
+        let label = UILabel()
+        label.text = "\(count)"
+        label.font = UIFont.preferredFont(forTextStyle: .caption1)
+        label.textColor = .label
+        label.textAlignment = .center
+        label.sizeToFit()
+        let height = max(22, ceil(label.bounds.height) + 4)
+        let width = max(height, ceil(label.bounds.width) + 14)
+        // UITableView sizes an accessory from its frame, not constraints
+        // inside a zero-sized container. Reserve room for every digit.
+        let capsule = UIView(frame: CGRect(x: 0, y: 0, width: width, height: height))
+        capsule.backgroundColor = .tertiarySystemFill
+        capsule.layer.cornerRadius = height / 2
+        capsule.layer.cornerCurve = .continuous
+        label.frame = capsule.bounds
+        label.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         capsule.addSubview(label)
-        label.snp.makeConstraints { x in
-            x.edges.equalToSuperview().inset(UIEdgeInsets(top: 1, left: 7, bottom: 1, right: 7))
-        }
+        capsule.isAccessibilityElement = true
         capsule.accessibilityLabel = String(localized: "\(count) working")
         return capsule
     }
