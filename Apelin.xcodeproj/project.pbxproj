@@ -1298,7 +1298,7 @@
 			repositoryURL = "https://github.com/1103945342/LiquidGlassKit.git";
 			requirement = {
 				kind = revision;
-				revision = 2eb41c5d0115d23179d7a3eb133cb07bac7bb7d8;
+				revision = 3beadda9f4b8ae77c3a0e5685ea32a19c9e73e4f;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

@@ -4269,7 +4269,7 @@ fragment. The chat's ListViewKit keeps its own update mechanism.
 
 `GlassSurfaceView` uses the owner's fork,
 `https://github.com/1103945342/LiquidGlassKit.git`, pinned to
-`2eb41c5d0115d23179d7a3eb133cb07bac7bb7d8`. The dependency is linked by the
+`3beadda9f4b8ae77c3a0e5685ea32a19c9e73e4f`. The dependency is linked by the
 app target only. It replaces the application-owned legacy refraction path:
 maintaining capture and shader code here has already required a rewrite, while
 this library supplies the rounded effect behind a small UIKit adapter. Do not
@@ -4282,11 +4282,14 @@ and uses an opaque surface. Controls remain siblings above the background.
 The adapter pauses the library's Metal views before replacing/removing them.
 This is integration code, not proof of pixel output or frame pacing.
 
-The pinned fork has no LICENSE file. Its copyright notice is not a reviewed
-license, and no license has been invented or substituted in this repository.
-Keep Collect Licenses and Licenses/review.json unchanged for this dependency
-until an actual authorization text can be reviewed. The Xcode package resource
-bundle and shader loading also require verification in a full build; the
+The pinned fork carries a `NOTICE` (added by its owner) recording that it is a
+fork of Alexey Demin's LiquidGlassKit, that upstream shipped no license text,
+and that the file grants nothing. That notice is the dependency's entry in
+`Licenses/review.json` (`liquidglasskit/NOTICE`, text hash recorded), which is
+what the Collect Licenses phase requires of every pin; keep the hash in step
+with the file. Do not replace it with an invented license and do not relicense
+upstream code. The Xcode package resource
+bundle and shader loading still require verification in a full build; the
 manifest does not explicitly declare resources, which alone is not proof that
 Xcode's Metal resource handling fails.
 
