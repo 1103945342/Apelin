@@ -241,8 +241,14 @@ final class SidebarController: UIViewController {
     func delete(_ id: UUID, from origin: ChatDeletion.Origin, presenter: UIViewController? = nil) {
         sessions.delete(id, from: origin, presenter: presenter ?? self) { [weak self] in
             guard let self, selectedID == id else { return }
-            selectedID = nil
-            onSelect?(nil, false)
+            // Deleting a conversation leaves the reader in the workspace's
+            // latest one that is still there. An empty conversation is made
+            // only when none is left to show: a delete should not put a row
+            // back into the list it was just taken out of.
+            let next = SidebarOrder.newest(sessions.summaries.filter { $0.id != id })
+            selectedID = next?.id
+            if let next { sessions.select(next) }
+            onSelect?(next, false)
         }
     }
 
