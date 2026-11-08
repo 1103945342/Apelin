@@ -94,6 +94,15 @@ jobs:
           tail -n 60 resolve.log
           exit "$status"
 
+      - name: Keep the resolve log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resolve-log-${{ github.sha }}
+          path: resolve.log
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Build and package
         shell: bash
         env:
