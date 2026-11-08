@@ -137,7 +137,7 @@ public enum AgentWorker {
             }
         case .agentCompact:
             await WorkerMain.serve(AgentCompactRequest.self, request) { compact in
-                let session = state.session(compact.sessionID)
+                let session = try await state.session(compact.sessionID)
                 await session.setModelDefaults(compact.modelDefaults)
                 try await session.compact()
                 return Acknowledged()

@@ -19,11 +19,11 @@ public extension ChannelHostBackend {
                 projectName: target.name.rawValue,
                 provider: choice.provider,
                 model: choice.model,
+                modelDefaults: modelDefaults,
                 approvalMode: .confirm,
                 reasoningEffort: choice.reasoningEffort,
                 serviceTier: choice.serviceTier,
                 modelParameters: choice.modelParameters,
-                modelDefaults: modelDefaults,
                 prompt: request.prompt,
                 title: request.title,
             ))
