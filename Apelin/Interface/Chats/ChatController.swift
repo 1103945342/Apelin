@@ -849,6 +849,7 @@ final class ChatController: UIViewController {
                     ComposerChoiceSheet.Choice(
                         title: model,
                         isSelected: account.provider == selected?.provider && model == selected?.model,
+                        modelTest: AgentModelTestRequest(provider: account.provider, model: model),
                     ) { ComposerModelSelection.choose(Self.selection(of: model, in: account), for: id) }
                 },
             )

@@ -1,3 +1,4 @@
+import ApelinProtocol
 import SnapKit
 import UIKit
 
@@ -19,6 +20,8 @@ final class ComposerChoiceSheet: UIViewController {
         /// The one the row is set to, marked with a filled circle and spoken
         /// as selected.
         var isSelected: Bool
+        /// Present a test without choosing the model or closing this picker.
+        var modelTest: AgentModelTestRequest? = nil
         var handler: () -> Void
     }
 
@@ -89,6 +92,17 @@ final class ComposerChoiceSheet: UIViewController {
             }
             for choice in group.choices {
                 let row = ChoiceRow(title: choice.title, detail: choice.subtitle, chosen: choice.isSelected)
+                if let request = choice.modelTest {
+                    row.configureTestAction { [weak self] in
+                        guard let self, presentedViewController == nil else { return }
+                        let result = ModelConnectivityController(request: request)
+                        let navigation = SheetNavigationController(rootViewController: result)
+                        // A direct request is bounded by the worker. Do not
+                        // imply closing a local task cancels an XPC request.
+                        navigation.isModalInPresentation = true
+                        presentAsFormSheet(navigation)
+                    }
+                }
                 let handler = choice.handler
                 row.addAction(UIAction { [weak self] _ in
                     self?.dismiss(animated: true) { handler() }
@@ -169,6 +183,8 @@ private final class ChoiceRow: UIControl {
     private let titleLabel = UILabel()
     private let detailLabel = UILabel()
     private let check = UIImageView()
+    private let testButton = UIButton(type: .system)
+    @objc private dynamic var testAction: (() -> Void)?
     private static let inset = UIEdgeInsets(top: 12, left: 14, bottom: 12, right: 14)
     private static let checkSize: CGFloat = 22
 
@@ -211,8 +227,40 @@ private final class ChoiceRow: UIControl {
         didSet { alpha = isHighlighted ? 0.6 : 1 }
     }
 
-    private func textWidth(for width: CGFloat) -> CGFloat {
-        max(1, width - Self.inset.left - Self.inset.right - Self.checkSize - 10)
+    /// The parent is one spoken choice. VoiceOver reaches the secondary
+    /// button through a custom action instead of hiding it behind that label.
+    @objc dynamic func configureTestAction(_ action: @escaping () -> Void) {
+        testAction = action
+        testButton.setTitle(String(localized: "Test"), for: .normal)
+        testButton.titleLabel?.font = .preferredFont(forTextStyle: .body)
+        testButton.titleLabel?.adjustsFontForContentSizeCategory = true
+        testButton.accessibilityLabel = String(localized: "Test Connectivity")
+        testButton.accessibilityElementsHidden = true
+        testButton.addAction(UIAction { [weak self] _ in self?.performTest() }, for: .touchUpInside)
+        addSubview(testButton)
+        accessibilityCustomActions = [UIAccessibilityCustomAction(
+            name: String(localized: "Test Connectivity"),
+            actionHandler: { [weak self] _ in
+                guard let self else { return false }
+                performTest()
+                return true
+            },
+        )]
+        setNeedsLayout()
+    }
+
+    @objc private dynamic func performTest() {
+        testAction?()
+    }
+
+    @objc private dynamic func testWidth(for width: CGFloat) -> CGFloat {
+        guard testAction != nil else { return 0 }
+        return max(44, min(width * 0.4, ceil(testButton.intrinsicContentSize.width) + 12))
+    }
+
+    @objc private dynamic func textWidth(for width: CGFloat) -> CGFloat {
+        let test = testWidth(for: width)
+        return max(1, width - Self.inset.left - Self.inset.right - Self.checkSize - 10 - (test > 0 ? test + 8 : 0))
     }
 
     override func sizeThatFits(_ size: CGSize) -> CGSize {
@@ -221,7 +269,8 @@ private final class ChoiceRow: UIControl {
         if !detailLabel.isHidden {
             height += 2 + ceil(detailLabel.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height)
         }
-        return CGSize(width: size.width, height: max(44, height + Self.inset.top + Self.inset.bottom))
+        let testHeight = testAction == nil ? 0 : testButton.intrinsicContentSize.height + 16
+        return CGSize(width: size.width, height: max(44, testHeight, height + Self.inset.top + Self.inset.bottom))
     }
 
     override func layoutSubviews() {
@@ -236,10 +285,21 @@ private final class ChoiceRow: UIControl {
             width: Self.checkSize,
             height: Self.checkSize,
         )
+        let testWidth = testWidth(for: bounds.width)
+        testButton.frame = CGRect(
+            x: bounds.width - Self.inset.right - testWidth,
+            y: 0, width: testWidth, height: bounds.height,
+        )
         y += titleHeight
-        guard !detailLabel.isHidden else { return }
-        let detailHeight = ceil(detailLabel.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height)
-        y += 2
-        detailLabel.frame = CGRect(x: titleLabel.frame.minX, y: y, width: width, height: detailHeight)
+        if !detailLabel.isHidden {
+            let detailHeight = ceil(detailLabel.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height)
+            y += 2
+            detailLabel.frame = CGRect(x: titleLabel.frame.minX, y: y, width: width, height: detailHeight)
+        }
+        if effectiveUserInterfaceLayoutDirection == .rightToLeft {
+            for view in [check, titleLabel, detailLabel, testButton] {
+                view.frame.origin.x = bounds.width - view.frame.maxX
+            }
+        }
     }
 }

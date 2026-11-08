@@ -183,6 +183,13 @@ public enum AgentWorker {
                 let home = URL(fileURLWithPath: context.assignment.home, isDirectory: true)
                 return SkillCatalog.listing(userDirectory: ApelinDataRoot(home: home).skills)
             }
+        case .agentModelTest:
+            await WorkerMain.serve(AgentModelTestRequest.self, request) { query in
+                await AgentModelTester.run(
+                    query,
+                    credentials: KeychainCredentialSource(accessGroup: keychainAccessGroup),
+                )
+            }
         case .agentRewritePrompt:
             await WorkerMain.serve(AgentRewritePromptRequest.self, request) { query in
                 try await PromptRewriter.rewrite(

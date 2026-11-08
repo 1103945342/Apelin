@@ -76,6 +76,8 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
     /// Rewrites a composer draft: one turn of the chosen model, with no
     /// session and no tools, asked to improve the text and answer with it.
     case agentRewritePrompt
+    /// A connectivity probe: exactly one user `Hi`, no session history or tools.
+    case agentModelTest
     case agentAPIConfiguration
     case agentModelList
     case agentModelActivate
@@ -174,7 +176,7 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .confirmLoaded, .confirmLoadedAttach, .captureScreen, .readUITree, .uiAction: .diagnostics
         case .agentOpen, .agentPrompt, .agentSteer, .agentAbort, .agentCompact, .agentApprove, .agentAttach, .agentList,
              .agentClose, .agentRunCode, .agentCredentialImport, .agentAccountList, .agentSkillList,
-             .agentRewritePrompt,
+             .agentRewritePrompt, .agentModelTest,
              .agentAPIConfiguration, .agentModelList,
              .agentModelActivate, .agentSignIn, .agentSignInRespond, .agentSignInCancel, .agentSignOut,
              .agentRewind, .agentEditMessage, .agentDeleteReply, .agentFork:
@@ -256,6 +258,7 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .agentAccountList: AgentAccountListRequest.self
         case .agentSkillList: AgentSkillListRequest.self
         case .agentRewritePrompt: AgentRewritePromptRequest.self
+        case .agentModelTest: AgentModelTestRequest.self
         case .agentAPIConfiguration: AgentAPIConfigurationRequest.self
         case .agentModelList: AgentModelListRequest.self
         case .agentModelActivate: AgentModelActivateRequest.self

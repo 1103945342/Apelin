@@ -161,6 +161,10 @@ final class ServiceTableTests: XCTestCase {
             return Row(reply: AgentSkillListResponse(skills: [
                 AgentSkill(name: "example", description: "An example.", source: .builtIn, body: "Do it."),
             ])) { _ = try await $0.agentSkillList() }
+        case .agentModelTest:
+            return Row(reply: AgentModelTestResponse(success: true, text: "Hello")) {
+                _ = try await $0.agentModelTest(AgentModelTestRequest(provider: .anthropic, model: "test"))
+            }
         case .agentRewritePrompt:
             return Row(reply: AgentRewritePromptResponse(text: "Rewritten.")) {
                 _ = try await $0.agentRewritePrompt(text: "Original.", provider: nil, model: nil)

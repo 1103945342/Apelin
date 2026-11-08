@@ -335,7 +335,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `crashOpen`, `crashSymbolicate`; `confirmLoaded`, `confirmLoadedAttach`, `captureScreen`,
   `readUITree`, `uiAction`; `agentOpen`, `agentPrompt`, `agentSteer`,
   `agentAbort`, `agentCompact`, `agentApprove`, `agentAttach`, `agentList`, `agentClose`,
-  `agentRunCode`, `agentCredentialImport`, `agentAccountList`, `agentSkillList`, `agentAPIConfiguration`, `agentModelList`, `agentModelActivate`, `agentSignIn`,
+  `agentRunCode`, `agentCredentialImport`, `agentAccountList`, `agentSkillList`, `agentAPIConfiguration`, `agentModelList`, `agentModelTest`, `agentModelActivate`, `agentSignIn`,
   `agentSignInRespond`, `agentSignInCancel`, `agentSignOut`, `agentRewind`, `agentEditMessage`,
   `agentDeleteReply`, `agentFork`; `toolHostOpen`, `toolHostClose`,
   `toolHostCall`;
@@ -2277,9 +2277,32 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   Anthropic-compatible endpoint maps to the DeepSeek model family, not the
   Claude catalog; API-key discovery reads the endpoint's model-list API.
   `EnabledModels` owns only local, non-secret selections and custom IDs;
-  sign-out clears them. The chat picker is an uncached deferred context
-  menu reading enabled IDs only, and opens
-  Model Providers when there are none. API-key model IDs need not occur in
+  sign-out clears them. The chat picker's sheet reads enabled IDs afresh at
+  each opening and opens Model Providers when there are none. Each model row
+  has a trailing Test button (also a VoiceOver custom action); it opens
+  `ModelConnectivityController` without choosing the model or dismissing the
+  picker. `agentModelTest` is app-only and goes to the credential worker, not
+  a conversation: one user `Hi`, no system prompt, history or tools. Providers
+  whose transport cannot avoid adding instructions fail explicitly before a
+  model request rather than silently changing that contract. The result page
+  shows success/failure, stage durations, first-event and first-text latency,
+  total time, reply and any thinking, and a sanitized failure reason. A stage
+  never reached is shown as such, not as zero. These are SDK/request timings,
+  not DNS, TCP or TLS measurements. Results are selectable and stay only in
+  that page; no conversation is created. The worker bounds its probe at 60 s;
+  the app's IPC bound for this operation is 80 s so it does not discard the
+  final report at the ordinary 20 s limit. The result sheet stays open while
+  testing (a local Task cancellation would not cancel an XPC request).
+  `Tests/ModelConnectivity/check.py --ios --entitlements build/Tool.entitlements`
+  compiles and signs the standalone report regression on-device (the entitlement
+  file comes from the device-executables skill). It uses the production report
+  and wire values, with only trailing call commas removed for Swift 5.10, and
+  checks stage timing, partial replies, empty replies, cancellation and deadline
+  races. It does not test the SDK transports or replace `make check`.
+  `ModelConnectivityTests` in ApelinAgentWorkerTests covers the pure-Hi context,
+  optional settings, local-start filtering, missing credentials, blocked prompt
+  providers and failure redaction; run it with the package suite on the CI toolchain.
+  API-key model IDs need not occur in
   kwwk's static catalog; OAuth IDs remain restricted to that provider's list.
   Each login is an `AgentProvider` case kept
   under one store id (`AgentProvider.storeID`), with kwwk's own flows:
