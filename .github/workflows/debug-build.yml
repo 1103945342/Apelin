@@ -63,7 +63,11 @@ jobs:
       - name: Restore SwiftPM cache
         uses: actions/cache@v4
         with:
-          path: ${{ runner.temp }}/apelin-spm
+          # Xcode keeps its clones in the derived data folder it is given,
+          # and `collect-licenses` reads them from there: the cache follows
+          # that path rather than moving the clones somewhere the build's
+          # license step cannot find them.
+          path: ${{ runner.temp }}/apelin-${{ github.run_id }}-${{ github.run_attempt }}/SourcePackages
           key: spm-${{ runner.os }}-${{ hashFiles('Apelin.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
           restore-keys: |
             spm-${{ runner.os }}-
@@ -71,17 +75,18 @@ jobs:
       - name: Resolve package dependencies
         shell: bash
         env:
-          SPMPATH: ${{ runner.temp }}/apelin-spm
+          DERIVED_DATA: ${{ runner.temp }}/apelin-${{ github.run_id }}-${{ github.run_attempt }}
         run: |
           set -uo pipefail
-          mkdir -p "$SPMPATH"
           # Resolving on its own first, so a dependency failure names its
           # cause here instead of surfacing as a bare "Could not resolve
-          # package dependencies" in the middle of the build. The full log
-          # goes to the step summary, which a run keeps.
+          # package dependencies" in the middle of the build. The same derived
+          # data the build uses, since that is where the clones belong. The
+          # full log goes to the step summary, which a run keeps.
+          mkdir -p "$DERIVED_DATA"
           status=0
           xcodebuild -resolvePackageDependencies \
-              -clonedSourcePackagesDirPath "$SPMPATH" \
+              -derivedDataPath "$DERIVED_DATA" \
               -project Apelin.xcodeproj -scheme Apelin >resolve.log 2>&1 || status=$?
           if [[ "$status" -eq 0 ]]; then
             tail -n 20 resolve.log
@@ -105,8 +110,6 @@ jobs:
 
       - name: Build and package
         shell: bash
-        env:
-          CLONED_SOURCE_PACKAGES: ${{ runner.temp }}/apelin-spm
         run: |
           set -euo pipefail
           make deb FLAVOR="${{ github.event.inputs.bootstrap || 'roothide' }}" CONFIGURATION=Release SKIP_HARNESS=1 \
