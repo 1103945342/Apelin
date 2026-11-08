@@ -79,13 +79,14 @@ jobs:
           # cause here instead of surfacing as a bare "Could not resolve
           # package dependencies" in the middle of the build. The full log
           # goes to the step summary, which a run keeps.
-          if xcodebuild -resolvePackageDependencies \
+          status=0
+          xcodebuild -resolvePackageDependencies \
               -clonedSourcePackagesDirPath "$SPMPATH" \
-              -project Apelin.xcodeproj -scheme Apelin >resolve.log 2>&1; then
+              -project Apelin.xcodeproj -scheme Apelin >resolve.log 2>&1 || status=$?
+          if [[ "$status" -eq 0 ]]; then
             tail -n 20 resolve.log
             exit 0
           fi
-          status=$?
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           tail -n 120 resolve.log >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
