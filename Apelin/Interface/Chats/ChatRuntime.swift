@@ -494,11 +494,8 @@ final class ChatRuntime {
             return
         } catch let error as ApelinError where error.code == .timeout {
             // No answer: the run may still be going, so the row stays as it
-            // is; the reason says which it was.
-            throw ApelinError(
-                .timeout,
-                String(localized: "Apelin's background service did not answer, so the stop could not be sent. The reply may still be coming."),
-            )
+            // is; keep the existing localized timeout message.
+            throw error
         }
     }
 
