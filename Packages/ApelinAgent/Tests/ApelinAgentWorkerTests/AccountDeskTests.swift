@@ -821,11 +821,11 @@ struct AccountDeskTests {
         }
     }
 
-    /// kwwk's refreshers for the sessions, with Kimi's given an identity:
-    /// every login that renews itself, and Devin's.
+    /// Every renewing login remains supported, but a session constructs
+    /// only the selected account's refresher (and none for API keys).
     @Test
     func `sessions refresh every renewing login without kwwk's files`() {
-        let ids = Set(KimiIdentity.refreshers().map(\.id))
+        let ids = Set(AgentProvider.allCases.flatMap { KimiIdentity.refreshers(for: $0.storeID).map(\.id) })
         #expect(ids.isSuperset(of: OAuthSubscriptions.refreshedIds))
         #expect(ids.contains("devin"))
     }

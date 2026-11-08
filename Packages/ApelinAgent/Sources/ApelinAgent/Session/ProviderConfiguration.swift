@@ -94,8 +94,11 @@ public enum ProviderResolver {
     public static func resolve(
         _ configuration: ProviderConfiguration,
         credentials: any CredentialSource,
+        diagnostic: @Sendable (String) -> Void = { _ in },
     ) async throws -> ResolvedProvider {
+        let reading = Date()
         let stored = try await storedCredentials(configuration, in: credentials)
+        diagnostic("provider credentials read in \(elapsed(since: reading))")
         guard let storeID = configuration.storeID else {
             if case let .registered(model) = configuration {
                 return ResolvedProvider(model: model, authResolver: nil)
@@ -103,9 +106,12 @@ public enum ProviderResolver {
             preconditionFailure("unreachable")
         }
         // OAuthManager(source:) keeps refreshed tokens in its own memory and
-        // never writes them anywhere. Its refreshers are kwwk's own, with
-        // Kimi's given an identity so that it never reaches for ~/.kwwk.
-        let manager = OAuthManager(source: credentials, providers: KimiIdentity.refreshers())
+        // never writes them anywhere. Only this account's refresher is made;
+        // API keys need none, and Kimi's identity never reaches for ~/.kwwk.
+        let preparing = Date()
+        let manager = OAuthManager(source: credentials, providers: KimiIdentity.refreshers(for: storeID))
+        diagnostic("provider refreshers prepared in \(elapsed(since: preparing))")
+        let registering = Date()
         guard let resolved = try await ProviderRegistration.resolve(
             storeID: storeID,
             manager: manager,
@@ -113,7 +119,12 @@ public enum ProviderResolver {
         ) else {
             throw ProviderResolutionError.missingCredentials(storeID)
         }
+        diagnostic("provider registered in \(elapsed(since: registering))")
         return ResolvedProvider(model: resolved.model, authResolver: resolved.authResolver, credentials: stored)
+    }
+
+    private static func elapsed(since start: Date) -> String {
+        "\(Int(Date().timeIntervalSince(start) * 1000)) ms"
     }
 
     /// The stored sign-in `configuration` needs, nil for one that needs

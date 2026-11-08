@@ -166,7 +166,11 @@ public actor AgentSession {
         let resolving = Date()
         let resolved: ResolvedProvider
         do {
-            resolved = try await ProviderResolver.resolve(configuration.provider, credentials: credentials)
+            resolved = try await ProviderResolver.resolve(
+                configuration.provider,
+                credentials: credentials,
+                diagnostic: { journal.startup($0) },
+            )
         } catch {
             journal.sessionOpenFailed(error)
             throw error
@@ -198,13 +202,14 @@ public actor AgentSession {
             record: { _ = try await log.append($0) },
             journal: journal,
         )
+        let connecting = Date()
         let (mcpManager, mcpTools) = await MCPBridge.connect(configuration.mcpServers)
-        journal.startup("tool extensions and MCP: \(Self.milliseconds(since: resolving))")
         let toolExtensions = ToolExtensionOffer.read(
             installRoot: configuration.installRoot,
             policy: configuration.toolExtensionPolicy,
         )
         toolExtensions.logLeftOut()
+        journal.startup("tool extensions and MCP: \(Self.milliseconds(since: connecting))")
         let skills = SkillCatalog.load(userDirectory: configuration.dataRoot.skills)
         let snapshot = PromptState.read(
             configuration,

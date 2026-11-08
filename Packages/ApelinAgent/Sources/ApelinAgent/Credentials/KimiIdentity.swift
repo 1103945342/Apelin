@@ -1,3 +1,4 @@
+import ApelinCore
 import Foundation
 import KWWKAI
 
@@ -15,12 +16,35 @@ public enum KimiIdentity {
     public static let deviceIDExtra = "deviceId"
 
     /// The identity a sign-in or a refresh sends: the recorded id, else a
-    /// new one.
+    /// new one. Only local system information is read: kwwk's `.host()`
+    /// calls ProcessInfo.hostName, which can block on name resolution.
     public static func identity(recordedIn credentials: OAuthCredentials?) -> KimiDeviceIdentity {
+        let deviceID: String
         if case let .string(recorded)? = credentials?.extras[deviceIDExtra], !recorded.isEmpty {
-            return .host(deviceId: recorded)
+            deviceID = recorded
+        } else {
+            deviceID = newDeviceID()
         }
-        return .host(deviceId: newDeviceID())
+        #if os(iOS)
+            let system = "iOS"
+        #elseif os(macOS)
+            let system = "macOS"
+        #else
+            let system = "unknown"
+        #endif
+        #if arch(arm64)
+            let architecture = "arm64"
+        #elseif arch(x86_64)
+            let architecture = "x86_64"
+        #else
+            let architecture = "unknown"
+        #endif
+        return KimiDeviceIdentity(
+            deviceId: deviceID,
+            deviceName: PrivateShapes.currentHostName() ?? "Apelin",
+            deviceModel: "\(system) \(architecture)",
+            osVersion: ProcessInfo.processInfo.operatingSystemVersionString
+        )
     }
 
     /// 32 lowercase hex digits, as kwwk makes its own.
@@ -28,10 +52,17 @@ public enum KimiIdentity {
         UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased()
     }
 
-    /// kwwk's refreshers, with Kimi's given an identity of its own (the
-    /// recorded id still wins), and Devin's, which renews nothing but has to
-    /// be known by id: `OAuthManager.defaultProviders()` without the file.
-    public static func refreshers() -> [any OAuthProvider] {
-        OAuthSubscriptions.refreshers(kimiIdentity: .host(deviceId: newDeviceID())) + [DevinOAuthProvider()]
+    /// Only the selected account's refresher. Constructing every provider
+    /// also constructed Kimi's device identity for API keys such as OpenAI.
+    /// Devin renews nothing but OAuthManager still needs to know its id.
+    public static func refreshers(for providerID: String) -> [any OAuthProvider] {
+        if providerID == "devin" {
+            return [DevinOAuthProvider()]
+        }
+        let kimiIdentity = KimiSite.site(id: providerID) == nil ? nil : identity(recordedIn: nil)
+        guard let refresher = OAuthSubscriptions.refresher(providerId: providerID, kimiIdentity: kimiIdentity) else {
+            return []
+        }
+        return [refresher]
     }
 }

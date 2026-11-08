@@ -2294,7 +2294,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   which kwwk finds the account's Code Assist project, onboarding a new
   account and polling until Google has set it up, and keeps the project,
   the tier and, when Google names it, the email as extras; it renews at Google (`upkeep: .refreshed`, in
-  `KimiIdentity.refreshers()` with the rest) and answers through Code
+  `KimiIdentity.refreshers(for:)` for that account) and answers through Code
   Assist's `streamGenerateContent`. A free Google account signs in too;
   which models a plan serves is Google's. Apelin adds the case, after
   Cursor in the order, and its mark (its official logo on a white plate):
@@ -2317,7 +2317,15 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   (`deviceId`), a sign-in again reuses the recorded one, a first one makes a
   new one (`KimiIdentity`), and neither the sign-in nor a session's refresh
   ever reaches kwwk's `~/.kwwk/kimi-device-id` (sessions build their
-  `OAuthManager` with `KimiIdentity.refreshers()`). Sessions can use every
+  `OAuthManager` with `KimiIdentity.refreshers(for:)`). A session constructs
+  only its selected account's refresher; API keys construct none. Kimi's
+  identity reads the local name through `gethostname` (`PrivateShapes`),
+  never `ProcessInfo.hostName`, which may wait for network name resolution.
+  Provider startup logs time credential reads, refresher preparation and
+  registration separately; the extensions/MCP timer begins after provider
+  resolution, so it never includes that earlier wait. `ProviderStartupTests`
+  covers the per-account refresher set and recorded/new Kimi device ids.
+  Sessions can use every
   provider: the first four keep their `ProviderConfiguration` cases, every
   other is `.stored(storeID:, model:)`. `ProviderRegistration` is shared
   by account verification and conversations: it uses kwwk's registration
