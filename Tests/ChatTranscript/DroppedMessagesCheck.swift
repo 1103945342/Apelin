@@ -58,5 +58,11 @@ func checkDroppedMessages() {
                  "a message queued twice under one id goes back once")
     precondition(DroppedMessages.returning([UUID()], from: events, to: typed, attachment: read) == nil,
                  "an id no queued message has puts nothing back")
+    let remoteID = UUID()
+    let remote = event(6, "queued", ["id": .string(remoteID.uuidString), "from": .string("other-chat"), "text": .string("Agent task")])
+    precondition(DroppedMessages.returning([remoteID], from: [remote], to: typed, attachment: read) == nil,
+                 "another conversation's follow-up is never returned to the reader's composer")
+    let mixed = DroppedMessages.returning([first, remoteID], from: events + [remote], to: typed, attachment: read)
+    precondition(mixed?.draft.text == "Build it\n\nTyped later" && mixed?.messages == 1)
     print("ok: dropped queued messages go back to the composer with their files, ahead of what was typed since")
 }

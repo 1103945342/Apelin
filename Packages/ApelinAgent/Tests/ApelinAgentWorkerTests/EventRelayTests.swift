@@ -60,6 +60,27 @@ struct EventRelayTests {
     }
 
     @Test
+    func `conversation queue and acceptance keep the same source and identity`() async {
+        let emitted = Emitted()
+        let relay = EventRelay { emitted.append($0, $1) }
+        let id = UUID()
+        await relay.relay(.conversationMessageQueued(id: id, text: "Review", from: "reviewer"), historical: true)
+        await relay.relay(.conversationMessageTaken(id: id, text: "Review", from: "reviewer"), historical: true)
+        await relay.relay(.conversationMessagesDropped(ids: [id]), historical: false)
+        #expect(emitted.kinds == ["queued", "prompt", "queueDropped"])
+        for kind in ["queued", "prompt"] {
+            let payload = emitted.payloads(of: kind).compactMap { $0 }.first
+            #expect(payload?["id"]?.stringValue == id.uuidString)
+            #expect(payload?["from"]?.stringValue == "reviewer")
+            #expect(payload?["text"]?.stringValue == "Review")
+            #expect(payload?["historical"]?.boolValue == true)
+        }
+        let dropped = emitted.payloads(of: "queueDropped").compactMap { $0 }.first
+        #expect(dropped?["ids"] == .array([.string(id.uuidString)]))
+        #expect(dropped?["historical"] == nil)
+    }
+
+    @Test
     func `historical events with no payload still carry the marker`() async {
         let emitted = Emitted()
         let relay = EventRelay { emitted.append($0, $1) }

@@ -27,7 +27,7 @@ enum DroppedMessages {
         var remaining = ids
         var parts: [ComposerDraft] = []
         var leftOut = 0
-        for event in events where event.kind == "queued" {
+        for event in events where event.kind == "queued" && event.payload?["from"]?.stringValue == nil {
             guard let id = ChatTranscript.userMessageID(of: event), remaining.remove(id) != nil else { continue }
             let saved = ChatTranscript.attachments(in: event.payload?["attachments"])
             let files = saved.compactMap(attachment)

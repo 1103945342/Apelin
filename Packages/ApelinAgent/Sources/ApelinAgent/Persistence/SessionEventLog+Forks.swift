@@ -10,6 +10,46 @@ struct ForkContext: Sendable {
     var records: [SessionEventRecord]
     var anchors: [String: HistoryAnchor]
 
+    /// Only an unfinished suffix may be discarded after an explicit stop.
+    /// A missing result in the middle, an orphan result or a duplicate call
+    /// is damage, not cancellation. Keep whole call batches: a partial batch
+    /// cannot be resumed even when some of its tools already returned.
+    static func completePrefix(of messages: [Message]) throws -> [Message] {
+        var outstanding: Set<String> = []
+        var boundary = 0
+        for (index, message) in messages.enumerated() {
+            switch message {
+            case let .assistant(assistant):
+                if !outstanding.isEmpty, index == messages.count - 1,
+                   assistant.stopReason == .aborted,
+                   !assistant.content.contains(where: { if case .toolCall = $0 { return true }; return false })
+                {
+                    // kwwk's thrown-cancellation path appends a terminal
+                    // aborted assistant message after the unfinished batch.
+                    continue
+                }
+                guard outstanding.isEmpty else {
+                    throw SessionStoreError.corrupt("an assistant message follows unfinished tool calls")
+                }
+                for block in assistant.content {
+                    if case let .toolCall(call) = block, !outstanding.insert(call.id).inserted {
+                        throw SessionStoreError.corrupt("duplicate tool call in a message")
+                    }
+                }
+            case let .toolResult(result):
+                guard outstanding.remove(result.toolCallId) != nil else {
+                    throw SessionStoreError.corrupt("tool result has no pending call")
+                }
+            default:
+                guard outstanding.isEmpty else {
+                    throw SessionStoreError.corrupt("a message follows unfinished tool calls")
+                }
+            }
+            if outstanding.isEmpty { boundary = index + 1 }
+        }
+        return Array(messages.prefix(boundary))
+    }
+
     static func hasCompleteToolResults(_ messages: [Message]) -> Bool {
         var outstanding: Set<String> = []
         for message in messages {
@@ -59,7 +99,15 @@ extension SessionEventLog {
         let records = try records(afterSeq: 0)
         var located: [(id: UUID, index: Int, anchor: HistoryAnchor)] = []
         for (position, record) in records.enumerated() {
-            guard case let .userMessage(id, text, attachments) = record.event else { continue }
+            let candidate: (id: UUID, text: String, attachments: [AgentAttachment])? = {
+                switch record.event {
+                case let .userMessage(id, text, attachments): return (id, text, attachments)
+                case let .conversationMessageTaken(id, text, _): return (id, text, [])
+                default: return nil
+                }
+            }()
+            guard let candidate else { continue }
+            let (id, text, attachments) = candidate
             let key = id.uuidString.lowercased()
             if let anchor = anchors[key] {
                 if let index = ConversationHistory.index(of: anchor, in: messages), case let .user(user) = messages[index] {
@@ -77,8 +125,11 @@ extension SessionEventLog {
             // Sessions predating anchors: never identify repeated text by
             // its first occurrence alone.
             let later = records[(position + 1)...].count {
-                if case let .userMessage(_, value, files) = $0.event { return value == text && files == attachments }
-                return false
+                switch $0.event {
+                case let .userMessage(_, value, files): return value == text && files == attachments
+                case let .conversationMessageTaken(_, value, _): return value == text && attachments.isEmpty
+                default: return false
+                }
             }
             let suffix = ConversationHistory.attachmentSuffix(attachments.map { (name: $0.name, path: $0.path) })
             guard let index = ConversationHistory.index(typed: text, suffix: suffix, later: later, in: messages),
@@ -112,8 +163,12 @@ extension SessionEventLog {
             }
             let end = ConversationHistory.nextReaderMessage(after: item.index, in: messages)
             if existing == nil, let position = records.firstIndex(where: {
-                if case let .userMessage(id, _, _) = $0.event { return id == item.id }
-                return false
+                switch $0.event {
+                case let .userMessage(id, _, _), let .conversationMessageTaken(id, _, _):
+                    return id == item.id
+                default:
+                    return false
+                }
             }) {
                 let prefix = Set(located.filter { $0.index < end }.map(\.id))
                 let changedLater = records[(position + 1)...].contains { record in
@@ -143,6 +198,66 @@ extension SessionEventLog {
             )
             try HistoryObjectStore.write(encoder.encode(manifest), to: url)
         }
+    }
+
+    /// End a stopped run at its last whole model boundary. Sealing is not
+    /// recapturing: the saved UI records must stay paired with the saved
+    /// messages, without the partial call/approval events emitted afterwards.
+    /// Validate every unsealed snapshot before changing any of them, and let
+    /// damaged objects, manifests and IO errors reach the caller unchanged.
+    func recoverInterruptedHistory(_ messages: [Message]) throws -> [Message] {
+        let prefix = try ForkContext.completePrefix(of: messages)
+        guard prefix.count < messages.count else { return messages }
+        guard !prefix.isEmpty else {
+            throw SessionStoreError.corrupt("no complete conversation boundary before interrupted calls")
+        }
+        let records = try records(afterSeq: 0)
+        var pending: [(UUID, ForkManifest)] = []
+        var seen: Set<UUID> = []
+        for record in records {
+            let messageID: UUID? = {
+                switch record.event {
+                case let .userMessage(id, _, _), let .conversationMessageTaken(id, _, _): return id
+                default: return nil
+                }
+            }()
+            guard let messageID,
+                  seen.insert(messageID).inserted,
+                  var manifest = try readManifest(messageID), !manifest.sealed
+            else { continue }
+            guard let context = try readForkContext(messageID),
+                  try ForkContext.completePrefix(of: context.messages) == context.messages
+            else {
+                throw SessionStoreError.corrupt("saved boundary has unfinished tool calls")
+            }
+            manifest.sealed = true
+            pending.append((messageID, manifest))
+        }
+        let encoder = Self.forkEncoder()
+        for (id, manifest) in pending {
+            try HistoryObjectStore.write(encoder.encode(manifest), to: manifestURL(id))
+        }
+        try writeTranscript(prefix)
+        return prefix
+    }
+
+    /// Older builds wrote the stopped run's unfinished tail to the live
+    /// transcript. Repair only a recorded stop, not a successful run or an
+    /// arbitrary malformed history. Decoding and filesystem failures throw.
+    func readResumableTranscript() throws -> [Message] {
+        let messages = try readTranscript()
+        guard !ForkContext.hasCompleteToolResults(messages) else { return messages }
+        let records = try records(afterSeq: 0)
+        let ending = records.reversed().first { record in
+            switch record.event {
+            case .finished, .userMessage, .promptSubmitted, .conversationMessageTaken: true
+            default: false
+            }
+        }
+        guard case .finished(reason: .aborted)? = ending?.event else {
+            throw SessionStoreError.corrupt("unfinished tool calls without a recorded stop")
+        }
+        return try recoverInterruptedHistory(messages)
     }
 
     func readForkContext(_ id: UUID) throws -> ForkContext? {

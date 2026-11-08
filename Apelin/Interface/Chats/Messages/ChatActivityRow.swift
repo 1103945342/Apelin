@@ -8,6 +8,9 @@ import UIKit
 final class ChatActivityRow: ListRowView {
     @objc dynamic var onToggle: (() -> Void)?
     private let header = ThinkingStatusLabel()
+    private let sourceLabel = UILabel()
+    private static let sourceSpacing: CGFloat = 4
+    private static let sizingSource = UILabel()
     /// Holds the title, and while the count shows fades its first line out
     /// before it (`titleMask`), so a long title runs under the count rather
     /// than into it. The title's own mask is its shimmer.
@@ -32,6 +35,12 @@ final class ChatActivityRow: ListRowView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        sourceLabel.font = .preferredFont(forTextStyle: .caption1)
+        sourceLabel.adjustsFontForContentSizeCategory = true
+        sourceLabel.textColor = .secondaryLabel
+        sourceLabel.numberOfLines = 0
+        sourceLabel.isHidden = true
+        addSubview(sourceLabel)
         titleView.addSubview(header)
         addSubview(titleView)
         titleFade.colors = Self.opaqueFade
@@ -58,6 +67,8 @@ final class ChatActivityRow: ListRowView {
         shownID = message.id
         header.animationIdentity = message.id
         header.text = message.activityTitle
+        sourceLabel.text = message.role.isThinking ? message.processingSource : nil
+        sourceLabel.isHidden = sourceLabel.text == nil
         isAccessibilityElement = false
         header.accessibilityLabel = message.activityTitle
         let opensTrace = Self.isReasoning(message)
@@ -87,6 +98,8 @@ final class ChatActivityRow: ListRowView {
         header.isThinking = false
         header.animationIdentity = nil
         header.text = nil
+        sourceLabel.text = nil
+        sourceLabel.isHidden = true
         header.accessibilityValue = nil
         showsReceived = false
         received.layer.removeAllAnimations()
@@ -107,10 +120,14 @@ final class ChatActivityRow: ListRowView {
         func pixel(_ value: CGFloat) -> CGFloat {
             (value * scale).rounded() / scale
         }
+        let sourceHeight = Self.sourceHeight(sourceLabel.text, width: textWidth)
+        sourceLabel.font = .preferredFont(forTextStyle: .caption1)
+        sourceLabel.frame = CGRect(x: content.minX, y: content.minY, width: textWidth,
+                                   height: max(0, sourceHeight - Self.sourceSpacing))
         let height = ceil(header.sizeThatFits(CGSize(width: textWidth, height: .greatestFiniteMagnitude)).height)
         titleView.frame = CGRect(
             x: pixel(content.minX),
-            y: pixel(content.minY),
+            y: pixel(content.minY + sourceHeight),
             width: pixel(textWidth),
             height: pixel(height),
         )
@@ -234,10 +251,20 @@ final class ChatActivityRow: ListRowView {
             sizingHeader.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height,
         )
         var height = headerHeight + insets.top + insets.bottom
+        height += sourceHeight(message.role.isThinking ? message.processingSource : nil, width: width)
         if banner(of: message) != nil {
             height += bannerSpacing + ToolCallBannerView.height
         }
         return height
+    }
+
+    @objc dynamic private static func sourceHeight(_ text: String?, width: CGFloat) -> CGFloat {
+        guard let text else { return 0 }
+        sizingSource.font = .preferredFont(forTextStyle: .caption1)
+        sizingSource.numberOfLines = 0
+        sizingSource.text = text
+        return ceil(sizingSource.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height)
+            + sourceSpacing
     }
 
     /// Only a running summary has the line under it; the trace lists every

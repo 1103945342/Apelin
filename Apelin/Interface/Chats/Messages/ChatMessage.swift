@@ -54,6 +54,9 @@ struct ChatMessage: Identifiable, Hashable {
     /// A user message another conversation's agent sent: the line shown
     /// over the bubble naming that conversation.
     var sender: String?
+    /// Only the currently running summary names the message it is processing.
+    /// A queued message must not replace this until the model takes it.
+    var processingSource: String?
     /// A tool row's call, and on a running summary its newest call, for the
     /// line under the summary.
     var banner: ToolCallBanner?

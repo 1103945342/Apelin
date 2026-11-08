@@ -1131,6 +1131,7 @@ checkSquashCard()
 checkQuestionCard()
 
 checkChatForkHistory()
+checkConversationSource()
 
 try checkSidebarTree()
 checkChatLineage()

@@ -135,6 +135,15 @@ final class SidebarSessionsController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .clear
+        let center = NotificationCenter.default
+        for name in [
+            NSCalendarDayChangedNotification,
+            NSSystemTimeZoneDidChangeNotification,
+            NSCurrentLocaleDidChangeNotification,
+            UIApplication.willEnterForegroundNotification,
+        ] {
+            center.addObserver(self, selector: #selector(datePresentationChanged), name: name, object: nil)
+        }
 
         view.addSubview(searchField)
         view.addSubview(newChatButton)
@@ -158,6 +167,10 @@ final class SidebarSessionsController: UIViewController {
         tableView.delegate = self
         dataSource.defaultRowAnimation = .fade
         reload()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     // MARK: - What the sidebar asks for
@@ -186,6 +199,18 @@ final class SidebarSessionsController: UIViewController {
             return chat.id
         }
         applySnapshot(changedRows: changedRows, restoreSelection: false, animateMove: pinChanged)
+    }
+
+    @objc private func datePresentationChanged() {
+        guard isViewLoaded else { return }
+        applySnapshot { [weak self] in self?.reloadSectionTitles() }
+    }
+
+    private func reloadSectionTitles() {
+        guard tableView.isFilled else { return }
+        let count = tableView.numberOfSections
+        guard count > 0 else { return }
+        tableView.reloadSections(IndexSet(integersIn: 0..<count), with: .none)
     }
 
     /// Picks `summary` and brings its row into sight.
@@ -299,7 +324,12 @@ final class SidebarSessionsController: UIViewController {
         UserDefaults.standard.set(expanded.sorted(), forKey: "sidebar.expandedConversations.v1")
     }
 
-    private func applySnapshot(changedRows: [UUID] = [], restoreSelection: Bool = true, animateMove: Bool = false) {
+    private func applySnapshot(
+        changedRows: [UUID] = [],
+        restoreSelection: Bool = true,
+        animateMove: Bool = false,
+        completion: (() -> Void)? = nil,
+    ) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, SidebarTree.Item>()
         tree = SidebarTree(chats)
         let shown = tree.roots(query: query)
@@ -335,7 +365,10 @@ final class SidebarSessionsController: UIViewController {
         tableView.backgroundView?.isHidden = !shown.isEmpty
         guard tableView.isFilled else {
             pacing.begin()
-            dataSource.applyFirst(snapshot, to: tableView) { [weak self] in self?.selectPicked() }
+            dataSource.applyFirst(snapshot, to: tableView) { [weak self] in
+                self?.selectPicked()
+                completion?()
+            }
             return
         }
         if hasChanges {
@@ -345,10 +378,14 @@ final class SidebarSessionsController: UIViewController {
                 : pacedAnimation
             dataSource.applyChange(snapshot, to: tableView, animated: animated) { [weak self] in
                 self?.selectPicked()
+                completion?()
             }
         }
         if !hasChanges, restoreSelection {
             selectPicked()
+        }
+        if !hasChanges {
+            completion?()
         }
     }
 
@@ -368,17 +405,16 @@ final class SidebarSessionsController: UIViewController {
         let now = Date()
         guard case let .day(day) = section else { return String(localized: "Pinned") }
         let calendar = Calendar.current
-        if calendar.isDateInToday(day) || calendar.isDateInYesterday(day) {
+        switch SidebarOrder.titleKind(for: day, now: now, calendar: calendar) {
+        case .today, .yesterday:
             return relativeDayFormatter.string(from: day)
-        }
-        let age = calendar.dateComponents([.day], from: day, to: calendar.startOfDay(for: now)).day ?? .max
-        if age < 7 {
+        case .weekday:
             return day.formatted(dayHeading.weekday(.wide))
-        }
-        if calendar.isDate(day, equalTo: now, toGranularity: .year) {
+        case .monthDay:
             return day.formatted(dayHeading.month(.abbreviated).day())
+        case .fullDate:
+            return day.formatted(dayHeading.year().month(.abbreviated).day())
         }
-        return day.formatted(dayHeading.year().month(.abbreviated).day())
     }
 }
 

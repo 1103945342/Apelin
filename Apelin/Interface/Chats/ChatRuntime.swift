@@ -520,7 +520,7 @@ final class ChatRuntime {
 
     /// A new conversation holding `id`'s model history through the turn of
     /// message `messageID`, named after it and listed first. Its new session
-    /// is opened immediately; a failed open leaves the same row to retry.
+    /// is opened when its page is selected; a failed open leaves the same row to retry.
     func fork(_ id: UUID, through messageID: UUID) async throws -> ChatSummary? {
         guard records[id] != nil, canFork(id) else { return nil }
         // The session log is the source of truth for a fork. Its worker
@@ -538,15 +538,9 @@ final class ChatRuntime {
         summary.branchNumber = number
         let newID = summary.id
         records[newID] = ChatRecord(summary: summary, sessionID: newSessionID)
-        // Save the row before opening it. If the new session cannot be opened,
-        // the same row remains and its next send can retry the open.
+        // Opening the page starts (or retries) its replay. No model prompt is
+        // sent, and failure stays visible instead of leaving a silent blank.
         changed(newID)
-        do {
-            _ = try await open(newID)
-        } catch {
-            // Keep the saved record; opening is retried when the conversation is
-            // used again, rather than creating another fork row.
-        }
         return self.summary(newID)
     }
 
@@ -614,6 +608,14 @@ final class ChatRuntime {
 
     private static func compactionResult(_ event: TaskEvent) -> AgentCompactionResult {
         (try? event.payload?.decode(AgentCompactionResult.self)) ?? AgentCompactionResult(outcome: .failed)
+    }
+
+    /// Follow a saved session when the reader opens its page, without sending
+    /// a prompt. In particular an empty fork must retry a failed first open.
+    func loadHistory(_ id: UUID) async throws {
+        guard let record = records[id],
+              ChatFork.needsHistoryLoad(record, isFollowed: readers[id] != nil) else { return }
+        _ = try await open(id)
     }
 
     private func open(_ id: UUID, selection: ComposerModelSelection? = nil) async throws -> AgentOpenResponse {

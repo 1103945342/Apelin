@@ -161,6 +161,7 @@ final class ChatMessageRow: ListRowView {
         label.attributedText = NSAttributedString()
         label.accessibilityLabel = nil
         bubble.isHidden = true
+        bubble.showsConversationBorder = false
         senderLabel.text = nil
         senderLabel.isHidden = true
         shownID = nil
@@ -202,6 +203,7 @@ final class ChatMessageRow: ListRowView {
         shownID = message.id
         label.accessibilityValue = waiting ? String(localized: "Waiting to Send") : nil
         bubble.isHidden = !isUser || message.text.isEmpty
+        bubble.showsConversationBorder = isUser && message.sender != nil
         senderLabel.text = isUser ? message.sender : nil
         senderLabel.isHidden = senderLabel.text == nil
         senderLabel.alpha = alpha

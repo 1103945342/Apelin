@@ -52,6 +52,7 @@ struct ChatTranscript {
     private var unanswered: UUID?
     /// The run's output so far, from its latest `received`.
     private var receivedTokens: Int?
+    private var processingSource: String?
     /// Each turn the events started, in order: from a `prompt` to the next
     /// one or to its run's end, with what its replies cost.
     private var turns: [Turn] = []
@@ -126,6 +127,7 @@ struct ChatTranscript {
                 finishThinking(at: event.time)
                 assistant = nil
                 let messageID = Self.userMessageID(of: event) ?? id
+                processingSource = payload?["from"]?.stringValue.map { Self.processingLine(conversationTitle($0)) }
                 let files = Self.attachments(in: payload?["attachments"])
                 queued.removeAll { $0.id == messageID }
                 if firstRows[messageID] == nil {
@@ -138,7 +140,7 @@ struct ChatTranscript {
                     message.sender = payload?["from"]?.stringValue.map { Self.senderLine(conversationTitle($0)) }
                     message.sentAt = event.time
                     if event.kind == "prompt" {
-                        let named = Self.userMessageID(of: event)
+                        let named = payload?["from"]?.stringValue == nil ? Self.userMessageID(of: event) : nil
                         message.turnMessageID = named
                         endTurn(at: event.time)
                         turns.append(Turn(start: rows.count, messageID: named, began: event.time))
@@ -159,6 +161,7 @@ struct ChatTranscript {
                     attachments: files.compactMap(attachment),
                 )
                 message.isQueued = true
+                message.sender = payload?["from"]?.stringValue.map { Self.senderLine(conversationTitle($0)) }
                 queued.append(message)
             case "queueDropped":
                 let ids = Self.identifiers(in: payload?["ids"])
@@ -305,6 +308,7 @@ struct ChatTranscript {
                 finishThinking(at: event.time)
                 assistant = nil
                 isWorking = false
+                processingSource = nil
                 receivedTokens = nil
                 endTurn(at: event.time)
             case "usage":
@@ -348,6 +352,7 @@ struct ChatTranscript {
                 if Self.endsTask(event) {
                     finishThinking(at: event.time)
                     isWorking = false
+                    processingSource = nil
                     isCompacting = false
                     receivedTokens = nil
                     endTurn(at: event.time)
@@ -378,6 +383,9 @@ struct ChatTranscript {
                 }
             }
             Self.keepTrailingSummaryRunning(&messages, receivedTokens: receivedTokens, reconnecting: reconnecting)
+            if let summary = messages.lastIndex(where: { $0.role.isThinking }) {
+                messages[summary].processingSource = processingSource
+            }
         }
         messages += queued
         for draft in sending where !messages.contains(where: { $0.id == draft.id }) {
@@ -659,6 +667,14 @@ struct ChatTranscript {
     static func senderLine(_ title: String?) -> String {
         guard let title, !title.isEmpty else { return String(localized: "From another chat") }
         return String(localized: "From \(title)")
+    }
+
+    /// Above the active summary, distinct from the bubble's attribution.
+    static func processingLine(_ title: String?) -> String {
+        guard let title, !title.isEmpty else {
+            return String(localized: "Processing a message from another chat")
+        }
+        return String(localized: "Processing a message from \(title)")
     }
 
     /// The reason in a call's arguments, trimmed; nil when it gave none.

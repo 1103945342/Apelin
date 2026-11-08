@@ -53,6 +53,28 @@ struct ForkContextTests {
     }
 
     @Test
+    func `a taken source message gets an anchored fork snapshot`() async throws {
+        let home = try TemporaryHome()
+        defer { home.remove() }
+        let log = try SessionEventLog(sessionsRoot: home.dataRoot.sessions, sessionID: UUID().uuidString)
+        let id = UUID()
+        let user = UserMessage(text: "reviewer-session\nReview this")
+        try await log.append(.conversationMessageTaken(id: id, text: "Review this", from: "reviewer-session"))
+        try await log.append(.messageFinished(text: "Reviewed."))
+        try await log.append(.finished(reason: .completed))
+        try await log.writeHistorySnapshot(
+            [.user(user), .assistant(fauxAssistantMessage("Reviewed."))],
+            anchors: [id.uuidString.lowercased(): anchor(user)],
+            seal: true,
+        )
+        let context = try #require(try await log.readForkContext(id))
+        #expect(context.messages == [.user(user), .assistant(fauxAssistantMessage("Reviewed."))])
+        #expect(context.records.contains { $0.event == .conversationMessageTaken(id: id, text: "Review this", from: "reviewer-session") })
+        #expect(context.anchors[id.uuidString.lowercased()]?.digest == ConversationHistory.digest(ConversationHistory.text(of: user)))
+        await log.close()
+    }
+
+    @Test
     func `images and untruncated tool results are model objects not UI reconstructions`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
@@ -188,6 +210,14 @@ struct ForkContextTests {
             await session.abort()
             break
         }
+        await session.waitForIdle()
+        // Cancellation during an executing tool can still produce its real
+        // denied/cancelled result. A complete batch must not be rolled back.
+        let stoppedMessages = try await session.log.readTranscript()
+        #expect(ForkContext.hasCompleteToolResults(stoppedMessages))
+        #expect(stoppedMessages.contains { if case .toolResult = $0 { return true }; return false })
+        let stoppedRecords = try await session.log.records(afterSeq: 0)
+        #expect(!stoppedRecords.contains { if case .error = $0.event { return true }; return false })
         await session.close()
     }
 
@@ -265,6 +295,169 @@ struct ForkContextTests {
         #expect(after.messages == before.messages)
         #expect(after.records == before.records)
         await log.close()
+    }
+
+    private func pendingBatch() -> [Message] {
+        [.assistant(fauxAssistantMessage(blocks: [
+            fauxToolCall(name: "file_read", arguments: ["path": "one"], id: "one"),
+            fauxToolCall(name: "file_read", arguments: ["path": "two"], id: "two"),
+        ], stopReason: .toolUse)), .toolResult(ToolResultMessage(
+            toolCallId: "one", toolName: "file_read", content: [.text(TextContent(text: "A real result"))],
+        ))]
+    }
+
+    @Test
+    func `stopping preserves the last whole batch and never invents a result`() throws {
+        let complete: [Message] = [.user(UserMessage(text: "Read"))] + pendingBatch() + [
+            .toolResult(ToolResultMessage(toolCallId: "two", toolName: "file_read", content: [.text(TextContent(text: "Second real result"))])),
+        ]
+        #expect(try ForkContext.completePrefix(of: complete) == complete)
+        #expect(try ForkContext.completePrefix(of: complete + pendingBatch()) == complete)
+        #expect(try ForkContext.completePrefix(of: complete + pendingBatch() + [
+            .assistant(fauxAssistantMessage("", stopReason: .aborted)),
+        ]) == complete)
+        #expect(throws: (any Error).self) {
+            try ForkContext.completePrefix(of: pendingBatch() + [.user(UserMessage(text: "Later"))])
+        }
+        #expect(throws: (any Error).self) {
+            try ForkContext.completePrefix(of: pendingBatch() + [.assistant(fauxAssistantMessage("Not cancellation"))])
+        }
+        #expect(throws: (any Error).self) {
+            try ForkContext.completePrefix(of: [.toolResult(ToolResultMessage(toolCallId: "orphan", toolName: "file_read", content: []))])
+        }
+    }
+
+    @Test
+    func `reopening a stopped incomplete transcript seals its saved model and UI boundary`() async throws {
+        let home = try TemporaryHome()
+        defer { home.remove() }
+        let sessionID = UUID().uuidString
+        let log = try SessionEventLog(sessionsRoot: home.dataRoot.sessions, sessionID: sessionID)
+        let id = UUID()
+        let user = UserMessage(text: "Read")
+        let anchors = [id.uuidString.lowercased(): anchor(user)]
+        let complete: [Message] = [.user(user), .assistant(fauxAssistantMessage("Already read one batch"))]
+        try await log.append(.userMessage(id: id, text: "Read", attachments: []))
+        try await log.append(.messageFinished(text: "Already read one batch"))
+        try await log.writeHistorySnapshot(complete, anchors: anchors)
+        let before = try #require(try await log.readForkContext(id))
+        try await log.append(.toolCallStarted(ToolCallRecord(id: "two", name: "file_read", arguments: "{}")))
+        try await log.append(.finished(reason: .aborted))
+        try await log.writeTranscript(complete + pendingBatch())
+        await log.close()
+
+        let reopened = try SessionEventLog(sessionsRoot: home.dataRoot.sessions, sessionID: sessionID)
+        #expect(try await reopened.readResumableTranscript() == complete)
+        #expect(try await reopened.readTranscript() == complete)
+        // A later seal or edit must not replace the stopped turn's boundary
+        // with partial UI events or with the later run's content.
+        try await reopened.writeHistorySnapshot(complete + [.assistant(fauxAssistantMessage("Later"))], anchors: anchors, seal: true)
+        let after = try #require(try await reopened.readForkContext(id))
+        #expect(after.messages == before.messages)
+        #expect(after.records == before.records)
+        #expect(after.anchors == before.anchors)
+        #expect(try await reopened.readResumableTranscript() == complete)
+        await reopened.close()
+    }
+
+    @Test(arguments: [FinishReason.completed, .failed])
+    func `incomplete history without a recorded stop is not silently repaired`(_ reason: FinishReason) async throws {
+        let home = try TemporaryHome()
+        defer { home.remove() }
+        let log = try SessionEventLog(sessionsRoot: home.dataRoot.sessions, sessionID: UUID().uuidString)
+        let messages: [Message] = [.user(UserMessage(text: "Read"))] + pendingBatch()
+        try await log.writeTranscript(messages)
+        try await log.append(.finished(reason: reason))
+        await #expect(throws: (any Error).self) { try await log.readResumableTranscript() }
+        #expect(try await log.readTranscript() == messages)
+        await log.close()
+    }
+
+    @Test(arguments: ["manifest", "object", "transcript-write"])
+    func `stopped recovery surfaces real damage and IO failures`(_ failure: String) async throws {
+        let home = try TemporaryHome()
+        defer { home.remove() }
+        let log = try SessionEventLog(sessionsRoot: home.dataRoot.sessions, sessionID: UUID().uuidString)
+        let id = UUID()
+        let user = UserMessage(text: "Read")
+        let messages: [Message] = [.user(user)]
+        try await log.append(.userMessage(id: id, text: "Read", attachments: []))
+        try await log.writeHistorySnapshot(messages, anchors: [id.uuidString.lowercased(): anchor(user)])
+        let incomplete = messages + pendingBatch()
+        try await log.writeTranscript(incomplete)
+        let transcriptURL = log.directory.appendingPathComponent("transcript.json")
+        let bytes = try Data(contentsOf: transcriptURL)
+        let manifest = log.directory.appendingPathComponent("forks/\(id.uuidString.lowercased()).json")
+        if failure == "manifest" {
+            try Data("damaged".utf8).write(to: manifest)
+        } else if failure == "object" {
+            let json = try #require(try JSONSerialization.jsonObject(with: Data(contentsOf: manifest)) as? [String: Any])
+            let names = try #require(json["messages"] as? [String])
+            let name = try #require(names.first)
+            try Data("damaged".utf8).write(to: log.directory.appendingPathComponent("forks/objects/\(name)"))
+        } else {
+            try FileManager.default.removeItem(at: transcriptURL)
+            try FileManager.default.createDirectory(at: transcriptURL, withIntermediateDirectories: false)
+        }
+        await #expect(throws: (any Error).self) { try await log.recoverInterruptedHistory(incomplete) }
+        if failure != "transcript-write" {
+            #expect(try Data(contentsOf: transcriptURL) == bytes)
+        }
+        await log.close()
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func `stopping a tool batch allows another prompt editing forking and reopening`() async throws {
+        let home = try TemporaryHome()
+        defer { home.remove() }
+        let faux = await registerFauxProvider()
+        defer { faux.unregister() }
+        // Providers can finish a cancelled stream with tool-call blocks
+        // already buffered. kwwk retains that assistant message but (correctly)
+        // executes none of its calls when its stop reason is aborted.
+        faux.setResponses([.message(fauxAssistantMessage(blocks: [
+            fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove first", "installation_id": "first"], id: "first"),
+            fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove second", "installation_id": "second"], id: "second"),
+        ], stopReason: .aborted))])
+        let configuration = AgentSessionConfiguration(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot)
+        let session = try await AgentSession(configuration: configuration, backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
+        let agent = await session.agent
+        // Deterministic stop at the retained partial message, before the loop
+        // returns. Do not race a timer against a fast faux provider.
+        let unsubscribe = agent.subscribe { event, _ in
+            if case .messageEnd(.assistant) = event { await session.abort() }
+        }
+        let id = UUID()
+        try await session.prompt("Remove both", messageID: id)
+        await session.waitForIdle()
+        unsubscribe()
+        let boundary = try #require(try await session.log.readForkContext(id))
+        #expect(try await session.log.readTranscript() == boundary.messages)
+        #expect(!boundary.messages.contains { if case .assistant = $0 { return true }; return false })
+        #expect(!boundary.messages.contains { if case .toolResult = $0 { return true }; return false })
+        let events = try await session.log.records(afterSeq: 0)
+        #expect(!events.contains { if case .error = $0.event { return true }; return false })
+        #expect(await session.pendingApprovals.isEmpty)
+        // Edits preserve the original stopped snapshot; the provider must
+        // receive a valid model conversation on the very next prompt too.
+        try await session.edit(id, reply: false, text: "Keep both", expected: nil)
+        faux.setResponses([.factory { context, _, _, _ in
+            #expect(ForkContext.hasCompleteToolResults(context.messages))
+            return fauxAssistantMessage("Continuing safely")
+        }])
+        try await session.prompt("Continue", messageID: UUID())
+        await session.waitForIdle()
+        let forkID = UUID().uuidString.lowercased()
+        try await session.fork(through: id, as: forkID)
+        let fork = try SessionEventLog(sessionsRoot: home.dataRoot.sessions, sessionID: forkID)
+        #expect(try await fork.readTranscript() == boundary.messages)
+        await fork.close()
+        let transcript = try await session.log.readTranscript()
+        #expect(ForkContext.hasCompleteToolResults(transcript))
+        await session.close()
+        let reopened = try await AgentSession(configuration: configuration, backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
+        #expect(try await reopened.log.readTranscript() == transcript)
+        await reopened.close()
     }
 
     @Test

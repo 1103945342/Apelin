@@ -228,16 +228,25 @@ extension AgentSession {
         let records = try await log.records(afterSeq: 0)
         var found: (text: String, attachments: [AgentAttachment], position: Int)?
         for (position, record) in records.enumerated() {
-            if case let .userMessage(messageID, text, attachments) = record.event, messageID == id {
+            switch record.event {
+            case let .userMessage(messageID, text, attachments) where messageID == id:
                 found = (text, attachments, position)
+            case let .conversationMessageTaken(messageID, text, _) where messageID == id:
+                found = (text, [], position)
+            default:
+                break
             }
         }
         guard let found else { return nil }
         let later = records[(found.position + 1)...].count {
-            if case let .userMessage(_, text, attachments) = $0.event {
+            switch $0.event {
+            case let .userMessage(_, text, attachments):
                 return text == found.text && attachments == found.attachments
+            case let .conversationMessageTaken(_, text, _):
+                return text == found.text && found.attachments.isEmpty
+            default:
+                return false
             }
-            return false
         }
         let suffix = ConversationHistory.attachmentSuffix(found.attachments.map { (name: $0.name, path: $0.path) })
         guard let index = ConversationHistory.index(typed: found.text, suffix: suffix, later: later, in: messages),
@@ -259,12 +268,16 @@ extension AgentSession {
     /// replays this new log rather than cutting its current UI a second time.
     static func forkRecords(_ records: [SessionEventRecord], through id: UUID) -> [SessionEventRecord]? {
         guard let start = records.firstIndex(where: {
-            if case let .userMessage(messageID, _, _) = $0.event { return messageID == id }
-            return false
+            switch $0.event {
+            case let .userMessage(messageID, _, _), let .conversationMessageTaken(messageID, _, _):
+                return messageID == id
+            default:
+                return false
+            }
         }) else { return nil }
         let startsTurn: (SessionEventRecord) -> Bool = { record in
             switch record.event {
-            case .userMessage, .promptSubmitted:
+            case .userMessage, .promptSubmitted, .conversationMessageTaken:
                 return true
             default:
                 return false
@@ -280,13 +293,22 @@ extension AgentSession {
         let end = finished.map { $0 + 1 } ?? next
         var taken: Set<UUID> = []
         for record in records[..<end] {
-            if case let .userMessage(messageID, _, _) = record.event {
+            switch record.event {
+            case let .userMessage(messageID, _, _), let .conversationMessageTaken(messageID, _, _):
                 taken.insert(messageID)
+            default:
+                break
             }
         }
         var kept = records[..<end].filter {
-            if case let .userMessageQueued(messageID, _, _) = $0.event { return taken.contains(messageID) }
-            return true
+            switch $0.event {
+            case let .userMessageQueued(messageID, _, _), let .conversationMessageQueued(messageID, _, _):
+                return taken.contains(messageID)
+            case .conversationMessagesDropped:
+                return false // their untaken queue entries are excluded too
+            default:
+                return true
+            }
         }
         let lastTurn = kept.lastIndex(where: startsTurn) ?? 0
         let ended = kept[lastTurn...].contains {

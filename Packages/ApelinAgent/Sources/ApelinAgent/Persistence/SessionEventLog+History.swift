@@ -65,8 +65,10 @@ extension SessionEventLog {
         )
         do {
             let ids = Set(records.compactMap { record -> UUID? in
-                if case let .userMessage(id, _, _) = record.event { return id }
-                return nil
+                switch record.event {
+                case let .userMessage(id, _, _), let .conversationMessageTaken(id, _, _): return id
+                default: return nil
+                }
             }).subtracting([messageID])
             try copyForkHistory(from: historySource, to: folder, ids: ids)
             try writeForkContext(

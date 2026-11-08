@@ -480,6 +480,18 @@ final class ChatController: UIViewController {
         let previous = self.chat
         self.chat = chat
         ConversationNotices.shared.withdraw(session: runtime.records[chat.id]?.sessionID)
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                try await runtime.loadHistory(chat.id)
+                if self.chat?.id == chat.id { refreshRuntime() }
+            } catch is CancellationError {
+                return
+            } catch {
+                guard self.chat?.id == chat.id else { return }
+                presentNotice(title: "Unable to Load Conversation", message: error.readableMessage)
+            }
+        }
         updateModelSelection()
         ensureModelSelection()
         title = chat.displayTitle

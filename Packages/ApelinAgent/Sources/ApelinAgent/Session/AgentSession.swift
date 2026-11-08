@@ -59,8 +59,12 @@ public actor AgentSession {
         var id: UUID
         var text: String
         var attachments: [AgentAttachment]
-        /// The text the loop is handed.
+        /// The text and timestamp the loop is handed. A different user
+        /// message (a runtime aside, for example) must never take this entry.
         var injected: String
+        var timestamp: Int64
+        /// Non-nil entries belong to kwwk's follow-up queue, not steering.
+        var from: String? = nil
         /// What the model had been told before this message's delta, and
         /// whether the host's restart was still to tell: put back if the run
         /// never takes it.
@@ -68,8 +72,12 @@ public actor AgentSession {
         var restartUntold: Bool
     }
 
-    /// Messages sent while a run was going, oldest first.
+    /// Messages handed to either queue, oldest first; `from` distinguishes
+    /// follow-ups from reader steering, including their drop behaviour.
     private var queued: [QueuedMessage] = []
+    /// Source messages still refreshing context, not handed to kwwk yet.
+    private var preparingConversations: Set<UUID> = []
+    private var stopGeneration: UInt64 = 0
     /// What the system prompt showed when the session took it, plus every
     /// delta a message has carried since (`PromptState`).
     private var told: PromptState
@@ -145,7 +153,7 @@ public actor AgentSession {
         } else if previous?.project != configuration.project {
             throw SessionStoreError.corrupt("session \(configuration.id) belongs to another project")
         }
-        let transcript = try await LegacyToolNames.migrate(log.readTranscript())
+        let transcript = try await LegacyToolNames.migrate(log.readResumableTranscript())
         try await Self.closeAbandonedApprovals(log)
 
         let resolved: ResolvedProvider
@@ -606,6 +614,10 @@ public actor AgentSession {
             // again meanwhile is the duplicate.
             guard submitted.insert(messageID).inserted else { return }
         }
+        if let sender {
+            try await promptConversation(text, id: messageID ?? UUID(), files: files, from: sender)
+            return
+        }
         let queues = messageID != nil && runTask != nil && !runEnding
         let attachments: [AgentAttachment]
         do {
@@ -666,6 +678,7 @@ public actor AgentSession {
                     text: text,
                     attachments: attachments,
                     injected: prompt,
+                    timestamp: message.timestamp,
                     told: toldBefore,
                     restartUntold: restartUntoldBefore,
                 ))
@@ -707,6 +720,65 @@ public actor AgentSession {
         // the run has started: this wait holds nothing up
         if messageID != nil {
             await persistAnchors()
+        }
+    }
+
+    /// Source messages are follow-ups, never reader steering. Keep the
+    /// exact UserMessage even for an idle run (`prompt(String)` would
+    /// replace its timestamp), and announce acceptance only at messageStart.
+    private func promptConversation(
+        _ text: String,
+        id: UUID,
+        files: [(name: String, mimeType: String, data: Data)],
+        from sender: ConversationSender,
+    ) async throws {
+        let generation = stopGeneration
+        preparingConversations.insert(id)
+        let attachments: [AgentAttachment]
+        do {
+            attachments = try files.map { try saveAttachment(name: $0.name, mimeType: $0.mimeType, data: $0.data) }
+            try await log.append(.conversationMessageQueued(id: id, text: text, from: sender.sessionID))
+        } catch {
+            preparingConversations.remove(id)
+            submitted.remove(id)
+            throw error
+        }
+        defer { preparingConversations.remove(id) }
+        guard stopGeneration == generation else { return }
+        // A new send after Stop belongs to the next run, not to the
+        // cancelled loop that is still unwinding.
+        if aborted, let task = runTask { await task.value }
+        await waitForEndingRun()
+        while let compaction { await compaction.value }
+        guard stopGeneration == generation else { return }
+        if snapshotStale, runTask == nil { takeSnapshot() }
+        let repository = runTask == nil && needsProjectContext
+            ? await runner.repositoryStatus(within: Self.repositoryStatusWait)
+            : nil
+        guard stopGeneration == generation else { return }
+        let suffix = ConversationHistory.attachmentSuffix(attachments.map { (name: $0.name, path: $0.path) })
+        let (prompt, toldBefore, restartUntoldBefore) = await withSystemState(
+            sender.prefix + "\n" + text + suffix,
+            delta: true,
+        )
+        await waitForEndingRun()
+        while let compaction { await compaction.value }
+        guard stopGeneration == generation else { return }
+        // No suspension from here until the message and its run are owned.
+        let injected = runTask == nil ? withProjectContext(prompt, repository: repository) : prompt
+        let images = files.filter { $0.mimeType.hasPrefix("image/") }
+            .map { ImageContent(data: $0.data.base64EncodedString(), mimeType: $0.mimeType) }
+        let message = UserMessage(content: [.text(TextContent(text: injected))] + images.map { .image($0) })
+        queued.append(QueuedMessage(
+            id: id, text: text, attachments: attachments,
+            injected: injected, timestamp: message.timestamp, from: sender.sessionID,
+            told: toldBefore, restartUntold: restartUntoldBefore,
+        ))
+        preparingConversations.remove(id)
+        agent.followUp(message)
+        if runTask == nil {
+            aborted = false
+            runTask = carryOver([])
         }
     }
 
@@ -823,14 +895,29 @@ public actor AgentSession {
         compaction = nil
     }
 
-    /// Stops the run. Waiting approvals resolve as denied, and the messages
-    /// queued for it are dropped (`queuedMessagesDropped`).
+    /// Stops the run. Waiting approvals resolve as denied. Once the loop's
+    /// already-emitted message events settle, untaken reader and source
+    /// messages are dropped separately; sources never return to the composer.
     public func abort() async {
         aborted = true
+        stopGeneration &+= 1
         titleTask?.cancel()
-        agent.clearSteeringQueue()
-        await dropQueued()
+        // Cancel before the first suspension; neither queue may sneak into
+        // the next model step while dropped-message events are written.
         agent.abort()
+        agent.clearSteeringQueue()
+        agent.clearFollowUpQueue()
+        let preparing = Array(preparingConversations)
+        preparingConversations.removeAll()
+        if !preparing.isEmpty { snapshotStale = true }
+        // A messageStart already emitted by kwwk may still be waiting for
+        // this actor. Let that acceptance settle before dropping untaken
+        // entries in runEnded; clearing kwwk's queues above prevents more.
+        if runTask == nil || runEnding { await dropQueued() }
+        if !preparing.isEmpty {
+            submitted.subtract(preparing)
+            await record(.conversationMessagesDropped(ids: preparing))
+        }
         await gate.cancelAll(reason: "aborted")
     }
 
@@ -898,9 +985,28 @@ public actor AgentSession {
                     }
                     return nil
                 }.joined()
-                let index = queued.firstIndex { $0.injected == injected } ?? 0
+                // No fallback to index zero: runtime/user messages that did
+                // not come from either tracked queue consume neither one.
+                guard let index = queued.firstIndex(where: {
+                    $0.injected == injected && $0.timestamp == user.timestamp
+                }) else { break }
                 let taken = queued.remove(at: index)
-                await record(.userMessage(id: taken.id, text: taken.text, attachments: taken.attachments))
+                if let from = taken.from {
+                    let suffix = ConversationHistory.attachmentSuffix(
+                        taken.attachments.map { (name: $0.name, path: $0.path) },
+                    )
+                    saveAnchor(
+                        taken.id,
+                        modelText: ConversationHistory.text(of: user),
+                        typed: taken.text,
+                        suffix: suffix,
+                        timestamp: user.timestamp,
+                    )
+                    await persistAnchors()
+                    await record(.conversationMessageTaken(id: taken.id, text: taken.text, from: from))
+                } else {
+                    await record(.userMessage(id: taken.id, text: taken.text, attachments: taken.attachments))
+                }
             default:
                 break
             }
@@ -1004,13 +1110,10 @@ public actor AgentSession {
                 attachments: attachments,
             )))
         case .agentEnd:
-            // The event carries only this run's messages; the transcript is
-            // the whole conversation, which a reopened session reads back.
-            do {
-                try await log.writeTranscript(agent.state.messages)
-            } catch {
-                await record(.error(message: "Unable to save the conversation history: \(error.localizedDescription)"))
-            }
+            // The loop has not returned yet. runEnded saves the transcript
+            // after resolving an interrupted call batch; persisting it here
+            // would poison the next run (and a reopened session).
+            break
         default:
             break
         }
@@ -1036,14 +1139,16 @@ public actor AgentSession {
     /// again, the same message is a new submission.
     private func dropQueued() async {
         guard !queued.isEmpty else { return }
-        let ids = queued.map(\.id)
+        let readers = queued.filter { $0.from == nil }.map(\.id)
+        let conversations = queued.filter { $0.from != nil }.map(\.id)
         // The changes the dropped messages carried, and the host's
         // restart, were never read.
         told = queued[0].told
         restartUntold = queued[0].restartUntold
         queued.removeAll()
-        submitted.subtract(ids)
-        await record(.queuedMessagesDropped(ids: ids))
+        submitted.subtract(readers + conversations)
+        if !readers.isEmpty { await record(.queuedMessagesDropped(ids: readers)) }
+        if !conversations.isEmpty { await record(.conversationMessagesDropped(ids: conversations)) }
     }
 
     func record(_ event: AgentSessionEvent) async {
@@ -1097,24 +1202,44 @@ public actor AgentSession {
         let reason: FinishReason = aborted ? .aborted : (lastFinishedWithError ? .failed : .completed)
         // A loop that ended on an error, or just before a message was
         // queued, never drained it: the next run takes it. Not after a
-        // stop, nor when this run was started for it and took none: what
-        // is dropped, the app puts back in the composer.
+        // stop, nor when this run was started for it and took none: only
+        // dropped reader messages go back to the composer's input.
         let waiting = queued.map(\.id)
         let next = aborted || waiting == carried ? [] : waiting
         if next.isEmpty {
             // otherwise the next run would read them first
             agent.clearSteeringQueue()
+            if aborted || queued.contains(where: { $0.from != nil }) {
+                agent.clearFollowUpQueue()
+            }
             await dropQueued()
         }
         await runner.turnEnded()
         journal.runEnded(reason)
+        let interrupted = aborted && !ForkContext.hasCompleteToolResults(agent.state.messages)
+        do {
+            if interrupted {
+                // No tool result is invented, and a partial batch is never
+                // sent with the next prompt. Preserve the existing snapshot's
+                // model/UI pair instead of capturing the unfinished UI tail.
+                agent.state.messages = try await log.recoverInterruptedHistory(agent.state.messages)
+                snapshotStale = true
+                ownCalls.removeAll()
+            } else {
+                try await log.writeTranscript(agent.state.messages)
+            }
+        } catch {
+            await record(.error(message: "Unable to save the conversation history: \(error.localizedDescription)"))
+        }
         // the turn's messages are in: what compaction would now go by
         await recordContextUsage()
         await record(.finished(reason: reason))
-        do {
-            try await log.writeHistorySnapshot(agent.state.messages, anchors: anchors, seal: true)
-        } catch {
-            await record(.error(message: "Unable to preserve the completed conversation for future forks: \(error.localizedDescription)"))
+        if !interrupted {
+            do {
+                try await log.writeHistorySnapshot(agent.state.messages, anchors: anchors, seal: true)
+            } catch {
+                await record(.error(message: "Unable to preserve the completed conversation for future forks: \(error.localizedDescription)"))
+            }
         }
         // a stop meanwhile dropped them
         runTask = next.isEmpty || aborted ? nil : carryOver(next)
@@ -1130,6 +1255,12 @@ public actor AgentSession {
         }
         let agent = agent
         return Task { [weak self] in
+            // A stop may arrive after this task was scheduled but before
+            // kwwk acquired a run (so agent.abort had no handle to cancel).
+            if await self?.aborted == true {
+                await self?.runEnded(carrying: ids)
+                return
+            }
             do {
                 try await agent.continue()
             } catch {

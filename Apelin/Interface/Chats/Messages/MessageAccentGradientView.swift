@@ -38,7 +38,14 @@ final class MessageAccentGradientView: UIView {
         updateColors()
     }
 
+    @objc dynamic var showsConversationBorder = false {
+        didSet { updateColors() }
+    }
+
     @objc dynamic private func updateColors() {
+        layer.borderWidth = showsConversationBorder ? 1.5 : 0
+        layer.borderColor = showsConversationBorder
+            ? UIColor.systemGreen.resolvedColor(with: traitCollection).cgColor : nil
         let accent = tintColor.resolvedColor(with: traitCollection)
         gradient.colors = [accent.withAlphaComponent(0.10).cgColor, accent.withAlphaComponent(0.15).cgColor]
     }

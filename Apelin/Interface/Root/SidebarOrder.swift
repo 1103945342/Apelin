@@ -37,6 +37,31 @@ enum SidebarOrder {
         newestFirst(chats).first
     }
 
+    enum DayTitle: Equatable {
+        case today
+        case yesterday
+        case weekday
+        case monthDay
+        case fullDate
+    }
+
+    static func titleKind(for day: Date, now: Date, calendar: Calendar = .current) -> DayTitle {
+        if calendar.isDate(day, inSameDayAs: now) {
+            return .today
+        }
+        if calendar.isDate(day, inSameDayAs: calendar.date(byAdding: .day, value: -1, to: now) ?? now) {
+            return .yesterday
+        }
+        let age = calendar.dateComponents([.day], from: day, to: calendar.startOfDay(for: now)).day ?? .max
+        if age < 7 {
+            return .weekday
+        }
+        if calendar.isDate(day, equalTo: now, toGranularity: .year) {
+            return .monthDay
+        }
+        return .fullDate
+    }
+
     /// `chats` as the sidebar lists them, by the days of `calendar`.
     static func sections(of chats: [ChatSummary], calendar: Calendar = .current) -> Sections {
         var sections = Sections()

@@ -483,14 +483,25 @@ struct PromptCacheTests {
         }
         for event in events {
             switch event {
-            case let .promptSubmitted(text, _), let .userMessage(_, text, _), let .userMessageQueued(_, text, _), let .steered(text):
+            case let .promptSubmitted(text, _), let .userMessage(_, text, _), let .userMessageQueued(_, text, _), let .steered(text),
+                 let .conversationMessageQueued(_, text, _), let .conversationMessageTaken(_, text, _):
                 #expect(!text.contains(SystemState.openingTag), "the app was shown the block")
             default:
                 break
             }
         }
         #expect(events.contains(.steered(text: "and say which")))
-        #expect(events.contains(.promptSubmitted(text: "Review it", from: "opener-session")))
+        let queuedAt = try #require(events.firstIndex { event in
+            if case .conversationMessageQueued(_, "Review it", "opener-session") = event { return true }
+            return false
+        })
+        guard case let .conversationMessageQueued(id, _, _) = events[queuedAt] else {
+            Issue.record("expected the source message's queue event")
+            return
+        }
+        let takenAt = try #require(events.firstIndex(of: .conversationMessageTaken(id: id, text: "Review it", from: "opener-session")))
+        #expect(queuedAt < takenAt, "acceptance follows queuing with the same id and sender")
+        #expect(!events.contains(.promptSubmitted(text: "Review it", from: "opener-session")))
     }
 
     @Test

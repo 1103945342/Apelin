@@ -9,6 +9,12 @@ public enum AgentSessionEvent: Sendable, Hashable, Codable {
     /// A prompt entered the session (also queued follow-ups). `from`: the
     /// conversation of this project whose agent sent it, not the user.
     case promptSubmitted(text: String, from: String? = nil)
+    /// Another conversation's message, not a reader's editable steering
+    /// message. The same id is taken only when the model loop accepts it.
+    case conversationMessageQueued(id: UUID, text: String, from: String)
+    case conversationMessageTaken(id: UUID, text: String, from: String)
+    /// Never restore these messages to the reader's composer.
+    case conversationMessagesDropped(ids: [UUID])
     case userMessage(id: UUID, text: String, attachments: [AgentAttachment])
     /// A message sent while a run was going: queued for the run's next
     /// step, and a `userMessage` of the same id once the run takes it.

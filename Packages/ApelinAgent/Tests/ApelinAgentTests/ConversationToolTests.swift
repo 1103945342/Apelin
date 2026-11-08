@@ -342,7 +342,12 @@ struct ConversationToolTests {
         try await session.prompt("Review Tweak.x", from: sender)
         await session.waitForIdle()
         let events = try await session.log.records(afterSeq: 0).map(\.event)
-        #expect(events.contains(.promptSubmitted(text: "Review Tweak.x", from: "opener-session")), "the app sees the text as sent, marked with the sender")
+        let queuedID = try #require(events.compactMap { event -> UUID? in
+            if case let .conversationMessageQueued(id, "Review Tweak.x", "opener-session") = event { return id }
+            return nil
+        }.first)
+        #expect(events.contains(.conversationMessageTaken(id: queuedID, text: "Review Tweak.x", from: "opener-session")), "only the loop's acceptance marks it as active")
+        #expect(!events.contains(.promptSubmitted(text: "Review Tweak.x", from: "opener-session")))
         let modelText = await seen.text
         #expect(modelText.contains(sender.prefix + "\nReview Tweak.x"), "the model reads one line naming the sender right before the message")
         #expect(sender.prefix.contains("“Plan the tweak” (opener-session)") && sender.prefix.contains("not from the user"))

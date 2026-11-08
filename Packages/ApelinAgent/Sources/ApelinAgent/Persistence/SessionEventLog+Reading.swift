@@ -7,7 +7,7 @@ extension SessionEventLog {
     struct Summary: Sendable, Equatable {
         /// The last record's number.
         var lastSeq: UInt64 = 0
-        /// Every `userMessage` id: the same message sent again is a duplicate.
+        /// Every model-accepted user message id, direct or from another conversation.
         var userMessageIDs: Set<UUID> = []
         var hasTitle = false
         /// Approvals asked and never resolved, in the order asked.
@@ -15,7 +15,7 @@ extension SessionEventLog {
 
         /// The kinds of event `add` reads, as the encoder spells their
         /// cases: the only lines the opening scan decodes, but for the last.
-        static let kinds: Set<String> = ["userMessage", "titleUpdated", "approvalRequested", "approvalResolved"]
+        static let kinds: Set<String> = ["userMessage", "conversationMessageTaken", "titleUpdated", "approvalRequested", "approvalResolved"]
 
         init() {}
 
@@ -29,7 +29,7 @@ extension SessionEventLog {
         mutating func add(_ record: SessionEventRecord) {
             lastSeq = record.seq
             switch record.event {
-            case let .userMessage(id, _, _): userMessageIDs.insert(id)
+            case let .userMessage(id, _, _), let .conversationMessageTaken(id, _, _): userMessageIDs.insert(id)
             case .titleUpdated: hasTitle = true
             case let .approvalRequested(request): openApprovals.append(request.id)
             case let .approvalResolved(id, _): openApprovals.removeAll { $0 == id }

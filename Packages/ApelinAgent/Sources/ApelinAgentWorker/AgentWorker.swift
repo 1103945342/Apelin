@@ -581,6 +581,16 @@ actor EventRelay {
                 "text": .string(text),
                 "attachments": (try? ApelinCore.JSONValue(encoding: attachments)) ?? .array([]),
             ]))]
+        case let .conversationMessageQueued(id, text, from):
+            return [("queued", .object([
+                "id": .string(id.uuidString), "text": .string(text), "from": .string(from),
+            ]))]
+        case let .conversationMessageTaken(id, text, from):
+            return [("prompt", .object([
+                "id": .string(id.uuidString), "text": .string(text), "from": .string(from),
+            ]))]
+        case let .conversationMessagesDropped(ids):
+            return [("queueDropped", .object(["ids": .array(ids.map { .string($0.uuidString) })]))]
         case let .queuedMessagesDropped(ids):
             return [("queueDropped", .object(["ids": .array(ids.map { .string($0.uuidString) })]))]
         case let .promptSubmitted(text, from):

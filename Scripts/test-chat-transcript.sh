@@ -61,6 +61,7 @@ sources=(
     "$root/Tests/ChatTranscript/ChatDeletionCheck.swift"
     "$root/Tests/ChatTranscript/ChatUnreadCheck.swift"
     "$root/Tests/ChatTranscript/ChatForkCheck.swift"
+    "$root/Tests/ChatTranscript/ConversationSourceCheck.swift"
     "$root/Tests/ChatTranscript/ForcePushCardCheck.swift"
     "$root/Tests/ChatTranscript/SquashCardCheck.swift"
     "$root/Tests/ChatTranscript/QuestionCardCheck.swift"

@@ -1444,7 +1444,17 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   from kwwk's steering queue too so no later run reads them; the app puts
   them back in the composer, text and files, ahead of what was typed
   since, and says "N Messages Not Sent" once the reader sees the
-  conversation: `DroppedMessages`), `messageStarted`,
+  conversation: `DroppedMessages`). Source messages instead use kwwk's
+  follow-up queue: `conversationMessageQueued` becomes `queued` {id, text,
+  from}; only the matching model `messageStart` emits
+  `conversationMessageTaken`, mapped to `prompt` with the same id and from.
+  The app shows that source above the active thinking row and outlines its
+  bubble in green. A queued source never replaces the active source until
+  taken. `conversationMessagesDropped` maps to `queueDropped`, but queued
+  events carrying `from` never return to the reader's composer. Both queues
+  are cleared on Stop; text plus the exact user-message timestamp match
+  acceptance, so a runtime aside cannot consume another message's entry.
+  `messageStarted`,
   `messageDiscarded` (kwwk gave up the message streaming since the last
   `messageStarted` and asks for it again: its text and thinking are not the
   reply), `reconnecting` (a failed model request is being made again:
@@ -1498,7 +1508,9 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   change of the history it has not seen, as at a compaction (`SessionReplay`).
   `agentFork` reads a saved model/UI context for message `id`, including
   image bytes, untruncated tool results and provider metadata, rather than
-  reconstructing model messages from the visible log. `forks/<message-id>.json`
+  reconstructing model messages from the visible log. Its boundary is either
+  a direct `userMessage` or a source message's `conversationMessageTaken`;
+  a queued-but-untaken source is never a model-history boundary. `forks/<message-id>.json`
   references immutable SHA-256 objects under `forks/objects/`; each completed
   turn is sealed, so later edits, rewind and compaction cannot rewrite it.
   The session captures complete model-message boundaries, then seals at run
@@ -1509,6 +1521,14 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   from surviving messages, never invented from a truncated UI log.
   The app starts the new session with an empty event projection and replays
   its own log; historical events must not repeat business side effects.
+  Selecting a saved session without an active reader opens its history even
+  when the UI record is empty; an open error is shown and the same record
+  can be retried, rather than leaving a silent empty fork. On an explicit
+  stop with an incomplete tool batch, `runEnded` restores the last complete
+  model prefix and seals existing snapshots without recapturing partial UI
+  events. It never invents tool results. Reopening an older unfinished
+  transcript repairs only a recorded aborted run; malformed middle batches,
+  orphan results, damaged objects and IO failures remain errors.
   General Chat, a picker for turns removed by rewind, and historical system
   prompt/tool-configuration provenance are not implemented by this change.
   `ForkContextTests` covers preservation and independent forks; the production
