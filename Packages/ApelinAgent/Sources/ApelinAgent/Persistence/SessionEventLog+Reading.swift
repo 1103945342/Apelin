@@ -53,11 +53,10 @@ extension SessionEventLog {
     /// from its bytes, and for the last line's number. One of those that
     /// will not decode is `corrupt`, but for the last line, which a process
     /// killed mid-write leaves torn.
-    static func scan(_ url: URL) throws -> (summary: Summary, length: Int, size: Int, decodes: Int, records: [SessionEventRecord]) {
+    static func scan(_ url: URL) throws -> (summary: Summary, length: Int, size: Int, decodes: Int) {
         let data = try Data(contentsOf: url, options: .mappedIfSafe)
         return try data.withUnsafeBytes { bytes in
             var summary = Summary()
-            var records: [SessionEventRecord] = []
             var decodes = 0
             func decode(_ line: Range<Int>) -> SessionEventRecord? {
                 decodes += 1
@@ -77,13 +76,11 @@ extension SessionEventLog {
                 }
                 guard let record = decode(line) else { throw SessionStoreError.corrupt("line \(number)") }
                 summary.add(record)
-                records.append(record)
             }
-            guard let last else { return (summary, length, bytes.count, decodes, records) }
+            guard let last else { return (summary, length, bytes.count, decodes) }
             number += 1
             if let record = decode(last) {
                 summary.add(record)
-                records.append(record)
             } else if length < bytes.count {
                 // the torn write is the one after it
                 throw SessionStoreError.corrupt("line \(number)")
@@ -96,7 +93,7 @@ extension SessionEventLog {
                     summary.lastSeq = record.seq
                 }
             }
-            return (summary, length, bytes.count, decodes, records)
+            return (summary, length, bytes.count, decodes)
         }
     }
 

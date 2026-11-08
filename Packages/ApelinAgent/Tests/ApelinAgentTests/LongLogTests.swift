@@ -155,6 +155,13 @@ struct LongLogTests {
         await #expect(throws: SessionStoreError.corrupt("line 3")) {
             _ = try await log.records(afterSeq: 0)
         }
+        // A partial opening scan must not become a seemingly valid fork.
+        // Failed reads stay failed on retry, never cached as empty/partial.
+        for _ in 0 ..< 2 {
+            await #expect(throws: SessionStoreError.corrupt("line 3")) {
+                _ = try await log.historyRecords()
+            }
+        }
         await log.close()
     }
 

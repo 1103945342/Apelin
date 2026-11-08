@@ -51,6 +51,7 @@ extension SessionEventLog {
         anchors: [String: HistoryAnchor],
         historySource: URL,
         through messageID: UUID,
+        savedObjects: [String: Data] = [:],
     ) throws {
         guard isValidSessionID(metadata.id) else { throw SessionStoreError.invalidSessionID(metadata.id) }
         let encoder = historyEncoder()
@@ -70,7 +71,7 @@ extension SessionEventLog {
                 default: return nil
                 }
             }).subtracting([messageID])
-            try copyForkHistory(from: historySource, to: folder, ids: ids)
+            try copyForkHistory(from: historySource, to: folder, ids: ids, savedObjects: savedObjects)
             try writeForkContext(
                 ForkContext(messages: transcript, records: records, anchors: anchors),
                 id: messageID, directory: folder,

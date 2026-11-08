@@ -10,6 +10,9 @@ struct ForkContext: Sendable {
     var messages: [Message]
     var records: [SessionEventRecord]
     var anchors: [String: HistoryAnchor]
+    /// Verified serialized bytes retained only for this fork transaction.
+    /// Reuse them instead of reading the selected snapshot again while copying.
+    var savedObjects: [String: Data] = [:]
 
     /// Only an unfinished suffix may be discarded after an explicit stop.
     /// A missing result in the middle, an orphan result or a duplicate call
@@ -97,10 +100,9 @@ extension SessionEventLog {
         guard ForkContext.hasCompleteToolResults(messages) else {
             throw SessionStoreError.corrupt("cannot archive a conversation with unfinished tool calls")
         }
-        // The pending delta is a record the snapshot's turn records must
-        // contain, so it is written before `written` is walked.
-        try flush()
-        let records = written
+        // The pending delta belongs to this snapshot too. On a reopened
+        // session the opening summary is not a complete event history.
+        let records = try historyRecords()
         var located: [(id: UUID, index: Int, anchor: HistoryAnchor)] = []
         for (position, record) in records.enumerated() {
             let candidate: (id: UUID, text: String, attachments: [AgentAttachment])? = {
@@ -147,7 +149,7 @@ extension SessionEventLog {
         guard !located.isEmpty else { return }
         try prepareForks()
         let encoder = Self.forkEncoder()
-        let objects = HistoryObjectStore(directory: forksDirectory.appendingPathComponent("objects"))
+        let objects = try HistoryObjectStore(directory: forksDirectory.appendingPathComponent("objects"))
         // The objects are content-addressed, so an object already stored is
         // the message stored again. Encoding and hashing every message on
         // every turn made the cost grow with the conversation; each is
@@ -280,16 +282,19 @@ extension SessionEventLog {
 
     func readForkContext(_ id: UUID) throws -> ForkContext? {
         guard let manifest = try readManifest(id) else { return nil }
-        let objects = HistoryObjectStore(directory: forksDirectory.appendingPathComponent("objects"))
+        let objects = try HistoryObjectStore(directory: forksDirectory.appendingPathComponent("objects"))
         var messages: [Message] = []
-        for name in manifest.messages {
-            messages.append(try Self.decoder.decode(Message.self, from: objects.get(name)))
+        var saved: [String: Data] = [:]
+        for (name, data) in zip(manifest.messages, try objects.get(manifest.messages)) {
+            messages.append(try Self.decoder.decode(Message.self, from: data))
+            saved[name] = data
         }
         var records: [SessionEventRecord] = []
-        for name in manifest.records {
-            records.append(try Self.decoder.decode(SessionEventRecord.self, from: objects.get(name)))
+        for (name, data) in zip(manifest.records, try objects.get(manifest.records)) {
+            records.append(try Self.decoder.decode(SessionEventRecord.self, from: data))
+            saved[name] = data
         }
-        return ForkContext(messages: messages, records: records, anchors: manifest.anchors)
+        return ForkContext(messages: messages, records: records, anchors: manifest.anchors, savedObjects: saved)
     }
 
     private func prepareForks() throws {
@@ -322,7 +327,7 @@ extension SessionEventLog {
             try FileManager.default.createDirectory(at: forks, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
         }
         try HistoryObjectStore.requireDirectory(forks)
-        let objects = HistoryObjectStore(directory: forks.appendingPathComponent("objects"))
+        let objects = try HistoryObjectStore(directory: forks.appendingPathComponent("objects"))
         let encoder = forkEncoder()
         var messages: [String] = []
         var records: [String] = []
@@ -334,14 +339,16 @@ extension SessionEventLog {
 
     /// Called while writing a new session. Copy only ancestors' snapshots,
     /// not future turns, and never retain a dependency on the source folder.
-    static func copyForkHistory(from source: URL, to destination: URL, ids: Set<UUID>) throws {
+    static func copyForkHistory(from source: URL, to destination: URL, ids: Set<UUID>, savedObjects: [String: Data] = [:]) throws {
         let sourceForks = source.appendingPathComponent("forks")
         guard try HistoryObjectStore.itemExists(sourceForks) else { return }
         try HistoryObjectStore.requireDirectory(sourceForks)
         let destinationForks = destination.appendingPathComponent("forks")
         try FileManager.default.createDirectory(at: destinationForks, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
-        let sourceObjects = HistoryObjectStore(directory: sourceForks.appendingPathComponent("objects"))
-        let destinationObjects = HistoryObjectStore(directory: destinationForks.appendingPathComponent("objects"))
+        let sourceObjects = try HistoryObjectStore(directory: sourceForks.appendingPathComponent("objects"))
+        var destinationObjects = try HistoryObjectStore(directory: destinationForks.appendingPathComponent("objects"))
+        var names = Set(savedObjects.keys)
+        var manifests: [(String, Data)] = []
         for id in ids {
             let name = id.uuidString.lowercased() + ".json"
             let url = sourceForks.appendingPathComponent(name)
@@ -351,9 +358,13 @@ extension SessionEventLog {
             let data = try Data(contentsOf: url)
             let manifest = try decoder.decode(ForkManifest.self, from: data)
             guard manifest.version == 1 else { throw SessionStoreError.corrupt("unsupported fork history version") }
-            for object in Set(manifest.messages + manifest.records) {
-                _ = try destinationObjects.put(sourceObjects.get(object))
-            }
+            names.formUnion(manifest.messages)
+            names.formUnion(manifest.records)
+            manifests.append((name, data))
+        }
+        var copied: Set<String> = []
+        try destinationObjects.copy(Array(names), from: sourceObjects, copied: &copied, preloaded: savedObjects)
+        for (name, data) in manifests {
             try HistoryObjectStore.write(data, to: destinationForks.appendingPathComponent(name))
         }
     }

@@ -77,13 +77,12 @@ public actor SessionEventLog {
     /// Writes the pending delta when its 250 ms are up.
     private var deadline: Task<Void, Never>?
     private var subscribers: [UUID: Subscriber] = [:]
-    /// Every record this open has written, in order, with the ones a replay
-    /// read already. A snapshot walks this instead of re-reading the file:
-    /// it was read once to find the end, and every record since is appended
-    /// here as it is written. Re-reading `events.jsonl` on every turn end
-    /// decoded the whole conversation again, so the cost of a turn grew with
-    /// the conversation's length.
-    var written: [SessionEventRecord] = []
+    /// Complete records for history snapshots, loaded lazily once per open.
+    /// The opening scan keeps only a summary: treating its selected records
+    /// as the whole history silently drops replies from forks after a reopen.
+    /// Nil until the first snapshot reads the file; subsequent writes append
+    /// to the cache. A failed read leaves it nil and must fail the snapshot.
+    private var written: [SessionEventRecord]?
     /// Lines decoded in full: by the opening scan, which decodes only the
     /// few `opened` needs, by every replay and by `records(afterSeq:)`.
     /// What a test holds an open to.
@@ -157,7 +156,7 @@ public actor SessionEventLog {
         nextSeq = scan.summary.lastSeq + 1
         length = UInt64(scan.length)
         decodes = scan.decodes
-        written = scan.records
+        written = scan.summary.lastSeq == 0 ? [] : nil
     }
 
     /// Session ids are UUIDs, so one can never name a path.
@@ -242,6 +241,18 @@ public actor SessionEventLog {
         return read.records.filter { $0.seq > afterSeq }
     }
 
+    /// Full snapshot input, never the opening summary or a partial replay.
+    /// No suspension between the read and cache publication: every append
+    /// before this call is on disk, and every later append updates the cache.
+    func historyRecords() throws -> [SessionEventRecord] {
+        try flush()
+        if let written { return written }
+        let read = try Self.readRecords(events)
+        decodes += read.decodes
+        written = read.records
+        return read.records
+    }
+
     /// Writes the pending delta, ends every subscriber's stream and closes
     /// the file.
     public func close() {
@@ -299,9 +310,8 @@ public actor SessionEventLog {
         try? flush()
     }
 
-    /// Writes the pending delta, if there is one. Internal, not private:
-    /// `writeHistorySnapshot` lives in another file's extension and has to
-    /// flush before it walks `written`.
+    /// Writes the pending delta, if there is one. Snapshot input flushes it
+    /// before reading the file or returning the complete cache.
     func flush() throws {
         deadline?.cancel()
         deadline = nil
@@ -324,7 +334,7 @@ public actor SessionEventLog {
         }
         length += UInt64(line.count)
         nextSeq += 1
-        written.append(record)
+        written?.append(record)
         for subscriber in subscribers.values {
             if subscriber.held == nil {
                 subscriber.continuation.yield(record)

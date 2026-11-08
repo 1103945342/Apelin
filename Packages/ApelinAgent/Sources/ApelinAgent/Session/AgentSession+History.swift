@@ -160,6 +160,7 @@ extension AgentSession {
                 anchors: context.anchors,
                 historySource: log.directory,
                 through: id,
+                savedObjects: context.savedObjects,
             )
         } catch let error as SessionStoreError {
             throw ApelinError(.conflict, error.localizedDescription)

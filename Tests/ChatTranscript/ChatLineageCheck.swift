@@ -51,6 +51,23 @@ func checkChatLineage() {
     var root = chat("Plan", "Clock")
     let first = branch(of: root, "Plan", number: 1)
     let second = branch(of: first, "Plan", number: 1)
+    precondition(
+        first.titlePresentation == ChatTitlePresentation(title: "Plan", branchNumber: 1),
+        "a branch title carries its number into the page-title presentation"
+    )
+    precondition(
+        root.titlePresentation == ChatTitlePresentation(title: "Plan"),
+        "a root conversation has no branch badge"
+    )
+    var malformedBranch = branch(of: root, "Plan", number: 0)
+    precondition(malformedBranch.titlePresentation.branchNumber == nil, "a nonpositive branch number is not shown")
+    malformedBranch.relationship = .derived
+    malformedBranch.branchNumber = 3
+    precondition(malformedBranch.titlePresentation.branchNumber == nil, "a derived conversation has no branch badge even with a stored number")
+    precondition(branch(of: root, "Plan", number: 2).titlePresentation != first.titlePresentation,
+                 "same-title branches with different numbers are distinct presentations")
+    precondition(ChatTitlePresentation(title: "Plan", branchNumber: -1).branchNumber == nil,
+                 "negative numbers never become badges")
     var projected = Dictionary(uniqueKeysWithValues: ChatLineage.projected([root, first, second]).map { ($0.id, $0) })
     precondition(projected[first.id]?.title == "Plan" && projected[second.id]?.title == "Plan")
     precondition(projected[second.id]?.branchNumber == 1, "only the title is projected")

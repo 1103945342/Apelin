@@ -95,6 +95,33 @@ extension ChatSummary {
 }
 
 extension ChatSummary {
+    /// What the conversation bar shows: the projected name and, only for a
+    /// numbered branch, the number that also distinguishes it in the sidebar.
+    var titlePresentation: ChatTitlePresentation {
+        ChatTitlePresentation(self)
+    }
+}
+
+struct ChatTitlePresentation: Equatable {
+    let title: String
+    let branchNumber: Int?
+
+    init(_ summary: ChatSummary) {
+        title = summary.displayTitle
+        if summary.relationship == .branch, let number = summary.branchNumber, number > 0 {
+            branchNumber = number
+        } else {
+            branchNumber = nil
+        }
+    }
+
+    init(title: String, branchNumber: Int? = nil) {
+        self.title = title
+        self.branchNumber = branchNumber.flatMap { $0 > 0 ? $0 : nil }
+    }
+}
+
+extension ChatSummary {
     private enum CodingKeys: String, CodingKey {
         case id, title, projectName, isPinned, isWorking, isUnread, isNamedByReader
         case parentChatID, relationship, branchNumber, lastBranchNumber

@@ -41,7 +41,7 @@ final class RootInterfaceController: UIViewController {
         page.onOpenChat = { [weak self] summary in
             guard let self else { return }
             sidebar.select(summary)
-            setDrawerOpen(false)
+            open(summary, picked: true)
         }
         return page
     }()

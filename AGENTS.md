@@ -1529,9 +1529,32 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   from surviving messages, never invented from a truncated UI log.
   The app starts the new session with an empty event projection and replays
   its own log; historical events must not repeat business side effects.
+  The fast opening scan is only a summary, never snapshot input. The first
+  history snapshot after reopening strictly reads the full event log once;
+  later snapshots use that complete cache plus appended records. A failed
+  read leaves no partial cache. Fork copying collects the union of ancestor
+  references and the selected snapshot's verified bytes, then atomically
+  publishes one binary `forks/objects/inherited.plist` (version 1) before
+  publishing ancestor manifests. It owns every byte; no parent links or hard
+  links remain. Each archive key and SHA-256 digest is validated on opening;
+  loose objects remain readable and new captures may add loose objects beside
+  the archive. Selected bytes are reused only within that fork transaction,
+  still checked against their digest, never fetched again from an advancing
+  source. Batch reads pin the object directory once. A failed copy leaves no
+  published partial archive or successful copied-set entries. Damaged objects
+  are still errors. Existing sealed snapshots and saved branches are not
+  rewritten by this fix.
   Selecting a saved session without an active reader opens its history even
   when the UI record is empty; an open error is shown and the same record
-  can be retried, rather than leaving a silent empty fork. On an explicit
+  can be retried, rather than leaving a silent empty fork. Fork success must
+  call the root's `open(summary, picked: true)` as well as `sidebar.select`:
+  selecting there only changes the highlight. Both `ChatController.use` and
+  its runtime refresh pass `titlePresentation`, including the branch number,
+  so equally named branches still update the title badge. These UI changes
+  still need installed-device verification. The ordinary request timeout can
+  still finish before a slow fork; pending-fork reconciliation is not yet
+  implemented, and storage-only timings do not prove the three-second
+  click-to-open target. On an explicit
   stop with an incomplete tool batch, `runEnded` restores the last complete
   model prefix and seals existing snapshots without recapturing partial UI
   events. It never invents tool results. Reopening an older unfinished

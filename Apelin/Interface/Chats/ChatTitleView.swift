@@ -18,7 +18,9 @@ import UIKit
 /// name's.
 final class ChatTitleView: UIView {
     private let label = LTXAnimatableLabel()
+    private let badge = UILabel()
     private(set) var title = ""
+    private var presentation = ChatTitlePresentation(title: "")
     /// Whether the change waiting for the next layout pass rolls in.
     private var animatesNextChange = false
 
@@ -31,6 +33,15 @@ final class ChatTitleView: UIView {
         label.isSelectable = false
         label.backgroundColor = .clear
         addSubview(label)
+        badge.font = .preferredFont(forTextStyle: .caption2)
+        badge.adjustsFontForContentSizeCategory = true
+        badge.textAlignment = .center
+        badge.textColor = .secondaryLabel
+        badge.backgroundColor = .tertiarySystemFill
+        badge.layer.cornerRadius = 8
+        badge.layer.masksToBounds = true
+        badge.isHidden = true
+        addSubview(badge)
 
         isAccessibilityElement = true
         accessibilityTraits = .header
@@ -45,13 +56,21 @@ final class ChatTitleView: UIView {
         fatalError("Use init(frame:)")
     }
 
-    /// Shows `title`, rolling the old one out when `animated` and the label
-    /// is on screen.
+    /// Shows the title and optional branch number, rolling text changes in
+    /// when the label is on screen.
     func setTitle(_ title: String, animated: Bool) {
-        guard title != self.title else { return }
-        self.title = title
-        accessibilityLabel = title
-        largeContentTitle = title
+        setTitle(ChatTitlePresentation(title: title), animated: animated)
+    }
+
+    func setTitle(_ presentation: ChatTitlePresentation, animated: Bool) {
+        guard presentation != self.presentation else { return }
+        self.presentation = presentation
+        title = presentation.title
+        accessibilityLabel = presentation.title
+        accessibilityValue = presentation.branchNumber.map { String(localized: "Branch \($0)") }
+        largeContentTitle = presentation.title
+        badge.text = presentation.branchNumber.map(String.init)
+        badge.isHidden = presentation.branchNumber == nil
         animatesNextChange = animated
         setNeedsLayout()
     }
@@ -90,17 +109,31 @@ final class ChatTitleView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         let room = bounds.width
-        let twoLines = room > 0 && Self.width(of: title, font: Self.font) > room
-        let lineHeight = ceil((twoLines ? Self.twoLineFont : Self.font).lineHeight)
+        let badgeSize = badge.isHidden ? CGSize.zero : badge.sizeThatFits(CGSize(width: room, height: bounds.height))
+        let badgeWidth = badge.isHidden ? 0 : max(16, ceil(badgeSize.width) + 8)
+        let badgeHeight = badge.isHidden ? 0 : max(16, ceil(badgeSize.height) + 4)
+        let titleRoom = max(0, room - (badge.isHidden ? 0 : badgeWidth + 4))
+        let twoLines = titleRoom > 0 && Self.width(of: title, font: Self.font) > titleRoom
+        let chosenFont = twoLines ? Self.twoLineFont : Self.font
+        let lineHeight = ceil(chosenFont.lineHeight)
         let textHeight = twoLines ? lineHeight * 2 : lineHeight
-        let box = textFrame(width: room, height: textHeight)
+        let box = textFrame(width: titleRoom, height: textHeight)
         label.frame = box
-        let attributed = attributedTitle(twoLines: twoLines, room: room, box: box)
+        let attributed = attributedTitle(twoLines: twoLines, room: titleRoom, box: box)
         let animated = animatesNextChange
         animatesNextChange = false
-        guard !attributed.isEqual(to: label.attributedText) else { return }
-        // a change of room alone moves or cuts the text at once
-        label.setAttributedText(attributed, animated: animated)
+        if !attributed.isEqual(to: label.attributedText) {
+            // a change of room alone moves or cuts the text at once
+            label.setAttributedText(attributed, animated: animated)
+        }
+        if badge.isHidden { return }
+        let titleWidth = min(titleRoom, Self.width(of: title, font: chosenFont))
+        badge.frame = CGRect(
+            x: titleWidth + 4,
+            y: floor((bounds.height - badgeHeight) / 2),
+            width: badgeWidth,
+            height: badgeHeight
+        )
     }
 
     override func didMoveToWindow() {

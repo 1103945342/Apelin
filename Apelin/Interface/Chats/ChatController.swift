@@ -519,7 +519,7 @@ final class ChatController: UIViewController {
         ensureModelSelection()
         title = chat.displayTitle
         // rolled only on screen; a page coming back shows its name at once
-        titleView.setTitle(chat.displayTitle, animated: previous != nil && view.window != nil)
+        titleView.setTitle(chat.titlePresentation, animated: previous != nil && view.window != nil)
         guard previous?.id != chat.id else { return }
         isSwitchingChat = true
         needsInitialScroll = true
@@ -588,7 +588,7 @@ final class ChatController: UIViewController {
                 // a rename, or the agent's title: the back button's too
                 title = summary.displayTitle
             }
-            titleView.setTitle(summary.displayTitle, animated: view.window != nil)
+            titleView.setTitle(summary.titlePresentation, animated: view.window != nil)
             let transcript = runtime.transcript(chat.id)
             updateMessages(transcript.messages)
             composer.setBusy(summary.isWorking)

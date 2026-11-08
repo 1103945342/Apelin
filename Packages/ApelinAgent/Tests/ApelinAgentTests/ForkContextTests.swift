@@ -52,6 +52,52 @@ struct ForkContextTests {
         await reopened.close()
     }
 
+    @Test(arguments: [false, true])
+    func `snapshots after reopening include old replies without waiting for a replay`(archived: Bool) async throws {
+        let home = try TemporaryHome()
+        defer { home.remove() }
+        let sourceID = UUID().uuidString.lowercased()
+        let log = try SessionEventLog(sessionsRoot: home.dataRoot.sessions, sessionID: sourceID)
+        let first = UUID(), second = UUID()
+        let user = UserMessage(text: "First")
+        let later = UserMessage(text: "Second")
+        let anchors = [first.uuidString.lowercased(): anchor(user), second.uuidString.lowercased(): anchor(later)]
+        let initial: [Message] = [.user(user), .assistant(fauxAssistantMessage("Original answer"))]
+        try await log.append(.userMessage(id: first, text: "First", attachments: []))
+        try await log.append(.textDelta("Original answer"))
+        try await log.append(.messageFinished(text: "Original answer"))
+        try await log.append(.finished(reason: .completed))
+        if archived { try await log.writeHistorySnapshot(initial, anchors: anchors, seal: true) }
+        let original = try await log.records(afterSeq: 0)
+        await log.close()
+
+        let reopened = try SessionEventLog(sessionsRoot: home.dataRoot.sessions, sessionID: sourceID)
+        let opening = await reopened.decodes
+        #expect(opening == 2, "opening still reads only the user message and last line")
+        // No attach/replay has filled any cache. Include a newly appended
+        // turn and a pending delta, neither dropping nor duplicating either.
+        try await reopened.append(.userMessage(id: second, text: "Second", attachments: []))
+        try await reopened.append(.textDelta("New reply"))
+        let partial = initial + [.user(later), .assistant(fauxAssistantMessage("New reply"))]
+        try await reopened.writeHistorySnapshot(partial, anchors: anchors)
+        let loaded = await reopened.decodes
+        #expect(loaded == opening + original.count + 2)
+        let snapshot = try #require(try await reopened.readForkContext(second))
+        #expect(Array(snapshot.records.prefix(original.count)) == original)
+        #expect(snapshot.messages == partial)
+        #expect(snapshot.records.filter { $0.event == .textDelta("New reply") }.count == 1)
+
+        try await reopened.append(.messageFinished(text: "New reply"))
+        try await reopened.append(.finished(reason: .completed))
+        try await reopened.writeHistorySnapshot(partial, anchors: anchors, seal: true)
+        #expect(await reopened.decodes == loaded, "later snapshots reuse the full cache")
+        let sealed = try #require(try await reopened.readForkContext(second))
+        #expect(sealed.records == (try await reopened.records(afterSeq: 0)))
+        let firstSaved = try #require(try await reopened.readForkContext(first))
+        #expect(firstSaved.records == original, "legacy seeding also keeps every old reply")
+        await reopened.close()
+    }
+
     @Test
     func `a taken source message gets an anchored fork snapshot`() async throws {
         let home = try TemporaryHome()
@@ -100,8 +146,8 @@ struct ForkContextTests {
         await log.close()
     }
 
-    @Test
-    func `fork owns selected and ancestor snapshots after source deletion`() async throws {
+    @Test(arguments: [false, true])
+    func `fork owns selected and ancestor snapshots after source deletion`(preload: Bool) async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let faux = await registerFauxProvider()
@@ -134,7 +180,12 @@ struct ForkContextTests {
             sessionsRoot: home.dataRoot.sessions, metadata: metadata,
             records: selected.records, transcript: selected.messages, anchors: selected.anchors,
             historySource: log.directory, through: second,
+            savedObjects: preload ? selected.savedObjects : [:],
         )
+        if preload {
+            let objects = home.dataRoot.sessions.appendingPathComponent(forkID).appendingPathComponent("forks/objects")
+            #expect(try FileManager.default.contentsOfDirectory(atPath: objects.path) == [HistoryObjectStore.archiveName])
+        }
         await log.close()
         try FileManager.default.removeItem(at: log.directory)
         let fork = try SessionEventLog(sessionsRoot: home.dataRoot.sessions, sessionID: forkID)
@@ -464,7 +515,7 @@ struct ForkContextTests {
     func `content addressed objects reject damage and links without overwriting them`() throws {
         let home = try TemporaryHome()
         defer { home.remove() }
-        let store = HistoryObjectStore(directory: home.projectURL.appendingPathComponent("objects"))
+        let store = try HistoryObjectStore(directory: home.projectURL.appendingPathComponent("objects"))
         let bytes = Data("original".utf8)
         let name = try store.put(bytes)
         #expect(try store.put(bytes) == name)
