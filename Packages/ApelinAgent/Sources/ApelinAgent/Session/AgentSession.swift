@@ -19,7 +19,7 @@ public actor AgentSession {
     public nonisolated let configuration: AgentSessionConfiguration
     public nonisolated let log: SessionEventLog
     /// The conversation's diagnostic journal, `Journal/Agent/<id>.log`.
-    nonisolated let journal: SessionJournal
+    public nonisolated let journal: SessionJournal
 
     let agent: Agent
     private let gate: ApprovalGate
@@ -30,6 +30,8 @@ public actor AgentSession {
     private var toolExtensions: ToolExtensionOffer
     private var unsubscribe: Unsubscribe?
     var runTask: Task<Void, Never>?
+    /// The last prompt's remainder, so the next one queues behind it.
+    private var acceptanceTail: Task<Void, Never>?
     /// From the moment a run's loop returns until its end is recorded: a
     /// message steered into it or followed up now would never be taken.
     private var runEnding = false
@@ -153,9 +155,15 @@ public actor AgentSession {
         } else if previous?.project != configuration.project {
             throw SessionStoreError.corrupt("session \(configuration.id) belongs to another project")
         }
+        // The open is what the app waits on for a new chat, so every step
+        // that can be slow says how long it took, on the conversation's own
+        // journal (Settings ▸ Logs ▸ Chats).
+        let opened = Date()
         let transcript = try await LegacyToolNames.migrate(log.readResumableTranscript())
         try await Self.closeAbandonedApprovals(log)
+        journal.startup("transcript read: \(transcript.count) message(s) in \(Self.milliseconds(since: opened))")
 
+        let resolving = Date()
         let resolved: ResolvedProvider
         do {
             resolved = try await ProviderResolver.resolve(configuration.provider, credentials: credentials)
@@ -163,6 +171,7 @@ public actor AgentSession {
             journal.sessionOpenFailed(error)
             throw error
         }
+        journal.startup("provider resolved in \(Self.milliseconds(since: resolving))")
         journal.sessionOpened(configuration, model: resolved.model, reopened: previous != nil, historyMessages: transcript.count)
         journal.closeUnfinishedCalls()
         for id in log.opened.openApprovals {
@@ -190,6 +199,7 @@ public actor AgentSession {
             journal: journal,
         )
         let (mcpManager, mcpTools) = await MCPBridge.connect(configuration.mcpServers)
+        journal.startup("tool extensions and MCP: \(Self.milliseconds(since: resolving))")
         let toolExtensions = ToolExtensionOffer.read(
             installRoot: configuration.installRoot,
             policy: configuration.toolExtensionPolicy,
@@ -640,6 +650,53 @@ public actor AgentSession {
             .map { ImageContent(data: $0.data.base64EncodedString(), mimeType: $0.mimeType) }
         let suffix = ConversationHistory.attachmentSuffix(attachments.map { (name: $0.name, path: $0.path) })
         let typed = text + suffix
+        // The message is the log's now, so it is accepted here. What came
+        // before the reply — waiting out a compaction, waiting for a run
+        // that is ending, saving a checkpoint, reading the repository — ran
+        // on the caller's clock, so a call was held open for as long as the
+        // conversation happened to be busy. It runs on instead, in the order
+        // the messages were accepted.
+        await appendAcceptance(Accepted(
+            text: text,
+            typed: typed,
+            suffix: suffix,
+            messageID: messageID,
+            attachments: attachments,
+            images: images,
+            sender: sender,
+            queues: queues,
+        ))
+    }
+
+    /// What a prompt left to do after it was recorded.
+    private struct Accepted {
+        var text: String
+        var typed: String
+        var suffix: String
+        var messageID: UUID?
+        var attachments: [AgentAttachment]
+        var images: [ImageContent]
+        var sender: ConversationSender?
+        var queues: Bool
+    }
+
+    /// Queues `accepted` behind the ones before it: each message's remainder
+    /// begins where the previous one's stopped, never beside it.
+    private func appendAcceptance(_ accepted: Accepted) async {
+        let previous = acceptanceTail
+        acceptanceTail = Task { [weak self] in
+            await previous?.value
+            await self?.accept(accepted)
+        }
+    }
+
+    /// Waits out what must end first, then starts or joins the run.
+    private func accept(_ accepted: Accepted) async {
+        let text = accepted.text
+        let typed = accepted.typed
+        let suffix = accepted.suffix
+        let messageID = accepted.messageID
+        let queues = accepted.queues
         // The work tree as it is before this message's run, saved while the
         // waits below go on and offered only when saved before the run
         // starts: a message that joins a run going has none.
@@ -666,17 +723,17 @@ public actor AgentSession {
             await record(.checkpointSaved(id: messageID))
         }
         let (prompt, toldBefore, restartUntoldBefore) = await withSystemState(
-            sender.map { $0.prefix + "\n" + typed } ?? typed,
+            accepted.sender.map { $0.prefix + "\n" + typed } ?? typed,
             delta: true,
         )
-        let message = UserMessage(content: [.text(TextContent(text: prompt))] + images.map { .image($0) })
+        let message = UserMessage(content: [.text(TextContent(text: prompt))] + accepted.images.map { .image($0) })
         await waitForEndingRun()
         if queues, let messageID {
             if runTask != nil {
                 queued.append(QueuedMessage(
                     id: messageID,
                     text: text,
-                    attachments: attachments,
+                    attachments: accepted.attachments,
                     injected: prompt,
                     timestamp: message.timestamp,
                     told: toldBefore,
@@ -688,7 +745,7 @@ public actor AgentSession {
                 return
             }
             // The run ended while this was recorded: it starts the next one.
-            await record(.userMessage(id: messageID, text: text, attachments: attachments))
+            await record(.userMessage(id: messageID, text: text, attachments: accepted.attachments))
             await waitForEndingRun()
         }
         // the last wait: nothing below suspends before the run is started
@@ -711,7 +768,7 @@ public actor AgentSession {
         }
         runTask = Task { [weak self] in
             do {
-                try await agent.prompt(opening, images: images)
+                try await agent.prompt(opening, images: accepted.images)
             } catch {
                 await self?.recordRunError(error)
             }
@@ -1268,6 +1325,11 @@ public actor AgentSession {
             }
             await self?.runEnded(carrying: ids)
         }
+    }
+
+    /// How long a step took, as a journal line reads it.
+    public static func milliseconds(since start: Date) -> String {
+        "\(Int((Date().timeIntervalSince(start) * 1000).rounded())) ms"
     }
 
     /// An assistant message's text blocks, joined with nothing between them.

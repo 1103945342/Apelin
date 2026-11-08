@@ -29,6 +29,9 @@ public final class SessionJournal: @unchecked Sendable {
         case tool = "Tool"
         case approval = "Approval"
         case compaction = "Compaction"
+        /// How the session came up: the host's start, this open, and every
+        /// step that took long enough for the app to notice.
+        case startup = "Startup"
     }
 
     /// What started a compaction.
@@ -541,6 +544,14 @@ public final class SessionJournal: @unchecked Sendable {
 
     private func write(_ category: Category, _ message: String, level: DiagnosticLevel = .info, at date: Date = Date()) {
         file?.write(category.rawValue, redaction.redacted(message), level: level, date: date)
+    }
+
+    /// One line about this session's start, on the journal's queue: the
+    /// steps that made the app wait, so Settings ▸ Logs ▸ Chats names them.
+    /// Returns at once; nothing waits for the write.
+    public func startup(_ message: String, level: DiagnosticLevel = .info) {
+        let now = Date()
+        perform { $0.write(.startup, message, level: level, at: now) }
     }
 
     @objc private dynamic func errorText(_ text: String) -> String {

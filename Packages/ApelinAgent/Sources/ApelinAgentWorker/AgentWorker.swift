@@ -322,6 +322,7 @@ actor WorkerState {
         let projectURL = dataRoot.workspace(for: identity.name, temporaryID: open.temporaryID)
 
         opening = true
+        let openedAt = Date()
         // one that fails leaves the place free for the host to try again
         defer { opening = false }
         // Credentials the owner dropped in the inbox are taken first.
@@ -406,6 +407,17 @@ actor WorkerState {
                 await session.generateTitle(for: prompt)
             }
         }
+        // What the app waited on before this chat could take a message, on
+        // the conversation's own journal: the worker start, the session's
+        // open and the replay of its history.
+        session.journal.startup(
+            "open finished in \(AgentSession.milliseconds(since: openedAt)) "
+                + "(\(openedMessages(open)))",
+        )
+    }
+
+    private func openedMessages(_ open: AgentOpenRequest) -> String {
+        open.sessionID == nil ? "new: " : "resumed: " + (open.prompt.map { "\($0.count) chars" } ?? "no prompt")
     }
 
     func session(_ id: String) throws -> AgentSession {

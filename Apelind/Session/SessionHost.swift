@@ -129,8 +129,29 @@ final class SessionHost: @unchecked Sendable {
         // names the one to kill when testing a restart (Documents/Console.md).
         try? Data("\(getpid())\n".utf8).write(to: pidFile, options: .atomic)
 
-        let ready = DispatchSemaphore(value: 0)
+        // The channel is taken over before the host is ready. A request that
+        // arrives meanwhile is waiting on that gate, not held in a socket
+        // nobody reads: the proxy has already written it, so a reader that
+        // starts only after `pruneLeftoverToolchains`, the task records and
+        // `install.reconcile` leaves the app waiting on work it cannot see.
+        let gate = ReadyGate()
+        proxy.onRequest { [self] request in
+            await gate.wait()
+            return await Dispatcher.handle(
+                HostRequest(request: request.request, descriptors: request.descriptors, caller: .app),
+                host: self,
+            )
+        }
+        proxy.onControl { [self] frame in
+            if frame.header.name == WorkerControl.shutdown {
+                shutdown()
+            }
+        }
+        proxy.onClose { [self] in shutdown() }
+        proxy.start()
+
         Task {
+            let started = Date()
             // A worker's events and its exit, applied in the order they came:
             // a task per event lets a final `state` overtake the `artifact`
             // before it, and an exit overtake the `state` it followed.
@@ -189,30 +210,28 @@ final class SessionHost: @unchecked Sendable {
             // ends `interrupted`. The folders removed toolchains left go
             // first, while nothing can install into them yet.
             await install.pruneLeftoverToolchains()
+            let pruned = Date()
+            var interrupted = 0
             for record in await registry.load() {
                 if let resumer = resumers[record.kind], await resumer(record) {
                     continue
                 }
                 await registry.interrupt(record.id)
+                interrupted += 1
             }
+            let resumed = Date()
             await install.reconcile()
-            ready.signal()
-        }
-        ready.wait()
-
-        proxy.onRequest { [self] request in
-            await Dispatcher.handle(
-                HostRequest(request: request.request, descriptors: request.descriptors, caller: .app),
-                host: self,
-            )
-        }
-        proxy.onControl { [self] frame in
-            if frame.header.name == WorkerControl.shutdown {
-                shutdown()
+            let reconciled = Date()
+            func elapsed(_ from: Date, _ to: Date) -> Int {
+                Int(to.timeIntervalSince(from) * 1000)
             }
+            NSLog(
+                "apelind-session: start took %d ms (prune %d, tasks %d with %d interrupted, reconcile %d)",
+                elapsed(started, reconciled), elapsed(started, pruned), elapsed(pruned, resumed),
+                interrupted, elapsed(resumed, reconciled),
+            )
+            gate.open()
         }
-        proxy.onClose { [self] in shutdown() }
-        proxy.start()
 
         // Report work to apelind as it changes, and stop idle workers.
         let timer = DispatchSource.makeTimerSource(queue: DispatchQueue(label: "wiki.qaq.apelind.session.report"))
@@ -341,4 +360,43 @@ final class SessionHost: @unchecked Sendable {
 enum WorkerNews: Sendable {
     case event(WorkerProcess, TaskID, String, JSONValue?)
     case exit(WorkerProcess)
+}
+
+/// Holds a request until the host has finished starting, then lets it go.
+///
+/// The channel is read from the first moment — the proxy wrote its request
+/// to the socket as soon as it had one — so a request that arrives during
+/// the start waits here instead of in a socket buffer nothing drains. Its
+/// wait is what the app measures as the background service not answering.
+final class ReadyGate: @unchecked Sendable {
+    private let lock = PthreadLock()
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+    private var opened = false
+
+    /// Returns once the host has finished starting. A request waiting here
+    /// is a request the app has already sent, so all of them are freed, and
+    /// one arriving after the release does not wait at all.
+    func wait() async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            let proceed: Bool = lock.withLock {
+                guard !opened else { return true }
+                waiters.append(continuation)
+                return false
+            }
+            // Resumed outside the lock: a continuation resumed while the
+            // lock is held runs its task, which may want the gate again.
+            if proceed { continuation.resume() }
+        }
+    }
+
+    /// Releases every request waiting; later ones find the gate open.
+    func open() {
+        let freed: [CheckedContinuation<Void, Never>] = lock.withLock {
+            opened = true
+            defer { waiters.removeAll() }
+            return waiters
+        }
+        NSLog("apelind-session: ready, %d request(s) waited for the start", freed.count)
+        freed.forEach { $0.resume() }
+    }
 }

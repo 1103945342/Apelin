@@ -7,6 +7,11 @@ import Foundation
 /// spawned for and an instance key (a build ID, an agent session ID; nil for
 /// the shared environment, diagnostics and log-reader workers).
 final class WorkerProcess: @unchecked Sendable {
+    /// How long a worker has to answer. A worker runs a turn to completion on
+    /// its own clock, so the bound is generous: it is here to name the layer
+    /// that stopped answering, not to cut a slow turn short.
+    static let defaultDeadline: Duration = .seconds(300)
+
     let role: WorkerRole
     let key: String?
     let channel: WorkerChannel
@@ -21,16 +26,24 @@ final class WorkerProcess: @unchecked Sendable {
     }
 
     /// Forwards a request; `taskID` tells the worker which task it serves,
-    /// `resumed` that the host is starting it again after a restart.
+    /// `resumed` that the host is starting it again after a restart, and
+    /// `deadline` bounds the wait for its answer.
     func call(
         _ request: WireRequest,
         descriptors: [OwnedDescriptor],
         taskID: TaskID? = nil,
         resumed: Bool = false,
+        deadline: Duration? = WorkerProcess.defaultDeadline,
     ) async throws -> (WireReply, [OwnedDescriptor]) {
         lock.withLock { inFlight += 1 }
         defer { lock.withLock { inFlight -= 1; idleSince = Date() } }
-        return try await channel.call(request, descriptors: descriptors, taskID: taskID, resumed: resumed)
+        return try await channel.call(
+            request,
+            descriptors: descriptors,
+            taskID: taskID,
+            resumed: resumed,
+            deadline: deadline,
+        )
     }
 
     @objc dynamic func idleFor() -> TimeInterval {

@@ -126,10 +126,24 @@ final class ChatRuntime {
         onChange?()
         // A host that does not answer yet is not an error, and runs
         // nothing this app could follow: every saved row stops working.
+        //
+        // A saved row's `isWorking` is what the last launch saw, not what is
+        // running now: the app was quit, so the run it showed ended with the
+        // process. The row waits here rather than claiming a turn is going —
+        // a chat shown working with no way to stop it is worse than one that
+        // takes a moment to come back, and the host's answer is what puts a
+        // live one back (`reopen`).
         let live = await (try? ApelinService.app.agentList().sessions) ?? []
         for record in records.values {
             if let session = live.first(where: { $0.sessionID == record.sessionID }) {
                 records[record.summary.id]?.reopen(as: session.task)
+                // A task the host reports ended is not followed: its events
+                // are read with the next `agentOpen`, and its row says so now.
+                guard !session.state.isTerminal else {
+                    records[record.summary.id]?.summary.isWorking = false
+                    changed(record.summary.id)
+                    continue
+                }
                 follow(record.summary.id, task: session.task)
             } else if record.summary.isWorking {
                 records[record.summary.id]?.summary.isWorking = false
@@ -468,7 +482,24 @@ final class ChatRuntime {
 
     func stop(_ id: UUID) async throws {
         guard let sessionID = records[id]?.sessionID else { return }
-        try await ApelinService.app.agentAbort(sessionID: sessionID)
+        do {
+            try await ApelinService.app.agentAbort(sessionID: sessionID)
+        } catch let error as ApelinError where error.code == .notFound {
+            // The session ended with the process that ran it (the app was
+            // quit, or the host restarted): there is no run left to stop, and
+            // the row must not keep saying it is. Waiting on a host that has
+            // nothing to stop is what made Stop look broken.
+            records[id]?.summary.isWorking = false
+            changed(id, urgent: true)
+            return
+        } catch let error as ApelinError where error.code == .timeout {
+            // No answer: the run may still be going, so the row stays as it
+            // is; the reason says which it was.
+            throw ApelinError(
+                .timeout,
+                String(localized: "Apelin's background service did not answer, so the stop could not be sent. The reply may still be coming."),
+            )
+        }
     }
 
     // MARK: The history's changes (Checkpoint & Rewind, a message's menu)

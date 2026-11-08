@@ -31,8 +31,16 @@ final class DaemonClient: ApelinTransport, @unchecked Sendable {
     private static let gracePeriod: TimeInterval = 10
     private static let helloTimeout: DispatchTimeInterval = .seconds(5)
     private static let retryDelay: DispatchTimeInterval = .seconds(1)
-    /// A call's bound beyond the attach's own wait.
-    private static let callMargin: TimeInterval = 30
+    /// A call's bound beyond an attach's own wait. The session host caps an
+    /// attach at `TaskRegistry.maximumWaitMilliseconds` (60 s), so the margin
+    /// has to outlast that cap plus the queue behind it; a margin below it
+    /// timed out a wait the host was still willing to serve.
+    private static let attachMargin: TimeInterval = 75
+    /// Everything else answers once it is done — a message accepted, a stop
+    /// sent, a list read — so a long bound only makes a stopped chain look
+    /// slower than it is. The work that genuinely takes minutes is a task,
+    /// and a task is read by an attach.
+    private static let callMargin: TimeInterval = 20
 
     private enum State {
         case unknown
@@ -51,8 +59,16 @@ final class DaemonClient: ApelinTransport, @unchecked Sendable {
         guard let connection = await connection() else {
             throw ApelinError(.backendUnavailable, "Apelin’s background service is not running")
         }
-        let wait = (try? JSONCoding.decode(WaitField.self, from: request.payload))?.waitMilliseconds ?? 0
-        let bound = Self.callMargin + Double(wait) / 1000
+        // Only an attach waits on the host by design; every other request
+        // answers as soon as it is done, so only an attach adds its wait to
+        // the bound. One that leaves the wait out is asking for the
+        // protocol's default, which is what the host applies anyway.
+        var bound = Self.callMargin
+        if let attach = request.operation.requestType as? any TaskAttachRequest.Type {
+            let wait = (try? JSONCoding.decode(WaitField.self, from: request.payload))?.waitMilliseconds
+                ?? attach.defaultWaitMilliseconds
+            bound = Self.attachMargin + Double(wait) / 1000
+        }
         let message = XPCEnvelope.message(for: request, descriptors: descriptors)
         return try await withCheckedThrowingContinuation { continuation in
             let once = Once()

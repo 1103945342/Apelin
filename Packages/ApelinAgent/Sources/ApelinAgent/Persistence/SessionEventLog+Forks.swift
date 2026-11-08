@@ -97,7 +97,10 @@ extension SessionEventLog {
         guard ForkContext.hasCompleteToolResults(messages) else {
             throw SessionStoreError.corrupt("cannot archive a conversation with unfinished tool calls")
         }
-        let records = try records(afterSeq: 0)
+        // The pending delta is a record the snapshot's turn records must
+        // contain, so it is written before `written` is walked.
+        try flush()
+        let records = written
         var located: [(id: UUID, index: Int, anchor: HistoryAnchor)] = []
         for (position, record) in records.enumerated() {
             let candidate: (id: UUID, text: String, attachments: [AgentAttachment])? = {
@@ -145,9 +148,16 @@ extension SessionEventLog {
         try prepareForks()
         let encoder = Self.forkEncoder()
         let objects = HistoryObjectStore(directory: forksDirectory.appendingPathComponent("objects"))
-        var messageObjects: [String] = []
-        for message in messages {
-            messageObjects.append(try objects.put(encoder.encode(message)))
+        // The objects are content-addressed, so an object already stored is
+        // the message stored again. Encoding and hashing every message on
+        // every turn made the cost grow with the conversation; they are
+        // written lazily, once a turn that needs them has not been sealed.
+        var messageObjects: [String?] = Array(repeating: nil, count: messages.count)
+        func objectName(at index: Int) throws -> String {
+            if let name = messageObjects[index] { return name }
+            let name = try objects.put(encoder.encode(messages[index]))
+            messageObjects[index] = name
+            return name
         }
         for item in located {
             let url = manifestURL(item.id)
@@ -195,7 +205,8 @@ extension SessionEventLog {
             }
             let manifest = ForkManifest(
                 sealed: seal || end < messages.count,
-                messages: Array(messageObjects[..<end]), records: eventObjects, anchors: turnAnchors,
+                messages: try (0 ..< end).map { try objectName(at: $0) },
+                records: eventObjects, anchors: turnAnchors,
             )
             try HistoryObjectStore.write(encoder.encode(manifest), to: url)
         }

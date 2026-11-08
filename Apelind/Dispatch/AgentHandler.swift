@@ -30,6 +30,14 @@ enum AgentHandler: DomainHandler {
             return await forward(request, AgentSteerRequest.self, host: host) { $0.sessionID }
         case .agentAbort:
             let reply = await forward(request, AgentAbortRequest.self, host: host) { $0.sessionID }
+            // No worker serves it: the run ended with the process that had it,
+            // and the task it was recorded under is the only thing still
+            // saying otherwise. The reply says so, so the row stops.
+            if case let .failure(error) = reply.0.result, error.code == .notFound,
+               let abort = try? request.decode(AgentAbortRequest.self)
+            {
+                await endDetachedSession(abort.sessionID, host: host)
+            }
             // The shell_run calls the stopped run was waiting on stop with it.
             if case .success = reply.0.result, let abort = try? request.decode(AgentAbortRequest.self) {
                 AgentRunCode.stop(session: abort.sessionID)
@@ -132,6 +140,19 @@ enum AgentHandler: DomainHandler {
         await host.approvals.forgetSession(sessionID)
         await AgentSessionTable.shared.forgetGrants(sessionID)
         AgentRunCode.stop(session: sessionID)
+    }
+
+    /// A session nothing serves any more: a chat whose worker went with the
+    /// process that ran it (the app was quit, the host restarted). Its open
+    /// task is left `running` on disk, so every launch finds a row that says
+    /// it is working with no way to stop it. Ending that task is what makes
+    /// Stop mean something, and what the next `agentOpen` resumes from.
+    private static func endDetachedSession(_ sessionID: String, host: SessionHost) async {
+        guard let entry = await AgentSessionTable.shared.entry(sessionID) else { return }
+        if let record = await host.registry.record(entry.task.taskID), !record.state.isTerminal {
+            await host.registry.finish(entry.task.taskID, .interrupted, message: "the process that ran it ended")
+        }
+        await forgetClosed(sessionID, host: host)
     }
 
     /// Closes every running session of a project, each as `agentClose`
