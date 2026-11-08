@@ -5,7 +5,7 @@ import UIKit
 ///
 /// The workspace owns the file, so no temporary copy is needed: the URL stays
 /// inside the project and is only handed to Quick Look for reading.
-private final class ProjectFilePreviewController: QLPreviewController, QLPreviewControllerDataSource {
+final class ProjectFilePreviewController: QLPreviewController, QLPreviewControllerDataSource {
     private let fileURL: URL
 
     init(url: URL) {

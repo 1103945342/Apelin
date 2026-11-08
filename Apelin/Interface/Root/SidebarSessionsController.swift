@@ -137,9 +137,9 @@ final class SidebarSessionsController: UIViewController {
         view.backgroundColor = .clear
         let center = NotificationCenter.default
         for name in [
-            NSCalendarDayChangedNotification,
-            NSSystemTimeZoneDidChangeNotification,
-            NSCurrentLocaleDidChangeNotification,
+            NSNotification.Name.NSCalendarDayChanged,
+            NSNotification.Name.NSSystemTimeZoneDidChange,
+            NSLocale.currentLocaleDidChangeNotification,
             UIApplication.willEnterForegroundNotification,
         ] {
             center.addObserver(self, selector: #selector(datePresentationChanged), name: name, object: nil)
