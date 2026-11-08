@@ -901,12 +901,15 @@ public actor AgentSession {
         }
     }
 
-    /// Generates a standalone SVG image with the configured image model.
+    /// Generates one image with the configured native image model when the
+    /// provider exposes one. Providers without a native image endpoint keep
+    /// the legacy self-contained SVG fallback.
     public func generateImage(for prompt: String) async throws -> AgentGenerateImageResponse {
         let prompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !prompt.isEmpty else { throw ApelinError(.badRequest, "image prompt is empty") }
         let conversationModel = agent.state.model
         let conversationAuthResolver = agent.authResolver
+        let provider: ProviderConfiguration
         let model: Model
         let authResolver: (@Sendable (Model, String?) async throws -> ResolvedProviderAuth?)?
         if let imageSelection = modelDefaults.imageGeneration {
@@ -914,12 +917,39 @@ public actor AgentSession {
                 .auxiliary(provider: imageSelection.provider, model: imageSelection.model),
                 credentials: credentials,
             )
+            provider = .auxiliary(provider: imageSelection.provider, model: imageSelection.model)
             model = resolved.model
             authResolver = resolved.authResolver
         } else {
+            provider = resolvedFrom.provider
             model = conversationModel
             authResolver = conversationAuthResolver
         }
+
+        if let backend = NativeImageGeneration.backend(for: provider, model: model) {
+            let auth = try await authResolver?(model, nil)
+            let image = try await NativeImageGeneration.generate(
+                backend: backend,
+                model: model,
+                auth: auth,
+                prompt: prompt,
+            )
+            return AgentGenerateImageResponse(image: image)
+        }
+        return try await generateLegacySVG(
+            prompt: prompt,
+            model: model,
+            authResolver: authResolver,
+        )
+    }
+
+    /// Compatibility path for providers whose API only exposes text
+    /// completion. This remains deliberately isolated from native image calls.
+    private func generateLegacySVG(
+        prompt: String,
+        model: Model,
+        authResolver: (@Sendable (Model, String?) async throws -> ResolvedProviderAuth?)?,
+    ) async throws -> AgentGenerateImageResponse {
         let cancellation = CancellationHandle()
         let auth = try await authResolver?(model, nil)
         let response = try await complete(

@@ -453,8 +453,9 @@ public struct AgentPromptRequest: OperationRequest {
 
 
 /// Generates one standalone image using the configured auxiliary image model.
-/// The worker asks for a self-contained SVG so providers without a native image
-/// endpoint still return an actual image artifact rather than chat prose.
+/// Providers with a native image endpoint return real image bytes (PNG/JPEG,
+/// usually as Base64); providers without one retain the session's compatibility
+/// SVG fallback.
 public struct AgentGenerateImageRequest: OperationRequest {
     public typealias Response = AgentGenerateImageResponse
     public static let operation = AppOperation.agentGenerateImage
