@@ -4,6 +4,12 @@ One time, before any code is written. `make check` runs
 `Scripts/check-checklist.sh` first, and every build target depends on it, so
 nothing builds until every box below is ticked.
 
+Where `make check` cannot be run at all — no `make` or Xcode, a script or
+tool it calls missing, a device that cannot build this app — code may still
+be changed, cautiously: this file gates the build and the push, not every
+edit. `make check` is then still owed before the change is pushed, and the
+box is never ticked to get past a gate that did run.
+
 Tick a box only after doing or deciding the thing, never to get past the gate.
 An item that does not apply here is ticked with the reason written after it.
 A decision is recorded where the item says (usually `AGENTS.md`), so the next

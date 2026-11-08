@@ -20,7 +20,15 @@ the same executable in session mode; the workers are its children.
   first and lists what is still open. An agent starting here works through
   it top to bottom and ticks a box only after doing or deciding the thing;
   one that does not apply is ticked with the reason beside it. The file
-  stays, ticked: it is the record of what was decided.
+  stays, ticked: it is the record of what was decided. **A `make check` that
+  cannot run is not a closed gate.** Where the environment has no way to run
+  it — no `make`, no Xcode, a script or tool it calls absent, a device that
+  cannot build this app at all — an agent still changes code, cautiously:
+  keep the change small enough to review by eye, read the rule in this file
+  that it touches, run whatever checks do exist (`Scripts/*.py`, a grep, a
+  syntax parse), and say in its reply that `make check` did not run and is
+  still owed to the first environment that can. It ticks no box, lowers no
+  check and skips no rule because the gate could not run.
 - **One app, several wrappers, and the backend is resolved at runtime.** Never a
   build flag, never a compilation condition, never a per-packaging source
   variant. The handshake with the daemon is the only honest answer to "am I

@@ -29,7 +29,7 @@ fi
 open="$(grep -nE '^[[:space:]]*- \[ \]' "$file" || true)"
 if [ -n "$open" ]; then
     count="$(printf '%s\n' "$open" | wc -l | tr -d ' ')"
-    echo "error: $file has $count of $total items unticked; no code is written until all are:" >&2
+    echo "error: $file has $count of $total items unticked; this build is refused until all are:" >&2
     printf '%s\n' "$open" | sed "s|^|    $file:|" >&2
     exit 65
 fi
