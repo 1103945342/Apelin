@@ -110,6 +110,7 @@ public enum AgentWorker {
                     guard data.count <= limit else { throw ApelinError(.badRequest, "attachment too large") }
                     return (attachment.name, attachment.mimeType, data)
                 }
+                await session.setModelDefaults(prompt.modelDefaults)
                 var sender: ConversationSender?
                 if let from = prompt.fromSessionID {
                     sender = await AgentWorker.sender(from, context: context)
@@ -117,6 +118,12 @@ public enum AgentWorker {
                 try await session.prompt(prompt.text, messageID: prompt.messageID, files: files, from: sender)
                 await session.generateTitle(for: prompt.text)
                 return Acknowledged()
+            }
+        case .agentGenerateImage:
+            await WorkerMain.serve(AgentGenerateImageRequest.self, request) { image in
+                let session = try await state.session(image.sessionID)
+                await session.setModelDefaults(image.modelDefaults)
+                return try await session.generateImage(for: image.prompt)
             }
         case .agentSteer:
             await WorkerMain.serve(AgentSteerRequest.self, request) { steer in
@@ -130,7 +137,9 @@ public enum AgentWorker {
             }
         case .agentCompact:
             await WorkerMain.serve(AgentCompactRequest.self, request) { compact in
-                try await state.session(compact.sessionID).compact()
+                let session = state.session(compact.sessionID)
+                await session.setModelDefaults(compact.modelDefaults)
+                try await session.compact()
                 return Acknowledged()
             }
         case .agentRewind:
@@ -353,6 +362,7 @@ actor WorkerState {
                     thinking: .init(rawValue: open.reasoningEffort?.rawValue ?? "off") ?? .off,
                     serviceTier: AgentWorker.serviceTier(open.serviceTier),
                     modelParameters: open.modelParameters ?? .init(),
+                    modelDefaults: open.modelDefaults ?? .init(),
                     installRoot: context.assignment.installRoot,
                     hostRestarted: open.hostRestarted == true,
                 ),
@@ -363,6 +373,7 @@ actor WorkerState {
                     projectURL: projectURL,
                     projectsURL: dataRoot.projects,
                     modelChoice: modelChoice,
+                    modelDefaults: open.modelDefaults ?? .init(),
                 ),
                 digests: ledger,
                 credentials: keychain,

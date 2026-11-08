@@ -1091,7 +1091,11 @@ extension ChatController: ComposerView.Delegate {
         rewriteTask?.cancel()
         // Nothing chosen is nothing to rewrite with: said here rather than
         // after a request the worker would refuse.
-        guard let id = chat?.id, let selection = ComposerModelSelection.selection(for: id) else {
+        let selection = Preferences.DefaultModels.selection(for: .promptRewrite)
+            ?? chat.flatMap { ComposerModelSelection.selection(for: $0.id) }.map {
+                Preferences.DefaultModelSelection(provider: $0.provider, model: $0.model)
+            }
+        guard selection != nil else {
             presentNotice(
                 title: "Unable to Rewrite",
                 message: String(localized: "Choose a model before rewriting."),
@@ -1113,6 +1117,10 @@ extension ChatController: ComposerView.Delegate {
                 composer.rewriteFailed()
             } catch {
                 composer.rewriteFailed()
+                // A rewrite stopped because its draft went out is not a
+                // failure to report: the message it belonged to has already
+                // been sent.
+                guard !Task.isCancelled else { return }
                 presentNotice(title: "Unable to Rewrite", message: error.readableMessage)
             }
         }

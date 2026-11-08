@@ -37,6 +37,37 @@ public enum ProviderConfiguration: Sendable, Hashable, Codable {
         }
     }
 
+    /// Converts the protocol's provider choice for an auxiliary operation.
+    /// Auxiliary defaults always carry a concrete model identifier.
+    public static func auxiliary(provider: AgentProvider, model: String) -> Self {
+        switch provider {
+        case .githubCopilot: .githubCopilot(model: model)
+        case .anthropic: .anthropic(model: model, oauth: false)
+        case .anthropicOAuth: .anthropic(model: model, oauth: true)
+        case .openAICompatible: .openAICompatible(model: model)
+        case .openAICodex: .stored(storeID: "openai-codex", model: model)
+        case .cursor: .stored(storeID: "cursor", model: model)
+        case .devin: .stored(storeID: "devin", model: model)
+        case .kiro: .stored(storeID: "kiro", model: model)
+        case .antigravity: .stored(storeID: "antigravity", model: model)
+        case .qoder: .stored(storeID: "qoder", model: model)
+        case .qoderCN: .stored(storeID: "qoder-cn", model: model)
+        case .workBuddy: .stored(storeID: "workbuddy", model: model)
+        case .workBuddyAI: .stored(storeID: "workbuddy-ai", model: model)
+        case .kimiCoding: .stored(storeID: "kimi-coding", model: model)
+        case .kimiCodingGlobal: .stored(storeID: "kimi-coding-ai", model: model)
+        case .xai: .stored(storeID: "xai", model: model)
+        case .zai: .stored(storeID: "zai", model: model)
+        case .zaiCodingCN: .stored(storeID: "zai-coding-cn", model: model)
+        case .openRouter: .stored(storeID: "openrouter", model: model)
+        case .openAI: .stored(storeID: "openai-api-key", model: model)
+        case .google: .stored(storeID: "google-api-key", model: model)
+        case .deepSeek: .stored(storeID: "deepseek-api-key", model: model)
+        case .openCodeGo: .stored(storeID: "opencode-go", model: model)
+        case .openCodeZen: .stored(storeID: "opencode", model: model)
+        }
+    }
+
     var modelID: String? {
         switch self {
         case let .anthropic(model, _), let .openAICompatible(model), let .githubCopilot(model): model

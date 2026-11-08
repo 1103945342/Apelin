@@ -61,6 +61,8 @@ public struct ChannelHostBackend: AgentHostBackend {
     public let projectsURL: URL
     /// What the session runs with now, which apelin_conversation_create passes on.
     public let modelChoice: SessionModelChoice
+    /// Auxiliary defaults inherited by conversations this session creates.
+    public let modelDefaults: AgentModelDefaults
 
     public static let maximumScreenshotBytes = 4 * 1024 * 1024
     static let logExcerptBytes = 8 * 1024
@@ -81,6 +83,7 @@ public struct ChannelHostBackend: AgentHostBackend {
         projectURL: URL,
         projectsURL: URL? = nil,
         modelChoice: SessionModelChoice = SessionModelChoice(),
+        modelDefaults: AgentModelDefaults = .init(),
     ) {
         self.service = service
         self.sessionID = sessionID
@@ -88,6 +91,7 @@ public struct ChannelHostBackend: AgentHostBackend {
         self.projectURL = projectURL
         self.projectsURL = projectsURL ?? projectURL.deletingLastPathComponent()
         self.modelChoice = modelChoice
+        self.modelDefaults = modelDefaults
     }
 
     // MARK: shell_run

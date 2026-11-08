@@ -21,6 +21,8 @@ public struct AgentSessionConfiguration: Sendable {
     /// What the app's model settings override on the model's own record: the
     /// window compaction is measured against and the most a reply may be.
     public var modelParameters: AgentModelParameters
+    /// What the app chose for operations beside the main conversation turn.
+    public var modelDefaults: AgentModelDefaults
     /// Hard cap on assistant turns per run; nil for none.
     public var maxTurns: Int?
     /// The install root the session host derived from its own path, which
@@ -53,6 +55,7 @@ public struct AgentSessionConfiguration: Sendable {
         thinking: ThinkingLevel = .off,
         serviceTier: ServiceTier? = nil,
         modelParameters: AgentModelParameters = .init(),
+        modelDefaults: AgentModelDefaults = .init(),
         maxTurns: Int? = nil,
         installRoot: String? = nil,
         systemState: SystemStateSource = .device,
@@ -70,6 +73,7 @@ public struct AgentSessionConfiguration: Sendable {
         self.thinking = thinking
         self.serviceTier = serviceTier
         self.modelParameters = modelParameters
+        self.modelDefaults = modelDefaults
         self.maxTurns = maxTurns
         self.installRoot = installRoot
         self.systemState = systemState

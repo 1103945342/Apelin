@@ -23,6 +23,7 @@ public extension ChannelHostBackend {
                 reasoningEffort: choice.reasoningEffort,
                 serviceTier: choice.serviceTier,
                 modelParameters: choice.modelParameters,
+                modelDefaults: modelDefaults,
                 prompt: request.prompt,
                 title: request.title,
             ))

@@ -62,6 +62,7 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
 
     case agentOpen
     case agentPrompt
+    case agentGenerateImage
     case agentSteer
     case agentAbort
     case agentCompact
@@ -174,7 +175,7 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .ptyOpen, .ptyAttach, .ptyResize, .ptyClose: .terminal
         case .logStream, .crashList, .crashOpen, .crashSymbolicate: .logs
         case .confirmLoaded, .confirmLoadedAttach, .captureScreen, .readUITree, .uiAction: .diagnostics
-        case .agentOpen, .agentPrompt, .agentSteer, .agentAbort, .agentCompact, .agentApprove, .agentAttach, .agentList,
+        case .agentOpen, .agentPrompt, .agentGenerateImage, .agentSteer, .agentAbort, .agentCompact, .agentApprove, .agentAttach, .agentList,
              .agentClose, .agentRunCode, .agentCredentialImport, .agentAccountList, .agentSkillList,
              .agentRewritePrompt, .agentModelTest,
              .agentAPIConfiguration, .agentModelList,
@@ -246,6 +247,7 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .uiAction: UIActionRequest.self
         case .agentOpen: AgentOpenRequest.self
         case .agentPrompt: AgentPromptRequest.self
+        case .agentGenerateImage: AgentGenerateImageRequest.self
         case .agentSteer: AgentSteerRequest.self
         case .agentAbort: AgentAbortRequest.self
         case .agentCompact: AgentCompactRequest.self

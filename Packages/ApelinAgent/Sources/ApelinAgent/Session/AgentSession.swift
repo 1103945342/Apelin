@@ -41,6 +41,12 @@ public actor AgentSession {
     /// sign-in keep that resolution: resolving again exchanges some
     /// providers' tokens over the network, before the message is recorded.
     private var resolvedFrom: (provider: ProviderConfiguration, credentials: OAuthCredentials?)
+    /// The credential source is also used for auxiliary models such as titles.
+    private let credentials: any CredentialSource
+    /// Defaults for operations that should not replace the conversation model.
+    private var modelDefaults: AgentModelDefaults
+    /// The main model/auth pair restored after a one-run vision override.
+    private var modelRestoreAfterRun: (model: Model, authResolver: (@Sendable (Model, String?) async throws -> ResolvedProviderAuth?)?)?
     /// The model the provider's record gives, before the app's settings
     /// override its figures: a later change of those starts from it again.
     private var recordModel: Model?
@@ -254,6 +260,8 @@ public actor AgentSession {
         resolvedFrom = (configuration.provider, resolved.credentials)
         recordModel = resolved.model
         self.configuration = configuration
+        self.credentials = credentials
+        self.modelDefaults = configuration.modelDefaults
         self.log = log
         self.journal = journal
         self.agent = agent
@@ -305,6 +313,12 @@ public actor AgentSession {
         agent.authResolver = resolved.authResolver
         resolvedFrom = (provider, resolved.credentials)
         journal.modelChanged(to: agent.state.model)
+    }
+
+    /// Applies app-wide auxiliary model settings to subsequent operations.
+    public func setModelDefaults(_ defaults: AgentModelDefaults?) {
+        guard let defaults else { return }
+        modelDefaults = defaults
     }
 
     // MARK: - Control
@@ -480,8 +494,10 @@ public actor AgentSession {
     public func generateTitle(for text: String) {
         guard (!hasTitle && titleMisses < Self.maximumTitleMisses) || projectStillNeedsName,
               titleTask == nil, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-        let model = agent.state.model
-        let authResolver = agent.authResolver
+        let conversationModel = agent.state.model
+        let conversationAuthResolver = agent.authResolver
+        let titleSelection = modelDefaults.title
+        let credentialSource = self.credentials
         let journal = journal
         titleTask = Task { [weak self] in
             let cancellation = CancellationHandle()
@@ -491,6 +507,19 @@ public actor AgentSession {
             }
             defer { timeout.cancel() }
             do {
+                let model: Model
+                let authResolver: (@Sendable (Model, String?) async throws -> ResolvedProviderAuth?)?
+                if let titleSelection {
+                    let resolved = try await ProviderResolver.resolve(
+                        .auxiliary(provider: titleSelection.provider, model: titleSelection.model),
+                        credentials: credentialSource,
+                    )
+                    model = resolved.model
+                    authResolver = resolved.authResolver
+                } else {
+                    model = conversationModel
+                    authResolver = conversationAuthResolver
+                }
                 let response = try await withTaskCancellationHandler {
                     let auth = try await authResolver?(model, nil)
                     return try await complete(
@@ -695,6 +724,32 @@ public actor AgentSession {
         }
     }
 
+    /// Uses the vision default only for a new run that contains image input.
+    private func prepareVisionModelIfNeeded(_ images: [ImageContent]) async {
+        guard !images.isEmpty, runTask == nil, modelRestoreAfterRun == nil,
+              let vision = modelDefaults.vision
+        else { return }
+        do {
+            let resolved = try await ProviderResolver.resolve(
+                .auxiliary(provider: vision.provider, model: vision.model),
+                credentials: credentials,
+            )
+            modelRestoreAfterRun = (agent.state.model, agent.authResolver)
+            agent.state.model = resolved.model
+            agent.authResolver = resolved.authResolver
+        } catch {
+            // Vision is an auxiliary preference: if its account cannot resolve,
+            // keep the conversation on its normal model and continue.
+        }
+    }
+
+    private func restoreModelAfterRun() {
+        guard let restore = modelRestoreAfterRun else { return }
+        agent.state.model = restore.model
+        agent.authResolver = restore.authResolver
+        modelRestoreAfterRun = nil
+    }
+
     /// Waits out what must end first, then starts or joins the run.
     private func accept(_ accepted: Accepted) async {
         let text = accepted.text
@@ -766,6 +821,7 @@ public actor AgentSession {
             return
         }
         aborted = false
+        await prepareVisionModelIfNeeded(accepted.images)
         let agent = agent
         let opening = withProjectContext(prompt, repository: repository)
         if let messageID {
@@ -837,6 +893,7 @@ public actor AgentSession {
             told: toldBefore, restartUntold: restartUntoldBefore,
         ))
         preparingConversations.remove(id)
+        await prepareVisionModelIfNeeded(images)
         agent.followUp(message)
         if runTask == nil {
             aborted = false
@@ -844,6 +901,54 @@ public actor AgentSession {
         }
     }
 
+    /// Generates a standalone SVG image with the configured image model.
+    public func generateImage(for prompt: String) async throws -> AgentGenerateImageResponse {
+        let prompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !prompt.isEmpty else { throw ApelinError(.badRequest, "image prompt is empty") }
+        let conversationModel = agent.state.model
+        let conversationAuthResolver = agent.authResolver
+        let model: Model
+        let authResolver: (@Sendable (Model, String?) async throws -> ResolvedProviderAuth?)?
+        if let imageSelection = modelDefaults.imageGeneration {
+            let resolved = try await ProviderResolver.resolve(
+                .auxiliary(provider: imageSelection.provider, model: imageSelection.model),
+                credentials: credentials,
+            )
+            model = resolved.model
+            authResolver = resolved.authResolver
+        } else {
+            model = conversationModel
+            authResolver = conversationAuthResolver
+        }
+        let cancellation = CancellationHandle()
+        let auth = try await authResolver?(model, nil)
+        let response = try await complete(
+            model: model,
+            context: Context(
+                systemPrompt: "Create one self-contained SVG image for the user's request. Return only valid SVG markup, beginning with <svg and ending with </svg>. Do not use Markdown or explanations.",
+                messages: [.user(UserMessage(text: String(prompt.prefix(8000))))],
+            ),
+            options: StreamOptions(
+                maxTokens: 4096,
+                maxRetryDelayMs: 0,
+                resolvedAuth: auth,
+                reasoning: model.reasoning ? .minimal : nil,
+                cancellation: cancellation,
+                verbose: false,
+            ),
+        )
+        let raw = Self.unfenced(Self.text(of: response.content).trimmingCharacters(in: .whitespacesAndNewlines))
+        guard let start = raw.range(of: "<svg"),
+              let end = raw.range(of: "</svg>", range: start.lowerBound ..< raw.endIndex)
+        else {
+            throw ApelinError(.internal, "the image model did not return SVG")
+        }
+        let svg = String(raw[start.lowerBound ..< end.upperBound])
+        return AgentGenerateImageResponse(image: AgentGeneratedImage(
+            data: Data(svg.utf8).base64EncodedString(),
+            mimeType: "image/svg+xml",
+        ))
+    }
     /// Names the conversation, unless it has a title already: a title the
     /// opener chose takes the place of a generated one.
     public func setTitle(_ title: String) async {
@@ -895,13 +1000,27 @@ public actor AgentSession {
                 await self?.compactionEnded(.failed("aborted"))
                 return
             }
-            let outcome = await Self.runCompaction(agent, sessionID: sessionID)
+            let outcome = await self?.runCompaction(agent, sessionID: sessionID) ?? .refusedAgentBusy
             await self?.compactionEnded(outcome)
         }
     }
 
-    private static func runCompaction(_ agent: Agent, sessionID: String) async -> AgentContextCompactionOutcome {
+    private func runCompaction(_ agent: Agent, sessionID: String) async -> AgentContextCompactionOutcome {
+        let originalModel = agent.state.model
+        let originalAuthResolver = agent.authResolver
         do {
+            if let compression = modelDefaults.compression {
+                let resolved = try await ProviderResolver.resolve(
+                    .auxiliary(provider: compression.provider, model: compression.model),
+                    credentials: credentials,
+                )
+                agent.state.model = resolved.model
+                agent.authResolver = resolved.authResolver
+            }
+            defer {
+                agent.state.model = originalModel
+                agent.authResolver = originalAuthResolver
+            }
             return try await agent.withMaintenance { cancellation in
                 await AgentContextCompactor.compactAgent(
                     agent: agent,
@@ -914,6 +1033,8 @@ public actor AgentSession {
                 )
             }
         } catch {
+            agent.state.model = originalModel
+            agent.authResolver = originalAuthResolver
             return .refusedAgentBusy
         }
     }
@@ -1294,6 +1415,7 @@ public actor AgentSession {
             await record(.error(message: "Unable to save the conversation history: \(error.localizedDescription)"))
         }
         // the turn's messages are in: what compaction would now go by
+        restoreModelAfterRun()
         await recordContextUsage()
         await record(.finished(reason: reason))
         if !interrupted {

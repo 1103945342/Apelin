@@ -19,6 +19,7 @@ final class SettingsViewController: TableController {
         case returnKey
         case compression
         case modelProviders
+        case defaultModels
         case permissionMode
         case memories
         case skills
@@ -54,6 +55,7 @@ final class SettingsViewController: TableController {
                     ? String(localized: "New Line")
                     : String(localized: "Send")
                 case .compression: Preferences.percentText(Preferences.compressionThreshold)
+                case .defaultModels: Preferences.DefaultModels.summary
                 case .permissionMode: AgentPermissions.title(for: AgentPermissions.mode)
                 case .memories: memorySummary
                 default: nil
@@ -105,7 +107,7 @@ final class SettingsViewController: TableController {
     private func rows(in section: Section) -> [Row] {
         switch section {
         case .chat: [.launch, .returnKey, .compression]
-        case .agent: [.modelProviders, .permissionMode, .memories, .skills]
+        case .agent: [.modelProviders, .defaultModels, .permissionMode, .memories, .skills]
         case .environment: [.toolchain, .sdks, .templates]
         case .git: [.git]
         case .about: [.version, .licenses, .logs]
@@ -160,6 +162,8 @@ final class SettingsViewController: TableController {
             content.text = String(localized: "Compression Threshold")
         case .modelProviders:
             content.text = String(localized: "Model Providers")
+        case .defaultModels:
+            content.text = String(localized: "Default Models")
         case .permissionMode:
             content.text = String(localized: "Permission Mode")
         case .memories:
@@ -240,6 +244,7 @@ final class SettingsViewController: TableController {
         let page: UIViewController
         switch row {
         case .modelProviders: page = ModelProvidersController()
+        case .defaultModels: page = DefaultModelsController()
         case .permissionMode: page = PermissionModeController()
         case .memories: page = MemoriesController()
         case .skills: page = SkillsController()

@@ -208,6 +208,40 @@ public enum AgentProvider: String, Codable, Sendable {
 
 extension AgentProvider: CaseIterable {}
 
+/// A provider/model pair used by an auxiliary agent operation.
+public struct AgentModelSelection: Codable, Sendable, Equatable, Hashable {
+    public var provider: AgentProvider
+    public var model: String
+
+    public init(provider: AgentProvider, model: String) {
+        self.provider = provider
+        self.model = model
+    }
+}
+
+/// App-wide model defaults. Missing entries follow the conversation model.
+public struct AgentModelDefaults: Codable, Sendable, Equatable, Hashable {
+    public var promptRewrite: AgentModelSelection?
+    public var compression: AgentModelSelection?
+    public var title: AgentModelSelection?
+    public var vision: AgentModelSelection?
+    public var imageGeneration: AgentModelSelection?
+
+    public init(
+        promptRewrite: AgentModelSelection? = nil,
+        compression: AgentModelSelection? = nil,
+        title: AgentModelSelection? = nil,
+        vision: AgentModelSelection? = nil,
+        imageGeneration: AgentModelSelection? = nil,
+    ) {
+        self.promptRewrite = promptRewrite
+        self.compression = compression
+        self.title = title
+        self.vision = vision
+        self.imageGeneration = imageGeneration
+    }
+}
+
 public enum AgentReasoningEffort: String, Codable, Sendable, CaseIterable {
     case off, minimal, low, medium, high, xhigh, max
 }
@@ -250,6 +284,8 @@ public struct AgentOpenRequest: OperationRequest {
     public var provider: AgentProvider?
     /// A model identifier from the app's model settings; nil is the default.
     public var model: String?
+    /// Defaults for auxiliary operations in this session.
+    public var modelDefaults: AgentModelDefaults?
     public var approvalMode: ApprovalMode
     /// Ask Before Using the Screen (`ScreenConsent`): nil is on. An agent's
     /// open takes its opener's, whatever it sends.
@@ -284,6 +320,7 @@ public struct AgentOpenRequest: OperationRequest {
         sessionID: String? = nil,
         provider: AgentProvider? = nil,
         model: String? = nil,
+        modelDefaults: AgentModelDefaults? = nil,
         approvalMode: ApprovalMode = .confirm,
         asksBeforeScreen: Bool? = nil,
         reasoningEffort: AgentReasoningEffort? = nil,
@@ -300,6 +337,7 @@ public struct AgentOpenRequest: OperationRequest {
         self.sessionID = sessionID
         self.provider = provider
         self.model = model
+        self.modelDefaults = modelDefaults
         self.approvalMode = approvalMode
         self.asksBeforeScreen = asksBeforeScreen
         self.reasoningEffort = reasoningEffort
@@ -354,6 +392,8 @@ public struct AgentPromptRequest: OperationRequest {
     public var messageID: UUID?
     public var provider: AgentProvider?
     public var model: String?
+    /// Updated app-wide auxiliary model defaults for this session.
+    public var modelDefaults: AgentModelDefaults?
     public var reasoningEffort: AgentReasoningEffort?
     public var serviceTier: AgentServiceTier?
     /// The model's own figures for this choice, as the app's model settings
@@ -385,6 +425,7 @@ public struct AgentPromptRequest: OperationRequest {
         attachments: [AgentInputAttachment]? = nil,
         provider: AgentProvider? = nil,
         model: String? = nil,
+        modelDefaults: AgentModelDefaults? = nil,
         reasoningEffort: AgentReasoningEffort? = nil,
         serviceTier: AgentServiceTier? = nil,
         approvalMode: ApprovalMode? = nil,
@@ -398,6 +439,7 @@ public struct AgentPromptRequest: OperationRequest {
         self.messageID = messageID
         self.provider = provider
         self.model = model
+        self.modelDefaults = modelDefaults
         self.reasoningEffort = reasoningEffort
         self.serviceTier = serviceTier
         self.modelParameters = modelParameters
@@ -406,6 +448,43 @@ public struct AgentPromptRequest: OperationRequest {
         self.asksBeforeScreen = asksBeforeScreen
         self.runMode = runMode
         self.fromSessionID = fromSessionID
+    }
+}
+
+
+/// Generates one standalone image using the configured auxiliary image model.
+/// The worker asks for a self-contained SVG so providers without a native image
+/// endpoint still return an actual image artifact rather than chat prose.
+public struct AgentGenerateImageRequest: OperationRequest {
+    public typealias Response = AgentGenerateImageResponse
+    public static let operation = AppOperation.agentGenerateImage
+    public var sessionID: String
+    public var prompt: String
+    public var modelDefaults: AgentModelDefaults?
+
+    public init(sessionID: String, prompt: String, modelDefaults: AgentModelDefaults? = nil) {
+        self.sessionID = sessionID
+        self.prompt = prompt
+        self.modelDefaults = modelDefaults
+    }
+}
+
+public struct AgentGeneratedImage: Codable, Sendable, Equatable, Hashable {
+    /// Base64-encoded image bytes.
+    public var data: String
+    public var mimeType: String
+
+    public init(data: String, mimeType: String) {
+        self.data = data
+        self.mimeType = mimeType
+    }
+}
+
+public struct AgentGenerateImageResponse: Codable, Sendable, Equatable, Hashable {
+    public var image: AgentGeneratedImage
+
+    public init(image: AgentGeneratedImage) {
+        self.image = image
     }
 }
 
@@ -442,8 +521,10 @@ public struct AgentCompactRequest: OperationRequest {
     public typealias Response = Acknowledged
     public static let operation = AppOperation.agentCompact
     public var sessionID: String
-    public init(sessionID: String) {
+    public var modelDefaults: AgentModelDefaults?
+    public init(sessionID: String, modelDefaults: AgentModelDefaults? = nil) {
         self.sessionID = sessionID
+        self.modelDefaults = modelDefaults
     }
 }
 
@@ -571,6 +652,10 @@ public extension ApelinService {
         _ = try await send(AgentPromptRequest(sessionID: sessionID, text: text))
     }
 
+    func agentGenerateImage(sessionID: String, prompt: String, modelDefaults: AgentModelDefaults? = nil) async throws -> AgentGenerateImageResponse {
+        try await send(AgentGenerateImageRequest(sessionID: sessionID, prompt: prompt, modelDefaults: modelDefaults))
+    }
+
     func agentSteer(sessionID: String, text: String) async throws {
         _ = try await send(AgentSteerRequest(sessionID: sessionID, text: text))
     }
@@ -579,8 +664,8 @@ public extension ApelinService {
         _ = try await send(AgentAbortRequest(sessionID: sessionID))
     }
 
-    func agentCompact(sessionID: String) async throws {
-        _ = try await send(AgentCompactRequest(sessionID: sessionID))
+    func agentCompact(sessionID: String, modelDefaults: AgentModelDefaults? = nil) async throws {
+        _ = try await send(AgentCompactRequest(sessionID: sessionID, modelDefaults: modelDefaults))
     }
 
     func agentApprove(

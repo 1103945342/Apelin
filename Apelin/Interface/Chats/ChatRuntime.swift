@@ -445,6 +445,7 @@ final class ChatRuntime {
                 attachments: inputs,
                 provider: selected?.provider,
                 model: selected?.model,
+                modelDefaults: Preferences.DefaultModels.wire,
                 reasoningEffort: selected?.effort,
                 serviceTier: selected?.tier,
                 approvalMode: AgentPermissions.mode,
@@ -610,7 +611,10 @@ final class ChatRuntime {
         let opened = try await open(id)
         // what the reader takes from here on, which may answer before the request does
         let seen = records[id]?.events.count ?? 0
-        try await ApelinService.app.agentCompact(sessionID: opened.sessionID)
+        try await ApelinService.app.agentCompact(
+            sessionID: opened.sessionID,
+            modelDefaults: Preferences.DefaultModels.wire,
+        )
         if let event = records[id]?.events.dropFirst(seen).last(where: { $0.kind == "compactionFinished" }) {
             return Self.compactionResult(event)
         }
@@ -662,6 +666,7 @@ final class ChatRuntime {
             sessionID: record.sessionID,
             provider: selected?.provider,
             model: selected?.model,
+            modelDefaults: Preferences.DefaultModels.wire,
             approvalMode: mode,
             asksBeforeScreen: AgentPermissions.asksBeforeScreen,
             reasoningEffort: selected?.effort,
