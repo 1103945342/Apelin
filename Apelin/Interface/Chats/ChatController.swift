@@ -37,10 +37,12 @@ final class ChatController: UIViewController {
     /// One tick per message the reader sent, at the list's trailing edge
     /// while it scrolls: dragged, it moves the list between them.
     private let messageRuler = ChatMessageRuler()
-    /// Over the page while the rail is dragged: the transcript softens and the
-    /// card beside the finger is the one thing left sharp. Decoration only, so
-    /// it takes no touch and says nothing to VoiceOver.
-    private let rulerVeil = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
+    /// Over the page while the rail is dragged: the transcript softens a
+    /// little and the card beside the finger is the one thing left sharp.
+    /// Decoration only, so it takes no touch and says nothing to VoiceOver.
+    /// The lightest material: the page must stay readable under it, since the
+    /// reader is still looking for the message they are dragging to.
+    private let rulerVeil = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
     private weak var tracePage: TraceController?
     /// Builds the rows again once a running turn has gone quiet.
     private let quietWatch = ChatQuietWatch()
