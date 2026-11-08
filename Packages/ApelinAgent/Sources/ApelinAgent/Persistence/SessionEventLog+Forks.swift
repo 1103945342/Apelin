@@ -150,15 +150,9 @@ extension SessionEventLog {
         let objects = HistoryObjectStore(directory: forksDirectory.appendingPathComponent("objects"))
         // The objects are content-addressed, so an object already stored is
         // the message stored again. Encoding and hashing every message on
-        // every turn made the cost grow with the conversation; they are
-        // written lazily, once a turn that needs them has not been sealed.
-        var messageObjects: [String?] = Array(repeating: nil, count: messages.count)
-        func objectName(at index: Int) throws -> String {
-            if let name = messageObjects[index] { return name }
-            let name = try objects.put(encoder.encode(messages[index]))
-            messageObjects[index] = name
-            return name
-        }
+        // every turn made the cost grow with the conversation; each is
+        // encoded once, and a manifest names the ones its turn reaches.
+        var encoded: [Data?] = Array(repeating: nil, count: messages.count)
         for item in located {
             let url = manifestURL(item.id)
             let existing = try readManifest(item.id)
@@ -203,9 +197,21 @@ extension SessionEventLog {
             for previous in located where previous.index < end {
                 turnAnchors[previous.id.uuidString.lowercased()] = previous.anchor
             }
+            var turnMessages: [String] = []
+            turnMessages.reserveCapacity(end)
+            for index in 0 ..< end {
+                let data: Data
+                if let done = encoded[index] {
+                    data = done
+                } else {
+                    data = try encoder.encode(messages[index])
+                    encoded[index] = data
+                }
+                turnMessages.append(try objects.put(data))
+            }
             let manifest = ForkManifest(
                 sealed: seal || end < messages.count,
-                messages: try (0 ..< end).map { try objectName(at: $0) },
+                messages: turnMessages,
                 records: eventObjects, anchors: turnAnchors,
             )
             try HistoryObjectStore.write(encoder.encode(manifest), to: url)
