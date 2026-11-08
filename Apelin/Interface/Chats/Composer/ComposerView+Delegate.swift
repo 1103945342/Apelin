@@ -17,7 +17,9 @@ extension ComposerView {
         func onComposerExpandTapped()
         /// The wand was tapped, with the draft as it stood.
         func onComposerRewriteRequested(draft: String)
-        /// The wand was tapped again while a rewrite ran.
+        /// The wand was tapped again while a rewrite ran, or the draft it was
+        /// rewriting was sent as it stood: either way nothing is left to
+        /// apply, and a running request is stopped.
         func onComposerRewriteCancelled()
         func onComposerCameraTapped()
         func onComposerPhotoTapped()

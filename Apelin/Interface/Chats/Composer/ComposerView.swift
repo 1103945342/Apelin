@@ -369,12 +369,21 @@ class ComposerView: ComposerSectionView {
     }
 
     /// A rewrite came back: the draft takes the new text, and the old one is
-    /// kept for the undo bar.
+    /// kept for the undo bar. The draft it was asked about has to still be
+    /// the one in the box: once the message has been sent the box is empty,
+    /// and a rewrite landing after that has nothing to replace and nothing
+    /// to undo — it is dropped, and no bar offers words that are already in
+    /// the conversation.
     func applyRewrite(original: String, rewritten: String) {
+        setRewriting(false)
+        guard (inputEditor.textView.text ?? "") == original else {
+            rewriteBar.isHidden = true
+            rewriteBar.onUndo = nil
+            return
+        }
         currentDraft.text = rewritten
         inputEditor.set(text: rewritten)
         publishNewEditorStatus()
-        setRewriting(false)
         rewriteBar.isHidden = false
         rewriteBar.onUndo = { [weak self] in
             guard let self else { return }
@@ -561,6 +570,10 @@ class ComposerView: ComposerSectionView {
         inputEditor.set(text: "")
         inputEditor.hasContent = false
         inputEditor.endEditing(true)
+        // The words a rewrite kept are no longer in the box: the message they
+        // were made from has gone, so the bar offering them back goes with it.
+        rewriteBar.isHidden = true
+        rewriteBar.onUndo = nil
         setNeedsLayout()
         publishNewEditorStatus()
     }
@@ -610,6 +623,12 @@ class ComposerView: ComposerSectionView {
         }
         // A delegate that answered at once sent nothing: the text stays.
         if submissionID == id {
+            // The message is out: a rewrite still running for it has nothing
+            // left to change, and stopping it keeps its answer — or its
+            // failure — from landing on the empty box the send leaves.
+            if inputEditor.rewriteButton.isRewriting {
+                delegate.onComposerRewriteCancelled()
+            }
             resetValues()
         }
     }
