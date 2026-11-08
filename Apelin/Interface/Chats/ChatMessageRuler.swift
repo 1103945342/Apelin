@@ -248,10 +248,10 @@ final class ChatMessageRuler: UIView {
     // MARK: Scrubbing
 
     @objc private func scrubbed(_ press: UILongPressGestureRecognizer) {
-        guard !entries.isEmpty else { return }
         let y = press.location(in: self).y
         switch press.state {
         case .began:
+            guard !entries.isEmpty else { return }
             isScrubbing = true
             hideWork?.cancel()
             feedback.prepare()
@@ -259,8 +259,14 @@ final class ChatMessageRuler: UIView {
             select(index(at: y), settled: false, force: true)
             setPreviewShown(true)
         case .changed:
+            // The entries can be replaced mid-scrub; a step with none to move
+            // between leaves the gesture alone rather than reading past them.
+            guard isScrubbing, entries.indices.contains(index(at: y)) else { return }
             select(index(at: y), settled: false, force: false)
         case .ended, .cancelled, .failed:
+            // Finishing never waits on the list: whatever happened to it
+            // while the finger was down, the scrub is over.
+            guard isScrubbing else { return }
             isScrubbing = false
             onSelect?(currentIndex, true)
             setPreviewShown(false)

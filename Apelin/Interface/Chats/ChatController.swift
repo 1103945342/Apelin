@@ -37,6 +37,10 @@ final class ChatController: UIViewController {
     /// One tick per message the reader sent, at the list's trailing edge
     /// while it scrolls: dragged, it moves the list between them.
     private let messageRuler = ChatMessageRuler()
+    /// Over the page while the rail is dragged: the transcript softens and the
+    /// card beside the finger is the one thing left sharp. Decoration only, so
+    /// it takes no touch and says nothing to VoiceOver.
+    private let rulerVeil = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
     private weak var tracePage: TraceController?
     /// Builds the rows again once a running turn has gone quiet.
     private let quietWatch = ChatQuietWatch()
@@ -263,8 +267,25 @@ final class ChatController: UIViewController {
         view.insertSubview(messageRuler, belowSubview: composer)
         messageRuler.onScrubBegan = { [weak self] in self?.beginRulerScrub() }
         messageRuler.onSelect = { [weak self] index, settled in
-            self?.showRulerEntry(index, settled: settled)
+            guard let self else { return }
+            // Lifting the finger ends the scrub whether or not the entry it
+            // was on is still in the list: the composer and the page come
+            // back either way.
+            if settled {
+                setComposerFaded(false)
+                setRulerVeil(false)
+            }
+            showRulerEntry(index)
         }
+        // The rail and its card stay above the veil, which is why the rail is
+        // brought forward of the composer here: the two never overlap.
+        rulerVeil.isUserInteractionEnabled = false
+        rulerVeil.isAccessibilityElement = false
+        rulerVeil.accessibilityElementsHidden = true
+        rulerVeil.alpha = 0
+        rulerVeil.isHidden = true
+        view.addSubview(rulerVeil)
+        view.bringSubviewToFront(messageRuler)
         view.accessibilityCustomRotors = [yourMessagesRotor()]
     }
 
@@ -1567,6 +1588,9 @@ extension ChatController {
     /// At the list's trailing edge, from under the bar's blur to above the
     /// composer.
     private func layoutMessageRuler() {
+        if rulerVeil.frame != view.bounds {
+            rulerVeil.frame = view.bounds
+        }
         let list = messageList.frame
         let top = max(topBlur.frame.maxY, view.safeAreaInsets.top) + 8
         let bottom = composer.frame.minY - 12
@@ -1609,13 +1633,38 @@ extension ChatController {
         followedTurn = nil
         messageList.setContentOffset(messageList.contentOffset, animated: false)
         setComposerFaded(true)
+        setRulerVeil(true)
+    }
+
+    /// The page softens while the rail is held, and comes back on lift with the
+    /// card: only the rail and its card are above the veil.
+    private func setRulerVeil(_ shown: Bool) {
+        let alpha: CGFloat = shown ? 1 : 0
+        guard !UIAccessibility.isReduceMotionEnabled else {
+            // Nothing to animate: drop whatever is running and put it there.
+            rulerVeil.layer.removeAllAnimations()
+            rulerVeil.alpha = alpha
+            rulerVeil.isHidden = !shown
+            return
+        }
+        UIView.animate(
+            withDuration: shown ? 0.14 : 0.22,
+            delay: 0,
+            options: [.beginFromCurrentState, .allowUserInteraction],
+            animations: {
+                self.rulerVeil.isHidden = false
+                self.rulerVeil.alpha = alpha
+            },
+        ) { _ in
+            self.rulerVeil.isHidden = self.rulerVeil.alpha == 0
+        }
     }
 
     /// Puts entry `index` at the top of the page, under the bar's blur. While
     /// the finger moves it jumps; once it lifts, the list settles there, with
     /// the rows on the way measured, since a row not yet shown was placed by
     /// an estimate.
-    private func showRulerEntry(_ index: Int, settled: Bool) {
+    private func showRulerEntry(_ index: Int) {
         let entries = messageRuler.entries
         guard entries.indices.contains(index) else { return }
         let id = entries[index].id
@@ -1630,9 +1679,6 @@ extension ChatController {
         // Measured on arrival, the row may have moved: once more puts it in place.
         messageList.setContentOffset(target(), animated: false)
         updateLatestMessageButton()
-        if settled {
-            setComposerFaded(false)
-        }
     }
 
     /// "Your Messages": VoiceOver steps from one of the reader's messages to
@@ -1653,7 +1699,7 @@ extension ChatController {
                 start = forward ? top : top - 1
             }
             guard entries.indices.contains(start) else { return nil }
-            showRulerEntry(start, settled: false)
+            showRulerEntry(start)
             messageList.layoutIfNeeded()
             guard let row = messageList.rowView(for: entries[start].id) as? ChatMessageRow else { return nil }
             return UIAccessibilityCustomRotorItemResult(targetElement: row.spokenElement, targetRange: nil)
