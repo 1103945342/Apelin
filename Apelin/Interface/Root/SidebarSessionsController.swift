@@ -203,14 +203,24 @@ final class SidebarSessionsController: UIViewController {
 
     @objc private func datePresentationChanged() {
         guard isViewLoaded else { return }
-        applySnapshot { [weak self] in self?.reloadSectionTitles() }
+        applySnapshot { [weak self] in self?.refreshSectionTitles() }
     }
 
-    private func reloadSectionTitles() {
+    /// A heading names the day it stands for, and the words under it move:
+    /// at midnight "Today" becomes "Yesterday", and a new time zone or
+    /// locale renames every day. The sections themselves stay where they
+    /// are, so each heading on screen is given its text again rather than
+    /// reloaded: the table keeps a section count of its own that can still
+    /// be ahead of the one its data source holds, and reloading a section
+    /// past the end throws.
+    private func refreshSectionTitles() {
         guard tableView.isFilled else { return }
-        let count = tableView.numberOfSections
-        guard count > 0 else { return }
-        tableView.reloadSections(IndexSet(integersIn: 0..<count), with: .none)
+        for section in 0..<tableView.numberOfSections {
+            guard let header = tableView.headerView(forSection: section),
+                  let identifier = dataSource.sectionIdentifier(for: section)
+            else { continue }
+            header.textLabel?.text = Self.title(for: identifier)
+        }
     }
 
     /// Picks `summary` and brings its row into sight.
