@@ -60,8 +60,43 @@ jobs:
           PUSH_TOKEN: ${{ github.token }}
         run: Packages/ApelinAgent/Scripts/sync-prompts.sh
 
+      - name: Restore SwiftPM cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/apelin-spm
+          key: spm-${{ runner.os }}-${{ hashFiles('Apelin.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+          restore-keys: |
+            spm-${{ runner.os }}-
+
+      - name: Resolve package dependencies
+        shell: bash
+        env:
+          SPMPATH: ${{ runner.temp }}/apelin-spm
+        run: |
+          set -uo pipefail
+          mkdir -p "$SPMPATH"
+          # Resolving on its own first, so a dependency failure names its
+          # cause here instead of surfacing as a bare "Could not resolve
+          # package dependencies" in the middle of the build. The full log
+          # goes to the step summary, which a run keeps.
+          if xcodebuild -resolvePackageDependencies \
+              -clonedSourcePackagesDirPath "$SPMPATH" \
+              -project Apelin.xcodeproj -scheme Apelin >resolve.log 2>&1; then
+            tail -n 20 resolve.log
+            exit 0
+          fi
+          status=$?
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          tail -n 120 resolve.log >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::resolving package dependencies failed (exit $status)"
+          tail -n 60 resolve.log
+          exit "$status"
+
       - name: Build and package
         shell: bash
+        env:
+          CLONED_SOURCE_PACKAGES: ${{ runner.temp }}/apelin-spm
         run: |
           set -euo pipefail
           make deb FLAVOR="${{ github.event.inputs.bootstrap || 'roothide' }}" CONFIGURATION=Release SKIP_HARNESS=1 \

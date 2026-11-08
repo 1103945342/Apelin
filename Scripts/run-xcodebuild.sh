@@ -31,6 +31,15 @@ elif [[ -n "$error_lines" ]]; then
 else
     exit 0
 fi
-[[ -z "$error_lines" ]] || head -40 <<<"$error_lines" >&2
+if [[ -n "$error_lines" ]]; then
+    head -40 <<<"$error_lines" >&2
+else
+    # No line matched: the failure is one xcodebuild reported in a shape this
+    # grep does not know, and the reason went to the log instead. SwiftPM's
+    # `Could not resolve package dependencies:` is that shape — its cause is
+    # the lines after it, which are not prefixed with `error:`. Keep them.
+    echo "no line matched the error pattern; the log's end follows" >&2
+    tail -n 80 "$log" >&2
+fi
 [[ "$xcode_status" -eq 0 ]] || exit "$xcode_status"
 exit 1
