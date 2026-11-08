@@ -116,6 +116,28 @@ jobs:
             DERIVED_DATA="$RUNNER_TEMP/apelin-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
             BUILD_NUMBER="$GITHUB_RUN_NUMBER" 2>&1 | tee "$RUNNER_TEMP/build.log"
 
+      - name: Keep the build log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-${{ github.sha }}
+          path: ${{ runner.temp }}/build.log
+          if-no-files-found: warn
+          retention-days: 7
+
+      # A compiler error is a line the wrapper prints to stderr, which an
+      # annotation keeps only as an exit status: the log itself is what names
+      # the file, the line and the diagnostic.
+      - name: Report the compiler errors
+        if: failure()
+        shell: bash
+        run: |
+          set -uo pipefail
+          log="$RUNNER_TEMP/build.log"
+          [[ -f "$log" ]] || exit 0
+          { echo '```'; grep -E "error:" "$log" | head -60; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          grep -E "error:" "$log" | head -40 || true
+
       - name: Read version and prepare release files
         id: release
         if: github.event_name == 'workflow_dispatch'
