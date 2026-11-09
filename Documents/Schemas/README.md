@@ -56,7 +56,8 @@ other hidden configuration.
 | `deploymentTarget` | `16.0` or later, as a string. |
 | `architectures` | `{rootless?, roothide?}` → `arm64`/`arm64e` lists. The keys present are the bootstraps the project packages for. Templates default to rootless `[arm64, arm64e]`, roothide `[arm64e]`. |
 | `configurations` | `Debug` and `Release`, each `{optimization: "0"…"3"/"s"/"z", debugInfo, defines?, cFlags?, swiftFlags?, linkFlags?}`. A define's name may not start with `APELIN_`. A flag is one argv element starting with `-`; nothing here is ever given to a shell. |
-| `products` | 1–8 of `{id, type, name, sources, headerSearchPaths?, resources?, infoPlist?, entitlements?, installName?, objcARC?, frameworks?, weakFrameworks?, libraries?, frameworkSearchPaths?, librarySearchPaths?, extensionSupport?}`. `type` is `app`, `appex`, `bundle`, `dylib` or `executable`. `app`, `appex` and `bundle` require `infoPlist`; only they may have `resources`; only `dylib` may set `installName` (default `@rpath/<name>.dylib`). `extensionSupport` names `{extension, component}` from an installed extension's manifest; the build adds that component's include directories, link-stub directories for the bootstrap being built and rpaths. Ids and names are unique (beyond the schema). |
+| `products` | 1–8 of `{id, type, name, sources, headerSearchPaths?, resources?, infoPlist?, entitlements?, installName?, objcARC?, frameworks?, weakFrameworks?, libraries?, frameworkSearchPaths?, librarySearchPaths?, extensionSupport?, swiftModules?}`. `type` is `app`, `appex`, `bundle`, `dylib` or `executable`. `app`, `appex` and `bundle` require `infoPlist`; only they may have `resources`; only `dylib` may set `installName` (default `@rpath/<name>.dylib`). `extensionSupport` names `{extension, component}` from an installed extension's manifest; the build adds that component's include directories, link-stub directories for the bootstrap being built and rpaths. `swiftModules` names the project's modules this product compiles against and links (below). Ids and names are unique (beyond the schema). |
+| `swiftModules` | 1–32 when present, of `{name, sources, dependencies?}`, each a Swift module built out of the project's own files — one target of a vendored package, say. `name` is the name its Swift sources import; `sources` are its `.swift` files; `dependencies` names the modules it imports, which are built before it. Each module becomes one `.swiftmodule` and one object, per architecture, which a product that names it (or names a module that imports it) compiles against with `-I` and links. **Nothing is resolved, fetched or downloaded**: SwiftPM never runs, a vendored package is a folder of the project like any other, and its own `Package.swift` is never read, so its resources and `Bundle.module` are not supported in v1. Only a Swift project compiles Swift modules; names are unique and never a product's name, a module never depends on itself, every dependency is declared, and the modules may not depend on each other in a cycle (all beyond the schema). |
 | `build.steps` | The typed steps, below. |
 | `package` | `{id, name, version, description, longDescription?, icon?, author, maintainer?, section, format?, depends?, dependsByBootstrap?, recommends?, suggests?, conflicts?, breaks?, replaces?, provides?, layout, maintainerScripts?, tweakFilter?}`. |
 
@@ -168,17 +169,19 @@ the digests, and the description documents themselves to render a diff.
 
 `project` holds exactly these members of `apelin-project.json`, each only if
 present: `kind`, `language`, `deploymentTarget`, `architectures`,
-`configurations`, `products` (every product, every member **except**
-`sources`, `headerSearchPaths` and `resources`), and `build`.
+`configurations`, `swiftModules`, `products` (every product, every member
+**except** `sources`, `headerSearchPaths` and `resources`), and `build`.
 
 `files` holds every product's `entitlements` file and every `script` step's
 `file`.
 
 So a compile or link flag, a define, an optimisation level, a step, a
 framework, a library, an extension support component, an install name, an
-entitlement or a build script's content each moves the build digest. Editing,
-adding or removing a source, header or resource under the existing globs does
-not, nor does `template`, `environment`, `projectID` or `package`.
+entitlement, a build script's content, a Swift module's source patterns or
+dependencies, or a product naming another module each moves the build digest.
+Editing, adding or removing a source, header or resource under the existing
+globs does not — a module's own files are sources like any other — nor does
+`template`, `environment`, `projectID` or `package`.
 
 ### Packaging description
 

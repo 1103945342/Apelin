@@ -225,7 +225,7 @@ def check_digests(update: bool) -> int:
         print(f"ok   digest/{case.name}: build {digests['build']['digest']}")
         print(f"     digest/{case.name}: packaging {digests['packaging']['digest']}")
         for description, edit, build_moves, packaging_moves in EDITS:
-            with tempfile.TemporaryDirectory(prefix="apelin-digest.", dir="/private/tmp") as scratch:
+            with tempfile.TemporaryDirectory(prefix="apelin-digest.") as scratch:
                 root = Path(scratch) / "project"
                 shutil.copytree(case / "project", root)
                 edit(root)

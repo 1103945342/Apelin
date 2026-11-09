@@ -68,6 +68,13 @@
       "maxItems": 8,
       "items": { "$ref": "#/$defs/product" }
     },
+    "swiftModules": {
+      "description": "Swift modules built out of the project's own files — one target of a vendored package, say — each one .swiftmodule and one object. A Swift product names the ones it compiles against and links in its own swiftModules. SwiftPM never runs and no Package.swift is read: the project says where each module's sources are and which modules it imports.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": { "$ref": "#/$defs/swiftModule" }
+    },
     "build": {
       "type": "object",
       "additionalProperties": false,
@@ -299,6 +306,28 @@
         }
       }
     },
+    "swiftModule": {
+      "description": "A module the project's own sources make, such as one target of a vendored Swift package: the sources it is compiled from, and the modules it imports.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "sources"],
+      "properties": {
+        "name": { "$ref": "#/$defs/identifier" },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": { "$ref": "#/$defs/relativeGlob" }
+        },
+        "dependencies": {
+          "description": "Modules this one imports: built before it, and linked with the products that use either.",
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 32,
+          "items": { "$ref": "#/$defs/identifier" }
+        }
+      }
+    },
     "product": {
       "type": "object",
       "additionalProperties": false,
@@ -372,6 +401,13 @@
           "type": "array",
           "maxItems": 8,
           "items": { "$ref": "#/$defs/extensionSupport" }
+        },
+        "swiftModules": {
+          "description": "The project's swiftModules this product compiles against and links, each with the modules it depends on.",
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 32,
+          "items": { "$ref": "#/$defs/identifier" }
         }
       },
       "allOf": [

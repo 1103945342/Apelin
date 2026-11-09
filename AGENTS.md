@@ -67,6 +67,18 @@ the same executable in session mode; the workers are its children.
   deletes it. dpkg and irisind never see one, no package repository takes
   one, and the Distribute… page offers Share `.ipa` alone. The two formats
   are never one renamed into the other, and a deb keeps every check it had.
+- **A Swift module is the project's own sources, never a resolution.** A
+  package a project vendors is a folder of the project: `swiftModules` names
+  each module's `.swift` files and the modules it imports, the build compiles
+  one `.swiftmodule` and one object per module per architecture with the
+  project's own `swiftc`, and a product compiles against and links the modules
+  it names together with the ones those import. SwiftPM never runs, no
+  `Package.swift` is read, nothing is fetched and no lockfile or package cache
+  exists — so a vendored module's resources and `Bundle.module` are out of
+  scope, and a missing dependency is a project that must vendor it, never a
+  network call. A module's dependencies are built before it, a cycle is
+  refused, and its declaration is in the build digest while its files are
+  sources like any other.
 - **roothide is recognised by the process's own path** (`RoothideRoot`,
   libroothide's own name rule), never by loading libroothide through the
   `.jbroot` link, which is not promised, and never by falling back to

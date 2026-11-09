@@ -146,6 +146,72 @@ public enum ProjectValidation {
                 }
             }
         }
+        errors += swiftModuleErrors(project)
+        return errors
+    }
+
+    /// The modules a project carries, and the ones its products name: each an
+    /// identifier the schema already checked, built before what depends on it,
+    /// and never a product's own name.
+    private static func swiftModuleErrors(_ project: ProjectDocument) -> [String] {
+        let modules = project.swiftModules ?? []
+        var errors: [String] = []
+        if !modules.isEmpty, project.language != .swift {
+            errors.append("/swiftModules: only a Swift project compiles Swift modules")
+        }
+        var byName: [String: ProjectDocument.SwiftModule] = [:]
+        for (index, module) in modules.enumerated() {
+            if byName[module.name] == nil {
+                byName[module.name] = module
+            } else {
+                errors.append("/swiftModules/\(index): module \(module.name) is declared twice")
+            }
+            for source in module.sources where pathExtension(source) != ".swift" {
+                errors.append("/swiftModules/\(index)/sources: \(source) is not a .swift source")
+            }
+        }
+        let productNames = Set(project.products.map(\.name))
+        for (index, module) in modules.enumerated() {
+            if productNames.contains(module.name) {
+                errors.append("/swiftModules/\(index)/name: \(module.name) is also a product name")
+            }
+            for dependency in module.dependencies ?? [] {
+                if dependency == module.name {
+                    errors.append("/swiftModules/\(index)/dependencies: \(module.name) depends on itself")
+                } else if byName[dependency] == nil {
+                    errors.append("/swiftModules/\(index)/dependencies: unknown swift module \(dependency)")
+                }
+            }
+        }
+        // A module is built before the modules that depend on it, so the
+        // modules may not wait for each other.
+        var state: [String: Int] = [:]
+        var cyclic: Set<String> = []
+        func visit(_ name: String) {
+            if state[name] != nil {
+                if state[name] == 1 {
+                    cyclic.insert(name)
+                }
+                return
+            }
+            state[name] = 1
+            for dependency in byName[name]?.dependencies ?? [] where byName[dependency] != nil {
+                visit(dependency)
+            }
+            state[name] = 2
+        }
+        for module in modules {
+            visit(module.name)
+        }
+        var reported: Set<String> = []
+        for (index, module) in modules.enumerated() where cyclic.contains(module.name) && reported.insert(module.name).inserted {
+            errors.append("/swiftModules/\(index)/dependencies: \(module.name) is in a dependency cycle")
+        }
+        for (index, product) in project.products.enumerated() {
+            for name in product.swiftModules ?? [] where byName[name] == nil {
+                errors.append("/products/\(index)/swiftModules: unknown swift module \(name)")
+            }
+        }
         return errors
     }
 

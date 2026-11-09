@@ -18,6 +18,8 @@ public final class BuildPipeline: @unchecked Sendable {
 
     private var objects: [String: [Architecture: [String]]] = [:]
     private var slices: [String: [Architecture: String]] = [:]
+    /// The project's own Swift modules, built once per architecture.
+    private var moduleCache: [Architecture: [String: BuiltModule]] = [:]
     @objc private dynamic var bundles: [String: String] = [:]
     @objc private dynamic var merged: [String: String] = [:]
     private var dsyms: [BuildProducts.DSYM] = []
@@ -226,6 +228,137 @@ public final class BuildPipeline: @unchecked Sendable {
         "\(arch.rawValue)-apple-ios\(project.deploymentTarget)"
     }
 
+    // MARK: Swift modules a project carries
+
+    /// A module the project's sources make, built for one architecture: the
+    /// folder its `.swiftmodule` sits in, which a product imports it with
+    /// (`-I`), and the object the product links.
+    private struct BuiltModule {
+        var include: String
+        var object: String
+    }
+
+    /// Every declared module, each after the modules it depends on and in the
+    /// project's order otherwise. A cycle is refused here too, so a project
+    /// that reached a build without a check still stops with a reason.
+    private func orderedModules() throws -> [ProjectDocument.SwiftModule] {
+        let declared = project.swiftModules ?? []
+        var byName: [String: ProjectDocument.SwiftModule] = [:]
+        for module in declared where byName[module.name] == nil {
+            byName[module.name] = module
+        }
+        var ordered: [ProjectDocument.SwiftModule] = []
+        var done: Set<String> = []
+        var visiting: Set<String> = []
+        func add(_ module: ProjectDocument.SwiftModule, after dependents: [String]) throws {
+            if done.contains(module.name) {
+                return
+            }
+            guard visiting.insert(module.name).inserted else {
+                let cycle = (dependents + [module.name]).joined(separator: " → ")
+                throw BuildFailure("swift modules depend on each other in a cycle: \(cycle)")
+            }
+            for dependency in module.dependencies ?? [] {
+                guard let found = byName[dependency] else {
+                    throw BuildFailure("swift module \(module.name) depends on \(dependency), which the project does not declare")
+                }
+                try add(found, after: dependents + [module.name])
+            }
+            visiting.remove(module.name)
+            done.insert(module.name)
+            ordered.append(module)
+        }
+        for module in declared {
+            try add(module, after: [])
+        }
+        return ordered
+    }
+
+    /// The modules a product compiles against and links, in the order they are
+    /// built, built for `arch` the first time one asks: each is compiled from
+    /// the project's own files with `swiftc`, into one `.swiftmodule` and one
+    /// object. Nothing is resolved, fetched or downloaded — a vendored package
+    /// is a folder of the project like any other, and its own `Package.swift`
+    /// is never read.
+    private func builtModules(of product: ProjectDocument.Product, for arch: Architecture) throws -> [BuiltModule] {
+        guard !(product.swiftModules ?? []).isEmpty else { return [] }
+        let built = try buildModules(for: arch)
+        return try moduleClosure(of: product).map { name in
+            guard let module = built[name] else {
+                throw BuildFailure("\(product.id): swift module \(name) was not built")
+            }
+            return module
+        }
+    }
+
+    /// The names a product links, each once and a module before the modules
+    /// that depend on it: a module a module imports is linked although the
+    /// product never names it.
+    private func moduleClosure(of product: ProjectDocument.Product) throws -> [String] {
+        var byName: [String: ProjectDocument.SwiftModule] = [:]
+        for module in project.swiftModules ?? [] where byName[module.name] == nil {
+            byName[module.name] = module
+        }
+        var reached: Set<String> = []
+        var order: [String] = []
+        func add(_ name: String) throws {
+            guard reached.insert(name).inserted else { return }
+            guard let module = byName[name] else {
+                throw BuildFailure("\(product.id): the project declares no swift module \(name)")
+            }
+            for dependency in module.dependencies ?? [] {
+                try add(dependency)
+            }
+            order.append(name)
+        }
+        for name in product.swiftModules ?? [] {
+            try add(name)
+        }
+        return order
+    }
+
+    /// Builds each declared module for `arch`, once per build. The project's
+    /// defines are not passed: a package's own configuration is its own, and
+    /// `APELIN_BUILD_ID` is not something it reads.
+    private func buildModules(for arch: Architecture) throws -> [String: BuiltModule] {
+        if let built = moduleCache[arch] {
+            return built
+        }
+        var built: [String: BuiltModule] = [:]
+        for module in try orderedModules() {
+            let directory = work.appendingPathComponent("modules/\(arch.rawValue)/\(module.name)").path
+            try makeDirectory(directory)
+            let sources = try ProjectGlob.expand(module.sources, in: inputs.projectRoot)
+            guard !sources.isEmpty else {
+                throw BuildFailure("swift module \(module.name): the sources match no file")
+            }
+            let object = directory + "/\(module.name).o"
+            var argv = [
+                "-sdk", inputs.sdk.path, "-target", swiftTarget(arch), "-wmo", "-c", "-parse-as-library",
+                "-module-name", module.name,
+            ] + swiftToolFlags
+            argv.append(configuration.optimization == "0" ? "-Onone" : "-O")
+            argv += ["-debug-prefix-map", "\(root)=."]
+            if configuration.debugInfo {
+                argv.append("-g")
+            }
+            for dependency in module.dependencies ?? [] {
+                guard let found = built[dependency] else {
+                    throw BuildFailure("swift module \(module.name) is built before \(dependency)")
+                }
+                argv += ["-I", found.include]
+            }
+            argv += ["-emit-module", "-emit-module-path", directory + "/\(module.name).swiftmodule"]
+            argv += sources.map(\.relative)
+            argv += ["-o", object]
+            try execute(tool("swiftc"), argv, label: "swiftc")
+            log("swift module \(module.name): \(sources.count) source(s), \(arch.rawValue)")
+            built[module.name] = BuiltModule(include: directory, object: object)
+        }
+        moduleCache[arch] = built
+        return built
+    }
+
     // MARK: Steps
 
     private func sources(of product: ProjectDocument.Product) throws -> [ProjectGlob.Match] {
@@ -256,6 +389,7 @@ public final class BuildPipeline: @unchecked Sendable {
                 }
                 argv += ["-D", bootstrapDefine, "-D", configurationDefine]
                 argv += support.includes.flatMap { ["-I", $0] }
+                argv += try builtModules(of: product, for: arch).flatMap { ["-I", $0.include] }
                 argv += configuration.swiftFlags ?? []
                 argv += flags
                 argv += sources.map(\.relative)
@@ -345,6 +479,7 @@ public final class BuildPipeline: @unchecked Sendable {
             argv += configuration.linkFlags ?? []
             argv += flags
             argv += produced[arch] ?? []
+            argv += try builtModules(of: product, for: arch).map(\.object)
             argv += ["-o", binary]
             try execute(executable, argv, label: "ld")
             if arch == .arm64e {

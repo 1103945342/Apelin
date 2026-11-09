@@ -179,6 +179,11 @@ public struct ProjectCheck: Sendable {
                 }
             }
         }
+        for (index, module) in (project.swiftModules ?? []).enumerated() {
+            for pattern in module.sources {
+                checkGlob(pattern, root: root, field: "/swiftModules/\(index)/sources", add: add)
+            }
+        }
         for (index, entry) in project.package.layout.enumerated() {
             if let file = entry.file, (try? ProjectFiles.read(file, in: root)) == nil {
                 add(

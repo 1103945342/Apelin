@@ -50,8 +50,23 @@ public struct ProjectDocument: Codable, Sendable, Equatable {
     public var architectures: ArchitectureMap
     public var configurations: Configurations
     public var products: [Product]
+    /// Swift modules compiled from sources a project carries — a dependency's,
+    /// vendored under the project — one `.swiftmodule` and one object each,
+    /// which a Swift product names in `swiftModules`. SwiftPM itself never
+    /// runs: the project says which folders are a module and which modules it
+    /// needs, so a package's own `Package.swift` is not read.
+    public var swiftModules: [SwiftModule]?
     public var build: Build
     public var package: Package
+
+    /// One module built out of the project's own files. Its name is the
+    /// Swift module name its sources `import`.
+    public struct SwiftModule: Codable, Sendable, Equatable {
+        public var name: String
+        public var sources: [String]
+        /// Modules this one imports, built before it.
+        public var dependencies: [String]?
+    }
 
     public struct TemplateSource: Codable, Sendable, Equatable {
         public var extensionID: String
@@ -122,6 +137,9 @@ public struct ProjectDocument: Codable, Sendable, Equatable {
         public var frameworkSearchPaths: [String]?
         public var librarySearchPaths: [String]?
         public var extensionSupport: [ExtensionSupport]?
+        /// The project's `swiftModules` this product compiles against and
+        /// links, each with the ones it depends on.
+        public var swiftModules: [String]?
 
         /// `@rpath/<name>.dylib` unless the project names one.
         public var effectiveInstallName: String {

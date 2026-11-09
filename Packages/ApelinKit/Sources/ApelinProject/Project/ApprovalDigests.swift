@@ -60,7 +60,11 @@ public struct ApprovalDigests: Codable, Sendable, Equatable {
     public var build: Description
     public var packaging: Description
 
-    private static let buildMembers = ["kind", "language", "deploymentTarget", "architectures", "configurations"]
+    /// `swiftModules` is here although the sources it names are not: what a
+    /// module is made of is the project's decision, what its files say is a
+    /// source edit like any other. A product's own `swiftModules` is a member
+    /// of `products`, and comes with it.
+    private static let buildMembers = ["kind", "language", "deploymentTarget", "architectures", "configurations", "swiftModules"]
     private static let productInputMembers: Set<String> = ["sources", "headerSearchPaths", "resources"]
 
     public static func buildDescription(_ project: JSONDocument, root: URL) throws -> JSONDocument {

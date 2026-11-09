@@ -154,6 +154,60 @@ def project_semantic_errors(project: dict) -> list[str]:
                 errors.append(f"/products/{index}/sources: a Swift project compiles .swift sources only in v1")
             elif not is_swift and suffix not in (".c", ".m"):
                 errors.append(f"/products/{index}/sources: {source} is not a .c or .m source")
+    errors.extend(_swift_module_errors(project))
+    return errors
+
+
+def _swift_module_errors(project: dict) -> list[str]:
+    """The modules a project carries, and the ones its products name."""
+    modules = project.get("swiftModules", [])
+    errors: list[str] = []
+    if modules and project["language"] != "swift":
+        errors.append("/swiftModules: only a Swift project compiles Swift modules")
+    by_name: dict[str, dict] = {}
+    for index, module in enumerate(modules):
+        if module["name"] in by_name:
+            errors.append(f"/swiftModules/{index}: module {module['name']} is declared twice")
+        else:
+            by_name[module["name"]] = module
+        for source in module["sources"]:
+            if os.path.splitext(source)[1] != ".swift":
+                errors.append(f"/swiftModules/{index}/sources: {source} is not a .swift source")
+    product_names = {p["name"] for p in project["products"]}
+    for index, module in enumerate(modules):
+        if module["name"] in product_names:
+            errors.append(f"/swiftModules/{index}/name: {module['name']} is also a product name")
+        for dependency in module.get("dependencies", []):
+            if dependency == module["name"]:
+                errors.append(f"/swiftModules/{index}/dependencies: {module['name']} depends on itself")
+            elif dependency not in by_name:
+                errors.append(f"/swiftModules/{index}/dependencies: unknown swift module {dependency}")
+    state: dict[str, int] = {}
+    cyclic: set[str] = set()
+
+    def visit(name: str) -> None:
+        if name in state:
+            if state[name] == 1:
+                cyclic.add(name)
+            return
+        state[name] = 1
+        for dependency in by_name[name].get("dependencies", []):
+            if dependency in by_name:
+                visit(dependency)
+        state[name] = 2
+
+    for module in modules:
+        visit(module["name"])
+    reported: set[str] = set()
+    for index, module in enumerate(modules):
+        name = module["name"]
+        if name in cyclic and name not in reported:
+            reported.add(name)
+            errors.append(f"/swiftModules/{index}/dependencies: {name} is in a dependency cycle")
+    for index, product in enumerate(project["products"]):
+        for name in product.get("swiftModules", []):
+            if name not in by_name:
+                errors.append(f"/products/{index}/swiftModules: unknown swift module {name}")
     return errors
 
 
@@ -298,7 +352,7 @@ def read_inside(root: Path, relative: str) -> bytes:
         return handle.read()
 
 
-_BUILD_PROJECT_MEMBERS = ("kind", "language", "deploymentTarget", "architectures", "configurations")
+_BUILD_PROJECT_MEMBERS = ("kind", "language", "deploymentTarget", "architectures", "configurations", "swiftModules")
 _PRODUCT_INPUT_MEMBERS = ("sources", "headerSearchPaths", "resources")
 
 

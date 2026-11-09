@@ -66,6 +66,9 @@ extension BuiltInSkills {
           `objcARC`, `installName` (dylib only; default
           `@rpath/<name>.dylib`), `entitlements` (a project plist), and
           `infoPlist` and `resources` (app, appex and bundle only).
+        - `swiftModules`: `[name]`, the project modules below this product
+          compiles against and links, each together with the modules it
+          imports.
         - `extensionSupport`: `[{extension, component}]`, the headers, link
           stubs and rpaths an installed development extension provides, the
           build picking each bootstrap's own. A tweak hooking with substrate
@@ -75,6 +78,28 @@ extension BuiltInSkills {
           `{"extension": "wiki.qaq.apelin.dev.preferences", "component":
           "preferences"}`, `frameworks` with `Preferences`, and depends on
           `preferenceloader`.
+
+        ## swiftModules
+        Swift modules built out of the project's own files, such as one target
+        of a package the project vendors (Swift projects only):
+
+        ```json
+        "swiftModules": [
+          {"name": "LogKit", "sources": ["Vendor/LogKit/Sources/**/*.swift"]},
+          {"name": "NetKit", "sources": ["Vendor/NetKit/Sources/**/*.swift"],
+           "dependencies": ["LogKit"]}
+        ]
+        ```
+
+        `name` is what the Swift sources `import`; `sources` its `.swift`
+        files; `dependencies` the modules it imports, built before it. Each
+        module becomes one `.swiftmodule` and one object per architecture, and
+        a Swift product that lists it in `swiftModules` compiles against it
+        and links it. SwiftPM never runs and nothing is downloaded: to use a
+        package, copy its sources into the project and describe each target
+        this way; its own `Package.swift` is never read, so its resources and
+        `Bundle.module` are not available. Names are unique and never a
+        product's name, and modules may not depend on each other in a cycle.
 
         ## build.steps
         Per product, in this order: `compile`, `link`, `bundle-resources`
