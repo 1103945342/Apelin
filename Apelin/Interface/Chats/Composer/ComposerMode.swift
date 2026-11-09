@@ -59,18 +59,38 @@ enum ComposerMode: String, CaseIterable, Codable, Sendable {
     }
 }
 
-/// Where the pill's setting is kept, read fresh by each run so a change lands on
-/// the next message rather than the one being answered.
+/// Where the pill's setting is kept: one entry per conversation, read fresh by
+/// each run so a change lands on the next message rather than the one being
+/// answered, and never carried into another conversation.
+///
+/// The single key this had before was every conversation's at once — a plan set
+/// in one turned the one opened beside it into a plan too. It stays only as a
+/// seed: the first time a conversation is read, it takes the old value and
+/// writes it down as its own, and nothing writes that key again.
 enum ComposerModeStore {
-    private static let key = "composer.mode"
+    private static let seedKey = "composer.mode"
 
-    static var mode: ComposerMode {
-        get {
-            guard let raw = UserDefaults.standard.string(forKey: key),
-                  let mode = ComposerMode(rawValue: raw)
-            else { return .build }
+    private static func key(for id: UUID) -> String {
+        "composer.mode.conversation." + id.uuidString
+    }
+
+    /// The mode a run in `id` goes out with. Nil — no conversation on screen
+    /// yet — is only ever asked by the pill as it is built, and starts afresh.
+    static func mode(for id: UUID?) -> ComposerMode {
+        guard let id else { return .build }
+        let defaults = UserDefaults.standard
+        if let raw = defaults.string(forKey: key(for: id)),
+           let mode = ComposerMode(rawValue: raw)
+        {
             return mode
         }
-        set { UserDefaults.standard.set(newValue.rawValue, forKey: key) }
+        let seed = defaults.string(forKey: seedKey).flatMap(ComposerMode.init(rawValue:)) ?? .build
+        defaults.set(seed.rawValue, forKey: key(for: id))
+        return seed
+    }
+
+    static func set(_ mode: ComposerMode, for id: UUID?) {
+        guard let id else { return }
+        UserDefaults.standard.set(mode.rawValue, forKey: key(for: id))
     }
 }

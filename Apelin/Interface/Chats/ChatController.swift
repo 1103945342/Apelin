@@ -166,11 +166,13 @@ final class ChatController: UIViewController {
         }
         composer.modelBar.onEffortTapped = { [weak self] in self?.presentEffortSheet() }
         composer.modelBar.onTierTapped = { [weak self] in self?.presentTierSheet() }
-        composer.onModeChanged = { mode in
-            // The store is what the next prompt reads; the pill has already
-            // taken its own colour. Written here so the write and the read
-            // agree on one place.
-            ComposerModeStore.mode = mode
+        composer.onModeChanged = { [weak self] mode in
+            // The store is what the next prompt reads, and it is this
+            // conversation's own entry, never the app's: the pill has already
+            // taken its own colour, and this writes what it took where the run
+            // that leaves from this page will find it.
+            guard let self else { return }
+            ComposerModeStore.set(mode, for: self.chat?.id)
         }
         composer.onCompactContext = { [weak self] in
             guard let self, let chat else { return }
@@ -517,6 +519,10 @@ final class ChatController: UIViewController {
         }
         updateModelSelection()
         ensureModelSelection()
+        // The pill is the one control said to carry a setting of its own: the
+        // page it now belongs to hands it this conversation's mode, so a chat
+        // opened after another never shows, or sends, the other one's.
+        composer.modelBar.modePill.set(mode: ComposerModeStore.mode(for: chat.id))
         title = chat.displayTitle
         // rolled only on screen; a page coming back shows its name at once
         titleView.setTitle(chat.titlePresentation, animated: previous != nil && view.window != nil)

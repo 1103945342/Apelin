@@ -450,7 +450,7 @@ final class ChatRuntime {
                 serviceTier: selected?.tier,
                 approvalMode: AgentPermissions.mode,
                 asksBeforeScreen: AgentPermissions.asksBeforeScreen,
-                runMode: ComposerModeStore.mode.runMode,
+                runMode: ComposerModeStore.mode(for: id).runMode,
                 modelParameters: ModelParameters.values(for: selected?.provider, model: selected?.model).wire,
             ),
             descriptors: descriptors,

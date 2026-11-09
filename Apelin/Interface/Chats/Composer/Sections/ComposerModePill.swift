@@ -3,13 +3,18 @@ import UIKit
 /// The pill under the composer: what this run is allowed to do, tapped to
 /// change it. Build, plan, automatic, in that order, wrapping round.
 ///
+/// The setting belongs to the conversation on screen, not to the app: the page
+/// hands this pill that conversation's mode (`set(mode:)`) when it shows one,
+/// and writes the tap back to it, so a plan set here is still a plan next time
+/// the conversation is opened and no other conversation ever takes it.
+///
 /// The pill is the only place the setting is changed, and it says what a run
 /// will do before one is sent, which is the answer a reader wants from a
 /// control they are about to press.
 final class ComposerModePill: UIControl {
     private let label = UILabel()
 
-    private(set) var mode: ComposerMode = ComposerModeStore.mode {
+    private(set) var mode: ComposerMode = .build {
         didSet { applyMode() }
     }
 
@@ -47,7 +52,8 @@ final class ComposerModePill: UIControl {
         fatalError("Use init(frame:)")
     }
 
-    /// The setting as something else left it, without telling the delegate.
+    /// The setting of the conversation now on screen, without telling the
+    /// delegate — neither the tap nor the store is involved in a page swap.
     func set(mode: ComposerMode) {
         guard self.mode != mode else { return }
         self.mode = mode
@@ -82,14 +88,14 @@ final class ComposerModePill: UIControl {
     }
 
     /// The word the pill draws: the mode's own name in the reader's language —
-    /// 规划, 构建, 自动模式 — because the badge is the only place the setting is
+    /// 规划, 构建, 自动 — because the badge is the only place the setting is
     /// named and a word nobody can read there names nothing. The screen reader
     /// says the same word.
     private var title: String {
         switch mode {
         case .plan: String(localized: "Plan")
         case .build: String(localized: "Build")
-        case .auto: String(localized: "Automatic Mode")
+        case .auto: String(localized: "Auto")
         }
     }
 
@@ -105,7 +111,6 @@ final class ComposerModePill: UIControl {
         isTrackingTap = true
         DispatchQueue.main.async { [weak self] in self?.isTrackingTap = false }
         mode = mode.next
-        ComposerModeStore.mode = mode
         onChange?(mode)
     }
 
