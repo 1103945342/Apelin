@@ -1,6 +1,754 @@
 {
   "sourceLanguage": "en",
   "strings": {
+
+  "%lld configured": {
+    "extractionState": "manual",
+    "localizations": {
+      "ar": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld configured"
+        }
+      },
+      "de": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld configured"
+        }
+      },
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld configured"
+        }
+      },
+      "es": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld configured"
+        }
+      },
+      "fr": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld configured"
+        }
+      },
+      "it": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld configured"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld configured"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld configured"
+        }
+      },
+      "pt-BR": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld configured"
+        }
+      },
+      "ru": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld configured"
+        }
+      },
+      "vi": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld configured"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld configured"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%lld configured"
+        }
+      }
+    }
+  },
+  "Conversation Compression": {
+    "extractionState": "manual",
+    "localizations": {
+      "ar": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Conversation Compression"
+        }
+      },
+      "de": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Conversation Compression"
+        }
+      },
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Conversation Compression"
+        }
+      },
+      "es": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Conversation Compression"
+        }
+      },
+      "fr": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Conversation Compression"
+        }
+      },
+      "it": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Conversation Compression"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Conversation Compression"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Conversation Compression"
+        }
+      },
+      "pt-BR": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Conversation Compression"
+        }
+      },
+      "ru": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Conversation Compression"
+        }
+      },
+      "vi": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Conversation Compression"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Conversation Compression"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Conversation Compression"
+        }
+      }
+    }
+  },
+  "Default Models": {
+    "extractionState": "manual",
+    "localizations": {
+      "ar": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Default Models"
+        }
+      },
+      "de": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Default Models"
+        }
+      },
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Default Models"
+        }
+      },
+      "es": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Default Models"
+        }
+      },
+      "fr": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Default Models"
+        }
+      },
+      "it": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Default Models"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Default Models"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Default Models"
+        }
+      },
+      "pt-BR": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Default Models"
+        }
+      },
+      "ru": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Default Models"
+        }
+      },
+      "vi": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Default Models"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Default Models"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Default Models"
+        }
+      }
+    }
+  },
+  "Image Generation": {
+    "extractionState": "manual",
+    "localizations": {
+      "ar": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Generation"
+        }
+      },
+      "de": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Generation"
+        }
+      },
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Generation"
+        }
+      },
+      "es": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Generation"
+        }
+      },
+      "fr": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Generation"
+        }
+      },
+      "it": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Generation"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Generation"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Generation"
+        }
+      },
+      "pt-BR": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Generation"
+        }
+      },
+      "ru": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Generation"
+        }
+      },
+      "vi": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Generation"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Generation"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Generation"
+        }
+      }
+    }
+  },
+  "Image Understanding": {
+    "extractionState": "manual",
+    "localizations": {
+      "ar": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Understanding"
+        }
+      },
+      "de": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Understanding"
+        }
+      },
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Understanding"
+        }
+      },
+      "es": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Understanding"
+        }
+      },
+      "fr": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Understanding"
+        }
+      },
+      "it": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Understanding"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Understanding"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Understanding"
+        }
+      },
+      "pt-BR": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Understanding"
+        }
+      },
+      "ru": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Understanding"
+        }
+      },
+      "vi": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Understanding"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Understanding"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Image Understanding"
+        }
+      }
+    }
+  },
+  "Prompt Optimization": {
+    "extractionState": "manual",
+    "localizations": {
+      "ar": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Prompt Optimization"
+        }
+      },
+      "de": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Prompt Optimization"
+        }
+      },
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Prompt Optimization"
+        }
+      },
+      "es": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Prompt Optimization"
+        }
+      },
+      "fr": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Prompt Optimization"
+        }
+      },
+      "it": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Prompt Optimization"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Prompt Optimization"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Prompt Optimization"
+        }
+      },
+      "pt-BR": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Prompt Optimization"
+        }
+      },
+      "ru": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Prompt Optimization"
+        }
+      },
+      "vi": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Prompt Optimization"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Prompt Optimization"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Prompt Optimization"
+        }
+      }
+    }
+  },
+  "These models are used for auxiliary tasks and do not change the model selected for a conversation.": {
+    "extractionState": "manual",
+    "localizations": {
+      "ar": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+        }
+      },
+      "de": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+        }
+      },
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+        }
+      },
+      "es": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+        }
+      },
+      "fr": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+        }
+      },
+      "it": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+        }
+      },
+      "pt-BR": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+        }
+      },
+      "ru": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+        }
+      },
+      "vi": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+        }
+      }
+    }
+  },
+  "Title Generation": {
+    "extractionState": "manual",
+    "localizations": {
+      "ar": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Title Generation"
+        }
+      },
+      "de": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Title Generation"
+        }
+      },
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Title Generation"
+        }
+      },
+      "es": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Title Generation"
+        }
+      },
+      "fr": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Title Generation"
+        }
+      },
+      "it": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Title Generation"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Title Generation"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Title Generation"
+        }
+      },
+      "pt-BR": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Title Generation"
+        }
+      },
+      "ru": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Title Generation"
+        }
+      },
+      "vi": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Title Generation"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Title Generation"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Title Generation"
+        }
+      }
+    }
+  },
+  "Use Conversation Model": {
+    "extractionState": "manual",
+    "localizations": {
+      "ar": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use Conversation Model"
+        }
+      },
+      "de": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use Conversation Model"
+        }
+      },
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use Conversation Model"
+        }
+      },
+      "es": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use Conversation Model"
+        }
+      },
+      "fr": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use Conversation Model"
+        }
+      },
+      "it": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use Conversation Model"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use Conversation Model"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use Conversation Model"
+        }
+      },
+      "pt-BR": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use Conversation Model"
+        }
+      },
+      "ru": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use Conversation Model"
+        }
+      },
+      "vi": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use Conversation Model"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use Conversation Model"
+        }
+      },
+      "zh-Hant": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Use Conversation Model"
+        }
+      }
+    }
+  },
     "Processing a message from %@": {
       "extractionState": "manual",
       "localizations": {
