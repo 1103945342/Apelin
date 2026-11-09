@@ -70,7 +70,7 @@ final class DefaultModelsController: TableController {
                 guard !Task.isCancelled, let self else { return }
                 self.accounts = []
             }
-            self.updateRows()
+            self?.updateRows()
         }
     }
 

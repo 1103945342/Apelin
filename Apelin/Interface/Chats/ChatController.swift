@@ -1095,7 +1095,7 @@ extension ChatController: ComposerView.Delegate {
             ?? chat.flatMap { ComposerModelSelection.selection(for: $0.id) }.map {
                 Preferences.DefaultModelSelection(provider: $0.provider, model: $0.model)
             }
-        guard selection != nil else {
+        guard let selection = selection else {
             presentNotice(
                 title: "Unable to Rewrite",
                 message: String(localized: "Choose a model before rewriting."),
