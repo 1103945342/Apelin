@@ -56,24 +56,24 @@ other hidden configuration.
 | `deploymentTarget` | `16.0` or later, as a string. |
 | `architectures` | `{rootless?, roothide?}` → `arm64`/`arm64e` lists. The keys present are the bootstraps the project packages for. Templates default to rootless `[arm64, arm64e]`, roothide `[arm64e]`. |
 | `configurations` | `Debug` and `Release`, each `{optimization: "0"…"3"/"s"/"z", debugInfo, defines?, cFlags?, swiftFlags?, linkFlags?}`. A define's name may not start with `APELIN_`. A flag is one argv element starting with `-`; nothing here is ever given to a shell. |
-| `products` | 1–8 of `{id, type, name, sources, headerSearchPaths?, resources?, infoPlist?, entitlements?, installName?, objcARC?, frameworks?, weakFrameworks?, libraries?, frameworkSearchPaths?, librarySearchPaths?, extensionSupport?}`. `app` and `bundle` require `infoPlist`; only they may have `resources`; only `dylib` may set `installName` (default `@rpath/<name>.dylib`). `extensionSupport` names `{extension, component}` from an installed extension's manifest; the build adds that component's include directories, link-stub directories for the bootstrap being built and rpaths. Ids and names are unique (beyond the schema). |
+| `products` | 1–8 of `{id, type, name, sources, headerSearchPaths?, resources?, infoPlist?, entitlements?, installName?, objcARC?, frameworks?, weakFrameworks?, libraries?, frameworkSearchPaths?, librarySearchPaths?, extensionSupport?}`. `type` is `app`, `appex`, `bundle`, `dylib` or `executable`. `app`, `appex` and `bundle` require `infoPlist`; only they may have `resources`; only `dylib` may set `installName` (default `@rpath/<name>.dylib`). `extensionSupport` names `{extension, component}` from an installed extension's manifest; the build adds that component's include directories, link-stub directories for the bootstrap being built and rpaths. Ids and names are unique (beyond the schema). |
 | `build.steps` | The typed steps, below. |
 | `package` | `{id, name, version, description, longDescription?, icon?, author, maintainer?, section, format?, depends?, dependsByBootstrap?, recommends?, suggests?, conflicts?, breaks?, replaces?, provides?, layout, maintainerScripts?, tweakFilter?}`. |
 
 ### Build steps
 
 Each product goes through, in this order, `compile` → `link` →
-`bundle-resources` (app and bundle only) → `lipo` → `dsym` → `strip` →
+`bundle-resources` (app, appex and bundle only) → `lipo` → `dsym` → `strip` →
 `sign`. `compile`, `link`, `lipo` and `sign` are required; each appears at
 most once per product; `sign` is the last step for its product (beyond the
 schema). Steps of different products may interleave.
 
 | Step | Does |
 |---|---|
-| `compile {product, flags?}` | Every source, once per architecture, to an object kept for `dsym`. Swift compiles the module whole, one object per architecture. |
-| `link {product, flags?}` | One Mach-O per architecture: `MH_EXECUTE` for app and executable, `MH_DYLIB` for dylib, `MH_BUNDLE` for bundle. |
-| `bundle-resources {product}` | Builds the `.app`/`.bundle` directory: the product's Info.plist with `CFBundleExecutable`, `CFBundleShortVersionString`, `CFBundleVersion` and `MinimumOSVersion` set by the build, then each resource flattened to its file name; a `.plist` is linted and written as XML. |
-| `lipo {product}` | Merges the slices into the product (inside the bundle for app/bundle). |
+| `compile {product, flags?}` | Every source, once per architecture, to an object kept for `dsym`. Swift compiles the module whole, one object per architecture; an `appex` compiles with `-parse-as-library`. |
+| `link {product, flags?}` | One Mach-O per architecture: `MH_EXECUTE` for app and executable, `MH_DYLIB` for dylib, `MH_BUNDLE` for bundle. An `appex` is `MH_EXECUTE` whose entry point is `_NSExtensionMain`, which the build links for (`-framework Foundation`). |
+| `bundle-resources {product}` | Builds the `.app`/`.appex`/`.bundle` directory: the product's Info.plist with `CFBundleExecutable`, `CFBundleShortVersionString`, `CFBundleVersion` and `MinimumOSVersion` set by the build, then each resource flattened to its file name; a `.plist` is linted and written as XML. An `.appex` must name a `CFBundleIdentifier` and an `NSExtension.NSExtensionPointIdentifier`. |
+| `lipo {product}` | Merges the slices into the product (inside the bundle for app, appex and bundle). |
 | `dsym {product}` | `dsymutil` while the objects exist. Fails on any warning, a dSYM without `__debug_info`, or UUIDs that differ from the product's. |
 | `strip {product, style?}` | `non-global` (`strip -x`, default) or `debug` (`strip -S`). Exported symbols stay. |
 | `sign {product, identity?}` | Ad-hoc (`identity: "adhoc"`, the only value), with the product's `entitlements` if any. |
@@ -122,16 +122,23 @@ Swift gets the bootstrap and configuration names as `-D` conditions.
 - `format` is `deb` (absent or `deb`) or `ipa`. An `ipa` package is an app
   project's build handing back an `.ipa` — the one app product it built,
   inside `Payload/<name>.app/`, zipped with the bytes the `sign` step
-  wrote — and no package manager installs it, so it carries exactly one `app`
-  product and an empty `layout`, and no relations, `tweakFilter` or
+  wrote, and each `appex` product it built at
+  `Payload/<name>.app/PlugIns/<extension>.appex`, where iOS looks for a
+  widget, a share sheet or another extension — and no package manager
+  installs it, so it carries exactly one `app` product, at most eight
+  `appex` ones and an empty `layout`, and no relations, `tweakFilter` or
   `maintainerScripts` (the check says which). The build writes
   `<id>_<version>.ipa` into the build's folder and records it with
   `format: "ipa"`; `apelin_package_install` installs one as an app — unpacked
-  under `<install root>/Applications`, signed with `ldid`, registered with
-  `uicache -p`, and taken off again by `apelin_package_remove` — no package
+  under `<install root>/Applications`, each Mach-O inside it signed with
+  `ldid`, registered with `uicache -p`, and taken off again by
+  `apelin_package_remove` — no package
   repository takes one, and Distribute… offers Share `.ipa` alone. The
   archive is read back after writing: every member under `Payload/<name>.app/`,
-  an `Info.plist` among them, nothing absolute or leading outside. Members are
+  an `Info.plist` among them, nothing absolute or leading outside, and each
+  extension with an `Info.plist` naming an executable it holds, an
+  `NSExtensionPointIdentifier`, and a `CFBundleIdentifier` under the app's.
+  Members are
   sorted by name and carry the build's start as their time, so the same bytes
   write the same archive.
 - `tweakFilter {dylib, bundles?, executables?, classes?}` (at least one list)

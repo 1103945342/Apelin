@@ -133,8 +133,9 @@ enum EmbeddedSchemas {
           "kind": { "const": "app" },
           "products": {
             "minItems": 1,
-            "maxItems": 1,
-            "items": { "required": ["type"], "properties": { "type": { "const": "app" } } }
+            "maxItems": 8,
+            "items": { "required": ["type"], "properties": { "type": { "enum": ["app", "appex"] } } },
+            "contains": { "required": ["type"], "properties": { "type": { "const": "app" } } }
           }
         }
       }
@@ -313,9 +314,9 @@ enum EmbeddedSchemas {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]{0,31}$"
         },
-        "type": { "enum": ["app", "dylib", "bundle", "executable"] },
+        "type": { "enum": ["app", "appex", "dylib", "bundle", "executable"] },
         "name": {
-          "description": "The Mach-O file name, and the bundle name without its extension for app and bundle.",
+          "description": "The Mach-O file name, and the bundle name without its extension for app, appex and bundle.",
           "type": "string",
           "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.+-]{0,63}$"
         },
@@ -331,7 +332,7 @@ enum EmbeddedSchemas {
           "items": { "$ref": "#/$defs/relativePath" }
         },
         "resources": {
-          "description": "Files bundle-resources copies into an app or bundle, flattened to their file names. A .plist is written as XML after a lint.",
+          "description": "Files bundle-resources copies into an app, an appex or a bundle, flattened to their file names. A .plist is written as XML after a lint.",
           "type": "array",
           "maxItems": 64,
           "items": { "$ref": "#/$defs/relativeGlob" }
@@ -381,7 +382,7 @@ enum EmbeddedSchemas {
       },
       "allOf": [
         {
-          "if": { "properties": { "type": { "enum": ["app", "bundle"] } } },
+          "if": { "properties": { "type": { "enum": ["app", "appex", "bundle"] } } },
           "then": { "required": ["infoPlist"] },
           "else": { "not": { "anyOf": [{ "required": ["infoPlist"] }, { "required": ["resources"] }] } }
         },
@@ -427,7 +428,7 @@ enum EmbeddedSchemas {
       }
     },
     "stepLink": {
-      "description": "One Mach-O per architecture: MH_EXECUTE for app and executable, MH_DYLIB for dylib, MH_BUNDLE for bundle.",
+      "description": "One Mach-O per architecture: MH_EXECUTE for app, appex and executable, MH_DYLIB for dylib, MH_BUNDLE for bundle. An appex is linked with Foundation's NSExtensionMain as its entry point.",
       "type": "object",
       "additionalProperties": false,
       "required": ["type", "product"],
@@ -438,7 +439,7 @@ enum EmbeddedSchemas {
       }
     },
     "stepBundleResources": {
-      "description": "Assemble the .app or .bundle directory: the product's Info.plist, with CFBundleExecutable, CFBundleShortVersionString, CFBundleVersion and MinimumOSVersion set by the build, and its resources.",
+      "description": "Assemble the .app, .appex or .bundle directory: the product's Info.plist, with CFBundleExecutable, CFBundleShortVersionString, CFBundleVersion and MinimumOSVersion set by the build, and its resources.",
       "type": "object",
       "additionalProperties": false,
       "required": ["type", "product"],
@@ -521,7 +522,7 @@ enum EmbeddedSchemas {
       "required": ["path"],
       "oneOf": [
         {
-          "description": "A built product: the merged, signed Mach-O, or the whole .app/.bundle directory.",
+          "description": "A built product: the merged, signed Mach-O, or the whole .app/.appex/.bundle directory.",
           "type": "object",
           "additionalProperties": false,
           "required": ["path", "product"],
@@ -625,7 +626,7 @@ enum EmbeddedSchemas {
           "items": { "$ref": "#/$defs/layoutEntry" }
         },
         "format": {
-          "description": "What the build hands back: a Debian package a package manager installs (the default), or an .ipa — the app project's built .app in Payload/, zipped with the bytes the sign step wrote, for a signing tool of one's own. An .ipa installs as an app, never through a package manager, so it has an empty layout and no relations, tweak filter or maintainer scripts.",
+          "description": "What the build hands back: a Debian package a package manager installs (the default), or an .ipa — the app project's built .app in Payload/, with each appex product it has at .app/PlugIns/<name>.appex, zipped with the bytes the sign step wrote, for a signing tool of one's own. An .ipa carries one app and the extensions it hosts, installs as an app, never through a package manager, so it has an empty layout and no relations, tweak filter or maintainer scripts.",
           "enum": ["deb", "ipa"]
         },
         "maintainerScripts": {

@@ -31,6 +31,16 @@ extension BuiltInSkills {
           `suggests`, `conflicts`, `breaks`, `replaces`, `provides`,
           `maintainerScripts` or `tweakFilter`: the schema refuses each of them
           on an ipa project, so one that carries any does not open.
+        - More products are allowed only as extensions: an appex product
+          (up to eight) is the app's extension, and the packager puts each at
+          `Payload/<app>.app/PlugIns/<name>.appex`. A widget is one —
+          `type: "appex"`, `infoPlist` with
+          `NSExtension.NSExtensionPointIdentifier` =
+          `com.apple.widgetkit-extension` and a `CFBundleIdentifier` under the
+          app's — with its own `compile`, `link`, `bundle-resources`, `lipo`,
+          `sign` steps; the build links it for `_NSExtensionMain` itself. The
+          project's entitlements are the app's; an extension that needs one of
+          its own takes `entitlements` on its product.
         - `arm64` for both bootstraps: an app that runs on ordinary iOS, not
           `arm64e`.
         - The entitlements are a container app's: `get-task-allow` and nothing

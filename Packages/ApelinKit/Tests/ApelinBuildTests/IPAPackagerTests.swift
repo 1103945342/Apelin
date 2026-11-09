@@ -144,6 +144,161 @@ final class IPAPackagerTests: XCTestCase {
         XCTAssertThrowsError(try IPAPackager(inputs: inputs, products: without).write())
     }
 
+    /// An Info.plist, written the way the build writes one.
+    private func plist(_ info: [String: Any], at url: URL) throws {
+        let data = try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0)
+        try data.write(to: url)
+    }
+
+    /// `Hello.app` whose Info.plist names `identifier`, so an extension can be
+    /// checked to be an identifier under it.
+    private func makeApp(in scratch: URL, identifier: String) throws -> URL {
+        let app = try makeApp(in: scratch)
+        try plist(["CFBundleExecutable": "Hello", "CFBundleIdentifier": identifier],
+                  at: app.appendingPathComponent("Info.plist"))
+        return app
+    }
+
+    /// `HelloWidgets.appex` as the build leaves one: an Info.plist naming the
+    /// executable, the widget point and an identifier the app hosts, with the
+    /// executable and a resource beside it.
+    private func makeAppex(
+        in scratch: URL,
+        name: String = "HelloWidgets",
+        identifier: String = "com.example.hello.widgets",
+        point: String? = "com.apple.widgetkit-extension",
+    ) throws -> URL {
+        let appex = scratch.appendingPathComponent("\(name).appex", isDirectory: true)
+        try FileManager.default.createDirectory(at: appex, withIntermediateDirectories: true)
+        var info: [String: Any] = [
+            "CFBundleExecutable": name,
+            "CFBundleIdentifier": identifier,
+            "CFBundlePackageType": "XPC!",
+        ]
+        if let point {
+            info["NSExtension"] = ["NSExtensionPointIdentifier": point]
+        }
+        try plist(info, at: appex.appendingPathComponent("Info.plist"))
+        try Data("#!/bin/sh\n".utf8).write(to: appex.appendingPathComponent(name))
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: appex.appendingPathComponent(name).path)
+        try Data("widget".utf8).write(to: appex.appendingPathComponent("Assets.car"))
+        return appex
+    }
+
+    /// The product record of an extension, as the pipeline writes it after
+    /// `bundle-resources`: a directory rather than a file, with the executable
+    /// named inside it.
+    private func appexProduct(_ directory: URL, id: String = "widgets") -> String {
+        let name = directory.lastPathComponent.replacingOccurrences(of: ".appex", with: "")
+        return """
+        , {"id": "\(id)", "type": "appex", "name": "\(name)", "path": "\(directory.path)",
+        "executable": "\(directory.path)/\(name)", "digest": "sha256:\(String(repeating: "5", count: 64))",
+        "uuids": {}}
+        """
+    }
+
+    /// The widget an app carries goes in at the one place iOS looks for it,
+    /// with the bytes the build signed, and the app on disk is left alone.
+    func testAnAppCarriesItsWidget() throws {
+        let scratch = try scratchDirectory("apelin-ipa")
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        let inputs = try makeInputs(scratch)
+        let app = try makeApp(in: scratch, identifier: "com.example.hello")
+        let appex = try makeAppex(in: scratch)
+        let products = try products(app: app.path, extra: appexProduct(appex))
+
+        let output = try IPAPackager(inputs: inputs, products: products).write()
+
+        let names = IPAPackager.names(of: output.path)
+        let inside = "Payload/Hello.app/PlugIns/HelloWidgets.appex"
+        XCTAssertEqual(names.first, "Payload/Hello.app", "the bundle's own entry comes first")
+        XCTAssertTrue(names.contains("Payload/Hello.app/PlugIns"), "\(names)")
+        XCTAssertTrue(names.contains(inside), "\(names)")
+        XCTAssertTrue(names.contains("\(inside)/Info.plist"), "\(names)")
+        XCTAssertTrue(names.contains("\(inside)/HelloWidgets"), "\(names)")
+        XCTAssertTrue(names.contains("\(inside)/Assets.car"), "\(names)")
+        XCTAssertFalse(
+            FileManager.default.fileExists(atPath: app.appendingPathComponent("PlugIns").path),
+            "the app on disk keeps what the build made",
+        )
+        XCTAssertEqual(try IPAPackager.verify(path: output.path, bundle: "Hello.app"), 6, "three files each, folders aside")
+    }
+
+    /// The widget's executable keeps the mode the build signed it with, which
+    /// is the only reason iOS runs it.
+    func testTheWidgetsExecutableStaysExecutable() throws {
+        let scratch = try scratchDirectory("apelin-ipa")
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        let inputs = try makeInputs(scratch)
+        let app = try makeApp(in: scratch, identifier: "com.example.hello")
+        let appex = try makeAppex(in: scratch)
+        let products = try products(app: app.path, extra: appexProduct(appex))
+
+        let output = try IPAPackager(inputs: inputs, products: products).write()
+
+        let modes = try IPAPackager.modes(of: output.path)
+        XCTAssertEqual(modes["Payload/Hello.app/PlugIns/HelloWidgets.appex/HelloWidgets"], 0o755)
+        XCTAssertEqual(modes["Payload/Hello.app/PlugIns/HelloWidgets.appex/Assets.car"], 0o644)
+    }
+
+    /// An app that already has a `PlugIns` folder of its own keeps it, and the
+    /// widget joins it: the archive names each folder once, however the folder
+    /// came to be. A zip with the same member twice is one unzip warns about.
+    func testAFolderTheAppAlreadyHasIsNamedOnce() throws {
+        let scratch = try scratchDirectory("apelin-ipa")
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        let inputs = try makeInputs(scratch)
+        let app = try makeApp(in: scratch, identifier: "com.example.hello")
+        let plugins = app.appendingPathComponent("PlugIns", isDirectory: true)
+        try FileManager.default.createDirectory(at: plugins, withIntermediateDirectories: true)
+        try Data("notes".utf8).write(to: plugins.appendingPathComponent("Notes.txt"))
+        let appex = try makeAppex(in: scratch)
+
+        let output = try IPAPackager(inputs: inputs, products: products(app: app.path, extra: appexProduct(appex))).write()
+
+        let names = IPAPackager.names(of: output.path)
+        XCTAssertEqual(Set(names).count, names.count, "\(names)")
+        XCTAssertTrue(names.contains("Payload/Hello.app/PlugIns/"), "\(names)")
+        XCTAssertTrue(names.contains("Payload/Hello.app/PlugIns/Notes.txt"), "\(names)")
+        XCTAssertTrue(names.contains("Payload/Hello.app/PlugIns/HelloWidgets.appex"), "\(names)")
+        XCTAssertEqual(try IPAPackager.verify(path: output.path, bundle: "Hello.app"), 7)
+    }
+
+    /// An extension that is not one is refused before the archive is written:
+    /// iOS would drop the whole app over it.
+    func testAnExtensionThatIsNotOneIsRefused() throws {
+        let scratch = try scratchDirectory("apelin-ipa")
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        let inputs = try makeInputs(scratch)
+        let app = try makeApp(in: scratch, identifier: "com.example.hello")
+
+        // An identifier the app does not host.
+        let outside = try makeAppex(in: scratch, name: "OutsideWidgets", identifier: "com.example.other.widgets")
+        XCTAssertThrowsError(try IPAPackager(inputs: inputs, products: products(app: app.path, extra: appexProduct(outside))).write()) {
+            XCTAssertTrue("\($0)".contains("not under the app's"), "\($0)")
+        }
+
+        // No extension point.
+        let pointless = try makeAppex(in: scratch, name: "PointlessWidgets", point: nil)
+        XCTAssertThrowsError(try IPAPackager(inputs: inputs, products: products(app: app.path, extra: appexProduct(pointless))).write()) {
+            XCTAssertTrue("\($0)".contains("NSExtensionPointIdentifier"), "\($0)")
+        }
+
+        // No executable where the Info.plist says it is.
+        let gone = try makeAppex(in: scratch, name: "GoneWidgets")
+        try FileManager.default.removeItem(at: gone.appendingPathComponent("GoneWidgets"))
+        XCTAssertThrowsError(try IPAPackager(inputs: inputs, products: products(app: app.path, extra: appexProduct(gone))).write()) {
+            XCTAssertTrue("\($0)".contains("CFBundleExecutable"), "\($0)")
+        }
+
+        // No Info.plist at all.
+        let bare = try makeAppex(in: scratch, name: "BareWidgets")
+        try FileManager.default.removeItem(at: bare.appendingPathComponent("Info.plist"))
+        XCTAssertThrowsError(try IPAPackager(inputs: inputs, products: products(app: app.path, extra: appexProduct(bare))).write()) {
+            XCTAssertTrue("\($0)".contains("no Info.plist"), "\($0)")
+        }
+    }
+
     /// One spelling for the format, whatever spells it: the schema's enum
     /// value, the wire's, and the record's.
     func testTheIpaFormatIsSpelledOneWay() {

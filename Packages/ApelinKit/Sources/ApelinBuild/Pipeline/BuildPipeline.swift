@@ -246,7 +246,7 @@ public final class BuildPipeline: @unchecked Sendable {
                 var argv = [
                     "-sdk", inputs.sdk.path, "-target", swiftTarget(arch), "-wmo", "-c", "-module-name", product.name,
                 ] + swiftToolFlags
-                if product.type == .dylib || product.type == .bundle {
+                if product.type == .dylib || product.type == .bundle || product.type == .appex {
                     argv.append("-parse-as-library")
                 }
                 argv.append(configuration.optimization == "0" ? "-Onone" : "-O")
@@ -313,6 +313,7 @@ public final class BuildPipeline: @unchecked Sendable {
                 case .dylib:
                     argv += ["-emit-library", "-Xlinker", "-install_name", "-Xlinker", product.effectiveInstallName]
                 case .bundle: argv += ["-Xlinker", "-bundle"]
+                case .appex: argv += extensionEntryPoint
                 case .app, .executable: break
                 }
                 argv += support.libraryDirectories.flatMap { ["-L", $0, "-F", $0] }
@@ -325,6 +326,7 @@ public final class BuildPipeline: @unchecked Sendable {
                 switch product.type {
                 case .dylib: argv += ["-dynamiclib", "-install_name", product.effectiveInstallName]
                 case .bundle: argv += ["-bundle"]
+                case .appex: argv += extensionEntryPoint
                 case .app, .executable: break
                 }
                 if product.objcARC == true {
@@ -371,6 +373,25 @@ public final class BuildPipeline: @unchecked Sendable {
         }
     }
 
+    /// What an `.appex` is linked with: an extension is MH_EXECUTE whose entry
+    /// point is Foundation's `NSExtensionMain` — the host's own way in, which
+    /// is what Xcode's `LD_ENTRY_POINT` sets — with Foundation linked so the
+    /// entry has somewhere to resolve from. The product's own `main` stays in
+    /// the image; `NSExtensionMain` is what starts it.
+    private var extensionEntryPoint: [String] {
+        ["-Xlinker", "-e", "-Xlinker", "_NSExtensionMain", "-framework", "Foundation"]
+    }
+
+    /// The directory a product's resources are assembled in: `<name>.app`,
+    /// `<name>.appex` or `<name>.bundle`.
+    private func bundleSuffix(of product: ProjectDocument.Product) -> String {
+        switch product.type {
+        case .app: ".app"
+        case .appex: ".appex"
+        default: ".bundle"
+        }
+    }
+
     /// The product's file: `<name>.dylib` for a library, `<name>` otherwise.
     private func fileName(of product: ProjectDocument.Product) -> String {
         product.type == .dylib && !product.name.hasSuffix(".dylib") ? product.name + ".dylib" : product.name
@@ -378,13 +399,27 @@ public final class BuildPipeline: @unchecked Sendable {
 
     private func bundleResources(_ product: ProjectDocument.Product) throws {
         guard let infoPlist = product.infoPlist else { throw BuildFailure("\(product.id) has no infoPlist") }
-        let suffix = product.type == .app ? ".app" : ".bundle"
+        let suffix = bundleSuffix(of: product)
         let bundle = work.appendingPathComponent("products/\(product.name)\(suffix)").path
         try? FileManager.default.removeItem(atPath: bundle)
         try makeDirectory(bundle)
         let source = try ProjectFiles.read(infoPlist, in: inputs.projectRoot)
         guard var info = try PropertyListSerialization.propertyList(from: source, format: nil) as? [String: Any] else {
             throw BuildFailure("\(infoPlist) is not a dictionary property list")
+        }
+        if product.type == .appex {
+            // What makes the directory an extension and not a bundle: the
+            // point it plugs into, and an identifier an app can host.
+            guard let identifier = info["CFBundleIdentifier"] as? String, !identifier.isEmpty else {
+                throw BuildFailure("\(infoPlist) has no CFBundleIdentifier, which an .appex needs")
+            }
+            guard let point = (info["NSExtension"] as? [String: Any])?["NSExtensionPointIdentifier"] as? String,
+                  !point.isEmpty
+            else {
+                throw BuildFailure("\(infoPlist) has no NSExtension.NSExtensionPointIdentifier, which an .appex needs")
+            }
+            info["CFBundlePackageType"] = info["CFBundlePackageType"] ?? "XPC!"
+            info["CFBundleSupportedPlatforms"] = info["CFBundleSupportedPlatforms"] ?? ["iPhoneOS"]
         }
         info["CFBundleExecutable"] = product.name
         info["CFBundleShortVersionString"] = project.package.version

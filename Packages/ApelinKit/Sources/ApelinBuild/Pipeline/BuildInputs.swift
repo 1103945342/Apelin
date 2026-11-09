@@ -153,9 +153,9 @@ public struct BuildProducts: Codable, Sendable, Equatable {
     public struct Product: Codable, Sendable, Equatable {
         public var id: String
         public var type: ProductType
-        /// The signed Mach-O, or the `.app`/`.bundle` directory.
+        /// The signed Mach-O, or the `.app`/`.appex`/`.bundle` directory.
         public var path: String
-        /// The signed Mach-O itself (inside the bundle for app and bundle).
+        /// The signed Mach-O itself (inside the bundle for app, appex and bundle).
         public var executable: String
         /// SHA-256 of `executable`.
         public var digest: String

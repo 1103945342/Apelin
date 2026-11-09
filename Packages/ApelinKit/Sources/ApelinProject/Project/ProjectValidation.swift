@@ -75,8 +75,8 @@ public enum ProjectValidation {
             if let last = done.last, stepOrder[type]! < stepOrder[last]! {
                 errors.append("\(location): \(type) cannot follow \(last) for \(pid)")
             }
-            if type == "bundle-resources", product.type != .app, product.type != .bundle {
-                errors.append("\(location): bundle-resources is only for app and bundle products")
+            if type == "bundle-resources", product.type != .app, product.type != .appex, product.type != .bundle {
+                errors.append("\(location): bundle-resources is only for app, appex and bundle products")
             }
             seen[pid]!.append(type)
         }
@@ -85,7 +85,10 @@ public enum ProjectValidation {
             for required in ["compile", "link", "lipo", "sign"] where !done.contains(required) {
                 errors.append("/build/steps: \(pid) has no \(required) step")
             }
-            if let type = products[pid]?.type, type == .app || type == .bundle, !done.contains("bundle-resources") {
+            if let type = products[pid]?.type,
+               type == .app || type == .appex || type == .bundle,
+               !done.contains("bundle-resources")
+            {
                 errors.append("/build/steps: \(pid) has no bundle-resources step")
             }
             if let last = done.last, last != "sign" {

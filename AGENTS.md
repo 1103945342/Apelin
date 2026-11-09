@@ -53,7 +53,13 @@ the same executable in session mode; the workers are its children.
   `.ipa`.** `package.format` is `deb` (absent, the default) or `ipa`; an
   `ipa` project builds one app and `IPAPackager` writes `Payload/<name>.app/`
   zipped, the bytes the `sign` step left, read back with libarchive before
-  it is recorded (`format: "ipa"`). An `.ipa` installs as an app, never as a
+  it is recorded (`format: "ipa"`). An `.ipa` carries the app's extensions:
+  each `appex` product the build made goes in at
+  `Payload/<name>.app/PlugIns/<extension>.appex`, the one place iOS loads a
+  widget, a share sheet or any other extension from, and the packager
+  refuses one whose `Info.plist` names no executable it holds, no
+  `NSExtensionPointIdentifier`, or an identifier not under the app's. An
+  `.ipa` installs as an app, never as a
   package: `installPackage` on an ipa artifact unpacks it inside the host,
   copies its one `Payload/*.app` under `<install root>/Applications`, signs
   every Mach-O with the bootstrap's `ldid`, registers it with `uicache`, and

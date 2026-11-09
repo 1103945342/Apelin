@@ -204,7 +204,7 @@ public struct Packager: Sendable {
                 if entry.product == project.package.tweakFilter?.dylib {
                     dylibLayoutPath = entry.path
                 }
-                if built.type == .app || built.type == .bundle {
+                if built.type == .app || built.type == .appex || built.type == .bundle {
                     entries += try DebEntry.tree(fromDirectory: built.path, at: packagePath).map { item in
                         var item = item
                         if item.path == packagePath + "/" + (built.executable as NSString).lastPathComponent {

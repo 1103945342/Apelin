@@ -107,18 +107,25 @@ def project_semantic_errors(project: dict) -> list[str]:
             errors.append(f"{where}: {step['type']} appears twice for {pid}")
         if done and _STEP_ORDER[step["type"]] < _STEP_ORDER[done[-1]]:
             errors.append(f"{where}: {step['type']} cannot follow {done[-1]} for {pid}")
-        if step["type"] == "bundle-resources" and products[pid]["type"] not in ("app", "bundle"):
-            errors.append(f"{where}: bundle-resources is only for app and bundle products")
+        if step["type"] == "bundle-resources" and products[pid]["type"] not in ("app", "appex", "bundle"):
+            errors.append(f"{where}: bundle-resources is only for app, appex and bundle products")
         done.append(step["type"])
     for pid, done in seen.items():
         for required in ("compile", "link", "lipo", "sign"):
             if required not in done:
                 errors.append(f"/build/steps: {pid} has no {required} step")
-        if products[pid]["type"] in ("app", "bundle") and "bundle-resources" not in done:
+        if products[pid]["type"] in ("app", "appex", "bundle") and "bundle-resources" not in done:
             errors.append(f"/build/steps: {pid} has no bundle-resources step")
         if done and done[-1] != "sign":
             errors.append(f"/build/steps: sign must be the last step for {pid}")
     package = project["package"]
+    if package.get("format", "deb") == "ipa":
+        # An .ipa carries one app and the extensions it hosts.
+        if project["kind"] != "app":
+            errors.append("/package/format: an .ipa is built from an app project")
+        apps = sum(1 for product in project["products"] if product["type"] == "app")
+        if apps != 1:
+            errors.append(f"/package/format: an .ipa carries exactly one app product, and this project has {apps}")
     for index, entry in enumerate(package["layout"]):
         if "product" in entry and entry["product"] not in products:
             errors.append(f"/package/layout/{index}: unknown product {entry['product']}")

@@ -23,6 +23,11 @@ public enum ProjectLanguage: String, Codable, Sendable {
 
 public enum ProductType: String, Codable, Sendable {
     case app, dylib, bundle, executable
+    /// An app's extension, `Name.appex`: an app directory the build assembles
+    /// like a bundle and links as an executable, embedded at
+    /// `PlugIns/<name>.appex` — in an `.ipa` by the packager, in a deb by a
+    /// layout entry.
+    case appex
 }
 
 public enum Architecture: String, Codable, Sendable, CaseIterable {

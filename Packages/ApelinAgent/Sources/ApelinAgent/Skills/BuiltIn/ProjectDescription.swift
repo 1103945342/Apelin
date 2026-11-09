@@ -51,9 +51,13 @@ extension BuiltInSkills {
 
         ## products (one to eight)
         `{id, type, name, sources, …}`:
-        - `id`: lowercase, such as `tweak`. `type`: `dylib`, `app`, `bundle`
-          or `executable`. `name`: the Mach-O file name; product names are
-          unique.
+        - `id`: lowercase, such as `tweak`. `type`: `dylib`, `app`, `bundle`,
+          `executable`, or `appex` — an app's extension, `Name.appex`: an `app`
+          product's bundle-resources and Info.plist, linked as an executable
+          whose entry point is `_NSExtensionMain`. An `.ipa` carries the app's
+          `appex` products in `PlugIns/<name>.appex` (the `ipa` format below); a
+          deb installs one through `layout`. `name`: the Mach-O file name;
+          product names are unique.
         - `sources`: project paths that may use `*`, `**` and `?`, such as
           `Sources/*.m` or `src/**/*.m`.
         - Optional: `headerSearchPaths`, `frameworks`, `weakFrameworks`,
@@ -61,7 +65,7 @@ extension BuiltInSkills {
           `frameworkSearchPaths` and `librarySearchPaths` (project paths),
           `objcARC`, `installName` (dylib only; default
           `@rpath/<name>.dylib`), `entitlements` (a project plist), and
-          `infoPlist` and `resources` (app and bundle only).
+          `infoPlist` and `resources` (app, appex and bundle only).
         - `extensionSupport`: `[{extension, component}]`, the headers, link
           stubs and rpaths an installed development extension provides, the
           build picking each bootstrap's own. A tweak hooking with substrate
@@ -74,10 +78,10 @@ extension BuiltInSkills {
 
         ## build.steps
         Per product, in this order: `compile`, `link`, `bundle-resources`
-        (app and bundle), `lipo`, `dsym`, `strip`, `sign`. `compile`, `link`,
-        `lipo` and `sign` are required and `sign` comes last, as `{"type":
-        "sign", "product": "tweak", "identity": "adhoc"}`. `compile` and
-        `link` take extra `flags`; `strip` takes `style`, `non-global` or
+        (app, appex and bundle), `lipo`, `dsym`, `strip`, `sign`. `compile`,
+        `link`, `lipo` and `sign` are required and `sign` comes last, as
+        `{"type": "sign", "product": "tweak", "identity": "adhoc"}`. `compile`
+        and `link` take extra `flags`; `strip` takes `style`, `non-global` or
         `debug`. A `script` step, `{"type": "script", "id", "interpreter",
         "file", "arguments"?, "inputs"?, "outputs"?, "requiresApproval":
         true}`, runs a project script (sh, bash, zsh, python3 or perl) as
@@ -96,12 +100,15 @@ extension BuiltInSkills {
           `ipa`, for an app project whose build should hand back an `.ipa`
           instead: the app the build made, inside `Payload/`, zipped and
           left as it was signed, to be signed again for a certificate and a
-          device. An `ipa` project has exactly one app product, no `layout`,
-          relations, `tweakFilter` or `maintainerScripts`, and installs
-          nothing as a package: `apelin_package_install` on the ipa artifact
-          puts the app on the device instead — unpacked, signed with ldid and
-          registered with uicache — and `apelin_package_remove` takes it off
-          again. Share `.ipa` in Distribute… hands the file out.
+          device. An `ipa` project has exactly one app product and no more
+          than eight `appex` ones; each extension the build made goes in at
+          `Payload/<app>.app/PlugIns/<name>.appex`, so a widget or a share
+          sheet travels with the app. It has no `layout`, relations,
+          `tweakFilter` or `maintainerScripts`, and installs nothing as a
+          package: `apelin_package_install` on the ipa artifact puts the app
+          on the device instead — unpacked, signed with ldid and registered
+          with uicache, its extensions beside it — and `apelin_package_remove`
+          takes it off again. Share `.ipa` in Distribute… hands the file out.
           Never publish one to a package repository.
         - `icon`: the image a package manager shows beside the package, its
           control `Icon`: an `https://` URL in printable ASCII, at most 2048
