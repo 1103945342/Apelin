@@ -155,6 +155,10 @@ public final class WorkerChannel: @unchecked Sendable {
     /// Sends a request and waits for its reply. `resumed` marks a task the
     /// host starts again after a restart.
     ///
+    /// Cancelling the caller releases only this local wait. It does not
+    /// cancel work already sent to the peer; that needs its domain's abort
+    /// or cancel operation. A late reply is discarded without closing the channel.
+    ///
     /// `deadline`: how long the reply may take before the call fails with
     /// `.timeout`. Without one the call waits for as long as the peer takes —
     /// the channel itself has no notion of a bound, so a peer that stopped
@@ -180,36 +184,43 @@ public final class WorkerChannel: @unchecked Sendable {
             descriptorCount: descriptors.count,
             resumed: resumed ? true : nil,
         )
-        let frame: ChannelFrame = try await withCheckedThrowingContinuation { continuation in
-            let registered: Bool = stateLock.withLock {
-                guard !closed else { return false }
-                pending[id] = continuation
-                return true
-            }
-            guard registered else {
-                continuation.resume(throwing: ApelinError(.unavailable, "the channel is closed"))
-                return
-            }
-            do {
-                try send(ChannelFrame(header: header, body: request.payload, descriptors: descriptors))
-            } catch {
-                let waiting = stateLock.withLock { pending.removeValue(forKey: id) }
-                waiting?.resume(throwing: error)
-            }
-            if let deadline {
-                // The timer takes the continuation out the same way a reply
-                // does, so a reply arriving after it is dropped rather than
-                // resuming a task that has already failed.
-                Task { [weak self] in
-                    try? await Task.sleep(for: deadline)
-                    guard let self else { return }
-                    let late = self.stateLock.withLock { self.pending.removeValue(forKey: id) }
-                    late?.resume(throwing: ApelinError(
-                        .timeout,
-                        "\(request.operation.rawValue) got no answer within \(deadline)",
-                    ))
+        let frame: ChannelFrame = try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                let registrationError: Error? = stateLock.withLock {
+                    // The same lock as onCancel: cancellation before registration
+                    // must not leave a continuation that nobody will resume.
+                    guard !Task.isCancelled else { return CancellationError() }
+                    guard !closed else { return ApelinError(.unavailable, "the channel is closed") }
+                    pending[id] = continuation
+                    return nil
+                }
+                if let registrationError {
+                    continuation.resume(throwing: registrationError)
+                    return
+                }
+                do {
+                    try send(ChannelFrame(header: header, body: request.payload, descriptors: descriptors))
+                } catch {
+                    let waiting = stateLock.withLock { pending.removeValue(forKey: id) }
+                    waiting?.resume(throwing: error)
+                }
+                if let deadline {
+                    // Reply, cancellation, timeout and close all take the same
+                    // continuation. Only the winner resumes it; late replies drop.
+                    Task { [weak self] in
+                        try? await Task.sleep(for: deadline)
+                        guard let self else { return }
+                        let late = self.stateLock.withLock { self.pending.removeValue(forKey: id) }
+                        late?.resume(throwing: ApelinError(
+                            .timeout,
+                            "\(request.operation.rawValue) got no answer within \(deadline)",
+                        ))
+                    }
                 }
             }
+        } onCancel: {
+            let waiting = self.stateLock.withLock { self.pending.removeValue(forKey: id) }
+            waiting?.resume(throwing: CancellationError())
         }
         if let error = frame.header.error {
             return (.failure(request.requestID, error), frame.descriptors)

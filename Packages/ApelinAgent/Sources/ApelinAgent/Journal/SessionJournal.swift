@@ -239,14 +239,30 @@ public final class SessionJournal: @unchecked Sendable {
             guard let self else { return attempt }
             let (stream, out) = AssistantMessageStream.makeStream()
             Task {
-                for await event in attempt {
-                    out.push(event)
+                do {
+                    try await NetworkRecovery.cancellable(options?.cancellation) {
+                        for await event in attempt {
+                            try Task.checkCancellation()
+                            try options?.cancellation?.throwIfCancelled()
+                            out.push(event)
+                        }
+                        let final = await attempt.result()
+                        try Task.checkCancellation()
+                        try options?.cancellation?.throwIfCancelled()
+                        if final.stopReason == .error {
+                            self.requestFailed(final, model: model)
+                        }
+                        out.end(final)
+                    }
+                } catch {
+                    // End this intermediate stream too: no orphaned reader
+                    // keeps buffering late provider events or logging failures
+                    // against the session's next turn.
+                    out.end(AssistantMessage(
+                        content: [], api: model.api, provider: model.provider, model: model.id,
+                        stopReason: .aborted, errorMessage: "Request was aborted",
+                    ))
                 }
-                let final = await attempt.result()
-                if final.stopReason == .error {
-                    self.requestFailed(final, model: model)
-                }
-                out.end(final)
             }
             return stream
         }

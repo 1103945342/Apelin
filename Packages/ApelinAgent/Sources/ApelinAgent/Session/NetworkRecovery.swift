@@ -90,22 +90,74 @@ enum NetworkRecovery {
         onWait: @escaping @Sendable () async -> Void,
     ) -> StreamFn {
         { model, context, options in
-            let first = try await inner(model, context, options)
-            let (stream, out) = AssistantMessageStream.makeStream()
+            let cancellation = options?.cancellation
+            let first = try await cancellable(cancellation) {
+                try await inner(model, context, options)
+            }
+            let (stream, continuation) = AssistantMessageStream.makeStream()
+            let out = Output(continuation)
             Task {
-                await relay(
-                    first,
-                    to: out,
-                    path: path,
-                    patience: patience,
-                    cancellation: options?.cancellation,
-                    onWait: onWait,
-                ) {
-                    try await inner(model, context, options)
+                do {
+                    try await cancellable(cancellation) {
+                        try await relay(
+                            first,
+                            to: out,
+                            path: path,
+                            patience: patience,
+                            cancellation: cancellation,
+                            onWait: onWait,
+                        ) {
+                            try await inner(model, context, options)
+                        }
+                    }
+                } catch {
+                    let stopped = stopped(AssistantMessage(
+                        content: [], api: model.api, provider: model.provider, model: model.id,
+                    ))
+                    finish(out, .error(reason: .aborted, error: stopped), stopped)
                 }
             }
             return stream
         }
+    }
+
+    /// Do not use a task group here: leaving its scope waits for every child,
+    /// including a provider that ignores cancellation. The one-result stream
+    /// releases our waiter independently; the operation is still cancelled,
+    /// and a late result is discarded by the finished continuation.
+    static func cancellable<Value: Sendable>(
+        _ cancellation: CancellationHandle?,
+        operation: @escaping @Sendable () async throws -> Value,
+    ) async throws -> Value {
+        try checkCancellation(cancellation)
+        let (results, out) = AsyncThrowingStream<Value, Error>.makeStream()
+        let task = Task {
+            do {
+                try checkCancellation(cancellation)
+                out.yield(try await operation())
+                out.finish()
+            } catch {
+                out.finish(throwing: error)
+            }
+        }
+        let registration = cancellation?.onCancel { _ in
+            out.finish(throwing: CancellationError())
+            task.cancel()
+        }
+        defer {
+            registration?.cancel()
+            task.cancel()
+        }
+        var iterator = results.makeAsyncIterator()
+        guard let result = try await iterator.next() else { throw CancellationError() }
+        // A buffered result may win the iterator race against cancellation.
+        try checkCancellation(cancellation)
+        return result
+    }
+
+    private static func checkCancellation(_ cancellation: CancellationHandle?) throws {
+        try Task.checkCancellation()
+        try cancellation?.throwIfCancelled()
     }
 
     /// A failure kwwk tries again and a missing route explains: a
@@ -125,21 +177,24 @@ enum NetworkRecovery {
     /// judged: as it came, after a wait for the route, or asked again.
     private static func relay(
         _ first: AssistantMessageStream,
-        to out: AssistantMessageStream.Continuation,
+        to out: Output,
         path: NetworkPath,
         patience: Patience,
         cancellation: CancellationHandle?,
         onWait: @Sendable () async -> Void,
-        ask: @Sendable () async throws -> AssistantMessageStream,
-    ) async {
+        ask: @escaping @Sendable () async throws -> AssistantMessageStream,
+    ) async throws {
         var attempt = first
         // Whether kwwk has had any of the reply: a start alone carries
         // nothing, and the next attempt's start stands in for it.
         var answered = false
         var retries = 0
         while true {
+            try checkCancellation(cancellation)
             var ending: AssistantMessageEvent?
             for await event in attempt {
+                // A provider may have queued events before noticing Stop.
+                try checkCancellation(cancellation)
                 switch event {
                 case .done, .error:
                     ending = event
@@ -151,6 +206,7 @@ enum NetworkRecovery {
                 }
             }
             let final = await attempt.result()
+            try checkCancellation(cancellation)
             guard !answered, final.stopReason == .error, let failure = final.providerFailure else {
                 finish(out, ending, final)
                 return
@@ -161,21 +217,26 @@ enum NetworkRecovery {
                 return
             }
             await onWait()
-            do {
-                try await waitForRoute(path, patience: patience, cancellation: cancellation)
-                if asksAgain {
-                    try await ProviderRetryPolicy.wait(patience.secureConnectionPause, cancellation: cancellation)
-                }
-            } catch {
-                let stopped = stopped(final)
-                finish(out, .error(reason: .aborted, error: stopped), stopped)
-                return
+            try checkCancellation(cancellation)
+            try await waitForRoute(path, patience: patience, cancellation: cancellation)
+            if asksAgain {
+                try await ProviderRetryPolicy.wait(patience.secureConnectionPause, cancellation: cancellation)
             }
-            guard asksAgain, let next = try? await ask() else {
+            try checkCancellation(cancellation)
+            guard asksAgain else {
                 finish(out, ending, final)
                 return
             }
-            attempt = next
+            do {
+                attempt = try await cancellable(cancellation, operation: ask)
+            } catch {
+                // Preserve the original failure when retry creation fails,
+                // but never turn a cancelled retry back into a network error.
+                try checkCancellation(cancellation)
+                if error is CancellationError { throw error }
+                finish(out, ending, final)
+                return
+            }
             retries += 1
         }
     }
@@ -194,15 +255,41 @@ enum NetworkRecovery {
         }
     }
 
+    /// `push(terminal)` and `end` must be one operation: the relay can
+    /// settle at the same time as its cancelled waiter. Stream.end alone
+    /// cannot prevent both terminal events being queued before either end.
+    private final class Output: @unchecked Sendable {
+        private let lock = NSLock()
+        private let continuation: AssistantMessageStream.Continuation
+        @objc private dynamic var ended = false
+
+        init(_ continuation: AssistantMessageStream.Continuation) {
+            self.continuation = continuation
+        }
+
+        func push(_ event: AssistantMessageEvent) {
+            lock.withLock {
+                guard !ended else { return }
+                continuation.push(event)
+            }
+        }
+
+        func finish(_ ending: AssistantMessageEvent?, _ final: AssistantMessage) {
+            lock.withLock {
+                guard !ended else { return }
+                ended = true
+                if let ending { continuation.push(ending) }
+                continuation.end(final)
+            }
+        }
+    }
+
     private static func finish(
-        _ out: AssistantMessageStream.Continuation,
+        _ out: Output,
         _ ending: AssistantMessageEvent?,
         _ final: AssistantMessage,
     ) {
-        if let ending {
-            out.push(ending)
-        }
-        out.end(final)
+        out.finish(ending, final)
     }
 
     /// What a provider ends a request stopped before its reply with.

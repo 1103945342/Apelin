@@ -100,6 +100,104 @@ final class WorkerChannelTests: XCTestCase {
         await fulfillment(of: [received], timeout: 5)
     }
 
+    func testCancellationReleasesWaitWithoutClosingChannel() async throws {
+        let (a, b) = try WorkerChannel.makePair()
+        let host = WorkerChannel(adopting: a)
+        let worker = WorkerChannel(adopting: b)
+        defer { host.close(); worker.close() }
+        let entered = expectation(description: "peer received the request")
+        let cancelled = expectation(description: "caller ended before peer answered")
+        let gate = ChannelReplyGate()
+        worker.onRequest { request in
+            if request.request.requestID == "held" {
+                entered.fulfill()
+                await gate.wait()
+            }
+            return (.success(request.request.requestID, ProjectCheckResponse(passed: true)), [])
+        }
+        host.start()
+        worker.start()
+        var request = try WireRequest(ProjectCheckRequest(projectID: "p"))
+        request.requestID = "held"
+        let held = request
+        let call = Task {
+            do {
+                _ = try await host.call(held)
+                XCTFail("a cancelled wait must not wait for the reply")
+            } catch is CancellationError {
+                cancelled.fulfill()
+            } catch {
+                XCTFail("unexpected error: \(error)")
+            }
+        }
+        await fulfillment(of: [entered], timeout: 2)
+        call.cancel()
+        await fulfillment(of: [cancelled], timeout: 2)
+        // Release even on failure: the old implementation must fail, not hang
+        // the suite. The late response must not resume a continuation twice.
+        await gate.release()
+        await call.value
+        let (reply, _) = try await host.call(WireRequest(ProjectCheckRequest(projectID: "p")), deadline: .seconds(2))
+        XCTAssertTrue(try JSONCoding.decode(ProjectCheckResponse.self, from: reply.result.get()).passed)
+        XCTAssertFalse(host.isClosed)
+    }
+
+    func testAlreadyCancelledCallSendsNothing() async throws {
+        let (a, b) = try WorkerChannel.makePair()
+        let host = WorkerChannel(adopting: a)
+        let worker = WorkerChannel(adopting: b)
+        defer { host.close(); worker.close() }
+        let sent = expectation(description: "cancelled request is not sent")
+        sent.isInverted = true
+        worker.onRequest { request in
+            sent.fulfill()
+            return (.success(request.request.requestID, ProjectCheckResponse(passed: true)), [])
+        }
+        host.start()
+        worker.start()
+        let call = Task {
+            withUnsafeCurrentTask { $0?.cancel() }
+            do {
+                _ = try await host.call(WireRequest(ProjectCheckRequest(projectID: "p")), deadline: .seconds(1))
+                XCTFail("a pre-cancelled call must throw")
+            } catch is CancellationError {
+                // The onCancel callback ran before continuation registration.
+            } catch {
+                XCTFail("unexpected error: \(error)")
+            }
+        }
+        await call.value
+        await fulfillment(of: [sent], timeout: 0.1)
+    }
+
+    func testCancellationRacingReplyAndCloseResumesOnce() async throws {
+        for _ in 0 ..< 50 {
+            let (a, b) = try WorkerChannel.makePair()
+            let host = WorkerChannel(adopting: a)
+            let worker = WorkerChannel(adopting: b)
+            worker.onRequest { request in
+                return (.success(request.request.requestID, ProjectCheckResponse(passed: true)), [])
+            }
+            host.start()
+            worker.start()
+            let call = Task {
+                try await host.call(WireRequest(ProjectCheckRequest(projectID: "p")), deadline: .seconds(1))
+            }
+            let cancellation = Task.detached { call.cancel() }
+            let closing = Task.detached { host.close() }
+            do {
+                _ = try await call.value
+            } catch is CancellationError {
+                // Cancellation won.
+            } catch let error as ApelinError {
+                XCTAssertEqual(error.code, .unavailable) // Close won, never timeout.
+            }
+            await cancellation.value
+            await closing.value
+            worker.close()
+        }
+    }
+
     func testClosedChannelFailsPendingCalls() async throws {
         let (a, b) = try WorkerChannel.makePair()
         let host = WorkerChannel(adopting: a)
@@ -111,6 +209,22 @@ final class WorkerChannelTests: XCTestCase {
         } catch let error as ApelinError {
             XCTAssertEqual(error.code, .unavailable)
         }
+    }
+}
+
+private actor ChannelReplyGate {
+    private var released = false
+    private var continuation: CheckedContinuation<Void, Never>?
+
+    func wait() async {
+        guard !released else { return }
+        await withCheckedContinuation { continuation = $0 }
+    }
+
+    func release() {
+        released = true
+        continuation?.resume()
+        continuation = nil
     }
 }
 

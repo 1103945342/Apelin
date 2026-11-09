@@ -364,6 +364,13 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   (`Shared/Protocol/XPCEnvelope.swift`, descriptors as XPC fd objects); between
   apelind, its session host and the workers it is a `WorkerChannel` frame
   (length-prefixed JSON over a socketpair, descriptors by `SCM_RIGHTS`).
+  Cancelling a task awaiting `WorkerChannel.call` releases that local wait
+  with `CancellationError`, including cancellation before registration. It
+  neither closes the shared channel nor cancels work already sent to the
+  peer: remote work still needs its domain's abort/cancel operation. Reply,
+  timeout, cancellation and close take the continuation under the same lock;
+  late replies are discarded. `WorkerChannelTests` covers cancellation before
+  and during a call, channel reuse, and cancellation racing reply and close.
   Long work is a task: `TaskID`, events numbered by `EventSeq` from 1 with no
   gaps, read by a long-poll attach with `afterSeq` (replay is a lower
   `afterSeq`), ended by a `state` event, stopped by a cancel.
@@ -1353,7 +1360,30 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   again here at most twice, 1 s apart. A failure after text, thinking or a
   call has streamed is kwwk's alone to take back and retry, a certificate
   error is never retried, and no tool runs twice: kwwk runs a call only once
-  its message has settled.
+  its message has settled. Stop also cancels the wrapper's stream creation,
+  forwarding and retry waits, not only its wait for a network route. Those
+  waits use a one-result `AsyncThrowingStream`, never a task group whose
+  scope would wait for a provider that ignores cancellation. Cancelling
+  releases the local waiter and cancels its operation; a provider may still
+  finish late, but its result is discarded and the relay checks cancellation
+  before forwarding another event. An aborted outer stream keeps the model
+  identity and the partial reply already delivered. A shared output lock
+  publishes one terminal event and its final result together when normal
+  completion races Stop. The journal's intermediate relay uses the same
+  cancellation boundary, so it stops consuming and retaining a stopped
+  request. `NetworkCancellationTests` covers hung creation and streams, a hung
+  TLS retry, late output, terminal races, journal lifetime, session close,
+  and another prompt after abort or same-ID reopen while the old provider
+  is still open. Title generation uses the same cancellation boundary around
+  model/credential resolution, stream creation and completion: Stop, close
+  and its 20-second timeout release the waiter even if the provider does not
+  cooperate. Cancellation is checked again after each setup wait, before a
+  request starts, and before a title is saved. Tests also cover a title stuck
+  reading credentials and a title stream that never ends.
+  The on-device isolated probe passes the network-layer cases, with data
+  types/collections adapted; the actual Swift 6.1 tests (including session,
+  title and reopen cases) and full `make check` still need a capable build
+  host. An installed-device Stop/close/reopen check is still owed.
   Prompt, steer, abort, compact, approve and close go
   to that session's running worker and to no other. The worker refuses a
   second `agentOpen` with `conflict` from its first suspension, and frees
