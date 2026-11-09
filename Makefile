@@ -71,6 +71,7 @@ CATALOG_KEYS_CHECK := $(ROOT_DIR)/Scripts/check-catalog-keys.py
 SHELL_DELETES_CHECK := $(ROOT_DIR)/Scripts/check-shell-deletes.py
 PERSISTED_READS_CHECK := $(ROOT_DIR)/Scripts/check-persisted-reads.py
 OBJC_DATA_CHECK := $(ROOT_DIR)/Scripts/check-objc-data.py
+CHAT_PAIRING_CHECK := $(ROOT_DIR)/Scripts/check-chat-pairing.py
 SYMBOL_CHECK        := $(ROOT_DIR)/Scripts/check-symbol-availability.py
 RPATH_CHECK         := $(ROOT_DIR)/Scripts/check-rpath-dependencies.py
 # The agent's system prompt is Packages/ApelinAgent/Prompts/*.md, compiled in
@@ -260,6 +261,7 @@ check:
 	@for script in "$(DEB_PACKAGER)" "$(DEVICE_INSTALLER)" "$(VERSION_APPLIER)" "$(XCODEBUILD_WRAPPER)" \
 		"$(LICENSE_COLLECTOR)" "$(ACCESSIBILITY_CHECK)" "$(STALE_STRINGS_CHECK)" "$(FORMAT_STRINGS_CHECK)" "$(TRANSLATIONS_CHECK)" \
 		"$(CATALOG_KEYS_CHECK)" "$(SHELL_DELETES_CHECK)" "$(PERSISTED_READS_CHECK)" "$(OBJC_DATA_CHECK)" \
+		"$(CHAT_PAIRING_CHECK)" \
 		"$(SYMBOL_CHECK)" "$(RPATH_CHECK)" "$(PROMPTS_EMBEDDER)" "$(SCHEMA_FIXTURES_CHECK)" "$(TEMPLATES_CHECK)" \
 		"$(EXTENSIONS_PACKAGER)" "$(AGENT_TOOLS_BUILDER)" "$(DEVICE_TOOL)"; do \
 		test -x "$$script" || { echo "error: $${script#$(ROOT_DIR)/} is not executable" >&2; exit 66; }; \
@@ -412,6 +414,10 @@ check:
 	@# Data through an @objc dynamic thunk stays in the autorelease pool on
 	@# older iOS: unpacking a toolchain reached 5.5 GB there, and none here.
 	@"$(OBJC_DATA_CHECK)" "$(ROOT_DIR)"
+	@# A conversation reaches the page and the sidebar's highlight through one
+	@# call (`open(_:picked:)`): a second way in moved the highlight and left
+	@# the page on the previous conversation.
+	@"$(CHAT_PAIRING_CHECK)" "$(ROOT_DIR)"
 
 # The Mac half of "where things get tested": what can run without a device.
 # RoothideRoot against libroothide's own name rule, ExecutableWatch against a

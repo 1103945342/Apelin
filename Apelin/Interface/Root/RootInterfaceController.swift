@@ -39,9 +39,8 @@ final class RootInterfaceController: UIViewController {
             self?.sidebar.delete(id, from: .moreMenu, presenter: page)
         }
         page.onOpenChat = { [weak self] summary in
-            guard let self else { return }
-            sidebar.select(summary)
-            open(summary, picked: true)
+            // `open` moves the sidebar's highlight with the page
+            self?.open(summary, picked: true)
         }
         return page
     }()
@@ -103,6 +102,9 @@ final class RootInterfaceController: UIViewController {
             sidebar.refresh()
             restoreChatIfReady()
             chatController.refreshRuntime()
+            // after everything above has read the new state: the page leaves a
+            // conversation the runtime no longer has
+            leaveGoneChat()
             ChatWidgetPublisher.shared.chatsChanged()
         }
         ChatWidgetPublisher.shared.attach(chatRuntime)
@@ -163,11 +165,10 @@ final class RootInterfaceController: UIViewController {
         }
     }
 
-    /// The conversation at launch: highlighted in the sidebar and put on the
-    /// page, not highlighted alone — `select` only moves the sidebar's row.
+    /// The conversation at launch: `open` puts it on the page and moves the
+    /// sidebar's highlight with it, so neither is shown without the other.
     private func restore(_ summary: ChatSummary) {
         restoredChat = true
-        sidebar.select(summary)
         open(summary, picked: false)
     }
 
@@ -287,7 +288,7 @@ final class RootInterfaceController: UIViewController {
             if let project {
                 restoredChat = true
                 sidebar.openCreatedProject(project)
-                // only an import link held through the welcome is left
+                // a link held through the welcome opens now, if there was one
                 restoreChatIfReady()
             } else {
                 opensChatAfterWelcome = true
@@ -455,13 +456,18 @@ final class RootInterfaceController: UIViewController {
 
     // MARK: - The detail column
 
-    /// The picked conversation on the one conversation page. With none
-    /// left picked, beside the sidebar the column shows the icon, and behind
-    /// a drawer a new conversation. The page is put back at the root only
-    /// when something else is there; otherwise it takes the conversation
-    /// where it is. Only a conversation the reader picked puts the drawer
-    /// away. What is shown is what the reader looks at, unless a drawer is
-    /// out over it (`syncViewedChat`).
+    /// The picked conversation on the one conversation page, and the sidebar
+    /// highlighting it: the two move together, so what the reader reads is
+    /// what the sidebar names. With none left picked, beside the sidebar the
+    /// column shows the icon, and behind a drawer a new conversation. The page
+    /// is put back at the root only when something else is there; otherwise it
+    /// takes the conversation where it is. Only a conversation the reader
+    /// picked puts the drawer away. What is shown is what the reader looks at,
+    /// unless a drawer is out over it (`syncViewedChat`).
+    ///
+    /// Every way to a conversation goes through here — a row, New Chat, the
+    /// launch, a fork, an `apelin://` link — so the page and the highlight
+    /// cannot end up naming different conversations.
     private func open(_ chat: ChatSummary?, picked: Bool) {
         defer { syncViewedChat() }
         guard let chat else {
@@ -472,6 +478,7 @@ final class RootInterfaceController: UIViewController {
             }
             return
         }
+        sidebar.highlight(chat)
         UserDefaults.standard.set(chat.id.uuidString, forKey: "chat.selectedID")
         chatController.use(chat)
         if navigator.viewControllers.first !== chatController {
@@ -484,22 +491,47 @@ final class RootInterfaceController: UIViewController {
         }
     }
 
+    /// The conversation on the page has gone from the runtime — its record
+    /// taken with its project's folder (`forgetDeletedProjects`), or a delete
+    /// that nothing picked the next one after. It is left the way a delete
+    /// leaves it: the sidebar moves to the newest conversation its workspace
+    /// still has and the page follows it (`open(_:picked:)`), or the column
+    /// goes back to the icon, so a conversation that is no longer there is
+    /// never left on screen as if it were. After this change has reached
+    /// everything else — the sidebar and the page have just read it — and
+    /// only while the page still shows the one that went.
+    private func leaveGoneChat() {
+        guard let shown = chatController.chat, chatRuntime.summary(shown.id) == nil else { return }
+        DispatchQueue.main.async { [weak self] in
+            guard let self,
+                  chatController.chat?.id == shown.id,
+                  chatRuntime.summary(shown.id) == nil
+            else { return }
+            sidebar.recovered(from: shown.id)
+            guard chatController.chat?.id == shown.id else { return }
+            // nothing highlighted to move: the page goes to the conversation
+            // the sidebar does name, or leaves the column with none
+            open(sidebar.selectedChat, picked: false)
+        }
+    }
+
     /// Opens an `apelin://` link: its conversation, in its project, as if
-    /// picked, which on an iPhone puts the drawer away. One that names
-    /// nothing leaves the page as it was and says so. A link before the
-    /// conversations are read waits for them, and the launch shows it
-    /// instead of the conversation saved; during the welcome it is dropped.
-    /// A prompt goes into a new General Chat's composer with the keyboard
-    /// up, and waits there for the reader's Send. An import is a sheet over
-    /// the page (`RepositoryImportFlow`); one that comes during the welcome
-    /// waits for it to finish rather than being dropped, since a tap on
-    /// Open in Apelin is what opened the app.
+    /// picked, which on an iPhone puts the drawer away. It is opened the one
+    /// way a conversation is (`open(_:picked:)`), so the page leaves the one
+    /// it showed rather than the sidebar's highlight moving alone. One that
+    /// names nothing leaves the page as it was and says so. A link before the
+    /// conversations are read waits for them, and the launch shows it instead
+    /// of the conversation saved; one that comes during the welcome waits for
+    /// it to finish too — a link tapped in a message, a notification or a
+    /// widget is what brought the reader here, so dropping it silently leaves
+    /// them on a conversation they did not ask for. A prompt goes into a new
+    /// General Chat's composer with the keyboard up, and waits there for the
+    /// reader's Send. An import is a sheet over the page
+    /// (`RepositoryImportFlow`).
     func open(_ link: ApelinLink) {
         guard link != .app else { return }
         guard !WelcomeFlow.shouldPresent else {
-            if Self.isImport(link) {
-                pendingLink = link
-            }
+            pendingLink = link
             return
         }
         guard chatRuntime.isLoaded else {
@@ -523,15 +555,15 @@ final class RootInterfaceController: UIViewController {
             restoredChat = true
             switch destination {
             case let .chat(summary):
-                sidebar.select(summary)
-                setDrawerOpen(false)
+                open(summary, picked: true)
             case let .newChat(project, draft):
                 let summary = chatRuntime.newChat(project: project, preferring: nil)
                 if let draft {
                     chatRuntime.saveDraft(ComposerDraft(text: draft), for: summary.id)
                 }
-                sidebar.select(summary)
-                setDrawerOpen(false)
+                // the page first: the draft and the keyboard are the
+                // conversation this link names, not the one it replaces
+                open(summary, picked: true)
                 guard draft != nil else { return }
                 // the conversation may have been on the page already, untouched
                 chatController.restoreDraft(for: summary.id)

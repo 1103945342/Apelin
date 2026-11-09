@@ -209,8 +209,19 @@ final class SidebarController: UIViewController {
 
     // MARK: - What the root asks for
 
-    /// Shows `summary`'s workspace with that conversation picked.
-    func select(_ summary: ChatSummary) {
+    /// Shows `summary`'s workspace with that conversation picked, and nothing
+    /// else: the page belongs to the root, whose `open(_:picked:)` calls this
+    /// and then puts the same conversation on it. Nothing else calls this,
+    /// so a highlight never moves without a page and a page never without a
+    /// highlight (`Scripts/check-chat-pairing.py`).
+    ///
+    /// One already picked, in the workspace already open, leaves its row
+    /// alone — the reader's search stays, and the row is not rebuilt and
+    /// scrolled under the tap that picked it — but the conversations are still
+    /// the page, since that is where the page went.
+    func highlight(_ summary: ChatSummary) {
+        page = .sessions
+        guard selectedID != summary.id || project?.name != summary.projectName else { return }
         if project?.name != summary.projectName {
             project = summary.projectName.map { name in
                 projects.first { $0.name == name } ?? ProjectSummary(name: name, kind: .workspace)
@@ -218,7 +229,27 @@ final class SidebarController: UIViewController {
         }
         selectedID = summary.id
         sessions.select(summary)
-        page = .sessions
+    }
+
+    /// The conversation the sidebar highlights, which `open(_:picked:)` keeps
+    /// the same as the one on the page: nil when none is picked or the picked
+    /// one has gone from the runtime.
+    var selectedChat: ChatSummary? {
+        selectedID.flatMap { runtime.summary($0) }
+    }
+
+    /// The conversation the sidebar had is gone from the runtime — deleted
+    /// here, or taken with its project's folder while the page showed it: the
+    /// highlight, and with it the page (`open(_:picked:)` through `onSelect`),
+    /// leaves for the newest one the workspace still has, and for none when
+    /// it has none. A delete does not put a row back into the list it was just
+    /// taken out of, so no empty conversation is made here.
+    func recovered(from id: UUID) {
+        guard selectedID == id else { return }
+        let next = SidebarOrder.newest(sessions.summaries.filter { $0.id != id })
+        selectedID = next?.id
+        if let next { sessions.select(next) }
+        onSelect?(next, false)
     }
 
     func refresh() {
@@ -240,15 +271,7 @@ final class SidebarController: UIViewController {
 
     func delete(_ id: UUID, from origin: ChatDeletion.Origin, presenter: UIViewController? = nil) {
         sessions.delete(id, from: origin, presenter: presenter ?? self) { [weak self] in
-            guard let self, selectedID == id else { return }
-            // Deleting a conversation leaves the reader in the workspace's
-            // latest one that is still there. An empty conversation is made
-            // only when none is left to show: a delete should not put a row
-            // back into the list it was just taken out of.
-            let next = SidebarOrder.newest(sessions.summaries.filter { $0.id != id })
-            selectedID = next?.id
-            if let next { sessions.select(next) }
-            onSelect?(next, false)
+            self?.recovered(from: id)
         }
     }
 
