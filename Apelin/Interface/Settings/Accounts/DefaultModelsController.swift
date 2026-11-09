@@ -6,11 +6,19 @@ import UIKit
 final class DefaultModelsController: TableController {
     private enum Section: Hashable { case models }
 
-    private lazy var dataSource = TableDataSource<Section, Preferences.DefaultModelKind, Preferences.DefaultModelKind>(
+    /// What a row says right now, not just which operation it is about: the
+    /// table redraws a row whose content differs, and a chosen model is the
+    /// only thing that differs here.
+    private struct Row: Equatable {
+        let kind: Preferences.DefaultModelKind
+        let detail: String
+    }
+
+    private lazy var dataSource = TableDataSource<Section, Preferences.DefaultModelKind, Row>(
         tableView: tableView,
-        identifier: { $0 },
-    ) { [weak self] table, _, kind in
-        self?.cell(in: table, kind: kind)
+        identifier: { $0.kind },
+    ) { [weak self] table, _, row in
+        self?.cell(in: table, row: row)
     }
 
     private var accounts: [AgentAccount] = []
@@ -33,11 +41,13 @@ final class DefaultModelsController: TableController {
         super.viewDidLoad()
         title = String(localized: "Default Models")
         navigationItem.backButtonDisplayMode = .minimal
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 44
         dataSource.headerTitle = { _ in String(localized: "Agent") }
         dataSource.footerTitle = { _ in
             String(localized: "These models are used for auxiliary tasks and do not change the model selected for a conversation.")
         }
-        dataSource.update([(.models, Preferences.DefaultModelKind.allCases)])
+        dataSource.update([(.models, rows())])
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -46,8 +56,14 @@ final class DefaultModelsController: TableController {
         updateRows()
     }
 
+    private func rows() -> [Row] {
+        Preferences.DefaultModelKind.allCases.map {
+            Row(kind: $0, detail: Preferences.DefaultModels.summary(for: $0))
+        }
+    }
+
     private func updateRows() {
-        dataSource.update([(.models, Preferences.DefaultModelKind.allCases)], reconfigure: true)
+        dataSource.update([(.models, rows())], reconfigure: true)
     }
 
     private func loadAccounts() {
@@ -74,21 +90,16 @@ final class DefaultModelsController: TableController {
         }
     }
 
-    private func cell(in tableView: UITableView, kind: Preferences.DefaultModelKind) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "default-model")
-            ?? UITableViewCell(style: .value1, reuseIdentifier: "default-model")
-        var content = UIListContentConfiguration.valueCell()
-        content.text = kind.title
-        content.secondaryText = Preferences.DefaultModels.summary(for: kind)
-        cell.contentConfiguration = content
-        cell.accessoryType = .disclosureIndicator
-        cell.selectionStyle = .default
+    private func cell(in tableView: UITableView, row: Row) -> UITableViewCell {
+        let reusable = tableView.dequeueReusableCell(withIdentifier: ModelValueCell.reuseIdentifier)
+        let cell = (reusable as? ModelValueCell) ?? ModelValueCell()
+        cell.configure(title: row.kind.title, value: row.detail)
         return cell
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        guard let kind = dataSource.value(at: indexPath) else { return }
+        guard let kind = dataSource.value(at: indexPath)?.kind else { return }
         choose(kind)
     }
 
@@ -133,5 +144,75 @@ final class DefaultModelsController: TableController {
             ComposerChoiceSheet(heading: kind.title, groups: groups),
             from: self,
         )
+    }
+}
+
+/// A setting whose value is a model's name: the operation at the leading end,
+/// the model at the trailing one, one text size smaller. The system's own value
+/// cell drops the value under the title when the two do not fit side by side,
+/// which left the list with some rows right-aligned and others not; here the
+/// value keeps the row's end whatever it is and a long name is cut in the
+/// middle, where the provider and the version's last words both stay readable.
+///
+/// The row is one accessibility element: VoiceOver reads the operation and the
+/// model in use as the one setting they are.
+private final class ModelValueCell: UITableViewCell {
+    static let reuseIdentifier = "default-model"
+
+    private let titleLabel = UILabel()
+    private let valueLabel = UILabel()
+
+    init() {
+        super.init(style: .default, reuseIdentifier: Self.reuseIdentifier)
+        accessoryType = .disclosureIndicator
+        selectionStyle = .default
+
+        titleLabel.font = .preferredFont(forTextStyle: .body)
+        titleLabel.adjustsFontForContentSizeCategory = true
+        titleLabel.textColor = .label
+        titleLabel.numberOfLines = 0
+        titleLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        valueLabel.font = .preferredFont(forTextStyle: .footnote)
+        valueLabel.adjustsFontForContentSizeCategory = true
+        valueLabel.textColor = .secondaryLabel
+        valueLabel.textAlignment = .right
+        valueLabel.numberOfLines = 1
+        valueLabel.lineBreakMode = .byTruncatingMiddle
+        valueLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
+        for label in [titleLabel, valueLabel] {
+            label.translatesAutoresizingMaskIntoConstraints = false
+            contentView.addSubview(label)
+        }
+        let margin = contentView.layoutMarginsGuide
+        NSLayoutConstraint.activate([
+            titleLabel.leadingAnchor.constraint(equalTo: margin.leadingAnchor),
+            titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            titleLabel.topAnchor.constraint(greaterThanOrEqualTo: margin.topAnchor),
+            valueLabel.trailingAnchor.constraint(equalTo: margin.trailingAnchor),
+            valueLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            valueLabel.topAnchor.constraint(greaterThanOrEqualTo: margin.topAnchor),
+            valueLabel.leadingAnchor.constraint(
+                greaterThanOrEqualTo: titleLabel.trailingAnchor,
+                constant: 8,
+            ),
+            contentView.heightAnchor.constraint(greaterThanOrEqualToConstant: 44),
+        ])
+
+        isAccessibilityElement = true
+        accessibilityTraits = .button
+    }
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
+        fatalError("Use init()")
+    }
+
+    func configure(title: String, value: String) {
+        titleLabel.text = title
+        valueLabel.text = value
+        accessibilityLabel = title
+        accessibilityValue = value
     }
 }

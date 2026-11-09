@@ -40,11 +40,6 @@ final class ModelConnectivityController: UIViewController {
             textView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
         setContentScrollView(textView)
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: String(localized: "Done"),
-            primaryAction: UIAction { [weak self] _ in self?.dismiss(animated: true) },
-        )
-        navigationItem.rightBarButtonItem?.isEnabled = false
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: spinner)
         spinner.accessibilityLabel = String(localized: "Testing…")
         spinner.startAnimating()
@@ -66,15 +61,22 @@ final class ModelConnectivityController: UIViewController {
     @objc private dynamic func finishModelTest() {
         work = nil
         spinner.stopAnimating()
-        navigationItem.leftBarButtonItem = nil
-        navigationItem.rightBarButtonItem?.isEnabled = true
-        navigationController?.isModalInPresentation = false
+        // The spinner was the only way off this page while the request ran;
+        // once it has answered, the leading button goes back to the list.
+        let back = UIBarButtonItem(
+            image: UIImage(systemName: "chevron.backward"),
+            primaryAction: UIAction { [weak self] _ in self?.dismiss(animated: true) },
+        )
+        back.accessibilityLabel = String(localized: "Back")
+        navigationItem.leftBarButtonItem = back
         renderModelTestReport()
     }
 
     @objc private dynamic func renderModelTestReport() {
         let body = NSMutableAttributedString()
-        func section(_ title: String, _ text: String) {
+        // A heading with no body under it: the verdicts read as one word, and
+        // the detail they used to carry is the reader's to look at below.
+        func section(_ title: String, _ text: String = "") {
             let heading = NSMutableParagraphStyle()
             heading.paragraphSpacingBefore = body.length == 0 ? 0 : 20
             heading.paragraphSpacing = 6
@@ -83,6 +85,7 @@ final class ModelConnectivityController: UIViewController {
                 .foregroundColor: UIColor.label,
                 .paragraphStyle: heading,
             ]))
+            guard !text.isEmpty else { return }
             body.append(NSAttributedString(string: text + "\n", attributes: [
                 .font: UIFont.preferredFont(forTextStyle: .body),
                 .foregroundColor: UIColor.label,
@@ -90,10 +93,7 @@ final class ModelConnectivityController: UIViewController {
         }
         section(String(localized: "Model"), request.provider.displayName + "\n" + request.model)
         if let result {
-            section(
-                result.success ? String(localized: "Connection Successful") : String(localized: "Connection Failed"),
-                String(localized: "Only “Hi” is sent, without a system prompt, conversation history or tools."),
-            )
+            section(result.success ? String(localized: "Connection Successful") : String(localized: "Connection Failed"))
             if let failure = result.failure, !failure.isEmpty {
                 section(String(localized: "Failure Reason"), failure)
             }
@@ -107,13 +107,16 @@ final class ModelConnectivityController: UIViewController {
             section(String(localized: "Timings"), String(localized: "Unavailable"))
             section(String(localized: "Model Reply"), String(localized: "Unavailable"))
         } else {
-            section(String(localized: "Testing…"), [
-                String(localized: "Only “Hi” is sent, without a system prompt, conversation history or tools."),
-                String(localized: "The model request times out after 60 seconds."),
-            ].joined(separator: "\n\n"))
+            // What is being sent, and nothing about it: the request is one
+            // word, and `AgentModelTester` writes it into the message it sends.
+            section(String(localized: "Testing…"), Self.sentText)
         }
         textView.attributedText = body
     }
+
+    /// The one message a connectivity test sends, as `AgentModelTester` builds
+    /// it: no system prompt, no history, no tools.
+    private static let sentText = "Hi"
 
     private static func timings(_ result: AgentModelTestResponse) -> String {
         let phases: [(AgentModelTestPhase, String)] = [
@@ -135,8 +138,7 @@ final class ModelConnectivityController: UIViewController {
             } ?? String(localized: "Not Reached")
             return name + ": " + value
         }
-        return rows.joined(separator: "\n") + "\n\n"
-            + String(localized: "First-event and first-text times are measured from request start. Other rows show stage durations.")
+        return rows.joined(separator: "\n")
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {

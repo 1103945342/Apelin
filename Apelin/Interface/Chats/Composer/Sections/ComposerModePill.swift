@@ -53,10 +53,15 @@ final class ComposerModePill: UIControl {
         self.mode = mode
     }
 
+    /// The widest the pill grows, whatever the language calls the mode: three
+    /// short words at most, so the marks after it keep their place in the row
+    /// from one mode to the next, and a long one shrinks inside the badge.
+    private static let maxWidth: CGFloat = 96
+
     override var intrinsicContentSize: CGSize {
         let height = max(label.font.lineHeight + ComposerMetrics.Spacing.sm, 24)
         let width = max(42, label.intrinsicContentSize.width + ComposerMetrics.Spacing.md * 2)
-        return CGSize(width: ceil(width), height: ceil(height))
+        return CGSize(width: ceil(min(width, Self.maxWidth)), height: ceil(height))
     }
 
     override func layoutSubviews() {
@@ -76,26 +81,21 @@ final class ComposerModePill: UIControl {
         setNeedsLayout()
     }
 
-    /// The word the pill draws: the mode's own name, in lower case, the same
-    /// in every language. The row shows it as a badge of three known words
-    /// rather than as a sentence, and VoiceOver reads the reader's own word
-    /// for it instead (`spokenTitle`), so nothing is left untranslated that
-    /// is meant to be read.
+    /// The word the pill draws: the mode's own name in the reader's language —
+    /// 规划, 构建, 自动模式 — because the badge is the only place the setting is
+    /// named and a word nobody can read there names nothing. The screen reader
+    /// says the same word.
     private var title: String {
         switch mode {
-        case .plan: "plan"
-        case .build: "build"
-        case .auto: "auto"
+        case .plan: String(localized: "Plan")
+        case .build: String(localized: "Build")
+        case .auto: String(localized: "Automatic Mode")
         }
     }
 
     /// What the screen reader says the setting is.
     private var spokenTitle: String {
-        switch mode {
-        case .plan: String(localized: "Plan")
-        case .build: String(localized: "Build")
-        case .auto: String(localized: "Automatic")
-        }
+        title
     }
 
     @objc private func tapped() {

@@ -95,12 +95,27 @@ final class ComposerChoiceSheet: UIViewController {
                 if let request = choice.modelTest {
                     row.configureTestAction { [weak self] in
                         guard let self, presentedViewController == nil else { return }
-                        let result = ModelConnectivityController(request: request)
-                        let navigation = SheetNavigationController(rootViewController: result)
-                        // A direct request is bounded by the worker. Do not
-                        // imply closing a local task cancels an XPC request.
-                        navigation.isModalInPresentation = true
-                        presentAsFormSheet(navigation)
+                        let report = SheetNavigationController(
+                            rootViewController: ModelConnectivityController(request: request),
+                        )
+                        // A page of this list rather than a place of its own:
+                        // a card the picker's own height over it, so the
+                        // leading button or a pull down goes back to the
+                        // models rather than out of everything.
+                        if view.window?.traitCollection.horizontalSizeClass == .compact {
+                            report.modalPresentationStyle = .pageSheet
+                            if let controller = report.sheetPresentationController {
+                                controller.detents = [.custom(identifier: .init("model-test")) { context in
+                                    min(context.maximumDetentValue, Self.height)
+                                }]
+                                controller.prefersGrabberVisible = true
+                                controller.prefersEdgeAttachedInCompactHeight = true
+                            }
+                        } else {
+                            report.modalPresentationStyle = .formSheet
+                            report.preferredContentSize = CGSize(width: 480, height: Self.height)
+                        }
+                        present(report, animated: true)
                     }
                 }
                 let handler = choice.handler
@@ -231,9 +246,11 @@ private final class ChoiceRow: UIControl {
     /// button through a custom action instead of hiding it behind that label.
     @objc dynamic func configureTestAction(_ action: @escaping () -> Void) {
         testAction = action
-        testButton.setTitle(String(localized: "Test"), for: .normal)
-        testButton.titleLabel?.font = .preferredFont(forTextStyle: .body)
-        testButton.titleLabel?.adjustsFontForContentSizeCategory = true
+        // An icon rather than a word: the row's own label is the model, and a
+        // word beside it read as a second choice. The antenna says "try this
+        // one", and the label names it for VoiceOver.
+        testButton.setImage(UIImage(systemName: "antenna.radiowaves.left.and.right"), for: .normal)
+        testButton.tintColor = .secondaryLabel
         testButton.accessibilityLabel = String(localized: "Test Connectivity")
         testButton.accessibilityElementsHidden = true
         testButton.addAction(UIAction { [weak self] _ in self?.performTest() }, for: .touchUpInside)
