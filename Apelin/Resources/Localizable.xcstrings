@@ -8,13 +8,13 @@
       "ar": {
         "stringUnit": {
           "state": "translated",
-          "value": "%lld configured"
+          "value": "تم إعداد %lld"
         }
       },
       "de": {
         "stringUnit": {
           "state": "translated",
-          "value": "%lld configured"
+          "value": "%lld konfiguriert"
         }
       },
       "en": {
@@ -26,61 +26,61 @@
       "es": {
         "stringUnit": {
           "state": "translated",
-          "value": "%lld configured"
+          "value": "%lld configurados"
         }
       },
       "fr": {
         "stringUnit": {
           "state": "translated",
-          "value": "%lld configured"
+          "value": "%lld configurés"
         }
       },
       "it": {
         "stringUnit": {
           "state": "translated",
-          "value": "%lld configured"
+          "value": "%lld configurati"
         }
       },
       "ja": {
         "stringUnit": {
           "state": "translated",
-          "value": "%lld configured"
+          "value": "%lld 件設定済み"
         }
       },
       "ko": {
         "stringUnit": {
           "state": "translated",
-          "value": "%lld configured"
+          "value": "%lld개 구성됨"
         }
       },
       "pt-BR": {
         "stringUnit": {
           "state": "translated",
-          "value": "%lld configured"
+          "value": "%lld configurados"
         }
       },
       "ru": {
         "stringUnit": {
           "state": "translated",
-          "value": "%lld configured"
+          "value": "Настроено: %lld"
         }
       },
       "vi": {
         "stringUnit": {
           "state": "translated",
-          "value": "%lld configured"
+          "value": "%lld đã cấu hình"
         }
       },
       "zh-Hans": {
         "stringUnit": {
           "state": "translated",
-          "value": "%lld configured"
+          "value": "%lld 个已配置"
         }
       },
       "zh-Hant": {
         "stringUnit": {
           "state": "translated",
-          "value": "%lld configured"
+          "value": "%lld 個已設定"
         }
       }
     }
@@ -91,13 +91,13 @@
       "ar": {
         "stringUnit": {
           "state": "translated",
-          "value": "Conversation Compression"
+          "value": "ضغط المحادثات"
         }
       },
       "de": {
         "stringUnit": {
           "state": "translated",
-          "value": "Conversation Compression"
+          "value": "Unterhaltungskomprimierung"
         }
       },
       "en": {
@@ -109,61 +109,61 @@
       "es": {
         "stringUnit": {
           "state": "translated",
-          "value": "Conversation Compression"
+          "value": "Compresión de conversaciones"
         }
       },
       "fr": {
         "stringUnit": {
           "state": "translated",
-          "value": "Conversation Compression"
+          "value": "Compression des conversations"
         }
       },
       "it": {
         "stringUnit": {
           "state": "translated",
-          "value": "Conversation Compression"
+          "value": "Compressione delle conversazioni"
         }
       },
       "ja": {
         "stringUnit": {
           "state": "translated",
-          "value": "Conversation Compression"
+          "value": "会話の圧縮"
         }
       },
       "ko": {
         "stringUnit": {
           "state": "translated",
-          "value": "Conversation Compression"
+          "value": "대화 압축"
         }
       },
       "pt-BR": {
         "stringUnit": {
           "state": "translated",
-          "value": "Conversation Compression"
+          "value": "Compactação de conversas"
         }
       },
       "ru": {
         "stringUnit": {
           "state": "translated",
-          "value": "Conversation Compression"
+          "value": "Сжатие разговоров"
         }
       },
       "vi": {
         "stringUnit": {
           "state": "translated",
-          "value": "Conversation Compression"
+          "value": "Nén cuộc trò chuyện"
         }
       },
       "zh-Hans": {
         "stringUnit": {
           "state": "translated",
-          "value": "Conversation Compression"
+          "value": "对话压缩"
         }
       },
       "zh-Hant": {
         "stringUnit": {
           "state": "translated",
-          "value": "Conversation Compression"
+          "value": "對話壓縮"
         }
       }
     }
@@ -174,13 +174,13 @@
       "ar": {
         "stringUnit": {
           "state": "translated",
-          "value": "Default Models"
+          "value": "النماذج الافتراضية"
         }
       },
       "de": {
         "stringUnit": {
           "state": "translated",
-          "value": "Default Models"
+          "value": "Standardmodelle"
         }
       },
       "en": {
@@ -192,61 +192,61 @@
       "es": {
         "stringUnit": {
           "state": "translated",
-          "value": "Default Models"
+          "value": "Modelos predeterminados"
         }
       },
       "fr": {
         "stringUnit": {
           "state": "translated",
-          "value": "Default Models"
+          "value": "Modèles par défaut"
         }
       },
       "it": {
         "stringUnit": {
           "state": "translated",
-          "value": "Default Models"
+          "value": "Modelli predefiniti"
         }
       },
       "ja": {
         "stringUnit": {
           "state": "translated",
-          "value": "Default Models"
+          "value": "デフォルトモデル"
         }
       },
       "ko": {
         "stringUnit": {
           "state": "translated",
-          "value": "Default Models"
+          "value": "기본 모델"
         }
       },
       "pt-BR": {
         "stringUnit": {
           "state": "translated",
-          "value": "Default Models"
+          "value": "Modelos padrão"
         }
       },
       "ru": {
         "stringUnit": {
           "state": "translated",
-          "value": "Default Models"
+          "value": "Модели по умолчанию"
         }
       },
       "vi": {
         "stringUnit": {
           "state": "translated",
-          "value": "Default Models"
+          "value": "Mô hình mặc định"
         }
       },
       "zh-Hans": {
         "stringUnit": {
           "state": "translated",
-          "value": "Default Models"
+          "value": "默认模型"
         }
       },
       "zh-Hant": {
         "stringUnit": {
           "state": "translated",
-          "value": "Default Models"
+          "value": "預設模型"
         }
       }
     }
@@ -257,13 +257,13 @@
       "ar": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Generation"
+          "value": "إنشاء الصور"
         }
       },
       "de": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Generation"
+          "value": "Bilderzeugung"
         }
       },
       "en": {
@@ -275,61 +275,61 @@
       "es": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Generation"
+          "value": "Generación de imágenes"
         }
       },
       "fr": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Generation"
+          "value": "Génération d’images"
         }
       },
       "it": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Generation"
+          "value": "Generazione di immagini"
         }
       },
       "ja": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Generation"
+          "value": "画像生成"
         }
       },
       "ko": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Generation"
+          "value": "이미지 생성"
         }
       },
       "pt-BR": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Generation"
+          "value": "Geração de imagens"
         }
       },
       "ru": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Generation"
+          "value": "Генерация изображений"
         }
       },
       "vi": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Generation"
+          "value": "Tạo hình ảnh"
         }
       },
       "zh-Hans": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Generation"
+          "value": "图像生成"
         }
       },
       "zh-Hant": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Generation"
+          "value": "影像生成"
         }
       }
     }
@@ -340,13 +340,13 @@
       "ar": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Understanding"
+          "value": "فهم الصور"
         }
       },
       "de": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Understanding"
+          "value": "Bildverständnis"
         }
       },
       "en": {
@@ -358,61 +358,61 @@
       "es": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Understanding"
+          "value": "Comprensión de imágenes"
         }
       },
       "fr": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Understanding"
+          "value": "Compréhension des images"
         }
       },
       "it": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Understanding"
+          "value": "Comprensione delle immagini"
         }
       },
       "ja": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Understanding"
+          "value": "画像理解"
         }
       },
       "ko": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Understanding"
+          "value": "이미지 이해"
         }
       },
       "pt-BR": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Understanding"
+          "value": "Compreensão de imagens"
         }
       },
       "ru": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Understanding"
+          "value": "Понимание изображений"
         }
       },
       "vi": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Understanding"
+          "value": "Hiểu hình ảnh"
         }
       },
       "zh-Hans": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Understanding"
+          "value": "图像理解"
         }
       },
       "zh-Hant": {
         "stringUnit": {
           "state": "translated",
-          "value": "Image Understanding"
+          "value": "影像理解"
         }
       }
     }
@@ -423,13 +423,13 @@
       "ar": {
         "stringUnit": {
           "state": "translated",
-          "value": "Prompt Optimization"
+          "value": "تحسين المطالبات"
         }
       },
       "de": {
         "stringUnit": {
           "state": "translated",
-          "value": "Prompt Optimization"
+          "value": "Prompt-Optimierung"
         }
       },
       "en": {
@@ -441,61 +441,61 @@
       "es": {
         "stringUnit": {
           "state": "translated",
-          "value": "Prompt Optimization"
+          "value": "Optimización de prompts"
         }
       },
       "fr": {
         "stringUnit": {
           "state": "translated",
-          "value": "Prompt Optimization"
+          "value": "Optimisation des invites"
         }
       },
       "it": {
         "stringUnit": {
           "state": "translated",
-          "value": "Prompt Optimization"
+          "value": "Ottimizzazione del prompt"
         }
       },
       "ja": {
         "stringUnit": {
           "state": "translated",
-          "value": "Prompt Optimization"
+          "value": "プロンプト最適化"
         }
       },
       "ko": {
         "stringUnit": {
           "state": "translated",
-          "value": "Prompt Optimization"
+          "value": "프롬프트 최적화"
         }
       },
       "pt-BR": {
         "stringUnit": {
           "state": "translated",
-          "value": "Prompt Optimization"
+          "value": "Otimização de prompts"
         }
       },
       "ru": {
         "stringUnit": {
           "state": "translated",
-          "value": "Prompt Optimization"
+          "value": "Оптимизация запросов"
         }
       },
       "vi": {
         "stringUnit": {
           "state": "translated",
-          "value": "Prompt Optimization"
+          "value": "Tối ưu lời nhắc"
         }
       },
       "zh-Hans": {
         "stringUnit": {
           "state": "translated",
-          "value": "Prompt Optimization"
+          "value": "提示词优化"
         }
       },
       "zh-Hant": {
         "stringUnit": {
           "state": "translated",
-          "value": "Prompt Optimization"
+          "value": "提示詞最佳化"
         }
       }
     }
@@ -506,13 +506,13 @@
       "ar": {
         "stringUnit": {
           "state": "translated",
-          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+          "value": "تُستخدم هذه النماذج لمهام مساعدة ولا تغيّر النموذج المحدد للمحادثة."
         }
       },
       "de": {
         "stringUnit": {
           "state": "translated",
-          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+          "value": "Diese Modelle werden für Hilfsaufgaben verwendet und ändern nicht das für eine Unterhaltung ausgewählte Modell."
         }
       },
       "en": {
@@ -524,61 +524,61 @@
       "es": {
         "stringUnit": {
           "state": "translated",
-          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+          "value": "Estos modelos se usan para tareas auxiliares y no cambian el modelo seleccionado para una conversación."
         }
       },
       "fr": {
         "stringUnit": {
           "state": "translated",
-          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+          "value": "Ces modèles servent aux tâches auxiliaires et ne modifient pas le modèle sélectionné pour une conversation."
         }
       },
       "it": {
         "stringUnit": {
           "state": "translated",
-          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+          "value": "Questi modelli vengono usati per attività ausiliarie e non cambiano il modello selezionato per una conversazione."
         }
       },
       "ja": {
         "stringUnit": {
           "state": "translated",
-          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+          "value": "これらのモデルは補助的なタスクに使用され、会話で選択したモデルは変更されません。"
         }
       },
       "ko": {
         "stringUnit": {
           "state": "translated",
-          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+          "value": "이 모델은 보조 작업에 사용되며 대화에서 선택한 모델을 변경하지 않습니다."
         }
       },
       "pt-BR": {
         "stringUnit": {
           "state": "translated",
-          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+          "value": "Esses modelos são usados para tarefas auxiliares e não alteram o modelo selecionado para uma conversa."
         }
       },
       "ru": {
         "stringUnit": {
           "state": "translated",
-          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+          "value": "Эти модели используются для вспомогательных задач и не меняют модель, выбранную для разговора."
         }
       },
       "vi": {
         "stringUnit": {
           "state": "translated",
-          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+          "value": "Các mô hình này được dùng cho tác vụ phụ trợ và không thay đổi mô hình đã chọn cho cuộc trò chuyện."
         }
       },
       "zh-Hans": {
         "stringUnit": {
           "state": "translated",
-          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+          "value": "这些模型用于辅助任务，不会更改对话中所选的模型。"
         }
       },
       "zh-Hant": {
         "stringUnit": {
           "state": "translated",
-          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+          "value": "這些模型用於輔助任務，不會變更對話中選取的模型。"
         }
       }
     }
@@ -589,13 +589,13 @@
       "ar": {
         "stringUnit": {
           "state": "translated",
-          "value": "Title Generation"
+          "value": "إنشاء العناوين"
         }
       },
       "de": {
         "stringUnit": {
           "state": "translated",
-          "value": "Title Generation"
+          "value": "Titelerzeugung"
         }
       },
       "en": {
@@ -607,61 +607,61 @@
       "es": {
         "stringUnit": {
           "state": "translated",
-          "value": "Title Generation"
+          "value": "Generación de títulos"
         }
       },
       "fr": {
         "stringUnit": {
           "state": "translated",
-          "value": "Title Generation"
+          "value": "Génération de titres"
         }
       },
       "it": {
         "stringUnit": {
           "state": "translated",
-          "value": "Title Generation"
+          "value": "Generazione dei titoli"
         }
       },
       "ja": {
         "stringUnit": {
           "state": "translated",
-          "value": "Title Generation"
+          "value": "タイトル生成"
         }
       },
       "ko": {
         "stringUnit": {
           "state": "translated",
-          "value": "Title Generation"
+          "value": "제목 생성"
         }
       },
       "pt-BR": {
         "stringUnit": {
           "state": "translated",
-          "value": "Title Generation"
+          "value": "Geração de títulos"
         }
       },
       "ru": {
         "stringUnit": {
           "state": "translated",
-          "value": "Title Generation"
+          "value": "Генерация заголовков"
         }
       },
       "vi": {
         "stringUnit": {
           "state": "translated",
-          "value": "Title Generation"
+          "value": "Tạo tiêu đề"
         }
       },
       "zh-Hans": {
         "stringUnit": {
           "state": "translated",
-          "value": "Title Generation"
+          "value": "标题生成"
         }
       },
       "zh-Hant": {
         "stringUnit": {
           "state": "translated",
-          "value": "Title Generation"
+          "value": "標題生成"
         }
       }
     }
@@ -672,13 +672,13 @@
       "ar": {
         "stringUnit": {
           "state": "translated",
-          "value": "Use Conversation Model"
+          "value": "استخدام نموذج المحادثة"
         }
       },
       "de": {
         "stringUnit": {
           "state": "translated",
-          "value": "Use Conversation Model"
+          "value": "Unterhaltungsmodell verwenden"
         }
       },
       "en": {
@@ -690,61 +690,61 @@
       "es": {
         "stringUnit": {
           "state": "translated",
-          "value": "Use Conversation Model"
+          "value": "Usar el modelo de la conversación"
         }
       },
       "fr": {
         "stringUnit": {
           "state": "translated",
-          "value": "Use Conversation Model"
+          "value": "Utiliser le modèle de la conversation"
         }
       },
       "it": {
         "stringUnit": {
           "state": "translated",
-          "value": "Use Conversation Model"
+          "value": "Usa il modello della conversazione"
         }
       },
       "ja": {
         "stringUnit": {
           "state": "translated",
-          "value": "Use Conversation Model"
+          "value": "会話のモデルを使用"
         }
       },
       "ko": {
         "stringUnit": {
           "state": "translated",
-          "value": "Use Conversation Model"
+          "value": "대화 모델 사용"
         }
       },
       "pt-BR": {
         "stringUnit": {
           "state": "translated",
-          "value": "Use Conversation Model"
+          "value": "Usar o modelo da conversa"
         }
       },
       "ru": {
         "stringUnit": {
           "state": "translated",
-          "value": "Use Conversation Model"
+          "value": "Использовать модель разговора"
         }
       },
       "vi": {
         "stringUnit": {
           "state": "translated",
-          "value": "Use Conversation Model"
+          "value": "Dùng mô hình của cuộc trò chuyện"
         }
       },
       "zh-Hans": {
         "stringUnit": {
           "state": "translated",
-          "value": "Use Conversation Model"
+          "value": "使用对话模型"
         }
       },
       "zh-Hant": {
         "stringUnit": {
           "state": "translated",
-          "value": "Use Conversation Model"
+          "value": "使用對話模型"
         }
       }
     }
