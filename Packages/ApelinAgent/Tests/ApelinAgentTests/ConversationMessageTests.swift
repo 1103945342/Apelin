@@ -122,12 +122,12 @@ struct ConversationMessageTests {
         let records = events.enumerated().map {
             SessionEventRecord(seq: UInt64($0.offset + 1), date: Date(), event: $0.element)
         }
-        let first = try #require(AgentSession.forkRecords(records, through: reader)).map(\.event)
+        let first = try #require(records.forkRecords(through: reader)).map(\.event)
         #expect(first == [.userMessage(id: reader, text: "Work", attachments: []), .messageFinished(text: "Reader reply"), .finished(reason: .aborted)])
-        let sourceFork = try #require(AgentSession.forkRecords(records, through: source)).map(\.event)
+        let sourceFork = try #require(records.forkRecords(through: source)).map(\.event)
         #expect(sourceFork.contains(taken) && sourceFork.contains(.messageFinished(text: "Source reply")))
         #expect(sourceFork.filter { $0 == taken }.count == 1)
-        let later = try #require(AgentSession.forkRecords(records, through: nextReader)).map(\.event)
+        let later = try #require(records.forkRecords(through: nextReader)).map(\.event)
         #expect(later.contains(queued) && later.contains(taken))
         #expect(later.filter { $0 == queued }.count == 1)
     }

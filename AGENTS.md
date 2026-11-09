@@ -1579,6 +1579,16 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   a queued-but-untaken source is never a model-history boundary. `forks/<message-id>.json`
   references immutable SHA-256 objects under `forks/objects/`; each completed
   turn is sealed, so later edits, rewind and compaction cannot rewrite it.
+  A version 2 manifest names only the turn's messages, and the turn's UI
+  records are derived from the append-only event log when the turn is
+  forked: the log still holds every turn after an edit, a rewind or a
+  compaction, so a copy per turn only made every turn — and every fork —
+  write the whole history again. A version 1 manifest kept one object per
+  record, and that copy is what shortened a fork's visible replies when it
+  had been written from a reopened session's opening summary; it is still
+  read, and its list is used only when the log no longer has the turn.
+  Deriving the records is what repairs such a snapshot — a sealed one is
+  never rewritten to do it.
   The session captures complete model-message boundaries, then seals at run
   end and before destructive edits/manual compaction. An outstanding tool
   call cannot replace the last resumable boundary. A fork copies its selected

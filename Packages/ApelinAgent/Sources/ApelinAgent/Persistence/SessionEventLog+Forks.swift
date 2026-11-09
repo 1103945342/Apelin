@@ -72,16 +72,26 @@ struct ForkContext: Sendable {
     }
 }
 
-/// Small manifests reference immutable message/event objects. Sealed turns
-/// never change when later turns edit, rewind or compact the live transcript.
+/// Small manifests reference immutable message objects. Sealed turns never
+/// change when later turns edit, rewind or compact the live transcript.
+///
+/// A turn's UI records are not stored here any more. The event log is
+/// append-only, so every turn's records are still in it after an edit, a
+/// rewind or a compaction; copying them into objects made every turn, and
+/// every fork, write the whole conversation's history again. Version 1
+/// manifests are still read, and their object per record is still honoured
+/// when the log no longer has the turn.
 extension SessionEventLog {
     private struct ForkManifest: Codable {
-        var version = 1
+        var version = 2
         var sealed: Bool
         var messages: [String]
-        var records: [String]
+        /// Version 1 only: one object per UI record of the turn.
+        var records: [String]?
         var anchors: [String: HistoryAnchor]
     }
+
+    private static let readableForkVersions = 1 ... 2
 
     private var forksDirectory: URL { directory.appendingPathComponent("forks", isDirectory: true) }
 
@@ -190,11 +200,10 @@ extension SessionEventLog {
                 // not its historical version. Do not label it as one.
                 if changedLater { continue }
             }
-            guard let turnRecords = AgentSession.forkRecords(records, through: item.id) else { continue }
-            var eventObjects: [String] = []
-            for record in turnRecords {
-                eventObjects.append(try objects.put(encoder.encode(record)))
-            }
+            // The turn's records are read back from the log when the turn is
+            // forked (`readForkContext`): the log is append-only, so a copy of
+            // them here only made every turn write the whole history again.
+            guard records.forkRecords(through: item.id) != nil else { continue }
             var turnAnchors: [String: HistoryAnchor] = [:]
             for previous in located where previous.index < end {
                 turnAnchors[previous.id.uuidString.lowercased()] = previous.anchor
@@ -214,7 +223,7 @@ extension SessionEventLog {
             let manifest = ForkManifest(
                 sealed: seal || end < messages.count,
                 messages: turnMessages,
-                records: eventObjects, anchors: turnAnchors,
+                records: nil, anchors: turnAnchors,
             )
             try HistoryObjectStore.write(encoder.encode(manifest), to: url)
         }
@@ -289,10 +298,22 @@ extension SessionEventLog {
             messages.append(try Self.decoder.decode(Message.self, from: data))
             saved[name] = data
         }
+        // The turn's UI records come from the log, which is append-only and
+        // still holds every turn after an edit, a rewind or a compaction. A
+        // version 1 manifest kept its own copy, and one written from a
+        // reopened session's opening summary held a fragment of the history:
+        // the log is what keeps a fork's visible replies whole.
         var records: [SessionEventRecord] = []
-        for (name, data) in zip(manifest.records, try objects.get(manifest.records)) {
-            records.append(try Self.decoder.decode(SessionEventRecord.self, from: data))
-            saved[name] = data
+        // persisted-read: a log that cannot be read falls back to the
+        // snapshot's own objects below, never to an empty history
+        let history = try? historyRecords()
+        if let history, let derived = history.forkRecords(through: id) {
+            records = derived
+        } else if let names = manifest.records, !names.isEmpty {
+            for (name, data) in zip(names, try objects.get(names)) {
+                records.append(try Self.decoder.decode(SessionEventRecord.self, from: data))
+                saved[name] = data
+            }
         }
         return ForkContext(messages: messages, records: records, anchors: manifest.anchors, savedObjects: saved)
     }
@@ -315,12 +336,16 @@ extension SessionEventLog {
         let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
         guard attributes[.type] as? FileAttributeType == .typeRegular else { throw HistoryObjectStore.Failure.unsafePath }
         let manifest = try Self.decoder.decode(ForkManifest.self, from: Data(contentsOf: url))
-        guard manifest.version == 1 else { throw SessionStoreError.corrupt("unsupported fork history version") }
+        guard Self.readableForkVersions.contains(manifest.version) else {
+            throw SessionStoreError.corrupt("unsupported fork history version")
+        }
         return manifest
     }
 
     /// Copies the selected version, even if the source advances while the
     /// fork is being written. The new session's target is already sealed.
+    /// Its records are not written here: they are read back from the new
+    /// session's own log, which holds them through this turn.
     static func writeForkContext(_ context: ForkContext, id: UUID, directory: URL) throws {
         let forks = directory.appendingPathComponent("forks")
         if !FileManager.default.fileExists(atPath: forks.path) {
@@ -330,16 +355,25 @@ extension SessionEventLog {
         let objects = try HistoryObjectStore(directory: forks.appendingPathComponent("objects"))
         let encoder = forkEncoder()
         var messages: [String] = []
-        var records: [String] = []
         for message in context.messages { messages.append(try objects.put(encoder.encode(message))) }
-        for record in context.records { records.append(try objects.put(encoder.encode(record))) }
-        let manifest = ForkManifest(sealed: true, messages: messages, records: records, anchors: context.anchors)
+        let manifest = ForkManifest(sealed: true, messages: messages, records: nil, anchors: context.anchors)
         try HistoryObjectStore.write(encoder.encode(manifest), to: forks.appendingPathComponent(id.uuidString.lowercased() + ".json"))
     }
 
     /// Called while writing a new session. Copy only ancestors' snapshots,
     /// not future turns, and never retain a dependency on the source folder.
-    static func copyForkHistory(from source: URL, to destination: URL, ids: Set<UUID>, savedObjects: [String: Data] = [:]) throws {
+    /// `history` is the source log's records, which the new session's log
+    /// also carries: an ancestor whose turn is in it is written without the
+    /// version 1 record objects, so a fork of an older conversation stops
+    /// copying its whole history. An ancestor the log no longer has keeps its
+    /// objects and is copied as it is.
+    static func copyForkHistory(
+        from source: URL,
+        to destination: URL,
+        ids: Set<UUID>,
+        history: [SessionEventRecord],
+        savedObjects: [String: Data] = [:],
+    ) throws {
         let sourceForks = source.appendingPathComponent("forks")
         guard try HistoryObjectStore.itemExists(sourceForks) else { return }
         try HistoryObjectStore.requireDirectory(sourceForks)
@@ -349,6 +383,7 @@ extension SessionEventLog {
         var destinationObjects = try HistoryObjectStore(directory: destinationForks.appendingPathComponent("objects"))
         var names = Set(savedObjects.keys)
         var manifests: [(String, Data)] = []
+        let encoder = forkEncoder()
         for id in ids {
             let name = id.uuidString.lowercased() + ".json"
             let url = sourceForks.appendingPathComponent(name)
@@ -357,15 +392,93 @@ extension SessionEventLog {
             guard attributes[.type] as? FileAttributeType == .typeRegular else { throw HistoryObjectStore.Failure.unsafePath }
             let data = try Data(contentsOf: url)
             let manifest = try decoder.decode(ForkManifest.self, from: data)
-            guard manifest.version == 1 else { throw SessionStoreError.corrupt("unsupported fork history version") }
+            guard readableForkVersions.contains(manifest.version) else {
+                throw SessionStoreError.corrupt("unsupported fork history version")
+            }
             names.formUnion(manifest.messages)
-            names.formUnion(manifest.records)
-            manifests.append((name, data))
+            guard history.forkRecords(through: id) != nil else {
+                names.formUnion(manifest.records ?? [])
+                manifests.append((name, data))
+                continue
+            }
+            let updated = ForkManifest(
+                sealed: manifest.sealed,
+                messages: manifest.messages,
+                records: nil,
+                anchors: manifest.anchors,
+            )
+            manifests.append((name, try encoder.encode(updated)))
         }
         var copied: Set<String> = []
         try destinationObjects.copy(Array(names), from: sourceObjects, copied: &copied, preloaded: savedObjects)
         for (name, data) in manifests {
             try HistoryObjectStore.write(data, to: destinationForks.appendingPathComponent(name))
+        }
+    }
+}
+
+extension Array where Element == SessionEventRecord {
+    /// Historical UI events through this turn's first finish or the next
+    /// prompt, without untaken queued messages or later maintenance. A
+    /// partial boundary gets an aborted finish. Numbered from 1; the app
+    /// replays this new log rather than cutting its current UI a second time.
+    /// It lives with the log, not the session, because a fork's history is
+    /// rebuilt from the append-only log: that is why no manifest has to keep
+    /// its own copy of it.
+    func forkRecords(through id: UUID) -> [SessionEventRecord]? {
+        guard let start = firstIndex(where: {
+            switch $0.event {
+            case let .userMessage(messageID, _, _), let .conversationMessageTaken(messageID, _, _):
+                return messageID == id
+            default:
+                return false
+            }
+        }) else { return nil }
+        let startsTurn: (SessionEventRecord) -> Bool = { record in
+            switch record.event {
+            case .userMessage, .promptSubmitted, .conversationMessageTaken:
+                return true
+            default:
+                return false
+            }
+        }
+        let next = self[(start + 1)...].firstIndex(where: startsTurn) ?? count
+        // Compaction, edits and other later maintenance are not part of
+        // the historical turn, even when no new prompt followed it yet.
+        let finished = self[(start + 1) ..< next].firstIndex {
+            if case .finished = $0.event { return true }
+            return false
+        }
+        let end = finished.map { $0 + 1 } ?? next
+        var taken: Set<UUID> = []
+        for record in self[..<end] {
+            switch record.event {
+            case let .userMessage(messageID, _, _), let .conversationMessageTaken(messageID, _, _):
+                taken.insert(messageID)
+            default:
+                break
+            }
+        }
+        var kept = self[..<end].filter {
+            switch $0.event {
+            case let .userMessageQueued(messageID, _, _), let .conversationMessageQueued(messageID, _, _):
+                return taken.contains(messageID)
+            case .conversationMessagesDropped:
+                return false // their untaken queue entries are excluded too
+            default:
+                return true
+            }
+        }
+        let lastTurn = kept.lastIndex(where: startsTurn) ?? 0
+        let ended = kept[lastTurn...].contains {
+            if case .finished = $0.event { return true }
+            return false
+        }
+        if !ended {
+            kept.append(SessionEventRecord(seq: 0, date: kept.last?.date ?? Date(), event: .finished(reason: .aborted)))
+        }
+        return kept.enumerated().map { offset, record in
+            SessionEventRecord(seq: UInt64(offset + 1), date: record.date, event: record.event)
         }
     }
 }

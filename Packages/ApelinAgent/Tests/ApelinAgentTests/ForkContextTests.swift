@@ -146,6 +146,49 @@ struct ForkContextTests {
         await log.close()
     }
 
+    @Test
+    func `a sealed snapshot stores messages only and its records come from the log`() async throws {
+        let home = try TemporaryHome()
+        defer { home.remove() }
+        let sessionID = UUID().uuidString.lowercased()
+        let log = try SessionEventLog(sessionsRoot: home.dataRoot.sessions, sessionID: sessionID)
+        let first = UUID()
+        let second = UUID()
+        let user = UserMessage(text: "First")
+        let later = UserMessage(text: "Second")
+        let anchors = [first.uuidString.lowercased(): anchor(user), second.uuidString.lowercased(): anchor(later)]
+        try await log.append(.userMessage(id: first, text: "First", attachments: []))
+        try await log.append(.messageFinished(text: "First reply"))
+        try await log.append(.finished(reason: .completed))
+        try await log.writeHistorySnapshot([.user(user), .assistant(fauxAssistantMessage("First reply"))], anchors: anchors, seal: true)
+        try await log.append(.userMessage(id: second, text: "Second", attachments: []))
+        try await log.append(.messageFinished(text: "Second reply"))
+        try await log.append(.finished(reason: .completed))
+        let both: [Message] = [
+            .user(user), .assistant(fauxAssistantMessage("First reply")),
+            .user(later), .assistant(fauxAssistantMessage("Second reply")),
+        ]
+        try await log.writeHistorySnapshot(both, anchors: anchors, seal: true)
+        let written = try await log.records(afterSeq: 0)
+
+        // The manifest names its messages; it no longer holds a copy of the
+        // turn's UI records, which the append-only log still has.
+        let manifest = try Data(contentsOf: log.directory.appendingPathComponent("forks/\(second.uuidString.lowercased()).json"))
+        let json = try #require(try JSONSerialization.jsonObject(with: manifest) as? [String: Any])
+        #expect(json["version"] as? Int == 2)
+        #expect(json["records"] == nil)
+        #expect((json["messages"] as? [String])?.isEmpty == false)
+        await log.close()
+
+        // Reopening reads the log's opening summary alone; the fork of the
+        // turn must still be the whole history, not what the summary saw.
+        let reopened = try SessionEventLog(sessionsRoot: home.dataRoot.sessions, sessionID: sessionID)
+        defer { Task { await reopened.close() } }
+        let context = try #require(try await reopened.readForkContext(second))
+        #expect(context.records == written)
+        #expect(context.messages == both)
+    }
+
     @Test(arguments: [false, true])
     func `fork owns selected and ancestor snapshots after source deletion`(preload: Bool) async throws {
         let home = try TemporaryHome()
@@ -179,7 +222,7 @@ struct ForkContextTests {
         try SessionEventLog.writeFork(
             sessionsRoot: home.dataRoot.sessions, metadata: metadata,
             records: selected.records, transcript: selected.messages, anchors: selected.anchors,
-            historySource: log.directory, through: second,
+            historySource: log.directory, history: try await log.records(afterSeq: 0), through: second,
             savedObjects: preload ? selected.savedObjects : [:],
         )
         if preload {

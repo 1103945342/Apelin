@@ -149,6 +149,9 @@ extension AgentSession {
         guard var metadata = try await log.readMetadata() else {
             throw ApelinError(.notFound, "This chat's record could not be read.")
         }
+        // persisted-read: an unreadable log leaves the fork to the snapshot's
+        // own objects, which `readForkContext` above already fell back to
+        let history: [SessionEventRecord] = (try? await log.historyRecords()) ?? context.records
         metadata.id = newSessionID.lowercased()
         metadata.created = Date()
         do {
@@ -159,6 +162,7 @@ extension AgentSession {
                 transcript: context.messages,
                 anchors: context.anchors,
                 historySource: log.directory,
+                history: history,
                 through: id,
                 savedObjects: context.savedObjects,
             )
@@ -261,66 +265,5 @@ extension AgentSession {
         )
         anchors[key] = anchor
         return (index, anchor)
-    }
-
-    /// Historical UI events through this turn's first finish or the next
-    /// prompt, without untaken queued messages or later maintenance. A
-    /// partial boundary gets an aborted finish. Numbered from 1; the app
-    /// replays this new log rather than cutting its current UI a second time.
-    static func forkRecords(_ records: [SessionEventRecord], through id: UUID) -> [SessionEventRecord]? {
-        guard let start = records.firstIndex(where: {
-            switch $0.event {
-            case let .userMessage(messageID, _, _), let .conversationMessageTaken(messageID, _, _):
-                return messageID == id
-            default:
-                return false
-            }
-        }) else { return nil }
-        let startsTurn: (SessionEventRecord) -> Bool = { record in
-            switch record.event {
-            case .userMessage, .promptSubmitted, .conversationMessageTaken:
-                return true
-            default:
-                return false
-            }
-        }
-        let next = records[(start + 1)...].firstIndex(where: startsTurn) ?? records.count
-        // Compaction, edits and other later maintenance are not part of
-        // the historical turn, even when no new prompt followed it yet.
-        let finished = records[(start + 1) ..< next].firstIndex {
-            if case .finished = $0.event { return true }
-            return false
-        }
-        let end = finished.map { $0 + 1 } ?? next
-        var taken: Set<UUID> = []
-        for record in records[..<end] {
-            switch record.event {
-            case let .userMessage(messageID, _, _), let .conversationMessageTaken(messageID, _, _):
-                taken.insert(messageID)
-            default:
-                break
-            }
-        }
-        var kept = records[..<end].filter {
-            switch $0.event {
-            case let .userMessageQueued(messageID, _, _), let .conversationMessageQueued(messageID, _, _):
-                return taken.contains(messageID)
-            case .conversationMessagesDropped:
-                return false // their untaken queue entries are excluded too
-            default:
-                return true
-            }
-        }
-        let lastTurn = kept.lastIndex(where: startsTurn) ?? 0
-        let ended = kept[lastTurn...].contains {
-            if case .finished = $0.event { return true }
-            return false
-        }
-        if !ended {
-            kept.append(SessionEventRecord(seq: 0, date: kept.last?.date ?? Date(), event: .finished(reason: .aborted)))
-        }
-        return kept.enumerated().map { offset, record in
-            SessionEventRecord(seq: UInt64(offset + 1), date: record.date, event: record.event)
-        }
     }
 }

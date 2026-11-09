@@ -50,6 +50,7 @@ extension SessionEventLog {
         transcript: [Message],
         anchors: [String: HistoryAnchor],
         historySource: URL,
+        history: [SessionEventRecord],
         through messageID: UUID,
         savedObjects: [String: Data] = [:],
     ) throws {
@@ -71,7 +72,10 @@ extension SessionEventLog {
                 default: return nil
                 }
             }).subtracting([messageID])
-            try copyForkHistory(from: historySource, to: folder, ids: ids, savedObjects: savedObjects)
+            try copyForkHistory(
+                from: historySource, to: folder, ids: ids,
+                history: history, savedObjects: savedObjects,
+            )
             try writeForkContext(
                 ForkContext(messages: transcript, records: records, anchors: anchors),
                 id: messageID, directory: folder,
