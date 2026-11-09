@@ -1394,8 +1394,18 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   pending text (2026-10-29: one reply had written every provider delta as
   a line, 684,540 of them, and reopening it took 104 s on a device). It is
   opened in one pass that decodes only the lines a session needs (its user
-  message ids, whether it has a title, the approvals left waiting, the
-  last number), and a reattach replays from disk outside the log's actor
+  message ids, whether it has a title, the approvals left waiting, turn and
+  compaction boundaries, and the last number). A reopened session has no
+  running model task: before its replay boundary it appends `finished(aborted)`
+  for a turn with no end, and `compactionFinished(cancelled)` for a compaction
+  with no end. Otherwise a historical prompt or reconnect leaves readers
+  showing Running forever, and Stop has no live run to end. Recovery keeps
+  every old record, is idempotent, and is never a new live completion.
+  `InterruptedSessionTests` covers recovery, repeated opens and a subsequent
+  prompt; the reader and long-log tests cover idle state and selective decoding.
+  An on-device scanner probe passes synthetic histories and the failing log
+  read-only; full session tests and installed UI validation remain owed.
+  A reattach replays from disk outside the log's actor
   while appends go on, so an open answers at once and a send never waits
   behind the history; a line that will not decode stands as an `error` of
   its number. Beside it the worker keeps the conversation's diagnostic

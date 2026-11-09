@@ -249,6 +249,24 @@ struct ConversationBackendTests {
     }
 
     @Test
+    func `an interrupted turn recovered during replay is idle even while its worker stays open`() {
+        var reader = ConversationReader(afterSeq: 3, byteLimit: 1024)
+        reader.take(batch([
+            ("prompt", text("Try")),
+            ("reconnecting", nil),
+            ("queued", text("Waiting")),
+        ]))
+        #expect(reader.state == .running)
+        reader.take(batch([
+            ("finished", .object(["reason": .string("aborted"), "historical": .bool(true)])),
+        ], from: 4))
+        #expect(reader.state == .idle && reader.isSettled)
+        #expect(reader.response(sessionID: Self.child, title: nil, timedOut: false).messages.isEmpty)
+        reader.take(batch([("prompt", text("Continue"))], from: 5))
+        #expect(reader.state == .running, "the recovered end must not hide a later turn")
+    }
+
+    @Test
     func `read waits for the turn after its point to finish, across attaches`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.agentList, reply: AgentListResponse(sessions: [summary()]))

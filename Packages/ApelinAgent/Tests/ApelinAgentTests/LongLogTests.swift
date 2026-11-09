@@ -31,8 +31,11 @@ struct LongLogTests {
         // build's replay pays some 14 µs a line: this many keep it quick.
         let lines = 50000
         var file = try SyntheticLog(home: home, sessionID: sessionID)
+        var selectedLines = 0
         for seq in 1 ... lines {
-            try file.append(needed[seq] ?? Self.streamed(seq))
+            let event = needed[seq] ?? Self.streamed(seq)
+            if needed[seq] != nil || event == .messageStarted { selectedLines += 1 }
+            try file.append(event)
         }
         try file.write()
         let configuration = AgentSessionConfiguration(
@@ -53,10 +56,10 @@ struct LongLogTests {
 
         let session = try await open()
         let opening = await session.log.decodes
-        #expect(opening <= needed.count + 1, "the lines the summary reads, and the last for its number")
+        #expect(opening == selectedLines + 1, "metadata, turn boundaries and the last line only; no streamed bulk")
         // the session took the summary: a message it has is a duplicate
         let seq = await session.log.lastSeq
-        #expect(seq == UInt64(lines) + 1, "the abandoned approval is closed")
+        #expect(seq == UInt64(lines) + 2, "the abandoned approval and interrupted turn are closed")
         try await session.prompt("Go on.", messageID: second)
         #expect(await session.log.lastSeq == seq)
 
@@ -82,7 +85,8 @@ struct LongLogTests {
 
         // Opened again, it has nothing left to close.
         let reopened = try await open()
-        #expect(await reopened.log.decodes <= needed.count + 2)
+        #expect(await reopened.log.decodes == selectedLines + 3)
+        #expect(await reopened.log.opened.interruptionEvents.isEmpty)
         #expect(await reopened.log.opened.openApprovals.isEmpty)
         #expect(await reopened.log.lastSeq == seq + 1)
         await reopened.close()
@@ -207,13 +211,16 @@ struct LongLogTests {
     func `the kinds the summary reads are spelled as the encoder writes them`() throws {
         let needed: [AgentSessionEvent] = [
             .userMessage(id: UUID(), text: "Hi", attachments: []),
+            .conversationMessageTaken(id: UUID(), text: "Hi", from: "source"),
+            .promptSubmitted(text: "Legacy prompt"), .steered(text: "Legacy steer"), .messageStarted,
+            .finished(reason: .completed), .compactionStarted, .compactionFinished(.init(outcome: .cancelled)),
             .titleUpdated("A title"),
             .approvalRequested(Self.approval("asked")),
             .approvalResolved(requestID: "asked", decision: .deny(reason: "no")),
         ]
         let others: [AgentSessionEvent] = [
-            .thinkingDelta("a"), .textDelta("b"), .received(tokens: 3), .messageStarted,
-            .userMessageQueued(id: UUID(), text: "Hi", attachments: []), .finished(reason: .completed),
+            .thinkingDelta("a"), .textDelta("b"), .received(tokens: 3),
+            .userMessageQueued(id: UUID(), text: "Hi", attachments: []),
         ]
         func kind(_ event: AgentSessionEvent) throws -> String? {
             let line = try SyntheticLog.encoder.encode(SessionEventRecord(seq: 7, date: Date(), event: event))

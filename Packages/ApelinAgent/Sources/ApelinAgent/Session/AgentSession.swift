@@ -167,6 +167,14 @@ public actor AgentSession {
         let opened = Date()
         let transcript = try await LegacyToolNames.migrate(log.readResumableTranscript())
         try await Self.closeAbandonedApprovals(log)
+        // The worker that emitted the last turn's start is gone. There is
+        // no runTask to abort after reopen, so leaving its events unfinished
+        // makes every reader show a permanently running chat. Persist the
+        // missing end before the replay boundary, without erasing history
+        // or treating this recovery as a newly completed live turn.
+        for event in log.opened.interruptionEvents {
+            try await log.append(event)
+        }
         journal.startup("transcript read: \(transcript.count) message(s) in \(Self.milliseconds(since: opened))")
 
         let resolving = Date()
