@@ -87,15 +87,16 @@ final class ComposerModePill: UIControl {
         setNeedsLayout()
     }
 
-    /// The word the pill draws: the mode's own name in the reader's language —
-    /// 规划, 构建, 自动 — because the badge is the only place the setting is
-    /// named and a word nobody can read there names nothing. The screen reader
-    /// says the same word.
+    /// The word the pill draws: the mode's own name in the reader's language,
+    /// and only there — 规划, 构建, 自动 — while every other language keeps the
+    /// three English names. These are keys of the pill's own, not `Build` and
+    /// `Plan`, which other pages draw in their own translations; the badge is
+    /// three short words that belong together and are read as one row.
     private var title: String {
         switch mode {
-        case .plan: String(localized: "Plan")
-        case .build: String(localized: "Build")
-        case .auto: String(localized: "Auto")
+        case .plan: String(localized: "Run Mode Plan")
+        case .build: String(localized: "Run Mode Build")
+        case .auto: String(localized: "Run Mode Auto")
         }
     }
 
