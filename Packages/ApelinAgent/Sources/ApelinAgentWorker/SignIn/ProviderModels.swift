@@ -2,6 +2,7 @@ import ApelinAgent
 import ApelinProtocol
 import Foundation
 import KWWKAI
+import os
 
 /// The endpoint's model family is distinct from its wire format. DeepSeek's
 /// Anthropic endpoint accepts Claude aliases but still runs DeepSeek models.
@@ -76,6 +77,11 @@ enum ProviderModels {
             guard let entry = index.entry(for: id, catalogKey: catalog) else { continue }
             found[id] = entry.capabilities
         }
+        // Says in the device log how the catalogs read this account's models: a
+        // model with no entry and a page that has not reloaded look the same on
+        // screen, and this tells the two apart.
+        Logger(subsystem: "wiki.qaq.apelin", category: "ModelCatalog")
+            .notice("named \(found.count, privacy: .public) of \(models.count, privacy: .public) \(provider.storeID, privacy: .public) models, key \(catalog ?? "-", privacy: .public)")
         return found
     }
 

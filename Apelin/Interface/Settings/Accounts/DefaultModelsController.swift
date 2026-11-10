@@ -127,7 +127,8 @@ final class DefaultModelsController: TableController {
                 title: account.account ?? account.provider.displayName,
                 choices: models.map { model in
                     ComposerChoiceSheet.Choice(
-                        title: model,
+                        title: account.displayName(for: model),
+                        subtitle: account.catalogName(for: model) == nil ? nil : model,
                         isSelected: current?.provider == account.provider && current?.model == model,
                         modelTest: AgentModelTestRequest(provider: account.provider, model: model),
                     ) { [weak self] in

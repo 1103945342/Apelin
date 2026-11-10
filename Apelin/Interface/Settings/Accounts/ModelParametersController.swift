@@ -31,7 +31,9 @@ final class ModelParametersController: TableController {
     ) { [weak self] _, _, model in
         let cell = UITableViewCell(style: .value1, reuseIdentifier: nil)
         var content = cell.defaultContentConfiguration()
-        content.text = model
+        // The catalog's name where one knows the model; its id under it stays
+        // one tap away, on the model's own page.
+        content.text = self?.account.displayName(for: model) ?? model
         content.textProperties.numberOfLines = 0
         let values = self.map { ModelParameters.values(for: $0.account.provider, model: model) }
         let catalog = self?.account.capabilities?[model]
@@ -193,7 +195,13 @@ final class ModelParameterFormController: TableController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = model
+        // The catalog's name, with the provider's own id above it — the id is
+        // what the conversation sends and what a provider's list calls it.
+        let name = catalog?.displayName(for: model)
+        title = name ?? model
+        if name != nil {
+            navigationItem.prompt = model
+        }
         navigationItem.largeTitleDisplayMode = .never
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 52
