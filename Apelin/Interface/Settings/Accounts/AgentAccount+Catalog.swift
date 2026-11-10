@@ -10,21 +10,21 @@ import ApelinProtocol
 extension AgentModelCapabilities {
     /// The catalog's name for `model`, unless it only spells the id again.
     func displayName(for model: String) -> String? {
-        guard let name = catalogName, !name.isEmpty,
-              name.caseInsensitiveCompare(model) != .orderedSame
+        guard let title = catalogTitle, !title.isEmpty,
+              title.caseInsensitiveCompare(model) != .orderedSame
         else { return nil }
-        return name
+        return title
     }
 }
 
 extension AgentAccount {
-    /// The name a catalog gives `model`, when one knows it.
-    func catalogName(for model: String) -> String? {
+    /// What the catalog calls `model`, when one knows it in words.
+    func catalogTitle(for model: String) -> String? {
         capabilities?[model]?.displayName(for: model)
     }
 
     /// The model as a reader reads it: the catalog's name, or its own id.
     func displayName(for model: String) -> String {
-        catalogName(for: model) ?? model
+        catalogTitle(for: model) ?? model
     }
 }

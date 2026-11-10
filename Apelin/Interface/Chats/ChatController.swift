@@ -856,7 +856,7 @@ final class ChatController: UIViewController {
                         // The name the catalog gives it, with the provider's own
                         // id under it: the id is what the conversation sends.
                         title: account.displayName(for: model),
-                        subtitle: account.catalogName(for: model) == nil ? nil : model,
+                        subtitle: account.catalogTitle(for: model) == nil ? nil : model,
                         isSelected: account.provider == selected?.provider && model == selected?.model,
                         modelTest: AgentModelTestRequest(provider: account.provider, model: model),
                     ) { ComposerModelSelection.choose(Self.selection(of: model, in: account), for: id) }

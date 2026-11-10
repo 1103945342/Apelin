@@ -123,7 +123,7 @@ final class ModelActivationController: TableController, UISearchResultsUpdating 
         // conversation sends, and it stays readable under the name.
         content.text = account.displayName(for: model)
         content.textProperties.numberOfLines = 0
-        if account.catalogName(for: model) != nil {
+        if account.catalogTitle(for: model) != nil {
             content.secondaryText = model
             content.secondaryTextProperties.color = .secondaryLabel
         }

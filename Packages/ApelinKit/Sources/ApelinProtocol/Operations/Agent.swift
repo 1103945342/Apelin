@@ -310,6 +310,10 @@ public struct AgentModelCapabilities: Codable, Sendable, Equatable, Hashable {
     public var reasoning: Bool?
     /// The entry's own name, as the catalog spells it: `deepseek-v4.1-flash`.
     public var catalogName: String?
+    /// What the catalog calls the model in words, where that is not the id
+    /// again: `DeepSeek V4.1 Flash`. The name a list shows; the id stays what a
+    /// conversation sends.
+    public var catalogTitle: String?
     /// The catalog it came from: a provider key of the one kwwk bundles
     /// (`deepseek`), or `models.dev`'s (`anthropic`).
     public var catalogProvider: String?
@@ -322,6 +326,7 @@ public struct AgentModelCapabilities: Codable, Sendable, Equatable, Hashable {
         acceptsImages: Bool? = nil,
         reasoning: Bool? = nil,
         catalogName: String? = nil,
+        catalogTitle: String? = nil,
         catalogProvider: String? = nil,
         source: String? = nil,
     ) {
@@ -330,6 +335,7 @@ public struct AgentModelCapabilities: Codable, Sendable, Equatable, Hashable {
         self.acceptsImages = acceptsImages
         self.reasoning = reasoning
         self.catalogName = catalogName
+        self.catalogTitle = catalogTitle
         self.catalogProvider = catalogProvider
         self.source = source
     }

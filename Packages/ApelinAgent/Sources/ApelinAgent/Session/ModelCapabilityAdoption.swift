@@ -43,6 +43,7 @@ extension ModelCatalogIndex.Entry {
             acceptsImages: acceptsImages,
             reasoning: reasoning,
             catalogName: id,
+            catalogTitle: name,
             catalogProvider: provider,
             source: source,
         )
