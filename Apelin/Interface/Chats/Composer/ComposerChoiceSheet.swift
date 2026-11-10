@@ -31,8 +31,11 @@ final class ComposerChoiceSheet: UIViewController {
         var choices: [Choice]
     }
 
-    /// The height every picker opens at, on a phone and on a card alike.
-    static let height: CGFloat = 420
+    /// The height the connectivity report opens at, on a phone and on a card
+    /// alike. It is a grouped page of its own — the verdict, the stages it
+    /// stopped in the middle of, the reply and what was sent — so it stands
+    /// taller than the rows the picker itself draws.
+    static let height: CGFloat = 620
 
     private let heading: String
     private let groups: [Group]
@@ -99,9 +102,9 @@ final class ComposerChoiceSheet: UIViewController {
                             rootViewController: ModelConnectivityController(request: request),
                         )
                         // A page of this list rather than a place of its own:
-                        // a card the picker's own height over it, so the
-                        // leading button or a pull down goes back to the
-                        // models rather than out of everything.
+                        // a card over it, so the leading button or a pull down
+                        // goes back to the models rather than out of
+                        // everything.
                         if view.window?.traitCollection.horizontalSizeClass == .compact {
                             report.modalPresentationStyle = .pageSheet
                             if let controller = report.sheetPresentationController {
