@@ -97,10 +97,6 @@ public actor AgentSession {
     /// A compaction rewrote the conversation: the next run takes the system
     /// prompt afresh, since its prefix is written anew anyway.
     var snapshotStale = false
-    /// What this run may do, from the composer's pill; nil leaves the line out
-    /// of `<system-state>`. Kept here rather than in the prompt, which is the
-    /// session's snapshot.
-    private var runMode: ApelinProtocol.AgentRunMode?
     /// This session's own memory and skill calls, until they end, by call id.
     private var ownCalls: [String: (tool: AgentToolName, arguments: KWWKAI.JSONValue)] = [:]
     /// What the current run has received, for the app's counter.
@@ -365,7 +361,6 @@ public actor AgentSession {
     /// The runner hears it too: a plan run's reads-only wall is the runner's,
     /// and an automatic run's "stop asking" is the approval gate's.
     public func setRunMode(_ mode: ApelinProtocol.AgentRunMode?) async {
-        runMode = mode
         await runner.setRunMode(mode)
         // An automatic run is a build run that stops asking; the other two
         // keep the approval mode the app last said, restored here because
