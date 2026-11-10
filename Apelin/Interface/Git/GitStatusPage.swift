@@ -792,15 +792,19 @@ private final class GitOverviewCell: UITableViewCell {
         icon.tintColor = GitTheme.primary
         icon.contentMode = .scaleAspectFit
         stateLabel.font = GitTheme.labelMedium
+        stateLabel.adjustsFontForContentSizeCategory = true
         stateLabel.textColor = GitTheme.onSurfaceVariant
         branchLabel.font = GitTheme.mono(16, .medium)
+        branchLabel.adjustsFontForContentSizeCategory = true
         branchLabel.textColor = GitTheme.onSurface
         branchLabel.numberOfLines = 1
         branchLabel.lineBreakMode = .byTruncatingMiddle
         upstreamLabel.font = GitTheme.labelSmall
+        upstreamLabel.adjustsFontForContentSizeCategory = true
         upstreamLabel.textColor = GitTheme.onSurfaceVariant
         upstreamLabel.numberOfLines = 1
         sync.font = GitTheme.mono(12)
+        sync.adjustsFontForContentSizeCategory = true
         sync.textColor = GitTheme.onSurfaceVariant
         sync.backgroundColor = GitTheme.mutedSurface
         sync.layer.cornerRadius = 8
@@ -899,6 +903,7 @@ private final class GitCommitCell: UITableViewCell {
     private let hint = UILabel().then {
         $0.text = String(localized: "No commit identity configured. Set your name and email in “Credentials & Identity”.")
         $0.font = GitTheme.bodySmall
+        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = GitTheme.onSurfaceVariant
         $0.textAlignment = .center
         $0.numberOfLines = 0
@@ -994,6 +999,7 @@ private final class GitCleanCell: UITableViewCell {
         let label = UILabel().then {
             $0.text = String(localized: "Working tree clean, no changes")
             $0.font = GitTheme.bodyMedium
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurfaceVariant
             $0.textAlignment = .center
         }
@@ -1020,6 +1026,7 @@ private final class GitHeaderCell: UITableViewCell {
         contentView.backgroundColor = .clear
         selectionStyle = .none
         label.font = GitTheme.font(13, .regular)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = GitTheme.subtleText
         label.numberOfLines = 1
         let row = UIStackView(arrangedSubviews: [label, button]).then {
@@ -1063,12 +1070,14 @@ private final class GitFileCell: UITableViewCell {
     private let chipHost = UIView()
     private let name = UILabel().then {
         $0.font = GitTheme.mono(14)
+        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = GitTheme.onSurface
         $0.numberOfLines = 1
         $0.lineBreakMode = .byTruncatingMiddle
     }
     private let directory = UILabel().then {
         $0.font = GitTheme.mono(11)
+        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = GitTheme.onSurfaceVariant
         $0.numberOfLines = 1
         $0.lineBreakMode = .byTruncatingMiddle
@@ -1189,12 +1198,14 @@ private final class GitDirCell: UITableViewCell {
     private let chipHost = UIView()
     private let pathLabel = UILabel().then {
         $0.font = GitTheme.mono(14)
+        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = GitTheme.onSurface
         $0.numberOfLines = 1
         $0.lineBreakMode = .byTruncatingMiddle
     }
     private let count = UILabel().then {
         $0.font = GitTheme.labelSmall
+        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = GitTheme.onSurfaceVariant
     }
     private let chevron = UIImageView()
@@ -1304,11 +1315,13 @@ private final class GitMergeBannerCell: UITableViewCell {
         let title = UILabel().then {
             $0.text = String(localized: "Merge Awaiting Commit")
             $0.font = GitTheme.font(13, .semibold)
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.warning
         }
         let hint = UILabel().then {
             $0.text = String(localized: "There are no unresolved conflicts. Review and stage the changes you want to keep, then commit to complete the merge.")
             $0.font = GitTheme.bodySmall
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurfaceVariant
             $0.numberOfLines = 0
         }

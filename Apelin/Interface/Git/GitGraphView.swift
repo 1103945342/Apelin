@@ -145,22 +145,10 @@ struct GitGraphLayout: Equatable {
 /// centre and every y coordinate are read from `bounds` during `draw(_:)` and
 /// nothing is cached in points.
 final class GitGraphView: UIView {
-    /// The reference app's eight colours, chosen to read on both grounds.
-    private static let palette: [UIColor] = [
-        UIColor(hex: 0x2563EB),
-        UIColor(hex: 0x16A34A),
-        UIColor(hex: 0xF59E0B),
-        UIColor(hex: 0x8B5CF6),
-        UIColor(hex: 0x06B6D4),
-        UIColor(hex: 0xEF4444),
-        UIColor(hex: 0xEC4899),
-        UIColor(hex: 0xEAB308),
-    ]
-
-    /// A lane's colour, cycled through the eight. The hash pill in the row
-    /// uses this too, so the pill and the line agree.
+    /// A lane's colour, cycled through the eight the theme keeps — the same
+    /// eight the badge beside a row uses, so pill and line cannot drift apart.
     static func color(forLane lane: Int) -> UIColor {
-        palette[((lane % palette.count) + palette.count) % palette.count]
+        GitTheme.laneColor(lane)
     }
 
     /// Ten points when the history is a single line, so the text gets the
@@ -326,6 +314,12 @@ final class GitGraphView: UIView {
     }
 
     private func centreX(_ lane: Int) -> CGFloat {
-        CGFloat(lane) * laneWidth + laneWidth / 2 + 4
+        let fromLeading = CGFloat(lane) * laneWidth + laneWidth / 2 + 4
+        // The columns grow away from the page's leading edge, so on a
+        // right-to-left page the first one starts at the right of the box.
+        guard UIView.userInterfaceLayoutDirection(for: semanticContentAttribute) == .rightToLeft else {
+            return fromLeading
+        }
+        return bounds.width - fromLeading
     }
 }

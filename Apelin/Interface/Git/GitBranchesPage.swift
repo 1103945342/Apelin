@@ -404,6 +404,7 @@ final class GitBranchesPage: UIViewController, GitPage {
         let description = UILabel().then {
             $0.text = String(localized: "Create lightweight tag from current HEAD (\(session.currentBranch ?? "HEAD"))")
             $0.font = GitTheme.bodySmall
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurfaceVariant
             $0.numberOfLines = 0
         }
@@ -602,10 +603,12 @@ private final class GitBranchesOverviewCell: UITableViewCell {
     private let title = UILabel().then {
         $0.text = String(localized: "Current branch")
         $0.font = GitTheme.labelMedium
+        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = GitTheme.onSurfaceVariant
     }
     private let branch = UILabel().then {
         $0.font = GitTheme.mono(16, .medium)
+        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = GitTheme.onSurface
         $0.numberOfLines = 1
         $0.lineBreakMode = .byTruncatingMiddle
@@ -613,6 +616,7 @@ private final class GitBranchesOverviewCell: UITableViewCell {
     private let detached = UILabel().then {
         $0.text = String(localized: "detached HEAD: not on any branch")
         $0.font = GitTheme.labelSmall
+        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = GitTheme.error
     }
     private let metrics = UIStackView()
@@ -695,6 +699,7 @@ private final class GitRefHeaderCell: UITableViewCell {
         chevron.tintColor = GitTheme.subtleText
         chevron.contentMode = .scaleAspectFit
         label.font = GitTheme.font(13, .regular)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = GitTheme.subtleText
         add.tintColor = GitTheme.onSurfaceVariant
         add.setImage(GitIcon.image(GitIcon.Name.plus, pointSize: 16), for: .normal)
@@ -754,12 +759,14 @@ private final class GitRefRowCell: UITableViewCell {
     private var iconLeading: Constraint?
     private let name = UILabel().then {
         $0.font = GitTheme.mono(14)
+        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = GitTheme.onSurface
         $0.numberOfLines = 1
         $0.lineBreakMode = .byTruncatingMiddle
     }
     private let subtitle = UILabel().then {
         $0.font = GitTheme.labelSmall
+        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = GitTheme.onSurfaceVariant
         $0.numberOfLines = 1
     }
@@ -847,6 +854,7 @@ private final class GitBranchEmptyCell: UITableViewCell {
         contentView.backgroundColor = .clear
         selectionStyle = .none
         label.font = GitTheme.bodyMedium
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = GitTheme.onSurfaceVariant
         label.textAlignment = .center
         label.numberOfLines = 0

@@ -52,6 +52,7 @@ final class GitCommitDialogController: UIViewController {
         let title = UILabel().then {
             $0.text = String(localized: "Commit Changes")
             $0.font = GitTheme.font(24, .semibold)
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurface
             $0.accessibilityTraits = .header
         }
@@ -107,6 +108,7 @@ final class GitCommitDialogController: UIViewController {
             $0.layer.cornerCurve = .continuous
         }
         field.font = GitTheme.bodyMedium
+        field.adjustsFontForContentSizeCategory = true
         field.textColor = GitTheme.onSurface
         field.tintColor = GitTheme.primary
         field.backgroundColor = .clear
@@ -116,6 +118,7 @@ final class GitCommitDialogController: UIViewController {
         field.delegate = self
         placeholder.text = String(localized: "Commit message")
         placeholder.font = GitTheme.bodyMedium
+        placeholder.adjustsFontForContentSizeCategory = true
         placeholder.textColor = GitTheme.onSurfaceVariant
         fieldBorder.addSubview(field)
         fieldBorder.addSubview(placeholder)
@@ -129,6 +132,7 @@ final class GitCommitDialogController: UIViewController {
         let amendLabel = UILabel().then {
             $0.text = String(localized: "Amend last commit (--amend)")
             $0.font = GitTheme.bodySmall
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurface
         }
         let amendRow = UIView().then {
@@ -305,6 +309,7 @@ final class GitStashSheetContent: UIView {
         let title = UILabel().then {
             $0.text = String(localized: "Stashes")
             $0.font = GitTheme.titleMedium
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurface
             $0.accessibilityTraits = .header
         }
@@ -366,6 +371,7 @@ final class GitStashSheetContent: UIView {
             let empty = UILabel().then {
                 $0.text = String(localized: "No stashes found")
                 $0.font = GitTheme.bodyMedium
+                $0.adjustsFontForContentSizeCategory = true
                 $0.textColor = GitTheme.onSurfaceVariant
                 $0.textAlignment = .center
             }
@@ -405,6 +411,7 @@ final class GitStashSheetContent: UIView {
         let message = UILabel().then {
             $0.text = stash.message.isEmpty ? "stash@{\(stash.index)}" : stash.message
             $0.font = GitTheme.font(14, .medium)
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurface
             $0.numberOfLines = 1
             $0.lineBreakMode = .byTruncatingTail
@@ -412,12 +419,14 @@ final class GitStashSheetContent: UIView {
         let trailing = UILabel().then {
             $0.text = stash.branch.isEmpty ? String(stash.commit.prefix(7)) : stash.branch
             $0.font = GitTheme.labelSmall
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurfaceVariant
             $0.numberOfLines = 1
         }
         let index = UILabel().then {
             $0.text = "stash@{\(stash.index)}"
             $0.font = GitTheme.mono(11)
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurfaceVariant
         }
         let pop = GitButtons.text(title: String(localized: "Pop"))

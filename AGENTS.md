@@ -4651,3 +4651,31 @@ packages both flavours and every extension, reads each package back, and keeps
 `.deb` from that run and install it with the device's package manager; `make
 install`, `make vphone` and `make device-*` need a host reaching the device
 over ssh.
+
+## The in-app Git screen (`Apelin/Interface/Git/`)
+
+The screen draws with `GitTheme` and the app's own tokens rather than a palette
+of its own: the grounds, cards, separators and text are `UIColor.pageBackground`
+/ `.secondarySystemGroupedBackground` / `.separator` / `.label`'s, the accent —
+primary buttons, links, the selected segment — is `AppAccent`, and type is
+`GitTheme.font`/`mono`, which are `UIFontMetrics` on `.body` and so follow the
+reader's text size. Only what carries meaning keeps a colour of its own, and
+that is the page's one exception: a diff's added and removed lines, the graph's
+lanes (`GitTheme.lanes`, which `GitGraphView` reads instead of keeping a copy)
+and a path's status badge. A new raw `UIColor(rgb:)` in this folder is a meaning
+colour or a bug.
+
+- A question with nothing to fill in is `presentGitDialog`'s no-content branch:
+  the app's `AlertViewController`, the page's buttons in their order with the
+  last one filled, in the delete colour when one is marked destructive. Never a
+  `UIAlertController`, and never a button matched by comparing its title.
+- A result is announced through `GitPageHost.gitShowToast(_:succeeded:)` and its
+  `gitShowSuccess`/failure defaults; a page does not draw a toast itself.
+- A list with nothing to show uses `EmptyStateView`, not a hand-built label.
+- A diff is source code: its gutters, marker and text are
+  `semanticContentAttribute = .forceLeftToRight` whatever the page's direction.
+  The commit graph instead grows away from the page's leading edge, so on a
+  right-to-left page its first lane starts at the right (`GitGraphView.centreX`).
+- The page's segment control sets no title fonts: the platform draws them, and
+  scales them with the reader's text size, which a font set here would freeze.
+

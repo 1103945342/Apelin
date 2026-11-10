@@ -34,12 +34,8 @@ final class GitGlassTabs: UIView {
         control.selectedSegmentIndex = UISegmentedControl.noSegment
         control.backgroundColor = .clear
         control.addTarget(self, action: #selector(selectionChanged), for: .valueChanged)
-        control.setTitleTextAttributes(
-            [.font: GitTheme.font(13, .semibold)], for: .selected,
-        )
-        control.setTitleTextAttributes(
-            [.font: GitTheme.font(13, .regular)], for: .normal,
-        )
+        // No title attributes: the platform draws the titles, and scales them
+        // with the reader's text size, which a font set here would freeze.
         glass.contentView.addSubview(control)
         control.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(UIEdgeInsets(top: 7, left: 7, bottom: 7, right: 7))

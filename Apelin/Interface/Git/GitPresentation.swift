@@ -1,3 +1,4 @@
+import AlertController
 import SnapKit
 import Then
 import UIKit
@@ -138,6 +139,7 @@ final class GitFormSheetController: UIViewController {
         let titleLabel = UILabel().then {
             $0.text = heading
             $0.font = GitTheme.font(22, .semibold)
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurface
             $0.numberOfLines = 0
             $0.accessibilityTraits = .header
@@ -150,6 +152,7 @@ final class GitFormSheetController: UIViewController {
             let label = UILabel().then {
                 $0.text = message
                 $0.font = GitTheme.bodyMedium
+                $0.adjustsFontForContentSizeCategory = true
                 $0.textColor = GitTheme.onSurfaceVariant
                 $0.numberOfLines = 0
             }
@@ -263,6 +266,7 @@ class GitBottomSheetController: UIViewController {
             let label = UILabel().then {
                 $0.text = sheetTitle
                 $0.font = GitTheme.font(20, .semibold)
+                $0.adjustsFontForContentSizeCategory = true
                 $0.textColor = GitTheme.onSurface
                 $0.numberOfLines = 2
                 $0.lineBreakMode = .byTruncatingMiddle
@@ -345,11 +349,13 @@ final class GitTextField: UIView, UITextFieldDelegate {
 
         label.text = title
         label.font = GitTheme.labelSmall
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = GitTheme.onSurfaceVariant
         label.backgroundColor = GitTheme.cardSurface
         label.isUserInteractionEnabled = false
 
         field.font = GitTheme.bodyMedium
+        field.adjustsFontForContentSizeCategory = true
         field.textColor = GitTheme.onSurface
         field.tintColor = GitTheme.primary
         field.placeholder = placeholder
@@ -435,6 +441,7 @@ final class GitSwitchRow: UIView {
         let label = UILabel().then {
             $0.text = title
             $0.font = GitTheme.bodySmall
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurfaceVariant
             $0.numberOfLines = 0
         }
@@ -609,6 +616,7 @@ final class GitStatusChip: UIView {
         let label = UILabel().then {
             $0.text = String(code.prefix(2))
             $0.font = GitTheme.mono(11, .medium)
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = colors.foreground
             $0.textAlignment = .center
         }
@@ -633,6 +641,7 @@ final class GitSectionHeaderView: UIView {
         super.init(frame: .zero)
         label.text = title
         label.font = GitTheme.font(13, .regular)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = GitTheme.subtleText
         label.numberOfLines = 1
         addSubview(label)
@@ -651,30 +660,6 @@ final class GitSectionHeaderView: UIView {
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 }
 
-/// A centred sentence with nothing else, the pages' empty state.
-final class GitEmptyStateView: UIView {
-    init(text: String) {
-        super.init(frame: .zero)
-        let label = UILabel().then {
-            $0.text = text
-            $0.font = GitTheme.bodyMedium
-            $0.textColor = GitTheme.onSurfaceVariant
-            $0.textAlignment = .center
-            $0.numberOfLines = 0
-        }
-        addSubview(label)
-        label.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-            make.leading.trailing.equalToSuperview().inset(GitTheme.Space.lg)
-        }
-        isAccessibilityElement = true
-        accessibilityLabel = text
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-}
-
 extension UIViewController {
     /// Presents a dialog over whatever is on screen, whichever sheet it is.
     func presentGitDialog(
@@ -684,22 +669,44 @@ extension UIViewController {
         actions: [GitDialogAction],
     ) {
         guard let content else {
-            // A question with nothing to fill in is the system's alert.
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            for action in actions where action.title != String(localized: "Cancel") {
-                alert.addAction(UIAlertAction(
-                    title: action.title,
-                    style: action.destructive ? .destructive : .default,
-                ) { _ in action.handler() })
-            }
-            if let cancel = actions.first(where: { $0.title == String(localized: "Cancel") }) {
-                alert.addAction(UIAlertAction(title: cancel.title, style: .cancel) { _ in cancel.handler() })
-            }
-            topPresenter.present(alert, animated: true)
+            presentGitAlert(title: title, message: message, actions: actions)
             return
         }
         let sheet = GitFormSheetController(title: title, message: message, content: content, actions: actions)
         topPresenter.present(sheet, animated: true)
+    }
+
+    /// A question with nothing to fill in: the app's own alert, drawn like every
+    /// other question it asks. The buttons keep the page's order with the last
+    /// one filled, and a delete is painted in the delete colour.
+    private func presentGitAlert(title: String, message: String?, actions: [GitDialogAction]) {
+        let accent = AlertControllerConfiguration.accentColor
+        let accentForeground = AlertControllerConfiguration.accentForegroundColor
+        if actions.contains(where: \.destructive) {
+            AlertControllerConfiguration.accentColor = .systemRed
+            AlertControllerConfiguration.accentForegroundColor = .white
+        }
+        let alert = AlertViewController(
+            title: String.LocalizationValue(title),
+            message: String.LocalizationValue(message ?? ""),
+        ) { context in
+            for (index, action) in actions.enumerated() {
+                let button = String.LocalizationValue(action.title)
+                if index == actions.count - 1 {
+                    context.addAction(title: button, attribute: .accent) {
+                        context.dispose { action.handler() }
+                    }
+                } else {
+                    context.addAction(title: button) {
+                        context.dispose { action.handler() }
+                    }
+                }
+            }
+        }
+        topPresenter.present(alert, animated: true) {
+            AlertControllerConfiguration.accentColor = accent
+            AlertControllerConfiguration.accentForegroundColor = accentForeground
+        }
     }
 
     func presentGitSheet(

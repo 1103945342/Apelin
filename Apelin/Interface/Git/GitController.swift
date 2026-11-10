@@ -65,12 +65,14 @@ final class GitController: UIViewController {
     private let titleLabel = UILabel().then {
         $0.text = String(localized: "Git")
         $0.font = GitTheme.titleLarge
+        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = GitTheme.onSurface
         $0.accessibilityTraits = .header
     }
 
     private let repoNameLabel = UILabel().then {
         $0.font = GitTheme.bodyMedium
+        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = GitTheme.onSurfaceVariant
         $0.lineBreakMode = .byTruncatingMiddle
         $0.numberOfLines = 1
@@ -318,6 +320,7 @@ final class GitController: UIViewController {
         let title = UILabel().then {
             $0.text = String(localized: "This workspace is not a Git repository yet")
             $0.font = GitTheme.bodyMedium
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurfaceVariant
             $0.textAlignment = .center
             $0.numberOfLines = 0
@@ -325,6 +328,7 @@ final class GitController: UIViewController {
         let first = UILabel().then {
             $0.text = String(localized: "Initialize a new repository here to start version control")
             $0.font = GitTheme.bodySmall
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurfaceVariant
             $0.textAlignment = .center
             $0.numberOfLines = 0
@@ -332,6 +336,7 @@ final class GitController: UIViewController {
         let second = UILabel().then {
             $0.text = String(localized: "If a subdirectory already has a Git repository, you can select it instead")
             $0.font = GitTheme.bodySmall
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurfaceVariant
             $0.textAlignment = .center
             $0.numberOfLines = 0
@@ -358,6 +363,7 @@ final class GitController: UIViewController {
         let busyLabel = UILabel().then {
             $0.text = String(localized: "Cloning the repository, please wait…")
             $0.font = GitTheme.bodySmall
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurfaceVariant
             $0.textAlignment = .center
             $0.numberOfLines = 0
@@ -465,6 +471,7 @@ final class GitController: UIViewController {
             let empty = UILabel().then {
                 $0.text = String(localized: "No directories to choose in this workspace")
                 $0.font = GitTheme.bodyMedium
+                $0.adjustsFontForContentSizeCategory = true
                 $0.textColor = GitTheme.onSurfaceVariant
                 $0.numberOfLines = 0
             }
@@ -504,6 +511,7 @@ final class GitController: UIViewController {
             let trailing = UILabel().then {
                 $0.text = String(localized: "Not a repository")
                 $0.font = GitTheme.labelSmall
+                $0.adjustsFontForContentSizeCategory = true
                 $0.textColor = GitTheme.onSurfaceVariant
             }
             control.addSubview(trailing)

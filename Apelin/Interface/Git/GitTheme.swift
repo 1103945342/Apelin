@@ -2,38 +2,43 @@ import SnapKit
 import Then
 import UIKit
 
-/// The Git screen's colours, type and spacing, taken from the reference app
-/// so the page is the page and not an interpretation of it. Its palette is
-/// the light and dark pairs that app ships; a colour is resolved for the
-/// trait collection it is drawn in.
+/// The Git screen's colours, type and spacing. The grounds, the text and the
+/// accent are the app's own (`UIColor+Surfaces`, `AppAccent`), so the page
+/// belongs to Apelin like the pages beside it; only what carries meaning —
+/// a diff's added and removed lines, the graph's lanes, a path's status — keeps
+/// a colour of its own.
 enum GitTheme {
     // MARK: - Colour
 
-    static let primary = pair(light: 0x2563EB, dark: 0x60A5FA)
-    static let onPrimary = pair(light: 0xFFFFFF, dark: 0x082F49)
-    static let primaryContainer = pair(light: 0xDBEAFE, dark: 0x0F3A63)
-    static let onPrimaryContainer = pair(light: 0x0B3B76, dark: 0xDBEAFE)
+    /// The app's accent: black on white before iOS 26, the system's blue on or
+    /// after it, so a Git button is the app's button there.
+    static let primary = AppAccent.color(glass: UIColor(rgb: 0x2563EB))
+    static let onPrimary = AppAccent.foreground(glass: .white)
+    static let primaryContainer = primary.withAlphaComponent(0.12)
+    static let onPrimaryContainer = primary
 
-    static let secondary = pair(light: 0x0284C7, dark: 0x7DD3FC)
-    static let secondaryContainer = pair(light: 0xE0F2FE, dark: 0x0C4A6E)
-    static let onSecondaryContainer = pair(light: 0x075985, dark: 0xBAE6FD)
+    /// The figures beside the accent's: a step down, still legible as a count.
+    static let secondary = UIColor.secondaryLabel
+    static let secondaryContainer = UIColor.tertiarySystemFill
+    static let onSecondaryContainer = UIColor.label
 
+    /// A tag: what a commit is marked with rather than where it lives.
     static let tertiary = pair(light: 0x16A34A, dark: 0x22C55E)
     static let tertiaryContainer = pair(light: 0xDCFCE7, dark: 0x14532D)
     static let onTertiaryContainer = pair(light: 0x15803D, dark: 0xBBF7D0)
 
-    static let pageBackground = pair(light: 0xF8F8F8, dark: 0x07111F)
-    static let cardSurface = pair(light: 0xFFFFFF, dark: 0x0D1B2E)
-    static let mutedSurface = pair(light: 0xF2F2F7, dark: 0x13273F)
-    static let buttonMutedBackground = pair(light: 0xF0F2F5, dark: 0x1E293B)
+    static let pageBackground = UIColor.pageBackground
+    static let cardSurface = UIColor.secondarySystemGroupedBackground
+    static let mutedSurface = UIColor.secondarySystemFill
+    static let buttonMutedBackground = UIColor.tertiarySystemFill
 
-    static let onSurface = pair(light: 0x0F172A, dark: 0xEAF2FF)
-    static let onSurfaceVariant = pair(light: 0x475569, dark: 0xB8C7DA)
-    static let surfaceVariant = pair(light: 0xEAF4FF, dark: 0x13273F)
-    static let subtleText = pair(light: 0x8E8E93, dark: 0x94A3B8)
-    static let subtleBorder = pair(light: 0xE5E5EA, dark: 0x2A3F56)
-    static let outline = pair(light: 0xD1D1D6, dark: 0x64748B)
-    static let outlineVariant = pair(light: 0xE5E5EA, dark: 0x334155)
+    static let onSurface = UIColor.label
+    static let onSurfaceVariant = UIColor.secondaryLabel
+    static let surfaceVariant = UIColor.tertiarySystemFill
+    static let subtleText = UIColor.tertiaryLabel
+    static let subtleBorder = UIColor.separator
+    static let outline = UIColor.separator
+    static let outlineVariant = UIColor.separator
 
     static let success = pair(light: 0x22C55E, dark: 0x4ADE80)
     static let warning = pair(light: 0xF59E0B, dark: 0xFBBF24)

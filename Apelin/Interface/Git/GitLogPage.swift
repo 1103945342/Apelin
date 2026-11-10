@@ -338,6 +338,7 @@ private final class GitLogSearchField: UIView {
         icon.tintColor = GitTheme.onSurfaceVariant
         icon.contentMode = .scaleAspectFit
         field.font = GitTheme.bodyMedium
+        field.adjustsFontForContentSizeCategory = true
         field.textColor = GitTheme.onSurface
         field.tintColor = GitTheme.primary
         field.placeholder = String(localized: "Search commit message or author…")
@@ -374,6 +375,7 @@ private final class GitLogHeaderCell: UITableViewCell {
         contentView.backgroundColor = .clear
         selectionStyle = .none
         label.font = GitTheme.font(13, .regular)
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = GitTheme.subtleText
         contentView.addSubview(label)
         label.snp.makeConstraints { make in
@@ -407,11 +409,13 @@ private final class GitLogCommitCell: UITableViewCell {
     }
     private let message = UILabel().then {
         $0.font = GitTheme.font(14, .semibold)
+        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = GitTheme.onSurface
         $0.numberOfLines = 2
     }
     private let hashLabel = UILabel().then {
         $0.font = GitTheme.mono(11)
+        $0.adjustsFontForContentSizeCategory = true
         $0.textAlignment = .center
         $0.clipsToBounds = true
         $0.layer.cornerRadius = 8
@@ -422,11 +426,13 @@ private final class GitLogCommitCell: UITableViewCell {
     }
     private let author = UILabel().then {
         $0.font = GitTheme.labelSmall
+        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = GitTheme.onSurfaceVariant
         $0.numberOfLines = 1
     }
     private let date = UILabel().then {
         $0.font = GitTheme.labelSmall
+        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = GitTheme.onSurfaceVariant
         $0.numberOfLines = 1
     }
@@ -592,6 +598,7 @@ private final class GitRefPill: UIStackView {
         let label = UILabel().then {
             $0.text = ref.name
             $0.font = GitTheme.labelSmall
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = foreground
             $0.numberOfLines = 1
             $0.lineBreakMode = .byTruncatingMiddle
@@ -618,6 +625,7 @@ private final class GitLogFooterCell: UITableViewCell {
         contentView.backgroundColor = .clear
         selectionStyle = .none
         label.font = GitTheme.labelSmall
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = GitTheme.onSurfaceVariant
         label.textAlignment = .center
         contentView.addSubview(label)
@@ -653,32 +661,31 @@ private final class GitLogFooterCell: UITableViewCell {
 }
 
 private final class GitLogEmptyCell: UITableViewCell {
-    private let label = UILabel()
+    private var empty: EmptyStateView?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         backgroundColor = .clear
         contentView.backgroundColor = .clear
         selectionStyle = .none
-        label.font = GitTheme.bodyMedium
-        label.textColor = GitTheme.onSurfaceVariant
-        label.textAlignment = .center
-        contentView.addSubview(label)
-        label.snp.makeConstraints { make in
-            make.centerX.centerY.equalToSuperview()
-            make.leading.trailing.equalToSuperview().inset(16)
-            make.top.greaterThanOrEqualToSuperview().offset(80)
-            make.bottom.lessThanOrEqualToSuperview().offset(-32)
-        }
-        isAccessibilityElement = true
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
+    /// The list's own empty state, so a history with nothing in it looks like
+    /// every other list in the app: a symbol above a sentence.
     func configure(text: String) {
-        label.text = text
-        accessibilityLabel = text
+        empty?.removeFromSuperview()
+        let view = EmptyStateView(symbolName: "record.circle", text: text)
+        contentView.addSubview(view)
+        view.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(80)
+            make.leading.trailing.equalToSuperview().inset(16)
+            make.height.equalTo(160)
+            make.bottom.equalToSuperview().offset(-32)
+        }
+        empty = view
     }
 }
 
@@ -699,6 +706,7 @@ private final class GitCommitDetailContent: UIView {
         let message = UILabel().then {
             $0.text = commit.summary
             $0.font = GitTheme.titleMedium
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurface
             $0.numberOfLines = 0
         }
@@ -709,17 +717,20 @@ private final class GitCommitDetailContent: UIView {
         let bodyLabel = UILabel().then {
             $0.text = rest.isEmpty ? nil : rest
             $0.font = GitTheme.bodySmall
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurfaceVariant
             $0.numberOfLines = 0
         }
         let author = UILabel().then {
             $0.text = "\(commit.authorName) · \(Self.dateText(commit.authoredAt))"
             $0.font = GitTheme.labelMedium
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurfaceVariant
         }
         let hash = UILabel().then {
             $0.text = commit.id
             $0.font = GitTheme.mono(11)
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurfaceVariant
             $0.numberOfLines = 1
             $0.lineBreakMode = .byTruncatingMiddle
@@ -777,6 +788,7 @@ private final class GitCommitDetailContent: UIView {
             let merge = UILabel().then {
                 $0.text = String(localized: "Merge commit")
                 $0.font = GitTheme.labelSmall
+                $0.adjustsFontForContentSizeCategory = true
                 $0.textColor = GitTheme.tertiary
             }
             stack.addArrangedSubview(merge)
@@ -785,6 +797,7 @@ private final class GitCommitDetailContent: UIView {
             let empty = UILabel().then {
                 $0.text = String(localized: "No files changed in this commit")
                 $0.font = GitTheme.labelSmall
+                $0.adjustsFontForContentSizeCategory = true
                 $0.textColor = GitTheme.onSurfaceVariant
             }
             stack.addArrangedSubview(empty)
@@ -792,6 +805,7 @@ private final class GitCommitDetailContent: UIView {
             let summary = UILabel().then {
                 $0.text = String(localized: "\(detail.files.count) files changed")
                 $0.font = GitTheme.labelSmall
+                $0.adjustsFontForContentSizeCategory = true
                 $0.textColor = GitTheme.onSurfaceVariant
             }
             stack.addArrangedSubview(summary)
@@ -823,6 +837,7 @@ private final class GitCommitDetailContent: UIView {
         let name = UILabel().then {
             $0.text = (file.path as NSString).lastPathComponent
             $0.font = GitTheme.mono(12)
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurface
             $0.numberOfLines = 1
             $0.lineBreakMode = .byTruncatingMiddle
@@ -831,6 +846,7 @@ private final class GitCommitDetailContent: UIView {
             let dir = (file.path as NSString).deletingLastPathComponent
             $0.text = dir.isEmpty ? nil : dir
             $0.font = GitTheme.mono(11)
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurfaceVariant
         }
         let text = UIStackView(arrangedSubviews: [name, directory]).then {
@@ -971,6 +987,7 @@ private final class GitResetChoiceRow: UIControl {
         circle.tintColor = GitTheme.primary
         label.text = title
         label.font = GitTheme.bodySmall
+        label.adjustsFontForContentSizeCategory = true
         label.textColor = GitTheme.onSurface
         label.numberOfLines = 2
         addSubview(circle)

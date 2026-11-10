@@ -33,6 +33,7 @@ final class GitDiffPage: UIViewController {
     private let spinner = UIActivityIndicatorView(style: .medium)
     private let message = UILabel()
     private let messageIcon = UIImageView()
+    private let retryButton = UIButton(type: .system)
 
     private var rows: [LineDiff.Row] = []
     private var gutterWidth: CGFloat = 40
@@ -91,11 +92,13 @@ final class GitDiffPage: UIViewController {
 
         titleLabel.text = (path as NSString).lastPathComponent
         titleLabel.font = GitTheme.titleSmall
+        titleLabel.adjustsFontForContentSizeCategory = true
         titleLabel.textColor = GitTheme.onSurface
         titleLabel.numberOfLines = 1
         titleLabel.lineBreakMode = .byTruncatingMiddle
         pathLabel.text = path
         pathLabel.font = GitTheme.mono(11)
+        pathLabel.adjustsFontForContentSizeCategory = true
         pathLabel.textColor = GitTheme.onSurfaceVariant
         pathLabel.numberOfLines = 1
         pathLabel.lineBreakMode = .byTruncatingMiddle
@@ -138,8 +141,10 @@ final class GitDiffPage: UIViewController {
             make.height.equalTo(36)
         }
         addedLabel.font = GitTheme.mono(12, .semibold)
+        addedLabel.adjustsFontForContentSizeCategory = true
         addedLabel.textColor = GitTheme.diffAdd
         removedLabel.font = GitTheme.mono(12, .semibold)
+        removedLabel.adjustsFontForContentSizeCategory = true
         removedLabel.textColor = GitTheme.diffRemove
         let stats = UIStackView(arrangedSubviews: [addedLabel, removedLabel]).then {
             $0.axis = .horizontal
@@ -154,6 +159,11 @@ final class GitDiffPage: UIViewController {
         hScroll.showsHorizontalScrollIndicator = true
         hScroll.alwaysBounceVertical = false
         hScroll.contentInsetAdjustmentBehavior = .never
+        // A diff is source code: its gutters, marker and text run left to
+        // right whatever the page's direction, so the two sides of a changed
+        // line stay on the sides their `+` and `-` name.
+        hScroll.semanticContentAttribute = .forceLeftToRight
+        table.semanticContentAttribute = .forceLeftToRight
         view.addSubview(hScroll)
         hScroll.snp.makeConstraints { make in
             make.top.equalTo(statsBar.snp.bottom)
@@ -180,6 +190,7 @@ final class GitDiffPage: UIViewController {
             make.center.equalTo(view.safeAreaLayoutGuide)
         }
         message.font = GitTheme.bodyMedium
+        message.adjustsFontForContentSizeCategory = true
         message.textColor = GitTheme.onSurfaceVariant
         message.textAlignment = .center
         message.numberOfLines = 0
@@ -187,7 +198,17 @@ final class GitDiffPage: UIViewController {
         messageIcon.tintColor = GitTheme.onSurfaceVariant
         messageIcon.contentMode = .scaleAspectFit
         messageIcon.isHidden = true
-        let centered = UIStackView(arrangedSubviews: [messageIcon, message]).then {
+        // A file that did not load is worth another try: the repository may
+        // have been busy or the read may have lost a race with a checkout.
+        retryButton.setTitle(String(localized: "Try Again"), for: .normal)
+        retryButton.titleLabel?.font = GitTheme.bodyMedium
+        retryButton.titleLabel?.adjustsFontForContentSizeCategory = true
+        retryButton.setTitleColor(GitTheme.primary, for: .normal)
+        retryButton.isHidden = true
+        retryButton.addAction(UIAction { [weak self] _ in
+            self?.load()
+        }, for: .touchUpInside)
+        let centered = UIStackView(arrangedSubviews: [messageIcon, message, retryButton]).then {
             $0.axis = .vertical
             $0.spacing = GitTheme.Space.sm
             $0.alignment = .center
@@ -209,6 +230,8 @@ final class GitDiffPage: UIViewController {
     private func load() {
         spinner.startAnimating()
         statsBar.isHidden = true
+        emptyStack?.isHidden = true
+        retryButton.isHidden = true
         Task { @MainActor in
             do {
                 let versions: GitVersions
@@ -246,7 +269,7 @@ final class GitDiffPage: UIViewController {
                 layoutDiff(diff)
             } catch {
                 spinner.stopAnimating()
-                show(message: error.readableMessage, symbol: GitIcon.Name.error)
+                show(message: error.readableMessage, symbol: GitIcon.Name.error, retry: true)
             }
         }
     }
@@ -255,6 +278,7 @@ final class GitDiffPage: UIViewController {
         let note = UILabel().then {
             $0.text = text
             $0.font = GitTheme.labelSmall
+            $0.adjustsFontForContentSizeCategory = true
             $0.textColor = GitTheme.onSurfaceVariant
             $0.textAlignment = .center
             $0.numberOfLines = 0
@@ -268,6 +292,8 @@ final class GitDiffPage: UIViewController {
     }
 
     private func layoutDiff(_ rows: [LineDiff.Row]) {
+        hScroll.isHidden = false
+        emptyStack?.isHidden = true
         let longest = rows.map { Self.width(of: $0.text) }.max() ?? 0
         let digits = max(3, String(rows.map { max($0.oldNumber ?? 0, $0.newNumber ?? 0) }.max() ?? 0).count)
         gutterWidth = CGFloat(digits) * 7 + 12
@@ -318,7 +344,7 @@ final class GitDiffPage: UIViewController {
         return (text as NSString).size(withAttributes: [.font: font]).width
     }
 
-    private func show(message text: String, symbol: String?) {
+    private func show(message text: String, symbol: String?, retry: Bool = false) {
         hScroll.isHidden = true
         statsBar.isHidden = true
         message.text = text
@@ -327,6 +353,7 @@ final class GitDiffPage: UIViewController {
         if let symbol {
             messageIcon.image = GitIcon.image(symbol, pointSize: 32)
         }
+        retryButton.isHidden = !retry
         emptyStack?.isHidden = false
     }
 }
@@ -357,6 +384,7 @@ private final class GitDiffLineCell: UITableViewCell {
         contentView.backgroundColor = .clear
         for label in [oldNumber, newNumber] {
             label.font = GitTheme.mono(10)
+            label.adjustsFontForContentSizeCategory = true
             label.textColor = GitTheme.onSurfaceVariant.withAlphaComponent(0.6)
             label.textAlignment = .right
             label.backgroundColor = GitTheme.surfaceVariant.withAlphaComponent(0.5)
@@ -364,7 +392,9 @@ private final class GitDiffLineCell: UITableViewCell {
         }
         divider.backgroundColor = GitTheme.outlineVariant.withAlphaComponent(0.5)
         prefix.font = GitTheme.mono(12, .bold)
+        prefix.adjustsFontForContentSizeCategory = true
         text.font = GitTheme.mono(12)
+        text.adjustsFontForContentSizeCategory = true
         text.numberOfLines = 1
         contentView.addSubview(oldNumber)
         contentView.addSubview(divider)
