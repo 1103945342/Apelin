@@ -293,7 +293,7 @@ final class GitBranchesPage: UIViewController, GitPage {
         Task { @MainActor in
             do {
                 try await session.checkout(name: ref, remote: remote)
-                host?.gitShowToast(String(localized: "Switched to \(ref)"))
+                host?.gitShowSuccess(String(localized: "Switched to \(ref)"))
             } catch {
                 host?.gitShowToast(String(localized: "Switch failed: \(error.readableMessage)"))
             }

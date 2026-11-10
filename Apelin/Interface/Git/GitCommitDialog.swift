@@ -64,8 +64,8 @@ final class GitCommitDialogController: UIViewController {
         generateConfiguration.background.backgroundColor = GitTheme.primaryContainer.withAlphaComponent(0.65)
         generateConfiguration.background.cornerRadius = 12
         generateConfiguration.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 8, bottom: 5, trailing: 10)
+        generateConfiguration.titleTextAttributesTransformer = .git(GitTheme.labelSmall)
         generateButton.configuration = generateConfiguration
-        generateButton.titleLabel?.font = GitTheme.labelSmall
         generateButton.addAction(UIAction { [weak self] _ in self?.generate() }, for: .touchUpInside)
         generateButton.accessibilityLabel = String(localized: "AI Generate")
 
@@ -87,8 +87,8 @@ final class GitCommitDialogController: UIViewController {
             configuration.background.strokeWidth = 1
             configuration.background.cornerRadius = 10
             configuration.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10)
+            configuration.titleTextAttributesTransformer = .git(GitTheme.mono(11))
             let chip = UIButton(configuration: configuration)
-            chip.titleLabel?.font = GitTheme.mono(11)
             chip.addAction(UIAction { [weak self] _ in self?.apply(type: type) }, for: .touchUpInside)
             chipRow.addArrangedSubview(chip)
         }

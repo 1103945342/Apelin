@@ -2,6 +2,19 @@ import SnapKit
 import Then
 import UIKit
 
+extension UIConfigurationTextAttributesTransformer {
+    /// The font a configuration's title keeps. A configuration lays its own
+    /// title out, so a font set on `titleLabel` is gone the next time it
+    /// does; this is the one place the font is stated instead.
+    static func git(_ font: UIFont) -> Self {
+        UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.font = font
+            return outgoing
+        }
+    }
+}
+
 // The reference app's presentation pieces: a centred dialog, a bottom sheet,
 // the outlined field and its switch, and the status badge. They are written
 // once here so the status, branches and commits pages show the same thing.
@@ -67,8 +80,8 @@ enum GitGlassButton {
         configuration.baseForegroundColor = destructive
             ? GitTheme.error
             : prominent ? GitTheme.onPrimary : GitTheme.onSurface
+        configuration.titleTextAttributesTransformer = .git(GitTheme.labelLarge)
         let button = UIButton(configuration: configuration)
-        button.titleLabel?.font = GitTheme.labelLarge
         button.titleLabel?.adjustsFontSizeToFitWidth = true
         button.titleLabel?.minimumScaleFactor = 0.8
         return button
@@ -461,9 +474,9 @@ final class GitCopyButton: UIButton {
         configuration.title = title
         configuration.baseForegroundColor = GitTheme.primary
         configuration.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8)
+        configuration.titleTextAttributesTransformer = .git(GitTheme.labelMedium)
         super.init(frame: .zero)
         self.configuration = configuration
-        titleLabel?.font = GitTheme.labelMedium
         addAction(UIAction { [weak self] _ in self?.tapped() }, for: .touchUpInside)
     }
 
@@ -506,8 +519,8 @@ enum GitButtons {
         configuration.background.cornerRadius = 12
         configuration.cornerStyle = .fixed
         configuration.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8)
+        configuration.titleTextAttributesTransformer = .git(GitTheme.labelLarge)
         let button = UIButton(configuration: configuration)
-        button.titleLabel?.font = GitTheme.labelLarge
         button.snp.makeConstraints { make in make.height.equalTo(46) }
         return button
     }
@@ -523,8 +536,8 @@ enum GitButtons {
         configuration.background.cornerRadius = 12
         configuration.cornerStyle = .fixed
         configuration.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
+        configuration.titleTextAttributesTransformer = .git(GitTheme.labelMedium)
         let button = UIButton(configuration: configuration)
-        button.titleLabel?.font = GitTheme.labelMedium
         button.titleLabel?.adjustsFontSizeToFitWidth = true
         button.titleLabel?.minimumScaleFactor = 0.8
         button.snp.makeConstraints { make in make.height.equalTo(40) }
@@ -542,8 +555,8 @@ enum GitButtons {
         configuration.background.cornerRadius = 12
         configuration.cornerStyle = .fixed
         configuration.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10)
+        configuration.titleTextAttributesTransformer = .git(GitTheme.labelLarge)
         let button = UIButton(configuration: configuration)
-        button.titleLabel?.font = GitTheme.labelLarge
         button.snp.makeConstraints { make in make.height.equalTo(height) }
         return button
     }
@@ -559,8 +572,8 @@ enum GitButtons {
         configuration.background.strokeColor = GitTheme.outline
         configuration.background.strokeWidth = 1
         configuration.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12)
+        configuration.titleTextAttributesTransformer = .git(GitTheme.labelLarge)
         let button = UIButton(configuration: configuration)
-        button.titleLabel?.font = GitTheme.labelLarge
         return button
     }
 
@@ -578,8 +591,8 @@ enum GitButtons {
         configuration.title = title
         configuration.baseForegroundColor = GitTheme.primary
         configuration.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8)
+        configuration.titleTextAttributesTransformer = .git(GitTheme.labelMedium)
         let button = UIButton(configuration: configuration)
-        button.titleLabel?.font = GitTheme.labelMedium
         return button
     }
 }

@@ -357,13 +357,13 @@ final class GitStatusPage: UIViewController, GitPage {
         Task { @MainActor in
             await session.ignore(pattern)
             busy = false
-            host?.gitShowToast(String(localized: "Added to .gitignore"))
+            host?.gitShowSuccess(String(localized: "Added to .gitignore"))
         }
     }
 
     private func copyPath(_ path: String) {
         UIPasteboard.general.string = path
-        host?.gitShowToast(String(localized: "Path copied"))
+        host?.gitShowSuccess(String(localized: "Path copied"))
     }
 
     private func openDiff(path: String, staged: Bool) {

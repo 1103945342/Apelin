@@ -1,12 +1,15 @@
 import ApelinCore
 import SnapKit
+import SPIndicator
 import Then
 import UIKit
 
 /// What a Git page needs from the screen it sits in.
 @MainActor
 protocol GitPageHost: AnyObject {
-    func gitShowToast(_ text: String)
+    /// A line about what just happened, drawn as a failure unless it says
+    /// otherwise.
+    func gitShowToast(_ text: String, succeeded: Bool)
     func gitSetBusy(_ busy: Bool)
     func gitReload()
     func gitOpenCredentials()
@@ -120,8 +123,6 @@ final class GitController: UIViewController {
     private var stateView: UIView?
     private var notARepoButtons: [UIView] = []
     private var notARepoBusy: UIStackView?
-    private var toast: UIView?
-    private var toastWorkItem: DispatchWorkItem?
 
     init(projectName: String) {
         session = GitSession(projectName: projectName)
@@ -615,8 +616,17 @@ final class GitController: UIViewController {
 }
 
 extension GitController: GitPageHost {
-    func gitShowToast(_ text: String) {
-        showToast(text)
+    func gitShowToast(_ text: String, succeeded: Bool) {
+        // The one floating line the whole app confirms with; git's own words
+        // are dynamic text, so nothing here is looked up a second time.
+        SPIndicator.present(
+            title: text,
+            preset: succeeded ? .done : .error,
+            haptic: succeeded ? .success : .error,
+        )
+        // The line leaves on its own; a reader who cannot see it still hears
+        // what happened.
+        UIAccessibility.post(notification: .announcement, argument: text)
     }
 
     func gitSetBusy(_ busy: Bool) {
@@ -683,43 +693,15 @@ extension GitController: UIScrollViewDelegate {
 
 // MARK: - Toast
 
-extension GitController {
-    func showToast(_ text: String) {
-        toast?.removeFromSuperview()
-        toastWorkItem?.cancel()
-        let label = UILabel().then {
-            $0.text = text
-            $0.font = GitTheme.bodySmall
-            $0.textColor = .white
-            $0.numberOfLines = 0
-            $0.textAlignment = .center
-        }
-        let container = UIView().then {
-            $0.backgroundColor = UIColor(rgb: 0x2C2C2E)
-            $0.layer.cornerRadius = 4
-            $0.layer.cornerCurve = .continuous
-            $0.alpha = 0
-        }
-        container.addSubview(label)
-        label.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 14, left: 16, bottom: 14, right: 16))
-        }
-        view.addSubview(container)
-        container.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.leading.greaterThanOrEqualToSuperview().offset(16)
-            make.trailing.lessThanOrEqualToSuperview().offset(-16)
-            make.bottom.equalTo(tabs.snp.top).offset(-12)
-        }
-        toast = container
-        UIView.animate(withDuration: 0.2) { container.alpha = 1 }
-        let work = DispatchWorkItem { [weak container] in
-            UIView.animate(withDuration: 0.2) { container?.alpha = 0 } completion: { _ in
-                container?.removeFromSuperview()
-            }
-        }
-        toastWorkItem = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.6, execute: work)
-        UIAccessibility.post(notification: .announcement, argument: text)
+@MainActor
+extension GitPageHost {
+    /// A failure: git's own words, or what Apelin could not do.
+    func gitShowToast(_ text: String) {
+        gitShowToast(text, succeeded: false)
+    }
+
+    /// What went through.
+    func gitShowSuccess(_ text: String) {
+        gitShowToast(text, succeeded: true)
     }
 }
