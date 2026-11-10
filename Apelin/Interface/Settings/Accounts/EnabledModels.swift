@@ -37,6 +37,23 @@ enum EnabledModels {
         Set(UserDefaults.standard.stringArray(forKey: "hiddenModels.\(provider.rawValue)") ?? [])
     }
 
+    /// The model ids this device keeps for each provider, keyed by the
+    /// provider's store id: handed to the account listing so the catalogs are
+    /// read over the models the app shows — a custom endpoint's own — and not
+    /// only the ones the agent can list for itself.
+    static func knownModelIDs() -> [String: [String]] {
+        var known: [String: [String]] = [:]
+        for provider in AgentProvider.allCases {
+            let models = ids(for: provider)
+                .union(customIDs(for: provider))
+                .subtracting(hiddenIDs(for: provider))
+            if !models.isEmpty {
+                known[provider.storeID] = models.sorted()
+            }
+        }
+        return known
+    }
+
     static func accounts(from accounts: [AgentAccount]) -> [AgentAccount] {
         accounts.compactMap { account in
             guard account.signedIn else { return nil }

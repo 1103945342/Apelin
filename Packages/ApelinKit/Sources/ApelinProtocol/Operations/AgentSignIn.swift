@@ -130,7 +130,15 @@ public struct AgentAccount: Codable, Sendable, Equatable {
 public struct AgentAccountListRequest: OperationRequest {
     public typealias Response = AgentAccountListResponse
     public static let operation = AppOperation.agentAccountList
-    public init() {}
+    /// Model ids this device keeps for a provider and the agent's own list does
+    /// not: a custom endpoint's model, saved in the app's settings and never
+    /// in the credentials. Keyed by the provider's store id
+    /// (`openAICompatible`). The catalogs are read over these too, so a relay's
+    /// model is named and measured like one of the provider's own.
+    public var extraModels: [String: [String]]?
+    public init(extraModels: [String: [String]]? = nil) {
+        self.extraModels = extraModels
+    }
 }
 
 public struct AgentAccountListResponse: Codable, Sendable, Equatable {
@@ -260,8 +268,8 @@ public struct AgentSignOutRequest: OperationRequest {
 }
 
 public extension ApelinService {
-    func agentAccountList() async throws -> AgentAccountListResponse {
-        try await send(AgentAccountListRequest())
+    func agentAccountList(extraModels: [String: [String]]? = nil) async throws -> AgentAccountListResponse {
+        try await send(AgentAccountListRequest(extraModels: extraModels))
     }
 
     func agentAPIConfiguration(provider: AgentProvider) async throws -> AgentAPIConfigurationResponse {

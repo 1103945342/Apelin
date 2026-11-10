@@ -828,7 +828,7 @@ final class ChatController: UIViewController {
         modelLoader = Task { [weak self] in
             guard let self else { return }
             do {
-                let accounts = try await EnabledModels.accounts(from: ApelinService.app.agentAccountList().accounts)
+                let accounts = try await EnabledModels.accounts(from: ApelinService.app.agentAccountsWithKnownModels())
                 guard !Task.isCancelled, self.chat?.id == chat.id else { return }
                 // Nothing enabled is nothing to pick: the accounts page is.
                 guard !accounts.isEmpty else {
@@ -939,7 +939,7 @@ extension ChatController {
         selectionCheck?.cancel()
         guard let id = chat?.id else { return }
         selectionCheck = Task {
-            guard let listed = try? await ApelinService.app.agentAccountList().accounts,
+            guard let listed = try? await ApelinService.app.agentAccountsWithKnownModels(),
                   !Task.isCancelled, self.chat?.id == id
             else { return }
             let accounts = EnabledModels.accounts(from: listed)

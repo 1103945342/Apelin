@@ -71,7 +71,7 @@ final class DefaultModelsController: TableController {
         dataSource.beginLoad()
         loader = Task { [weak self] in
             do {
-                var accounts = try await EnabledModels.accounts(from: ApelinService.app.agentAccountList().accounts)
+                var accounts = try await EnabledModels.accounts(from: ApelinService.app.agentAccountsWithKnownModels())
                 for index in accounts.indices where accounts[index].models?.isEmpty != false {
                     do {
                         accounts[index].models = try await ApelinService.app

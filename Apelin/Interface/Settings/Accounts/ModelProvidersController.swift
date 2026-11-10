@@ -111,9 +111,9 @@ final class ModelProvidersController: TableController, UISearchResultsUpdating {
         dataSource.beginLoad()
         loader = Task { [weak self] in
             do {
-                let list = try await ApelinService.app.agentAccountList()
+                let accounts = try await ApelinService.app.agentAccountsWithKnownModels()
                 guard !Task.isCancelled, let self else { return }
-                accounts = list.accounts
+                self.accounts = accounts
                 failure = nil
             } catch {
                 guard !Task.isCancelled, let self else { return }

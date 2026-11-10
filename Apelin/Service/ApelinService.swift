@@ -7,6 +7,15 @@ import Foundation
 /// methods are in Packages/ApelinKit/Sources/ApelinProtocol/Operations; this
 /// only says how the app reaches apelind.
 extension ApelinService {
+    /// The account list read against the models this device keeps, so a custom
+    /// endpoint's model is named and measured like one of the provider's own.
+    /// The list the chat and the model pages are built from.
+    func agentAccountsWithKnownModels() async throws -> [AgentAccount] {
+        try await agentAccountList(extraModels: EnabledModels.knownModelIDs()).accounts
+    }
+}
+
+extension ApelinService {
     /// Through apelind over XPC.
     static let app = ApelinService(transport: DaemonClient.shared)
 }

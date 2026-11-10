@@ -109,7 +109,7 @@ final class WelcomeProvidersPage: WelcomeListPage {
         Task { [weak self] in
             guard let self else { return }
             do {
-                let accounts = try await ApelinService.app.agentAccountList().accounts
+                let accounts = try await ApelinService.app.agentAccountsWithKnownModels()
                 guard let account = accounts.first(where: { $0.provider == provider }) else {
                     throw ApelinError(
                         .unimplemented,

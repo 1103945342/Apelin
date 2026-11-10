@@ -184,8 +184,8 @@ public enum AgentWorker {
                     .importAll(into: KeychainCredentialSource(accessGroup: keychainAccessGroup))
             }
         case .agentAccountList:
-            await WorkerMain.serve(AgentAccountListRequest.self, request) { _ in
-                await accounts.list()
+            await WorkerMain.serve(AgentAccountListRequest.self, request) { list in
+                await accounts.list(extraModels: list.extraModels ?? [:])
             }
         case .agentSkillList:
             await WorkerMain.serve(AgentSkillListRequest.self, request) { _ in

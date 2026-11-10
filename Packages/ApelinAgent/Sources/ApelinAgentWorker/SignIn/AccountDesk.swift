@@ -73,7 +73,7 @@ public actor AccountDesk {
 
     // MARK: - Accounts
 
-    public func list() async -> AgentAccountListResponse {
+    public func list(extraModels: [String: [String]] = [:]) async -> AgentAccountListResponse {
         let stored = await Set(store.providerIds())
         var accounts: [AgentAccount] = []
         for provider in AgentProvider.signInOrder {
@@ -89,7 +89,13 @@ public actor AccountDesk {
             if account.signedIn, let credentials = try? await store.credentials(for: provider.storeID) {
                 account.account = Self.accountLabel(provider, credentials)
                 account.expiresAt = Self.lapses(credentials)
-                let models = ProviderModels.list(provider, credentials: credentials)
+                var models = ProviderModels.list(provider, credentials: credentials)
+                // A custom endpoint's models live in the app's settings, never
+                // in the credentials: without them the catalogs would have
+                // nothing to name for the models the app shows.
+                for id in extraModels[provider.storeID] ?? [] where !models.contains(id) {
+                    models.append(id)
+                }
                 account.models = models
                 account.reasoningEfforts = ProviderModels.reasoningEfforts(
                     provider,
