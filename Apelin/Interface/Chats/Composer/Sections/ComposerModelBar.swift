@@ -103,20 +103,24 @@ final class ComposerModelBar: ComposerSectionView {
 
     // MARK: - State
 
-    /// The mark of the provider that will answer: its own artwork, and a plain
-    /// symbol for one the bundle has none for.
-    func setProvider(_ provider: AgentProvider?) {
+    /// The mark of the model that will answer: whose model the name says it is,
+    /// and the provider's own where the name says nothing — its artwork, or a
+    /// plain symbol for a provider the bundle has none for.
+    func setModel(_ provider: AgentProvider?, model: String?) {
         updateControls { [self] in
-            // A provider's own mark keeps the colours it was drawn with: as a
-            // template it would be one flat silhouette, and a black one in
-            // light mode. Only the fallback symbol follows the label's colour.
-            if let icon = provider?.icon {
-                modelButton.iconView.image = icon.withRenderingMode(.alwaysOriginal)
+            // A mark keeps the colours it was drawn with: as a template it
+            // would be one flat silhouette, and a black one in light mode. Only
+            // the fallback symbol follows the label's colour.
+            let mark = model.flatMap(ModelBrand.brand(for:))?.icon ?? provider?.icon
+            if let mark {
+                modelButton.iconView.image = mark.withRenderingMode(.alwaysOriginal)
             } else {
                 modelButton.iconView.image = UIImage(systemName: "cpu")?.withRenderingMode(.alwaysTemplate)
             }
             modelButton.accessibilityLabel = String(localized: "Select Model")
-            modelButton.accessibilityValue = provider?.displayName
+            modelButton.accessibilityValue = [provider?.displayName, model]
+                .compactMap { $0 }
+                .joined(separator: " · ")
         }
     }
 

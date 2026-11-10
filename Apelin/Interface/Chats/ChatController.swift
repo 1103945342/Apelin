@@ -781,7 +781,7 @@ final class ChatController: UIViewController {
 
     @objc private func updateModelSelection() {
         let selection = chat.flatMap { ComposerModelSelection.selection(for: $0.id) }
-        composer.modelBar.setProvider(selection?.provider)
+        composer.modelBar.setModel(selection?.provider, model: selection?.model)
         composer.modelBar.setEfforts(selection?.supportedEfforts ?? [], selected: selection?.effort)
         composer.modelBar.setTiers(selection?.supportedTiers ?? [], selected: selection?.tier)
     }
