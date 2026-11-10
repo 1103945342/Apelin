@@ -207,10 +207,10 @@ public enum AgentWorker {
                     ) { stage in
                         context.emit(taskID, AgentModelTestProgress.eventKind, stage.payload)
                     }
-                    var payload: [String: JSONValue] = [
+                    var payload: [String: ApelinCore.JSONValue] = [
                         "state": .string(response.success ? TaskState.succeeded.rawValue : TaskState.failed.rawValue),
                     ]
-                    if let report = try? JSONValue(encoding: response) {
+                    if let report = try? ApelinCore.JSONValue(encoding: response) {
                         payload[AgentModelTestResponse.stateMember] = report
                     }
                     if let failure = response.failure {
