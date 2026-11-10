@@ -51,6 +51,12 @@ public struct ApelinDataRoot: Sendable, Hashable {
         url.appendingPathComponent("Temporary")
     }
 
+    /// `ModelData/models.json`: the model data the app updates and the agent
+    /// reads.
+    public var modelDataFile: URL {
+        ModelDataSnapshot.url(in: url)
+    }
+
     public func project(named name: ProjectName) -> URL {
         projects.appendingPathComponent(name.rawValue, isDirectory: true)
     }

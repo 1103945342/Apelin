@@ -255,17 +255,83 @@ public enum AgentServiceTier: String, Codable, Sendable, CaseIterable {
 }
 
 /// What the app's model settings say a model's own record does not, or says
-/// better: the two figures a conversation is read against.
+/// better: the two figures a conversation is read against, and what the model
+/// itself takes.
 public struct AgentModelParameters: Codable, Sendable, Equatable, Hashable {
     /// Tokens the conversation may take before the agent compacts it: the
     /// window the composer's ring is drawn against.
     public var contextWindow: Int?
     /// The most a reply may be.
     public var maxTokens: Int?
+    /// Whether the model takes images. Absent leaves what the catalog says;
+    /// `false` is a model a relay serves as text only, `true` one whose own
+    /// record does not say so.
+    public var acceptsImages: Bool?
+    /// Whether the model thinks before it answers. Absent leaves what the
+    /// catalog says.
+    public var reasoning: Bool?
+    /// Whether the catalog's figures apply at all. Absent is on; `false` is an
+    /// endpoint that refuses a figure it does not honour, and leaves the model
+    /// with nothing its entry says.
+    public var followsCatalog: Bool?
 
-    public init(contextWindow: Int? = nil, maxTokens: Int? = nil) {
+    public init(
+        contextWindow: Int? = nil,
+        maxTokens: Int? = nil,
+        acceptsImages: Bool? = nil,
+        reasoning: Bool? = nil,
+        followsCatalog: Bool? = nil,
+    ) {
         self.contextWindow = contextWindow
         self.maxTokens = maxTokens
+        self.acceptsImages = acceptsImages
+        self.reasoning = reasoning
+        self.followsCatalog = followsCatalog
+    }
+
+    /// Whether anything here overrides the model's own record.
+    public var hasAnythingToSay: Bool {
+        contextWindow != nil || maxTokens != nil || acceptsImages != nil
+            || reasoning != nil || followsCatalog != nil
+    }
+}
+
+/// What a model was read as: the catalog entry a conversation found for it,
+/// and the figures that entry gave, so the settings page can show them beside
+/// the app's own.
+public struct AgentModelCapabilities: Codable, Sendable, Equatable, Hashable {
+    /// The window the entry names.
+    public var contextWindow: Int?
+    /// The reply ceiling the entry names.
+    public var maxTokens: Int?
+    /// Whether it takes images.
+    public var acceptsImages: Bool?
+    /// Whether it thinks before it answers.
+    public var reasoning: Bool?
+    /// The entry's own name, as the catalog spells it: `deepseek-v4.1-flash`.
+    public var catalogName: String?
+    /// The catalog it came from: a provider key of the one kwwk bundles
+    /// (`deepseek`), or `models.dev`'s (`anthropic`).
+    public var catalogProvider: String?
+    /// `models.dev` or `catalog`: which copy the entry was read from.
+    public var source: String?
+
+    public init(
+        contextWindow: Int? = nil,
+        maxTokens: Int? = nil,
+        acceptsImages: Bool? = nil,
+        reasoning: Bool? = nil,
+        catalogName: String? = nil,
+        catalogProvider: String? = nil,
+        source: String? = nil,
+    ) {
+        self.contextWindow = contextWindow
+        self.maxTokens = maxTokens
+        self.acceptsImages = acceptsImages
+        self.reasoning = reasoning
+        self.catalogName = catalogName
+        self.catalogProvider = catalogProvider
+        self.source = source
     }
 }
 

@@ -35,14 +35,48 @@ enum ProviderModels {
         return models
     }
 
+    /// The levels each model offers: the kwwk catalog's own where it lists the
+    /// model under this account's key, and otherwise what the model's name
+    /// finds in the catalogs Apelin reads — a relay's `cn:deepseek-v4.1-flash`
+    /// reasons, and at the levels DeepSeek's entry gives it.
     static func reasoningEfforts(
         _ provider: AgentProvider,
         credentials: OAuthCredentials,
+        models: [String] = [],
     ) -> [String: [AgentReasoningEffort]] {
-        guard let catalog = catalogKey(provider, credentials: credentials) else { return [:] }
-        return Dictionary(uniqueKeysWithValues: ModelsCatalog.models(for: catalog).filter(\.reasoning).map { model in
-            (model.id, supportedThinkingLevels(model).compactMap { AgentReasoningEffort(rawValue: $0.rawValue) })
-        })
+        let catalog = catalogKey(provider, credentials: credentials)
+        var efforts: [String: [AgentReasoningEffort]] = [:]
+        if let catalog {
+            for model in ModelsCatalog.models(for: catalog) where model.reasoning {
+                efforts[model.id] = supportedThinkingLevels(model).compactMap { AgentReasoningEffort(rawValue: $0.rawValue) }
+            }
+        }
+        let index = ModelCatalogIndex()
+        for id in models where efforts[id] == nil {
+            guard let entry = index.entry(for: id, catalogKey: catalog) else { continue }
+            let levels = entry.reasoningEfforts
+            if !levels.isEmpty {
+                efforts[id] = levels
+            }
+        }
+        return efforts
+    }
+
+    /// What the catalogs say about each of the account's models, for the
+    /// settings page to name and to fill its overrides from.
+    static func capabilities(
+        _ provider: AgentProvider,
+        credentials: OAuthCredentials,
+        models: [String],
+    ) -> [String: AgentModelCapabilities] {
+        let catalog = catalogKey(provider, credentials: credentials)
+        let index = ModelCatalogIndex()
+        var found: [String: AgentModelCapabilities] = [:]
+        for id in models {
+            guard let entry = index.entry(for: id, catalogKey: catalog) else { continue }
+            found[id] = entry.capabilities
+        }
+        return found
     }
 
     /// The tiers Apelin offers that the catalog lists for each of the

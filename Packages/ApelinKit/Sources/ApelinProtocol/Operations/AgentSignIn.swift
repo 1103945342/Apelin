@@ -90,6 +90,10 @@ public struct AgentAccount: Codable, Sendable, Equatable {
     /// Processing tiers the provider catalog lists, keyed by model ID; a
     /// model it does not name is offered none.
     public var serviceTiers: [String: [AgentServiceTier]]?
+    /// What each model was read as, keyed by model ID: the catalog entry found
+    /// for a name the provider does not describe itself, so the settings page
+    /// can show a relay's models with the figures they really have.
+    public var capabilities: [String: AgentModelCapabilities]?
     public var isAPIKeyAccount: Bool {
         usesAPIKey ?? (method == .apiKey)
     }
@@ -105,6 +109,7 @@ public struct AgentAccount: Codable, Sendable, Equatable {
         usesAPIKey: Bool? = nil,
         reasoningEfforts: [String: [AgentReasoningEffort]]? = nil,
         serviceTiers: [String: [AgentServiceTier]]? = nil,
+        capabilities: [String: AgentModelCapabilities]? = nil,
     ) {
         self.provider = provider
         self.method = method
@@ -116,6 +121,7 @@ public struct AgentAccount: Codable, Sendable, Equatable {
         self.usesAPIKey = usesAPIKey
         self.reasoningEfforts = reasoningEfforts
         self.serviceTiers = serviceTiers
+        self.capabilities = capabilities
     }
 }
 

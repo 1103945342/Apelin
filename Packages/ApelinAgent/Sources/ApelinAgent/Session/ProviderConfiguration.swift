@@ -108,7 +108,9 @@ public struct ResolvedProvider: Sendable {
 
 public enum ProviderResolver {
     /// What the app's model settings override on the model's own record. A
-    /// figure that is not positive leaves the record's alone.
+    /// figure that is not positive leaves the record's alone; a switch that is
+    /// absent leaves what the catalogs read; `followsCatalog` is decided when
+    /// the provider is registered (`ModelResolver.resolving`), before this.
     public static func applying(_ parameters: AgentModelParameters, to model: Model) -> Model {
         var model = model
         if let window = parameters.contextWindow, window > 0 {
@@ -116,6 +118,12 @@ public enum ProviderResolver {
         }
         if let tokens = parameters.maxTokens, tokens > 0 {
             model.maxTokens = tokens
+        }
+        if let acceptsImages = parameters.acceptsImages {
+            model.input = acceptsImages ? [.text, .image] : [.text]
+        }
+        if let reasoning = parameters.reasoning {
+            model.reasoning = reasoning
         }
         return model
     }
@@ -125,6 +133,7 @@ public enum ProviderResolver {
     public static func resolve(
         _ configuration: ProviderConfiguration,
         credentials: any CredentialSource,
+        modelParameters: AgentModelParameters? = nil,
         diagnostic: @Sendable (String) -> Void = { _ in },
     ) async throws -> ResolvedProvider {
         let reading = Date()
@@ -147,6 +156,7 @@ public enum ProviderResolver {
             storeID: storeID,
             manager: manager,
             modelOverride: configuration.modelID,
+            parameters: modelParameters,
         ) else {
             throw ProviderResolutionError.missingCredentials(storeID)
         }

@@ -18,6 +18,7 @@ final class SettingsViewController: TableController {
         case preferences
         case modelProviders
         case defaultModels
+        case modelData
         case permissionMode
         case memories
         case skills
@@ -100,7 +101,7 @@ final class SettingsViewController: TableController {
     private func rows(in section: Section) -> [Row] {
         switch section {
         case .chat: [.preferences]
-        case .agent: [.modelProviders, .defaultModels, .permissionMode, .memories, .skills]
+        case .agent: [.modelProviders, .defaultModels, .modelData, .permissionMode, .memories, .skills]
         case .environment: [.toolchain, .sdks, .templates]
         case .git: [.git]
         case .about: [.version, .licenses, .logs]
@@ -155,6 +156,8 @@ final class SettingsViewController: TableController {
             content.text = String(localized: "Model Providers")
         case .defaultModels:
             content.text = String(localized: "Default Models")
+        case .modelData:
+            content.text = String(localized: "Model Data")
         case .permissionMode:
             content.text = String(localized: "Permission Mode")
         case .memories:
@@ -201,6 +204,7 @@ final class SettingsViewController: TableController {
         case .preferences: page = ChatPreferencesController()
         case .modelProviders: page = ModelProvidersController()
         case .defaultModels: page = DefaultModelsController()
+        case .modelData: page = ModelDataController()
         case .permissionMode: page = PermissionModeController()
         case .memories: page = MemoriesController()
         case .skills: page = SkillsController()

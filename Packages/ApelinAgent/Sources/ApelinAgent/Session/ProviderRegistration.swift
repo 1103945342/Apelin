@@ -1,3 +1,4 @@
+import ApelinProtocol
 import Foundation
 import KWWKAI
 
@@ -9,13 +10,18 @@ public enum ProviderRegistration {
         storeID: String,
         manager: OAuthManager,
         modelOverride: String? = nil,
+        parameters: AgentModelParameters? = nil,
     ) async throws -> ResolvedAuth? {
         guard let credentials = try await manager.credentials(for: storeID) else { return nil }
         if storeID == CredentialProviderID.deepSeek {
             let id = modelOverride ?? DeepSeekProvider.extra("defaultModel", in: credentials) ?? DeepSeekProvider.defaultModel
             let base = DeepSeekProvider.extra("baseUrl", in: credentials) ?? DeepSeekProvider.baseURL
             let fallback = Model(id: id, api: "openai-completions", provider: "deepseek", baseURL: base)
-            let model = DeepSeekProvider.applyingCatalog(to: fallback)
+            let model = ModelResolver.resolving(
+                DeepSeekProvider.applyingCatalog(to: fallback),
+                catalogKey: "deepseek",
+                parameters: parameters,
+            )
             await APIRegistry.shared.register(OpenAICompletionsProvider(), scope: model.provider)
             return ResolvedAuth(model: model, modelLabel: "\(model.name) from DeepSeek", authResolver: { _, _ in
                 ResolvedProviderAuth(token: credentials.access, scheme: .bearer)
@@ -24,18 +30,47 @@ public enum ProviderRegistration {
         guard let resolved = try await registerStored(storeId: storeID, manager: manager, modelOverride: modelOverride) else {
             return nil
         }
-        guard storeID == CredentialProviderID.openAICompatible else {
-            return resolved
+        // A model the endpoint's own record does not describe is read against
+        // the catalogs: a relay's `cn:deepseek-v4.1-flash` is DeepSeek's model,
+        // with its window, its ceiling and its images. An endpoint whose
+        // figures are already the catalog's changes nothing here.
+        let model = ModelResolver.resolving(
+            DeepSeekProvider.isOfficial(credentials) ? DeepSeekProvider.applyingCatalog(to: resolved.model) : resolved.model,
+            catalogKey: catalogKey(storeID: storeID),
+            parameters: parameters,
+        )
+        guard storeID != CredentialProviderID.openAICompatible else {
+            return ResolvedAuth(
+                model: model,
+                modelLabel: resolved.modelLabel,
+                authResolver: resolved.authResolver,
+                providerSlots: resolved.providerSlots,
+                authResolvers: resolved.authResolvers,
+            )
         }
         // The registry's transport is shared. Bind the key to this resolution
         // so another account verification cannot replace an in-flight key.
         return ResolvedAuth(
-            model: DeepSeekProvider.isOfficial(credentials) ? DeepSeekProvider.applyingCatalog(to: resolved.model) : resolved.model,
+            model: model,
             modelLabel: resolved.modelLabel,
             authResolver: { _, _ in ResolvedProviderAuth(token: credentials.access, scheme: .bearer) },
             providerSlots: resolved.providerSlots,
             authResolvers: resolved.authResolvers,
         )
+    }
+
+    /// The catalog a store id's models are filed under, when the two names
+    /// differ (a store id is `openai-api-key`, its catalog `openai`). Nil is an
+    /// endpoint the catalogs do not key, read from every provider's copy.
+    static func catalogKey(storeID: String) -> String? {
+        switch storeID {
+        case CredentialProviderID.openAICompatible: nil
+        case "openai-api-key": "openai"
+        case "anthropic-api-key": "anthropic"
+        case "google-api-key": "google"
+        case CredentialProviderID.deepSeek: "deepseek"
+        default: storeID
+        }
     }
 }
 

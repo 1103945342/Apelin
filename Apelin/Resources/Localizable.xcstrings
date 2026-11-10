@@ -5673,89 +5673,6 @@
         }
       }
     },
-    "A figure set here is the one your conversations read this model against, in place of what the provider reports.": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "أي قيمة تُضبط هنا هي ما تقرأ به محادثاتك هذا النموذج بدلًا مما يذكره المزوّد."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ein hier gesetzter Wert ist der, gegen den deine Gespräche dieses Modell lesen, statt der Angabe des Anbieters."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A figure set here is the one your conversations read this model against, in place of what the provider reports."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La cifra que fijes aquí es la que tus conversaciones usan para este modelo, en lugar de lo que indica el proveedor."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La valeur définie ici est celle que vos conversations utilisent pour ce modèle, à la place de ce qu’indique le fournisseur."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Il valore impostato qui è quello che le tue conversazioni usano per questo modello, al posto di quanto indicato dal fornitore."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ここで設定した値が、プロバイダーの報告値の代わりに会話で使われます。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "여기서 설정한 값이 제공자가 알리는 값 대신 대화에서 사용됩니다."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "O valor definido aqui é o que suas conversas usam para este modelo, no lugar do que o provedor informa."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Заданное здесь значение используется в разговорах вместо того, что сообщает провайдер."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Giá trị đặt ở đây được hội thoại dùng cho mô hình này thay cho giá trị nhà cung cấp báo."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "这里设定的数值会取代服务商上报的数值，用于你的对话。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "這裡設定的數值會取代服務商上報的數值，用於你的對話。"
-          }
-        }
-      }
-    },
     "A folder cannot be put inside itself.": {
       "localizations": {
         "ar": {
@@ -93578,89 +93495,6 @@
         }
       }
     },
-    "The most a reply may be. Leave it empty to use what the model reports.": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "أقصى ما يمكن أن يكون عليه الرد. اترك الحقل فارغًا لاستخدام ما يذكره النموذج."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Das Höchstmaß einer Antwort. Leer lassen, um die Angabe des Modells zu verwenden."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The most a reply may be. Leave it empty to use what the model reports."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lo máximo que puede ocupar una respuesta. Déjalo vacío para usar lo que indica el modelo."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Le maximum qu’une réponse peut occuper. Laissez vide pour utiliser ce qu’indique le modèle."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Il massimo che una risposta può occupare. Lascia vuoto per usare quanto indicato dal modello."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "返信が使える最大トークン数です。空欄にするとモデルの値をそのまま使います。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "응답이 차지할 수 있는 최대량입니다. 비워 두면 모델이 알리는 값을 사용합니다."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "O máximo que uma resposta pode ocupar. Deixe vazio para usar o que o modelo informa."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Сколько максимум может занимать ответ. Оставьте пустым, чтобы взять значение модели."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mức tối đa một phản hồi có thể chiếm. Để trống để dùng giá trị của mô hình."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "单次回复可占用的最大 Token 数。留空则使用模型自带的数值。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "單次回覆可佔用的最大 Token 數。留空則使用模型自帶的數值。"
-          }
-        }
-      }
-    },
     "The operation was cancelled.": {
       "localizations": {
         "ar": {
@@ -99843,89 +99677,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "待辦"
-          }
-        }
-      }
-    },
-    "Tokens a conversation may take before your agent compacts it. Leave it empty to use what the model reports.": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "عدد الرموز التي يمكن أن تصل إليها المحادثة قبل أن يضغطها وكيلك. اترك الحقل فارغًا لاستخدام ما يذكره النموذج."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wie viele Tokens ein Gespräch umfassen darf, bevor dein Agent es verdichtet. Leer lassen, um die Angabe des Modells zu verwenden."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tokens a conversation may take before your agent compacts it. Leave it empty to use what the model reports."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tokens que puede ocupar una conversación antes de que tu agente la compacte. Déjalo vacío para usar lo que indica el modelo."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nombre de jetons qu’une conversation peut occuper avant que votre agent ne la compresse. Laissez vide pour utiliser ce qu’indique le modèle."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Token che una conversazione può occupare prima che il tuo agente la comprima. Lascia vuoto per usare quanto indicato dal modello."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "エージェントが会話を圧縮するまでに使えるトークン数です。空欄にするとモデルの値をそのまま使います。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "에이전트가 대화를 압축하기 전까지 사용할 수 있는 토큰 수입니다. 비워 두면 모델이 알리는 값을 사용합니다."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tokens que uma conversa pode ocupar antes de o seu agente compactá-la. Deixe vazio para usar o que o modelo informa."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Сколько токенов может занимать разговор, прежде чем агент его сожмёт. Оставьте пустым, чтобы взять значение модели."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Số token hội thoại có thể chiếm trước khi tác nhân nén lại. Để trống để dùng giá trị của mô hình."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "对话在压缩前可占用的 Token 数。留空则使用模型自带的数值。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "對話在壓縮前可佔用的 Token 數。留空則使用模型自帶的數值。"
           }
         }
       }
@@ -117619,6 +117370,2058 @@
           "stringUnit": {
             "state": "translated",
             "value": "未到達"
+          }
+        }
+      }
+    },
+    "A figure set here is the one your conversations read this model against, in place of what the catalog and the provider report.": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الرقم المحدَّد هنا هو ما تقرأ به محادثاتك هذا النموذج بدلًا مما يذكره الكتالوج والمزوّد."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein hier gesetzter Wert ist der, gegen den deine Unterhaltungen dieses Modell lesen, anstelle dessen, was Katalog und Anbieter melden."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La cifra que pongas aquí es la que tus conversaciones usan para este modelo, en lugar de la que indican el catálogo y el proveedor."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La valeur indiquée ici est celle que vos conversations utilisent pour ce modèle, à la place de celle du catalogue et du fournisseur."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il valore impostato qui è quello con cui le tue conversazioni leggono questo modello, al posto di quello del catalogo e del fornitore."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ここで設定した値が、カタログとプロバイダーが示す値の代わりに、会話がこのモデルを読む基準になります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여기서 설정한 값이 카탈로그와 제공자가 알려주는 값 대신 대화에서 이 모델을 읽는 기준이 됩니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O número definido aqui é o que suas conversas usam para este modelo, no lugar do que o catálogo e o provedor informam."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Указанное здесь число используется в беседах для этой модели вместо того, что сообщают каталог и провайдер."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con số đặt ở đây là mốc hội thoại dùng cho mô hình này, thay cho con số danh mục và nhà cung cấp báo."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这里设定的数字，就是对话读取此模型的依据，替代目录与提供方所报的数字。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這裡設定的數字，就是對話讀取此模型的依據，取代目錄與提供者所報的數字。"
+          }
+        }
+      }
+    },
+    "Tokens a conversation may take before your agent compacts it. Leave it empty to use the catalog's figure, or the model's own.": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عدد الرموز التي يمكن للمحادثة أن تبلغها قبل أن يضغطها وكيلك. اتركه فارغًا لاستخدام رقم الكتالوج أو رقم النموذج نفسه."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Token, die eine Unterhaltung umfassen darf, bis dein Agent sie verdichtet. Leer lassen, um den Wert des Katalogs oder des Modells zu verwenden."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tokens que puede ocupar una conversación antes de que tu agente la comprima. Déjalo vacío para usar la cifra del catálogo o la del propio modelo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jetons qu’une conversation peut atteindre avant que votre agent ne la compresse. Laissez vide pour utiliser la valeur du catalogue ou celle du modèle."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Token che una conversazione può raggiungere prima che il tuo agente la comprima. Lascia vuoto per usare il valore del catalogo o quello del modello."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "エージェントが圧縮するまでに会話が使えるトークン数です。空欄ならカタログまたはモデル自身の値を使います。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "에이전트가 압축하기 전까지 대화가 사용할 수 있는 토큰 수입니다. 비워 두면 카탈로그나 모델 자체의 값을 사용합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tokens que uma conversa pode ocupar antes de seu agente compactá-la. Deixe vazio para usar o número do catálogo ou do próprio modelo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сколько токенов может занять беседа, прежде чем агент её сожмёт. Оставьте пустым, чтобы взять число из каталога или самой модели."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Số token hội thoại có thể dùng trước khi tác nhân nén lại. Để trống để dùng con số của danh mục hoặc của chính mô hình."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "对话在你 agent 压缩之前可以占用的 token 数。留空则使用目录或模型自身的数字。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "對話在你 agent 壓縮之前可以佔用的 token 數。留空則使用目錄或模型本身的數字。"
+          }
+        }
+      }
+    },
+    "The most a reply may be. Leave it empty to use the catalog's figure, or the model's own.": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الحد الأقصى لطول الرد. اتركه فارغًا لاستخدام رقم الكتالوج أو رقم النموذج نفسه."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Höchstmaß einer Antwort. Leer lassen, um den Wert des Katalogs oder des Modells zu verwenden."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo máximo que puede ocupar una respuesta. Déjalo vacío para usar la cifra del catálogo o la del propio modelo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La taille maximale d’une réponse. Laissez vide pour utiliser la valeur du catalogue ou celle du modèle."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il massimo di una risposta. Lascia vuoto per usare il valore del catalogo o quello del modello."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "応答の最大量です。空欄ならカタログまたはモデル自身の値を使います。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "응답의 최대 길이입니다. 비워 두면 카탈로그나 모델 자체의 값을 사용합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O máximo que uma resposta pode ocupar. Deixe vazio para usar o número do catálogo ou do próprio modelo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Наибольший размер ответа. Оставьте пустым, чтобы взять число из каталога или самой модели."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Độ dài tối đa của câu trả lời. Để trống để dùng con số của danh mục hoặc của chính mô hình."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一条回复的最大长度。留空则使用目录或模型自身的数字。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一則回覆的最大長度。留空則使用目錄或模型本身的數字。"
+          }
+        }
+      }
+    },
+    "Catalog Entry": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مُدخل الكتالوج"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Katalogeintrag"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrada del catálogo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrée du catalogue"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voce del catalogo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "カタログの項目"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "카탈로그 항목"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrada do catálogo"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запись каталога"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mục trong danh mục"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目录条目"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目錄項目"
+          }
+        }
+      }
+    },
+    "Not in Any Catalog": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "غير موجود في أي كتالوج"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In keinem Katalog"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No está en ningún catálogo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Absent des catalogues"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non presente in alcun catalogo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "どのカタログにもない"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "카탈로그에 없음"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não está em nenhum catálogo"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет ни в одном каталоге"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không có trong danh mục nào"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不在任何目录中"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不在任何目錄中"
+          }
+        }
+      }
+    },
+    "Built-in Catalog": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الكتالوج المضمّن"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mitgelieferter Katalog"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Catálogo incluido"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Catalogue intégré"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Catalogo integrato"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "内蔵カタログ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내장 카탈로그"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Catálogo incluído"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Встроенный каталог"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Danh mục tích hợp"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "内置目录"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "內建目錄"
+          }
+        }
+      }
+    },
+    "Apply Catalog Figures": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تطبيق أرقام الكتالوج"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Katalogwerte anwenden"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicar cifras del catálogo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appliquer les chiffres du catalogue"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applica i valori del catalogo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "カタログの値を適用"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "카탈로그 값 적용"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicar números do catálogo"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Применять данные каталога"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Áp dụng số liệu danh mục"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按目录采用"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "依目錄採用"
+          }
+        }
+      }
+    },
+    "Takes Images": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يقبل الصور"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nimmt Bilder an"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acepta imágenes"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accepte les images"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accetta immagini"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像を受け付ける"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이미지 입력 지원"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aceita imagens"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Принимает изображения"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nhận hình ảnh"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "接受图片"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "接受圖片"
+          }
+        }
+      }
+    },
+    "Reasons Before Answering": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يفكّر قبل الإجابة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Denkt vor der Antwort nach"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Razona antes de responder"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raisonne avant de répondre"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ragiona prima di rispondere"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回答前に思考する"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "답변 전에 추론"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raciocina antes de responder"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Размышляет перед ответом"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suy luận trước khi trả lời"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回答前先思考"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回答前先思考"
+          }
+        }
+      }
+    },
+    "Apelin looks a model up by the full name your provider is asked for, and reads it by what the catalog says. Turn this off for an endpoint that refuses a figure it does not honour.": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يبحث Apelin عن النموذج بالاسم الكامل الذي يُطلب به من مزوّدك، ويقرأه وفق ما يقوله الكتالوج. أوقف هذا لنقطة نهاية ترفض رقمًا لا تحترمه."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apelin sucht ein Modell unter dem vollen Namen, mit dem dein Anbieter angefragt wird, und liest es nach dem Katalog. Schalte dies für einen Endpunkt aus, der einen Wert ablehnt, den er nicht beachtet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apelin busca el modelo por el nombre completo con el que se pide a tu proveedor y lo lee según el catálogo. Desactívalo para un extremo que rechace una cifra que no respeta."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apelin recherche un modèle sous le nom complet demandé à votre fournisseur et le lit selon le catalogue. Désactivez ceci pour un point de terminaison qui refuse une valeur qu’il n’honore pas."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apelin cerca il modello con il nome completo richiesto al tuo fornitore e lo legge secondo il catalogo. Disattiva questa opzione per un endpoint che rifiuta un valore che non rispetta."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apelin はプロバイダーに尋ねる完全な名前でモデルを探し、カタログに従って読み取ります。尊重しない値を拒むエンドポイントではこれを切ってください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apelin은 제공자에게 요청하는 전체 이름으로 모델을 찾고 카탈로그에 따라 읽습니다. 따르지 않는 값을 거부하는 엔드포인트에서는 이를 끄세요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Apelin procura o modelo pelo nome completo pedido ao seu provedor e o lê conforme o catálogo. Desative para um endpoint que recusa um número que não honra."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apelin ищет модель по полному имени, с которым обращается к провайдеру, и читает её по каталогу. Отключите для точки, которая отвергает число, которое не соблюдает."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apelin tra mô hình theo tên đầy đủ gửi tới nhà cung cấp và đọc nó theo danh mục. Hãy tắt mục này với điểm cuối từ chối con số nó không tuân theo."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apelin 按向提供方请求的完整名称查找模型，并依据目录读取它。若某个端点拒绝它不遵守的数字，请关掉这一项。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apelin 依向提供者請求的完整名稱查找模型，並依目錄讀取它。若某個端點拒絕它不遵守的數字，請關掉這一項。"
+          }
+        }
+      }
+    },
+    "Neither the catalog Apelin ships nor its models.dev copy names this model, so what your provider reports is used.": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا يذكر هذا النموذج الكتالوج المضمَّن في Apelin ولا نسخة models.dev، لذا يُستخدم ما يبلّغ عنه مزوّدك."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weder der mitgelieferte Katalog noch die models.dev-Kopie nennen dieses Modell, daher wird verwendet, was dein Anbieter meldet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ni el catálogo incluido ni la copia de models.dev nombran este modelo, así que se usa lo que indica tu proveedor."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ni le catalogue intégré ni la copie de models.dev ne nomment ce modèle : ce que votre fournisseur indique est utilisé."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Né il catalogo integrato né la copia di models.dev nominano questo modello, quindi si usa ciò che riporta il tuo fornitore."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "内蔵カタログにも models.dev のコピーにもこのモデルはないため、プロバイダーが示す値を使います。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내장 카탈로그와 models.dev 사본 모두 이 모델을 담고 있지 않아 제공자가 알려주는 값을 사용합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nem o catálogo incluído nem a cópia do models.dev nomeiam este modelo, então o que seu provedor informa é usado."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ни встроенный каталог, ни копия models.dev эту модель не называют, поэтому берётся то, что сообщает провайдер."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cả danh mục tích hợp và bản sao models.dev đều không có mô hình này, nên dùng con số nhà cung cấp báo."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "内置目录与 models.dev 副本都没有这个模型，因此使用提供方上报的数字。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "內建目錄與 models.dev 副本都沒有這個模型，因此使用提供者上報的數字。"
+          }
+        }
+      }
+    },
+    "A switch here overrides the catalog. A model read as text only is sent no images: theirs are dropped before the message goes.": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أي مفتاح هنا يتجاوز الكتالوج. النموذج الذي يُقرأ كنص فقط لا تُرسل إليه صور: تُسقَط صورها قبل إرسال الرسالة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein Schalter hier überschreibt den Katalog. Ein Modell, das nur als Text gelesen wird, bekommt keine Bilder: sie werden vor dem Senden entfernt."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un interruptor aquí anula el catálogo. A un modelo leído solo como texto no se le envían imágenes: se descartan antes de enviar el mensaje."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un interrupteur ici prime sur le catalogue. Un modèle lu comme texte seul ne reçoit pas d’images : elles sont écartées avant l’envoi du message."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un interruttore qui prevale sul catalogo. A un modello letto solo come testo non vengono inviate immagini: vengono scartate prima dell’invio del messaggio."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ここのスイッチはカタログより優先されます。テキストのみとして読まれるモデルには画像を送らず、送信前に画像は取り除かれます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여기 스위치는 카탈로그보다 우선합니다. 텍스트만 읽는 모델에는 이미지를 보내지 않으며, 메시지를 보내기 전에 이미지는 빠집니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um interruptor aqui sobrepõe o catálogo. Um modelo lido apenas como texto não recebe imagens: elas são descartadas antes do envio."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переключатель здесь важнее каталога. Модели, читаемой только как текст, изображения не отправляются: их убирают до отправки сообщения."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Công tắc ở đây được ưu tiên hơn danh mục. Mô hình chỉ đọc văn bản sẽ không nhận hình ảnh: hình bị bỏ trước khi gửi tin nhắn."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这里的开关优先于目录。被读作纯文本的模型不会收到图片：图片会在消息发出前被去掉。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這裡的開關優先於目錄。被讀作純文字的模型不會收到圖片：圖片會在訊息送出前被去掉。"
+          }
+        }
+      }
+    },
+    "Model Data": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بيانات النماذج"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modelldaten"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datos de modelos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Données des modèles"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dati dei modelli"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "モデルデータ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모델 데이터"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dados de modelos"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Данные моделей"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dữ liệu mô hình"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模型数据"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模型資料"
+          }
+        }
+      }
+    },
+    "Updated": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "آخر تحديث"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktualisiert"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualizado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mise à jour"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiornato"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新日時"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "업데이트됨"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualizado"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновлено"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đã cập nhật"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新时间"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新時間"
+          }
+        }
+      }
+    },
+    "Not Downloaded": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لم يُنزَّل"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht geladen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No descargado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non téléchargé"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non scaricato"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未ダウンロード"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다운로드되지 않음"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não baixado"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не загружено"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa tải xuống"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未下载"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未下載"
+          }
+        }
+      }
+    },
+    "Reading…": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جارٍ القراءة…"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wird gelesen…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leyendo…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lecture…"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lettura…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "読み込み中…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "읽는 중…"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lendo…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чтение…"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đang đọc…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在读取…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在讀取…"
+          }
+        }
+      }
+    },
+    "Update Now": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التحديث الآن"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jetzt aktualisieren"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualizar ahora"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mettre à jour"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiorna ora"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "今すぐ更新"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지금 업데이트"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualizar agora"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновить"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cập nhật ngay"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "立即更新"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "立即更新"
+          }
+        }
+      }
+    },
+    "Updating": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جارٍ التحديث"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wird aktualisiert"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualizando"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mise à jour"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiornamento"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新中"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "업데이트 중"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualizando"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновление"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Đang cập nhật"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在更新"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在更新"
+          }
+        }
+      }
+    },
+    "Delete Copy": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حذف النسخة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kopie löschen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar copia"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer la copie"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimina copia"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コピーを削除"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사본 삭제"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Excluir cópia"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить копию"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xóa bản sao"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除副本"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "刪除副本"
+          }
+        }
+      }
+    },
+    "models.dev’s catalog, trimmed to the figures Apelin reads and kept on this device, so a conversation reaches the network for neither.": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "كتالوج models.dev، مختصرًا إلى الأرقام التي يقرأها Apelin ومحفوظًا على هذا الجهاز، فلا تحتاج المحادثة إلى الشبكة لواحد منهما."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Katalog von models.dev, gekürzt auf die Werte, die Apelin liest, und auf diesem Gerät behalten, sodass eine Unterhaltung für keinen von beiden ins Netz geht."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El catálogo de models.dev, recortado a las cifras que Apelin lee y guardado en este dispositivo, así que una conversación no sale a la red por ninguno de los dos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le catalogue de models.dev, réduit aux valeurs qu’Apelin lit et gardé sur cet appareil : une conversation ne sort pas sur le réseau pour l’un ou l’autre."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il catalogo di models.dev, ridotto ai valori che Apelin legge e tenuto su questo dispositivo, così una conversazione non va in rete per nessuno dei due."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "models.dev のカタログを Apelin が読む値だけに絞ってこの端末に保存します。どちらを読むにも会話はネットワークに出ません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "models.dev 카탈로그를 Apelin이 읽는 값만 남겨 이 기기에 보관합니다. 어느 쪽을 읽든 대화가 네트워크로 나가지 않습니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O catálogo do models.dev, reduzido aos números que o Apelin lê e guardado neste dispositivo, então uma conversa não vai à rede por nenhum dos dois."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Каталог models.dev, урезанный до чисел, которые читает Apelin, и хранимый на этом устройстве: беседа не выходит в сеть ни за одним из них."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Danh mục của models.dev, lọc còn những con số Apelin đọc và giữ trên thiết bị này, nên hội thoại không cần mạng cho cả hai."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "models.dev 的目录，裁剪到 Apelin 会读取的数字并保存在本机，因此对话无需联网读取两者中的任何一个。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "models.dev 的目錄，裁剪到 Apelin 會讀取的數字並保存在本機，因此對話無需連網讀取兩者中的任何一個。"
+          }
+        }
+      }
+    },
+    "Download the copy to read models the catalog Apelin ships does not name.": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نزّل النسخة لتقرأ نماذج لا يذكرها الكتالوج المضمَّن في Apelin."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lade die Kopie, um Modelle zu lesen, die der mitgelieferte Katalog nicht nennt."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descarga la copia para leer modelos que el catálogo incluido no nombra."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Téléchargez la copie pour lire les modèles que le catalogue intégré ne nomme pas."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scarica la copia per leggere modelli che il catalogo integrato non nomina."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コピーをダウンロードすると、内蔵カタログにないモデルも読めます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사본을 다운로드하면 내장 카탈로그에 없는 모델도 읽을 수 있습니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baixe a cópia para ler modelos que o catálogo incluído não nomeia."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загрузите копию, чтобы читать модели, которых нет во встроенном каталоге."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tải bản sao để đọc những mô hình mà danh mục tích hợp không có."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下载副本即可读取内置目录里没有的模型。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下載副本即可讀取內建目錄裡沒有的模型。"
+          }
+        }
+      }
+    },
+    "Updating replaces the copy with models.dev’s current catalog. Deleting it leaves every conversation reading the catalog Apelin ships.": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التحديث يستبدل النسخة بكتالوج models.dev الحالي. حذفها يترك كل محادثة تقرأ الكتالوج المضمَّن في Apelin."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktualisieren ersetzt die Kopie durch models.dev aktuellen Katalog. Löschen lässt jede Unterhaltung den mitgelieferten Katalog lesen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualizar reemplaza la copia con el catálogo actual de models.dev. Eliminarla deja que cada conversación lea el catálogo incluido."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mettre à jour remplace la copie par le catalogue actuel de models.dev. La supprimer laisse chaque conversation lire le catalogue intégré."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’aggiornamento sostituisce la copia con il catalogo attuale di models.dev. Eliminarla lascia ogni conversazione leggere il catalogo integrato."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新すると models.dev の現在のカタログでコピーを置き換えます。削除すると各会話は内蔵カタログを読みます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "업데이트하면 models.dev의 현재 카탈로그로 사본을 바꿉니다. 삭제하면 모든 대화가 내장 카탈로그를 읽습니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualizar substitui a cópia pelo catálogo atual do models.dev. Excluí-la deixa cada conversa lendo o catálogo incluído."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновление заменяет копию актуальным каталогом models.dev. После удаления беседы читают встроенный каталог."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cập nhật thay bản sao bằng danh mục hiện tại của models.dev. Xóa nó thì mọi hội thoại đọc danh mục tích hợp."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新会用 models.dev 当前的目录替换副本。删除后所有对话读取内置目录。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新會用 models.dev 目前的目錄取代副本。刪除後所有對話讀取內建目錄。"
+          }
+        }
+      }
+    },
+    "Unable to Update": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعذّر التحديث"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktualisieren nicht möglich"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo actualizar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mise à jour impossible"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossibile aggiornare"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新できません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "업데이트할 수 없음"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível atualizar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось обновить"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Không thể cập nhật"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法更新"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法更新"
+          }
+        }
+      }
+    },
+    "models.dev’s catalog didn’t download. Check your connection and try again.": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لم يتم تنزيل كتالوج models.dev. تحقّق من اتصالك وحاول مجددًا."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Katalog von models.dev wurde nicht geladen. Prüfe deine Verbindung und versuche es erneut."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El catálogo de models.dev no se descargó. Comprueba tu conexión e inténtalo de nuevo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le catalogue de models.dev n’a pas été téléchargé. Vérifiez votre connexion et réessayez."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il catalogo di models.dev non è stato scaricato. Controlla la connessione e riprova."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "models.dev のカタログをダウンロードできませんでした。接続を確認して、もう一度お試しください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "models.dev 카탈로그를 다운로드하지 못했습니다. 연결을 확인하고 다시 시도하세요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O catálogo do models.dev não foi baixado. Verifique sua conexão e tente de novo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Каталог models.dev не загрузился. Проверьте соединение и повторите."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Danh mục của models.dev chưa tải được. Kiểm tra kết nối và thử lại."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "models.dev 的目录未能下载。请检查网络后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "models.dev 的目錄未能下載。請檢查網路後重試。"
+          }
+        }
+      }
+    },
+    "Delete Model Data": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حذف بيانات النماذج"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modelldaten löschen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar datos de modelos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer les données des modèles"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimina dati dei modelli"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "モデルデータを削除"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모델 데이터 삭제"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Excluir dados de modelos"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить данные моделей"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xóa dữ liệu mô hình"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除模型数据"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "刪除模型資料"
+          }
+        }
+      }
+    },
+    "The copy on this device is removed and every conversation reads the catalog Apelin ships instead.": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تُحذف النسخة من هذا الجهاز وتقرأ كل محادثة الكتالوج المضمَّن في Apelin بدلًا منها."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Kopie auf diesem Gerät wird entfernt, und jede Unterhaltung liest stattdessen den mitgelieferten Katalog."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La copia de este dispositivo se elimina y cada conversación lee el catálogo incluido en su lugar."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La copie sur cet appareil est supprimée et chaque conversation lit le catalogue intégré à la place."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La copia su questo dispositivo viene rimossa e ogni conversazione legge il catalogo integrato."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この端末のコピーが削除され、各会話は内蔵カタログを読むようになります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 기기의 사본이 삭제되고 모든 대화가 내장 카탈로그를 읽습니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A cópia neste dispositivo é removida e cada conversa passa a ler o catálogo incluído."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Копия на этом устройстве удаляется, и беседы читают встроенный каталог."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bản sao trên thiết bị này bị xóa và mọi hội thoại đọc danh mục tích hợp."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本机副本会被删除，所有对话改为读取内置目录。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本機副本會被刪除，所有對話改為讀取內建目錄。"
+          }
+        }
+      }
+    },
+    "The copy is still on this device.": {
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "النسخة لا تزال على هذا الجهاز."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Kopie ist noch auf diesem Gerät."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La copia sigue en este dispositivo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La copie est toujours sur cet appareil."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La copia è ancora su questo dispositivo."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コピーはこの端末に残っています。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사본이 아직 이 기기에 있습니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A cópia continua neste dispositivo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Копия всё ещё на этом устройстве."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bản sao vẫn còn trên thiết bị này."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "副本仍在本机。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "副本仍在本機。"
           }
         }
       }

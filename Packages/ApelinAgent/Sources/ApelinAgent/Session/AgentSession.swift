@@ -183,6 +183,7 @@ public actor AgentSession {
             resolved = try await ProviderResolver.resolve(
                 configuration.provider,
                 credentials: credentials,
+                modelParameters: configuration.modelParameters,
                 diagnostic: { journal.startup($0) },
             )
         } catch {
@@ -312,7 +313,11 @@ public actor AgentSession {
             agent.state.serviceTier = serviceTier
             return
         }
-        let resolved = try await ProviderResolver.resolve(provider, credentials: credentials)
+        let resolved = try await ProviderResolver.resolve(
+            provider,
+            credentials: credentials,
+            modelParameters: modelParameters,
+        )
         guard runTask == nil else { return }
         recordModel = resolved.model
         agent.state.model = ProviderResolver.applying(modelParameters, to: resolved.model)

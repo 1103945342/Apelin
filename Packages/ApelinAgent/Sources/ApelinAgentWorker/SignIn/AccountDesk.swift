@@ -89,9 +89,19 @@ public actor AccountDesk {
             if account.signedIn, let credentials = try? await store.credentials(for: provider.storeID) {
                 account.account = Self.accountLabel(provider, credentials)
                 account.expiresAt = Self.lapses(credentials)
-                account.models = ProviderModels.list(provider, credentials: credentials)
-                account.reasoningEfforts = ProviderModels.reasoningEfforts(provider, credentials: credentials)
+                let models = ProviderModels.list(provider, credentials: credentials)
+                account.models = models
+                account.reasoningEfforts = ProviderModels.reasoningEfforts(
+                    provider,
+                    credentials: credentials,
+                    models: models,
+                )
                 account.serviceTiers = ProviderModels.serviceTiers(provider, credentials: credentials)
+                account.capabilities = ProviderModels.capabilities(
+                    provider,
+                    credentials: credentials,
+                    models: models,
+                )
                 account.usesAPIKey = ProviderModels.usesAPIKey(provider, credentials: credentials) ? true : nil
             }
             accounts.append(account)
