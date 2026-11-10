@@ -6,6 +6,10 @@
 # when a model's figures changed — a day without a change leaves the file, and
 # its `generatedAt`, alone. The app ships that file, writes it into the data
 # folder on the first launch, and replaces it when its own copy is a week old.
+#
+# A run that cannot read models.dev files an issue with what stopped it: a
+# job's own log is not readable without an administrator's account, and a copy
+# that silently stops updating is worse than one that says so.
 name: Model Catalog
 
 on:
@@ -21,6 +25,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: model-catalog
@@ -38,7 +43,9 @@ jobs:
 
       - name: Trim models.dev's catalog
         shell: bash
-        run: python3 -I Scripts/refresh-models-dev.py .
+        run: |
+          set -o pipefail
+          python3 -I Scripts/refresh-models-dev.py . 2>&1 | tee trim.log
 
       - name: Commit the copy that changed
         shell: bash
@@ -53,3 +60,43 @@ jobs:
           git add -- Apelin/Resources/models.dev.json
           git commit -m "Update models.dev's catalog"
           git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Say what stopped it
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          title="models.dev's catalog could not be read"
+          {
+            echo "The update of \`Apelin/Resources/models.dev.json\` did not finish, so the catalog"
+            echo "Apelin ships is the one from the last run that did. Nothing else is affected."
+            echo
+            echo '```'
+            tail -n 40 trim.log 2>/dev/null || echo "no output"
+            echo '```'
+            echo
+            echo "Run: ${GITHUB_SERVER_URL}/${GH_REPO}/actions/runs/${GITHUB_RUN_ID}"
+          } > report.md
+          open=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          if [[ -n "$open" ]]; then
+            gh issue edit "$open" --body-file report.md
+          else
+            gh issue create --title "$title" --body-file report.md
+          fi
+
+      - name: Close the report once a copy is read again
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          title="models.dev's catalog could not be read"
+          open=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          if [[ -n "$open" ]]; then
+            gh issue close "$open" --comment "models.dev answered again; the shipped copy is updated."
+          fi

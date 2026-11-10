@@ -121,7 +121,15 @@ def trim(catalog):
 
 
 def read(url):
-    request = urllib.request.Request(url, headers={"Accept": "application/json"})
+    # A browser's own headers: some hosts answer a script with 403.
+    request = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "application/json",
+            "Accept-Encoding": "identity",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) ApelinModelCatalog/1.0",
+        },
+    )
     with urllib.request.urlopen(request, timeout=120) as response:
         # A file:// source has no status, which is how a fixture is read.
         status = getattr(response, "status", None) or 200
@@ -146,7 +154,11 @@ def main(argv):
         index += 1
 
     target = root / RELATIVE
-    models = trim(read(source))
+    try:
+        catalog = read(source)
+    except Exception as error:  # noqa: BLE001 - the reason is what the issue says
+        raise SystemExit(f"error: {source} could not be read: {type(error).__name__}: {error}")
+    models = trim(catalog)
     if not models:
         raise SystemExit("error: models.dev's catalog named no model")
 
