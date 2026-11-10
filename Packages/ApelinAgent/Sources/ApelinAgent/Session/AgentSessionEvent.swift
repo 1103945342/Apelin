@@ -60,6 +60,10 @@ public enum AgentSessionEvent: Sendable, Hashable, Codable {
     /// away (`apelin_notification_send`): plain text within `AgentNoticeRules`' lengths,
     /// which the session host posts as a banner by its own rules.
     case notice(title: String?, body: String)
+    /// The agent changed the conversation's own run mode (`apelin_run_mode`),
+    /// as the composer's pill would: the mode it is now and why. The app
+    /// writes it where the pill reads it, so the next prompt goes out with it.
+    case runModeChanged(runMode: AgentRunMode, reason: String)
     case error(message: String)
     /// A run ended.
     case finished(reason: FinishReason)

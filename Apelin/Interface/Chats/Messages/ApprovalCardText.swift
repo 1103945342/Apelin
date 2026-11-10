@@ -45,16 +45,29 @@ enum ApprovalCardText {
 
     /// The card's title when it is not the call's own: a git_push the host
     /// binds to a lease (`detail.forcePush`) overwrites the remote's branch,
-    /// which the title says, and a question is its own title. Nil for any
-    /// other request.
+    /// which the title says; a question is its own title; a run mode switch
+    /// says which way it goes. Nil for any other request.
     static func title(_ payload: JSONValue?) -> String? {
         if let question = question(payload) {
             return question.question
+        }
+        if let requested = runModeSwitch(payload) {
+            return requested.mode == .build
+                ? String(localized: "Switch to build mode")
+                : String(localized: "Switch to plan mode")
         }
         return payload?["detail"]?[forcePushDetail] != nil ? String(localized: "Force-push to the remote") : nil
     }
 
     private static let forcePushDetail = "forcePush"
+
+    /// The run mode change an `approvalRequested` asks for
+    /// (`detail.runMode`): the mode asked and the agent's reason, which the
+    /// card shows. Nil for any other request and for one that does not read.
+    static func runModeSwitch(_ payload: JSONValue?) -> AgentRunModeRequest? {
+        guard let detail = payload?["detail"]?[AgentRunModeRules.detailKey] else { return nil }
+        return try? detail.decode(AgentRunModeRequest.self)
+    }
 
     /// The question an `approvalRequested` asks (`detail.question`), nil for
     /// any other request and for one whose question does not read.

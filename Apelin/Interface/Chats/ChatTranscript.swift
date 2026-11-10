@@ -18,6 +18,10 @@ struct ChatTranscript {
     /// How full the conversation's context is, from the last `contextUsage`
     /// the agent recorded: the figure the ring beside the composer shows.
     var contextUsage: ChatContextUsage?
+    /// The run mode the agent last changed this conversation to itself
+    /// (`apelin_run_mode`): the page writes it where the pill reads it, so a
+    /// change made while the app was away is not lost.
+    var runMode: ComposerMode?
     var approvalIDs: [UUID: String] = [:]
     /// While the turn runs and its last row is a reply with nothing after
     /// it: when, with no event before then, a running summary stands in
@@ -275,14 +279,19 @@ struct ChatTranscript {
                     var request = ChatMessage(id: rowID, role: .approval(nil), text: title + "\n\n" + detail)
                     request.runsAsRoot = ApprovalCardText.isRoot(payload)
                     request.question = ApprovalCardText.question(payload)
-                    // A question's card is its options: the call's
-                    // arguments, which name them again, are not shown.
-                    request.approvalSections = request.question != nil ? [] : ApprovalCardText.sections(
+                    let modeSwitch = ApprovalCardText.runModeSwitch(payload)
+                    // A question's card is its options, and a mode switch's
+                    // is its reason: the call's arguments, which name them
+                    // again, are not shown.
+                    request.approvalSections = request.question != nil || modeSwitch != nil ? [] : ApprovalCardText.sections(
                         payload, title: title,
                         callReason: payload?["toolCallID"]?.stringValue.flatMap { callReasons[$0] },
                     )
                     if let question = request.question {
                         request.text = title + "\n\n" + question.options.map(\.label).joined(separator: "\n")
+                    }
+                    if let modeSwitch {
+                        request.text = title + "\n\n" + modeSwitch.reason
                     }
                     add(request)
                 }
@@ -303,6 +312,11 @@ struct ChatTranscript {
                 // conversation, and only a compaction brings it down.
                 if let usage = ChatContextUsage(payload) {
                     contextUsage = usage
+                }
+            case "runModeChanged":
+                // The last one wins: the mode the conversation is in now.
+                if let raw = payload?["mode"]?.stringValue, let mode = ComposerMode(rawValue: raw) {
+                    runMode = mode
                 }
             case "finished":
                 finishThinking(at: event.time)
@@ -768,6 +782,7 @@ struct ChatTranscript {
         case .conversationStop: return String(localized: "Stop a chat")
         case .notificationSend: return String(localized: "Send a notification")
         case .questionAsk: return String(localized: "Ask a question")
+        case .runMode: return String(localized: "Switch the run mode")
         case .webSearch:
             let query = values?["query"]?.stringValue ?? ""
             return query.isEmpty ? String(localized: "Search the web") : String(localized: "Search for \(query)")

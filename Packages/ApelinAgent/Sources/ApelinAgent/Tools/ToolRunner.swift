@@ -107,6 +107,12 @@ actor ToolRunner {
 
     private var runMode: ApelinProtocol.AgentRunMode?
 
+    /// The mode this run is in now, as the agent may have changed it itself
+    /// (`apelin_run_mode`): what `<system-state>` says of the steps after it.
+    var currentRunMode: ApelinProtocol.AgentRunMode? {
+        runMode
+    }
+
     /// Why a tool is wrong in a plan run, or nil when the tool may run: only
     /// reads pass. MCP and extension tools have no risk of their own, so they
     /// are refused as a whole — a plan reads what Apelin itself keeps.
@@ -409,7 +415,7 @@ actor ToolRunner {
         switch detail {
         case .gitSettings, .descriptionChanged, .toolchainSetup, .sdkImport, .otherProject, .externalBuild, .skillChange,
              .projectRename, .rootCommand, .feedback, .feedbackEdit, .repositoryCreate, .issueCreate, .projectDelete,
-             .packagePublish, .screenControl, .forcePush, .squash, .resetToRemote, .question:
+             .packagePublish, .screenControl, .forcePush, .squash, .resetToRemote, .question, .runMode:
             return false
         case .none, .command, .packageRemoval, .gitPush:
             return true
@@ -484,6 +490,9 @@ actor ToolRunner {
 
         case .questionAsk:
             return try await askQuestion(arguments, toolCallID: context.toolCallID, cancellation: cancellation)
+
+        case .runMode:
+            return try await changeRunMode(arguments, toolCallID: context.toolCallID, cancellation: cancellation)
 
         case .webSearch:
             let result = try await WebSearch.shared.search(arguments)

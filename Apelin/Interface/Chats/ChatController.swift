@@ -612,6 +612,14 @@ final class ChatController: UIViewController {
             // temporary chat has no files of its own to name.
             composer.projectRoot = summary.projectName.flatMap { DataFolder.app.project(named: $0) }
             composer.modelBar.setContextUsage(transcript.contextUsage, compactable: runtime.canCompact(chat.id))
+            // The agent may have changed the run mode itself
+            // (`apelin_run_mode`): the log's last word is what the pill shows
+            // and what the next prompt goes out with, whether the change came
+            // while this page was open or while the app was away.
+            if let mode = transcript.runMode, ComposerModeStore.mode(for: chat.id) != mode {
+                ComposerModeStore.set(mode, for: chat.id)
+                composer.modelBar.modePill.set(mode: mode)
+            }
             composer.setContextUsage(
                 usedTokens: transcript.contextUsage?.tokens ?? 0,
                 limitTokens: transcript.contextUsage?.window ?? 0,

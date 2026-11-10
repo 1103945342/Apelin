@@ -1,4 +1,5 @@
 import struct ApelinProtocol.AgentQuestion
+import struct ApelinProtocol.AgentRunModeRequest
 import enum ApelinProtocol.GitRepositoryVisibility
 import Foundation
 
@@ -149,6 +150,11 @@ public enum ApprovalDetail: Sendable, Hashable, Codable {
     /// carries the answer (`ApprovalGate.request(question:)`). Asked in
     /// every mode, a plan run included, and never granted for the session.
     case question(AgentQuestion)
+    /// The conversation's own run mode going back to a build
+    /// (`apelin_run_mode`): what is asked, and the agent's reason, which the
+    /// card shows. A switch to a plan asks nobody. The host matches nothing
+    /// to it; the answer reaches only the model.
+    case runMode(AgentRunModeRequest)
 }
 
 /// What a card asks while Ask Before Using the Screen is on (owner,

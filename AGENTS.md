@@ -1562,7 +1562,10 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   detail} followed by `state` `waitingForApproval`, `approvalResolved`
   followed by `state` `running` when none is left, `notice` {title?, body}
   (`apelin_notification_send`, between its `toolCall` and `toolResult`; the host posts
-  it, Notifications above; the transcript shows only the call), `error`
+  it, Notifications above; the transcript shows only the call),
+  `runModeChanged` {mode, why} (`apelin_run_mode`, 2026-11-11: the
+  conversation's own run mode, which the app writes where the pill reads
+  it), `error`
   {message}, `finished` {reason}, `compactionStarted` and
   `compactionFinished` {outcome: compacted, tooShort, cancelled or failed,
   messagesCompacted?, message?, summary?} (`AgentCompactionResult`; only
@@ -2050,6 +2053,27 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   result and the prompt both say so. The journal keeps a result's size
   only. Tested by `QuestionToolTests` and `Tests/ChatTranscript/
   QuestionCardCheck.swift`.
+  Run mode (2026-11-11, `Tools/RunModes.swift`, `AgentRunModeRequest` in
+  ApelinProtocol), in any chat: apelin_run_mode {mode: plan | build, why}
+  → the conversation's own run mode, the pill's setting, changed by the
+  agent. A switch to plan asks nobody and is applied at once: a plan run
+  can only read, and the case it is for — a task too large or too unclear
+  for one step — is exactly when stopping to ask would leave it
+  unthought-through. A switch to build is the reader's decision: the call
+  waits on the gate as a question does, `detail.runMode` {mode, why}
+  carrying the agent's own sentence, which the card shows under the title
+  Switch to build mode; `agentApprove`'s approve applies it and deny keeps
+  the plan, the result saying so. `auto` is refused: a run that stops
+  asking is the reader's choice about the device, not the model's about
+  the task. Either way the session records `runModeChanged` {mode, why},
+  which the app's transcript reads into the composer's pill and
+  `ComposerModeStore`, so the change outlives the run and the next prompt
+  goes out with it, a change made while the app was away included. It is
+  a read (`ToolRisk.readOnly`: it changes no file), a plan run may ask for
+  a build, Strict lets it through without a card of its own, and it is
+  never granted for the session. The prompt tells the agent when to take
+  a plan and that a plan must write its steps with apelin_todo_write
+  before it asks to build.
   Web pages (2026-10-29, `Tools/WebFetch.swift`, `HTMLText.swift`,
   `PublicHost.swift`), in any chat: apelin_web_fetch {url, offset?} → no
   host request: the worker fetches one public http or https page itself,

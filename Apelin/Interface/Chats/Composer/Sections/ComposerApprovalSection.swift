@@ -4,9 +4,12 @@ import UIKit
 /// The outstanding decision replaces the input. Only its result enters history.
 ///
 /// A question the agent asked (`ChatMessage.question`) takes the same place:
-/// its options in place of the detail, each a button, then Other… for an
-/// answer of the reader's own. One option answers it at once; a question
-/// that takes several has Send. Skip takes Deny's place.
+/// its numbered options in place of the detail, each a button, then Other…
+/// for an answer of the reader's own. Choosing an option never answers on its
+/// own — a mis-tap would send it — so the row under them is Skip on the left
+/// and Confirm on the right, and Confirm sends what is chosen. A question
+/// that takes one option keeps the option just chosen and drops the one
+/// before; one that takes several toggles each.
 final class ComposerApprovalSection: ComposerSectionView {
     /// The request and the decision; Approve on a request as root waits on
     /// the device owner's check there before anything is sent.
@@ -179,44 +182,60 @@ final class ComposerApprovalSection: ComposerSectionView {
         textScroll.contentOffset = .zero
     }
 
-    /// A question's options, each a button, then Other…. A check beside
-    /// each shows what is chosen when several may be.
+    /// A question's options, each a button numbered in the order shown, then
+    /// Other…. Every option shows the mark of the one chosen — a check
+    /// where several may be, a filled circle where one may.
     private func setOptions(of question: AgentQuestion) {
         for (index, option) in question.options.enumerated() {
-            let control = QuestionOptionControl(title: option.label, detail: option.detail, checks: question.multiple)
+            let control = QuestionOptionControl(
+                number: index + 1,
+                title: option.label,
+                detail: option.detail,
+                checks: true,
+                multiple: question.multiple,
+            )
             control.addAction(UIAction { [weak self] _ in self?.choose(index) }, for: .touchUpInside)
             optionViews.append(control)
         }
-        let other = QuestionOptionControl(title: String(localized: "Other…"), detail: nil, checks: false)
+        let other = QuestionOptionControl(
+            number: nil,
+            title: String(localized: "Other…"),
+            detail: nil,
+            checks: false,
+            multiple: false,
+        )
         other.addAction(UIAction { [weak self] _ in self?.answerOther() }, for: .touchUpInside)
         optionViews.append(other)
         optionViews.forEach { textScroll.addSubview($0) }
     }
 
-    /// Deny and Approve, or for a question Skip, and Send when it takes
-    /// several options — enabled once one is chosen.
+    /// Deny and Approve, or for a question Skip on the left and Confirm on
+    /// the right: Confirm sends the options chosen, and is disabled until one
+    /// is, so nothing is answered by a tap on an option alone.
     private func setButtons(for question: AgentQuestion?) {
-        if let question {
-            denyButton.setTitle(String(localized: "Skip"), for: .normal)
-            approveButton.setTitle(String(localized: "Send"), for: .normal)
-            approveButton.isHidden = !question.multiple
-            approveButton.isEnabled = !chosen.isEmpty
-        } else {
+        guard question != nil else {
             denyButton.setTitle(String(localized: "Deny"), for: .normal)
             approveButton.setTitle(String(localized: "Approve"), for: .normal)
             approveButton.isHidden = false
             approveButton.isEnabled = true
+            return
         }
+        denyButton.setTitle(String(localized: "Skip"), for: .normal)
+        approveButton.setTitle(String(localized: "Confirm"), for: .normal)
+        approveButton.isHidden = false
+        approveButton.isEnabled = !chosen.isEmpty
     }
 
     private func choose(_ index: Int) {
         guard let request, let question = request.question, question.options.indices.contains(index) else { return }
-        guard question.multiple else {
-            onAnswer?(request, AgentQuestionAnswer(selected: [question.options[index].label]))
-            return
-        }
-        if chosen.remove(index) == nil {
-            chosen.insert(index)
+        if question.multiple {
+            if chosen.remove(index) == nil {
+                chosen.insert(index)
+            }
+        } else {
+            // One answer: the option just chosen replaces any other, and
+            // Confirm sends it, so a mis-tap is undone by choosing again.
+            chosen = [index]
         }
         for (position, control) in optionViews.enumerated() where position < question.options.count {
             control.isChosen = chosen.contains(position)
@@ -295,13 +314,8 @@ final class ComposerApprovalSection: ComposerSectionView {
         let actionY = textScroll.frame.maxY + ChatMarkdownView.blockSpacing
         let buttonHeight = max(44, ceil(UIFont.preferredFont(forTextStyle: .headline).lineHeight + 22))
         let row = CGRect(x: 0, y: actionY, width: contentWidth, height: buttonHeight)
-        // A question that takes one option has Skip alone, across the row.
-        guard !approveButton.isHidden else {
-            denyButton.frame = row
-            return row.maxY + ChatMarkdownView.blockSpacing
-        }
         let buttonWidth = (contentWidth - ChatMarkdownView.blockSpacing) / 2
-        // Deny then Approve in reading order: right to left, Deny on the right
+        // Skip then Confirm in reading order: right to left, Skip on the right
         let deny = CGRect(x: 0, y: actionY, width: buttonWidth, height: buttonHeight)
         denyButton.frame = directionalFrame(deny, across: row)
         approveButton.frame = directionalFrame(
@@ -312,14 +326,17 @@ final class ComposerApprovalSection: ComposerSectionView {
     }
 }
 
-/// One option of a question: its label over its detail, in a rounded cell,
-/// with a check when several may be chosen. A single element, read as its
-/// label and detail, a button, selected while chosen.
+/// One option of a question: its number, then its label over its detail, in a
+/// rounded cell, with a check when several may be chosen. A single element,
+/// read as its number, label and detail, a button, selected while chosen.
 private final class QuestionOptionControl: UIControl {
     private let titleLabel = UILabel()
     private let detailLabel = UILabel()
     private let check = UIImageView()
     private let checks: Bool
+    /// Several options may be chosen: a check marks each, where one may be
+    /// chosen shows a filled circle, as a radio button does.
+    private let multiple: Bool
     private static let inset = UIEdgeInsets(top: 12, left: 14, bottom: 12, right: 14)
     private static let checkSize: CGFloat = 22
 
@@ -330,7 +347,7 @@ private final class QuestionOptionControl: UIControl {
     /// The check and the trait for `isChosen`; called from `init` too, where
     /// `didSet` does not run.
     private func updateCheck() {
-        check.image = UIImage(systemName: isChosen ? "checkmark.circle.fill" : "circle")
+        check.image = UIImage(systemName: checkName)
         check.tintColor = isChosen ? .label : .tertiaryLabel
         if isChosen {
             accessibilityTraits.insert(.selected)
@@ -339,13 +356,22 @@ private final class QuestionOptionControl: UIControl {
         }
     }
 
-    init(title: String, detail: String?, checks: Bool) {
+    private var checkName: String {
+        guard isChosen else { return "circle" }
+        return multiple ? "checkmark.circle.fill" : "largecircle.fill.circle"
+    }
+
+    init(number: Int?, title: String, detail: String?, checks: Bool, multiple: Bool) {
         self.checks = checks
+        self.multiple = multiple
         super.init(frame: .zero)
         backgroundColor = .tertiarySystemFill
         layer.cornerRadius = 10
         layer.cornerCurve = .continuous
-        titleLabel.text = title
+        // The number in the label itself, so VoiceOver reads it before the
+        // label and a screen reader hears which option it is.
+        let shown = number.map { "\($0). \(title)" } ?? title
+        titleLabel.text = shown
         titleLabel.font = .preferredFont(forTextStyle: .body)
         titleLabel.adjustsFontForContentSizeCategory = true
         titleLabel.textColor = .label
@@ -363,7 +389,7 @@ private final class QuestionOptionControl: UIControl {
             addSubview(view)
         }
         isAccessibilityElement = true
-        accessibilityLabel = [title, detail].compactMap(\.self).filter { !$0.isEmpty }.joined(separator: ", ")
+        accessibilityLabel = [shown, detail].compactMap(\.self).filter { !$0.isEmpty }.joined(separator: ", ")
         accessibilityTraits = .button
         updateCheck()
     }

@@ -713,6 +713,11 @@ actor EventRelay {
                 payload["title"] = .string(title)
             }
             return [(AgentNoticeRules.eventKind, .object(payload))]
+        case let .runModeChanged(runMode, reason):
+            return [("runModeChanged", .object([
+                "mode": .string(runMode.rawValue),
+                "reason": .string(reason),
+            ]))]
         case let .error(message):
             return [("error", .object(["message": .string(message)]))]
         case let .finished(reason):
@@ -840,6 +845,10 @@ actor EventRelay {
         // nothing to it, since the answer reaches only the model.
         case let .question(question):
             payload["detail"] = .object([AgentQuestionRules.detailKey: (try? ApelinCore.JSONValue(encoding: question)) ?? .null])
+        // The mode a run asks to go to and the reason on the card; the host
+        // matches nothing to it either.
+        case let .runMode(runMode):
+            payload["detail"] = .object([AgentRunModeRules.detailKey: (try? ApelinCore.JSONValue(encoding: runMode)) ?? .null])
         }
         return .object(payload)
     }

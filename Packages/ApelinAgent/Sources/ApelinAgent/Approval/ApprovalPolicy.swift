@@ -386,8 +386,10 @@ public struct ApprovalPolicy: Sendable, Hashable {
             return .allow(.notRequired)
 
         // The question is itself the card the reader answers: asking first
-        // whether to ask would be a second card for the same thing.
-        case .questionAsk:
+        // whether to ask would be a second card for the same thing. So is the
+        // mode switch: going to a plan asks nobody, and going back to a build
+        // is the card the tool itself raises, with the agent's reason on it.
+        case .questionAsk, .runMode:
             return .allow(.notRequired)
 
         // Instructions every later conversation, in every project, lists

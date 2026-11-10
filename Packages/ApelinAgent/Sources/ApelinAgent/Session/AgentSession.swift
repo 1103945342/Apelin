@@ -487,7 +487,7 @@ public actor AgentSession {
         let facts = await SystemState.facts(
             configuration.systemState,
             mode: runner.approvalMode,
-            runMode: runMode,
+            runMode: runner.currentRunMode,
             asksBeforeScreen: runner.asksBeforeScreen,
             changes: changes,
             hostRestarted: delta && restartUntoldBefore,
