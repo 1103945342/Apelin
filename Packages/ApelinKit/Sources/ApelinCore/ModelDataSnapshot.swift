@@ -91,6 +91,13 @@ extension ModelDataSnapshot {
     public static let fileName = "models.json"
     /// models.dev's whole catalog, the one the app downloads.
     public static let remoteURL = URL(string: "https://models.dev/api.json")!
+    /// The copy this repository's daily update keeps, already in this shape.
+    /// models.dev answers from Japan and is slow from China; the repository's
+    /// copy comes through jsDelivr, which is reachable there.
+    public static let mirrorURL =
+        URL(string: "https://cdn.jsdelivr.net/gh/1103945342/Apelin@main/Apelin/Resources/models.dev.json")!
+    /// How old the copy may be before the app looks for a newer one.
+    public static let refreshInterval: TimeInterval = 7 * 24 * 60 * 60
 
     /// `<data folder>/ModelData/models.json`, the one file the app writes and
     /// the agent reads.
@@ -109,9 +116,34 @@ extension ModelDataSnapshot {
     /// falls back to the catalog kwwk ships.
     public static func read(_ url: URL) -> ModelDataSnapshot? {
         guard let data = try? Data(contentsOf: url) else { return nil }
+        return decode(data)
+    }
+
+    /// The copy `data` holds, nil when it is not this shape: the app reads
+    /// models.dev's trimmed form and its own bundled copy the same way.
+    public static func decode(_ data: Data) -> ModelDataSnapshot? {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         return try? decoder.decode(ModelDataSnapshot.self, from: data)
+    }
+
+    /// The copy the app ships, read from its own bundle: what a device reads
+    /// before it has ever reached the network, and what it falls back to when a
+    /// copy it downloaded does not read.
+    public static func bundled(in bundle: Bundle = .main) -> ModelDataSnapshot? {
+        guard let url = bundle.url(forResource: bundledResource, withExtension: "json") else { return nil }
+        return read(url)
+    }
+
+    /// The bundled copy's file name without its extension.
+    public static let bundledResource = "models.dev"
+
+    /// Whether a newer copy is worth asking for: one that never says when it
+    /// was written is always stale, and a copy the clock puts in the future is
+    /// not.
+    public func isStale(now: Date = Date(), interval: TimeInterval = ModelDataSnapshot.refreshInterval) -> Bool {
+        guard let generatedAt else { return true }
+        return now.timeIntervalSince(generatedAt) > interval
     }
 
     /// Writes the copy beside the others, making `ModelData/` on the way.

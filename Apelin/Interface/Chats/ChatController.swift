@@ -854,6 +854,8 @@ final class ChatController: UIViewController {
                 choices: (account.models ?? []).map { model in
                     ComposerChoiceSheet.Choice(
                         title: model,
+                        // The name the catalog gives it, when one knows it.
+                        subtitle: account.capabilities?[model]?.catalogName,
                         isSelected: account.provider == selected?.provider && model == selected?.model,
                         modelTest: AgentModelTestRequest(provider: account.provider, model: model),
                     ) { ComposerModelSelection.choose(Self.selection(of: model, in: account), for: id) }

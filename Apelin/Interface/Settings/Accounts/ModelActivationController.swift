@@ -121,6 +121,12 @@ final class ModelActivationController: TableController, UISearchResultsUpdating 
         var content = cell.defaultContentConfiguration()
         content.text = model
         content.textProperties.numberOfLines = 0
+        // The name the catalog gives the model, when one knows it: the id the
+        // provider serves stays the row's own.
+        if let name = account.capabilities?[model]?.catalogName {
+            content.secondaryText = name
+            content.secondaryTextProperties.color = .secondaryLabel
+        }
         cell.contentConfiguration = content
         cell.accessoryType = row.selected ? .checkmark : .none
         cell.accessibilityTraits = row.selected ? [.button, .selected] : [.button]

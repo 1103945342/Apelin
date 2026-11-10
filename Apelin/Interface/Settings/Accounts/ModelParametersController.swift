@@ -115,15 +115,28 @@ final class ModelParameterFormController: TableController {
     }
 
     /// The entry the catalogs found, in their own words: the copy it was read
-    /// from, the provider key and the name it spells.
+    /// from, the provider key and the name it spells, and the figures a
+    /// conversation is read against — so the window is on the row that names
+    /// the entry, not only in a field left empty.
     private var catalogLine: String {
         guard let catalog else { return String(localized: "Not in Any Catalog") }
         let name = catalog.catalogName ?? model
         let copy = catalog.source == "models.dev"
             ? "models.dev"
             : String(localized: "Built-in Catalog")
-        guard let provider = catalog.catalogProvider, !provider.isEmpty else { return "\(copy) · \(name)" }
-        return "\(copy) · \(provider)/\(name)"
+        var line = catalog.catalogProvider.flatMap { $0.isEmpty ? nil : "\(copy) · \($0)/\(name)" }
+            ?? "\(copy) · \(name)"
+        var figures: [String] = []
+        if let window = catalog.contextWindow {
+            figures.append(String(localized: "\(window.formatted()) tokens"))
+        }
+        if let tokens = catalog.maxTokens {
+            figures.append(String(localized: "\(tokens.formatted()) tokens"))
+        }
+        if !figures.isEmpty {
+            line += " · " + figures.joined(separator: " / ")
+        }
+        return line
     }
 
     private lazy var dataSource = TableDataSource<Section, Row, Row>(

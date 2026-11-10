@@ -66,4 +66,31 @@ public enum ModelIdentity {
         var seen: Set<String> = []
         return stretches.compactMap { seen.insert($0.text).inserted ? $0.text : nil }
     }
+
+    /// A name with every break written the same way, so a catalog's own
+    /// spelling of a model and a relay's are one name: `deepseek-v4.1-flash`,
+    /// `deepseek_v4.1_flash` and `DeepSeek V4.1 Flash` all become
+    /// `deepseek v4.1 flash`. A name spelled with none of the breaks is kept
+    /// as it is.
+    ///
+    /// This is what finds a model whose name the catalog spells out in words
+    /// and files under an id of its own: kwwk files the model as
+    /// `deepseek-flash` and calls it "DeepSeek V4.1 Flash", so a relay serving
+    /// `cn:deepseek-v4.1-flash` matches only through its name.
+    public static func normalized(_ name: String) -> String {
+        var words: [String] = []
+        var word = ""
+        for character in name.lowercased() {
+            if breaks.contains(character) {
+                if !word.isEmpty {
+                    words.append(word)
+                    word = ""
+                }
+            } else {
+                word.append(character)
+            }
+        }
+        if !word.isEmpty { words.append(word) }
+        return words.joined(separator: " ")
+    }
 }

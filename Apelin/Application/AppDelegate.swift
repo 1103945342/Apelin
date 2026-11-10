@@ -34,6 +34,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         AlertControllerConfiguration.accentColor = AppAccent.color(glass: .systemBlue)
         AlertControllerConfiguration.accentForegroundColor = AppAccent.foreground(glass: .white)
         ConsoleLaunch.start()
+        // models.dev's catalog: the shipped copy in place, then a newer one if
+        // the copy on this device is old (ModelDataRefresh).
+        ModelDataRefresh.start()
         return true
     }
 

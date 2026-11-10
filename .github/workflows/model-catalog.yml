@@ -1,0 +1,55 @@
+# models.dev's catalog, kept in the repository so a device reads a model the
+# catalog kwwk ships does not name before it has ever reached the network.
+#
+# Every day at 20:00 Asia/Shanghai (12:00 UTC) this reads models.dev's api.json,
+# trims it to the fields a conversation reads, and commits Apelin/Resources/models.dev.json
+# when a model's figures changed — a day without a change leaves the file, and
+# its `generatedAt`, alone. The app ships that file, writes it into the data
+# folder on the first launch, and replaces it when its own copy is a week old.
+name: Model Catalog
+
+on:
+  schedule:
+    # GitHub's cron runs in UTC: 12:00 UTC is 20:00 in Asia/Shanghai.
+    - cron: "0 12 * * *"
+  # The first copy, and any change to how it is trimmed, without waiting a day.
+  push:
+    paths:
+      - Scripts/refresh-models-dev.py
+      - .github/workflows/model-catalog.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: model-catalog
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    name: Read models.dev and commit what changed
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Trim models.dev's catalog
+        shell: bash
+        run: python3 -I Scripts/refresh-models-dev.py .
+
+      - name: Commit the copy that changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$(git status --porcelain -- Apelin/Resources/models.dev.json)" ]]; then
+            echo "models.dev's catalog is unchanged"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- Apelin/Resources/models.dev.json
+          git commit -m "Update models.dev's catalog"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

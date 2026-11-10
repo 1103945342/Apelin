@@ -332,6 +332,29 @@ the same executable in session mode; the workers are its children.
   name, optional delegate method answered by accident and plain override in a
   final class; fix them, or list one kept on purpose in its `ACCEPTED` with the
   reason, before committing.
+- **A model finds its catalog entry by id, and by the name the catalog gives
+  it.** kwwk files the model a relay serves as `cn:deepseek-v4.1-flash` under
+  `deepseek-flash` and spells it "DeepSeek V4.1 Flash", so the lookup
+  (`ModelIdentity`, `ModelCatalogIndex`) tries the name as an id first and then
+  as a name with every break written one way (`deepseek v4.1 flash`). A stretch
+  from the middle of a word still matches nothing (`v4.1` alone is not a
+  model), and nothing is ever renamed: the endpoint's own id stays what the
+  pickers and the provider page show, and the catalog only supplies the window,
+  the reply ceiling, images and thinking levels — the entry a model was read as
+  is named, with those figures, in Settings ▸ Models ▸ that model.
+- **models.dev's catalog is a file in this repository, not a download.**
+  `.github/workflows/model-catalog.yml` reads `https://models.dev/api.json`
+  every day at 12:00 UTC (20:00 Asia/Shanghai), trims it with
+  `Scripts/refresh-models-dev.py` to the fields `ModelDataSnapshot` keeps, and
+  commits `Apelin/Resources/models.dev.json` only when a model's figures
+  changed — that commit's `generatedAt` is the stamp the app measures a week
+  from. The app ships the file, writes it into
+  `~/Documents/wiki.qaq.apelin/ModelData/models.json` on the first launch (the
+  one file the agent reads), and replaces it once its copy is a week old
+  (`ModelDataRefresh`): models.dev first, then this repository's copy through
+  jsDelivr, which answers where models.dev does not. There is no page for it —
+  it updates itself, and the page that had the buttons aborted inside UIKit's
+  reconfigure when its second update arrived.
 
 ## Decisions
 

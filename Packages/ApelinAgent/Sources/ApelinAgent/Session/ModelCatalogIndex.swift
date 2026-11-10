@@ -52,21 +52,39 @@ public struct ModelCatalogIndex: Sendable {
     /// `catalogKey` is the provider key to ask first — kwwk's own
     /// (`deepseek`, `anthropic`, `openai`), or nil for an endpoint the
     /// catalogs do not key, which is read from every provider's copy.
+    ///
+    /// A name is tried as a model id first, then as the name a catalog gives
+    /// the model it files differently: `deepseek-flash` is what kwwk calls the
+    /// model it names "DeepSeek V4.1 Flash", so a relay serving
+    /// `cn:deepseek-v4.1-flash` finds it through that name and no other way.
     public func entry(for id: String, catalogKey: String? = nil) -> Entry? {
+        Self.entry(
+            for: id,
+            catalogKey: catalogKey,
+            bundled: Self.shared.bundled,
+            snapshot: Self.shared.snapshot(),
+        )
+    }
+
+    /// The lookup over two tables, so the rules are read without a device's
+    /// files behind them.
+    static func entry(for id: String, catalogKey: String?, bundled: Table, snapshot: Table) -> Entry? {
         let candidates = ModelIdentity.candidates(id)
         guard !candidates.isEmpty else { return nil }
-        let bundled = Self.shared.bundled
-        let snapshot = Self.shared.snapshot()
         if let key = catalogKey?.lowercased(), !key.isEmpty {
-            if let entry = Self.best(in: bundled.byProvider[key] ?? [:], for: candidates)
-                ?? Self.best(in: snapshot.byProvider[key] ?? [:], for: candidates) {
+            if let entry = best(in: bundled.byProvider[key] ?? [:], for: candidates)
+                ?? bestByName(in: bundled.byProviderName[key] ?? [:], for: candidates)
+                ?? best(in: snapshot.byProvider[key] ?? [:], for: candidates)
+                ?? bestByName(in: snapshot.byProviderName[key] ?? [:], for: candidates) {
                 return entry
             }
         }
-        if let entry = Self.best(in: bundled.byID, for: candidates) {
+        if let entry = best(in: bundled.byID, for: candidates)
+            ?? bestByName(in: bundled.byName, for: candidates) {
             return entry
         }
-        return Self.best(in: snapshot.byID, for: candidates)
+        return best(in: snapshot.byID, for: candidates)
+            ?? bestByName(in: snapshot.byName, for: candidates)
     }
 
     /// Every model a catalog keys under `catalogKey`, as that catalog names
@@ -101,6 +119,26 @@ public struct ModelCatalogIndex: Sendable {
         return nil
     }
 
+    /// The one entry a provider files under a name, read the same way as an id.
+    private static func bestByName(in rows: [String: Entry], for candidates: [String]) -> Entry? {
+        for candidate in candidates {
+            for stretch in ModelIdentity.stretches(ModelIdentity.normalized(candidate)) {
+                if let entry = rows[stretch] { return entry }
+            }
+        }
+        return nil
+    }
+
+    /// The best of several providers' copies of one name.
+    private static func bestByName(in rows: [String: [Entry]], for candidates: [String]) -> Entry? {
+        for candidate in candidates {
+            for stretch in ModelIdentity.stretches(ModelIdentity.normalized(candidate)) {
+                if let entries = rows[stretch], let entry = entries.first { return entry }
+            }
+        }
+        return nil
+    }
+
     // MARK: - The tables
 
     struct Table: Sendable {
@@ -108,15 +146,25 @@ public struct ModelCatalogIndex: Sendable {
         var byProvider: [String: [String: Entry]] = [:]
         /// Lowercased model id → every provider's entry, best first.
         var byID: [String: [Entry]] = [:]
+        /// Provider key → normalized display name → entry, for the models a
+        /// catalog files under an id of its own.
+        var byProviderName: [String: [String: Entry]] = [:]
+        /// Normalized display name → every provider's entry, best first.
+        var byName: [String: [Entry]] = [:]
 
         /// Files each entry under its name, once, with every provider's copies
         /// of a name ordered: the provider the name mentions first, then by
         /// provider key.
         mutating func indexByID() {
             var byID: [String: [Entry]] = [:]
+            var byName: [String: [Entry]] = [:]
             for (_, rows) in byProvider {
                 for (key, entry) in rows {
                     byID[key, default: []].append(entry)
+                    let name = ModelIdentity.normalized(entry.name)
+                    if name.count >= ModelIdentity.minimumLength {
+                        byName[name, default: []].append(entry)
+                    }
                 }
             }
             for key in byID.keys {
@@ -127,7 +175,16 @@ public struct ModelCatalogIndex: Sendable {
                     return left.provider < right.provider
                 }
             }
+            for key in byName.keys {
+                byName[key]?.sort { left, right in
+                    let named = key.contains(left.provider.lowercased())
+                    let otherNamed = key.contains(right.provider.lowercased())
+                    if named != otherNamed { return named }
+                    return left.provider < right.provider
+                }
+            }
             self.byID = byID
+            self.byName = byName
         }
     }
 
@@ -137,11 +194,20 @@ public struct ModelCatalogIndex: Sendable {
         var table = Table()
         for row in providers {
             var rows: [String: Entry] = [:]
+            var names: [String: Entry] = [:]
+            let provider = row.provider.lowercased()
             for model in row.models {
                 rows[model.id.lowercased()] = model.entry
+                // One name per provider: the first of two models calling
+                // themselves DeepSeek V4.1 Flash is the one a relay means.
+                let name = ModelIdentity.normalized(model.entry.name)
+                if name.count >= ModelIdentity.minimumLength, names[name] == nil {
+                    names[name] = model.entry
+                }
             }
             if !rows.isEmpty {
-                table.byProvider[row.provider.lowercased()] = rows
+                table.byProvider[provider] = rows
+                table.byProviderName[provider] = names
             }
         }
         table.indexByID()
