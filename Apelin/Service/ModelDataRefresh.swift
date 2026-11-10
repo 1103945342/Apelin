@@ -8,10 +8,11 @@ import os
 /// writes `Apelin/Resources/models.dev.json` every day), and the first launch
 /// writes it into the data folder the agent reads, so a device that has never
 /// reached the network still reads models the catalog kwwk ships does not name.
-/// A copy older than a week is replaced in the background — models.dev first,
-/// then this repository's copy through jsDelivr, which is reachable where
-/// models.dev is not — and a copy that cannot be fetched is kept as it is: no
-/// conversation ever waits for this.
+/// A copy older than a week is replaced in the background — this repository's
+/// copy through jsDelivr first, which is reachable where models.dev is not
+/// (models.dev itself does not answer from mainland China), then models.dev —
+/// and a copy that cannot be fetched is kept as it is: no conversation ever
+/// waits for this.
 enum ModelDataRefresh {
     private static let logger = Logger(subsystem: "wiki.qaq.apelin", category: "ModelData")
     /// The last attempt, so a device with no network tries once a day rather
@@ -49,7 +50,10 @@ enum ModelDataRefresh {
             return
         }
         defaults.set(now, forKey: attemptKey)
-        for source in [ModelDataSnapshot.remoteURL, ModelDataSnapshot.mirrorURL] {
+        // This repository's copy first: the workflow refreshes it every day, so
+        // it is at most a day behind, and it comes through jsDelivr, which
+        // answers where models.dev does not (it does not from mainland China).
+        for source in [ModelDataSnapshot.mirrorURL, ModelDataSnapshot.remoteURL] {
             do {
                 let fresh = try await fetch(source)
                 // A copy with nothing in it is no copy: keep what is there.

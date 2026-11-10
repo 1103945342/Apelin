@@ -351,10 +351,10 @@ the same executable in session mode; the workers are its children.
   from. The app ships the file, writes it into
   `~/Documents/wiki.qaq.apelin/ModelData/models.json` on the first launch (the
   one file the agent reads), and replaces it once its copy is a week old
-  (`ModelDataRefresh`): models.dev first, then this repository's copy through
-  jsDelivr, which answers where models.dev does not. There is no page for it —
-  it updates itself, and the page that had the buttons aborted inside UIKit's
-  reconfigure when its second update arrived.
+  (`ModelDataRefresh`): this repository's copy through jsDelivr first, which
+  answers where models.dev does not, then models.dev itself. There is no page
+  for it — it updates itself, and the page that had the buttons aborted inside
+  UIKit's reconfigure when its second update arrived.
 
 ## Decisions
 
