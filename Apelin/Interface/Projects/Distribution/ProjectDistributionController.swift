@@ -26,7 +26,7 @@ final class ProjectDistributionController: TableController {
     }
 
     private enum Row: Hashable {
-        case project, package(BuildBootstrap), publish, target(BuildBootstrap), checking, ready, blocker(Int), issue(Int), prepare, unavailable
+        case project, package(BuildBootstrap), publish, target(BuildBootstrap), configuration(BuildConfiguration), checking, ready, blocker(Int), issue(Int), prepare, unavailable
     }
 
     private struct RowContent: Equatable {
@@ -46,6 +46,12 @@ final class ProjectDistributionController: TableController {
     private let onPrepare: ((String) -> Void)?
     @objc private dynamic var displayName: String?
     private var selectedTarget: BuildBootstrap? = .roothide
+    /// The configuration an `.ipa` project builds: it has no bootstrap to
+    /// choose between, only Debug or Release.
+    private var selectedConfiguration: BuildConfiguration = .release
+    /// Whether the description builds one app as an `.ipa`; read with the
+    /// manifest, so the page offers no target for one.
+    private var isIPA = false
     /// Nil until the manifest is read; one that cannot build takes the
     /// targets away.
     private var method: ProjectBuildMethod?
@@ -107,7 +113,10 @@ final class ProjectDistributionController: TableController {
             switch section {
             case .packages:
                 String(localized: "Publish the selected packages to your package repository together, or share one. Each is the file its build made, unchanged.")
-            case .target: String(localized: "Choose one target, then tap “Build”. To build the other target, come back and build again.")
+            case .target:
+                self?.isIPA == true
+                    ? String(localized: "Choose Debug or Release, then tap “Build”.")
+                    : String(localized: "Choose one target, then tap “Build”. To build the other target, come back and build again.")
             case .readiness:
                 self?.blockers.isEmpty == false
                     ? String(localized: "Fix these before building.")
@@ -152,6 +161,9 @@ final class ProjectDistributionController: TableController {
         case let .target(target) where target != selectedTarget:
             selectedTarget = target
             refreshCheck()
+        case let .configuration(configuration) where configuration != selectedConfiguration:
+            selectedConfiguration = configuration
+            updateRows()
         case .prepare:
             prepare()
         default:
@@ -197,7 +209,7 @@ final class ProjectDistributionController: TableController {
             content.textProperties.color = value.enabled ? .tintColor : .tertiaryLabel
             cell.selectionStyle = value.enabled ? .default : .none
             cell.accessibilityTraits = value.enabled ? .button : [.button, .notEnabled]
-        case .target:
+        case .target, .configuration:
             cell.accessoryType = value.selected ? .checkmark : .none
             cell.selectionStyle = .default
             cell.accessibilityTraits = value.selected ? [.button, .selected] : .button
@@ -299,9 +311,17 @@ final class ProjectDistributionController: TableController {
             sections.append((.packages, rows + [publish]))
         }
         if canBuild {
-            sections.append((.target, BuildBootstrap.allCases.map { target in
-                RowContent(row: .target(target), text: target.rawValue, selected: target == selectedTarget)
-            }))
+            sections.append((.target, isIPA
+                ? [BuildConfiguration.debug, .release].map { configuration in
+                    RowContent(
+                        row: .configuration(configuration),
+                        text: configuration == .debug ? String(localized: "Debug") : String(localized: "Release"),
+                        selected: configuration == selectedConfiguration,
+                    )
+                }
+                : BuildBootstrap.allCases.map { target in
+                    RowContent(row: .target(target), text: target.rawValue, selected: target == selectedTarget)
+                }))
         }
         if !readiness.isEmpty {
             sections.append((.readiness, readiness))
@@ -344,6 +364,7 @@ final class ProjectDistributionController: TableController {
                 let project = try await DistributionProject.resolve(named: projectName)
                 guard !Task.isCancelled else { return }
                 method = project.method
+                isIPA = project.isIPA
                 guard project.method.canBuild else {
                     blockers = []
                     issues = []
@@ -381,6 +402,7 @@ final class ProjectDistributionController: TableController {
             guard let self else { return }
             var found: [BuildBootstrap: DistributionPackage] = [:]
             if let project = try? await DistributionProject.resolve(named: projectName), project.method.canBuild {
+                isIPA = project.isIPA
                 // the link needs no network; a failure leaves every package unpublished
                 let linked = try? await ApelinService.app.distributionRepositoryList(repositories: false).linked
                 found = await DistributionPackages.newest(
@@ -441,7 +463,13 @@ final class ProjectDistributionController: TableController {
         let open = { [weak self] in
             guard let self else { return }
             navigationController?.pushViewController(
-                DistributionBuildController(projectName: projectName, target: target, method: method),
+                DistributionBuildController(
+                    projectName: projectName,
+                    target: target,
+                    method: method,
+                    configuration: selectedConfiguration,
+                    isIPA: isIPA,
+                ),
                 animated: true,
             )
         }
@@ -463,7 +491,7 @@ final class ProjectDistributionController: TableController {
         guard !checking, let onPrepare else { return }
         let prompt = if method == .script {
             String(localized: "Prepare this workspace for distribution: run apelin_project_check_distribution and fix everything it lists, and make sure its build script writes a release package for each target when APELIN_CONFIGURATION is release, with the package’s real name, identifier, author and a new version. Then tell me what you changed. Do not build yet.")
-        } else if let target = selectedTarget {
+        } else if let target = selectedTarget, !isIPA {
             String(localized: "Prepare this project for distribution to \(target.rawValue): run apelin_project_check_distribution, fix everything it lists (the package’s name, description, author and version, its identifiers, and the app’s icon if it has one), then tell me what you changed. Do not build yet.")
         } else {
             String(localized: "Prepare this project for distribution: run apelin_project_check_distribution, fix everything it lists (the package’s name, description, author and version, its identifiers, and the app’s icon if it has one), then tell me what you changed. Do not build yet.")
@@ -494,6 +522,9 @@ enum DistributionProject {
         /// workspace, whose script decides both, and a description that
         /// names neither.
         var package: (id: String, version: String)?
+        /// Whether the description packages one app as an `.ipa`, which is
+        /// built for a configuration rather than for a bootstrap.
+        var isIPA: Bool
     }
 
     static func resolve(named name: String) async throws -> Manifest {
@@ -517,7 +548,13 @@ enum DistributionProject {
             {
                 package = (packageID, version)
             }
-            return Manifest(id: id, method: method, package: package)
+            return Manifest(
+                id: id,
+                method: method,
+                package: package,
+                // the description's own format; absent means a .deb
+                isIPA: value["package"]?["format"]?.stringValue == BuildArtifact.ipaFormat,
+            )
         }.value
     }
 }
