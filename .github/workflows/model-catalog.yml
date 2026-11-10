@@ -75,7 +75,9 @@ jobs:
           GH_REPO: ${{ github.repository }}
         shell: bash
         run: |
-          set -euo pipefail
+          # The annotation below already carries the reason; an issue is a
+          # second copy of it, and one that cannot be filed is not a failure.
+          set +e
           title="models.dev's catalog could not be read"
           {
             echo "The update of \`Apelin/Resources/models.dev.json\` did not finish, so the catalog"
@@ -101,9 +103,12 @@ jobs:
           GH_REPO: ${{ github.repository }}
         shell: bash
         run: |
-          set -euo pipefail
+          # A run that cannot tidy this up has still done its work: the issue
+          # is a note, and failing the job over it would mark a good copy bad.
+          set +e
           title="models.dev's catalog could not be read"
           open=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
           if [[ -n "$open" ]]; then
             gh issue close "$open" --comment "models.dev answered again; the shipped copy is updated."
           fi
+          exit 0
