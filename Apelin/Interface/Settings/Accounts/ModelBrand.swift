@@ -30,7 +30,6 @@ enum ModelBrand: String, CaseIterable {
     case miniMax
     case nova
     case phi
-    case granite
     case perplexity
     case nvidia
 
@@ -54,7 +53,6 @@ enum ModelBrand: String, CaseIterable {
         case .miniMax: ["minimax", "abab"]
         case .nova: ["nova"]
         case .phi: ["phi"]
-        case .granite: ["granite"]
         case .perplexity: ["perplexity", "sonar"]
         case .nvidia: ["nemotron", "nvidia"]
         }
@@ -78,7 +76,6 @@ enum ModelBrand: String, CaseIterable {
         case .miniMax: "ProviderMiniMax"
         case .nova: "ProviderNova"
         case .phi: "ProviderPhi"
-        case .granite: "ProviderGranite"
         case .perplexity: "ProviderPerplexity"
         case .nvidia: "ProviderNvidia"
         }

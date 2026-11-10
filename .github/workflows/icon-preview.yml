@@ -44,10 +44,9 @@ jobs:
             name="$(basename "$(dirname "$svg")" .imageset)"
             rsvg-convert -w 256 -h 256 --keep-aspect-ratio "$svg" -o "/tmp/icons/$name.png"
           done
-          montage /tmp/icons/*.png \
-            -tile 6x -geometry 120x120+18+18 -background white \
-            -label '%t' -pointsize 16 -fill black \
-            -border 1 -bordercolor '#DDDDDD' \
+          montage -font DejaVu-Sans -pointsize 14 -label '%t' \
+            /tmp/icons/*.png \
+            -tile 6x -geometry 120x120+16+16 -background white -fill black \
             Documents/Icon/provider-icons.png
           ls -l Documents/Icon/provider-icons.png
 
