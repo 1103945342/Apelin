@@ -92,8 +92,9 @@ public actor AccountDesk {
                 var models = ProviderModels.list(provider, credentials: credentials)
                 // A custom endpoint's models live in the app's settings, never
                 // in the credentials: without them the catalogs would have
-                // nothing to name for the models the app shows.
-                for id in extraModels[provider.storeID] ?? [] where !models.contains(id) {
+                // nothing to name for the models the app shows. The app keys
+                // them by the provider's own id, which every process knows.
+                for id in extraModels[provider.rawValue] ?? [] where !models.contains(id) {
                     models.append(id)
                 }
                 account.models = models

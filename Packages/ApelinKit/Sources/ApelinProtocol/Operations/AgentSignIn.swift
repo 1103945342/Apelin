@@ -132,8 +132,8 @@ public struct AgentAccountListRequest: OperationRequest {
     public static let operation = AppOperation.agentAccountList
     /// Model ids this device keeps for a provider and the agent's own list does
     /// not: a custom endpoint's model, saved in the app's settings and never
-    /// in the credentials. Keyed by the provider's store id
-    /// (`openAICompatible`). The catalogs are read over these too, so a relay's
+    /// in the credentials. Keyed by the provider's id (`AgentProvider.rawValue`,
+    /// `openAICompatible`). The catalogs are read over these too, so a relay's
     /// model is named and measured like one of the provider's own.
     public var extraModels: [String: [String]]?
     public init(extraModels: [String: [String]]? = nil) {

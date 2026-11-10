@@ -38,7 +38,7 @@ enum EnabledModels {
     }
 
     /// The model ids this device keeps for each provider, keyed by the
-    /// provider's store id: handed to the account listing so the catalogs are
+    /// provider's own id: handed to the account listing so the catalogs are
     /// read over the models the app shows — a custom endpoint's own — and not
     /// only the ones the agent can list for itself.
     static func knownModelIDs() -> [String: [String]] {
@@ -48,7 +48,7 @@ enum EnabledModels {
                 .union(customIDs(for: provider))
                 .subtracting(hiddenIDs(for: provider))
             if !models.isEmpty {
-                known[provider.storeID] = models.sorted()
+                known[provider.rawValue] = models.sorted()
             }
         }
         return known
