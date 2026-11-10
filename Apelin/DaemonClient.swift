@@ -59,16 +59,10 @@ final class DaemonClient: ApelinTransport, @unchecked Sendable {
         guard let connection = await connection() else {
             throw ApelinError(.backendUnavailable, "Apelin’s background service is not running")
         }
-        // Attach requests add their wait to the ordinary bound. A model test
-        // has its own bounded worker operation and needs that allowance too.
+        // Attach requests add their wait to the ordinary bound. A model test is
+        // a task now and answers with its handle at once, like any other.
         // An attach omitting its wait uses the same default as the host.
         var bound = Self.callMargin
-        if request.operation == .agentModelTest {
-            // The account worker bounds the whole probe at 60 seconds. Leave
-            // room for dispatch and the final report, rather than discarding
-            // its timings and partial reply after the normal 20-second bound.
-            bound += 60
-        }
         if let attach = request.operation.requestType as? any TaskAttachRequest.Type {
             let wait = (try? JSONCoding.decode(WaitField.self, from: request.payload))?.waitMilliseconds
                 ?? attach.defaultWaitMilliseconds

@@ -8,9 +8,10 @@ enum AgentModelTester {
     static func run(
         _ request: AgentModelTestRequest,
         credentials: any CredentialSource,
+        progress: (@Sendable (AgentModelTestProgress) -> Void)? = nil,
     ) async -> AgentModelTestResponse {
         let cancellation = CancellationHandle()
-        let report = ModelTestReport { cancellation.cancel() }
+        let report = ModelTestReport(cancelRequest: { cancellation.cancel() }, progress: progress)
         return await withTaskCancellationHandler {
             await withCheckedContinuation { continuation in
                 report.attach(continuation)

@@ -1,3 +1,4 @@
+import ApelinCore
 import ApelinProtocol
 import UIKit
 
@@ -8,6 +9,9 @@ import UIKit
 /// went wrong first, then what each stage of the request cost, then the model's
 /// words, and the two parameters the request carried last. A reader who wants
 /// only "did it work, and where did it stop" reads the first two groups.
+///
+/// The whole list is on screen from the start and fills in as the task reports
+/// each stage, so the page shows where the request is while it waits.
 final class ModelConnectivityController: UITableViewController {
     private enum Section {
         case verdict
@@ -29,6 +33,9 @@ final class ModelConnectivityController: UITableViewController {
     private let request: AgentModelTestRequest
     private let spinner = UIActivityIndicatorView(style: .medium)
     private var work: Task<Void, Never>?
+    /// What each stage has cost so far, and the one running now.
+    private var progress: [AgentModelTestPhase: Double] = [:]
+    private var running: AgentModelTestPhase?
     private var result: AgentModelTestResponse?
     @objc private dynamic var transportFailure: String?
 
@@ -55,6 +62,8 @@ final class ModelConnectivityController: UITableViewController {
 
     private func start() {
         work?.cancel()
+        progress = [:]
+        running = nil
         result = nil
         transportFailure = nil
         // The spinner is the only way off this page while the request runs;
@@ -66,16 +75,53 @@ final class ModelConnectivityController: UITableViewController {
         tableView.reloadData()
         let request = request
         work = Task { [weak self] in
+            guard let self else { return }
             do {
-                let result = try await ApelinService.app.agentModelTest(request)
-                guard !Task.isCancelled else { return }
-                self?.result = result
+                let handle = try await ApelinService.app.agentModelTest(request)
+                if Task.isCancelled { return }
+                for try await event in ApelinService.app.events(of: handle) {
+                    if Task.isCancelled { return }
+                    if apply(event) { break }
+                }
             } catch {
                 guard !Task.isCancelled else { return }
-                self?.transportFailure = error.readableMessage
+                transportFailure = error.readableMessage
             }
-            self?.finishModelTest()
+            if Task.isCancelled { return }
+            if result == nil, transportFailure == nil {
+                transportFailure = String(localized: "Unavailable")
+            }
+            finishModelTest()
         }
+    }
+
+    /// One event: a stage as it starts or ends, or the final `state` that
+    /// carries the report. Answers whether the task has ended.
+    private func apply(_ event: TaskEvent) -> Bool {
+        if event.kind == AgentModelTestProgress.eventKind {
+            guard let stage = AgentModelTestProgress(payload: event.payload) else { return false }
+            if let milliseconds = stage.milliseconds {
+                progress[stage.phase] = milliseconds
+                if running == stage.phase { running = nil }
+            } else {
+                running = stage.phase
+            }
+            reloadStages()
+            return false
+        }
+        guard event.kind == TaskEvent.stateKind else { return false }
+        let state = event.payload?["state"]?.stringValue.flatMap(TaskState.init(rawValue:))
+        guard state?.isTerminal == true else { return false }
+        if let value = event.payload?[AgentModelTestResponse.stateMember],
+           let report = try? value.decode(AgentModelTestResponse.self)
+        {
+            for stage in report.stages { progress[stage.name] = stage.milliseconds }
+            result = report
+        } else if let message = event.payload?["message"]?.stringValue {
+            transportFailure = message
+        }
+        running = nil
+        return true
     }
 
     @objc private dynamic func finishModelTest() {
@@ -94,6 +140,16 @@ final class ModelConnectivityController: UITableViewController {
         tableView.reloadData()
     }
 
+    /// The stages group is the only one that changes while the task runs:
+    /// reloading the whole list would flash the verdict and the reply with it.
+    private func reloadStages() {
+        guard let section = sections.firstIndex(of: .stages) else { return }
+        let rows = Self.phases.indices.map { IndexPath(row: $0, section: section) }
+        UIView.performWithoutAnimation {
+            tableView.reloadRows(at: rows, with: .none)
+        }
+    }
+
     // MARK: - What the screen shows
 
     private var isFinished: Bool {
@@ -109,10 +165,9 @@ final class ModelConnectivityController: UITableViewController {
         return transportFailure
     }
 
-    /// Nothing is known until the worker answers, so a running test shows the
-    /// verdict alone: a stage list filled in advance would be a guess.
+    /// Every group is here from the start: the stages fill in as the task
+    /// reports them, rather than appearing together at the end.
     private var sections: [Section] {
-        guard isFinished else { return [.verdict] }
         var sections: [Section] = [.verdict, .stages, .reply]
         if !thinking.isEmpty { sections.append(.thoughts) }
         sections.append(.parameters)
@@ -162,6 +217,15 @@ final class ModelConnectivityController: UITableViewController {
             (.response, String(localized: "Receive Response")),
             (.total, String(localized: "Total Time")),
         ]
+    }
+
+    /// What a stage row says now: its time once it has ended, the spinner's
+    /// sentence while it runs, and plain words for one not reached yet.
+    private func stageValue(_ phase: AgentModelTestPhase) -> (text: String, active: Bool) {
+        if let milliseconds = progress[phase] { return (Self.duration(milliseconds), false) }
+        if isFinished { return (String(localized: "Not Reached"), false) }
+        if running == phase { return (String(localized: "Testing…"), true) }
+        return (String(localized: "Waiting"), false)
     }
 
     private static func duration(_ milliseconds: Double) -> String {
@@ -290,22 +354,35 @@ final class ModelConnectivityController: UITableViewController {
     private func stageCell(_ tableView: UITableView, at indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: Self.plainCell, for: indexPath)
         let (phase, name) = Self.phases[indexPath.row]
-        let value = result?.stages.first { $0.name == phase }.map { Self.duration($0.milliseconds) }
+        let value = stageValue(phase)
         var config = UIListContentConfiguration.valueCell()
         config.text = name
-        config.secondaryText = value ?? String(localized: "Not Reached")
-        config.secondaryTextProperties.color = value == nil ? .secondaryLabel : .label
-        config.secondaryTextProperties.font = Self.numberFont
+        // The sentence belongs to the row's value, so VoiceOver reads "Time to
+        // First Event, Testing…" while the row spins; the spinner is decoration.
+        config.secondaryText = value.text
+        config.secondaryTextProperties.color = progress[phase] == nil ? .secondaryLabel : .label
+        config.secondaryTextProperties.font = progress[phase] == nil
+            ? .preferredFont(forTextStyle: .body)
+            : Self.numberFont
         if phase == .total {
             config.textProperties.font = .preferredFont(forTextStyle: .headline)
-            config.secondaryTextProperties.font = Self.boldNumberFont
+            if progress[phase] != nil {
+                config.secondaryTextProperties.font = Self.boldNumberFont
+            }
         }
         cell.contentConfiguration = config
         cell.selectionStyle = .none
+        if value.active {
+            let spinner = UIActivityIndicatorView(style: .medium)
+            spinner.startAnimating()
+            cell.accessoryView = spinner
+        } else {
+            cell.accessoryView = nil
+        }
         return cell
     }
 
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    override func tableView(_: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         guard sections[indexPath.section] == .thoughts else { return }
         navigationController?.pushViewController(ThoughtsController(text: thinking), animated: true)

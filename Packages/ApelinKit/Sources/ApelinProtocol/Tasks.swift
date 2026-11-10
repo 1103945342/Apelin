@@ -104,12 +104,18 @@ public enum TaskKind: String, Codable, Sendable {
     /// stopped process's alone.
     case signIn
 
+    /// One provider connectivity probe in apelin-agent's `credential-import`
+    /// instance: a `stage` event as each phase starts and ends, then the
+    /// report in the final `state`. Read with `agentAttach`; never resumed,
+    /// since the probe died with the process that ran it.
+    case modelTest
+
     /// The operation that attaches to this kind of task.
     public var attachOperation: AppOperation {
         switch self {
         case .environment: .environmentAttach
         case .build, .install: .buildAttach
-        case .agent, .signIn: .agentAttach
+        case .agent, .signIn, .modelTest: .agentAttach
         case .terminal: .ptyAttach
         case .logStream: .logStream
         case .confirmLoaded: .confirmLoadedAttach

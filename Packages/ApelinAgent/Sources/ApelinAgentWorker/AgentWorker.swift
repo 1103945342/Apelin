@@ -194,10 +194,31 @@ public enum AgentWorker {
             }
         case .agentModelTest:
             await WorkerMain.serve(AgentModelTestRequest.self, request) { query in
-                await AgentModelTester.run(
-                    query,
-                    credentials: KeychainCredentialSource(accessGroup: keychainAccessGroup),
-                )
+                guard let taskID = request.taskID else {
+                    throw ApelinError(.badRequest, "a model test requires a task")
+                }
+                // The probe can take a minute: the handle goes back at once and
+                // each stage is emitted as it starts and ends, then the report
+                // travels as the `result` of the final `state`.
+                Task.detached(priority: .userInitiated) {
+                    let response = await AgentModelTester.run(
+                        query,
+                        credentials: KeychainCredentialSource(accessGroup: keychainAccessGroup),
+                    ) { stage in
+                        context.emit(taskID, AgentModelTestProgress.eventKind, stage.payload)
+                    }
+                    var payload: [String: JSONValue] = [
+                        "state": .string(response.success ? TaskState.succeeded.rawValue : TaskState.failed.rawValue),
+                    ]
+                    if let report = try? JSONValue(encoding: response) {
+                        payload[AgentModelTestResponse.stateMember] = report
+                    }
+                    if let failure = response.failure {
+                        payload["message"] = .string(failure)
+                    }
+                    context.emit(taskID, TaskEvent.stateKind, .object(payload))
+                }
+                return TaskHandle(taskID: taskID, kind: .modelTest)
             }
         case .agentRewritePrompt:
             await WorkerMain.serve(AgentRewritePromptRequest.self, request) { query in
