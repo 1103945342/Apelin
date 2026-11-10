@@ -1,0 +1,66 @@
+# A sheet of every model and provider mark, drawn from the assets themselves,
+# so the icons can be looked at without installing a build: `rsvg-convert`
+# rasterises each SVG and ImageMagick tiles them with their own names.
+#
+# It writes `Documents/Icon/provider-icons.png`, which the project keeps as the
+# record of what the app draws. Run it after adding or replacing a mark.
+name: Icon Sheet
+
+on:
+  push:
+    paths:
+      - Apelin/Resources/Assets.xcassets/Provider*.imageset/**
+      - .github/workflows/icon-preview.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: icon-sheet
+  cancel-in-progress: true
+
+jobs:
+  sheet:
+    name: Draw every mark
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install the renderer
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends librsvg2-bin imagemagick
+
+      - name: Draw the sheet
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/icons Documents/Icon
+          for svg in Apelin/Resources/Assets.xcassets/Provider*.imageset/*.svg; do
+            name="$(basename "$(dirname "$svg")" .imageset)"
+            rsvg-convert -w 256 -h 256 --keep-aspect-ratio "$svg" -o "/tmp/icons/$name.png"
+          done
+          montage /tmp/icons/*.png \
+            -tile 6x -geometry 120x120+18+18 -background white \
+            -label '%t' -pointsize 16 -fill black \
+            -border 1 -bordercolor '#DDDDDD' \
+            Documents/Icon/provider-icons.png
+          ls -l Documents/Icon/provider-icons.png
+
+      - name: Commit the sheet
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$(git status --porcelain -- Documents/Icon/provider-icons.png)" ]]; then
+            echo "the sheet is unchanged"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- Documents/Icon/provider-icons.png
+          git commit -m "Draw the provider icon sheet"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
