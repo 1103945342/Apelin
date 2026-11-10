@@ -385,10 +385,11 @@ private final class GitDiffLineCell: UITableViewCell {
         for label in [oldNumber, newNumber] {
             label.font = GitTheme.mono(10)
             label.adjustsFontForContentSizeCategory = true
-            label.textColor = GitTheme.onSurfaceVariant.withAlphaComponent(0.6)
+            // The numbers sit on the line's own background, an added or removed
+            // line's tint included: a band of their own would cut the row in
+            // two.
+            label.textColor = GitTheme.onSurfaceVariant
             label.textAlignment = .right
-            label.backgroundColor = GitTheme.surfaceVariant.withAlphaComponent(0.5)
-            label.clipsToBounds = true
         }
         divider.backgroundColor = GitTheme.outlineVariant.withAlphaComponent(0.5)
         prefix.font = GitTheme.mono(12, .bold)
