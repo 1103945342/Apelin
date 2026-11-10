@@ -45,7 +45,14 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          python3 -I Scripts/refresh-models-dev.py . 2>&1 | tee trim.log
+          if python3 -I Scripts/refresh-models-dev.py . 2>&1 | tee trim.log; then
+            exit 0
+          fi
+          # The log is not readable without an administrator's account; an
+          # annotation is, and it carries the reason.
+          reason="$(tail -n 6 trim.log | tr '\n' ' ' | cut -c1-900)"
+          echo "::error title=models.dev could not be read::${reason}"
+          exit 1
 
       - name: Commit the copy that changed
         shell: bash
