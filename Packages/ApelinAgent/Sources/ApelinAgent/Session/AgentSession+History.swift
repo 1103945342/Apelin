@@ -129,28 +129,22 @@ extension AgentSession {
         await recordContextUsage()
     }
 
-    /// Writes the historical model/UI snapshot, not today's edited prefix.
-    /// Sealed snapshots can be read while the source is running or compacting.
+    /// Writes the model/UI conversation through the turn of `id` into a new
+    /// session, read from the conversation log rather than from a snapshot
+    /// taken when that turn ended: the log keeps every segment it ever
+    /// wrote, so a compaction cannot take an older turn away.
     public func fork(through id: UUID, as newSessionID: String) async throws {
         guard SessionEventLog.isValidSessionID(newSessionID), newSessionID.lowercased() != self.id.lowercased() else {
             throw ApelinError(.badRequest, "a fork's session ID must be a new UUID")
         }
-        var context = try await log.readForkContext(id)
-        if context == nil {
-            // Seed legacy sessions only from their surviving model messages;
-            // a UI log is not a lossless substitute for a lost transcript.
-            try requireIdle()
-            try await log.writeHistorySnapshot(agent.state.messages, anchors: anchors, seal: true)
-            context = try await log.readForkContext(id)
-        }
-        guard let context else {
-            throw ApelinError(.conflict, "No saved model context exists for this message. Older versions did not preserve context removed by compaction or rewind; queued messages have no model context until taken.")
-        }
         guard var metadata = try await log.readMetadata() else {
             throw ApelinError(.notFound, "This chat's record could not be read.")
         }
+        guard let context = try await forkedContext(through: id) else {
+            throw ApelinError(.conflict, "No saved model context exists for this message. Older versions did not preserve context removed by compaction or rewind; queued messages have no model context until taken.")
+        }
         // persisted-read: an unreadable log leaves the fork to the snapshot's
-        // own objects, which `readForkContext` above already fell back to
+        // own objects, which `forkedContext` already fell back to
         let history: [SessionEventRecord] = (try? await log.historyRecords()) ?? context.records
         metadata.id = newSessionID.lowercased()
         metadata.created = Date()
@@ -171,18 +165,29 @@ extension AgentSession {
         }
     }
 
-    /// Save only a complete model-message boundary. A call without its
-    /// result is not a resumable context; the last good snapshot stays.
-    func captureForkBoundary() async {
-        // kwwk's processEvent appends messageEnd to state before awaiting
-        // listeners. Read that exact state; never synthesize a message here.
-        let messages = agent.state.messages
-        guard ForkContext.hasCompleteToolResults(messages) else { return }
-        do {
-            try await log.writeHistorySnapshot(messages, anchors: anchors)
-        } catch {
-            await record(.error(message: "Unable to preserve this conversation boundary for future forks: \(error.localizedDescription)"))
+    /// The conversation through the turn of `id`: the segment of the
+    /// conversation log that holds that message, cut after it, so a turn a
+    /// compaction has since replaced is still the context it was read in.
+    /// A session that predates the log, or a message the log cannot find,
+    /// falls back to the snapshots a fork used to be written from.
+    private func forkedContext(through id: UUID) async throws -> ForkContext? {
+        if let forked = try await log.conversation(through: id, anchors: anchors) {
+            let messages = try await LegacyToolNames.migrate(forked)
+            // persisted-read: a log that cannot be read falls back to the
+            // snapshots below, never to an empty history
+            if let records = (try? await log.historyRecords())?.forkRecords(through: id) {
+                return ForkContext(messages: messages, records: records, anchors: anchors)
+            }
         }
+        var context = try await log.readForkContext(id)
+        if context == nil {
+            // Seed legacy sessions only from their surviving model messages;
+            // a UI log is not a lossless substitute for a lost transcript.
+            try requireIdle()
+            try await log.writeHistorySnapshot(agent.state.messages, anchors: anchors, seal: true)
+            context = try await log.readForkContext(id)
+        }
+        return context
     }
 
     // MARK: Helpers
@@ -209,13 +214,10 @@ extension AgentSession {
     /// be written leaves it as it was.
     private func replaceHistory(_ messages: [Message]) async throws {
         let before = agent.state.messages
-        // Refuse a destructive edit when the original context cannot be
-        // preserved. A later fork reads this version, not the edited one.
-        try await log.writeHistorySnapshot(before, anchors: anchors, seal: true)
         try requireIdle()
         agent.state.messages = messages
         do {
-            try await log.writeTranscript(messages)
+            try await startConversationSegment(messages)
         } catch {
             agent.state.messages = before
             throw ApelinError(.unavailable, "Unable to save the conversation history: \(error.localizedDescription)")

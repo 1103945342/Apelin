@@ -97,13 +97,10 @@ public actor AgentSession {
     /// A compaction rewrote the conversation: the next run takes the system
     /// prompt afresh, since its prefix is written anew anyway.
     var snapshotStale = false
-    /// How many messages the last write to `transcript.json` put on disk:
-    /// what a change is measured against, and what a shorter conversation is
-    /// refused against.
+    /// How many messages of the conversation `messages.jsonl` already holds:
+    /// what an append is measured against, and what a shorter conversation is
+    /// held to.
     private var savedMessageCount = 0
-    /// A compaction has shrunk the conversation since that write, so a
-    /// shorter state is the context this chat goes on from, not a loss.
-    private var compactedSinceSave = false
     /// This session's own memory and skill calls, until they end, by call id.
     private var ownCalls: [String: (tool: AgentToolName, arguments: KWWKAI.JSONValue)] = [:]
     /// What the current run has received, for the app's counter.
@@ -292,6 +289,11 @@ public actor AgentSession {
         hasTitle = log.opened.hasTitle
         anchors = await log.readAnchors()
         savedMessageCount = transcript.count
+        // A session that predates `messages.jsonl` is seeded from its
+        // transcript once; from then on the log is what it goes on from.
+        if await log.hasConversation == false {
+            try await log.snapshotConversation(transcript)
+        }
         for diagnostic in skills.diagnostics {
             _ = try? await log.append(.error(message: "A skill has a problem. \(diagnostic)"))
         }
@@ -789,9 +791,8 @@ public actor AgentSession {
         let messageID = accepted.messageID
         let queues = accepted.queues
         // A context that lost messages after the last write does not answer
-        // from the fragment: the saved conversation holds the chat. Nothing
-        // but a compaction shrinks it, and that says so.
-        if runTask == nil, !compactedSinceSave, agent.state.messages.count < savedMessageCount {
+        // from the fragment: the saved conversation holds the chat.
+        if runTask == nil, agent.state.messages.count < savedMessageCount {
             await restoreSavedConversation()
         }
         // The work tree as it is before this message's run, saved while the
@@ -1046,9 +1047,6 @@ public actor AgentSession {
         aborted = false
         let agent = agent
         let sessionID = id
-        let messages = agent.state.messages
-        let anchors = anchors
-        let log = log
         journal.compactionStarted(
             .requested,
             model: agent.state.model,
@@ -1057,12 +1055,6 @@ public actor AgentSession {
         )
         compaction = Task { [weak self] in
             await self?.record(.compactionStarted)
-            do {
-                try await log.writeHistorySnapshot(messages, anchors: anchors, seal: true)
-            } catch {
-                await self?.compactionArchiveFailed(error)
-                return
-            }
             if await self?.aborted == true {
                 await self?.compactionEnded(.failed("aborted"))
                 return
@@ -1106,12 +1098,6 @@ public actor AgentSession {
         }
     }
 
-    private func compactionArchiveFailed(_ error: Error) async {
-        let message = "Unable to preserve the pre-compaction conversation: \(error.localizedDescription)"
-        await record(.error(message: message))
-        await compactionEnded(.failed(message))
-    }
-
     private func compactionEnded(_ outcome: AgentContextCompactionOutcome) async {
         journal.compactionEnded(outcome, usage: contextUsage, nativeSummary: goesOnFromNativeSummary, stopped: aborted)
         let result = switch outcome {
@@ -1132,9 +1118,10 @@ public actor AgentSession {
         }
         if result.outcome == .compacted {
             snapshotStale = true
-            // a reopened session reads the compacted conversation back
+            // a reopened session reads the compacted conversation back, and
+            // the conversation it replaced stays in the log
             do {
-                try await saveConversation(agent.state.messages)
+                try await startConversationSegment(agent.state.messages)
             } catch {
                 await record(.error(message: "Unable to save the conversation history: \(error.localizedDescription)"))
             }
@@ -1282,7 +1269,6 @@ public actor AgentSession {
             }
         case let .messageEnd(message):
             guard case let .assistant(assistant) = message else {
-                await captureForkBoundary()
                 break
             }
             output.endMessage(reported: assistant.usage.output)
@@ -1304,7 +1290,6 @@ public actor AgentSession {
                         ?? "The model provider returned an error. Try again.",
                 ))
             }
-            await captureForkBoundary()
         case .streamRewind:
             // kwwk gave up the message it was streaming; the next one replaces it
             journal.replyDiscarded()
@@ -1313,25 +1298,23 @@ public actor AgentSession {
             journal.retrying(attempt: attempt, delayMs: delayMs, reason: reason)
             await record(.reconnecting)
         case let .compactStart(messagesCount, usage):
-            // kwwk emits this immediately before it rewrites the conversation.
-            // Keep the exact pre-compaction context so an older message can
-            // still be forked after automatic compaction.
-            do {
-                try await log.writeHistorySnapshot(agent.state.messages, anchors: anchors)
-            } catch {
-                await record(.error(message: "Unable to preserve the pre-compaction conversation: \(error.localizedDescription)"))
-                aborted = true
-                agent.abort()
-            }
+            // kwwk emits this immediately before it rewrites the
+            // conversation; the one it replaces stays in `messages.jsonl`,
+            // which is where a fork of an older turn reads it.
             journal.compactionStarted(.automatic, model: agent.state.model, messages: messagesCount, usage: usage)
         case let .compactEnd(outcome):
             // kwwk compacted on its own, as the context filled
             journal.compactionEnded(outcome, usage: contextUsage, nativeSummary: goesOnFromNativeSummary, stopped: aborted)
             if case .compacted = outcome {
                 snapshotStale = true
-                // The context shrank on purpose: what comes next is this
-                // chat's conversation, not a loss of it.
-                compactedSinceSave = true
+                // kwwk rewrote the conversation as the context filled: the
+                // compacted one starts a segment, and the one it replaced
+                // stays in the file for a fork.
+                do {
+                    try await startConversationSegment(agent.state.messages)
+                } catch {
+                    await record(.error(message: "Unable to save the conversation history: \(error.localizedDescription)"))
+                }
             }
         case let .toolExecutionStart(id, name, args):
             if let tool = AgentToolName(rawValue: name), Self.ownChangeTools.contains(tool) {
@@ -1415,38 +1398,50 @@ public actor AgentSession {
         _ = try? await log.append(event)
     }
 
-    /// Writes the conversation and remembers how much of it is on disk.
-    func saveConversation(_ messages: [Message]) async throws {
+    /// Starts a new segment of the conversation log with `messages`, and
+    /// writes the whole conversation out beside it: a compaction, a repair
+    /// and the reader's own edit each rewrite what the chat goes on from, and
+    /// what they replace stays in the file, where a fork still reads it.
+    func startConversationSegment(_ messages: [Message]) async throws {
+        try await log.snapshotConversation(messages)
         try await log.writeTranscript(messages)
         savedMessageCount = messages.count
-        compactedSinceSave = false
     }
 
-    /// Writes the conversation whenever it becomes a complete model boundary
-    /// the disk does not hold yet.
+    /// Appends what the conversation gained since the last write.
     ///
-    /// kwwk puts a tool's result into `state.messages` without a
-    /// `messageEnd`, so waiting for one kind of event missed the boundary a
-    /// killed process needs most — and a session killed in its first turn
-    /// left nothing at all. The state is looked at after every event, and
-    /// only a complete one that changed is written; a reply being streamed
-    /// leaves the messages as they were, so it is not written out.
+    /// Called after every event kwwk gives: a tool's result enters the
+    /// conversation without a `messageEnd`, and a session killed in its first
+    /// turn used to save nothing at all. One line per finished message is
+    /// what keeps the turn through the process dying; a reply being streamed
+    /// has not entered the conversation yet, so nothing partial is written.
     private func checkpoint() async {
         let messages = agent.state.messages
         guard messages.count != savedMessageCount else { return }
-        guard ForkContext.hasCompleteToolResults(messages) else { return }
-        // A shorter conversation is not this path's to write: a compaction
-        // shrinks it and says so, and the reader's own edits write theirs.
-        // Replacing a whole chat with a fragment is how one was lost.
-        guard messages.count > savedMessageCount || compactedSinceSave else {
+        // A shorter conversation is not this path's to write: a compaction,
+        // a repair and the reader's edits start a segment of their own.
+        // Appending a tail onto a history that shrank would stitch together
+        // a conversation that never happened.
+        guard messages.count > savedMessageCount else {
             journal.startup(
-                "conversation came back with \(messages.count) message(s) where \(savedMessageCount) were saved; kept the saved one",
+                "conversation came back with \(messages.count) message(s) where \(savedMessageCount) are saved",
                 level: .warning,
             )
             return
         }
         do {
-            try await saveConversation(messages)
+            try await log.appendConversation(Array(messages[savedMessageCount...]))
+            savedMessageCount = messages.count
+        } catch {
+            await record(.error(message: "Unable to save the conversation history: \(error.localizedDescription)"))
+        }
+    }
+
+    /// Writes `transcript.json` beside the log: what a build that does not
+    /// know `messages.jsonl` reads. Once at a run's end, never per message.
+    func writeTranscriptCopy() async {
+        do {
+            try await log.writeTranscript(agent.state.messages)
         } catch {
             await record(.error(message: "Unable to save the conversation history: \(error.localizedDescription)"))
         }
@@ -1457,8 +1452,11 @@ public actor AgentSession {
     /// answer as if the chat began there.
     func restoreSavedConversation() async {
         do {
-            let saved = try await log.readTranscript()
-            guard saved.count > agent.state.messages.count else { return }
+            var saved = try await log.readConversation()
+            if saved == nil {
+                saved = try await log.readTranscript()
+            }
+            guard let saved, saved.count > agent.state.messages.count else { return }
             journal.startup(
                 "state held \(agent.state.messages.count) message(s); going on from the \(saved.count) saved",
                 level: .warning,
@@ -1538,12 +1536,15 @@ public actor AgentSession {
                 // sent with the next prompt. Preserve the existing snapshot's
                 // model/UI pair instead of capturing the unfinished UI tail.
                 agent.state.messages = try await log.recoverInterruptedHistory(agent.state.messages)
-                // the recovery wrote the whole, shorter conversation itself
-                savedMessageCount = agent.state.messages.count
+                // the whole, shorter conversation starts a segment of its own
+                try await startConversationSegment(agent.state.messages)
                 snapshotStale = true
                 ownCalls.removeAll()
             } else {
-                try await saveConversation(agent.state.messages)
+                // every finished message is already appended; this is the
+                // copy a build without the conversation log reads
+                await checkpoint()
+                await writeTranscriptCopy()
             }
         } catch {
             await record(.error(message: "Unable to save the conversation history: \(error.localizedDescription)"))
@@ -1552,13 +1553,6 @@ public actor AgentSession {
         restoreModelAfterRun()
         await recordContextUsage()
         await record(.finished(reason: reason))
-        if !interrupted {
-            do {
-                try await log.writeHistorySnapshot(agent.state.messages, anchors: anchors, seal: true)
-            } catch {
-                await record(.error(message: "Unable to preserve the completed conversation for future forks: \(error.localizedDescription)"))
-            }
-        }
         // a stop meanwhile dropped them
         runTask = next.isEmpty || aborted ? nil : carryOver(next)
         runEnding = false

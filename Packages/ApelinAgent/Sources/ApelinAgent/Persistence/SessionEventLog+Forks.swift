@@ -274,7 +274,10 @@ extension SessionEventLog {
     /// transcript. Repair only a recorded stop, not a successful run or an
     /// arbitrary malformed history. Decoding and filesystem failures throw.
     func readResumableTranscript() throws -> [Message] {
-        let messages = try readTranscript()
+        // `messages.jsonl` is what a chat goes on from; `transcript.json` is
+        // how a session that predates it is read, and is still written at
+        // each run's end for a build that does not know the log.
+        let messages = try readConversation() ?? readTranscript()
         guard !ForkContext.hasCompleteToolResults(messages) else { return messages }
         let records = try records(afterSeq: 0)
         let ending = records.reversed().first { record in

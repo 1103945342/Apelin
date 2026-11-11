@@ -1604,13 +1604,19 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   host numbers and stamps every event with the moment it relayed it, so
   without `at` a whole fork read as a single second and its turns as no
   time while running and none thinking.
-  `agentFork` reads a saved model/UI context for message `id`, including
-  image bytes, untruncated tool results and provider metadata, rather than
-  reconstructing model messages from the visible log. Its boundary is either
+  `agentFork` reads the conversation `messages.jsonl` kept through message
+  `id` — the segment that holds it, cut after it, so a turn a later
+  compaction replaced is still the context it was read in — including image
+  bytes, untruncated tool results and provider metadata, rather than
+  reconstructing model messages from the visible log. A session that
+  predates the log, or a message it cannot find, falls back to the snapshots
+  below. Its boundary is either
   a direct `userMessage` or a source message's `conversationMessageTaken`;
   a queued-but-untaken source is never a model-history boundary. `forks/<message-id>.json`
   references immutable SHA-256 objects under `forks/objects/`; each completed
   turn is sealed, so later edits, rewind and compaction cannot rewrite it.
+  Those snapshots are no longer written for a new turn: the log holds every
+  turn, and the manifests stay readable for the sessions that have them.
   A version 2 manifest names only the turn's messages, and the turn's UI
   records are derived from the append-only event log when the turn is
   forked: the log still holds every turn after an edit, a rewind or a
@@ -1622,16 +1628,21 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   Deriving the records is what repairs such a snapshot — a sealed one is
   never rewritten to do it.
   The session captures complete model-message boundaries, then seals at run
-  end and before destructive edits/manual compaction. `transcript.json`, the
-  history a reopened session reads back, is written whenever the model's
-  conversation becomes a complete boundary the disk does not hold — checked
-  after every kwwk event, because a tool's result enters the conversation
-  without a `messageEnd`, and a session killed in its first turn used to
-  leave nothing at all. That path never writes a shorter conversation than
-  the one saved (a compaction says so itself and is allowed to), a state
-  that lost messages is restored from the saved one before a prompt, and a
-  history that comes back empty while the log took messages is read back
-  from the last saved boundary — or the reader is told it could not be.
+  end and before destructive edits/manual compaction. The model's
+  conversation lives in `messages.jsonl` beside it: one line per record,
+  appended and never edited — a `snapshot` line when a compaction, a repair
+  or the reader's edit rewrites it, and an `append` line for the messages
+  finished since, written after every kwwk event (a tool's result enters the
+  conversation without a `messageEnd`, and a session killed in its first
+  turn used to save nothing at all). A conversation is its last snapshot and
+  the appends after it; what a compaction replaces stays in the file, which
+  is what a fork of an older turn reads. Appending a tail after the
+  conversation shrank is refused — a compaction, a repair and an edit each
+  start a segment of their own. `transcript.json` is still written at each
+  run's end, for a build that predates the log. A state that lost messages
+  is restored from the saved conversation before a prompt, and a history
+  that comes back empty while the log took messages is read back from the
+  last saved boundary — or the reader is told it could not be.
   The interruption events a reopening writes are what let a transcript a
   killed process left in the middle be read as a run that stopped. An outstanding tool
   call cannot replace the last resumable boundary. A fork copies its selected

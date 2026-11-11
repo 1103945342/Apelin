@@ -86,9 +86,15 @@ extension SessionEventLog {
                 events.append(line)
                 events.append(0x0A)
             }
+            var conversation = Data()
+            conversation.append(try Self.conversationEncoder.encode(
+                SessionEventLog.ConversationRecord(kind: .snapshot, messages: transcript),
+            ))
+            conversation.append(0x0A)
             let files: [(String, Data)] = try [
                 ("session.json", encoder.encode(metadata)),
                 ("events.jsonl", events),
+                ("messages.jsonl", conversation),
                 ("transcript.json", encoder.encode(transcript)),
                 ("anchors.json", encoder.encode(anchors)),
             ]
