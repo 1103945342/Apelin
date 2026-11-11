@@ -206,7 +206,13 @@ final class ChatActivityRow: ListRowView {
                 height: pixel(Self.chevronSize),
             )
         }
-        layoutReceived(in: content)
+        // The count sits at the end of the title line, before the arrow.
+        layoutReceived(in: CGRect(
+            x: content.minX,
+            y: content.minY,
+            width: max(1, content.width - chevronRoom),
+            height: content.height,
+        ))
         if !bannerView.isHidden {
             // the line keeps the reading width, padding included; its
             // ground is drawn out to the row's edges

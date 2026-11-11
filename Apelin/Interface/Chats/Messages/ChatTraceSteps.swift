@@ -118,6 +118,10 @@ final class ChatThoughtRow: UIView {
     let stepID: UUID
 
     private var step: ChatMessage
+    /// The line over the text. They are a stack's, so a folded thought's
+    /// text takes no room at all — a hidden view of constraints would keep
+    /// its height and leave the row as tall as the text it does not show.
+    private let stack = UIStackView()
     private let line = UIControl()
     private let icon = UIImageView()
     private let titleLabel = UILabel()
@@ -153,7 +157,12 @@ final class ChatThoughtRow: UIView {
         super.init(frame: .zero)
 
         line.addTarget(self, action: #selector(toggle), for: .touchUpInside)
-        addSubview(line)
+
+        stack.axis = .vertical
+        stack.spacing = 0
+        addSubview(stack)
+        stack.snp.makeConstraints { make in make.edges.equalToSuperview() }
+        stack.addArrangedSubview(line)
 
         icon.image = UIImage(systemName: "brain.head.profile")
         icon.contentMode = .scaleAspectFit
@@ -187,10 +196,9 @@ final class ChatThoughtRow: UIView {
         textLabel.numberOfLines = Self.lineLimit
         textLabel.lineBreakMode = .byTruncatingTail
         textLabel.isHidden = true
-        addSubview(textLabel)
+        stack.addArrangedSubview(textLabel)
 
         line.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
             make.height.greaterThanOrEqualTo(Style.lineHeight)
         }
         icon.snp.makeConstraints { make in
@@ -205,10 +213,6 @@ final class ChatThoughtRow: UIView {
             make.leading.equalTo(icon.snp.trailing).offset(Style.spacing)
             make.trailing.equalTo(chevron.snp.leading).offset(-Style.spacing)
             make.centerY.equalToSuperview()
-        }
-        textLabel.snp.makeConstraints { make in
-            make.top.equalTo(line.snp.bottom).offset(Style.bodySpacing)
-            make.leading.trailing.bottom.equalToSuperview()
         }
 
         configure(step)
@@ -232,9 +236,7 @@ final class ChatThoughtRow: UIView {
         textLabel.text = step.text
         showsBody = ChatTraceExpansion.isExpanded(thought: step.id)
         textLabel.isHidden = !showsBody
-        textLabel.snp.updateConstraints { make in
-            make.top.equalTo(line.snp.bottom).offset(showsBody ? Style.bodySpacing : 0)
-        }
+        stack.setCustomSpacing(showsBody ? Style.bodySpacing : 0, after: line)
         updateAccessibility()
     }
 
