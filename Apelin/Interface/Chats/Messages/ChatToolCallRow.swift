@@ -214,7 +214,7 @@ final class ChatToolCallRow: UIView {
     }
 
     @objc dynamic private func toggle() {
-        ChatTraceExpansion.toggle(call: step.id)
+        ChatTraceExpansion.setExpanded(call: step.id, !showsBody)
         configure(step)
         updateChevron(animated: true)
         onToggle?()

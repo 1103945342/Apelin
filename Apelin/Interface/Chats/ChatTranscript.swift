@@ -552,7 +552,6 @@ struct ChatTranscript {
             return
         }
         rows[index].role = .thinking(seconds: nil, tools: tools)
-        rows[index].runningTools = rows[index].trace.count(where: \.awaitsResult)
         rows[index].receivedTokens = receivedTokens
         rows[index].banner = rows[index].trace.last { $0.role == .tool }?.banner
         rows[index].isReconnecting = reconnecting

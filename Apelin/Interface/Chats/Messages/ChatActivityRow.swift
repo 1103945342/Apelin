@@ -111,7 +111,7 @@ final class ChatActivityRow: ListRowView {
         isAccessibilityElement = false
         header.accessibilityLabel = message.activityTitle
         let expands = Self.canExpand(message)
-        let expanded = expands && ChatTraceExpansion.isExpanded(summary: message.id)
+        let expanded = expands && Self.isExpanded(message)
         chevron.isHidden = !expands
         chevron.transform = expanded ? CGAffineTransform(rotationAngle: .pi / 2) : .identity
         var actions: [UIAccessibilityCustomAction] = []
@@ -340,7 +340,7 @@ final class ChatActivityRow: ListRowView {
         if banner(of: message) != nil {
             height += bannerSpacing + ToolCallBannerView.height
         }
-        if canExpand(message), ChatTraceExpansion.isExpanded(summary: message.id) {
+        if canExpand(message), isExpanded(message) {
             height += expansionSpacing + ChatTraceSteps.height(for: message, width: width)
         }
         return height
@@ -375,10 +375,17 @@ final class ChatActivityRow: ListRowView {
         return !message.trace.isEmpty || !message.text.isEmpty
     }
 
+    /// Whether its steps are open: what the reader chose, else the run still
+    /// going. A summary of a finished stretch folds away, as aimini folds a
+    /// turn that ended.
+    private static func isExpanded(_ message: ChatMessage) -> Bool {
+        ChatTraceExpansion.isExpanded(summary: message.id, fallback: isReasoning(message))
+    }
+
     /// Folds the steps away, or opens them; the list measures the row again.
     @objc dynamic private func toggle() {
         guard let message, Self.canExpand(message) else { return }
-        ChatTraceExpansion.toggle(summary: message.id)
+        ChatTraceExpansion.setExpanded(summary: message.id, !Self.isExpanded(message))
         onToggle?()
     }
 

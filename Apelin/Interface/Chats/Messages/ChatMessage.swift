@@ -65,8 +65,6 @@ struct ChatMessage: Identifiable, Hashable {
     var banner: ToolCallBanner?
     /// A tool row whose result has not come back yet.
     var awaitsResult = false
-    /// On a running summary, the calls in its trace still waiting for a result.
-    var runningTools = 0
     /// On the running summary, a model request that failed is being made
     /// again (the session's `reconnecting`) and nothing has come of it yet.
     var isReconnecting = false
@@ -107,37 +105,16 @@ struct ChatMessage: Identifiable, Hashable {
     /// shown.
     var isRemoved = false
 
+    /// What a summary's title line says, as aimini's turn header does: the
+    /// run is going, or it is done. What it is doing is the line under it and
+    /// the steps it opens; a failed request being made again says so instead,
+    /// because a reader waiting on one is owed the reason.
     var activityTitle: String {
-        guard case let .thinking(seconds, tools) = role else { return text }
-        // An unfinished summary counts only the calls still running; between
-        // them the model is at work again, so it reads "Thinking…", or
-        // "Reconnecting…" while a failed request is made again.
-        guard let seconds else {
-            if isReconnecting {
-                return String(localized: "Reconnecting…")
-            }
-            guard runningTools > 0 else { return String(localized: "Thinking…") }
-            return runningTools == 1
-                ? String(localized: "Executing tool…")
-                : String(localized: "Executing \(runningTools) tools…")
+        guard case let .thinking(seconds, _) = role else { return text }
+        if seconds == nil {
+            return isReconnecting ? String(localized: "Reconnecting…") : String(localized: "Running")
         }
-        if seconds <= 0 {
-            guard tools > 0 else { return "" }
-            return tools == 1 ? String(localized: "Called 1 tool") : String(localized: "Called \(tools) tools")
-        }
-        if tools <= 0 {
-            return seconds == 1
-                ? String(localized: "Thought for 1 second")
-                : String(localized: "Thought for \(seconds) seconds")
-        }
-        if seconds == 1 {
-            return tools == 1
-                ? String(localized: "Thought for 1 second and called 1 tool")
-                : String(localized: "Thought for 1 second and called \(tools) tools")
-        }
-        return tools == 1
-            ? String(localized: "Thought for \(seconds) seconds and called 1 tool")
-            : String(localized: "Thought for \(seconds) seconds and called \(tools) tools")
+        return String(localized: "Completed")
     }
 
     var approvalTitle: String {
