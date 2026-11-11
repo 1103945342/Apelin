@@ -384,6 +384,7 @@ actor WorkerState {
                     serviceTier: AgentWorker.serviceTier(open.serviceTier),
                     modelParameters: open.modelParameters ?? .init(),
                     modelDefaults: open.modelDefaults ?? .init(),
+                    promptInjection: (open.promptInjection ?? "").trimmingCharacters(in: .whitespacesAndNewlines),
                     installRoot: context.assignment.installRoot,
                     hostRestarted: open.hostRestarted == true,
                 ),

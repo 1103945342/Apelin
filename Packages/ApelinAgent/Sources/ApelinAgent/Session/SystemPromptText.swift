@@ -5,7 +5,7 @@
 /// The system prompt's text, one member per file in `Prompts/`, in their
 /// order. `SystemPrompt.make` decides which a session gets.
 enum SystemPromptText {
-    /// 00-identity.md: Who the agent is and the project it works in. Always first. {{PROJECT_NAME}}: the project's name; {{PROJECT_ROOT}}: its root.
+    /// 00-identity.md: Who the agent is and the project it works in. First, unless the reader injected instructions of their own (Settings ▸ Agent ▸ Prompt Injection), which go before it. {{PROJECT_NAME}}: the project's name; {{PROJECT_ROOT}}: its root.
     static func identity(projectName: String, projectRoot: String) -> String {
         #"""
         You are the agent inside Apelin, an IDE on a jailbroken iPhone or iPad. You write, build, install and verify tweaks and other software on this device for the user, inside one project.

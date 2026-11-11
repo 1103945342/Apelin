@@ -350,6 +350,9 @@ actor AgentSessionTable {
         /// Ask Before Using the Screen, as the app last sent it; an agent's
         /// session has its opener's.
         var asksBeforeScreen = true
+        /// The reader's standing instructions, as the session opened with
+        /// them: an agent's session has its opener's.
+        var promptInjection: String? = nil
         var title: String?
         var createdAt: Date
         var approvals: [String: ApprovalDecision] = [:]

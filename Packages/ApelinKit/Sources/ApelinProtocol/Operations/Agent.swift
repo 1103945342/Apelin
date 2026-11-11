@@ -367,6 +367,10 @@ public struct AgentOpenRequest: OperationRequest {
     /// The model's own figures for this choice, as the app's model settings
     /// have them: nil leaves what the model's record says.
     public var modelParameters: AgentModelParameters?
+    /// The reader's standing instructions, from Settings ▸ Agent ▸ Prompt
+    /// Injection: the text the system prompt carries before anything else.
+    /// The app sends it; a conversation an agent opens has its opener's.
+    public var promptInjection: String?
     /// A first prompt, submitted as soon as the session is open.
     public var prompt: String?
     /// End the session (its task) when the first run finishes: `succeeded`
@@ -398,6 +402,7 @@ public struct AgentOpenRequest: OperationRequest {
         reasoningEffort: AgentReasoningEffort? = nil,
         serviceTier: AgentServiceTier? = nil,
         modelParameters: AgentModelParameters? = nil,
+        promptInjection: String? = nil,
         prompt: String? = nil,
         closeWhenFinished: Bool? = nil,
         title: String? = nil,
@@ -415,6 +420,7 @@ public struct AgentOpenRequest: OperationRequest {
         self.reasoningEffort = reasoningEffort
         self.serviceTier = serviceTier
         self.modelParameters = modelParameters
+        self.promptInjection = promptInjection
         self.prompt = prompt
         self.closeWhenFinished = closeWhenFinished
         self.title = title

@@ -23,6 +23,10 @@ public struct AgentSessionConfiguration: Sendable {
     public var modelParameters: AgentModelParameters
     /// What the app chose for operations beside the main conversation turn.
     public var modelDefaults: AgentModelDefaults
+    /// The reader's standing instructions (Settings ▸ Agent ▸ Prompt
+    /// Injection), which the system prompt carries before anything else;
+    /// empty when there are none.
+    public var promptInjection: String
     /// Hard cap on assistant turns per run; nil for none.
     public var maxTurns: Int?
     /// The install root the session host derived from its own path, which
@@ -56,6 +60,7 @@ public struct AgentSessionConfiguration: Sendable {
         serviceTier: ServiceTier? = nil,
         modelParameters: AgentModelParameters = .init(),
         modelDefaults: AgentModelDefaults = .init(),
+        promptInjection: String = "",
         maxTurns: Int? = nil,
         installRoot: String? = nil,
         systemState: SystemStateSource = .device,
@@ -74,6 +79,7 @@ public struct AgentSessionConfiguration: Sendable {
         self.serviceTier = serviceTier
         self.modelParameters = modelParameters
         self.modelDefaults = modelDefaults
+        self.promptInjection = promptInjection
         self.maxTurns = maxTurns
         self.installRoot = installRoot
         self.systemState = systemState

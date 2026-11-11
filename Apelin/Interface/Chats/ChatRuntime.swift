@@ -672,6 +672,7 @@ final class ChatRuntime {
             reasoningEffort: selected?.effort,
             serviceTier: selected?.tier,
             modelParameters: ModelParameters.values(for: selected?.provider, model: selected?.model).wire,
+            promptInjection: Preferences.PromptInjection.wire,
         )
         if request.temporaryID != nil {
             try DataFolder.app.makeLevels(to: DataFolder.app.root.appendingPathComponent("Temporary/" + id.uuidString))

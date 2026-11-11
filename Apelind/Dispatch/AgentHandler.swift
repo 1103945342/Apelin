@@ -401,6 +401,7 @@ enum AgentHandler: DomainHandler {
                 project: project,
                 mode: open.approvalMode,
                 asksBeforeScreen: asksBeforeScreen,
+                promptInjection: resolved.promptInjection,
                 title: title ?? existing?.title,
                 createdAt: Date(),
                 parentSessionID: opener?.sessionID ?? existing?.parentSessionID ?? saved?.parentSessionID,

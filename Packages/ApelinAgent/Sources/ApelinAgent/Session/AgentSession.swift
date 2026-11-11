@@ -427,6 +427,7 @@ public actor AgentSession {
             buildSystem: state.buildSystem,
             memory: MemoryTools.prompt(state.memory),
             environment: state.environment,
+            injected: configuration.promptInjection,
         )
     }
 

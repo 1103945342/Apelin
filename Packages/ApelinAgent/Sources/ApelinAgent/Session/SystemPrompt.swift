@@ -16,10 +16,17 @@ enum SystemPrompt {
         buildSystem: ProjectBuildSystem = .apelin,
         memory: String = "",
         environment: String = "",
+        injected: String = "",
     ) -> String {
         // The text is Prompts/*.md, compiled in as SystemPromptText by
         // Scripts/embed-prompts.py; the order here is the prompt's.
-        var sections = [
+        var sections: [String] = []
+        // The reader's own instructions go before everything, because that is
+        // what they are for (Settings ▸ Agent ▸ Prompt Injection).
+        if !injected.isEmpty {
+            sections.append(injectedSection(injected))
+        }
+        sections.append(contentsOf: [
             SystemPromptText.identity(projectName: project.name.rawValue, projectRoot: projectRoot),
             SystemPromptText.responses,
             SystemPromptText.working(
@@ -27,7 +34,7 @@ enum SystemPrompt {
                 renamedTools: renamedToolsNote,
             ),
             SystemPromptText.device,
-        ]
+        ])
         if project.isTemporary {
             sections.append(SystemPromptText.generalChat)
         }
@@ -58,6 +65,16 @@ enum SystemPrompt {
             sections.append(memory)
         }
         return sections.joined(separator: "\n\n")
+    }
+
+    /// The reader's standing instructions, as the prompt opens with them.
+    static func injectedSection(_ text: String) -> String {
+        """
+        # Injected instructions
+        The reader set these in Apelin's settings. They come before everything \
+        else here and take precedence over the instructions below.
+        \(text)
+        """
     }
 
     /// Project instructions, memories and skills written before the tools

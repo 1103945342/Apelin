@@ -659,6 +659,18 @@ do {
         "provider, model, effort and tier go as sent",
     )
     check(child.prompt == "Write the README" && child.title == "Docs", "the prompt goes as sent, the title on one trimmed line")
+    check(child.promptInjection == nil, "an opener with no injected instructions passes none on")
+    var injectedOpener = opener
+    injectedOpener.promptInjection = "Always answer in Chinese."
+    let inherited = try AgentConversationRules.childOpen(
+        AgentOpenRequest(prompt: "go"),
+        opener: injectedOpener,
+        target: project,
+    )
+    check(
+        inherited.promptInjection == "Always answer in Chinese.",
+        "a conversation an agent opens carries the reader's injected instructions too",
+    )
     let relaxed = await session("c-relaxed", mode: .relaxed)
     let relaxedChild = try AgentConversationRules.childOpen(
         AgentOpenRequest(approvalMode: .confirm, prompt: "go"),

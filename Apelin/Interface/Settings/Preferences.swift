@@ -89,6 +89,44 @@ enum Preferences {
         }
     }
 
+    /// The text the reader wants every conversation to start under: what the
+    /// agent's system prompt carries before anything else. Kept beside the
+    /// other settings, and sent with each session as it opens — a
+    /// conversation already running keeps the prompt it opened with.
+    enum PromptInjection {
+        /// What one prompt may carry, as project instructions are capped.
+        static let maximumCharacters = 16 * 1024
+
+        static var enabled: Bool {
+            get { UserDefaults.standard.bool(forKey: "agent.promptInjection.enabled") }
+            set { UserDefaults.standard.set(newValue, forKey: "agent.promptInjection.enabled") }
+        }
+
+        static var text: String {
+            get { UserDefaults.standard.string(forKey: "agent.promptInjection.text") ?? "" }
+            set {
+                // Kept as typed: what the page shows must be what was written,
+                // and the trim happens where the prompt is made.
+                UserDefaults.standard.set(
+                    String(newValue.prefix(maximumCharacters)),
+                    forKey: "agent.promptInjection.text",
+                )
+            }
+        }
+
+        /// Whether there is anything to inject at all.
+        static var isEmpty: Bool {
+            text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+
+        /// What a session's open carries: the text while the switch is on and
+        /// something is written, nil otherwise.
+        static var wire: String? {
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            return enabled && !trimmed.isEmpty ? trimmed : nil
+        }
+    }
+
     /// What the next launch opens.
     enum Launch: String, CaseIterable {
         case lastConversation

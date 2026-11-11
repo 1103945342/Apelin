@@ -19,6 +19,8 @@ final class SettingsViewController: TableController {
         case modelProviders
         case defaultModels
         case permissionMode
+        /// Settings ▸ Agent ▸ Prompt Injection: the text before every prompt.
+        case promptInjection
         case memories
         case skills
         case toolchain
@@ -52,6 +54,9 @@ final class SettingsViewController: TableController {
                 let detail: String? = switch row {
                 case .defaultModels: Preferences.DefaultModels.summary
                 case .permissionMode: AgentPermissions.title(for: AgentPermissions.mode)
+                case .promptInjection: Preferences.PromptInjection.enabled
+                    ? String(localized: "On")
+                    : String(localized: "Off")
                 case .memories: memorySummary
                 default: nil
                 }
@@ -102,7 +107,7 @@ final class SettingsViewController: TableController {
     private func rows(in section: Section) -> [Row] {
         switch section {
         case .chat: [.preferences]
-        case .agent: [.modelProviders, .defaultModels, .permissionMode, .memories, .skills]
+        case .agent: [.modelProviders, .defaultModels, .permissionMode, .promptInjection, .memories, .skills]
         case .environment: [.toolchain, .sdks, .apps, .templates]
         case .git: [.git]
         case .about: [.version, .licenses, .logs]
@@ -159,6 +164,8 @@ final class SettingsViewController: TableController {
             content.text = String(localized: "Default Models")
         case .permissionMode:
             content.text = String(localized: "Permission Mode")
+        case .promptInjection:
+            content.text = String(localized: "Prompt Injection")
         case .memories:
             content.text = String(localized: "Memories")
         case .skills:
@@ -206,6 +213,7 @@ final class SettingsViewController: TableController {
         case .modelProviders: page = ModelProvidersController()
         case .defaultModels: page = DefaultModelsController()
         case .permissionMode: page = PermissionModeController()
+        case .promptInjection: page = PromptInjectionController()
         case .memories: page = MemoriesController()
         case .skills: page = SkillsController()
         case .toolchain: page = ToolchainController()

@@ -7,6 +7,25 @@ import Testing
 @Suite("Environment prompt and project tree")
 struct EnvironmentPromptTests {
     @Test
+    func `the reader's injected instructions open the prompt, and nothing is added while they are off`() throws {
+        let home = try TemporaryHome()
+        defer { home.remove() }
+        let root = try ScopedRoot(home.projectURL)
+        let quiet = AgentSessionConfiguration(project: home.project, provider: .githubCopilot(model: "m"), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot)
+        let plain = try AgentSession.systemPrompt(quiet, root: root, skills: [])
+        #expect(!plain.contains("# Injected instructions"), "nothing is injected with none set")
+        #expect(plain.hasPrefix("You are the agent inside Apelin"), "the identity opens the prompt without them")
+
+        var configuration = quiet
+        configuration.promptInjection = "Always answer in Chinese."
+        let prompt = try AgentSession.systemPrompt(configuration, root: root, skills: [])
+        #expect(prompt.hasPrefix("# Injected instructions\n"), "the injected section opens the prompt")
+        let injected = try #require(prompt.range(of: "Always answer in Chinese."))
+        let identity = try #require(prompt.range(of: "You are the agent inside Apelin"))
+        #expect(injected.lowerBound < identity.lowerBound, "the reader's text comes before everything else")
+    }
+
+    @Test
     func `without a toolchain the prompt says so, and a binding to one that is gone is named`() throws {
         let home = try TemporaryHome()
         defer { home.remove() }
