@@ -42,6 +42,9 @@ final class ChatActivityRow: ListRowView {
     @objc dynamic private var shownID: UUID?
     /// Whether the count is meant to be on screen, while it fades too.
     @objc dynamic private var showsReceived = false
+    /// Whether the steps were open when this row last showed a message: only
+    /// a change to that animates, never a row taking another message.
+    private var showsSteps = false
     private static let sizingHeader = ThinkingStatusLabel()
     /// Between the title's fade and the count.
     private static let receivedSpacing: CGFloat = 6
@@ -112,8 +115,15 @@ final class ChatActivityRow: ListRowView {
         header.accessibilityLabel = message.activityTitle
         let expands = Self.canExpand(message)
         let expanded = expands && Self.isExpanded(message)
+        let wasExpanded = showsSteps
+        showsSteps = expanded
         chevron.isHidden = !expands
-        chevron.transform = expanded ? CGAffineTransform(rotationAngle: .pi / 2) : .identity
+        let turn = expanded ? CGAffineTransform(rotationAngle: .pi / 2) : .identity
+        if expanded != wasExpanded, window != nil, !UIAccessibility.isReduceMotionEnabled {
+            UIView.animate(withDuration: 0.22) { self.chevron.transform = turn }
+        } else {
+            chevron.transform = turn
+        }
         var actions: [UIAccessibilityCustomAction] = []
         if expands {
             actions.append(UIAccessibilityCustomAction(
@@ -135,6 +145,9 @@ final class ChatActivityRow: ListRowView {
             expansion.show(message)
         }
         expansion.isHidden = !expanded
+        if expanded, !wasExpanded, isSameMessage {
+            revealExpansion()
+        }
         let tokens = message.receivedTokens
         header.accessibilityValue = tokens.map(ReceivedTokensView.spoken)
         showReceived(tokens, settles: message.receivedSettles, animated: isSameMessage)
@@ -169,6 +182,9 @@ final class ChatActivityRow: ListRowView {
         expansion.isHidden = true
         chevron.isHidden = true
         chevron.transform = .identity
+        showsSteps = false
+        expansion.alpha = 1
+        expansion.transform = .identity
         message = nil
         onToggle = nil
         onOpenPage = nil
@@ -328,6 +344,19 @@ final class ChatActivityRow: ListRowView {
             received.alpha = 1
             setTitleFade(false, animated: false)
             titleView.layer.mask = nil
+        }
+    }
+
+    /// The steps unfolding, as aimini shows them: they fade in and settle
+    /// down at once. The list hands the row its whole new height in one
+    /// pass, so the growth itself is not ours to animate.
+    private func revealExpansion() {
+        guard window != nil, !UIAccessibility.isReduceMotionEnabled else { return }
+        expansion.alpha = 0
+        expansion.transform = CGAffineTransform(translationX: 0, y: -8)
+        UIView.animate(withDuration: 0.22, delay: 0, options: [.curveEaseOut]) {
+            self.expansion.alpha = 1
+            self.expansion.transform = .identity
         }
     }
 

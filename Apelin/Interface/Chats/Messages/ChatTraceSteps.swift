@@ -331,12 +331,24 @@ final class ChatThoughtRow: UIView {
         return true
     }
 
-    private func configure(_ step: ChatMessage) {
+    private func configure(_ step: ChatMessage, animated: Bool = false) {
         titleLabel.text = Self.title(for: step)
         textLabel.text = step.text
         showsBody = ChatTraceExpansion.isExpanded(thought: step.id)
+        textLabel.layer.removeAllAnimations()
+        textLabel.alpha = 1
+        textLabel.transform = .identity
         textLabel.isHidden = !showsBody
         stack.setCustomSpacing(showsBody ? Style.bodySpacing : 0, after: line)
+        if animated, showsBody, window != nil, !UIAccessibility.isReduceMotionEnabled {
+            // as aimini unfolds a thought: the text fades in and settles
+            textLabel.alpha = 0
+            textLabel.transform = CGAffineTransform(translationX: 0, y: -6)
+            UIView.animate(withDuration: 0.22, delay: 0, options: [.curveEaseOut]) {
+                self.textLabel.alpha = 1
+                self.textLabel.transform = .identity
+            }
+        }
         updateAccessibility()
     }
 
@@ -392,7 +404,7 @@ final class ChatThoughtRow: UIView {
 
     @objc dynamic private func toggle() {
         ChatTraceExpansion.setExpanded(thought: step.id, !showsBody)
-        configure(step)
+        configure(step, animated: true)
         updateChevron(animated: true)
         onToggle?()
     }

@@ -59,6 +59,12 @@ struct ToolCallDetail: Equatable {
     }
 
     let sections: [Section]
+    /// The file the call names, from its `path` argument.
+    let path: String?
+    /// What the call answered: the text after its arguments, as it was
+    /// written, with the escape sequences a terminal colours itself with
+    /// taken out.
+    let result: String?
 
     /// `detail`: a tool row's, the arguments' JSON and, after a blank line,
     /// the result. `title`: the row's; a `reason` that only repeats it is
@@ -66,19 +72,24 @@ struct ToolCallDetail: Equatable {
     init(detail: String, title: String) {
         let separator = detail.range(of: "\n\n")
         let head = separator.map { String(detail[..<$0.lowerBound]) } ?? detail
+        let answer = separator.map { Self.plain(String(detail[separator.upperBound...])) }
         let decoded = head.isEmpty ? JSONValue.object([:]) : try? JSONCoding.decode(JSONValue.self, from: Data(head.utf8))
         guard case let .object(values)? = decoded else {
+            path = nil
+            result = nil
             sections = detail.isEmpty ? [] : [Section(name: nil, value: Self.plain(detail), isResult: false)]
             return
         }
+        path = values["path"]?.stringValue
+        result = answer?.isEmpty == false ? answer : nil
         var sections = values
             .filter { name, value in !(name == "reason" && value.stringValue == title) }
-            .map { name, value in Section(name: name, value: Self.text(of: value), isResult: false) }
+            .map { name, value in Section(name: name, value: Self.text(of: value, named: name), isResult: false) }
             .sorted(by: Self.precedes)
         if let separator, !detail[separator.upperBound...].isEmpty {
             sections.append(Section(
                 name: String(localized: "Result"),
-                value: Self.plain(String(detail[separator.upperBound...])),
+                value: answer ?? "",
                 isResult: true,
             ))
         }
@@ -91,10 +102,17 @@ struct ToolCallDetail: Equatable {
             .joined(separator: "\n\n")
     }
 
-    /// A string as itself, anything else as compact JSON.
-    private static func text(of value: JSONValue) -> String {
+    /// A string as itself, anything else as compact JSON; a command's
+    /// arguments, which come as an array, as the line they run.
+    private static func text(of value: JSONValue, named name: String) -> String {
         if let string = value.stringValue {
             return string
+        }
+        if name == "argv", case let .array(words) = value {
+            let parts = words.compactMap(\.stringValue)
+            if parts.count == words.count {
+                return CommandLineText.quoted(parts)
+            }
         }
         return (try? JSONCoding.encode(value)).map { String(decoding: $0, as: UTF8.self) } ?? ""
     }

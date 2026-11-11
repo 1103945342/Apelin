@@ -144,7 +144,7 @@ final class ToolCallSectionView: UIView {
     /// A block's text, held whole in a scroll view of its own: the panel is
     /// as tall as the text, or as tall as `maximumBlockHeight` lets it be,
     /// and the rest of the text is reached by scrolling inside it.
-    private let panelScroll = UIScrollView()
+    private let panelScroll = BlockScrollView()
     private let panelLabel = UILabel()
 
     /// `maximumBlockHeight`: the tallest a block is drawn, as aimini's tool
@@ -227,7 +227,9 @@ final class ToolCallSectionView: UIView {
 
         let kind = section.kind
         // Blocks are the things that are content; everything else is a line.
-        let isBlock = kind == .code || kind == .diff || kind == .result
+        // A command is content too: it sits in a panel of its own, as aimini
+        // draws a call's instruction, rather than as a line of the page.
+        let isBlock = kind == .code || kind == .diff || kind == .result || kind == .command
         valueLabel.isHidden = isBlock
         panel.isHidden = !isBlock
         if isBlock {
@@ -250,16 +252,6 @@ final class ToolCallSectionView: UIView {
         accessibilityTraits = .staticText
         accessibilityLabel = hasName ? section.name : String(localized: "Details")
         accessibilityValue = section.value
-    }
-
-    /// A block short enough to be shown whole keeps its hands off the
-    /// finger: a scroll view with nothing to scroll still takes the pan, and
-    /// the transcript under it would stop moving. Only a block with more
-    /// text than its panel shows scrolls inside it.
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        panelScroll.isScrollEnabled = !panel.isHidden
-            && panelLabel.bounds.height > panelScroll.bounds.height + 0.5
     }
 
     /// A value that is a word or a line, in the face its kind asks for.
@@ -310,5 +302,18 @@ final class ToolCallSectionView: UIView {
             ))
         }
         return result
+    }
+}
+
+/// A block's text in a scroll view of its own. A scroll view with nothing
+/// below the fold still takes the pan, which would stop the transcript under
+/// the finger over every panel; this one begins to scroll only when there is
+/// something to reach, and leaves the drag to the transcript otherwise.
+final class BlockScrollView: UIScrollView {
+    override func gestureRecognizerShouldBegin(_ recognizer: UIGestureRecognizer) -> Bool {
+        guard recognizer === panGestureRecognizer else {
+            return super.gestureRecognizerShouldBegin(recognizer)
+        }
+        return contentSize.height > bounds.height + 0.5
     }
 }

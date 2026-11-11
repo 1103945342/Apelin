@@ -155,7 +155,7 @@ final class ChatToolCallRow: UIView {
         return true
     }
 
-    private func configure(_ step: ChatMessage) {
+    private func configure(_ step: ChatMessage, animated: Bool = false) {
         icon.image = UIImage(systemName: ToolSymbol.name(for: step.tool))
             ?? UIImage(systemName: "wrench.and.screwdriver")
         titleLabel.text = step.text
@@ -165,6 +165,9 @@ final class ChatToolCallRow: UIView {
         reasonLabel.isHidden = !showsReason
         showsBody = ChatTraceExpansion.isExpanded(call: step.id)
         rebuildBody(step)
+        if animated {
+            animateBody()
+        }
         updateAccessibility()
     }
 
@@ -175,9 +178,11 @@ final class ChatToolCallRow: UIView {
             body.removeArrangedSubview(view)
             view.removeFromSuperview()
         }
+        body.layer.removeAllAnimations()
+        body.alpha = 1
+        body.transform = .identity
         if showsBody {
-            let detail = ToolCallDetail(detail: step.detail, title: step.text)
-            for section in Self.sections(of: detail, tool: step.tool) {
+            for section in Self.sections(of: step) {
                 // aimini stops a tool's instruction or result at 240 pt and
                 // scrolls the rest inside the panel.
                 body.addArrangedSubview(
@@ -191,16 +196,70 @@ final class ChatToolCallRow: UIView {
         }
     }
 
-    /// What a call's row opens into. A file tool is handed the file itself —
-    /// an edit's old and new text, a write's whole content — and what the
-    /// reader wants of the call is the diff it answered with: aimini draws a
-    /// file edit as its diff and nothing else. The result stays, and so does
-    /// any argument that is a line, such as the path.
-    private static func sections(of detail: ToolCallDetail, tool: String?) -> [ToolCallDetail.Section] {
-        guard let tool, let name = AgentToolName.canonical(tool),
-              ToolCallBanner.fileTools.contains(name)
-        else { return detail.sections }
-        return detail.sections.filter { $0.isResult || !$0.value.contains("\n") }
+    /// What a call's row opens into, by the tool it is:
+    ///
+    /// - a file tool that writes one is shown as the diff it answered with,
+    ///   under the file's own name: its arguments are the file itself, and
+    ///   aimini draws a file edit as its diff and nothing else;
+    /// - a file read is shown as what it read, under the file's name;
+    /// - anything else shows its arguments and its result.
+    ///
+    /// The reason is never among them: the line above already says why the
+    /// call was made, and repeating it under the line only pushes the answer
+    /// down.
+    private static func sections(of step: ChatMessage) -> [ToolCallDetail.Section] {
+        let detail = ToolCallDetail(detail: step.detail, title: step.text)
+        let file = detail.path.map { ($0 as NSString).lastPathComponent } ?? ""
+        func named(_ value: String) -> ToolCallDetail.Section {
+            ToolCallDetail.Section(name: file.isEmpty ? nil : file, value: value, isResult: true)
+        }
+        guard let tool = step.tool.flatMap(AgentToolName.canonical) else {
+            return detail.sections.filter { $0.name != "reason" }
+        }
+        if ToolCallBanner.fileTools.contains(tool) {
+            // "Patched Tweak.x (1 replacement, +3 -1)", then the diff.
+            guard let result = detail.result, let diff = afterFirstLine(result) else { return [] }
+            return [named(diff)]
+        }
+        if tool == .fileRead {
+            guard let result = detail.result, !result.isEmpty else { return [] }
+            return [named(withoutLineNumbers(result))]
+        }
+        return detail.sections.filter { $0.name != "reason" }
+    }
+
+    /// What a call answered past the line that counts it: a file tool's
+    /// result opens with "Patched Tweak.x (1 replacement, +3 -1)" and the
+    /// diff follows.
+    private static func afterFirstLine(_ result: String) -> String? {
+        guard let line = result.firstIndex(of: "\n") else { return nil }
+        let rest = String(result[result.index(after: line)...])
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return rest.isEmpty ? nil : rest
+    }
+
+    /// A file's text without the line numbers `file_read` puts in front of
+    /// every line: what the reader wants of it is the file.
+    private static func withoutLineNumbers(_ text: String) -> String {
+        text.split(separator: "\n", omittingEmptySubsequences: false).map { line in
+            guard let tab = line.firstIndex(of: "\t"), tab > line.startIndex,
+                  line[..<tab].allSatisfy(\.isNumber)
+            else { return String(line) }
+            return String(line[line.index(after: tab)...])
+        }.joined(separator: "\n")
+    }
+
+    /// The sections arriving, as aimini unfolds them: they fade in and
+    /// settle down into place. The list gives the row its new height in one
+    /// step, so growing it here is not ours to animate.
+    private func animateBody() {
+        guard showsBody, window != nil, !UIAccessibility.isReduceMotionEnabled else { return }
+        body.alpha = 0
+        body.transform = CGAffineTransform(translationX: 0, y: -6)
+        UIView.animate(withDuration: 0.22, delay: 0, options: [.curveEaseOut]) {
+            self.body.alpha = 1
+            self.body.transform = .identity
+        }
     }
 
     private func updateChevron(animated: Bool) {
@@ -246,7 +305,7 @@ final class ChatToolCallRow: UIView {
 
     @objc dynamic private func toggle() {
         ChatTraceExpansion.setExpanded(call: step.id, !showsBody)
-        configure(step)
+        configure(step, animated: true)
         updateChevron(animated: true)
         onToggle?()
     }

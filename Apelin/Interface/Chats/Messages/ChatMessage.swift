@@ -105,16 +105,48 @@ struct ChatMessage: Identifiable, Hashable {
     /// shown.
     var isRemoved = false
 
-    /// What a summary's title line says, as aimini's turn header does: the
-    /// run is going, or it is done. What it is doing is the line under it and
-    /// the steps it opens; a failed request being made again says so instead,
-    /// because a reader waiting on one is owed the reason.
+    /// What a summary's title line says: a stretch still going names the run
+    /// and what it waits on, a finished one names what it did. aimini titles
+    /// a group of calls the same way, and no stretch calls itself finished
+    /// while the turn still works — one turn is not two processes, one
+    /// finished and one running, with a reply between them.
     var activityTitle: String {
-        guard case let .thinking(seconds, _) = role else { return text }
-        if seconds == nil {
-            return isReconnecting ? String(localized: "Reconnecting…") : String(localized: "Running")
+        guard case let .thinking(seconds, tools) = role else { return text }
+        // An unfinished summary counts only the calls still running; between
+        // them the model is at work again, so it reads "Thinking…", or
+        // "Reconnecting…" while a failed request is made again.
+        guard let seconds else {
+            if isReconnecting {
+                return String(localized: "Reconnecting…")
+            }
+            let running = runningTools
+            guard running > 0 else { return String(localized: "Thinking…") }
+            return running == 1
+                ? String(localized: "Executing tool…")
+                : String(localized: "Executing \(running) tools…")
         }
-        return String(localized: "Completed")
+        if seconds <= 0 {
+            guard tools > 0 else { return "" }
+            return tools == 1 ? String(localized: "Called 1 tool") : String(localized: "Called \(tools) tools")
+        }
+        if tools <= 0 {
+            return seconds == 1
+                ? String(localized: "Thought for 1 second")
+                : String(localized: "Thought for \(seconds) seconds")
+        }
+        if seconds == 1 {
+            return tools == 1
+                ? String(localized: "Thought for 1 second and called 1 tool")
+                : String(localized: "Thought for 1 second and called \(tools) tools")
+        }
+        return tools == 1
+            ? String(localized: "Thought for \(seconds) seconds and called 1 tool")
+            : String(localized: "Thought for \(seconds) seconds and called \(tools) tools")
+    }
+
+    /// The calls this summary's trace is still waiting on.
+    private var runningTools: Int {
+        trace.count(where: { $0.role == .tool && $0.awaitsResult })
     }
 
     var approvalTitle: String {
