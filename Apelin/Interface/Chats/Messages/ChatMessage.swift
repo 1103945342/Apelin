@@ -180,6 +180,27 @@ struct ChatMessage: Identifiable, Hashable {
     }
 }
 
+/// What a row draws of a message, without the strings themselves: its role,
+/// how much text and detail it holds, and whether its call is still out. Two
+/// rows showing the same message compare with it cheaply — comparing whole
+/// messages, arguments and results included, on every event of a running
+/// turn is what made a stream stutter.
+struct ChatMessageShape: Hashable {
+    let role: ChatMessage.Role
+    /// Bytes, not characters: counting a string's characters walks all of it,
+    /// and this is asked on every event.
+    let text: Int
+    let detail: Int
+    let awaitsResult: Bool
+
+    init(_ message: ChatMessage) {
+        role = message.role
+        text = message.text.utf8.count
+        detail = message.detail.utf8.count
+        awaitsResult = message.awaitsResult
+    }
+}
+
 /// What one turn of the conversation cost, as the provider counted it
 /// (the `usage` of each reply in it, summed), and how long it ran.
 struct ChatTurnStats: Hashable {

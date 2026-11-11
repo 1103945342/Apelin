@@ -17,8 +17,9 @@ final class ChatTraceSteps: UIView {
     private var order: [UUID] = []
     private var views: [UUID: UIView] = [:]
     /// What each view shows now, so a step that has not changed is not read
-    /// again — a call's arguments can be a whole file.
-    private var shown: [UUID: ChatMessage] = [:]
+    /// again — a call's arguments can be a whole file, and comparing that on
+    /// every event of a run costs more than the row does.
+    private var shown: [UUID: ChatMessageShape] = [:]
     /// The height these steps were last fitted at, and the state they were
     /// fitted in: laying out a stack whose call is open is not free, and a
     /// row asks for it on every layout pass.
@@ -47,13 +48,14 @@ final class ChatTraceSteps: UIView {
             return
         }
         for step in steps {
-            if shown[step.id] != step {
+            let shape = ChatMessageShape(step)
+            if shown[step.id] != shape {
                 if let row = views[step.id] as? ChatToolCallRow {
                     row.show(step)
                 } else if let row = views[step.id] as? ChatThoughtRow {
                     row.show(step)
                 }
-                shown[step.id] = step
+                shown[step.id] = shape
                 changed()
             }
             // What the reader folded or unfolded is not part of the step's
@@ -108,7 +110,7 @@ final class ChatTraceSteps: UIView {
             }
             stack.addArrangedSubview(view)
             views[step.id] = view
-            shown[step.id] = step
+            shown[step.id] = ChatMessageShape(step)
         }
         changed()
     }
@@ -142,7 +144,7 @@ final class ChatTraceSteps: UIView {
         guard width > 1 else { return 0 }
         let steps = TraceStep.messages(of: summary)
         let key = Measure(
-            steps: steps,
+            shapes: steps.map(ChatMessageShape.init),
             width: width,
             size: UIApplication.shared.preferredContentSizeCategory,
             opened: steps.map(Self.isOpened),
@@ -169,19 +171,20 @@ final class ChatTraceSteps: UIView {
     }
 
     /// What a height was measured from: the steps, how wide, at which text
-    /// size, and which of the steps the reader had open. The steps' messages
-    /// say nothing about being folded, and a stack-sized call does not fit
-    /// the same either way.
+    /// size, and which of the steps the reader had open. What the steps hold
+    /// is enough, and their strings stay out of it: hashing a file's worth of
+    /// arguments on every pass costs more than the measurement saves.
     private struct Measure: Hashable {
-        let steps: [ChatMessage]
+        let shapes: [ChatMessageShape]
         let width: CGFloat
         let size: UIContentSizeCategory
         let opened: [Bool]
     }
 
     /// Past this many the cache starts again: it only ever holds the
-    /// summaries a list is showing and the widths they are shown at.
-    private static let measureCapacity = 32
+    /// summaries a list is showing and the widths they are shown at, and a
+    /// long conversation shows many of them.
+    private static let measureCapacity = 256
     private static var measures: [Measure: CGFloat] = [:]
 
     private static func height(of stack: UIStackView, width: CGFloat) -> CGFloat {
@@ -221,6 +224,8 @@ final class ChatThoughtRow: UIView {
     private let chevron = UIImageView()
     private let textLabel = UILabel()
     private var showsBody = false
+    /// What this row was last given, without its strings.
+    private var shownShape: ChatMessageShape?
     /// When the preview last rolled: a stream arrives faster than a line can
     /// be read, so the roll is kept to a few a second.
     private var lastRoll = Date.distantPast
@@ -333,6 +338,7 @@ final class ChatThoughtRow: UIView {
         }
         preview.snp.makeConstraints { make in make.edges.equalToSuperview() }
 
+        shownShape = ChatMessageShape(step)
         configure(step)
         updateChevron(animated: false)
     }
@@ -344,7 +350,9 @@ final class ChatThoughtRow: UIView {
 
     /// The same thought as it grows, or a new one.
     func show(_ step: ChatMessage) {
-        guard step != self.step else { return }
+        let shape = ChatMessageShape(step)
+        guard shape != shownShape else { return }
+        shownShape = shape
         self.step = step
         configure(step)
     }
@@ -362,8 +370,13 @@ final class ChatThoughtRow: UIView {
 
     private func configure(_ step: ChatMessage, animated: Bool = false) {
         titleLabel.text = Self.title(for: step)
-        textLabel.text = step.text
         showsBody = ChatTraceExpansion.isExpanded(thought: step.id)
+        // A folded thought draws one line of it: the whole text is only put
+        // into the label when it is open, or a stream copies it on every
+        // token for a label nobody is looking at.
+        if showsBody {
+            textLabel.text = step.text
+        }
         textLabel.layer.removeAllAnimations()
         textLabel.alpha = 1
         textLabel.transform = .identity
@@ -425,10 +438,14 @@ final class ChatThoughtRow: UIView {
     }
 
     /// The end of what a thought has written, on one line of white space:
-    /// the newest words are what a reader wants of a run still thinking.
+    /// the newest words are what a reader wants of a run still thinking. Only
+    /// the end is read — splitting a whole thought on every token copies all
+    /// of it.
     private static func tail(of text: String) -> String {
-        let line = text.split(whereSeparator: \.isWhitespace).joined(separator: " ")
-        guard line.count > Self.previewLength else { return line }
+        let end = text.suffix(Self.previewLength * 2)
+        let line = end.split(whereSeparator: \.isWhitespace).joined(separator: " ")
+        let truncated = line.count > Self.previewLength || text.utf8.count > end.utf8.count
+        guard truncated else { return line }
         return "…" + String(line.suffix(Self.previewLength))
     }
 

@@ -22,6 +22,8 @@ final class ChatToolCallRow: UIView {
     private let chevron = UIImageView()
     private let body = UIStackView()
     private var showsBody = false
+    /// What this row was last given, without its strings.
+    private var shownShape: ChatMessageShape?
 
     /// What the line and the folded sections are drawn with.
     private enum Style {
@@ -131,6 +133,7 @@ final class ChatToolCallRow: UIView {
 
         configure(step)
         updateChevron(animated: false)
+        shownShape = ChatMessageShape(step)
     }
 
     @available(*, unavailable)
@@ -141,7 +144,9 @@ final class ChatToolCallRow: UIView {
     /// The same call with more of its result, or a new one: what the line
     /// says changes in place, and a call the reader opened stays open.
     func show(_ step: ChatMessage) {
-        guard step != self.step else { return }
+        let shape = ChatMessageShape(step)
+        guard shape != shownShape else { return }
+        shownShape = shape
         self.step = step
         configure(step)
         updateChevron(animated: false)

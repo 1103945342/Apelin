@@ -736,7 +736,7 @@ final class ChatController: UIViewController {
     /// A new user message starts a turn, whose output the list then follows
     /// (`followTurn`) while the reader is at the latest message.
     private func updateMessages(_ items: [ChatMessage]) {
-        guard messages != items else { return }
+        guard Self.differs(messages, items) else { return }
         // A compaction's row comes between turns, with none to follow: a
         // reader at the latest message is shown it.
         let revealsCompaction = followedTurn == nil && distanceFromLatestMessage <= 2
@@ -756,6 +756,21 @@ final class ChatController: UIViewController {
             revealLatestMessage()
         }
         updateLatestMessageButton()
+    }
+
+    /// Whether the rows differ, read from the end: a run changes what it last
+    /// wrote, and comparing the whole transcript — every call's arguments and
+    /// result — on every event of it is what made a stream stutter.
+    private static func differs(_ old: [ChatMessage], _ new: [ChatMessage]) -> Bool {
+        guard old.count == new.count else { return true }
+        var index = new.count - 1
+        while index >= 0 {
+            if old[index] != new[index] {
+                return true
+            }
+            index -= 1
+        }
+        return false
     }
 
     /// Moves the list with the followed turn's output while the reader is at

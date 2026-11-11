@@ -19,6 +19,9 @@ final class ChatTurnHeaderRow: ListRowView {
     private static let sizingWork = UILabel()
     /// The turn this header belongs to, which is what the process is kept by.
     private var turnID: UUID?
+    /// Which state the custom action was built for: it is rebuilt when that
+    /// changes, never on every event of a run.
+    private var actionsExpanded: Bool?
 
     private enum Style {
         static let topSpacing: CGFloat = 2
@@ -73,6 +76,8 @@ final class ChatTurnHeaderRow: ListRowView {
         turnID = nil
         accessibilityLabel = nil
         accessibilityValue = nil
+        accessibilityCustomActions = nil
+        actionsExpanded = nil
         onToggle = nil
     }
 
@@ -90,21 +95,34 @@ final class ChatTurnHeaderRow: ListRowView {
         // says only that it is done, and what it did is behind its steps.
         let detail = running ? message.text : ""
         work.font = Style.workFont
-        work.text = detail.isEmpty ? nil : detail
+        // The seconds tick on every event of a run; the label is written only
+        // when what it says changes.
+        if work.text != detail {
+            work.text = detail
+        }
         work.isHidden = detail.isEmpty
         let expanded = turnID.map(ChatTraceExpansion.isExpanded(turn:)) ?? false
         chevron.transform = expanded ? CGAffineTransform(rotationAngle: .pi / 2) : .identity
         accessibilityLabel = title
         accessibilityValue = detail.isEmpty ? nil : detail
-        accessibilityCustomActions = [
-            UIAccessibilityCustomAction(
-                name: expanded ? String(localized: "Collapse") : String(localized: "Expand"),
-            ) { [weak self] _ in
-                self?.toggle()
-                return true
-            },
-        ]
+        if actionsExpanded != expanded {
+            actionsExpanded = expanded
+            accessibilityCustomActions = [Self.expandAction(expanded: expanded, owner: self)]
+        }
         setNeedsLayout()
+    }
+
+    /// The one custom action a header offers: open its process, or fold it.
+    private static func expandAction(
+        expanded: Bool,
+        owner: ChatTurnHeaderRow,
+    ) -> UIAccessibilityCustomAction {
+        UIAccessibilityCustomAction(
+            name: expanded ? String(localized: "Collapse") : String(localized: "Expand"),
+        ) { [weak owner] _ in
+            owner?.toggle()
+            return true
+        }
     }
 
     @objc private func toggle() {
@@ -117,14 +135,8 @@ final class ChatTurnHeaderRow: ListRowView {
         } else {
             chevron.transform = turn
         }
-        accessibilityCustomActions = [
-            UIAccessibilityCustomAction(
-                name: expanded ? String(localized: "Collapse") : String(localized: "Expand"),
-            ) { [weak self] _ in
-                self?.toggle()
-                return true
-            },
-        ]
+        accessibilityCustomActions = [Self.expandAction(expanded: expanded, owner: self)]
+        actionsExpanded = expanded
         onToggle?()
     }
 
