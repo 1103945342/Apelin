@@ -2071,9 +2071,17 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   goes out with it, a change made while the app was away included. It is
   a read (`ToolRisk.readOnly`: it changes no file), a plan run may ask for
   a build, Strict lets it through without a card of its own, and it is
-  never granted for the session. The prompt tells the agent when to take
-  a plan and that a plan must write its steps with apelin_todo_write
-  before it asks to build.
+  never granted for the session. A plan run's wall (`ToolRunner
+  .planVerdict`) lets every read through, and with them the two things a
+  plan is made of: its own record, apelin_todo_write (the list above the
+  message box), and the shell_run presets that only read — `ls`, `cat`,
+  `head`, `tail`, `wc`, `file`, `stat`, `plutil -p`, `git status`,
+  `git diff`, `git log` — matched as the approval policy matches them, as
+  a plain argv, inside the project and never as root. Everything that
+  writes, builds, installs or runs as root is refused before the gate,
+  whatever the approval mode says: a plan is not the approval mode. The
+  prompt tells the agent when to take a plan and that a plan writes its
+  steps with apelin_todo_write before it asks to build.
   Web pages (2026-10-29, `Tools/WebFetch.swift`, `HTMLText.swift`,
   `PublicHost.swift`), in any chat: apelin_web_fetch {url, offset?} → no
   host request: the worker fetches one public http or https page itself,

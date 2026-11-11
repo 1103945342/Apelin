@@ -30,9 +30,11 @@ enum ComposerMode: String, CaseIterable, Codable, Sendable {
         switch self {
         case .plan:
             """
-            This run is a plan: read what you need, and answer with what you would \
-            change and why. Do not edit, create or delete a file, and do not build, \
-            install or run anything that changes the device.
+            This run is a plan: read what you need — the files, the log, the read-only \
+            commands of shell_run's presets (ls, cat, head, tail, wc, file, stat, plutil -p, \
+            and git status, git diff, git log) — write the steps with apelin_todo_write, and \
+            answer with what you would change and why. Do not edit, create or delete a file, \
+            and do not build, install or run anything that changes the device.
             """
         case .build, .auto:
             nil

@@ -113,16 +113,28 @@ actor ToolRunner {
         runMode
     }
 
-    /// Why a tool is wrong in a plan run, or nil when the tool may run: only
-    /// reads pass. MCP and extension tools have no risk of their own, so they
-    /// are refused as a whole — a plan reads what Apelin itself keeps.
-    private func planVerdict(for tool: InvocationFacts.Tool) -> String? {
+    /// Why a tool is wrong in a plan run, or nil when the tool may run. Reads
+    /// pass, and so do the two things a plan is made of: its own todo list,
+    /// which the composer shows above the message box as the plan, and the
+    /// shell_run presets that only read (`ls`, `cat`, `git log`, …). MCP and
+    /// extension tools have no risk of their own, so they are refused as a
+    /// whole — a plan reads what Apelin itself keeps.
+    private func planVerdict(for tool: InvocationFacts.Tool, arguments: JSONValue) -> String? {
         switch tool {
-        case .mcp(let name):
+        case let .mcp(name):
             return "\(name) is not a read tool"
-        case .toolExtension(let tool):
+        case let .toolExtension(tool):
             return "\(tool.name) is not a read tool"
-        case .local(let name):
+        case let .local(name):
+            switch name {
+            case .todoList, .todoWrite:
+                // The plan itself, not a change to the project.
+                return nil
+            case .shellRun:
+                return readOnlyCommandVerdict(arguments)
+            default:
+                break
+            }
             switch name.risk {
             case .readOnly:
                 return nil
@@ -132,6 +144,33 @@ actor ToolRunner {
                 return "\(name.rawValue) changes the device; a plan answers with what it would change"
             }
         }
+    }
+
+    /// Why a shell_run is more than reading, or nil when it is one of the
+    /// presets that read: a plain argv, matched as the approval policy
+    /// matches one, inside the project and as mobile. Shell text, pipes, a
+    /// script and root are never reads.
+    private func readOnlyCommandVerdict(_ arguments: JSONValue) -> String? {
+        if arguments.argBool("root") == true {
+            return "a plan runs nothing as root"
+        }
+        guard let command = try? CommandClassifier.classify(arguments) else {
+            return "the command could not be read; give a plain argv that reads"
+        }
+        guard case let .argv(argv) = command else {
+            return "shell text, pipes and scripts are not reads; give a plain argv"
+        }
+        let cwd = arguments.argString("cwd") ?? "."
+        guard root.mayReach(cwd) else {
+            return "\(cwd) is outside the project"
+        }
+        guard ApprovalPresets.default.commands.contains(where: {
+            $0.matches(argv, root: root, workingDirectory: cwd)
+        }) else {
+            let names = ApprovalPresets.default.commands.map(\.name).joined(separator: ", ")
+            return "a plan runs what reads and nothing else: one of \(names)"
+        }
+        return nil
     }
 
     /// A run ended: the next one may send its own notices.
@@ -251,7 +290,7 @@ actor ToolRunner {
         // told so in `<system-state>`, and this is the wall behind the words:
         // what writes or runs is refused without asking, whatever the
         // approval mode says, because a plan is not the approval mode.
-        if runMode == .plan, let verdict = planVerdict(for: tool) {
+        if runMode == .plan, let verdict = planVerdict(for: tool, arguments: arguments) {
             journal?.note(ToolCallOutcome(.denied, "a plan run refused it: \(verdict)"), for: toolCallID)
             throw ToolDeniedError(message: "refused: this run is a plan — \(verdict)")
         }
