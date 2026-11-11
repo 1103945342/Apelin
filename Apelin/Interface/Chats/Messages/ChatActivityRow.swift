@@ -100,8 +100,16 @@ final class ChatActivityRow: ListRowView {
         }
         header.accessibilityTraits = .staticText
         header.accessibilityCustomActions = actions.isEmpty ? nil : actions
-        expansion.show(message)
-        expansion.isHidden = false
+        if message.foldsProcessSteps {
+            // A folded turn draws its whole process as this one line and the
+            // call it is on: the steps under them are what opening the turn's
+            // header is for, and rebuilding them here would be work nobody
+            // sees, on every event of a run.
+            expansion.isHidden = true
+        } else {
+            expansion.show(message)
+            expansion.isHidden = false
+        }
         let tokens = message.receivedTokens
         header.accessibilityValue = tokens.map(ReceivedTokensView.spoken)
         showReceived(tokens, settles: message.receivedSettles, animated: isSameMessage)
@@ -153,14 +161,18 @@ final class ChatActivityRow: ListRowView {
         sourceLabel.font = .preferredFont(forTextStyle: .caption1)
         sourceLabel.frame = CGRect(x: content.minX, y: content.minY, width: textWidth,
                                    height: max(0, sourceHeight - Self.sourceSpacing))
-        // The title runs across the reading width.
+        // The title runs across the reading width; a summary with nothing to
+        // say — a finished stretch — gives its line to what is under it.
         let titleWidth = max(1, textWidth)
-        let height = ceil(header.sizeThatFits(CGSize(width: titleWidth, height: .greatestFiniteMagnitude)).height)
+        let titleHeight = (header.text ?? "").isEmpty && received.isHidden
+            ? 0
+            : ceil(header.sizeThatFits(CGSize(width: titleWidth, height: .greatestFiniteMagnitude)).height)
+        titleView.isHidden = titleHeight == 0
         titleView.frame = CGRect(
             x: pixel(content.minX),
             y: pixel(content.minY + sourceHeight),
             width: pixel(titleWidth),
-            height: pixel(height),
+            height: pixel(titleHeight),
         )
         header.frame = titleView.bounds
         // The count sits at the end of the title line.
@@ -188,7 +200,7 @@ final class ChatActivityRow: ListRowView {
             )
         }
         let above = bannerView.isHidden ? titleView.frame.maxY : bannerView.frame.maxY
-        expansion.frame = CGRect(
+        expansion.frame = expansion.isHidden ? .zero : CGRect(
             x: content.minX,
             y: above + Self.expansionSpacing,
             width: textWidth,
@@ -289,17 +301,22 @@ final class ChatActivityRow: ListRowView {
     static func height(for message: ChatMessage, width: CGFloat) -> CGFloat {
         let insets = ChatMessageRow.insets(for: width)
         let width = max(1, width - insets.left - insets.right)
-        sizingHeader.font = .preferredFont(forTextStyle: .body)
-        sizingHeader.text = message.activityTitle
-        let headerHeight = ceil(
-            sizingHeader.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height,
-        )
-        var height = headerHeight + insets.top + insets.bottom
+        var height = insets.top + insets.bottom
+        // A finished stretch has no title line: what it did is in its steps.
+        if !message.activityTitle.isEmpty {
+            sizingHeader.font = .preferredFont(forTextStyle: .body)
+            sizingHeader.text = message.activityTitle
+            height += ceil(
+                sizingHeader.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height,
+            )
+        }
         height += sourceHeight(message.role.isThinking ? message.processingSource : nil, width: width)
         if banner(of: message) != nil {
             height += bannerSpacing + ToolCallBannerView.height
         }
-        height += expansionSpacing + ChatTraceSteps.height(for: message, width: width)
+        if !message.foldsProcessSteps {
+            height += expansionSpacing + ChatTraceSteps.height(for: message, width: width)
+        }
         return height
     }
 

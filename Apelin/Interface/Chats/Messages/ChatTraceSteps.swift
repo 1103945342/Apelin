@@ -42,7 +42,7 @@ final class ChatTraceSteps: UIView {
     /// The summary's steps as they are now: one that has not changed keeps
     /// what is on screen, so a stream grows the last of them in place.
     func show(_ summary: ChatMessage) {
-        let steps = TraceStep.messages(of: summary)
+        let steps = Self.drawn(summary)
         guard steps.map(\.id) == order else {
             rebuild(with: steps)
             return
@@ -142,7 +142,7 @@ final class ChatTraceSteps: UIView {
     /// slower still.
     static func height(for summary: ChatMessage, width: CGFloat) -> CGFloat {
         guard width > 1 else { return 0 }
-        let steps = TraceStep.messages(of: summary)
+        let steps = drawn(summary)
         let key = Measure(
             shapes: steps.map(ChatMessageShape.init),
             width: width,
@@ -159,6 +159,19 @@ final class ChatTraceSteps: UIView {
         }
         measures[key] = measured
         return measured
+    }
+
+    /// The steps as they are drawn now: a thought that is still streaming
+    /// takes its text a few times a second rather than on every token, so one
+    /// text is measured and laid out instead of a thousand — an open thought
+    /// is the most expensive thing a run draws.
+    static func drawn(_ summary: ChatMessage) -> [ChatMessage] {
+        TraceStep.messages(of: summary).map { step in
+            guard step.role.isThinking else { return step }
+            var step = step
+            step.text = ThinkingStreamGate.text(step.text, for: step.id)
+            return step
+        }
     }
 
     /// Whether the reader has this step open: a thought by its own flag, a
@@ -198,6 +211,34 @@ final class ChatTraceSteps: UIView {
 
     /// The one view the list's heights are measured in.
     private static let sizing = ChatTraceSteps()
+}
+
+/// How often a thought that is still streaming takes a new text where it is
+/// shown open, and what it showed before. Every token used to be laid out
+/// again — the label, the row holding it, and the list's height under it —
+/// which is what made an open process stutter through a stream; the text
+/// arrives far faster than it can be read.
+@MainActor
+enum ThinkingStreamGate {
+    /// Four times a second: fast enough to read as a stream, a hundredth of
+    /// the layout a token-by-token text asks for.
+    static let interval: TimeInterval = 0.25
+
+    private static var shown: [UUID: (text: String, at: Date)] = [:]
+
+    /// The text the thought `id` shows now: `text` when it is time for a new
+    /// one, and the one before it when it is not. A text that did not grow, or
+    /// that begins differently — a thought restarted — is taken at once.
+    static func text(_ text: String, for id: UUID) -> String {
+        let now = Date()
+        if let last = shown[id], text.utf8.count > last.text.utf8.count, text.hasPrefix(last.text),
+           now.timeIntervalSince(last.at) < interval
+        {
+            return last.text
+        }
+        shown[id] = (text, now)
+        return text
+    }
 }
 
 /// One thought of a run, folded into a line: how long it thought, and — once
@@ -454,9 +495,7 @@ final class ChatThoughtRow: UIView {
         guard case let .thinking(seconds, _) = step.role, let seconds else {
             return String(localized: "Thinking…")
         }
-        return seconds == 1
-            ? String(localized: "Thought for 1 second")
-            : String(localized: "Thought for \(seconds) seconds")
+        return ChatMessage.workTitle(seconds: seconds, tools: 0)
     }
 
     private func updateChevron(animated: Bool) {

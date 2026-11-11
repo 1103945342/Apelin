@@ -47,7 +47,7 @@ struct ChatMessage: Identifiable, Hashable {
         }
     }
 
-    let id: UUID
+    var id: UUID
     var role: Role
     var text: String
     var detail = ""
@@ -108,6 +108,10 @@ struct ChatMessage: Identifiable, Hashable {
     /// A reply the reader deleted (`replyDeleted`): left out of the rows
     /// shown.
     var isRemoved = false
+    /// A summary a folded turn draws for its whole process: the row shows its
+    /// line and the call it is on, and none of the steps under them — they are
+    /// what opening the turn's header is for.
+    var foldsProcessSteps = false
 
     /// What a summary's title line says: a stretch still going names the run
     /// and what it waits on, a finished one names what it did. aimini titles
@@ -115,7 +119,7 @@ struct ChatMessage: Identifiable, Hashable {
     /// while the turn still works — one turn is not two processes, one
     /// finished and one running, with a reply between them.
     var activityTitle: String {
-        guard case let .thinking(seconds, tools) = role else { return text }
+        guard case let .thinking(seconds, _) = role else { return text }
         // An unfinished summary counts only the calls still running; between
         // them the model is at work again, so it reads "Thinking…", or
         // "Reconnecting…" while a failed request is made again.
@@ -129,11 +133,10 @@ struct ChatMessage: Identifiable, Hashable {
                 ? String(localized: "Executing tool…")
                 : String(localized: "Executing \(running) tools…")
         }
-        if seconds <= 0 {
-            guard tools > 0 else { return "" }
-            return tools == 1 ? String(localized: "Called 1 tool") : String(localized: "Called \(tools) tools")
-        }
-        return Self.workTitle(seconds: seconds, tools: tools)
+        // A finished stretch says nothing of its own: what it thought and
+        // called is in its steps, and a count of them reads better there than
+        // over them.
+        return ""
     }
 
     /// What a stretch of a run did, in aimini's words: "Thought for 3

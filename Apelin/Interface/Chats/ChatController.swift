@@ -796,14 +796,39 @@ final class ChatController: UIViewController {
         if let page = tracePage, let message = items.first(where: { $0.id == page.messageID }) {
             page.show(message)
         }
-        let visible = items.filter { item in
-            guard !item.role.isApproval else { return false }
-            // A turn's process is drawn only under an open header, which is
-            // the one way in, as aimini's turn header is.
-            if case .thinking = item.role, let turn = item.turnMessageID {
-                return ChatTraceExpansion.isExpanded(turn: turn)
+        // A turn's whole process is drawn under an open header, which is the
+        // one way in, as aimini's turn header is. Folded, it is one summary
+        // row — the newest, and only while the turn runs, so the state and
+        // what it is doing now are on screen — with the reply under it. That
+        // row keeps the turn's name, so the next stretch's summary replaces
+        // the one before it in place.
+        var newestActivity: [UUID: Int] = [:]
+        var runningTurns = Set<UUID>()
+        for (offset, item) in items.enumerated() {
+            guard let turn = item.turnMessageID else { continue }
+            if case let .turn(running, _) = item.role, running {
+                runningTurns.insert(turn)
             }
-            return true
+            if case .thinking = item.role {
+                newestActivity[turn] = offset
+            }
+        }
+        var visible: [ChatMessage] = []
+        visible.reserveCapacity(items.count)
+        for (offset, item) in items.enumerated() {
+            guard !item.role.isApproval else { continue }
+            guard case .thinking = item.role, let turn = item.turnMessageID else {
+                visible.append(item)
+                continue
+            }
+            if ChatTraceExpansion.isExpanded(turn: turn) {
+                visible.append(item)
+            } else if runningTurns.contains(turn), newestActivity[turn] == offset {
+                var row = item
+                row.id = ChatTranscript.rowID(forProcess: turn)
+                row.foldsProcessSteps = true
+                visible.append(row)
+            }
         }
         messageList.apply(visible, animated: !isSwitchingChat && !UIAccessibility.isReduceMotionEnabled)
         updateMessageRuler(visible)

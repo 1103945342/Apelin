@@ -494,14 +494,15 @@ struct ChatTranscript {
             let isRunning = running == turnID
             result.append(row)
             if isRunning || range.contains(where: { rows[$0].role.isActivity }) {
-                let tools = range.count(where: { rows[$0].role == .tool })
                 let seconds = isRunning
                     ? began[turnID].map { max(0, Int(now.timeIntervalSince($0).rounded())) }
                     : durations[turnID]
+                // The header says the turn's state alone: what it has done so
+                // far, and how long it took, is not its line to say.
                 var header = ChatMessage(
                     id: rowID("turn:\(turnID)"),
                     role: .turn(running: isRunning, seconds: seconds),
-                    text: isRunning ? ChatMessage.workTitle(seconds: seconds ?? 0, tools: tools) : "",
+                    text: "",
                 )
                 header.turnMessageID = turnID
                 result.append(header)
@@ -617,6 +618,13 @@ struct ChatTranscript {
             ids.insert(id)
         }
         return ids
+    }
+
+    /// The row a folded turn draws its process in: one row for the whole turn,
+    /// so the next stretch's summary replaces the one before it in place
+    /// rather than arriving as another row under it.
+    static func rowID(forProcess of: UUID) -> UUID {
+        rowID("process:\(of.uuidString)")
     }
 
     /// The row an event at `index` among the record's own is named by: the
