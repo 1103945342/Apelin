@@ -141,19 +141,16 @@ final class ToolCallSectionView: UIView {
     private let nameLabel = UILabel()
     private let valueLabel = UILabel()
     private let panel = UIView()
-    /// A block's text, in a view that scrolls when the block is too tall to
-    /// draw whole — `maximumBlockHeight` says how tall is too tall.
-    private let panelText = UITextView()
-    private var panelTextHeight: Constraint?
-    /// The height the panel's text was last given.
-    private var shownBlockHeight: CGFloat = -1
+    /// A block's text, held whole in a scroll view of its own: the panel is
+    /// as tall as the text, or as tall as `maximumBlockHeight` lets it be,
+    /// and the rest of the text is reached by scrolling inside it.
+    private let panelScroll = UIScrollView()
+    private let panelLabel = UILabel()
 
-    /// The tallest a block is drawn: past it the text scrolls inside its
-    /// panel, as aimini's tool sections do. Nil draws a block whole, which
-    /// is what the trace's page does with the room it has.
-    var maximumBlockHeight: CGFloat?
-
-    init(section: ToolCallDetail.Section) {
+    /// `maximumBlockHeight`: the tallest a block is drawn, as aimini's tool
+    /// sections are. Nil draws a block as tall as it is, which is what the
+    /// trace's page does with the room it has.
+    init(section: ToolCallDetail.Section, maximumBlockHeight: CGFloat? = nil) {
         super.init(frame: .zero)
 
         stack.axis = .vertical
@@ -175,17 +172,33 @@ final class ToolCallSectionView: UIView {
         panel.backgroundColor = TraceBody.Style.panelColor
         panel.layer.cornerRadius = TraceBody.Style.panelCorner
         panel.layer.cornerCurve = .continuous
-        panelText.isEditable = false
-        panelText.isSelectable = true
-        panelText.isScrollEnabled = false
-        panelText.backgroundColor = .clear
-        panelText.textContainerInset = .zero
-        panelText.textContainer.lineFragmentPadding = 0
-        panelText.showsVerticalScrollIndicator = false
-        panel.addSubview(panelText)
-        panelText.snp.makeConstraints { x in
+        panelScroll.alwaysBounceVertical = false
+        panelScroll.showsVerticalScrollIndicator = maximumBlockHeight != nil
+        panelLabel.numberOfLines = 0
+        panel.addSubview(panelScroll)
+        panelScroll.addSubview(panelLabel)
+        panelScroll.snp.makeConstraints { x in
             x.edges.equalToSuperview().inset(TraceBody.Style.panelPadding)
-            panelTextHeight = x.height.equalTo(0).constraint
+        }
+        panelLabel.snp.makeConstraints { x in
+            x.edges.equalTo(panelScroll.snp.contentLayoutGuide)
+            x.width.equalTo(panelScroll.snp.frameLayoutGuide)
+        }
+
+        // The panel is as tall as its text while that fits, and as tall as
+        // the limit once it does not: the height it would take from the text
+        // is the stronger wish, the limit is what is left when the text is
+        // longer, and the view scrolls the part it cannot show. Both are
+        // constraints, so the row measured before it is laid out and the row
+        // drawn come out the same height.
+        let fits = panelScroll.heightAnchor.constraint(equalTo: panelLabel.heightAnchor)
+        fits.priority = UILayoutPriority(999)
+        fits.isActive = true
+        if let maximumBlockHeight {
+            panelScroll.heightAnchor.constraint(lessThanOrEqualToConstant: maximumBlockHeight).isActive = true
+            let holds = panelScroll.heightAnchor.constraint(equalToConstant: maximumBlockHeight)
+            holds.priority = UILayoutPriority(750)
+            holds.isActive = true
         }
 
         for view in [rule as UIView, nameLabel, valueLabel, panel] {
@@ -211,7 +224,7 @@ final class ToolCallSectionView: UIView {
         valueLabel.isHidden = isBlock
         panel.isHidden = !isBlock
         if isBlock {
-            panelText.attributedText = Self.blockText(section, kind: kind)
+            panelLabel.attributedText = Self.blockText(section, kind: kind)
         } else {
             valueLabel.attributedText = Self.lineText(section, kind: kind)
         }
@@ -230,46 +243,6 @@ final class ToolCallSectionView: UIView {
         accessibilityTraits = .staticText
         accessibilityLabel = hasName ? section.name : String(localized: "Details")
         accessibilityValue = section.value
-    }
-
-    /// The panel's text is as tall as what it holds, or as tall as
-    /// `maximumBlockHeight` lets it be, and scrolls for the rest. Its width
-    /// is the view's, given here rather than read from bounds: a row is
-    /// measured before it is laid out, and both must come out the same.
-    private func sizeBlock(width: CGFloat) {
-        guard !panel.isHidden else { return }
-        let inner = width - TraceBody.Style.panelPadding * 2
-        guard inner > 1 else { return }
-        let measured = ceil(
-            (panelText.attributedText ?? NSAttributedString()).boundingRect(
-                with: CGSize(width: inner, height: .greatestFiniteMagnitude),
-                options: [.usesLineFragmentOrigin, .usesFontLeading],
-                context: nil,
-            ).height,
-        )
-        let shown = maximumBlockHeight.map { min($0, measured) } ?? measured
-        guard abs(shown - shownBlockHeight) > 0.5 else { return }
-        shownBlockHeight = shown
-        panelTextHeight?.update(offset: shown)
-        panelText.isScrollEnabled = shown < measured - 0.5
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        sizeBlock(width: bounds.width)
-    }
-
-    override func systemLayoutSizeFitting(
-        _ targetSize: CGSize,
-        withHorizontalFittingPriority horizontalFittingPriority: UILayoutPriority,
-        verticalFittingPriority: UILayoutPriority,
-    ) -> CGSize {
-        sizeBlock(width: targetSize.width)
-        return super.systemLayoutSizeFitting(
-            targetSize,
-            withHorizontalFittingPriority: horizontalFittingPriority,
-            verticalFittingPriority: verticalFittingPriority,
-        )
     }
 
     /// A value that is a word or a line, in the face its kind asks for.

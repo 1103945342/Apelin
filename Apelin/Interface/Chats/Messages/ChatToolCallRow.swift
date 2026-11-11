@@ -166,11 +166,11 @@ final class ChatToolCallRow: UIView {
         }
         if showsBody {
             for section in ToolCallDetail(detail: step.detail, title: step.text).sections {
-                let view = ToolCallSectionView(section: section)
-                // aimini stops a tool's instruction or result at 240 dp and
+                // aimini stops a tool's instruction or result at 240 pt and
                 // scrolls the rest inside the panel.
-                view.maximumBlockHeight = Style.blockHeightLimit
-                body.addArrangedSubview(view)
+                body.addArrangedSubview(
+                    ToolCallSectionView(section: section, maximumBlockHeight: Style.blockHeightLimit),
+                )
             }
         }
         body.isHidden = body.arrangedSubviews.isEmpty
