@@ -47,6 +47,28 @@ struct InstallationRecord: Codable, Equatable, Sendable {
         var name: String
         /// `<install root>/Applications/<name>.app`, as it was copied.
         var bundlePath: String
+
+        /// Where the bundle is now. roothide names its bootstrap folder
+        /// `.jbroot-<id>`, and a jailbreak again can give that folder another
+        /// name with everything inside it: the path a record was written with
+        /// then names nothing while the app is on the device all the same.
+        /// The recorded path is the answer while it holds this bundle;
+        /// otherwise the bundle is looked for where an install puts one
+        /// today, and taken only when the `Info.plist` there is this one's —
+        /// never a stranger's app that happens to share the name.
+        func path(under applications: String) -> String {
+            if Self.holds(bundlePath, bundleID) { return bundlePath }
+            let moved = applications + "/" + name + ".app"
+            return Self.holds(moved, bundleID) ? moved : bundlePath
+        }
+
+        private static func holds(_ path: String, _ bundleID: String) -> Bool {
+            guard let data = FileManager.default.contents(atPath: path + "/Info.plist"),
+                  let plist = (try? PropertyListSerialization.propertyList(from: data, format: nil)) as? [String: Any],
+                  let identifier = plist["CFBundleIdentifier"] as? String
+            else { return false }
+            return identifier == bundleID
+        }
     }
 
     var installationID: String

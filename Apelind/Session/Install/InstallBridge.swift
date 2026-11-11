@@ -451,7 +451,9 @@ actor InstallBridge {
             let bundle = try AppBundle.find(in: workspace)
             let destination = URL(fileURLWithPath: layout.applications)
                 .appendingPathComponent(bundle.name + ".app")
-            try await checkPlacement(of: bundle, at: destination, installationID: installationID)
+            try await checkPlacement(
+                of: bundle, at: destination, applications: layout.applications, installationID: installationID
+            )
             do {
                 try FileManager.default.createDirectory(
                     atPath: layout.applications,
@@ -515,7 +517,11 @@ actor InstallBridge {
 
     /// Whether the app can go where its bundle asks: nothing else at that
     /// path, and no installation of ours already holding this bundle ID.
-    private func checkPlacement(of bundle: AppBundle, at destination: URL, installationID: String) async throws {
+    /// A record whose own copy of the app is gone no longer holds it — that
+    /// app went away with the root it was installed under, or outside Apelin.
+    private func checkPlacement(
+        of bundle: AppBundle, at destination: URL, applications: String, installationID: String
+    ) async throws {
         guard !bundle.bundleID.hasPrefix("com.apple.") else {
             throw ApelinError(.denied, "an .ipa cannot claim \(bundle.bundleID), a system bundle ID")
         }
@@ -523,6 +529,7 @@ actor InstallBridge {
         if let other = records.first(where: {
             $0.installationID != installationID && $0.status == .installed
                 && $0.application?.bundleID == bundle.bundleID
+                && $0.application.map { FileManager.default.fileExists(atPath: $0.path(under: applications)) } == true
         }) {
             throw ApelinError(
                 .conflict,
@@ -547,16 +554,38 @@ actor InstallBridge {
             return
         }
         do {
+            let bundlePath = application.path(under: layout.applications)
             var metadata = stat()
-            let present = lstat(application.bundlePath, &metadata) == 0
+            let present = lstat(bundlePath, &metadata) == 0
             if present {
                 try ApplicationInstall.unregister(
-                    application.bundlePath,
+                    bundlePath,
                     layout: layout,
                     installRoot: paths.installRoot
                 )
-                guard Self.removeTree(URL(fileURLWithPath: application.bundlePath), inside: layout.applications) else {
-                    throw ApelinError(.denied, "\(application.bundlePath) is not inside \(layout.applications)")
+                // LaunchServices may still name the path this record was
+                // written with, from the root the app went in under: an
+                // unregistration there costs nothing and leaves no ghost.
+                if application.bundlePath != bundlePath {
+                    _ = try? ApplicationInstall.unregister(
+                        application.bundlePath,
+                        layout: layout,
+                        installRoot: paths.installRoot
+                    )
+                }
+                guard Self.removeTree(URL(fileURLWithPath: bundlePath), inside: layout.applications) else {
+                    throw ApelinError(.denied, "\(bundlePath) is not inside \(layout.applications)")
+                }
+                // Every other record of this bundle named the app this
+                // removal took away — an earlier install under a root the
+                // bootstrap has since renamed. None of them keeps saying it
+                // is on the device.
+                for other in await installations.all()
+                    where other.installationID != record.installationID
+                    && other.status == .installed
+                    && other.application?.bundleID == application.bundleID
+                {
+                    _ = try? await installations.update(other.installationID) { $0.status = .removed }
                 }
             }
             _ = try await installations.update(record.installationID) {
@@ -769,28 +798,33 @@ actor InstallBridge {
     /// this caller would act on it and, if not, the refusal it would give.
     func list(_ request: InstallationListRequest, caller: Caller) async throws -> InstallationListResponse {
         let installed = try packages.installedPackages()
+        let applications = ApplicationInstall.Layout(installRoot: paths.installRoot).applications
         let records = await installations.all()
         var newest: [String: InstallationRecord] = [:]
         // Oldest first: a later install of a package supersedes an earlier
         // one, and a removal under way is listed as that, not as the
-        // install before it.
+        // install before it. A record whose app or package is no longer on
+        // the device is not a candidate at all, so an older record that can
+        // still be managed is not hidden behind it.
         for record in records where record.status == .installed || record.status == .removing {
+            // An app is on the device while its bundle is; a package while
+            // dpkg lists it installed.
+            let onDevice = record.application.map { FileManager.default.fileExists(atPath: $0.path(under: applications)) }
+                ?? (installed[record.packageID]?.isInstalled == true)
+            guard onDevice else { continue }
             newest[record.packageID] = record
         }
         let listed = newest.values.filter { record in
-            // An app is on the device while its bundle is; a package while
-            // dpkg lists it installed.
-            let onDevice = record.application.map { FileManager.default.fileExists(atPath: $0.bundlePath) }
-                ?? (installed[record.packageID]?.isInstalled == true)
-            return onDevice
-                && (request.packageID == nil || record.packageID == request.packageID)
+            (request.packageID == nil || record.packageID == request.packageID)
                 && (request.projectID == nil || record.projectID == request.projectID)
         }
         return InstallationListResponse(installations: listed.sorted { $0.createdAt > $1.createdAt }.map { record in
             var refusal: String?
             do {
                 if let application = record.application {
-                    guard record.status == .installed, FileManager.default.fileExists(atPath: application.bundlePath) else {
+                    guard record.status == .installed,
+                          FileManager.default.fileExists(atPath: application.path(under: applications))
+                    else {
                         throw ApelinError(.conflict, "This app is no longer on the device.")
                     }
                 } else {

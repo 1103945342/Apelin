@@ -1301,6 +1301,38 @@ do {
     expectError("removing through a superseded record", code: .conflict) { try ManagedPackagePolicy.checkRemoval(older, installed: installed, records: [older, ours]) }
 }
 
+// An app's record outlives the root it was installed under: roothide renames
+// its `.jbroot-…` folder when the device is jailbroken again, and the bundle
+// moves with it. The record finds it there, and never takes a stranger's app
+// that happens to carry the same name.
+do {
+    let applications = scratchPath + "/newroot/Applications"
+    let gone = scratchPath + "/oldroot/Applications"
+    try FileManager.default.createDirectory(atPath: applications + "/Demo.app", withIntermediateDirectories: true)
+    try FileManager.default.createDirectory(atPath: applications + "/Stranger.app", withIntermediateDirectories: true)
+    func identifier(_ id: String, at path: String) throws {
+        let plist = try PropertyListSerialization.data(
+            fromPropertyList: ["CFBundleIdentifier": id], format: .xml, options: 0
+        )
+        try plist.write(to: URL(fileURLWithPath: path + "/Info.plist"))
+    }
+    try identifier("com.example.demo", at: applications + "/Demo.app")
+    try identifier("com.example.stranger", at: applications + "/Stranger.app")
+
+    let moved = InstallationRecord.Application(
+        bundleID: "com.example.demo", name: "Demo", bundlePath: gone + "/Demo.app"
+    )
+    check(moved.path(under: applications) == applications + "/Demo.app", "an app under a renamed root is found where it is now")
+    let stranger = InstallationRecord.Application(
+        bundleID: "com.example.demo", name: "Stranger", bundlePath: gone + "/Demo.app"
+    )
+    check(stranger.path(under: applications) == gone + "/Demo.app", "an app of another bundle with the same name is not taken for it")
+    let there = InstallationRecord.Application(
+        bundleID: "com.example.demo", name: "Demo", bundlePath: applications + "/Demo.app"
+    )
+    check(there.path(under: applications) == there.bundlePath, "a record that still names the bundle keeps its path")
+}
+
 // MARK: - Deb control
 
 do {
