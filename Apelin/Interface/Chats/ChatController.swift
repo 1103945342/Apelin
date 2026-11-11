@@ -91,6 +91,15 @@ final class ChatController: UIViewController {
     /// at the same point in that row rather than at the same offset.
     private var readingPlace: (row: ChatMessage.ID, fraction: CGFloat)?
     private var lastLayoutWidth: CGFloat = 0
+    /// A page of earlier turns is being folded in: the scroll that follows is
+    /// ours, and must not ask for another page.
+    private var isLoadingEarlierHistory = false
+    /// A page was loaded at the top, and the reader has not left it yet: the
+    /// next page is asked for when they come back up, not at once.
+    private var holdsHistoryTop = false
+    /// The rail's entries whose messages the list is showing, in order: what
+    /// the top of the page can be read against.
+    private var loadedRulerIndices: [Int] = []
     private var modelLoader: Task<Void, Never>?
     private var selectionCheck: Task<Void, Never>?
     private var attachmentImport: ComposerAttachmentImport?
@@ -1409,15 +1418,6 @@ extension ChatController: UIScrollViewDelegate {
         }
     }
 
-    /// A page of earlier turns is being folded in: the scroll that follows is
-    /// ours, and must not ask for another page.
-    private var isLoadingEarlierHistory = false
-    /// A page was loaded at the top, and the reader has not left it yet: the
-    /// next page is asked for when they come back up, not at once.
-    private var holdsHistoryTop = false
-    /// The rail's entries whose messages the list is showing, in order: what
-    /// the top of the page can be read against.
-    private var loadedRulerIndices: [Int] = []
     private var distanceFromLatestMessage: CGFloat {
         max(0, messageList.maximumContentOffset.y - messageList.contentOffset.y)
     }
