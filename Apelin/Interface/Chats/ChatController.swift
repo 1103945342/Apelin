@@ -307,6 +307,13 @@ final class ChatController: UIViewController {
         messageList.keyboardDismissMode = .interactive
         messageList.delegate = self
         messageList.rows {
+            ListRow(ChatTurnHeaderRow.self)
+                .when { message in
+                    if case .turn = message.role { return true }
+                    return false
+                }
+                .height { message, context in ChatTurnHeaderRow.height(for: message, width: context.width) }
+                .configure { row, message, _ in row.show(message) }
             ListRow(ChatActivityRow.self)
                 .when { $0.role.isActivity }
                 .height { message, context in ChatActivityRow.height(for: message, width: context.width) }

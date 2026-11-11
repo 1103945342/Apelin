@@ -402,6 +402,14 @@ struct ChatTranscript {
                 messages[summary].processingSource = processingSource
             }
         }
+        // One header per turn, under the prompt that began it: the run's
+        // state said once for the whole turn, never once per stretch inside
+        // it. A turn that writes a reply and then works on is the same turn.
+        messages = Self.withTurnHeaders(
+            messages,
+            running: isWorking ? turns.last?.messageID : nil,
+            durations: turnDurations,
+        )
         messages += queued
         for draft in sending where !messages.contains(where: { $0.id == draft.id }) {
             var message = ChatMessage(id: draft.id, role: .user, text: draft.text, attachments: draft.attachments)
@@ -417,6 +425,43 @@ struct ChatTranscript {
             firstRows[row.id] = rows.count
         }
         rows.append(row)
+    }
+
+    /// How long each turn that ended took, by the message that began it.
+    private var turnDurations: [UUID: Int] {
+        var durations: [UUID: Int] = [:]
+        for turn in turns {
+            guard let id = turn.messageID, let ended = turn.ended else { continue }
+            durations[id] = max(0, Int(ended.timeIntervalSince(turn.began).rounded()))
+        }
+        return durations
+    }
+
+    /// Each turn's header under the prompt that began it: the run's state,
+    /// once for the whole turn. A turn with nothing in it but its reply gets
+    /// none, and a stretch that ended inside a turn that is still going says
+    /// nothing about the turn's state — that is the header's to say.
+    private static func withTurnHeaders(
+        _ rows: [ChatMessage],
+        running: UUID?,
+        durations: [UUID: Int],
+    ) -> [ChatMessage] {
+        var result: [ChatMessage] = []
+        result.reserveCapacity(rows.count + 1)
+        for (index, row) in rows.enumerated() {
+            result.append(row)
+            guard row.role == .user, !row.isQueued, let turnID = row.turnMessageID else { continue }
+            let end = rows[(index + 1)...].firstIndex { $0.role == .user } ?? rows.count
+            let hasSteps = rows[(index + 1) ..< end].contains { $0.role.isActivity }
+            let isRunning = running == turnID
+            guard hasSteps || isRunning else { continue }
+            result.append(ChatMessage(
+                id: rowID("turn:\(turnID)"),
+                role: .turn(running: isRunning, seconds: durations[turnID]),
+                text: "",
+            ))
+        }
+        return result
     }
 
     /// Ends the turn still open, at `date`.
@@ -634,6 +679,10 @@ struct ChatTranscript {
                 if message.role.needsApproval {
                     combined.append(message)
                 }
+            case .turn:
+                // A turn's header is made after the fold, from the turn
+                // itself; one that arrives here only passes through.
+                combined.append(message)
             case .user, .assistant, .compaction:
                 summary = nil
                 combined.append(message)

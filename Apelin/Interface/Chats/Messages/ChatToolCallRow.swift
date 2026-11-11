@@ -34,9 +34,12 @@ final class ChatToolCallRow: UIView {
         /// Between the line and the sections under it.
         static let bodySpacing: CGFloat = 8
         static let sectionSpacing: CGFloat = 12
-        /// The tallest a block of a call's instruction or result is drawn:
-        /// past it the text scrolls inside its panel, as aimini's do.
-        static let blockHeightLimit: CGFloat = 240
+        /// The tallest a call's instruction is drawn: a command is a line or
+        /// two, and a box the size of a result's would take the page.
+        static let commandHeightLimit: CGFloat = 120
+        /// The tallest a call's result is drawn: past it the text scrolls
+        /// inside its panel, as aimini's do.
+        static let blockHeightLimit: CGFloat = 180
 
         static var titleFont: UIFont {
             UIFontMetrics(forTextStyle: .subheadline).scaledFont(
@@ -183,11 +186,15 @@ final class ChatToolCallRow: UIView {
         body.transform = .identity
         if showsBody {
             for section in Self.sections(of: step) {
-                // aimini stops a tool's instruction or result at 240 pt and
-                // scrolls the rest inside the panel.
-                body.addArrangedSubview(
-                    ToolCallSectionView(section: section, maximumBlockHeight: Style.blockHeightLimit),
-                )
+                // aimini caps a tool's instruction and result and scrolls the
+                // rest inside the panel; a command's box is much shorter than
+                // a result's, which is what the reader came to read.
+                body.addArrangedSubview(ToolCallSectionView(
+                    section: section,
+                    maximumBlockHeight: section.kind == .command
+                        ? Style.commandHeightLimit
+                        : Style.blockHeightLimit,
+                ))
             }
         }
         body.isHidden = body.arrangedSubviews.isEmpty

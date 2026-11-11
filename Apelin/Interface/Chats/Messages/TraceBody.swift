@@ -175,6 +175,12 @@ final class ToolCallSectionView: UIView {
         panelScroll.alwaysBounceVertical = false
         panelScroll.showsVerticalScrollIndicator = maximumBlockHeight != nil
         panelLabel.numberOfLines = 0
+        // The text keeps its whole height inside the panel. Without this the
+        // cap would compress the label rather than the panel: the text would
+        // be cut off inside it, the scroll view would think it had nothing to
+        // scroll, and the part below the fold could not be reached at all.
+        panelLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+        panelLabel.setContentHuggingPriority(.required, for: .vertical)
         panel.addSubview(panelScroll)
         panelScroll.addSubview(panelLabel)
         panelScroll.snp.makeConstraints { x in
@@ -310,6 +316,13 @@ final class ToolCallSectionView: UIView {
 /// the finger over every panel; this one begins to scroll only when there is
 /// something to reach, and leaves the drag to the transcript otherwise.
 final class BlockScrollView: UIScrollView {
+    /// A block with more text than the panel shows takes the drag; one that
+    /// fits leaves it to the transcript under it.
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        isScrollEnabled = contentSize.height > bounds.height + 0.5
+    }
+
     override func gestureRecognizerShouldBegin(_ recognizer: UIGestureRecognizer) -> Bool {
         guard recognizer === panGestureRecognizer else {
             return super.gestureRecognizerShouldBegin(recognizer)

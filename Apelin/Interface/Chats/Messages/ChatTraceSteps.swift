@@ -214,14 +214,18 @@ final class ChatThoughtRow: UIView {
     private let line = UIControl()
     private let icon = UIImageView()
     private let titleLabel = UILabel()
+    private let preview = UILabel()
     private let chevron = UIImageView()
     private let textLabel = UILabel()
     private var showsBody = false
+    /// When the preview last rolled: a stream arrives faster than a line can
+    /// be read, so the roll is kept to a few a second.
+    private var lastRoll = Date.distantPast
 
-    /// How much of a thought the row draws before it stops: a run whose
-    /// thoughts run to pages would otherwise bury the calls it made. The
-    /// whole of it is in the trace's page, a long press away.
-    private static let lineLimit = 20
+    /// How much of a thought the folded line keeps after its title, and how
+    /// often the roll is allowed.
+    private static let previewLength = 200
+    private static let rollInterval: TimeInterval = 0.25
 
     private enum Style {
         static let lineHeight: CGFloat = 28
@@ -266,7 +270,19 @@ final class ChatThoughtRow: UIView {
         titleLabel.textColor = .secondaryLabel
         titleLabel.numberOfLines = 1
         titleLabel.lineBreakMode = .byTruncatingTail
+        titleLabel.setContentHuggingPriority(.required, for: .horizontal)
+        titleLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
         line.addSubview(titleLabel)
+
+        // After the title, while the thought is folded: the words it is
+        // writing now, the newest at the trailing end.
+        preview.font = Style.bodyFont
+        preview.adjustsFontForContentSizeCategory = true
+        preview.textColor = .tertiaryLabel
+        preview.numberOfLines = 1
+        preview.lineBreakMode = .byTruncatingHead
+        preview.isHidden = true
+        line.addSubview(preview)
 
         chevron.image = UIImage(
             systemName: "chevron.right",
@@ -282,8 +298,9 @@ final class ChatThoughtRow: UIView {
         textLabel.font = Style.bodyFont
         textLabel.adjustsFontForContentSizeCategory = true
         textLabel.textColor = .secondaryLabel
-        textLabel.numberOfLines = Self.lineLimit
-        textLabel.lineBreakMode = .byTruncatingTail
+        // Opened, a thought is shown whole: it is what the reader asked for.
+        textLabel.numberOfLines = 0
+        textLabel.lineBreakMode = .byWordWrapping
         textLabel.isHidden = true
         stack.addArrangedSubview(textLabel)
 
@@ -300,6 +317,10 @@ final class ChatThoughtRow: UIView {
         }
         titleLabel.snp.makeConstraints { make in
             make.leading.equalTo(icon.snp.trailing).offset(Style.spacing)
+            make.centerY.equalToSuperview()
+        }
+        preview.snp.makeConstraints { make in
+            make.leading.equalTo(titleLabel.snp.trailing).offset(Style.spacing)
             make.trailing.equalTo(chevron.snp.leading).offset(-Style.spacing)
             make.centerY.equalToSuperview()
         }
@@ -349,7 +370,40 @@ final class ChatThoughtRow: UIView {
                 self.textLabel.transform = .identity
             }
         }
+        showPreview(of: step)
         updateAccessibility()
+    }
+
+    /// Folded, the line keeps the words the thought is writing after its
+    /// title, the newest at the trailing end: a run that is still thinking
+    /// shows what it is thinking, and the line rolls up as more arrives.
+    private func showPreview(of step: ChatMessage) {
+        preview.isHidden = showsBody || step.text.isEmpty
+        guard !preview.isHidden else { return }
+        let running = step.role.isThinking
+        preview.lineBreakMode = running ? .byTruncatingHead : .byTruncatingTail
+        let text = running ? Self.tail(of: step.text) : step.text
+        guard preview.text != text else { return }
+        let rolls = running && preview.text != nil && window != nil
+            && !UIAccessibility.isReduceMotionEnabled
+            && Date().timeIntervalSince(lastRoll) >= Self.rollInterval
+        preview.text = text
+        guard rolls else { return }
+        lastRoll = Date()
+        let push = CATransition()
+        push.type = .push
+        push.subtype = .fromBottom
+        push.duration = 0.2
+        push.timingFunction = CAMediaTimingFunction(name: .easeOut)
+        preview.layer.add(push, forKey: "stream")
+    }
+
+    /// The end of what a thought has written, on one line of white space:
+    /// the newest words are what a reader wants of a run still thinking.
+    private static func tail(of text: String) -> String {
+        let line = text.split(whereSeparator: \.isWhitespace).joined(separator: " ")
+        guard line.count > Self.previewLength else { return line }
+        return "…" + String(line.suffix(Self.previewLength))
     }
 
     /// "Thinking…" while it thinks, then how long it thought.
@@ -390,6 +444,7 @@ final class ChatThoughtRow: UIView {
         } else {
             isAccessibilityElement = true
             accessibilityLabel = titleLabel.text
+            accessibilityValue = preview.isHidden ? nil : preview.text
             accessibilityTraits = .button
             line.isAccessibilityElement = false
             textLabel.isAccessibilityElement = false

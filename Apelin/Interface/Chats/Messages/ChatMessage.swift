@@ -13,6 +13,10 @@ struct ChatMessage: Identifiable, Hashable {
         /// row's text is the summary it goes on from, empty for a session
         /// that did not keep it.
         case compaction
+        /// The header of a turn (`ChatTurnHeaderRow`): the run's state, said
+        /// once for the whole turn rather than by each stretch inside it.
+        /// `seconds` is how long the turn took, once it has ended.
+        case turn(running: Bool, seconds: Int?)
 
         var isActivity: Bool {
             switch self {
