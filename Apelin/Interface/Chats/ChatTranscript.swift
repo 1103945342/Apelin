@@ -116,6 +116,14 @@ struct ChatTranscript {
         // By position: a reopened session's events go on after the earlier
         // task's under a numbering that starts again (`ChatRecord.reopen`).
         for (index, event) in zip(eventCount..., events) {
+            // A conversation read back — a fork's whole history, or a
+            // session reopened — is relayed in one burst, so the host's stamp
+            // says when it was replayed rather than when it happened: `at`
+            // carries the log's own time, and the turn's length with it.
+            var event = event
+            if let at = event.payload?["at"]?.doubleValue {
+                event.time = Date(timeIntervalSince1970: at)
+            }
             let payload = event.payload
             let text = payload?["text"]?.stringValue ?? ""
             let id = Self.rowID("event:\(index)")

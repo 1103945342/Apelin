@@ -88,6 +88,27 @@ struct EventRelayTests {
         #expect(emitted.payloads(of: "messageStarted").compactMap { $0 }.first?["historical"]?.boolValue == true)
     }
 
+    /// The host stamps an event with the moment it relayed it, so a
+    /// conversation read back — a fork's whole history — says `at` beside
+    /// `historical`, and the turns in it keep the time they took.
+    @Test
+    func `a replayed record says when it happened, and a live one says nothing`() async {
+        let emitted = Emitted()
+        let relay = EventRelay { emitted.append($0, $1) }
+        let wrote = Date(timeIntervalSince1970: 1_700_000_000)
+        await relay.relay(.messageStarted, historical: true, at: wrote)
+        await relay.relay(.thinkingDelta("from snapshot"), historical: true, at: wrote.addingTimeInterval(2))
+        await relay.relay(.reconnecting)
+        await relay.flush()
+
+        let started = emitted.payloads(of: "messageStarted").compactMap { $0 }.first
+        #expect(started?["at"]?.doubleValue == wrote.timeIntervalSince1970)
+        // Coalesced streaming says when its last record was written.
+        let thinking = emitted.payloads(of: "thinking").compactMap { $0 }.first
+        #expect(thinking?["at"]?.doubleValue == wrote.addingTimeInterval(2).timeIntervalSince1970)
+        #expect(emitted.payloads(of: "reconnecting") == [nil])
+    }
+
     @Test
     func `the received count goes out with the streamed text, only its latest and only when new`() async {
         let emitted = Emitted()

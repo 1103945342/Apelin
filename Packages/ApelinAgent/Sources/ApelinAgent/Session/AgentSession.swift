@@ -161,7 +161,6 @@ public actor AgentSession {
         // that can be slow says how long it took, on the conversation's own
         // journal (Settings ▸ Logs ▸ Chats).
         let opened = Date()
-        let transcript = try await LegacyToolNames.migrate(log.readResumableTranscript())
         try await Self.closeAbandonedApprovals(log)
         // The worker that emitted the last turn's start is gone. There is
         // no runTask to abort after reopen, so leaving its events unfinished
@@ -171,6 +170,12 @@ public actor AgentSession {
         for event in log.opened.interruptionEvents {
             try await log.append(event)
         }
+        // Read after them: a transcript the killed process left in the
+        // middle of a turn — the prompt it took, a call whose result never
+        // came — is resumable only as a run that stopped, and
+        // `readResumableTranscript` refuses one whose log records no stop.
+        // The events just written are that record.
+        let transcript = try await LegacyToolNames.migrate(log.readResumableTranscript())
         journal.startup("transcript read: \(transcript.count) message(s) in \(Self.milliseconds(since: opened))")
 
         let resolving = Date()
@@ -1208,6 +1213,13 @@ public actor AgentSession {
             case .assistant:
                 output.startMessage()
                 await record(.messageStarted)
+                // A prompt is the one thing the last boundary does not hold:
+                // keep it now, so a process killed while a long reply streams
+                // still leaves the turn it answers. Every other step is kept
+                // by the boundary its own message end writes.
+                if let last = agent.state.messages.last, Self.isUserMessage(last) {
+                    await captureBoundary()
+                }
             case let .user(user) where !queued.isEmpty:
                 // the loop took a queued message: it is in the conversation now
                 let injected = user.content.compactMap { block -> String? in
@@ -1259,7 +1271,7 @@ public actor AgentSession {
             }
         case let .messageEnd(message):
             guard case let .assistant(assistant) = message else {
-                await captureForkBoundary()
+                await captureBoundary()
                 break
             }
             output.endMessage(reported: assistant.usage.output)
@@ -1281,7 +1293,7 @@ public actor AgentSession {
                         ?? "The model provider returned an error. Try again.",
                 ))
             }
-            await captureForkBoundary()
+            await captureBoundary()
         case .streamRewind:
             // kwwk gave up the message it was streaming; the next one replaces it
             journal.replyDiscarded()
@@ -1505,6 +1517,12 @@ public actor AgentSession {
     /// How long a step took, as a journal line reads it.
     public static func milliseconds(since start: Date) -> String {
         "\(Int((Date().timeIntervalSince(start) * 1000).rounded())) ms"
+    }
+
+    /// Whether `message` is what a reader or another conversation said.
+    private static func isUserMessage(_ message: Message) -> Bool {
+        if case .user = message { return true }
+        return false
     }
 
     /// An assistant message's text blocks, joined with nothing between them.

@@ -429,7 +429,7 @@ actor WorkerState {
         let relay = EventRelay(context: context, taskID: taskID)
         self.relay = Task { [weak self] in
             for await record in events {
-                await relay.relay(record.event, historical: record.seq <= boundary)
+                await relay.relay(record.event, historical: record.seq <= boundary, at: record.date)
                 if record.seq > boundary, case let .finished(reason) = record.event {
                     await relay.flush()
                     await self?.runFinished(reason)
@@ -532,6 +532,12 @@ actor EventRelay {
     private var flushScheduled = false
     private var waiting = 0
     private var historical: Bool?
+    /// When the record being replayed happened, in the log it came from.
+    /// `historical` event payloads carry it as `at`, because the host stamps
+    /// every task event with the moment it relayed it: without it a
+    /// conversation read back — a fork's whole history — says every turn
+    /// took as long as the replay did.
+    private var replayedAt: Date?
 
     init(context: WorkerContext, taskID: TaskID) {
         self.init { kind, payload in context.emit(taskID, kind, payload) }
@@ -542,11 +548,16 @@ actor EventRelay {
         self.emit = emit
     }
 
-    func relay(_ event: AgentSessionEvent, historical: Bool = false) {
+    /// `at`: when the record happened, for a record read back from the
+    /// session's own log rather than one just made.
+    func relay(_ event: AgentSessionEvent, historical: Bool = false, at: Date? = nil) {
         if self.historical != nil, self.historical != historical {
             flush()
         }
         self.historical = historical
+        if let at {
+            replayedAt = at
+        }
         switch event {
         case let .textDelta(delta):
             text += delta
@@ -568,17 +579,22 @@ actor EventRelay {
         }
     }
 
+    /// A replay's payload is the record's own, with the two fields the app
+    /// reads beside it: `historical`, and when it happened.
     private func emitEvent(_ kind: String, _ payload: ApelinCore.JSONValue?) {
-        var marked = payload
-        if historical == true {
-            if case var .object(values) = marked {
-                values["historical"] = .bool(true)
-                marked = .object(values)
-            } else {
-                marked = .object(["historical": .bool(true)])
-            }
+        guard historical == true else {
+            emit(kind, payload)
+            return
         }
-        emit(kind, marked)
+        var values: [String: ApelinCore.JSONValue] = [:]
+        if let payload, case let .object(held) = payload {
+            values = held
+        }
+        values["historical"] = .bool(true)
+        if let replayedAt {
+            values["at"] = .number(replayedAt.timeIntervalSince1970)
+        }
+        emit(kind, .object(values))
     }
 
     func flush() {

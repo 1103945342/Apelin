@@ -1598,6 +1598,12 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   reader typed in it), or for one sent before anchors by its text; one a
   compaction summarised is refused. A reopened session's replay ends at a
   change of the history it has not seen, as at a compaction (`SessionReplay`).
+  An event the worker relays from the session's own log — a fork's whole
+  history, a reopened session's replay — carries `historical` and `at`
+  beside its payload, seconds since 1970, when the record was written: the
+  host numbers and stamps every event with the moment it relayed it, so
+  without `at` a whole fork read as a single second and its turns as no
+  time while running and none thinking.
   `agentFork` reads a saved model/UI context for message `id`, including
   image bytes, untruncated tool results and provider metadata, rather than
   reconstructing model messages from the visible log. Its boundary is either
@@ -1616,7 +1622,12 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   Deriving the records is what repairs such a snapshot — a sealed one is
   never rewritten to do it.
   The session captures complete model-message boundaries, then seals at run
-  end and before destructive edits/manual compaction. An outstanding tool
+  end and before destructive edits/manual compaction. The same boundary is
+  written to `transcript.json`, the history a reopened session reads back:
+  a process killed in the middle of a turn then leaves that turn's prompt
+  and every message it finished, not the turn before it. The interruption
+  events a reopening writes are what let a transcript a killed process left
+  in the middle be read as a run that stopped. An outstanding tool
   call cannot replace the last resumable boundary. A fork copies its selected
   version and its ancestors' objects, so removing the source session does not
   remove the fork's model context. A missing legacy snapshot is seeded only

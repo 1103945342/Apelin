@@ -80,6 +80,14 @@ struct ComposerModelSelection: Codable, Equatable {
         save(selected, for: id, defaults: defaults)
     }
 
+    /// A conversation made from another one keeps its picks: a branch of a
+    /// chat is that chat continued, so it sends the same model, effort and
+    /// speed instead of the defaults a new conversation is seeded with.
+    static func inherit(from parent: UUID, into child: UUID, defaults: UserDefaults = .standard) {
+        guard let selection = selection(for: parent, defaults: defaults) else { return }
+        save(selection, for: child, defaults: defaults)
+    }
+
     private static func save(_ selection: Self, for id: UUID, defaults: UserDefaults) {
         guard let data = try? JSONEncoder().encode(selection) else { return }
         defaults.set(data, forKey: key + ".conversation." + id.uuidString)

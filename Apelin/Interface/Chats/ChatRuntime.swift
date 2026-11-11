@@ -137,14 +137,16 @@ final class ChatRuntime {
         for record in records.values {
             if let session = live.first(where: { $0.sessionID == record.sessionID }) {
                 records[record.summary.id]?.reopen(as: session.task)
-                // A task the host reports ended is not followed: its events
-                // are read with the next `agentOpen`, and its row says so now.
-                guard !session.state.isTerminal else {
+                // A task the host reports ended is read to its end too: the
+                // reply, and the run's own end, are in the events after this
+                // row's cursor when the app was killed in the middle of the
+                // turn, and a conversation left saying it is working — with
+                // nothing left to stop — is what not reading them leaves.
+                follow(record.summary.id, task: session.task)
+                if session.state.isTerminal {
                     records[record.summary.id]?.summary.isWorking = false
                     changed(record.summary.id)
-                    continue
                 }
-                follow(record.summary.id, task: session.task)
             } else if record.summary.isWorking {
                 records[record.summary.id]?.summary.isWorking = false
                 changed(record.summary.id)
@@ -567,6 +569,10 @@ final class ChatRuntime {
         summary.branchNumber = number
         let newID = summary.id
         records[newID] = ChatRecord(summary: summary, sessionID: newSessionID)
+        // A branch goes on with the parent's model, effort and speed: the
+        // reader picked them for this conversation, and a branch of it is
+        // the same conversation continued, not a new chat with the defaults.
+        ComposerModelSelection.inherit(from: id, into: newID)
         // Opening the page starts (or retries) its replay. No model prompt is
         // sent, and failure stays visible instead of leaving a silent blank.
         changed(newID)
