@@ -120445,237 +120445,6 @@
         }
       }
     },
-    "Installed by Apelin": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "مثبَّت بواسطة Apelin"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Von Apelin installiert"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Instalada por Apelin"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Installée par Apelin"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Installata da Apelin"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apelin がインストール"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apelin이 설치함"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Instalado pelo Apelin"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Установлено Apelin"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Do Apelin cài đặt"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "由 Apelin 安装"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "由 Apelin 安裝"
-          }
-        }
-      }
-    },
-    "From a package": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "من حزمة"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aus einem Paket"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "De un paquete"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "D’un paquet"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Da un pacchetto"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "パッケージ由来"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "패키지에서 설치됨"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "De um pacote"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Из пакета"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Từ gói"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "来自软件包"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "來自套件"
-          }
-        }
-      }
-    },
-    "Added by another tool": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "أضافه أداة أخرى"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Von einem anderen Werkzeug hinzugefügt"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Añadida por otra herramienta"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ajoutée par un autre outil"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aggiunta da un altro strumento"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "他のツールが追加"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "다른 도구가 추가함"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Adicionado por outra ferramenta"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Добавлено другим инструментом"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Do công cụ khác thêm vào"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "由其他工具添加"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "由其他工具加入"
-          }
-        }
-      }
-    },
     "Forget %@?": {
       "extractionState": "manual",
       "localizations": {
@@ -121061,83 +120830,6 @@
         }
       }
     },
-    "The apps under the bootstrap's Applications folder: what Apelin installed, what a package owns, and registrations whose bundle is gone. An app iOS keeps in its own container is not listed.": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "التطبيقات الموجودة في مجلد Applications الخاص بالـ bootstrap: ما ثبّته Apelin، وما تملكه حزمة، وتسجيلات لم يعد الـ bundle الخاص بها موجودًا. لا تُدرج التطبيقات التي يحتفظ بها iOS في حاويتها الخاصة."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Die Apps im Applications-Ordner des Bootstraps: von Apelin installierte, von einem Paket verwaltete und Registrierungen, deren Bundle nicht mehr da ist. Apps, die iOS in einem eigenen Container hält, werden nicht aufgeführt."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Las apps de la carpeta Applications del bootstrap: las que instaló Apelin, las de un paquete y los registros cuyo bundle ya no está. Las apps que iOS guarda en su propio contenedor no aparecen."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Les apps du dossier Applications du bootstrap : celles qu’Apelin a installées, celles d’un paquet, et les enregistrements dont le bundle a disparu. Une app qu’iOS garde dans son propre conteneur n’est pas listée."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Le app nella cartella Applications del bootstrap: quelle installate da Apelin, quelle di un pacchetto e le registrazioni il cui bundle non c’è più. Le app che iOS tiene nel proprio contenitore non sono elencate."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "bootstrap の Applications フォルダ内の App です。Apelin がインストールしたもの、パッケージが管理するもの、バンドルが消えた登録が並びます。iOS が独自のコンテナに置く App は表示されません。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "bootstrap의 Applications 폴더에 있는 앱입니다. Apelin이 설치한 앱, 패키지가 관리하는 앱, 번들이 사라진 등록이 표시됩니다. iOS가 자체 컨테이너에 두는 앱은 표시되지 않습니다."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Os apps na pasta Applications do bootstrap: os que o Apelin instalou, os de um pacote e registros cujo bundle não existe mais. Apps que o iOS mantém no próprio contêiner não são listados."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Программы в папке Applications бутстрапа: установленные Apelin, принадлежащие пакету и регистрации, чьих пакетов уже нет. Программы, которые iOS держит в собственном контейнере, здесь не показываются."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Các ứng dụng trong thư mục Applications của bootstrap: do Apelin cài, do gói quản lý, và các đăng ký mà bundle đã mất. Ứng dụng iOS giữ trong vùng chứa riêng không được liệt kê."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "bootstrap 的 Applications 文件夹里的应用：Apelin 安装的、软件包提供的，以及 bundle 已不存在的注册记录。iOS 放在自己容器里的应用不会列出。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "bootstrap 的 Applications 資料夾裡的 App：Apelin 安裝的、套件提供的，以及 bundle 已不存在的註冊記錄。iOS 放在自己容器裡的 App 不會列出。"
-          }
-        }
-      }
-    },
     "Its bundle at %@ is deleted from the device, and its registration removed.": {
       "extractionState": "manual",
       "localizations": {
@@ -121288,6 +120980,83 @@
           "stringUnit": {
             "state": "translated",
             "value": "LaunchServices 仍把它註冊在 %@，但那裡已經什麼都不剩了。只會撤銷註冊記錄。"
+          }
+        }
+      }
+    },
+    "The apps Apelin installed from an .ipa. One whose bundle is gone is listed as a registration that can still be cleared.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التطبيقات التي ثبّتها Apelin من ملف .ipa. التطبيق الذي اختفى الـ bundle الخاص به يُدرج كتسجيل يمكن إزالته بعد."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Apps, die Apelin aus einer .ipa installiert hat. Eine, deren Bundle nicht mehr da ist, wird als Registrierung aufgeführt, die sich noch entfernen lässt."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las apps que Apelin instaló desde un .ipa. Una cuyo bundle ya no está aparece como un registro que aún se puede quitar."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les apps qu’Apelin a installées depuis un .ipa. Celle dont le bundle a disparu apparaît comme un enregistrement qu’on peut encore retirer."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le app che Apelin ha installato da un .ipa. Quella il cui bundle non c’è più compare come registrazione ancora da rimuovere."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apelin が .ipa からインストールした App です。バンドルが消えたものは、削除できる登録として表示されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apelin이 .ipa에서 설치한 앱입니다. 번들이 사라진 앱은 정리할 수 있는 등록으로 표시됩니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os apps que o Apelin instalou a partir de um .ipa. Um cujo bundle não existe mais aparece como registro que ainda pode ser removido."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Программы, установленные Apelin из .ipa. Программа, чей пакет исчез, показана как регистрация, которую ещё можно убрать."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Các ứng dụng Apelin cài từ .ipa. Ứng dụng đã mất bundle sẽ hiện như một đăng ký còn có thể dọn."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apelin 从 .ipa 安装的应用。bundle 已经消失的会以仍可清理的注册记录列出。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apelin 從 .ipa 安裝的 App。bundle 已經消失的會以仍可清理的註冊記錄列出。"
           }
         }
       }

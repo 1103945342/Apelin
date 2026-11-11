@@ -3,14 +3,14 @@ import ApelinProtocol
 import Darwin
 import Foundation
 
-/// What is under the bootstrap's `Applications` right now, for Settings ▸
-/// Apps: the registrations LaunchServices holds — which outlive the bundles
-/// they name — together with the bundles on disk, each attributed to an
-/// Apelin installation, a package, or neither.
+/// What Settings ▸ Apps lists: the apps Apelin installed from an `.ipa`, and
+/// for each one whether its bundle is still there — a registration
+/// LaunchServices kept after the bundle went away is shown, so it can be
+/// cleared.
 ///
-/// Nothing here changes anything, and nothing outside
-/// `<install root>/Applications` is looked at: an app iOS keeps in its own
-/// containers is not this screen's subject.
+/// Nothing else under `Applications` is this screen's subject: an app a
+/// package installed belongs to its package manager, and one another tool
+/// copied in was never Apelin's. Nothing here changes anything.
 enum ApplicationCensus {
     /// Apelin's own bundle, never removed from this screen.
     static let ownBundleID = "wiki.qaq.apelin"
@@ -50,12 +50,6 @@ enum ApplicationCensus {
         return (identifier, name, version)
     }
 
-    /// Every `*.app` directly under `applications`.
-    static func bundles(in applications: String) -> [String] {
-        let names = (try? FileManager.default.contentsOfDirectory(atPath: applications)) ?? []
-        return names.filter { $0.hasSuffix(".app") }.sorted().map { applications + "/" + $0 }
-    }
-
     /// Which package lists which bundle under `Applications`, read from the
     /// package database's own `.list` files: `/Applications/Foo.app` →
     /// `com.example.foo`. Bounded — a database bigger than this leaves its
@@ -84,125 +78,63 @@ enum ApplicationCensus {
         return owners
     }
 
-    /// The rows: a registration or a bundle on disk each, attributed and
-    /// sorted by name.
+    /// One row per app Apelin installed that is still worth showing: its
+    /// bundle, or the registration left after the bundle went away. A record
+    /// whose app is gone from both is left out — there is nothing to remove.
     ///
     /// - Parameters:
     ///   - registered: what `uicache -l` answered.
-    ///   - bundles: the `.app` folders under `Applications`.
-    ///   - records: Apelin's installation records.
+    ///   - records: Apelin's installation records, oldest first.
     ///   - owners: `packageOwners`' answer.
     ///   - describe: `describe(bundleAt:)`, or a test's stand-in.
     static func rows(
         installRoot: String,
         registered: [(bundleID: String, path: String)],
-        bundles: [String],
         records: [InstallationRecord],
         owners: [String: String],
         describe: (String) -> (bundleID: String, name: String, version: String)? = ApplicationCensus.describe(bundleAt:),
     ) -> [ApplicationSummary] {
-        let folder = applicationsFolder(installRoot: installRoot)
-        let inside = folder + "/"
-        var rows: [ApplicationSummary] = []
-        var claimed: Set<String> = []
-
-        for entry in registered.sorted(by: { $0.bundleID < $1.bundleID }) {
-            // An app iOS keeps in its own containers is none of this screen's.
-            guard entry.path.hasPrefix(inside) else { continue }
-            let info = describe(entry.path)
-            let identifier = info?.bundleID ?? entry.bundleID
-            guard !claimed.contains(identifier) else { continue }
-            claimed.insert(identifier)
-            let name = info?.name
-                ?? String(((entry.path as NSString).lastPathComponent as NSString).deletingPathExtension)
-            rows.append(attribute(
-                bundleID: identifier,
-                name: name,
-                version: info?.version ?? "",
-                path: info == nil ? nil : entry.path,
-                registeredPath: entry.path,
-                installRoot: installRoot,
-                records: records,
-                owners: owners,
-            ))
-        }
-
-        for path in bundles.sorted() {
-            guard let info = describe(path), !claimed.contains(info.bundleID) else { continue }
-            claimed.insert(info.bundleID)
-            rows.append(attribute(
-                bundleID: info.bundleID,
-                name: info.name,
-                version: info.version,
-                path: path,
-                registeredPath: nil,
-                installRoot: installRoot,
-                records: records,
-                owners: owners,
-            ))
-        }
-
-        return rows.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
-    }
-
-    /// One row: who the app is, and what a removal from here would do.
-    private static func attribute(
-        bundleID: String,
-        name: String,
-        version: String,
-        path: String?,
-        registeredPath: String?,
-        installRoot: String,
-        records: [InstallationRecord],
-        owners: [String: String],
-    ) -> ApplicationSummary {
         let applications = applicationsFolder(installRoot: installRoot)
-        let held = records.last { $0.status == .installed && $0.application?.bundleID == bundleID }
-        let below = path.flatMap { BootstrapRootPath.belowRoot($0) }.map { "/" + $0 }
-        let owned = below.flatMap { owners[$0] }
+        var registrations: [String: String] = [:]
+        for entry in registered.sorted(by: { $0.bundleID < $1.bundleID }) where registrations[entry.bundleID] == nil {
+            registrations[entry.bundleID] = entry.path
+        }
 
-        func summary(
-            _ source: ApplicationSource,
-            removable: Bool,
-            installationID: String? = nil,
-            packageID: String? = nil,
-            reason: String? = nil,
-        ) -> ApplicationSummary {
-            ApplicationSummary(
-                bundleID: bundleID,
+        // The newest record of a bundle is the one that answers for it.
+        var newest: [String: InstallationRecord] = [:]
+        for record in records.sorted(by: { $0.createdAt < $1.createdAt })
+            where record.status == .installed
+        {
+            guard let application = record.application else { continue }
+            newest[application.bundleID] = record
+        }
+
+        var rows: [ApplicationSummary] = []
+        for record in newest.values {
+            guard let application = record.application else { continue }
+            let resolved = application.path(under: applications)
+            let info = describe(resolved)
+            let present = info?.bundleID == application.bundleID
+            let registeredPath = registrations[application.bundleID]
+            guard present || registeredPath != nil else { continue }
+
+            let name = info?.name ?? application.name
+            let version = info?.version ?? record.version
+            let below = present ? BootstrapRootPath.belowRoot(resolved).map { "/" + $0 } : nil
+            let owned = below.flatMap { owners[$0] }
+            rows.append(ApplicationSummary(
+                bundleID: application.bundleID,
                 name: name,
                 version: version,
-                path: path,
+                path: present ? resolved : nil,
                 registeredPath: registeredPath,
-                source: source,
-                installationID: installationID,
-                packageID: packageID,
-                removable: removable,
-                reason: reason,
-            )
-        }
-
-        if bundleID.hasPrefix("com.apple.") {
-            return summary(.other, removable: false, reason: "A system app, which is not managed here.")
-        }
-        if bundleID == ownBundleID {
-            return summary(.apelin, removable: false, reason: "This is Apelin itself.")
-        }
-        if let owned {
-            return summary(
-                .package,
-                removable: false,
+                source: owned == nil ? .apelin : .package,
+                installationID: record.installationID,
                 packageID: owned,
-                reason: "The package \(owned) lists this app. Remove that package with your package manager.",
-            )
+                removable: owned == nil && application.bundleID != ownBundleID,
+                reason: owned.map { "The package \($0) lists this app. Remove that package with your package manager." },
+            ))
         }
-        if let held {
-            let resolved = held.application?.path(under: applications)
-            // The record's own copy, or a registration left after it went.
-            if path == nil || resolved == path {
-                return summary(.apelin, removable: true, installationID: held.installationID)
-            }
-        }
-        return summary(.other, removable: true)
+        return rows.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 }

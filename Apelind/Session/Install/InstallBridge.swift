@@ -849,13 +849,14 @@ actor InstallBridge {
 
     // MARK: Apps
 
-    /// Settings ▸ Apps: what the bootstrap's `Applications` holds now and
-    /// what LaunchServices still registers, each with what a removal from
-    /// there would do. Read afresh every time — a tool the user ran outside
-    /// Apelin changes it under us, and there is nothing to keep.
+    /// Settings ▸ Apps: the apps Apelin installed from an `.ipa` that are
+    /// still on the device — its bundle, or the registration left after the
+    /// bundle went away — each with what a removal from there would do.
+    /// Read afresh every time: an app removed elsewhere changes it, and
+    /// there is nothing to keep.
     func applicationList() async throws -> ApplicationListResponse {
         let layout = ApplicationInstall.Layout(installRoot: paths.installRoot)
-        // A bootstrap without uicache still lists the bundles it holds.
+        // A bootstrap without uicache still lists the records it holds.
         let registered = ApplicationCensus.parseRegistered(
             (try? ApplicationInstall.run(layout.uicache, ["-l"]))?.output ?? ""
         )
@@ -864,7 +865,6 @@ actor InstallBridge {
         return ApplicationListResponse(applications: ApplicationCensus.rows(
             installRoot: paths.installRoot,
             registered: registered,
-            bundles: ApplicationCensus.bundles(in: layout.applications),
             records: await installations.all(),
             owners: owners,
         ))

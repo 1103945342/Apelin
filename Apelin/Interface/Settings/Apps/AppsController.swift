@@ -45,11 +45,13 @@ final class AppsController: TableController {
         super.viewDidLoad()
         title = String(localized: "Apps")
         navigationItem.backButtonDisplayMode = .minimal
+        // A swipe at a row offers the removal; a tap opens the same question.
+        dataSource.allowsEditing = true
         dataSource.headerTitle = { _ in String(localized: "Installed") }
         dataSource.footerTitle = { _ in
             String(localized: """
-            The apps under the bootstrap's Applications folder: what Apelin installed, what a package owns, \
-            and registrations whose bundle is gone. An app iOS keeps in its own container is not listed.
+            The apps Apelin installed from an .ipa. One whose bundle is gone is listed as a registration \
+            that can still be cleared.
             """)
         }
         tableView.backgroundView = LoadingView()
@@ -109,7 +111,7 @@ final class AppsController: TableController {
                 .joined(separator: "\n")
             content.secondaryTextProperties.numberOfLines = 0
             cell.accessoryType = .none
-            cell.selectionStyle = .none
+            cell.selectionStyle = app.removable ? .default : .none
             // The cell draws both lines itself, so it is the one element.
             cell.isAccessibilityElement = true
             cell.accessibilityLabel = app.name
@@ -126,25 +128,30 @@ final class AppsController: TableController {
         return cell
     }
 
-    /// One line under the name: where it came from, its identifier and its
-    /// version.
+    /// One line under the name: its identifier and its version, and for an
+    /// app whose bundle went away, that only the registration is left.
     private static func describe(_ app: ApplicationSummary) -> String {
-        let source: String = if app.path == nil {
-            String(localized: "Registration only")
-        } else {
-            switch app.source {
-            case .apelin: String(localized: "Installed by Apelin")
-            case .package: String(localized: "From a package")
-            case .other: String(localized: "Added by another tool")
-            }
+        var parts = [app.bundleID]
+        if !app.version.isEmpty {
+            parts.append(app.version)
         }
-        return [source, app.bundleID, app.version.isEmpty ? nil : app.version]
-            .compactMap { $0 }
-            .joined(separator: " · ")
+        if app.path == nil {
+            parts.append(String(localized: "Registration only"))
+        }
+        return parts.joined(separator: " · ")
     }
 
     override func tableView(_: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
-        false
+        if case let .app(app)? = dataSource.value(at: indexPath) {
+            return app.removable
+        }
+        return false
+    }
+
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        guard case let .app(app)? = dataSource.value(at: indexPath), app.removable else { return }
+        confirmRemoval(of: app)
     }
 
     // MARK: - Removing
