@@ -236,6 +236,7 @@ struct ChatTranscript {
                     let name = payload?["tool"]?.stringValue ?? ""
                     let arguments = payload?["arguments"]?.stringValue
                     var row = ChatMessage(id: id, role: .tool, text: Self.toolTitle(name, arguments: arguments))
+                    row.tool = name
                     row.detail = arguments ?? ""
                     row.banner = ToolCallBanner(tool: name, arguments: arguments, title: row.text)
                     row.awaitsResult = true

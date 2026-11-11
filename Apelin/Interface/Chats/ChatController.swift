@@ -312,13 +312,19 @@ final class ChatController: UIViewController {
                 .height { message, context in ChatActivityRow.height(for: message, width: context.width) }
                 .configure { [weak self] row, message, _ in
                     row.show(message)
+                    // The steps were folded or unfolded: the row is measured
+                    // again, and what is under it moves, without the list
+                    // being rebuilt.
                     row.onToggle = { [weak self] in
                         guard let self else { return }
-                        if case .thinking = message.role {
-                            let page = TraceController(message: message)
-                            tracePage = page
-                            presentPageAsFormSheet(page)
-                        }
+                        self.messageList.reconfigureRow(with: message.id)
+                        self.messageList.invalidateLayout(forRowWith: message.id)
+                    }
+                    row.onOpenPage = { [weak self] in
+                        guard let self else { return }
+                        let page = TraceController(message: message)
+                        self.tracePage = page
+                        self.presentPageAsFormSheet(page)
                     }
                 }
             ListRow(ChatCompactionRow.self)

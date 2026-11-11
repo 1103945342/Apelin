@@ -47,6 +47,9 @@ struct ChatMessage: Identifiable, Hashable {
     var role: Role
     var text: String
     var detail = ""
+    /// A tool row's call, by the name the model used (`AgentToolName`): which
+    /// tool it is, for the symbol its line is drawn with.
+    var tool: String?
     var trace: [ChatMessage] = []
     var attachments: [ComposerAttachment]
     /// A user message sent during a run that the run has not taken yet.
