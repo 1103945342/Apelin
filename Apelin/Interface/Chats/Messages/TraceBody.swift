@@ -180,10 +180,17 @@ final class ToolCallSectionView: UIView {
         panelScroll.snp.makeConstraints { x in
             x.edges.equalToSuperview().inset(TraceBody.Style.panelPadding)
         }
-        panelLabel.snp.makeConstraints { x in
-            x.edges.equalTo(panelScroll.snp.contentLayoutGuide)
-            x.width.equalTo(panelScroll.snp.frameLayoutGuide)
-        }
+        // The text fills the scroll view across, and is as tall as it is: the
+        // guides below are UIKit's own, which this SnapKit has no shorthand
+        // for.
+        panelLabel.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            panelLabel.leadingAnchor.constraint(equalTo: panelScroll.contentLayoutGuide.leadingAnchor),
+            panelLabel.trailingAnchor.constraint(equalTo: panelScroll.contentLayoutGuide.trailingAnchor),
+            panelLabel.topAnchor.constraint(equalTo: panelScroll.contentLayoutGuide.topAnchor),
+            panelLabel.bottomAnchor.constraint(equalTo: panelScroll.contentLayoutGuide.bottomAnchor),
+            panelLabel.widthAnchor.constraint(equalTo: panelScroll.frameLayoutGuide.widthAnchor),
+        ])
 
         // The panel is as tall as its text while that fits, and as tall as
         // the limit once it does not: the height it would take from the text
