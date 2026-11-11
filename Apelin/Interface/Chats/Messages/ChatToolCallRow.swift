@@ -245,7 +245,7 @@ final class ChatToolCallRow: UIView {
             guard let tab = line.firstIndex(of: "\t"), tab > line.startIndex,
                   line[..<tab].allSatisfy(\.isNumber)
             else { return String(line) }
-            return String(line[line.index(after: tab)...])
+            return String(line[tab...].dropFirst())
         }.joined(separator: "\n")
     }
 

@@ -72,7 +72,7 @@ struct ToolCallDetail: Equatable {
     init(detail: String, title: String) {
         let separator = detail.range(of: "\n\n")
         let head = separator.map { String(detail[..<$0.lowerBound]) } ?? detail
-        let answer = separator.map { Self.plain(String(detail[separator.upperBound...])) }
+        let answer = separator.map { Self.plain(String(detail[$0.upperBound...])) }
         let decoded = head.isEmpty ? JSONValue.object([:]) : try? JSONCoding.decode(JSONValue.self, from: Data(head.utf8))
         guard case let .object(values)? = decoded else {
             path = nil
