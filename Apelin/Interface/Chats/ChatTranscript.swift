@@ -136,7 +136,7 @@ struct ChatTranscript {
             }
             let payload = event.payload
             let text = payload?["text"]?.stringValue ?? ""
-            let id = Self.rowID("event:\(firstEvent + index)")
+            let id = Self.rowID(forEventAt: firstEvent + index)
             lastEventTime = event.time
             if Self.endsAttempt.contains(event.kind) {
                 attempt = nil
@@ -617,6 +617,13 @@ struct ChatTranscript {
             ids.insert(id)
         }
         return ids
+    }
+
+    /// The row an event at `index` among the record's own is named by: the
+    /// same name whether the fold started at that event or after it, so a
+    /// rail can name a message the page has not folded in yet.
+    static func rowID(forEventAt index: Int) -> UUID {
+        rowID("event:\(index)")
     }
 
     /// The id of the user message an event shows: a `prompt`, `steer` or

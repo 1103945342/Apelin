@@ -316,6 +316,7 @@ final class ChatRuntime {
         records.removeValue(forKey: id)
         transcripts.remove(id)
         historyTurns[id] = nil
+        promptCache[id] = nil
     }
 
     /// The conversation's rows, brought up to date only when its events, the
@@ -358,6 +359,50 @@ final class ChatRuntime {
         historyTurns[id] = (historyTurns[id] ?? ChatHistory.turns) + ChatHistory.step
         return true
     }
+
+    /// Each of the conversation's prompts, in order, as the rail lists them:
+    /// read from the record, so the rail covers turns the page has not folded
+    /// in. Only the events that arrived since are read again — a stream asks
+    /// for this on every one of them.
+    func promptRows(of id: UUID) -> [ChatMessageRuler.Entry] {
+        guard let record = records[id] else { return [] }
+        let cached = promptCache[id].flatMap { $0.events <= record.events.count ? $0 : nil }
+        let from = cached?.events ?? 0
+        var entries = cached?.entries ?? []
+        if from < record.events.count {
+            for index in from ..< record.events.count where record.events[index].kind == "prompt" {
+                let event = record.events[index]
+                entries.append(ChatMessageRuler.Entry(
+                    id: ChatTranscript.userMessageID(of: event) ?? ChatTranscript.rowID(forEventAt: index),
+                    text: event.payload?["text"]?.stringValue ?? "",
+                    sentAt: event.time,
+                ))
+            }
+        }
+        promptCache[id] = (record.events.count, entries)
+        return entries
+    }
+
+    /// Folds `conversationID` back to the turn the row `rowID` belongs to, in
+    /// one fold rather than a page at a time — the rail can pick a message far
+    /// outside what the page was showing — and answers whether it had to.
+    @discardableResult
+    func showHistory(_ conversationID: UUID, from rowID: UUID) -> Bool {
+        guard let record = records[conversationID] else { return false }
+        var prompts: [UUID] = []
+        for (index, event) in record.events.enumerated() where event.kind == "prompt" {
+            prompts.append(ChatTranscript.userMessageID(of: event) ?? ChatTranscript.rowID(forEventAt: index))
+        }
+        guard let position = prompts.firstIndex(of: rowID) else { return false }
+        let needed = prompts.count - position
+        guard needed > (historyTurns[conversationID] ?? ChatHistory.turns) else { return false }
+        historyTurns[conversationID] = needed
+        return true
+    }
+
+    /// The prompts a rail was last built from, by conversation, and how many
+    /// events they were read from.
+    private var promptCache: [UUID: (events: Int, entries: [ChatMessageRuler.Entry])] = [:]
 
     /// The title of the conversation `sessionID` is, which names a message
     /// its agent sent, and its journal in Settings ▸ Logs.

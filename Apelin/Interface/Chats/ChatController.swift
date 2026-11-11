@@ -277,7 +277,7 @@ final class ChatController: UIViewController {
                 setComposerFaded(false)
                 setRulerVeil(false)
             }
-            showRulerEntry(index)
+            showRulerEntry(index, loadsHistory: settled)
         }
         // The rail and its card stay above the veil, which is why the rail is
         // brought forward of the composer here: the two never overlap.
@@ -1390,6 +1390,9 @@ extension ChatController: UIScrollViewDelegate {
     /// A page was loaded at the top, and the reader has not left it yet: the
     /// next page is asked for when they come back up, not at once.
     private var holdsHistoryTop = false
+    /// The rail's entries whose messages the list is showing, in order: what
+    /// the top of the page can be read against.
+    private var loadedRulerIndices: [Int] = []
     private var distanceFromLatestMessage: CGFloat {
         max(0, messageList.maximumContentOffset.y - messageList.contentOffset.y)
     }
@@ -1668,10 +1671,22 @@ extension ChatController {
 /// rotor that reaches the same messages.
 extension ChatController {
     private func updateMessageRuler(_ rows: [ChatMessage]) {
-        let entries = rows
-            .filter { $0.role == .user && !$0.isQueued }
-            .map { ChatMessageRuler.Entry(id: $0.id, text: $0.text, sentAt: $0.sentAt) }
-        messageRuler.show(entries)
+        // The rail covers the whole conversation, not only the turns folded
+        // in: its entries come from the record, and one whose message the page
+        // has not loaded is folded in when the rail picks it.
+        let fromRecord = chat.map { runtime.promptRows(of: $0.id) } ?? []
+        let entries = fromRecord.isEmpty
+            ? rows
+                .filter { $0.role == .user && !$0.isQueued }
+                .map { ChatMessageRuler.Entry(id: $0.id, text: $0.text, sentAt: $0.sentAt) }
+            : fromRecord
+        if entries != messageRuler.entries {
+            messageRuler.show(entries)
+        }
+        // Which of them the list is showing: a rail cannot be drawn from a
+        // row the page has not folded in.
+        let loaded = Set(rows.map(\.id))
+        loadedRulerIndices = entries.indices.filter { loaded.contains(entries[$0].id) }
         // The ruler is the list's indicator once it has two messages to move
         // between; with fewer, the system's stays.
         let systemIndicator = entries.count < 2
@@ -1704,16 +1719,18 @@ extension ChatController {
     /// the page: the one being read under.
     private func rulerIndexAtTop() -> Int {
         let entries = messageRuler.entries
-        guard !entries.isEmpty else { return 0 }
+        guard !loadedRulerIndices.isEmpty else { return 0 }
         let line = messageList.contentOffset.y + max(messageList.adjustedContentInset.top, topBlur.frame.maxY) + 1
-        // The rows are in order, so their tops are too.
+        // The rows are in order, so their tops are too; only the ones the list
+        // holds can be asked where they are.
         var low = 0
-        var high = entries.count - 1
-        var found = 0
+        var high = loadedRulerIndices.count - 1
+        var found = loadedRulerIndices[0]
         while low <= high {
             let middle = (low + high) / 2
-            if messageList.rectForRow(with: entries[middle].id).minY <= line {
-                found = middle
+            let entry = loadedRulerIndices[middle]
+            if messageList.rectForRow(with: entries[entry].id).minY <= line {
+                found = entry
                 low = middle + 1
             } else {
                 high = middle - 1
@@ -1762,10 +1779,19 @@ extension ChatController {
     /// the finger moves it jumps; once it lifts, the list settles there, with
     /// the rows on the way measured, since a row not yet shown was placed by
     /// an estimate.
-    private func showRulerEntry(_ index: Int) {
+    private func showRulerEntry(_ index: Int, loadsHistory: Bool = true) {
         let entries = messageRuler.entries
         guard entries.indices.contains(index) else { return }
         let id = entries[index].id
+        // A message the page is not showing — the rail reaches the whole
+        // conversation — is folded in first, in one fold rather than a page
+        // at a time. Only once the finger is off the rail: a drag across a
+        // long conversation would otherwise fold a page per message it passes.
+        if loadsHistory, !loadedRulerIndices.contains(index), let chat,
+           runtime.showHistory(chat.id, from: id)
+        {
+            updateMessages(runtime.transcript(chat.id).messages)
+        }
         let topLine = max(messageList.adjustedContentInset.top, topBlur.frame.maxY) + 8
         func target() -> CGPoint {
             let row = messageList.rectForRow(with: id)
