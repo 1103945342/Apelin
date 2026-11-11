@@ -28,11 +28,12 @@ struct ChatTranscriptCache {
     ) -> ChatTranscript {
         let id = record.summary.id
         let sending = (record.sending ?? []).map(Entry.Sent.init)
+        let runEnded = record.run == .ended
         var entry = entries.removeValue(forKey: id)
         let titlesHold = entry?.senderTitles.allSatisfy { conversationTitle($0.key) == $0.value } ?? false
         if titlesHold, let kept = entry,
            kept.firstEvent == firstEvent,
-           kept.shows(record, sending: sending, now: now)
+           kept.shows(record, sending: sending, runEnded: runEnded, now: now)
         {
             entries[id] = kept
             return kept.transcript
@@ -48,6 +49,7 @@ struct ChatTranscriptCache {
             kept.catchUp(
                 with: record,
                 sending: sending,
+                runEnded: runEnded,
                 now: now,
                 conversationTitle: conversationTitle,
                 attachment: attachment,
@@ -58,6 +60,7 @@ struct ChatTranscriptCache {
                 record,
                 from: firstEvent,
                 sending: sending,
+                runEnded: runEnded,
                 now: now,
                 shown: entry?.transcript.messages,
                 conversationTitle: conversationTitle,
@@ -111,6 +114,8 @@ struct ChatTranscriptCache {
         /// The time it judged the turn's quiet by.
         var builtAt: Date
         var sending: [Sent]
+        /// Whether the record said the run was over when this was built.
+        var runEnded = false
         /// The titles it names other conversations' messages by, by session
         /// ID, as it read them; a rename there shows here.
         var senderTitles: [String: String?] = [:]
@@ -121,6 +126,7 @@ struct ChatTranscriptCache {
             _ record: ChatRecord,
             from firstEvent: Int,
             sending: [Sent],
+            runEnded: Bool,
             now: Date,
             shown: [ChatMessage]?,
             conversationTitle: (String) -> String?,
@@ -131,6 +137,7 @@ struct ChatTranscriptCache {
                 events: firstEvent == 0 ? record.events : Array(record.events[firstEvent...]),
                 firstEvent: firstEvent,
                 sending: record.sending ?? [],
+                runEnded: runEnded,
                 conversationTitle: { sessionID in
                     let title = conversationTitle(sessionID)
                     senderTitles.updateValue(title, forKey: sessionID)
@@ -145,17 +152,20 @@ struct ChatTranscriptCache {
             }
             builtAt = now
             self.sending = sending
+            self.runEnded = runEnded
             self.senderTitles = senderTitles
         }
 
         /// Whether it still shows `record`, whose messages on their way are
         /// `sending`, as a transcript built at `now` would, once its sender
-        /// titles are known to hold: the same events and messages, and no
-        /// quiet deadline passed since it was built, which a running summary
-        /// would now stand in for.
-        func shows(_ record: ChatRecord, sending: [Sent], now: Date) -> Bool {
+        /// titles are known to hold: the same events and messages, the same
+        /// word on whether the run is over, and no quiet deadline passed
+        /// since it was built, which a running summary would now stand in
+        /// for.
+        func shows(_ record: ChatRecord, sending: [Sent], runEnded: Bool, now: Date) -> Bool {
             let wentQuiet = transcript.quietDeadline.map { builtAt < $0 && $0 <= now } ?? false
-            return transcript.endEvent == record.events.count && self.sending == sending && !wentQuiet
+            return transcript.endEvent == record.events.count && self.sending == sending
+                && self.runEnded == runEnded && !wentQuiet
         }
 
         /// Reads the events `record` gained since onto the transcript and
@@ -163,6 +173,7 @@ struct ChatTranscriptCache {
         mutating func catchUp(
             with record: ChatRecord,
             sending: [Sent],
+            runEnded: Bool,
             now: Date,
             conversationTitle: (String) -> String?,
             attachment: (AgentAttachment) -> ComposerAttachment?,
@@ -172,6 +183,7 @@ struct ChatTranscriptCache {
             transcript.append(
                 record.events[transcript.endEvent...],
                 sending: record.sending ?? [],
+                runEnded: runEnded,
                 conversationTitle: { sessionID in
                     let title = conversationTitle(sessionID)
                     looked.updateValue(title, forKey: sessionID)
@@ -184,6 +196,7 @@ struct ChatTranscriptCache {
             senderTitles.merge(looked) { _, latest in latest }
             builtAt = now
             self.sending = sending
+            self.runEnded = runEnded
         }
     }
 }

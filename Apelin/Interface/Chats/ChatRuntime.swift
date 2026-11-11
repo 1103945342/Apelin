@@ -134,24 +134,7 @@ final class ChatRuntime {
         // takes a moment to come back, and the host's answer is what puts a
         // live one back (`reopen`).
         let live = await (try? ApelinService.app.agentList().sessions) ?? []
-        for record in records.values {
-            if let session = live.first(where: { $0.sessionID == record.sessionID }) {
-                records[record.summary.id]?.reopen(as: session.task)
-                // A task the host reports ended is read to its end too: the
-                // reply, and the run's own end, are in the events after this
-                // row's cursor when the app was killed in the middle of the
-                // turn, and a conversation left saying it is working — with
-                // nothing left to stop — is what not reading them leaves.
-                follow(record.summary.id, task: session.task)
-                if session.state.isTerminal {
-                    records[record.summary.id]?.summary.isWorking = false
-                    changed(record.summary.id)
-                }
-            } else if record.summary.isWorking {
-                records[record.summary.id]?.summary.isWorking = false
-                changed(record.summary.id)
-            }
-        }
+        reconcile(with: live)
         // What agents opened while the app was not following their openers.
         // Resolve parents before children without relying on the host's order.
         var remaining = live
@@ -167,6 +150,42 @@ final class ChatRuntime {
         restoreLineage(sessions: live)
         isReconciled = true
         onChange?()
+    }
+
+    /// Puts every saved row in step with what the host reports now: a run it
+    /// serves is followed, and one nothing is left to follow ends — a task
+    /// that ended while the app was away, a session the host no longer has.
+    /// Run whenever the app comes back in front, so a row that lost its run
+    /// stops saying it is without a relaunch.
+    func reconcileRuns() async {
+        reconcile(with: await (try? ApelinService.app.agentList().sessions) ?? [])
+    }
+
+    private func reconcile(with live: [AgentSessionSummary]) {
+        for record in records.values {
+            if let session = live.first(where: { $0.sessionID == record.sessionID }) {
+                records[record.summary.id]?.reopen(as: session.task)
+                // A task the host reports ended is read to its end too: the
+                // reply, and the run's own end, are in the events after this
+                // row's cursor when the app was killed in the middle of the
+                // turn, and a conversation left saying it is working — with
+                // nothing left to stop — is what not reading them leaves.
+                follow(record.summary.id, task: session.task)
+                if session.state.isTerminal {
+                    if records[record.summary.id]?.run != .ended {
+                        records[record.summary.id]?.summary.isWorking = false
+                        records[record.summary.id]?.run = .ended
+                        changed(record.summary.id)
+                    }
+                }
+            } else if record.summary.isWorking || record.run == .running || record.run == .stopping {
+                // The host has no such session: whatever turn this row shows
+                // as going ended with the process that ran it.
+                records[record.summary.id]?.summary.isWorking = false
+                records[record.summary.id]?.run = .ended
+                changed(record.summary.id)
+            }
+        }
     }
 
     /// Lists and follows a conversation an agent opened, leaving the
@@ -559,12 +578,18 @@ final class ChatRuntime {
         guard let sessionID = records[id]?.sessionID else { return }
         do {
             try await ApelinService.app.agentAbort(sessionID: sessionID)
+            // Taken: the turn ends when the host's end arrives. Until then it
+            // is stopping, so neither the header nor the button claims more
+            // than the app knows.
+            records[id]?.run = .stopping
+            changed(id)
         } catch let error as ApelinError where error.code == .notFound {
             // The session ended with the process that ran it (the app was
             // quit, or the host restarted): there is no run left to stop, and
             // the row must not keep saying it is. Waiting on a host that has
             // nothing to stop is what made Stop look broken.
             records[id]?.summary.isWorking = false
+            records[id]?.run = .ended
             changed(id, urgent: true)
             return
         } catch let error as ApelinError where error.code == .timeout {
@@ -856,10 +881,17 @@ final class ChatRuntime {
                         if let end = records[id]?.missedEnd(of: batch, isWorking: isWorking) {
                             await takeMissedEnd(at: end, of: task, from: batch, in: id)
                         }
+                        // The task is over: nothing more comes for this turn,
+                        // so it stops looking as if it were going.
+                        records[id]?.run = .ended
+                        records[id]?.summary.isWorking = false
+                        records[id]?.dropReplay()
+                        changed(id)
                         return
                     }
                 } catch let error as ApelinError where error.code == .notFound {
                     records[id]?.summary.isWorking = false
+                    records[id]?.run = .ended
                     changed(id)
                     return
                 } catch is CancellationError { return }

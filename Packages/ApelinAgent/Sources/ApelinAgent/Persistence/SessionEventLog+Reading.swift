@@ -9,6 +9,9 @@ extension SessionEventLog {
         var lastSeq: UInt64 = 0
         /// Every model-accepted user message id, direct or from another conversation.
         var userMessageIDs: Set<UUID> = []
+        /// The last of them, in the order the log took them: its boundary is
+        /// where a chat whose history came back empty is read back from.
+        var lastUserMessageID: UUID?
         var hasTitle = false
         /// Approvals asked and never resolved, in the order asked.
         var openApprovals: [String] = []
@@ -45,6 +48,7 @@ extension SessionEventLog {
             switch record.event {
             case let .userMessage(id, _, _), let .conversationMessageTaken(id, _, _):
                 userMessageIDs.insert(id)
+                lastUserMessageID = id
                 unfinishedTurn = true
             case .promptSubmitted, .steered, .messageStarted: unfinishedTurn = true
             case .finished: unfinishedTurn = false

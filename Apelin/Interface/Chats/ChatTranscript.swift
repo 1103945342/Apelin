@@ -99,18 +99,28 @@ struct ChatTranscript {
     /// session ID, for a message its agent sent. `sending` are messages sent
     /// and not echoed yet: each shows last, under its draft's id, until the
     /// host's `prompt` or `queued` event with that id takes its place.
-    /// `now` judges whether a running turn has been quiet for
+    /// `runEnded` says the app knows the turn is over, whatever end its
+    /// events are missing: a task that ended, or a session the host no
+    /// longer has. `now` judges whether a running turn has been quiet for
     /// `quietInterval`; without it no summary stands in for the quiet.
     init(
         events: [TaskEvent],
         firstEvent: Int = 0,
         sending: [ComposerDraft] = [],
+        runEnded: Bool = false,
         conversationTitle: (String) -> String? = { _ in nil },
         now: Date? = nil,
         attachment: (AgentAttachment) -> ComposerAttachment?,
     ) {
         self.firstEvent = firstEvent
-        append(events, sending: sending, conversationTitle: conversationTitle, now: now, attachment: attachment)
+        append(
+            events,
+            sending: sending,
+            runEnded: runEnded,
+            conversationTitle: conversationTitle,
+            now: now,
+            attachment: attachment,
+        )
     }
 
     /// Reads `events`, the ones that follow those read so far, and shows the
@@ -119,6 +129,7 @@ struct ChatTranscript {
     mutating func append(
         _ events: some Collection<TaskEvent>,
         sending: [ComposerDraft] = [],
+        runEnded: Bool = false,
         conversationTitle: (String) -> String? = { _ in nil },
         now: Date? = nil,
         attachment: (AgentAttachment) -> ComposerAttachment?,
@@ -394,6 +405,13 @@ struct ChatTranscript {
             }
         }
         eventCount += events.count
+        if runEnded, isWorking {
+            // The app knows this run is over and nothing more is coming, so
+            // the turn stops looking as if it were going — whatever end the
+            // process that ran it left unread.
+            isWorking = false
+            endTurn(at: now ?? lastEventTime ?? Date())
+        }
         show(sending: sending, now: now)
     }
 

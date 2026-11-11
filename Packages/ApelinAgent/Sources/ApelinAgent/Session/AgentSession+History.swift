@@ -171,24 +171,13 @@ extension AgentSession {
         }
     }
 
-    /// Save this boundary: the snapshot a fork reads, and the transcript a
-    /// reopened session reads its conversation back from. Only a complete
-    /// model boundary — a call without its result is not a resumable
-    /// context, and the last good boundary stays.
-    func captureBoundary() async {
+    /// Save only a complete model-message boundary. A call without its
+    /// result is not a resumable context; the last good snapshot stays.
+    func captureForkBoundary() async {
         // kwwk's processEvent appends messageEnd to state before awaiting
         // listeners. Read that exact state; never synthesize a message here.
         let messages = agent.state.messages
         guard ForkContext.hasCompleteToolResults(messages) else { return }
-        // First what a reopened session reads back: a process killed in the
-        // middle of the turn must not take the turn it was in, prompt
-        // included, with it — which writing the history only when a run
-        // ended did.
-        do {
-            try await log.writeTranscript(messages)
-        } catch {
-            await record(.error(message: "Unable to save the conversation history: \(error.localizedDescription)"))
-        }
         do {
             try await log.writeHistorySnapshot(messages, anchors: anchors)
         } catch {

@@ -251,6 +251,10 @@ final class RootInterfaceController: UIViewController {
     /// be written; space still short is said again only after a save worked.
     @objc private dynamic func enteredForeground() {
         chatRuntime.retryUnsaved()
+        // A run whose end the app never read — the app was killed in the
+        // middle of it, or the host restarted — ends here rather than only
+        // at the next launch.
+        Task { await chatRuntime.reconcileRuns() }
         StorageWarning.checkFreeSpace(from: self)
     }
 

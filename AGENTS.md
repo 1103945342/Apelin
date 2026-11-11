@@ -1622,16 +1622,29 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   Deriving the records is what repairs such a snapshot — a sealed one is
   never rewritten to do it.
   The session captures complete model-message boundaries, then seals at run
-  end and before destructive edits/manual compaction. The same boundary is
-  written to `transcript.json`, the history a reopened session reads back:
-  a process killed in the middle of a turn then leaves that turn's prompt
-  and every message it finished, not the turn before it. The interruption
-  events a reopening writes are what let a transcript a killed process left
-  in the middle be read as a run that stopped. An outstanding tool
+  end and before destructive edits/manual compaction. `transcript.json`, the
+  history a reopened session reads back, is written whenever the model's
+  conversation becomes a complete boundary the disk does not hold — checked
+  after every kwwk event, because a tool's result enters the conversation
+  without a `messageEnd`, and a session killed in its first turn used to
+  leave nothing at all. That path never writes a shorter conversation than
+  the one saved (a compaction says so itself and is allowed to), a state
+  that lost messages is restored from the saved one before a prompt, and a
+  history that comes back empty while the log took messages is read back
+  from the last saved boundary — or the reader is told it could not be.
+  The interruption events a reopening writes are what let a transcript a
+  killed process left in the middle be read as a run that stopped. An outstanding tool
   call cannot replace the last resumable boundary. A fork copies its selected
   version and its ancestors' objects, so removing the source session does not
   remove the fork's model context. A missing legacy snapshot is seeded only
   from surviving messages, never invented from a truncated UI log.
+  Whether a run is going is the app's own record (`ChatRecord.run`:
+  running, stopping, ended), never inferred from the events it happens to
+  have read: a task that ended while the app was away, or a session the host
+  no longer serves, leaves a turn that otherwise still looks as if it were
+  going with nothing left to stop. A task's end clears the replay it was
+  reading past, and the app reconciles with `agentList` at launch and
+  whenever it comes back in front.
   The app starts the new session with an empty event projection and replays
   its own log; historical events must not repeat business side effects.
   The fast opening scan is only a summary, never snapshot input. The first
