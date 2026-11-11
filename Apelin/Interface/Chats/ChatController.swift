@@ -56,8 +56,6 @@ final class ChatController: UIViewController {
     /// a fast reply has brought its message to the top of the visible area,
     /// or the reader dragged, until the next turn.
     private var followedTurn: UUID?
-    /// How fast the followed turn's reply streams.
-    private var turnPace = TurnFollowing.Pace()
     /// The conversations compacting themselves now, and how full each was
     /// when it last tried, so one fill compacts once.
     private var autoCompacting: Set<UUID> = []
@@ -313,7 +311,15 @@ final class ChatController: UIViewController {
                     return false
                 }
                 .height { message, context in ChatTurnHeaderRow.height(for: message, width: context.width) }
-                .configure { row, message, _ in row.show(message) }
+                .configure { [weak self] row, message, _ in
+                    row.show(message)
+                    // The header opens and folds the turn's process: the
+                    // rows are put in or taken out, and the list redraws.
+                    row.onToggle = { [weak self] in
+                        guard let self else { return }
+                        self.showTranscript(self.messages)
+                    }
+                }
             ListRow(ChatActivityRow.self)
                 .when { $0.role.isActivity }
                 .height { message, context in ChatActivityRow.height(for: message, width: context.width) }
@@ -553,10 +559,9 @@ final class ChatController: UIViewController {
         let draft = runtime.records[chat.id]?.draft ?? ComposerDraft()
         composer.restore(draft: draft)
         messages = runtime.transcript(chat.id).messages
-        // A turn still running is followed again, its pace measured afresh.
+        // A turn still running is followed again.
         turnMessage = TurnFollowing.turnMessage(in: messages)
         followedTurn = runtime.records[chat.id]?.summary.isWorking == true ? turnMessage : nil
-        turnPace = TurnFollowing.Pace()
         showTranscript(messages)
         refreshRuntime()
         messageList.scrollToBottom(animated: false)
@@ -729,53 +734,39 @@ final class ChatController: UIViewController {
     }
 
     /// A new user message starts a turn, whose output the list then follows
-    /// (`followTurn`), timing its reply as it streams.
+    /// (`followTurn`) while the reader is at the latest message.
     private func updateMessages(_ items: [ChatMessage]) {
         guard messages != items else { return }
         // A compaction's row comes between turns, with none to follow: a
         // reader at the latest message is shown it.
         let revealsCompaction = followedTurn == nil && distanceFromLatestMessage <= 2
             && items.last?.role == .compaction && items.last?.id != messages.last?.id
+        // Read before the rows are applied: the new content moves the offset,
+        // and what matters is where the reader was before it arrived.
+        let heldLatest = distanceFromLatestMessage <= 2
         messages = items
         let message = TurnFollowing.turnMessage(in: items)
         if message != turnMessage {
             turnMessage = message
             followedTurn = message
-            turnPace = TurnFollowing.Pace()
-        }
-        if let followedTurn {
-            turnPace.observe(tokens: TurnFollowing.replyTokens(in: items, after: followedTurn), at: CACurrentMediaTime())
         }
         showTranscript(items)
-        followTurn()
+        followTurn(heldLatest: heldLatest)
         if revealsCompaction {
             revealLatestMessage()
         }
         updateLatestMessageButton()
     }
 
-    /// Moves the list with the followed turn's output: to its end while the
-    /// reply streams no faster than a reader keeps up with. A faster one is
-    /// followed until the turn's message reaches the top of the visible
-    /// area, under the bar's blur, and the list then holds still for the
-    /// rest of the turn.
-    private func followTurn() {
-        guard let followed = followedTurn, !messageList.isTracking, !messageList.isDecelerating else { return }
-        let animated = !isSwitchingChat && !needsInitialScroll && !UIAccessibility.isReduceMotionEnabled
-        let move = TurnFollowing.move(
-            pace: turnPace,
-            offset: messageList.contentOffset.y,
-            latest: messageList.maximumContentOffset.y,
-            messageTop: messageList.rectForRow(with: followed).minY,
-            topInset: max(messageList.adjustedContentInset.top, topBlur.frame.maxY),
+    /// Moves the list with the followed turn's output while the reader is at
+    /// the latest message; scrolled back into the conversation, they are
+    /// reading, and the list stays where they put it.
+    private func followTurn(heldLatest: Bool) {
+        guard followedTurn != nil, heldLatest else { return }
+        guard !messageList.isTracking, !messageList.isDecelerating else { return }
+        messageList.scrollToBottom(
+            animated: !isSwitchingChat && !needsInitialScroll && !UIAccessibility.isReduceMotionEnabled,
         )
-        switch move {
-        case .latest:
-            messageList.scrollToBottom(animated: animated)
-        case let .stop(offset):
-            followedTurn = nil
-            messageList.setContentOffset(CGPoint(x: messageList.contentOffset.x, y: offset), animated: animated)
-        }
     }
 
     /// Shows the newest content, once: the turn is not followed again.
@@ -788,7 +779,15 @@ final class ChatController: UIViewController {
         if let page = tracePage, let message = items.first(where: { $0.id == page.messageID }) {
             page.show(message)
         }
-        let visible = items.filter { !$0.role.isApproval }
+        let visible = items.filter { item in
+            guard !item.role.isApproval else { return false }
+            // A turn's process is drawn only under an open header, which is
+            // the one way in, as aimini's turn header is.
+            if case .thinking = item.role, let turn = item.turnMessageID {
+                return ChatTraceExpansion.isExpanded(turn: turn)
+            }
+            return true
+        }
         messageList.apply(visible, animated: !isSwitchingChat && !UIAccessibility.isReduceMotionEnabled)
         updateMessageRuler(visible)
         // a request its stopped session left can no longer be answered
@@ -1279,12 +1278,21 @@ extension ChatController: UIScrollViewDelegate {
         if !decelerate {
             setComposerFaded(false)
             messageRuler.listMoved(false)
+            resumeFollowingAtLatest()
         }
     }
 
     func scrollViewDidEndDecelerating(_: UIScrollView) {
         setComposerFaded(false)
         messageRuler.listMoved(false)
+        resumeFollowingAtLatest()
+    }
+
+    /// Back at the latest message with the run still going: the list follows
+    /// it again, as it did before the reader scrolled away.
+    private func resumeFollowingAtLatest() {
+        guard followedTurn == nil, chat?.isWorking == true, distanceFromLatestMessage <= 2 else { return }
+        followedTurn = turnMessage
     }
 
     func scrollViewDidEndScrollingAnimation(_: UIScrollView) {

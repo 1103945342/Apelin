@@ -133,6 +133,17 @@ struct ChatMessage: Identifiable, Hashable {
             guard tools > 0 else { return "" }
             return tools == 1 ? String(localized: "Called 1 tool") : String(localized: "Called \(tools) tools")
         }
+        return Self.workTitle(seconds: seconds, tools: tools)
+    }
+
+    /// What a stretch of a run did, in aimini's words: "Thought for 3
+    /// seconds and called 2 tools", and the shorter forms of it. A turn's
+    /// header says the same of the whole turn while it runs.
+    static func workTitle(seconds: Int, tools: Int) -> String {
+        if seconds <= 0 {
+            guard tools > 0 else { return "" }
+            return tools == 1 ? String(localized: "Called 1 tool") : String(localized: "Called \(tools) tools")
+        }
         if tools <= 0 {
             return seconds == 1
                 ? String(localized: "Thought for 1 second")

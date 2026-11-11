@@ -409,6 +409,8 @@ struct ChatTranscript {
             messages,
             running: isWorking ? turns.last?.messageID : nil,
             durations: turnDurations,
+            began: turnBegan,
+            now: lastEventTime ?? Date(),
         )
         messages += queued
         for draft in sending where !messages.contains(where: { $0.id == draft.id }) {
@@ -427,7 +429,8 @@ struct ChatTranscript {
         rows.append(row)
     }
 
-    /// How long each turn that ended took, by the message that began it.
+    /// How long each turn took, and when each began, by the message that
+    /// began it.
     private var turnDurations: [UUID: Int] {
         var durations: [UUID: Int] = [:]
         for turn in turns {
@@ -437,29 +440,60 @@ struct ChatTranscript {
         return durations
     }
 
+    private var turnBegan: [UUID: Date] {
+        var began: [UUID: Date] = [:]
+        for turn in turns {
+            guard let id = turn.messageID else { continue }
+            began[id] = turn.began
+        }
+        return began
+    }
+
     /// Each turn's header under the prompt that began it: the run's state,
-    /// once for the whole turn. A turn with nothing in it but its reply gets
-    /// none, and a stretch that ended inside a turn that is still going says
-    /// nothing about the turn's state — that is the header's to say.
+    /// once for the whole turn, and — while it runs — what the turn has done
+    /// so far. Every row the turn made is named with its id, so the page can
+    /// leave the process out until the reader opens the header; a turn with
+    /// nothing but its reply gets no header.
     private static func withTurnHeaders(
         _ rows: [ChatMessage],
         running: UUID?,
         durations: [UUID: Int],
+        began: [UUID: Date],
+        now: Date,
     ) -> [ChatMessage] {
         var result: [ChatMessage] = []
         result.reserveCapacity(rows.count + 1)
-        for (index, row) in rows.enumerated() {
-            result.append(row)
-            guard row.role == .user, !row.isQueued, let turnID = row.turnMessageID else { continue }
-            let end = rows[(index + 1)...].firstIndex { $0.role == .user } ?? rows.count
-            let hasSteps = rows[(index + 1) ..< end].contains { $0.role.isActivity }
+        var index = 0
+        while index < rows.count {
+            let row = rows[index]
+            guard row.role == .user, !row.isQueued, let turnID = row.turnMessageID else {
+                result.append(row)
+                index += 1
+                continue
+            }
+            let end = (index + 1 ..< rows.count).first { rows[$0].role == .user } ?? rows.count
+            let range = (index + 1) ..< end
             let isRunning = running == turnID
-            guard hasSteps || isRunning else { continue }
-            result.append(ChatMessage(
-                id: rowID("turn:\(turnID)"),
-                role: .turn(running: isRunning, seconds: durations[turnID]),
-                text: "",
-            ))
+            result.append(row)
+            if isRunning || range.contains(where: { rows[$0].role.isActivity }) {
+                let tools = range.count(where: { rows[$0].role == .tool })
+                let seconds = isRunning
+                    ? began[turnID].map { max(0, Int(now.timeIntervalSince($0).rounded())) }
+                    : durations[turnID]
+                var header = ChatMessage(
+                    id: rowID("turn:\(turnID)"),
+                    role: .turn(running: isRunning, seconds: seconds),
+                    text: isRunning ? ChatMessage.workTitle(seconds: seconds ?? 0, tools: tools) : "",
+                )
+                header.turnMessageID = turnID
+                result.append(header)
+            }
+            for offset in range {
+                var member = rows[offset]
+                member.turnMessageID = turnID
+                result.append(member)
+            }
+            index = end
         }
         return result
     }

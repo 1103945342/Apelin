@@ -214,6 +214,9 @@ final class ChatThoughtRow: UIView {
     private let line = UIControl()
     private let icon = UIImageView()
     private let titleLabel = UILabel()
+    /// The line's trailing end while a thought is folded: the words it is
+    /// writing now, in a window one line tall so the roll stays inside it.
+    private let previewClip = UIView()
     private let preview = UILabel()
     private let chevron = UIImageView()
     private let textLabel = UILabel()
@@ -281,8 +284,11 @@ final class ChatThoughtRow: UIView {
         preview.textColor = .tertiaryLabel
         preview.numberOfLines = 1
         preview.lineBreakMode = .byTruncatingHead
-        preview.isHidden = true
-        line.addSubview(preview)
+        previewClip.clipsToBounds = true
+        previewClip.isUserInteractionEnabled = false
+        previewClip.isHidden = true
+        line.addSubview(previewClip)
+        previewClip.addSubview(preview)
 
         chevron.image = UIImage(
             systemName: "chevron.right",
@@ -319,11 +325,13 @@ final class ChatThoughtRow: UIView {
             make.leading.equalTo(icon.snp.trailing).offset(Style.spacing)
             make.centerY.equalToSuperview()
         }
-        preview.snp.makeConstraints { make in
+        previewClip.snp.makeConstraints { make in
             make.leading.equalTo(titleLabel.snp.trailing).offset(Style.spacing)
             make.trailing.equalTo(chevron.snp.leading).offset(-Style.spacing)
             make.centerY.equalToSuperview()
+            make.height.equalTo(titleLabel)
         }
+        preview.snp.makeConstraints { make in make.edges.equalToSuperview() }
 
         configure(step)
         updateChevron(animated: false)
@@ -376,26 +384,44 @@ final class ChatThoughtRow: UIView {
 
     /// Folded, the line keeps the words the thought is writing after its
     /// title, the newest at the trailing end: a run that is still thinking
-    /// shows what it is thinking, and the line rolls up as more arrives.
+    /// shows what it is thinking, and the line rolls up as more arrives —
+    /// the words just written come from below and the ones they replace
+    /// leave at the top, inside the one line the preview is given.
     private func showPreview(of step: ChatMessage) {
-        preview.isHidden = showsBody || step.text.isEmpty
-        guard !preview.isHidden else { return }
+        previewClip.isHidden = showsBody || step.text.isEmpty
+        guard !previewClip.isHidden else { return }
         let running = step.role.isThinking
         preview.lineBreakMode = running ? .byTruncatingHead : .byTruncatingTail
         let text = running ? Self.tail(of: step.text) : step.text
         guard preview.text != text else { return }
-        let rolls = running && preview.text != nil && window != nil
+        let previous = preview.text
+        preview.text = text
+        let rolls = running && previous != nil && window != nil
             && !UIAccessibility.isReduceMotionEnabled
             && Date().timeIntervalSince(lastRoll) >= Self.rollInterval
-        preview.text = text
-        guard rolls else { return }
+        guard rolls, let previous else { return }
         lastRoll = Date()
-        let push = CATransition()
-        push.type = .push
-        push.subtype = .fromBottom
-        push.duration = 0.2
-        push.timingFunction = CAMediaTimingFunction(name: .easeOut)
-        preview.layer.add(push, forKey: "stream")
+        let line = max(ceil(previewClip.bounds.height), ceil(preview.font.lineHeight))
+        // A roll still in flight leaves its copy behind; it goes now.
+        for view in previewClip.subviews where view !== preview {
+            view.removeFromSuperview()
+        }
+        let leaving = UILabel()
+        leaving.font = preview.font
+        leaving.textColor = preview.textColor
+        leaving.numberOfLines = 1
+        leaving.lineBreakMode = preview.lineBreakMode
+        leaving.text = previous
+        leaving.frame = CGRect(x: 0, y: 0, width: max(previewClip.bounds.width, 1), height: line)
+        previewClip.insertSubview(leaving, belowSubview: preview)
+        preview.transform = CGAffineTransform(translationX: 0, y: line)
+        UIView.animate(withDuration: 0.2, delay: 0, options: [.curveEaseOut]) {
+            leaving.transform = CGAffineTransform(translationX: 0, y: -line)
+            leaving.alpha = 0
+            self.preview.transform = .identity
+        } completion: { _ in
+            leaving.removeFromSuperview()
+        }
     }
 
     /// The end of what a thought has written, on one line of white space:
@@ -444,7 +470,7 @@ final class ChatThoughtRow: UIView {
         } else {
             isAccessibilityElement = true
             accessibilityLabel = titleLabel.text
-            accessibilityValue = preview.isHidden ? nil : preview.text
+            accessibilityValue = previewClip.isHidden ? nil : preview.text
             accessibilityTraits = .button
             line.isAccessibilityElement = false
             textLabel.isAccessibilityElement = false

@@ -1,15 +1,16 @@
 import ListViewKit
 import UIKit
 
-/// A summary in the transcript, which opens its steps in place
-/// (`ChatTraceSteps`): a thought as prose, a call as a line of its own that
-/// opens into what it was told and what it answered. Its trace's own page
-/// (`TraceController`) is one long press away. The turn's latest summary
+/// A summary in the transcript: a thought as prose, a call as a line of its
+/// own that opens into what it was told and what it answered. Its trace's own
+/// page (`TraceController`) is one long press away. The turn's header above
+/// it (`ChatTurnHeaderRow`) is what opens and folds the turn's process; this
+/// row draws the stretch it was given, whole. The turn's latest summary
 /// carries the output the run has received so far at the trailing end of its
 /// title line, the title's first line fading out before it; a running
 /// summary's newest call is the line under it.
 final class ChatActivityRow: ListRowView {
-    /// The summary was folded or unfolded: the list has to measure the row
+    /// A step inside was folded or unfolded: the list has to measure the row
     /// again.
     @objc dynamic var onToggle: (() -> Void)?
     /// The reader asked for the trace's page, where a step is shown whole.
@@ -29,22 +30,13 @@ final class ChatActivityRow: ListRowView {
     private let bannerView = ToolCallBannerView()
     /// The summary's steps, under the line the run's newest call is on.
     private let expansion = ChatTraceSteps()
-    /// At the end of the title line: the steps are folded, or they are open.
-    private let chevron = UIImageView()
-    /// Folds or unfolds the summary; a touch on a call inside the steps is
-    /// that call's own (`gestureRecognizer(_:shouldReceive:)`).
-    private lazy var tap = UITapGestureRecognizer(target: self, action: #selector(toggle))
-    /// The summary shown: its id is what the expansion is kept by, and its
-    /// steps are what the expansion draws.
+    /// The summary shown: its steps are what the expansion draws.
     private var message: ChatMessage?
     /// The message this row shows: only a change to it animates, never the
     /// row taking another message out of the pool.
     @objc dynamic private var shownID: UUID?
     /// Whether the count is meant to be on screen, while it fades too.
     @objc dynamic private var showsReceived = false
-    /// Whether the steps were open when this row last showed a message: only
-    /// a change to that animates, never a row taking another message.
-    private var showsSteps = false
     private static let sizingHeader = ThinkingStatusLabel()
     /// Between the title's fade and the count.
     private static let receivedSpacing: CGFloat = 6
@@ -52,9 +44,6 @@ final class ChatActivityRow: ListRowView {
     private static let titleFadeWidth: CGFloat = 20
     /// Between the title and the line under it.
     private static let bannerSpacing: CGFloat = 8
-    /// The title line's arrow, and the room between it and the title.
-    private static let chevronSize: CGFloat = 18
-    private static let chevronSpacing: CGFloat = 6
     /// Between the last line the summary shows and its steps.
     private static let expansionSpacing: CGFloat = 10
 
@@ -76,20 +65,9 @@ final class ChatActivityRow: ListRowView {
         addSubview(received)
         bannerView.isHidden = true
         addSubview(bannerView)
-        chevron.image = UIImage(
-            systemName: "chevron.right",
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: 12, weight: .semibold),
-        )
-        chevron.contentMode = .scaleAspectFit
-        chevron.tintColor = .tertiaryLabel
-        chevron.isAccessibilityElement = false
-        chevron.isHidden = true
-        addSubview(chevron)
         expansion.onExpansionChange = { [weak self] in self?.onToggle?() }
         expansion.isHidden = true
         addSubview(expansion)
-        tap.delegate = self
-        addGestureRecognizer(tap)
         let press = UILongPressGestureRecognizer(target: self, action: #selector(openPage(_:)))
         press.delegate = self
         addGestureRecognizer(press)
@@ -113,41 +91,17 @@ final class ChatActivityRow: ListRowView {
         sourceLabel.isHidden = sourceLabel.text == nil
         isAccessibilityElement = false
         header.accessibilityLabel = message.activityTitle
-        let expands = Self.canExpand(message)
-        let expanded = expands && Self.isExpanded(message)
-        let wasExpanded = showsSteps
-        showsSteps = expanded
-        chevron.isHidden = !expands
-        let turn = expanded ? CGAffineTransform(rotationAngle: .pi / 2) : .identity
-        if expanded != wasExpanded, window != nil, !UIAccessibility.isReduceMotionEnabled {
-            UIView.animate(withDuration: 0.22) { self.chevron.transform = turn }
-        } else {
-            chevron.transform = turn
-        }
         var actions: [UIAccessibilityCustomAction] = []
-        if expands {
-            actions.append(UIAccessibilityCustomAction(
-                name: expanded ? String(localized: "Collapse") : String(localized: "Expand"),
-            ) { [weak self] _ in
-                self?.toggle()
-                return true
-            })
-        }
         if Self.isReasoning(message) {
             actions.append(UIAccessibilityCustomAction(name: String(localized: "View Thoughts")) { [weak self] _ in
                 self?.onOpenPage?()
                 return true
             })
         }
-        header.accessibilityTraits = expands ? .button : .staticText
+        header.accessibilityTraits = .staticText
         header.accessibilityCustomActions = actions.isEmpty ? nil : actions
-        if expanded {
-            expansion.show(message)
-        }
-        expansion.isHidden = !expanded
-        if expanded, !wasExpanded, isSameMessage {
-            revealExpansion()
-        }
+        expansion.show(message)
+        expansion.isHidden = false
         let tokens = message.receivedTokens
         header.accessibilityValue = tokens.map(ReceivedTokensView.spoken)
         showReceived(tokens, settles: message.receivedSettles, animated: isSameMessage)
@@ -180,9 +134,6 @@ final class ChatActivityRow: ListRowView {
         bannerView.reset()
         bannerView.isHidden = true
         expansion.isHidden = true
-        chevron.isHidden = true
-        chevron.transform = .identity
-        showsSteps = false
         expansion.alpha = 1
         expansion.transform = .identity
         message = nil
@@ -202,9 +153,8 @@ final class ChatActivityRow: ListRowView {
         sourceLabel.font = .preferredFont(forTextStyle: .caption1)
         sourceLabel.frame = CGRect(x: content.minX, y: content.minY, width: textWidth,
                                    height: max(0, sourceHeight - Self.sourceSpacing))
-        // The arrow takes the end of the title line, so the title runs to it.
-        let chevronRoom = chevron.isHidden ? 0 : Self.chevronSize + Self.chevronSpacing
-        let titleWidth = max(1, textWidth - chevronRoom)
+        // The title runs across the reading width.
+        let titleWidth = max(1, textWidth)
         let height = ceil(header.sizeThatFits(CGSize(width: titleWidth, height: .greatestFiniteMagnitude)).height)
         titleView.frame = CGRect(
             x: pixel(content.minX),
@@ -213,20 +163,11 @@ final class ChatActivityRow: ListRowView {
             height: pixel(height),
         )
         header.frame = titleView.bounds
-        if !chevron.isHidden {
-            let line = min(ceil(header.font.lineHeight), titleView.frame.height)
-            chevron.frame = CGRect(
-                x: pixel(titleView.frame.maxX + Self.chevronSpacing),
-                y: pixel(titleView.frame.minY + (line - Self.chevronSize) / 2),
-                width: pixel(Self.chevronSize),
-                height: pixel(Self.chevronSize),
-            )
-        }
-        // The count sits at the end of the title line, before the arrow.
+        // The count sits at the end of the title line.
         layoutReceived(in: CGRect(
             x: content.minX,
             y: content.minY,
-            width: max(1, content.width - chevronRoom),
+            width: max(1, content.width),
             height: content.height,
         ))
         if !bannerView.isHidden {
@@ -246,15 +187,13 @@ final class ChatActivityRow: ListRowView {
                 right: max(0, bounds.width - bannerView.frame.maxX),
             )
         }
-        if !expansion.isHidden {
-            let above = bannerView.isHidden ? titleView.frame.maxY : bannerView.frame.maxY
-            expansion.frame = CGRect(
-                x: content.minX,
-                y: above + Self.expansionSpacing,
-                width: textWidth,
-                height: expansion.fittingHeight(width: textWidth),
-            )
-        }
+        let above = bannerView.isHidden ? titleView.frame.maxY : bannerView.frame.maxY
+        expansion.frame = CGRect(
+            x: content.minX,
+            y: above + Self.expansionSpacing,
+            width: textWidth,
+            height: expansion.fittingHeight(width: textWidth),
+        )
     }
 
     /// Across the title's first line, drawn at its trailing end; the title
@@ -347,37 +286,20 @@ final class ChatActivityRow: ListRowView {
         }
     }
 
-    /// The steps unfolding, as aimini shows them: they fade in and settle
-    /// down at once. The list hands the row its whole new height in one
-    /// pass, so the growth itself is not ours to animate.
-    private func revealExpansion() {
-        guard window != nil, !UIAccessibility.isReduceMotionEnabled else { return }
-        expansion.alpha = 0
-        expansion.transform = CGAffineTransform(translationX: 0, y: -8)
-        UIView.animate(withDuration: 0.22, delay: 0, options: [.curveEaseOut]) {
-            self.expansion.alpha = 1
-            self.expansion.transform = .identity
-        }
-    }
-
     static func height(for message: ChatMessage, width: CGFloat) -> CGFloat {
         let insets = ChatMessageRow.insets(for: width)
         let width = max(1, width - insets.left - insets.right)
-        let chevronRoom = canExpand(message) ? chevronSize + chevronSpacing : 0
-        let titleWidth = max(1, width - chevronRoom)
         sizingHeader.font = .preferredFont(forTextStyle: .body)
         sizingHeader.text = message.activityTitle
         let headerHeight = ceil(
-            sizingHeader.sizeThatFits(CGSize(width: titleWidth, height: .greatestFiniteMagnitude)).height,
+            sizingHeader.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height,
         )
         var height = headerHeight + insets.top + insets.bottom
         height += sourceHeight(message.role.isThinking ? message.processingSource : nil, width: width)
         if banner(of: message) != nil {
             height += bannerSpacing + ToolCallBannerView.height
         }
-        if canExpand(message), isExpanded(message) {
-            height += expansionSpacing + ChatTraceSteps.height(for: message, width: width)
-        }
+        height += expansionSpacing + ChatTraceSteps.height(for: message, width: width)
         return height
     }
 
@@ -401,28 +323,6 @@ final class ChatActivityRow: ListRowView {
             return true
         }
         return false
-    }
-
-    /// Whether the summary has steps to open: the thought's own text, or the
-    /// trace of what the run did after it.
-    private static func canExpand(_ message: ChatMessage) -> Bool {
-        guard isReasoning(message) else { return false }
-        return !message.trace.isEmpty || !message.text.isEmpty
-    }
-
-    /// Whether its steps are open: what the reader chose, else the run still
-    /// going. A summary of a finished stretch folds away, as aimini folds a
-    /// turn that ended — `Role.isThinking` is the summary of a run that has
-    /// not finished, so it is the only one that starts open.
-    private static func isExpanded(_ message: ChatMessage) -> Bool {
-        ChatTraceExpansion.isExpanded(summary: message.id, fallback: message.role.isThinking)
-    }
-
-    /// Folds the steps away, or opens them; the list measures the row again.
-    @objc dynamic private func toggle() {
-        guard let message, Self.canExpand(message) else { return }
-        ChatTraceExpansion.setExpanded(summary: message.id, !Self.isExpanded(message))
-        onToggle?()
     }
 
     /// The trace's own page, where a step is shown whole and copied.
