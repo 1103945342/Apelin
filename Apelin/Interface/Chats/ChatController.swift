@@ -550,6 +550,8 @@ final class ChatController: UIViewController {
         needsInitialScroll = true
         holdsLatestMessage = false
         readingPlace = nil
+        holdsHistoryTop = false
+        isLoadingEarlierHistory = false
         defer { isSwitchingChat = false }
         replaceMessageList()
 
@@ -1342,6 +1344,32 @@ extension ChatController: UIScrollViewDelegate {
         if messageRuler.alpha > 0 {
             messageRuler.setCurrent(rulerIndexAtTop())
         }
+        loadEarlierHistoryIfNeeded()
+    }
+
+    /// At the top of what is shown, with the conversation holding earlier
+    /// turns: another page of them is folded in. The row the reader was
+    /// reading stays at the top, so the page grows above them rather than
+    /// moving what they see.
+    private func loadEarlierHistoryIfNeeded() {
+        let top = messageList.minimumContentOffset.y
+        // Reading again, away from where a page ends: the next return to the
+        // top may load another.
+        if messageList.contentOffset.y > top + 240 {
+            holdsHistoryTop = false
+        }
+        guard !isLoadingEarlierHistory, !holdsHistoryTop, let chat else { return }
+        guard runtime.hasEarlierHistory(chat.id) else { return }
+        guard messageList.contentOffset.y <= top + 120 else { return }
+        guard let first = messageList.indicesForVisibleRows.sorted().first,
+              messageList.content.indices.contains(first) else { return }
+        let anchor = messageList.content[first].id
+        isLoadingEarlierHistory = true
+        holdsHistoryTop = true
+        defer { isLoadingEarlierHistory = false }
+        guard runtime.loadEarlierHistory(chat.id) else { return }
+        updateMessages(runtime.transcript(chat.id).messages)
+        messageList.scrollToRow(with: anchor, at: .top, animated: false)
     }
 
     private func holdLatestMessage() {
@@ -1356,6 +1384,12 @@ extension ChatController: UIScrollViewDelegate {
         }
     }
 
+    /// A page of earlier turns is being folded in: the scroll that follows is
+    /// ours, and must not ask for another page.
+    private var isLoadingEarlierHistory = false
+    /// A page was loaded at the top, and the reader has not left it yet: the
+    /// next page is asked for when they come back up, not at once.
+    private var holdsHistoryTop = false
     private var distanceFromLatestMessage: CGFloat {
         max(0, messageList.maximumContentOffset.y - messageList.contentOffset.y)
     }

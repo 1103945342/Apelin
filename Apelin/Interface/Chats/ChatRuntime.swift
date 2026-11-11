@@ -315,6 +315,7 @@ final class ChatRuntime {
         savedAt[id] = nil
         records.removeValue(forKey: id)
         transcripts.remove(id)
+        historyTurns[id] = nil
     }
 
     /// The conversation's rows, brought up to date only when its events, the
@@ -326,10 +327,36 @@ final class ChatRuntime {
         }
         return transcripts.transcript(
             of: record,
+            from: historyStart(of: id),
             now: Date(),
             isFollowed: { readers[$0] != nil },
             conversationTitle: { title(ofSession: $0) },
         ) { [self] item in attachment(item, in: id) }
+    }
+
+    /// How many turns of each conversation are folded when it is opened:
+    /// its last ones, and another page each time the reader asks.
+    private var historyTurns: [UUID: Int] = [:]
+
+    /// The event a conversation's fold starts at.
+    private func historyStart(of id: UUID) -> Int {
+        guard let record = records[id] else { return 0 }
+        return ChatHistory.start(of: record.events, keeping: historyTurns[id] ?? ChatHistory.turns)
+    }
+
+    /// Whether `id` holds events before the ones it is showing.
+    func hasEarlierHistory(_ id: UUID) -> Bool {
+        historyStart(of: id) > 0
+    }
+
+    /// Folds another page of `id`'s earlier turns in, and answers whether
+    /// there was one to fold: the page shows when its transcript is asked for
+    /// again.
+    @discardableResult
+    func loadEarlierHistory(_ id: UUID) -> Bool {
+        guard hasEarlierHistory(id) else { return false }
+        historyTurns[id] = (historyTurns[id] ?? ChatHistory.turns) + ChatHistory.step
+        return true
     }
 
     /// The title of the conversation `sessionID` is, which names a message

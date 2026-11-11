@@ -29,6 +29,14 @@ struct ChatTranscript {
     private(set) var quietDeadline: Date?
     /// How many events it has read.
     private(set) var eventCount = 0
+    /// Where the event it read first sits among the record's: a long
+    /// conversation is folded from its last turns back, and earlier ones
+    /// join the fold when the reader asks (`ChatHistory`). Rows are named by
+    /// that position, so the same event keeps its row however many turns are
+    /// folded in.
+    private(set) var firstEvent = 0
+    /// The record's index just past the last event it has read.
+    var endEvent: Int { firstEvent + eventCount }
     /// How long a running turn goes without an event before a summary
     /// stands in under its reply: the model may be writing a call it has
     /// not announced yet, or the provider has stalled.
@@ -95,11 +103,13 @@ struct ChatTranscript {
     /// `quietInterval`; without it no summary stands in for the quiet.
     init(
         events: [TaskEvent],
+        firstEvent: Int = 0,
         sending: [ComposerDraft] = [],
         conversationTitle: (String) -> String? = { _ in nil },
         now: Date? = nil,
         attachment: (AgentAttachment) -> ComposerAttachment?,
     ) {
+        self.firstEvent = firstEvent
         append(events, sending: sending, conversationTitle: conversationTitle, now: now, attachment: attachment)
     }
 
@@ -126,7 +136,7 @@ struct ChatTranscript {
             }
             let payload = event.payload
             let text = payload?["text"]?.stringValue ?? ""
-            let id = Self.rowID("event:\(index)")
+            let id = Self.rowID("event:\(firstEvent + index)")
             lastEventTime = event.time
             if Self.endsAttempt.contains(event.kind) {
                 attempt = nil
