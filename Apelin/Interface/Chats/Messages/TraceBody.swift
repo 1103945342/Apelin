@@ -252,6 +252,16 @@ final class ToolCallSectionView: UIView {
         accessibilityValue = section.value
     }
 
+    /// A block short enough to be shown whole keeps its hands off the
+    /// finger: a scroll view with nothing to scroll still takes the pan, and
+    /// the transcript under it would stop moving. Only a block with more
+    /// text than its panel shows scrolls inside it.
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        panelScroll.isScrollEnabled = !panel.isHidden
+            && panelLabel.bounds.height > panelScroll.bounds.height + 0.5
+    }
+
     /// A value that is a word or a line, in the face its kind asks for.
     private static func lineText(_ section: ToolCallDetail.Section, kind: ToolCallDetail.Section.Kind) -> NSAttributedString {
         let isMonospaced = kind == .path || kind == .command
