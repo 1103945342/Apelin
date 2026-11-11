@@ -23,6 +23,8 @@ final class SettingsViewController: TableController {
         case skills
         case toolchain
         case sdks
+        /// Settings ▸ Apps: the apps under the bootstrap's `Applications`.
+        case apps
         case templates
         case git
         case version
@@ -101,7 +103,7 @@ final class SettingsViewController: TableController {
         switch section {
         case .chat: [.preferences]
         case .agent: [.modelProviders, .defaultModels, .permissionMode, .memories, .skills]
-        case .environment: [.toolchain, .sdks, .templates]
+        case .environment: [.toolchain, .sdks, .apps, .templates]
         case .git: [.git]
         case .about: [.version, .licenses, .logs]
         }
@@ -165,6 +167,8 @@ final class SettingsViewController: TableController {
             content.text = String(localized: "Toolchains")
         case .sdks:
             content.text = String(localized: "SDKs")
+        case .apps:
+            content.text = String(localized: "Apps")
         case .templates:
             content.text = String(localized: "Templates")
         case .git:
@@ -206,6 +210,7 @@ final class SettingsViewController: TableController {
         case .skills: page = SkillsController()
         case .toolchain: page = ToolchainController()
         case .sdks: page = SDKListController()
+        case .apps: page = AppsController()
         case .templates: page = TemplatesController()
         case .git: page = GitSettingsController()
         case .licenses: page = LicensesViewController()

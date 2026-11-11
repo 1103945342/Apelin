@@ -558,7 +558,7 @@ actor InstallBridge {
             var metadata = stat()
             let present = lstat(bundlePath, &metadata) == 0
             if present {
-                try ApplicationInstall.unregister(
+                try ApplicationInstall.unregisterAnywhere(
                     bundlePath,
                     layout: layout,
                     installRoot: paths.installRoot
@@ -567,7 +567,7 @@ actor InstallBridge {
                 // written with, from the root the app went in under: an
                 // unregistration there costs nothing and leaves no ghost.
                 if application.bundlePath != bundlePath {
-                    _ = try? ApplicationInstall.unregister(
+                    _ = try? ApplicationInstall.unregisterAnywhere(
                         application.bundlePath,
                         layout: layout,
                         installRoot: paths.installRoot
@@ -845,6 +845,80 @@ actor InstallBridge {
                 reason: refusal,
             )
         })
+    }
+
+    // MARK: Apps
+
+    /// Settings ▸ Apps: what the bootstrap's `Applications` holds now and
+    /// what LaunchServices still registers, each with what a removal from
+    /// there would do. Read afresh every time — a tool the user ran outside
+    /// Apelin changes it under us, and there is nothing to keep.
+    func applicationList() async throws -> ApplicationListResponse {
+        let layout = ApplicationInstall.Layout(installRoot: paths.installRoot)
+        // A bootstrap without uicache still lists the bundles it holds.
+        let registered = ApplicationCensus.parseRegistered(
+            (try? ApplicationInstall.run(layout.uicache, ["-l"]))?.output ?? ""
+        )
+        let owners = ApplicationCensus.packageOwners(infoDirectory: (paths.installRoot == "/" ? "" : paths.installRoot)
+            + "/var/lib/dpkg/info")
+        return ApplicationListResponse(applications: ApplicationCensus.rows(
+            installRoot: paths.installRoot,
+            registered: registered,
+            bundles: ApplicationCensus.bundles(in: layout.applications),
+            records: await installations.all(),
+            owners: owners,
+        ))
+    }
+
+    /// Takes an app the list showed off the device: its registration first,
+    /// then the bundle, and the installation record that named it — or only
+    /// the registration, when that is all that is left of it.
+    ///
+    /// The pair the list answered is what removes anything: a path this host
+    /// did not just list is never taken, and a bundle outside `Applications`
+    /// is refused by `removeTree` whatever the path says.
+    func removeApplication(_ request: ApplicationRemoveRequest) async throws -> Acknowledged {
+        let listed = try await applicationList().applications
+        guard let app = listed.first(where: { $0.bundleID == request.bundleID && $0.path == request.path })
+            ?? listed.first(where: { $0.bundleID == request.bundleID && request.path == nil })
+        else {
+            throw ApelinError(.notFound, "This app is no longer on the device.")
+        }
+        guard app.removable else {
+            throw ApelinError(.denied, app.reason ?? "This app cannot be removed from here.")
+        }
+        let layout = ApplicationInstall.Layout(installRoot: paths.installRoot)
+        // The registration, by the path LaunchServices names — for a bundle
+        // that is gone, the only thing left to take away.
+        if let registered = app.registeredPath {
+            try ApplicationInstall.unregisterAnywhere(registered, layout: layout, installRoot: paths.installRoot)
+        }
+        if let path = app.path {
+            guard Self.removeTree(URL(fileURLWithPath: path), inside: layout.applications) else {
+                throw ApelinError(.denied, "\(path) is not inside \(layout.applications)")
+            }
+        }
+        // Every record of this bundle says it is gone: the one this install
+        // made, and any older one a renamed root left behind.
+        let all = await installations.all()
+        for record in all
+            where record.status == .installed && record.application?.bundleID == app.bundleID
+        {
+            _ = try? await installations.update(record.installationID) {
+                $0.status = .removed
+                $0.removalReceipt = InstallationRecord.Receipt(
+                    state: "succeeded",
+                    exitStatus: 0,
+                    packageID: record.packageID,
+                    version: record.version,
+                    failure: nil,
+                    failureText: nil,
+                    finishedAt: Date(),
+                )
+            }
+        }
+        NSLog("apelind-session: removed app %@", app.bundleID)
+        return Acknowledged()
     }
 
     // MARK: Toolchain folders

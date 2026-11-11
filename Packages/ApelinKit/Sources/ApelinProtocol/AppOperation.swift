@@ -37,6 +37,9 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
     case installPackage
     case removePackage
     case installationList
+    /// Settings ▸ Apps: the apps under the bootstrap's `Applications`.
+    case applicationList
+    case applicationRemove
     case respring
     case approvalDigestState
 
@@ -170,7 +173,8 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .environmentAttach, .environmentCancel: .environment
         case .extensionList, .projectCreate, .projectCheck, .projectRename, .projectDelete: .project
         case .buildStart, .buildAttach, .buildCancel: .build
-        case .installPackage, .removePackage, .installationList, .respring, .approvalDigestState: .install
+        case .installPackage, .removePackage, .installationList, .applicationList, .applicationRemove,
+             .respring, .approvalDigestState: .install
         case .fileRead, .protectedEditOpen, .protectedEditCommit: .files
         case .ptyOpen, .ptyAttach, .ptyResize, .ptyClose: .terminal
         case .logStream, .crashList, .crashOpen, .crashSymbolicate: .logs
@@ -227,6 +231,8 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .installPackage: InstallPackageRequest.self
         case .removePackage: RemovePackageRequest.self
         case .installationList: InstallationListRequest.self
+        case .applicationList: ApplicationListRequest.self
+        case .applicationRemove: ApplicationRemoveRequest.self
         case .respring: RespringRequest.self
         case .approvalDigestState: ApprovalDigestStateRequest.self
         case .fileRead: FileReadRequest.self

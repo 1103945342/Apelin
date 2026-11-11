@@ -144,9 +144,30 @@ enum ApplicationInstall {
         try uicache(["-u", toolPath(path, installRoot: installRoot)], layout: layout)
     }
 
+    /// The same for a bundle whose files may already be gone. roothide's
+    /// `uicache` has its root put in front of the paths it is given, so the
+    /// path it understands for a bundle that is there is the bootstrap's;
+    /// a registration left behind by a bundle that is no longer there is
+    /// keyed by the real path instead, which only `/rootfs/…` names. The real
+    /// path is tried first — it names the registration whichever root the
+    /// bootstrap had when it was made — and the bootstrap's second.
+    static func unregisterAnywhere(_ path: String, layout: Layout, installRoot: String) throws {
+        var refusal: Failure?
+        for argument in ["/rootfs" + path, toolPath(path, installRoot: installRoot)] {
+            do {
+                try uicache(["-u", argument], layout: layout)
+                return
+            } catch let failure as Failure {
+                refusal = failure
+            }
+        }
+        if let refusal { throw refusal }
+    }
+
     private static func uicache(_ arguments: [String], layout: Layout) throws {
         let result = try run(layout.uicache, arguments)
-        guard result.status == 0 else {
+        // A path it cannot match is printed as an error under a zero status.
+        guard result.status == 0, !result.output.hasPrefix("Error") else {
             throw Failure.tool("uicache answered \(result.status): \(result.output)")
         }
     }

@@ -18,6 +18,14 @@ enum InstallHandler: DomainHandler {
             await request.serve(InstallationListRequest.self) { query in
                 try await host.install.list(query, caller: request.caller)
             }
+        case .applicationList:
+            await request.serve(ApplicationListRequest.self) { _ in
+                try await host.install.applicationList()
+            }
+        case .applicationRemove:
+            await request.serve(ApplicationRemoveRequest.self) { remove in
+                try await host.install.removeApplication(remove)
+            }
         case .respring:
             await request.serve(RespringRequest.self) { _ in
                 try await host.install.respring()

@@ -53,11 +53,13 @@ struct InstallationRecord: Codable, Equatable, Sendable {
         /// name with everything inside it: the path a record was written with
         /// then names nothing while the app is on the device all the same.
         /// The recorded path is the answer while it holds this bundle;
-        /// otherwise the bundle is looked for where an install puts one
-        /// today, and taken only when the `Info.plist` there is this one's —
-        /// never a stranger's app that happens to share the name.
+        /// otherwise the same bundle is looked for under the root the
+        /// bootstrap has today, and taken only when the `Info.plist` there is
+        /// this one's — never a stranger's app that happens to share the name.
         func path(under applications: String) -> String {
             if Self.holds(bundlePath, bundleID) { return bundlePath }
+            let rebased = BootstrapRootPath.rebased(bundlePath, onto: applications)
+            if rebased != bundlePath, Self.holds(rebased, bundleID) { return rebased }
             let moved = applications + "/" + name + ".app"
             return Self.holds(moved, bundleID) ? moved : bundlePath
         }

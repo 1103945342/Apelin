@@ -530,6 +530,8 @@ do {
     check(CallerPolicy.allows(.worker(.agent, instance: "s"), .approvalDigestState), "the agent may read the ledger")
     check(CallerPolicy.allows(.worker(.agent, instance: "s"), .installationList), "the agent may list installations")
     check(!CallerPolicy.allows(.worker(.environment, instance: nil), .installationList) && !CallerPolicy.allows(.worker(.diagnostics, instance: nil), .installationList), "no other worker lists installations")
+    check(!CallerPolicy.allows(.worker(.agent, instance: "s"), .applicationRemove)
+        && !CallerPolicy.allows(.worker(.environment, instance: nil), .applicationList), "the apps under Applications are the app's alone")
     check(CallerPolicy.allows(.worker(.agent, instance: "s"), .toolHostCall), "the agent may call tools")
     check(CallerPolicy.allows(.worker(.agent, instance: "s"), .confirmLoaded) && CallerPolicy.allows(.worker(.agent, instance: "s"), .confirmLoadedAttach), "the agent starts and reads a load check")
     // Accounts are the app's alone: a session's agent never starts, answers
@@ -1210,6 +1212,7 @@ func record(
     version: String,
     status: InstallationRecord.Status = .installed,
     created: Date = Date(),
+    application: InstallationRecord.Application? = nil,
 ) -> InstallationRecord {
     InstallationRecord(
         installationID: id,
@@ -1239,6 +1242,7 @@ func record(
         removalTransactionID: nil,
         removalTaskID: nil,
         removalReceipt: nil,
+        application: application,
     )
 }
 
@@ -1331,6 +1335,58 @@ do {
         bundleID: "com.example.demo", name: "Demo", bundlePath: applications + "/Demo.app"
     )
     check(there.path(under: applications) == there.bundlePath, "a record that still names the bundle keeps its path")
+}
+
+// Settings ▸ Apps: who answers for each bundle under the bootstrap's
+// Applications, and what a removal there would do.
+do {
+    let root = "/private/var/containers/Bundle/Application/.jbroot-0123456789ABCDEF"
+    let applications = ApplicationCensus.applicationsFolder(installRoot: root)
+    let demo = applications + "/Demo.app"
+    let gone = applications + "/Gone.app"
+    let owned = applications + "/Owned.app"
+    let loose = applications + "/Loose.app"
+    let system = applications + "/Preferences.app"
+
+    let rows = ApplicationCensus.rows(
+        installRoot: root,
+        registered: [
+            ("local.apelin.demo", demo),
+            ("local.apelin.gone", gone),
+            ("com.example.owned", owned),
+            ("com.apple.Preferences", system),
+        ],
+        bundles: [demo, loose, owned],
+        records: [
+            record(
+                package: "local.apelin.demo", version: "1.0",
+                application: .init(bundleID: "local.apelin.demo", name: "Demo", bundlePath: demo),
+            ),
+        ],
+        owners: ["/Applications/Owned.app": "com.example.owner"],
+        describe: { path in
+            switch path {
+            case demo: ("local.apelin.demo", "Demo", "1.0")
+            case owned: ("com.example.owned", "Owned", "2.0")
+            case loose: ("com.example.loose", "Loose", "")
+            default: nil
+            }
+        },
+    )
+
+    check(rows.map(\.name) == ["Demo", "Gone", "Loose", "Owned", "Preferences"], "the apps sort by name: \(rows.map(\.name))")
+    let byName = Dictionary(uniqueKeysWithValues: rows.map { ($0.name, $0) })
+    check(byName["Demo"]?.source == .apelin && byName["Demo"]?.removable == true
+        && byName["Demo"]?.installationID != nil, "an app Apelin installed is its own to remove")
+    check(byName["Gone"]?.path == nil && byName["Gone"]?.registeredPath == gone
+        && byName["Gone"]?.removable == true, "a registration with no bundle behind it is removable too")
+    check(byName["Owned"]?.source == .package && byName["Owned"]?.packageID == "com.example.owner"
+        && byName["Owned"]?.removable == false, "an app a package lists is the package manager's")
+    check(byName["Loose"]?.source == .other && byName["Loose"]?.registeredPath == nil
+        && byName["Loose"]?.removable == true, "a bundle nobody registers or lists is still an app here")
+    check(byName["Preferences"]?.removable == false, "a system app is refused")
+    check(ApplicationCensus.parseRegistered("local.apelin.demo : /Applications/Demo.app\nnonsense\n")
+        .first?.bundleID == "local.apelin.demo", "uicache's own list is read")
 }
 
 // MARK: - Deb control
