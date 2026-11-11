@@ -144,6 +144,17 @@ final class ChatToolCallRow: UIView {
         updateChevron(animated: false)
     }
 
+    /// The reader folded or unfolded this call since its step last changed:
+    /// the row follows that, leaving a step that has not changed alone.
+    /// Answers whether anything changed.
+    @discardableResult
+    func applyExpansion() -> Bool {
+        guard ChatTraceExpansion.isExpanded(call: stepID) != showsBody else { return false }
+        configure(step)
+        updateChevron(animated: false)
+        return true
+    }
+
     private func configure(_ step: ChatMessage) {
         icon.image = UIImage(systemName: ToolSymbol.name(for: step.tool))
             ?? UIImage(systemName: "wrench.and.screwdriver")
@@ -165,7 +176,8 @@ final class ChatToolCallRow: UIView {
             view.removeFromSuperview()
         }
         if showsBody {
-            for section in ToolCallDetail(detail: step.detail, title: step.text).sections {
+            let detail = ToolCallDetail(detail: step.detail, title: step.text)
+            for section in Self.sections(of: detail, tool: step.tool) {
                 // aimini stops a tool's instruction or result at 240 pt and
                 // scrolls the rest inside the panel.
                 body.addArrangedSubview(
@@ -177,6 +189,18 @@ final class ChatToolCallRow: UIView {
         body.snp.updateConstraints { make in
             make.top.equalTo(line.snp.bottom).offset(body.isHidden ? 0 : Style.bodySpacing)
         }
+    }
+
+    /// What a call's row opens into. A file tool is handed the file itself —
+    /// an edit's old and new text, a write's whole content — and what the
+    /// reader wants of the call is the diff it answered with: aimini draws a
+    /// file edit as its diff and nothing else. The result stays, and so does
+    /// any argument that is a line, such as the path.
+    private static func sections(of detail: ToolCallDetail, tool: String?) -> [ToolCallDetail.Section] {
+        guard let tool, let name = AgentToolName.canonical(tool),
+              ToolCallBanner.fileTools.contains(name)
+        else { return detail.sections }
+        return detail.sections.filter { $0.isResult || !$0.value.contains("\n") }
     }
 
     private func updateChevron(animated: Bool) {

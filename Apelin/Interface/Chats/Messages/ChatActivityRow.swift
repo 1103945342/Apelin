@@ -383,9 +383,10 @@ final class ChatActivityRow: ListRowView {
 
     /// Whether its steps are open: what the reader chose, else the run still
     /// going. A summary of a finished stretch folds away, as aimini folds a
-    /// turn that ended.
+    /// turn that ended — `Role.isThinking` is the summary of a run that has
+    /// not finished, so it is the only one that starts open.
     private static func isExpanded(_ message: ChatMessage) -> Bool {
-        ChatTraceExpansion.isExpanded(summary: message.id, fallback: isReasoning(message))
+        ChatTraceExpansion.isExpanded(summary: message.id, fallback: message.role.isThinking)
     }
 
     /// Folds the steps away, or opens them; the list measures the row again.

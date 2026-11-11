@@ -536,20 +536,25 @@ struct ChatTranscript {
         return event.payload?["state"]?.stringValue.flatMap(TaskState.init(rawValue:))?.isTerminal == true
     }
 
-    /// While the turn runs, its last summary stays unfinished across tool
-    /// calls and approvals. Each thought ends when a tool starts, so without
-    /// this the title would flip between "Thought for…" and the running one.
-    /// It carries the run's output so far, the newest call in its trace and
-    /// whether a failed request is being made again.
+    /// While the run goes, its newest summary says so — it heads the run,
+    /// even when a reply is being written under it or a card waits below.
+    /// Each thought ends when a tool starts, so without this the header
+    /// would say "Completed" over a run still working, with the reply it is
+    /// writing arriving underneath. It carries the run's output so far, the
+    /// newest call in its trace and whether a failed request is being made
+    /// again.
     private static func keepTrailingSummaryRunning(
         _ rows: inout [ChatMessage],
         receivedTokens: Int?,
         reconnecting: Bool,
     ) {
-        guard let index = rows.lastIndex(where: { !$0.role.needsApproval }) else { return }
-        guard case let .thinking(_, tools) = rows[index].role else {
-            settleCount(&rows, reply: index, receivedTokens: receivedTokens)
-            return
+        guard let index = rows.lastIndex(where: { Self.isSummary($0.role) }),
+              case let .thinking(_, tools) = rows[index].role
+        else { return }
+        // A reply being written after the summary takes the count: it
+        // settles there once the run is writing, rather than climbing slowly.
+        if let last = rows.indices.last, rows[last].role == .assistant {
+            settleCount(&rows, reply: last, receivedTokens: receivedTokens)
         }
         rows[index].role = .thinking(seconds: nil, tools: tools)
         rows[index].receivedTokens = receivedTokens
@@ -557,9 +562,18 @@ struct ChatTranscript {
         rows[index].isReconnecting = reconnecting
     }
 
-    /// While the run writes a reply, the summary just above it is finished
-    /// and keeps the run's count, which settles there; never a summary above
-    /// the turn's own message.
+    /// Whether a row is one of the summaries the transcript folds a run's
+    /// thoughts, calls and approvals into — running or finished.
+    private static func isSummary(_ role: ChatMessage.Role) -> Bool {
+        if case .thinking = role {
+            return true
+        }
+        return false
+    }
+
+    /// While the run writes a reply, the summary above it keeps the run's
+    /// count, which settles there — its header still says the run is going;
+    /// never a summary above the turn's own message.
     private static func settleCount(_ rows: inout [ChatMessage], reply: Int, receivedTokens: Int?) {
         guard receivedTokens != nil, rows[reply].role == .assistant,
               let summary = rows[..<reply].lastIndex(where: { $0.role != .assistant }),
