@@ -7,22 +7,40 @@ import Testing
 
 @Suite("Pending input starts complete runs")
 struct PendingSessionTests {
-    @Test(.timeLimit(.minutes(1)))
-    func `a fresh reader send after stop starts without a separate resume`() async throws {
+    @Test(.timeLimit(.minutes(1)), arguments: [false, true])
+    func `fresh or stopped empty input starts directly without a queue snapshot`(stopped: Bool) async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let faux = await registerFauxProvider()
         defer { faux.unregister() }
-        faux.setResponses([.message(fauxAssistantMessage("Started."))])
+        faux.setResponses([
+            .message(fauxAssistantMessage("Started.")),
+            .message(fauxAssistantMessage("Next.")),
+        ])
         let session = try await AgentSession(configuration: .init(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot), backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
-        await session.abort()
+        if stopped {
+            await session.abort()
+            await session.waitForIdle()
+        }
+        let next = UUID(), idle = UUID()
+        try await session.prompt("start now", messageID: next, files: [("note.txt", "text/plain", Data("kept".utf8))])
         await session.waitForIdle()
-        let next = UUID()
-        try await session.prompt("start now", messageID: next)
+        try await session.prompt("duplicate", messageID: next)
+        try await session.prompt("idle next", messageID: idle)
         await session.waitForIdle()
         let events = try await session.log.records(afterSeq: 0).map(\.event)
+        #expect(!events.contains {
+            if case let .pendingQueue(messages, _) = $0 { return messages.contains { $0.id == next || $0.id == idle } }
+            return false
+        })
         #expect(events.filter { if case .userMessage(next, "start now", _) = $0 { return true }; return false }.count == 1)
-        #expect(events.contains(.finished(reason: .completed)))
+        #expect(events.filter { if case .userMessage(idle, "idle next", _) = $0 { return true }; return false }.count == 1)
+        let attachment = try #require(events.compactMap { event -> AgentAttachment? in
+            if case .userMessage(next, _, let attachments) = event { return attachments.first }
+            return nil
+        }.first)
+        #expect(try Data(contentsOf: home.projectURL.appendingPathComponent(attachment.path)) == Data("kept".utf8))
+        #expect(events.filter { $0 == .finished(reason: .completed) }.count == 2)
         await session.close()
     }
 
@@ -215,6 +233,43 @@ struct PendingSessionTests {
             if case .finished(reason: .completed) = event, let window { finishedWindows.append(window) }
         }
         #expect(finishedWindows == [8192, 16384, 32768])
+        await session.close()
+    }
+
+    @Test(.timeLimit(.minutes(1)), arguments: [false, true])
+    func `direct preparation keeps later input behind it and recovers on failure or stop`(stop: Bool) async throws {
+        let home = try TemporaryHome()
+        defer { home.remove() }
+        let faux = await registerFauxProvider()
+        defer { faux.unregister() }
+        let barrier = PendingResumeBarrier()
+        let credentials = DirectPreparationCredentials(barrier: barrier)
+        let session = try await AgentSession(configuration: .init(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot), backend: MockBackend(), digests: MockDigestLedger(), credentials: credentials)
+        let first = UUID(), second = UUID()
+        let send = Task {
+            try await session.prompt("first", messageID: first,
+                modelChoice: PendingModelChoice(provider: .openAICompatible(model: "missing")))
+        }
+        await barrier.waitUntilEntered()
+        let path = session.log.directory.appendingPathComponent("pending.json")
+        let reserved = try JSONDecoder().decode(PendingQueue.State.self, from: Data(contentsOf: path))
+        #expect(reserved.messages.isEmpty && reserved.handoffs.map(\.id) == [first])
+        try await session.prompt("duplicate", messageID: first)
+        try await session.prompt("second", messageID: second)
+        let before = try await session.log.records(afterSeq: 0).map(\.event)
+        #expect(!before.contains {
+            if case let .pendingQueue(messages, _) = $0 { return messages.contains { $0.id == first } }
+            return false
+        })
+        if stop { await session.abort() }
+        await barrier.release()
+        try await send.value
+        await session.waitForIdle()
+        let recovered = try JSONDecoder().decode(PendingQueue.State.self, from: Data(contentsOf: path))
+        #expect(recovered.paused && recovered.messages.map(\.id) == [first, second])
+        #expect(recovered.handoffs.isEmpty)
+        let events = try await session.log.records(afterSeq: 0).map(\.event)
+        #expect(!events.contains { if case .userMessage = $0 { return true }; return false })
         await session.close()
     }
 

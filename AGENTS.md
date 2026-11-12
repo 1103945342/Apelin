@@ -1528,7 +1528,12 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `projectNameSuggested` {name} (only a concrete project intent),
   `steer`, `queued` {id, text, attachments} (only an explicit insertion
   into the active run; its `prompt` uses the same id when the model takes
-  it). Ordinary Send goes to the session-owned `PendingQueue`, persisted
+  it). Idle reader Send with no backlog reserves a durable handoff
+  directly, never a waiting message; preparation and the subsequent run
+  own the slot before suspending. New, idle and stopped-empty chats take
+  this path. Later arrivals wait in FIFO order. Stop or preparation
+  failure recovers an untaken direct handoff into the paused queue.
+  Other ordinary Send goes to the session-owned `PendingQueue`, persisted
   before acceptance in `pending.json`, not kwwk's steering queue. A
   `pendingQueue` {messages: [{id, text, attachments, editing, sender?, delivery?, modelChoice?}], paused}
   snapshot replaces the app's waiting list; it is not conversation history.

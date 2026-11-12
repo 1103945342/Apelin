@@ -145,4 +145,41 @@ struct PendingQueueTests {
         }
         #expect(queue.state == before)
     }
+
+    @Test
+    func `direct input is durable without entering the waiting list`() throws {
+        let home = try TemporaryHome()
+        defer { home.remove() }
+        var queue = try PendingQueue(directory: home.projectURL, taken: [])
+        try queue.update { $0.paused = true }
+        let first = PendingMessage(id: UUID(), text: "direct", attachments: [])
+        let second = PendingMessage(id: UUID(), text: "later", attachments: [])
+        try queue.beginDirect(first)
+        #expect(queue.state.messages.isEmpty && !queue.state.paused)
+        #expect(queue.state.handoffs == [first] && queue.state.seen.contains(first.id))
+        try queue.enqueue(first)
+        try queue.enqueue(second)
+        #expect(queue.state.messages == [second])
+        #expect(throws: (any Error).self) { try queue.beginDirect(second) }
+        queue = try PendingQueue(directory: home.projectURL, taken: [])
+        #expect(queue.state.messages == [first, second] && queue.state.paused)
+        #expect(queue.state.handoffs.isEmpty)
+        queue = try PendingQueue(directory: home.projectURL, taken: [first.id])
+        #expect(queue.state.messages == [second])
+        try queue.enqueue(first)
+        #expect(queue.state.messages == [second])
+    }
+
+    @Test
+    func `failed direct reservation does not accept or unpause input`() throws {
+        let home = try TemporaryHome()
+        defer { home.remove() }
+        var queue = try PendingQueue(directory: home.projectURL, taken: [])
+        try FileManager.default.createDirectory(at: home.projectURL.appendingPathComponent("pending.json"), withIntermediateDirectories: false)
+        let before = queue.state
+        #expect(throws: (any Error).self) {
+            try queue.beginDirect(PendingMessage(id: UUID(), text: "direct", attachments: []))
+        }
+        #expect(queue.state == before)
+    }
 }

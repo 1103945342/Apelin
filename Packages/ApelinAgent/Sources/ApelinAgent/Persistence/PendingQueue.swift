@@ -103,6 +103,21 @@ struct PendingQueue {
         }
     }
 
+    /// Reserve idle reader input directly for dispatch, never in messages.
+    /// The durable handoff protects a crash during preparation just as take
+    /// protects a queued dispatch. Later arrivals must wait behind this one.
+    mutating func beginDirect(_ message: PendingMessage) throws {
+        guard state.messages.isEmpty, state.handoffs.isEmpty,
+              !state.seen.contains(message.id) else {
+            throw ApelinError(.conflict, "Direct input requires an empty queue and no outstanding handoff.")
+        }
+        try update {
+            $0.seen.insert(message.id)
+            $0.handoffs.append(message)
+            $0.paused = false
+        }
+    }
+
     mutating func change(_ request: AgentQueueRequest) throws {
         try update { state in
             switch request.action {

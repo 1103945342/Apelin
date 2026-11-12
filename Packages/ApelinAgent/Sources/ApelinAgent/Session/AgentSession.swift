@@ -715,7 +715,25 @@ public actor AgentSession {
             && (pendingBlocked || pending.state.paused || aborted || runFailed)
             ? stopGeneration : nil
         let attachments = try files.map { try saveAttachment(name: $0.name, mimeType: $0.mimeType, data: $0.data) }
-        try pending.enqueue(PendingMessage(id: id, text: text, attachments: attachments, sender: sender, delivery: delivery, modelChoice: modelChoice))
+        let item = PendingMessage(id: id, text: text, attachments: attachments, sender: sender, delivery: delivery, modelChoice: modelChoice)
+        if sender == nil, canMutateHistory, !runEnding,
+           pending.state.messages.isEmpty, pending.state.handoffs.isEmpty {
+            // Claim the idle slot synchronously. This is a handoff, not a
+            // waiting message: no pendingQueue snapshot may list this ID.
+            try pending.beginDirect(item)
+            submitted.insert(id)
+            pendingBlocked = false
+            aborted = false
+            runFailed = false
+            let generation = stopGeneration
+            let preparation = Task<Void, Never> { [weak self] in
+                await self?.drainPending(direct: item, directGeneration: generation)
+            }
+            pendingDrain = preparation
+            await preparation.value
+            return
+        }
+        try pending.enqueue(item)
         submitted.insert(id)
         if delivery == .steer, runTask != nil, !runEnding, !aborted, !pendingBlocked, !pending.state.paused {
             pendingSteers.insert(id)
@@ -769,7 +787,7 @@ public actor AgentSession {
         return task
     }
 
-    /// Both a reader send to an idle/ending chat and Resume use this path.
+    /// A reader send with backlog and Resume use this path.
     /// Do not clear the pause until the old run and its preparation have
     /// finished: either can still publish a pause while unwinding a Stop.
     private func resumePending(after generation: UInt64) async throws {
@@ -874,17 +892,17 @@ public actor AgentSession {
         pendingDrain = Task { [weak self] in await self?.drainPending() }
     }
 
-    private func drainPending() async {
+    private func drainPending(direct: PendingMessage? = nil, directGeneration: UInt64? = nil) async {
         defer {
             pendingDrain = nil
             schedulePending()
         }
-        let steering = runTask != nil
-        guard let item = steering
+        let steering = direct == nil && runTask != nil
+        guard let item = direct ?? (steering
             ? pending.state.messages.first(where: { pendingSteers.contains($0.id) && !$0.editing })
-            : pending.state.messages.first else { return }
+            : pending.state.messages.first) else { return }
         let revision = pending.revision
-        let generation = stopGeneration
+        let generation = directGeneration ?? stopGeneration
         do {
             try await pendingEvents?.value
             if !steering, agent.state.messages.count < savedMessageCount {
@@ -928,13 +946,18 @@ public actor AgentSession {
                 runMode: runner.currentRunMode, asksBeforeScreen: runner.asksBeforeScreen,
                 installRoot: configuration.installRoot
             )
-            // Every await is above this check. Hold/edit/reorder/stop and a run
-            // ending during preparation leave the item in the queue untouched.
-            guard generation == stopGeneration, revision == pending.revision,
+            // A queued item may be edited while preparing. Direct input is
+            // already reserved and immutable; later arrivals only change the
+            // waiting list and must not invalidate its dispatch.
+            let reservationValid = direct == nil
+                ? revision == pending.revision
+                : pending.state.handoffs.contains(where: { $0.id == item.id })
+            guard generation == stopGeneration, reservationValid,
                   compaction == nil, !historyMutation, !runEnding, !pendingBlocked,
                   steering ? (runTask != nil && !aborted && pendingSteers.contains(item.id)) : (runTask == nil && !pending.state.paused)
             else {
                 if !steering { restoreModelAfterRun() }
+                if direct != nil { await recoverPendingHandoff(item.id) }
                 return
             }
             let suffix = ConversationHistory.attachmentSuffix(item.attachments.map { (name: $0.name, path: $0.path) })
@@ -950,7 +973,7 @@ public actor AgentSession {
             var message = UserMessage(content: [.text(TextContent(text: opening))] + images.map { .image($0) })
             message.timestamp = max(message.timestamp, lastPendingTimestamp + 1)
             lastPendingTimestamp = message.timestamp
-            _ = try pending.take(item.id)
+            if direct == nil { _ = try pending.take(item.id) }
             if !steering {
                 if let choice = item.modelChoice, let resolved = resolvedChoice {
                     recordModel = resolved.model
@@ -1017,6 +1040,7 @@ public actor AgentSession {
             await persistAnchors()
         } catch {
             await pausePending(error: error)
+            if direct != nil { await recoverPendingHandoff(item.id) }
         }
     }
 
