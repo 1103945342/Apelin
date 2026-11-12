@@ -3,6 +3,7 @@ import enum ApelinProtocol.AgentToolName
 import enum ApelinProtocol.FeedbackRules
 import struct ApelinProtocol.GitIssueCreateRequest
 import struct ApelinProtocol.GitRepositoryCreateRequest
+import struct ApelinProtocol.GitRestoreRequest
 import enum ApelinProtocol.GitRepositoryVisibility
 import Foundation
 import KWWKAI
@@ -96,6 +97,40 @@ extension ToolRunner {
                 remote: remote,
                 force: arguments.argBool("force") ?? false,
             )
+        case .gitTag:
+            let action = try arguments.requireString("action")
+            guard let tagAction = GitTagToolRequest.Action(rawValue: action) else {
+                throw ToolArgumentError("git_tag needs action create or delete.")
+            }
+            let name = try arguments.requireString("name")
+            try GitBranchTools.checkName(name)
+            if let commit = arguments.argNonEmptyString("commit") {
+                try GitBranchTools.checkRevision(commit)
+            }
+            facts.tagChange = InvocationFacts.TagChange(
+                name: name,
+                deleting: tagAction == .delete,
+                annotated: arguments.argNonEmptyString("message") != nil,
+            )
+        case .gitStash:
+            let action = try arguments.requireString("action")
+            guard let stashAction = GitStashToolRequest.Action(rawValue: action) else {
+                throw ToolArgumentError("git_stash needs action list, save, apply, drop or clear.")
+            }
+            let index = arguments.argInt("index") ?? 0
+            guard index >= 0 else { throw ToolArgumentError("a stash index cannot be negative.") }
+            facts.stashReads = stashAction == .list
+        case .gitRestore, .gitClean:
+            guard let paths = arguments.argStrings("paths"), !paths.isEmpty else {
+                throw ToolArgumentError("paths must be a non-empty list of project-relative paths")
+            }
+            if name == .gitRestore {
+                let source = arguments.argString("source") ?? "head"
+                guard GitRestoreRequest.Source(rawValue: source) != nil else {
+                    throw ToolArgumentError("git_restore needs source head or index.")
+                }
+            }
+            facts.discardedPaths = paths
         case .gitMerge:
             try GitBranchTools.checkRevision(arguments.requireString("branch"))
         case .gitCommitDetail:

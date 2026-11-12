@@ -74,6 +74,19 @@ public struct InvocationFacts: Sendable, Hashable {
         }
     }
 
+    /// For git_tag: the tag's name, whether it is deleted, and whether it is
+    /// annotated.
+    public struct TagChange: Sendable, Hashable {
+        public var name: String
+        public var deleting: Bool
+        public var annotated: Bool
+        public init(name: String, deleting: Bool, annotated: Bool) {
+            self.name = name
+            self.deleting = deleting
+            self.annotated = annotated
+        }
+    }
+
     public var tool: Tool
     public var pathCheck: PathCheck?
     public var command: RunCodeInvocation?
@@ -88,6 +101,12 @@ public struct InvocationFacts: Sendable, Hashable {
     public var push: GitPushTarget?
     /// For git_branch_delete: the branch it deletes, and where.
     public var branchDeletion: BranchDeletion?
+    /// For git_restore and git_clean: the paths whose changes or files go.
+    public var discardedPaths: [String]?
+    /// For git_tag: the tag and what happens to it.
+    public var tagChange: TagChange?
+    /// For git_stash: whether the call only reads the list.
+    public var stashReads: Bool?
     /// For git_push with force_with_lease, when the push would take commits
     /// off the remote's branch: what it overwrites, as the fetch before it
     /// found the remote. Nil for an ordinary push, which loses nothing.
@@ -249,6 +268,14 @@ public struct ApprovalPolicy: Sendable, Hashable {
         if case .local(.gitBranchDelete) = facts.tool {
             return Self.branchDeletionVerdict(facts.branchDeletion)
         }
+        // A path's changes discarded, or its untracked files deleted: nothing
+        // in this conversation brings them back, so every mode asks.
+        if case .local(.gitRestore) = facts.tool, let paths = facts.discardedPaths {
+            return Self.discardedPathsVerdict(paths, discarding: true)
+        }
+        if case .local(.gitClean) = facts.tool, let paths = facts.discardedPaths {
+            return Self.discardedPathsVerdict(paths, discarding: false)
+        }
         if mode != .confirm {
             return .allow(.relaxed)
         }
@@ -329,6 +356,18 @@ public struct ApprovalPolicy: Sendable, Hashable {
             : ""
         return .ask(
             reason: "Deletes the branch \(deletion.name)\(place).\(unmerged) A deleted branch cannot be brought back by anything in this conversation.",
+            detail: .none,
+        )
+    }
+
+    /// Paths whose changes, or files, go: every mode asks, naming them.
+    static func discardedPathsVerdict(_ paths: [String], discarding: Bool) -> GateVerdict {
+        let what = paths.count == 1 ? "the path" : "\(paths.count) paths"
+        let named = paths.prefix(5).joined(separator: ", ")
+        let more = paths.count > 5 ? ", and \(paths.count - 5) more" : ""
+        let verb = discarding ? "Discards the changes to" : "Deletes the untracked files at"
+        return .ask(
+            reason: "\(verb) \(what) \(named)\(more): nothing in this conversation brings them back.",
             detail: .none,
         )
     }
@@ -517,6 +556,24 @@ public struct ApprovalPolicy: Sendable, Hashable {
         // with it: every deletion asks, naming the branch and where it goes.
         case .gitBranchDelete:
             return Self.branchDeletionVerdict(facts.branchDeletion)
+
+        // A tag made or deleted, and the project's stash changed: each asks,
+        // the card naming the tag; listing stashes changes nothing.
+        case .gitTag:
+            guard let tag = facts.tagChange else {
+                return .ask(reason: "This changes the project's tags.", detail: .none)
+            }
+            return tag.deleting
+                ? .ask(reason: "Deletes the tag \(tag.name): nothing in this conversation brings it back.", detail: .none)
+                : .ask(reason: "Makes the \(tag.annotated ? "annotated " : "")tag \(tag.name).", detail: .none)
+        case .gitStash:
+            guard facts.stashReads != true else { return .allow(.notRequired) }
+            return .ask(reason: "This changes the project's saved work (its stash). Review the named operation before running.", detail: .none)
+        case .gitRestore, .gitClean:
+            guard let paths = facts.discardedPaths else {
+                return .ask(reason: "This discards project files.", detail: .none)
+            }
+            return Self.discardedPathsVerdict(paths, discarding: facts.tool == .local(.gitRestore))
 
         // Another conversation of the project, opened, sent to or stopped:
         // its agent runs under this session's mode, so whatever it does

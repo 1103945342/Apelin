@@ -6,6 +6,7 @@ import enum ApelinProtocol.AgentToolName
 import struct ApelinProtocol.ApelinError
 import enum ApelinProtocol.BuildBootstrap
 import struct ApelinProtocol.GitPushLease
+import struct ApelinProtocol.GitRestoreRequest
 import enum ApelinProtocol.AgentRunMode
 import Foundation
 import KWWKAgent
@@ -445,6 +446,7 @@ actor ToolRunner {
              .local(.skillSave), .local(.skillRemove), .local(.feedbackSend), .local(.gitCreateRepository),
              .local(.projectDelete), .local(.packagePublish), .local(.feedbackEdit), .local(.gitCreateIssue),
              .local(.gitSquash), .local(.gitResetToRemote), .local(.gitBranchDelete),
+             .local(.gitTag), .local(.gitRestore), .local(.gitClean),
              .local(.gitBranchCreate), .local(.gitBranchCheckout), .local(.gitBranchRename),
              .local(.gitMerge), .local(.gitMergeAbort):
             return false
@@ -875,6 +877,50 @@ actor ToolRunner {
                 name: try arguments.requireString("name"),
                 remote: arguments.argNonEmptyString("remote"),
                 force: arguments.argBool("force") ?? false,
+            )))
+
+        case .gitTag:
+            let tagAction = try arguments.requireString("action")
+            guard let action = GitTagToolRequest.Action(rawValue: tagAction) else {
+                throw ToolArgumentError("git_tag needs action create or delete.")
+            }
+            return try await json(backend.gitTag(GitTagToolRequest(
+                context: context,
+                action: action,
+                name: try arguments.requireString("name"),
+                commit: arguments.argNonEmptyString("commit"),
+                message: arguments.argNonEmptyString("message"),
+            )))
+
+        case .gitStash:
+            let stashAction = try arguments.requireString("action")
+            guard let action = GitStashToolRequest.Action(rawValue: stashAction) else {
+                throw ToolArgumentError("git_stash needs action list, save, apply, drop or clear.")
+            }
+            return try await json(backend.gitStash(GitStashToolRequest(
+                context: context,
+                action: action,
+                message: arguments.argNonEmptyString("message"),
+                includeUntracked: arguments.argBool("include_untracked") ?? false,
+                index: arguments.argInt("index") ?? 0,
+                pop: arguments.argBool("pop") ?? false,
+            )))
+
+        case .gitRestore, .gitClean:
+            guard let paths = arguments.argStrings("paths"), !paths.isEmpty else {
+                throw ToolArgumentError("paths must be a non-empty list of project-relative paths")
+            }
+            if name == .gitClean {
+                return try await json(backend.gitClean(GitCleanToolRequest(context: context, paths: paths)))
+            }
+            let source = arguments.argString("source") ?? "head"
+            guard let restoreSource = GitRestoreRequest.Source(rawValue: source) else {
+                throw ToolArgumentError("git_restore needs source head or index.")
+            }
+            return try await json(backend.gitRestore(GitRestoreToolRequest(
+                context: context,
+                source: restoreSource,
+                paths: paths,
             )))
 
         case .gitBranchRename:

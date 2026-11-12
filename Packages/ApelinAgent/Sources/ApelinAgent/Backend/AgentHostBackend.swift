@@ -74,6 +74,14 @@ public protocol AgentHostBackend: Sendable {
     func gitMergeAbort(_ request: GitMergeAbortToolRequest) async throws -> GitMergeAbortResponse
     func gitLog(_ request: GitLogToolRequest) async throws -> GitLogResponse
     func gitCommitDetail(_ request: GitCommitDetailToolRequest) async throws -> GitCommitDetailResponse
+    /// A tag made, or deleted.
+    func gitTag(_ request: GitTagToolRequest) async throws -> GitTagToolResponse
+    /// The project's stashes: listed, saved, applied, dropped or cleared.
+    func gitStash(_ request: GitStashToolRequest) async throws -> GitStashToolResponse
+    /// Paths taken back from the index or HEAD, discarding their changes.
+    func gitRestore(_ request: GitRestoreToolRequest) async throws -> GitRestoreResponse
+    /// Untracked paths deleted.
+    func gitClean(_ request: GitCleanToolRequest) async throws -> GitDeletePathsResponse
     /// The remote's branches into remote-tracking refs, read to the end.
     func gitFetch(_ request: GitRemoteToolRequest) async throws -> GitTaskToolResponse
     /// Fetch, then fast-forward only, read to the end.

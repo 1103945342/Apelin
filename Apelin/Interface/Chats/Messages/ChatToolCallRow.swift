@@ -334,6 +334,14 @@ enum ToolSymbol {
         return switch name {
         case .gitBranchDelete:
             "trash"
+        case .gitTag:
+            "tag"
+        case .gitStash:
+            "archivebox"
+        case .gitRestore:
+            "arrow.uturn.backward"
+        case .gitClean:
+            "trash.slash"
         case .fileRead, .fileList, .fileGrep, .fileFind, .fileShow:
             "doc.text.magnifyingglass"
         case .fileWrite, .fileEdit, .fileCreate:

@@ -45,7 +45,8 @@ struct ApprovalMatrixTests {
     @Test
     func `Relaxed lets every local tool through but a reset to a remote`() {
         defer { home.remove() }
-        for tool in AgentToolName.allCases where tool != .gitResetToRemote && tool != .gitBranchDelete {
+        for tool in AgentToolName.allCases
+        where tool != .gitResetToRemote && tool != .gitBranchDelete && tool != .gitRestore && tool != .gitClean {
             let facts = InvocationFacts(
                 tool: .local(tool),
                 command: tool == .shellRun ? .shell("rm -rf build; make") : nil,
@@ -59,6 +60,9 @@ struct ApprovalMatrixTests {
         for mode in [ApprovalMode.relaxed, .full, .confirm] {
             #expect(isAsk(verdict(mode, InvocationFacts(tool: .local(.gitResetToRemote)))), "\(mode)")
             #expect(isAsk(verdict(mode, InvocationFacts(tool: .local(.gitBranchDelete)))), "\(mode)")
+            let paths = ["Sources/Tweak.m"]
+            #expect(isAsk(verdict(mode, InvocationFacts(tool: .local(.gitRestore), discardedPaths: paths))), "\(mode)")
+            #expect(isAsk(verdict(mode, InvocationFacts(tool: .local(.gitClean), discardedPaths: paths))), "\(mode)")
         }
     }
 

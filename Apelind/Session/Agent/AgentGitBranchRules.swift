@@ -14,6 +14,9 @@ enum AgentGitBranchRules {
             guard let value = arguments[key]?.stringValue, !value.isEmpty else { return nil }
             return value
         }
+        func paths(_ value: JSONValue?) -> [String]? {
+            value?.arrayValue?.compactMap(\.stringValue)
+        }
         func tool(_ name: AgentToolName, _ projectID: String) -> Bool {
             asked["tool"]?.stringValue == name.rawValue && projectID == project
         }
@@ -36,6 +39,48 @@ enum AgentGitBranchRules {
                     && arguments["name"]?.stringValue == value.name
                     && optional("remote") == value.remote
                     && (arguments["force"]?.boolValue ?? false) == (value.force ?? false)
+            case .gitTagCreate:
+                let value = try request.decode(GitTagCreateRequest.self)
+                return tool(.gitTag, value.projectID)
+                    && arguments["action"]?.stringValue == "create"
+                    && arguments["name"]?.stringValue == value.name
+                    && optional("commit") == value.commit
+                    && optional("message") == value.message
+            case .gitTagDelete:
+                let value = try request.decode(GitTagDeleteRequest.self)
+                return tool(.gitTag, value.projectID)
+                    && arguments["action"]?.stringValue == "delete"
+                    && arguments["name"]?.stringValue == value.name
+            case .gitRestore:
+                let value = try request.decode(GitRestoreRequest.self)
+                return tool(.gitRestore, value.projectID)
+                    && paths(arguments["paths"]) == value.paths
+                    && (arguments["source"]?.stringValue ?? "head") == value.source.rawValue
+            case .gitDeletePaths:
+                let value = try request.decode(GitDeletePathsRequest.self)
+                return tool(.gitClean, value.projectID)
+                    && paths(arguments["paths"]) == value.paths
+            case .gitStashSave:
+                let value = try request.decode(GitStashSaveRequest.self)
+                return tool(.gitStash, value.projectID)
+                    && arguments["action"]?.stringValue == "save"
+                    && optional("message") == value.message
+                    && (arguments["include_untracked"]?.boolValue ?? false) == value.includeUntracked
+            case .gitStashApply:
+                let value = try request.decode(GitStashApplyRequest.self)
+                return tool(.gitStash, value.projectID)
+                    && arguments["action"]?.stringValue == "apply"
+                    && (arguments["index"]?.doubleValue ?? 0) == Double(value.index)
+                    && (arguments["pop"]?.boolValue ?? false) == value.pop
+            case .gitStashDrop:
+                let value = try request.decode(GitStashDropRequest.self)
+                return tool(.gitStash, value.projectID)
+                    && arguments["action"]?.stringValue == "drop"
+                    && (arguments["index"]?.doubleValue ?? 0) == Double(value.index)
+            case .gitStashClear:
+                let value = try request.decode(GitStashClearRequest.self)
+                return tool(.gitStash, value.projectID)
+                    && arguments["action"]?.stringValue == "clear"
             case .gitBranchRename:
                 let value = try request.decode(GitBranchRenameRequest.self)
                 return tool(.gitBranchRename, value.projectID)

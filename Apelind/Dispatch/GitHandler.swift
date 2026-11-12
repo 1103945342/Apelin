@@ -18,19 +18,21 @@ enum GitHandler: DomainHandler {
              .gitBranches, .gitLog, .gitCommitDetail,
              .gitSettings, .gitAuthorSet, .gitCredentialSet, .gitCredentialRemove:
             return await host.forward(request, to: .environment)
-        case .gitBranchCreate, .gitBranchCheckout, .gitBranchDelete, .gitBranchRename, .gitMerge, .gitMergeAbort:
+        case .gitBranchCreate, .gitBranchCheckout, .gitBranchDelete, .gitBranchRename, .gitMerge, .gitMergeAbort,
+             .gitTagCreate, .gitTagDelete, .gitRestore, .gitDeletePaths,
+             .gitStashSave, .gitStashApply, .gitStashDrop, .gitStashClear:
             if case let .worker(.agent, instance) = request.caller,
                let refusal = await AgentGitBranchRules.authorize(request.request, session: instance, registry: host.registry)
             {
                 return request.fail(refusal)
             }
             return await host.forward(request, to: .environment)
-        // Destructive work-tree, tag and stash operations remain app-only:
-        // CallerPolicy does not expose them to the agent.
-        case .gitTagCreate, .gitTagDelete,
-             .gitCommitFileDiff, .gitFileVersions,
-             .gitRestore, .gitDeletePaths, .gitIgnoreAppend, .gitReset,
-             .gitStashList, .gitStashSave, .gitStashApply, .gitStashDrop, .gitStashClear:
+        // Destructive work-tree operations remain app-only: CallerPolicy does
+        // not expose them to the agent. Listing stashes reads only.
+        case .gitCommitFileDiff, .gitFileVersions,
+             .gitIgnoreAppend, .gitReset:
+            return await host.forward(request, to: .environment)
+        case .gitStashList:
             return await host.forward(request, to: .environment)
         // Checkpoint & Rewind's code: the agent saves its own project's
         // work tree before a run (the scope check above holds it to that
