@@ -444,7 +444,7 @@ actor ToolRunner {
         case .local(.packageRemove), .local(.gitPush), .local(.toolchainSetup), .local(.sdkImport),
              .local(.skillSave), .local(.skillRemove), .local(.feedbackSend), .local(.gitCreateRepository),
              .local(.projectDelete), .local(.packagePublish), .local(.feedbackEdit), .local(.gitCreateIssue),
-             .local(.gitSquash), .local(.gitResetToRemote),
+             .local(.gitSquash), .local(.gitResetToRemote), .local(.gitBranchDelete),
              .local(.gitBranchCreate), .local(.gitBranchCheckout), .local(.gitBranchRename),
              .local(.gitMerge), .local(.gitMergeAbort):
             return false
@@ -867,6 +867,14 @@ actor ToolRunner {
                 context: context,
                 name: try arguments.requireString("name"),
                 remote: arguments.argNonEmptyString("remote"),
+            )))
+
+        case .gitBranchDelete:
+            return try await json(backend.gitBranchDelete(GitBranchDeleteToolRequest(
+                context: context,
+                name: try arguments.requireString("name"),
+                remote: arguments.argNonEmptyString("remote"),
+                force: arguments.argBool("force") ?? false,
             )))
 
         case .gitBranchRename:

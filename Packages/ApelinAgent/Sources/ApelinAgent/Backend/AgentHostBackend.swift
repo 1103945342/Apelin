@@ -67,6 +67,8 @@ public protocol AgentHostBackend: Sendable {
     func gitBranches(_ request: GitBranchesToolRequest) async throws -> GitBranchesResponse
     func gitBranchCreate(_ request: GitBranchCreateToolRequest) async throws -> GitBranchCreateResponse
     func gitBranchCheckout(_ request: GitBranchCheckoutToolRequest) async throws -> GitBranchCheckoutResponse
+    /// A local branch, or a branch on a remote, deleted.
+    func gitBranchDelete(_ request: GitBranchDeleteToolRequest) async throws -> GitBranchDeleteResponse
     func gitBranchRename(_ request: GitBranchRenameToolRequest) async throws -> GitBranchRenameResponse
     func gitMerge(_ request: GitMergeToolRequest) async throws -> GitMergeResponse
     func gitMergeAbort(_ request: GitMergeAbortToolRequest) async throws -> GitMergeAbortResponse

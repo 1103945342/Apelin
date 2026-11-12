@@ -36,7 +36,7 @@ public extension AgentToolName {
         case .gitStatus, .gitDiff, .gitStage, .gitUnstage, .gitCommit, .gitInit,
              .gitFetch, .gitPull, .gitPush, .gitClone, .gitSquash, .projectSetEnvironment,
              .gitRemoteList, .gitRemoteSet, .gitRemoteRemove, .gitResetToRemote,
-             .gitBranches, .gitBranchCreate, .gitBranchCheckout, .gitBranchRename,
+             .gitBranches, .gitBranchCreate, .gitBranchCheckout, .gitBranchDelete, .gitBranchRename,
              .gitMerge, .gitMergeAbort, .gitLog, .gitCommitDetail:
             true
         default:
@@ -103,10 +103,11 @@ public extension AgentToolName {
         // after this conversation ends. A deleted project is gone for good,
         // its files and conversations with it. A published package is
         // anyone's to install who adds the user's package repository. A
-        // squash replaces commits the user may have read or published, and a
-        // reset to a remote discards the project's local work.
+        // squash replaces commits the user may have read or published, a
+        // reset to a remote discards the project's local work, and a branch
+        // deleted — here or on a remote — is gone for good.
         case .shellRun, .projectBuild, .packageInstall, .packageRemove, .deviceRespring, .screenInteract, .gitPush,
-             .gitSquash,
+             .gitSquash, .gitBranchDelete,
              .gitSetAuthor, .gitSaveCredential, .gitRemoveCredential, .gitCreateRepository, .gitCreateIssue,
              .toolchainSetup, .sdkImport, .toolchainSelfTest, .skillSave, .skillRemove, .feedbackSend, .projectDelete,
              .packagePublish, .feedbackEdit, .gitResetToRemote:
@@ -174,6 +175,7 @@ public extension AgentToolName {
         case .gitBranches: "List local and remote-tracking branches, their commits and upstreams, and tags. Shows the checked-out branch and detached HEAD state; changes nothing."
         case .gitBranchCreate: "Create a local branch at start_point (default HEAD), optionally switching to it. Never replaces an existing branch or discards work. Read git_status and git_branches first. Asks every time in Strict mode."
         case .gitBranchCheckout: "Switch to a local branch. With remote, use that remote-tracking branch to create a local branch only if the local name is absent; an existing local branch keeps its commit and upstream. Does not fetch. Read git_status and git_branches first; a refusal is never a reason to force checkout or discard changes. Asks every time in Strict mode."
+        case .gitBranchDelete: "Delete a local branch, or a branch of that name on a remote (remote: origin, as git push --delete does). The checked-out branch is never deleted, and a local branch whose commits HEAD does not hold is refused unless force is true, which only when the user asked for that branch's deletion and knows those commits go with it. Read git_status and git_branches first, and fetch before deleting on a remote when its tip matters. A deletion cannot be undone: never on your own initiative, and never to tidy up. Asks the user on a card, in every mode, naming the branch and where it goes."
         case .gitBranchRename: "Rename a local branch without overwriting an existing name. Changes no remote branch and pushes nothing. Only when the user asks for the rename. Asks every time in Strict mode."
         case .gitMerge: "Merge a branch, tag or commit into the checked-out branch: fast-forward when possible, otherwise a merge commit; no_fast_forward requests a merge commit even when a fast-forward is possible. Only for a merge the user requested or agreed to. Review git_status, git_branches and the relevant history first. Conflicts are returned as paths, not success: read and resolve each, git_stage the resolved paths, then git_commit to finish. Never blindly pick one side, reset or force past a refusal. Nothing is pushed. Asks every time in Strict mode."
         case .gitMergeAbort: "Abort an in-progress merge and restore the tracked files to HEAD. This discards all uncommitted tracked-file edits, including conflict resolutions and unrelated tracked edits: only when the user explicitly asks to abandon this merge, never to get past a conflict or a refusal. It refuses when no merge is in progress. Asks every time in Strict mode."
@@ -331,6 +333,12 @@ public extension AgentToolName {
             Schema.object([
                 "name": Schema.string("Local branch name, or the remote branch's short name when remote is supplied."),
                 "remote": Schema.string("Remote name when creating a local tracking branch; omit for a local branch."),
+            ], required: ["name"])
+        case .gitBranchDelete:
+            Schema.object([
+                "name": Schema.string("The branch to delete."),
+                "remote": Schema.string("The remote whose branch of that name is deleted, e.g. origin; omit to delete the local branch."),
+                "force": Schema.boolean("Delete a local branch even though HEAD does not hold its commits. Only when the user asked for that branch's deletion knowing what only it holds; default false refuses it."),
             ], required: ["name"])
         case .gitBranchRename:
             Schema.object([

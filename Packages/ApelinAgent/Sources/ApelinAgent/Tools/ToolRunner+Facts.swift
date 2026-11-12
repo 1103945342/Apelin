@@ -86,6 +86,16 @@ extension ToolRunner {
         case .gitBranchRename:
             try GitBranchTools.checkName(arguments.requireString("from"))
             try GitBranchTools.checkName(arguments.requireString("to"))
+        case .gitBranchDelete:
+            let name = try arguments.requireString("name")
+            try GitBranchTools.checkName(name)
+            let remote = arguments.argNonEmptyString("remote")
+            try GitRemoteTools.checkName(remote)
+            facts.branchDeletion = InvocationFacts.BranchDeletion(
+                name: name,
+                remote: remote,
+                force: arguments.argBool("force") ?? false,
+            )
         case .gitMerge:
             try GitBranchTools.checkRevision(arguments.requireString("branch"))
         case .gitCommitDetail:

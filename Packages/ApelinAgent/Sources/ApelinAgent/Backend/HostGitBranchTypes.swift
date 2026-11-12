@@ -31,6 +31,22 @@ public struct GitBranchCheckoutToolRequest: Sendable, Hashable, Codable {
     }
 }
 
+public struct GitBranchDeleteToolRequest: Sendable, Hashable, Codable {
+    public var context: HostCallContext
+    public var name: String
+    /// The remote whose branch is deleted (`origin`); nil is the local one.
+    public var remote: String?
+    /// A local branch whose commits HEAD does not hold is refused unless
+    /// this is true.
+    public var force: Bool
+    public init(context: HostCallContext, name: String, remote: String? = nil, force: Bool = false) {
+        self.context = context
+        self.name = name
+        self.remote = remote
+        self.force = force
+    }
+}
+
 public struct GitBranchRenameToolRequest: Sendable, Hashable, Codable {
     public var context: HostCallContext
     public var from: String
@@ -90,6 +106,10 @@ public extension AgentHostBackend {
 
     func gitBranchCheckout(_: GitBranchCheckoutToolRequest) async throws -> GitBranchCheckoutResponse {
         throw ToolDeniedError(message: "switching branches is not available here")
+    }
+
+    func gitBranchDelete(_: GitBranchDeleteToolRequest) async throws -> GitBranchDeleteResponse {
+        throw ToolDeniedError(message: "deleting branches is not available here")
     }
 
     func gitBranchRename(_: GitBranchRenameToolRequest) async throws -> GitBranchRenameResponse {

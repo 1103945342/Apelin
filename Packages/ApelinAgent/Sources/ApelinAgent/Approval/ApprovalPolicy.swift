@@ -60,6 +60,20 @@ public struct InvocationFacts: Sendable, Hashable {
         case toolExtension(ExtensionTool)
     }
 
+    /// For git_branch_delete: the branch, the remote it goes from when one
+    /// is named, and whether a local branch's unmerged commits are being
+    /// given up with it.
+    public struct BranchDeletion: Sendable, Hashable {
+        public var name: String
+        public var remote: String?
+        public var force: Bool
+        public init(name: String, remote: String?, force: Bool) {
+            self.name = name
+            self.remote = remote
+            self.force = force
+        }
+    }
+
     public var tool: Tool
     public var pathCheck: PathCheck?
     public var command: RunCodeInvocation?
@@ -72,6 +86,8 @@ public struct InvocationFacts: Sendable, Hashable {
     public var removedPackage: ListedInstallation?
     /// For git_push: where it pushes, and what.
     public var push: GitPushTarget?
+    /// For git_branch_delete: the branch it deletes, and where.
+    public var branchDeletion: BranchDeletion?
     /// For git_push with force_with_lease, when the push would take commits
     /// off the remote's branch: what it overwrites, as the fetch before it
     /// found the remote. Nil for an ordinary push, which loses nothing.
@@ -227,6 +243,12 @@ public struct ApprovalPolicy: Sendable, Hashable {
         if case .local(.gitResetToRemote) = facts.tool {
             return Self.resetVerdict(facts)
         }
+        // A branch deleted — here, or on a remote with the user's
+        // credential — cannot be brought back: Full asks as Strict does, the
+        // card naming the branch and where it goes.
+        if case .local(.gitBranchDelete) = facts.tool {
+            return Self.branchDeletionVerdict(facts.branchDeletion)
+        }
         if mode != .confirm {
             return .allow(.relaxed)
         }
@@ -292,6 +314,23 @@ public struct ApprovalPolicy: Sendable, Hashable {
             return .ask(reason: "What this reset would discard could not be read.", detail: .none)
         }
         return .ask(reason: reset.reason, detail: .resetToRemote(reset))
+    }
+
+    /// A branch deleted — here, or on a remote with the user's credential —
+    /// cannot be brought back: it asks in every mode, whatever the presets
+    /// say, the card naming the branch and where it goes.
+    static func branchDeletionVerdict(_ deletion: InvocationFacts.BranchDeletion?) -> GateVerdict {
+        guard let deletion else {
+            return .ask(reason: "What this deletion would remove could not be read.", detail: .none)
+        }
+        let place = deletion.remote.map { " on \($0)" } ?? ""
+        let unmerged = deletion.remote == nil && deletion.force
+            ? " HEAD does not hold its commits: they go with it."
+            : ""
+        return .ask(
+            reason: "Deletes the branch \(deletion.name)\(place).\(unmerged) A deleted branch cannot be brought back by anything in this conversation.",
+            detail: .none,
+        )
     }
 
     static let screenNote = "Ask Before Using the Screen is on, so each use of the screen needs your approval, in every mode."
@@ -472,6 +511,12 @@ public struct ApprovalPolicy: Sendable, Hashable {
                 reason: "This changes the project's branches or merge state. Review the named operation before running; each call needs your approval.",
                 detail: .none,
             )
+
+        // A branch deleted — here, or on a remote with the user's
+        // credential — is gone for good, and a local one may take commits
+        // with it: every deletion asks, naming the branch and where it goes.
+        case .gitBranchDelete:
+            return Self.branchDeletionVerdict(facts.branchDeletion)
 
         // Another conversation of the project, opened, sent to or stopped:
         // its agent runs under this session's mode, so whatever it does

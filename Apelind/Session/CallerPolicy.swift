@@ -64,8 +64,10 @@ enum CallerPolicy {
         // removed; a push that later uses one still asks, naming its URL.
         .gitRemoteList, .gitRemoteSet, .gitRemoteRemove,
         // Branch/history tools remain scoped to this session's project.
-        // Branch mutations also spend a per-call approval in Strict mode.
-        .gitBranches, .gitBranchCreate, .gitBranchCheckout, .gitBranchRename,
+        // Branch mutations also spend a per-call approval in Strict mode;
+        // a deletion, here or on a remote, asks in every mode
+        // (AgentGitBranchRules covers it too).
+        .gitBranches, .gitBranchCreate, .gitBranchCheckout, .gitBranchDelete, .gitBranchRename,
         .gitMerge, .gitMergeAbort, .gitLog, .gitCommitDetail,
         // Its own project made exactly a remote's branch, in every mode only
         // as the user approved exactly that reset (AgentResetToRemoteRules);

@@ -18,16 +18,16 @@ enum GitHandler: DomainHandler {
              .gitBranches, .gitLog, .gitCommitDetail,
              .gitSettings, .gitAuthorSet, .gitCredentialSet, .gitCredentialRemove:
             return await host.forward(request, to: .environment)
-        case .gitBranchCreate, .gitBranchCheckout, .gitBranchRename, .gitMerge, .gitMergeAbort:
+        case .gitBranchCreate, .gitBranchCheckout, .gitBranchDelete, .gitBranchRename, .gitMerge, .gitMergeAbort:
             if case let .worker(.agent, instance) = request.caller,
                let refusal = await AgentGitBranchRules.authorize(request.request, session: instance, registry: host.registry)
             {
                 return request.fail(refusal)
             }
             return await host.forward(request, to: .environment)
-        // Destructive work-tree, tag, deletion and stash operations remain
-        // app-only: CallerPolicy does not expose them to the agent.
-        case .gitBranchDelete, .gitTagCreate, .gitTagDelete,
+        // Destructive work-tree, tag and stash operations remain app-only:
+        // CallerPolicy does not expose them to the agent.
+        case .gitTagCreate, .gitTagDelete,
              .gitCommitFileDiff, .gitFileVersions,
              .gitRestore, .gitDeletePaths, .gitIgnoreAppend, .gitReset,
              .gitStashList, .gitStashSave, .gitStashApply, .gitStashDrop, .gitStashClear:

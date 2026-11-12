@@ -897,6 +897,7 @@ struct ChatTranscript {
         case .gitBranches: return String(localized: "Branches")
         case .gitBranchCreate: return String(localized: "Create branch")
         case .gitBranchCheckout: return String(localized: "Switch Branch")
+        case .gitBranchDelete: return String(localized: "Delete Branch")
         case .gitBranchRename: return String(localized: "Rename Branch")
         case .gitMerge: return String(localized: "Merge Branch")
         case .gitMergeAbort: return String(localized: "Abort Merge")

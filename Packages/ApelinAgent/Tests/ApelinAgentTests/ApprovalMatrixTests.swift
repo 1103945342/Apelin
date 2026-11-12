@@ -45,7 +45,7 @@ struct ApprovalMatrixTests {
     @Test
     func `Relaxed lets every local tool through but a reset to a remote`() {
         defer { home.remove() }
-        for tool in AgentToolName.allCases where tool != .gitResetToRemote {
+        for tool in AgentToolName.allCases where tool != .gitResetToRemote && tool != .gitBranchDelete {
             let facts = InvocationFacts(
                 tool: .local(tool),
                 command: tool == .shellRun ? .shell("rm -rf build; make") : nil,
@@ -54,9 +54,11 @@ struct ApprovalMatrixTests {
             #expect(verdict(.relaxed, facts) == .allow(.relaxed), "\(tool.rawValue)")
         }
         #expect(verdict(.relaxed, InvocationFacts(tool: .mcp("mcp__docs__search"))) == .allow(.relaxed))
-        // It discards local work: every mode asks, Full too.
+        // It discards local work: every mode asks, Full too. A branch deleted
+        // is gone for good, so a deletion asks the same way.
         for mode in [ApprovalMode.relaxed, .full, .confirm] {
             #expect(isAsk(verdict(mode, InvocationFacts(tool: .local(.gitResetToRemote)))), "\(mode)")
+            #expect(isAsk(verdict(mode, InvocationFacts(tool: .local(.gitBranchDelete)))), "\(mode)")
         }
     }
 

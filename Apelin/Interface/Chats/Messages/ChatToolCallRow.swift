@@ -327,9 +327,13 @@ final class ChatToolCallRow: UIView {
 /// a run reads as what it did rather than as a list of names, as aimini's
 /// call rows do.
 enum ToolSymbol {
+    /// The SF Symbol a call is drawn with: a branch for the operations that
+    /// move refs, and the bin for the one that deletes one.
     static func name(for tool: String?) -> String {
         guard let tool, let name = AgentToolName.canonical(tool) else { return fallback }
         return switch name {
+        case .gitBranchDelete:
+            "trash"
         case .fileRead, .fileList, .fileGrep, .fileFind, .fileShow:
             "doc.text.magnifyingglass"
         case .fileWrite, .fileEdit, .fileCreate:

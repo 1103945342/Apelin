@@ -334,8 +334,10 @@ public extension GitRepository {
     }
 
     /// Deletes a local branch. The checked-out one is refused: HEAD would
-    /// name nothing.
-    func deleteBranch(_ name: String) throws {
+    /// name nothing. Unless `force`, a branch whose tip is not in HEAD's
+    /// history is refused too, as `git branch --delete` refuses one that is
+    /// not merged: nothing would name the commits only it holds.
+    func deleteBranch(_ name: String, force: Bool = true) throws {
         try Self.checkBranchName(name)
         var reference: OpaquePointer?
         try GitError.check(git_branch_lookup(&reference, pointer, name, GIT_BRANCH_LOCAL), "read \(name)")
@@ -343,6 +345,18 @@ public extension GitRepository {
         defer { git_reference_free(reference) }
         guard git_branch_is_head(reference) == 0 else {
             throw GitError(.conflict, "\(name) is the checked-out branch: switch to another branch first")
+        }
+        if !force, let tip = git_reference_target(reference), let head = head().commit {
+            var headID = git_oid()
+            var tipID = git_oid()
+            try GitError.check(git_oid_fromstr(&headID, head), "read HEAD")
+            try GitError.check(git_oid_fromstr(&tipID, Self.hex(tip)), "read \(name)")
+            guard git_graph_descendant_of(pointer, &headID, &tipID) == 1 else {
+                throw GitError(
+                    .conflict,
+                    "\(name) holds commits HEAD does not: only force deletes it, and they go with it",
+                )
+            }
         }
         try GitError.check(git_branch_delete(reference), "delete \(name)")
     }

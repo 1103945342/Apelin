@@ -60,6 +60,13 @@ extension BuiltInSkills {
           `git_branch_rename` renames a local branch only when asked; none of
           these pushes or deletes a remote branch. Never force a checkout or
           discard local changes to get past a refusal.
+        - `git_branch_delete` deletes a local branch, or a branch of that name
+          on `remote` (`origin`), as `git push --delete` does — only when the
+          user asked for that branch's deletion. The checked-out branch is
+          never deleted. A local branch whose commits HEAD does not hold is
+          refused unless `force: true`, which only when the user knows those
+          commits go with it. Its card names the branch and where it goes, in
+          every mode.
         - A merge the user requested or agreed to uses `git_merge`, into the
           checked-out branch. It fast-forwards when possible, otherwise makes
           a merge commit; `no_fast_forward: true` requests one even when a

@@ -152,10 +152,16 @@ public struct GitBranchDeleteRequest: OperationRequest {
     public var name: String
     /// Deletes the branch on the remote (`origin/main` → `origin` + `main`).
     public var remote: String?
-    public init(projectID: String, name: String, remote: String? = nil) {
+    /// A local branch whose commits HEAD does not hold is refused unless
+    /// this is true, as `git branch --delete` refuses one that is not
+    /// merged. Nil keeps the app's own deletion, which confirms in its own
+    /// dialog: it deletes as it always did.
+    public var force: Bool?
+    public init(projectID: String, name: String, remote: String? = nil, force: Bool? = nil) {
         self.projectID = projectID
         self.name = name
         self.remote = remote
+        self.force = force
     }
 }
 

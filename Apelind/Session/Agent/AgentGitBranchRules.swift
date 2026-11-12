@@ -30,6 +30,12 @@ enum AgentGitBranchRules {
                 return tool(.gitBranchCheckout, value.projectID)
                     && arguments["name"]?.stringValue == value.name
                     && optional("remote") == value.remote
+            case .gitBranchDelete:
+                let value = try request.decode(GitBranchDeleteRequest.self)
+                return tool(.gitBranchDelete, value.projectID)
+                    && arguments["name"]?.stringValue == value.name
+                    && optional("remote") == value.remote
+                    && (arguments["force"]?.boolValue ?? false) == (value.force ?? false)
             case .gitBranchRename:
                 let value = try request.decode(GitBranchRenameRequest.self)
                 return tool(.gitBranchRename, value.projectID)

@@ -25,6 +25,15 @@ public extension ChannelHostBackend {
         }
     }
 
+    func gitBranchDelete(_ request: GitBranchDeleteToolRequest) async throws -> GitBranchDeleteResponse {
+        try await git("git branch delete") {
+            try await service.gitBranchDelete(GitBranchDeleteRequest(
+                projectID: project.id, name: request.name, remote: request.remote, force: request.force,
+            ))
+            return GitBranchDeleteResponse()
+        }
+    }
+
     func gitBranchRename(_ request: GitBranchRenameToolRequest) async throws -> GitBranchRenameResponse {
         try await git("git branch rename") {
             try await service.gitBranchRename(GitBranchRenameRequest(projectID: project.id, from: request.from, to: request.to))

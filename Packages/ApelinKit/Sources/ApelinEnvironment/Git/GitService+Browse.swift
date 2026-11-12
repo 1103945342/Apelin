@@ -58,7 +58,7 @@ public extension GitService {
                 try repository.deleteRemoteBranch(request.name, remote: remote, credentials: credentialLookup)
             }
         } else {
-            try mapped { try repository.deleteBranch(request.name) }
+            try mapped { try repository.deleteBranch(request.name, force: request.force ?? true) }
         }
         return GitBranchDeleteResponse()
     }

@@ -70,6 +70,7 @@ public enum AgentToolName: String, Sendable, Hashable, Codable, CaseIterable {
     case gitBranches = "git_branches"
     case gitBranchCreate = "git_branch_create"
     case gitBranchCheckout = "git_branch_checkout"
+    case gitBranchDelete = "git_branch_delete"
     case gitBranchRename = "git_branch_rename"
     case gitMerge = "git_merge"
     case gitMergeAbort = "git_merge_abort"
