@@ -4,6 +4,36 @@ import Foundation
 import KWWKAI
 import os
 
+/// The reasoning levels each WorkBuddy model was last seen offering, per
+/// store id, for ten minutes.
+///
+/// `fetch` reads the account's config, which names the models and their
+/// levels together, while the account list needs the same levels without a
+/// request of its own: what a fetch kept answers the list, and a model no
+/// fetch has covered yet falls back to the bundled rows. Ten minutes is
+/// what kwwk keeps a gate's own listing for: the config does not change
+/// often, and an account list is drawn every time Settings opens.
+final class WorkBuddyEffortCache: @unchecked Sendable {
+    static let shared = WorkBuddyEffortCache()
+
+    private let lock = NSLock()
+    private var entries: [String: (efforts: [String: [AgentReasoningEffort]], at: Date)] = [:]
+    private let lifetime: TimeInterval = 10 * 60
+
+    /// Objective-C cannot carry these dictionaries, so the accessors stay
+    /// plain (AGENTS.md ▸ Hard rules).
+    func efforts(for storeID: String) -> [String: [AgentReasoningEffort]]? {
+        lock.withLock {
+            guard let entry = entries[storeID], Date().timeIntervalSince(entry.at) < lifetime else { return nil }
+            return entry.efforts
+        }
+    }
+
+    func store(_ efforts: [String: [AgentReasoningEffort]], for storeID: String) {
+        lock.withLock { entries[storeID] = (efforts, Date()) }
+    }
+}
+
 /// The endpoint's model family is distinct from its wire format. DeepSeek's
 /// Anthropic endpoint accepts Claude aliases but still runs DeepSeek models.
 enum ProviderModels {
@@ -36,9 +66,14 @@ enum ProviderModels {
         return models
     }
 
-    /// The levels each model offers: the kwwk catalog's own where it lists the
-    /// model under this account's key, and otherwise what the model's name
-    /// finds in the catalogs Apelin reads — a relay's `cn:deepseek-v4.1-flash`
+    /// The reasoning levels each model takes, keyed by its id.
+    ///
+    /// WorkBuddy's own config is the authority: `fetch` reads it and keeps
+    /// what each model offers, and a model it named answers from there. A
+    /// model the config has not been read for — the account list is drawn
+    /// before any fetch, and again after a restart — falls back to the kwwk
+    /// catalog under this account's key, and then to what the model's name
+    /// finds in the catalogs Apelin reads: a relay's `cn:deepseek-v4.1-flash`
     /// reasons, and at the levels DeepSeek's entry gives it.
     static func reasoningEfforts(
         _ provider: AgentProvider,
@@ -60,7 +95,9 @@ enum ProviderModels {
                 efforts[id] = levels
             }
         }
-        return efforts
+        // A model the live config named keeps its own levels; one it did not
+        // is what the catalogs above say.
+        return efforts.merging(WorkBuddyEffortCache.shared.efforts(for: provider.storeID) ?? [:]) { _, live in live }
     }
 
     /// What the catalogs say about each of the account's models, for the
@@ -100,6 +137,43 @@ enum ProviderModels {
     }
 
     static func fetch(_ provider: AgentProvider, credentials: OAuthCredentials) async throws -> [String] {
+        // Trae's roster and Raccoon's catalogue are the account's own, read
+        // from its gate; kwwk's bundled rows are a seed for when the gate
+        // does not answer. The token goes as it is stored; a session renews
+        // its own.
+        if let site = TraeSite.site(id: provider.storeID) {
+            let live = try? await TraeModels.fetch(site: site, credentials: credentials)
+            return live?.map(\.id) ?? list(provider, credentials: credentials)
+        }
+        if provider == .raccoon {
+            let live = try? await RaccoonModels.fetch(credentials: credentials)
+            return live?.map(\.id) ?? list(provider, credentials: credentials)
+        }
+        // WorkBuddy's plans answer their own model list, which is the one its
+        // picker shows: the bundled rows are magpie's written-in picks and
+        // miss the models the account's config adds. Both builds sign in in
+        // the browser, so this sits before the key check below. A config
+        // that cannot be read leaves the bundled rows in place rather than
+        // emptying the picker.
+        if let site = WorkBuddySite.site(id: provider.storeID) {
+            if let live = try? await WorkBuddyModels.fetch(site: site, credentials: credentials),
+               !live.isEmpty
+            {
+                // The levels are the same answer as the list: keeping them
+                // here saves `reasoningEfforts` a request of its own, and
+                // keeps the two from disagreeing.
+                // Keyed by id: a config that names one twice keeps the
+                // first, where `uniqueKeysWithValues` would trap.
+                var levels: [String: [AgentReasoningEffort]] = [:]
+                for listing in live where levels[listing.model.id] == nil {
+                    levels[listing.model.id] = supportedThinkingLevels(listing.model)
+                        .compactMap { AgentReasoningEffort(rawValue: $0.rawValue) }
+                }
+                WorkBuddyEffortCache.shared.store(levels, for: provider.storeID)
+                return live.map(\.model.id)
+            }
+            return list(provider, credentials: credentials)
+        }
         guard usesAPIKey(provider, credentials: credentials),
               let request = modelRequest(provider, credentials: credentials)
         else { return list(provider, credentials: credentials) }

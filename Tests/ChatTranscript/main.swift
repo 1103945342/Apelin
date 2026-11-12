@@ -1129,6 +1129,7 @@ checkForcePushCard()
 checkSquashCard()
 
 checkQuestionCard()
+checkSignInElsewhere()
 
 checkChatForkHistory()
 checkConversationSource()

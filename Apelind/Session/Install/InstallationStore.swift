@@ -38,6 +38,14 @@ struct InstallationRecord: Codable, Equatable, Sendable {
         var failure: String?
         var failureText: String?
         var finishedAt: Date
+        /// True when irisind did not call it a success and the package
+        /// database showed the package installed all the same (#45).
+        var confirmed: Bool?
+
+        /// The install went through: irisind said so, or the database did.
+        var isInstalled: Bool {
+            state == "succeeded" || confirmed == true
+        }
     }
 
     /// An app this bridge put on the device from an `.ipa`: the bundle a

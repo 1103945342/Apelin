@@ -59,7 +59,7 @@ other hidden configuration.
 | `products` | 1–8 of `{id, type, name, sources, headerSearchPaths?, resources?, infoPlist?, entitlements?, installName?, objcARC?, frameworks?, weakFrameworks?, libraries?, frameworkSearchPaths?, librarySearchPaths?, extensionSupport?, swiftModules?}`. `type` is `app`, `appex`, `bundle`, `dylib` or `executable`. `app`, `appex` and `bundle` require `infoPlist`; only they may have `resources`; only `dylib` may set `installName` (default `@rpath/<name>.dylib`). `extensionSupport` names `{extension, component}` from an installed extension's manifest; the build adds that component's include directories, link-stub directories for the bootstrap being built and rpaths. `swiftModules` names the project's modules this product compiles against and links (below). Ids and names are unique (beyond the schema). |
 | `swiftModules` | 1–32 when present, of `{name, sources, dependencies?}`, each a Swift module built out of the project's own files — one target of a vendored package, say. `name` is the name its Swift sources import; `sources` are its `.swift` files; `dependencies` names the modules it imports, which are built before it. Each module becomes one `.swiftmodule` and one object, per architecture, which a product that names it (or names a module that imports it) compiles against with `-I` and links. **Nothing is resolved, fetched or downloaded**: SwiftPM never runs, a vendored package is a folder of the project like any other, and its own `Package.swift` is never read, so its resources and `Bundle.module` are not supported in v1. Only a Swift project compiles Swift modules; names are unique and never a product's name, a module never depends on itself, every dependency is declared, and the modules may not depend on each other in a cycle (all beyond the schema). |
 | `build.steps` | The typed steps, below. |
-| `package` | `{id, name, version, description, longDescription?, icon?, author, maintainer?, section, format?, depends?, dependsByBootstrap?, recommends?, suggests?, conflicts?, breaks?, replaces?, provides?, layout, maintainerScripts?, tweakFilter?}`. |
+| `package` | `{id, name, version, description, longDescription?, icon?, depiction?, sileoDepiction?, author, maintainer?, section, format?, depends?, dependsByBootstrap?, recommends?, suggests?, conflicts?, breaks?, replaces?, provides?, layout, maintainerScripts?, tweakFilter?}`. |
 
 ### Build steps
 
@@ -117,6 +117,15 @@ Swift gets the bootstrap and configuration names as `-D` conditions.
   extension's icon on Apelin's Pages,
   `https://owngoal-dev.github.io/Apelin/icons/<extension id>.png`; a project
   may keep it, name its own or drop it.
+- `depiction` and `sileoDepiction` are written as the control's `Depiction`
+  and `SileoDepiction`, after `Icon`, and nothing is written for one that is
+  absent. `Depiction` is the web page a package manager opens for the
+  package. `SileoDepiction` is the native depiction, a JSON document Sileo
+  and Irisin draw themselves: its tabs are where a changelog comes from,
+  which `Description` never fills. Each is an `https://` URL of the icon's
+  form. Apelin only passes the addresses on: the author hosts the page and
+  the JSON, for one in their package repository under
+  `depictions/<package id>/`. No template writes either.
 - `maintainerScripts` are project files; the packager substitutes `@PREFIX@`
   and `@ROOTFS@` and nothing else, requires `sh -n` to pass, and the install
   card shows them in full.
@@ -327,7 +336,7 @@ folder. No template script runs at creation.
 ## Fixtures
 
 ```
-Fixtures/project/valid/              one project per kind, plus cli-with-script
+Fixtures/project/valid/              one project per kind, plus cli-with-script and tweak-with-depictions
 Fixtures/project/invalid/            each with the error it must produce, in expectations.json
 Fixtures/extension/valid|invalid/    the same for manifests
 Fixtures/canonical-json.json         RFC 8785 vectors
@@ -342,7 +351,8 @@ table (source edited, new source under a glob, version bumped, members
 reordered, written on one line, formatted from one line, toolchain
 rebound, flag added, build script edited, entitlements
 edited, deployment target raised, postinst edited, installed data file
-edited, dependency added, icon set, install path changed), and requires each to move
+edited, dependency added, icon set, depiction set, native depiction set,
+install path changed), and requires each to move
 exactly the digests this file says it moves. `--update` rewrites
 `expected.json`; a changed digest changes every project's baseline, so read
 that diff before committing it.

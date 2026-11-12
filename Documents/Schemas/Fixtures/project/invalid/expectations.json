@@ -37,5 +37,10 @@
   "swift-module-name-unspellable.json": "does not match",
   "swift-module-c-source.json": "is not a .swift source",
   "swift-module-unknown-member.json": "unknown member",
-  "swift-module-repeated-dependency.json": "duplicate item"
+  "swift-module-repeated-dependency.json": "duplicate item",
+  "package-depiction-http.json": "/package/depiction: \"http://example.github.io/repo/depictions/com.example.apelintweak/\" does not match",
+  "package-depiction-not-a-string.json": "/package/depiction: expected string",
+  "package-sileo-depiction-space.json": "/package/sileoDepiction: \"https://example.github.io/repo/depictions/my tweak/depiction.json\" does not match",
+  "package-sileo-depiction-newline.json": "/package/sileoDepiction: \"https://example.github.io/repo/depictions/com.example.apelintweak/depiction.json\\n\" does not match",
+  "package-sileo-depiction-too-long.json": "/package/sileoDepiction: longer than 2048"
 }

@@ -1395,7 +1395,9 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   (`NativeCompactionFallback.configuration`). An attempt the network failed
   before kwwk had any of the reply is handed to kwwk only once
   `NWPathMonitor` has a route again, or after 30 s, so kwwk's own retries
-  (five attempts, about fifteen seconds of backoff) go out when they can get
+  (from kwwk 0.1.118 eight attempts over 68 to 91 seconds of backoff, and
+  300 s without a byte before a request times out; five attempts in about
+  fifteen seconds and 60 s before) go out when they can get
   through and kwwk still counts them; a failed TLS handshake
   (`NSURLErrorSecureConnectionFailed`), which kwwk never retries, is asked
   again here at most twice, 1 s apart. A failure after text, thinking or a
@@ -2470,8 +2472,9 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   GitHub Copilot, Kimi For Coding (kimi.com and, from kwwk 0.1.108, Kimi
   For Coding Global on kimi.ai, each with its own device id) and Grok;
   Safari with kwwk's loopback
-  listener for Claude Pro or Max, ChatGPT Codex, Devin, OpenRouter and,
-  from kwwk 0.1.110, Antigravity; a
+  listener for Claude Pro or Max, ChatGPT Codex, Devin, OpenRouter,
+  from kwwk 0.1.110, Antigravity and, from kwwk 0.1.118, Trae CN, Trae
+  and Raccoon; a
   page kwwk polls for Cursor, Qoder, Qoder CN, WorkBuddy, WorkBuddy AI, Z.ai
   and BigModel; Kiro's own listener — and every API-key entry of KWWKCli's
   `loginProviders` (Anthropic, OpenAI, Google AI Studio, OpenRouter,
@@ -2509,6 +2512,31 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   a 429 that says it is back within a minute and fails one that says the
   quota is spent (its `ProviderFailures.md`); its quota reader
   (`OAuthUsage`) is shown nowhere, as for every subscription.
+  Trae and Raccoon (owner, 2026-11-11; JanXiao's providers of PR #40,
+  moved into kwwk as OpenCode Go was: kwwk 0.1.118, `TraeOAuth`,
+  `TraeProvider`, `RaccoonOAuth`, `RaccoonProvider`) are signed in to as
+  their desktop clients sign in. Trae is ByteDance's IDE in two builds
+  whose accounts do not cross over: the China one, `trae`, which its users
+  call Trae CN, and the international one, `trae-intl`, Trae. Its page
+  calls back to any loopback port with `authCodeInfo` where an OAuth
+  redirect has `code`, kwwk exchanges that at the build's account gate
+  (the international build asks where its page is first and tries each of
+  its gates) and keeps the gate, the account and the machine and device
+  ids the sign-in made as extras; chats go through the client's own gate,
+  which a model is asked through by the directory function that lists it.
+  Raccoon is SenseTime's office assistant (xiaohuanxiong.com): its portal
+  page is told to deliver its code to a loopback, and the office identity
+  the sign-in answers rides on every request. Both renew through kwwk
+  (`upkeep: .refreshed`). Apelin adds the cases, after WorkBuddy in the
+  order, and their marks (Trae's one for both builds). Fetch Models reads
+  the account's own roster from its gate (`TraeModels.fetch`,
+  `RaccoonModels.fetch`) with the token as it is stored, and kwwk's
+  bundled rows stand in when the gate does not answer; no reasoning level
+  is offered for either, since no request made of their gates has carried
+  one. WorkBuddy's list is read the same way (`WorkBuddyModels.fetch`, its
+  `/v3/config`), and the levels it names for each model are kept for ten
+  minutes (`WorkBuddyEffortCache`) for the account list, which makes no
+  request of its own.
   Display order is Apelin's `AgentProvider.signInOrder`, independent of
   kwwk's registration order;
   `AccountDeskTests` fails when kwwk gains a subscription or a stored
@@ -2563,20 +2591,40 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   thing the flow shows. A loopback redirect is the URI kwwk registered for
   that provider (Claude's `http://localhost:53692/callback`, Codex's port
   1455, Devin's `127.0.0.1:59653`, OpenRouter's port 53693, Antigravity's
-  `http://localhost:51121/oauth-callback`): kwwk's NIO listener in
+  `http://localhost:51121/oauth-callback`), or, for Trae and Raccoon, whose
+  pages take any, whichever port is free (`127.0.0.1:<port>/authorize` and
+  `/auth/callback`): kwwk's NIO listener in
   the worker, through kwwk's `loopback` seam (`PasteableLoopback`), answers
-  Safari on the same device, and is raced against the redirect address
-  pasted from Safari's address bar for a device where it cannot. No
-  ASWebAuthenticationSession: the redirect is a plain loopback URI, not a
-  scheme the app could claim, and Safari keeps the provider's own sign-in
-  cookies. Proven on the Mac by `AccountDeskTests` (fake flows and
+  a browser on the same device, and is raced against the redirect address
+  handed back as `callbackURL` for a browser that cannot reach it. The
+  page (`ProviderLoginController`) opens the provider's page by itself in
+  `SignInBrowser`, the system's sign-in browser, which shares Safari's
+  cookies; the redirect is a plain loopback URI, not a scheme the app
+  could claim, so that session waits on a scheme nothing redirects to and
+  is closed when the task ends. A page the device cannot show is signed in
+  to on another device (owner, 2026-11-11, #49: claude.ai refuses iOS 16's
+  WebKit, "your browser or device software is out of date", and the
+  sign-in could not be done at all): under a device code and on a browser
+  step the page's link sits on a plate that copies it (`LoginLinkView`:
+  its host shown, the whole address copied), with one line saying how a
+  browser there finishes the sign-in (`SignInProgress.Step.elsewhere`,
+  tested in `Tests/ChatTranscript`). A device code is entered there; a
+  page whose link carries the code, or which kwwk polls, is only signed in
+  to; a loopback flow's page ends that browser on a redirect it cannot
+  open, whose address Paste Redirect Address reads from the clipboard and
+  sends as `callbackURL` — a refusal is a notice, in the app's words for
+  `badRequest`, and the sign-in goes on waiting. A page that returns to a
+  listener on this device and takes no pasted address (Kiro: a loopback
+  address among its query's values) gets the plate and no line, since no
+  other device can finish it. Proven on the Mac by `AccountDeskTests` (fake flows and
   listener, an in-memory store, no secret in any event: a device code that
   is typed and one that is only checked, Kimi's device id, a loopback with
   a paste, Antigravity's own kwwk login up to its Google page, a polled
   page, every key form, OpenRouter both ways, kwwk's lists covered); on a
   device by `Documents/Console/scripts/accounts.json` (start, read, refuse
-  and cancel a device code, two loopbacks, OpenRouter's and Antigravity's,
-  a polled page and two key forms; signs nothing in) and, by name,
+  and cancel a device code, four loopbacks, OpenRouter's, Antigravity's,
+  Trae CN's and Raccoon's, a polled page and two key forms; signs nothing
+  in) and, by name,
   `a2-api-key-sign-in.json` (a placeholder key in and out again, which
   replaces the device's openai-compatible sign-in); the real sign-ins by
   hand.
@@ -2970,7 +3018,12 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   horizontal preview layout, removal and Quick Look; camera, Photos and
   Files use system pickers, and web text uses FlowDown's ScrubberKit at its
   pinned revision. Live assistant text uses `MarkdownStreamView` with a stable message identity and immediate first fill, so only streaming additions fade in. Each turn is followed while a reader can keep up (`TurnFollowing`): from its user message (a local row just sent, a message a run took, or one another conversation sent) the list follows new output to the end of the turn while the reply streams at no more than 50 tokens a second. The pace is the reply's estimated tokens (`TokenEstimate`: about four ASCII characters to a token, a token to each other character, so Chinese and English both count sensibly) over the time since its first text, judged once a second of it has passed; the first update marks the start and does not count, so neither the first coalesced chunk nor a backlog reads as speed. Faster than that, the turn is followed only until its message reaches the top of the visible area, under the bar's blur, at most a page; the list then holds still while the reply grows below and the downward chevron above the composer shows (Liquid Glass on iOS 26, the system material's blur before it). The chevron scrolls to the latest content once and does not follow again; a drag ends following for the turn, and reaching the bottom does not bring it back: only the next turn does. A message a running turn will take later is shown once on Send and starts no turn until it is taken. The chat header uses a 1 pt private `variableBlur` CAFilter with an alpha-gradient mask on an owned `CABackdropLayer`, following VariableBlur; the old transcript opacity mask and the system top scroll-edge effect are removed. Drafts persist their attachment bytes; submitted and received files are stored in the chat workspace. User attachments sit above the bubble with the same trailing edge. Image previews, PDF first pages and supported Quick Look thumbnails use the same album layout as assistant images; text and other files use document cards with a filename and up to three lines of text, preserving single line breaks and collapsing consecutive blank lines in at most eight passes over the 220-character preview. Each card is capped at the smallest of its natural content width, its user bubble’s width and 350 pt; size labels are omitted. All user attachment previews stay within the maximum user-bubble width. Each image album and document card is at most 30% of the window height; album fitting preserves tile proportions. An album is also no larger than its images (owner, 2026-10-30, issue #20; `MessageImageLayout.frames(aspectRatios:naturalSizes:…)`): shrunk until the image it enlarges least is drawn at its own size, one of its pixels (the original's, read by ImageIO, not the thumbnail's) to each of the screen's (`displayScale`), but no tile under 32 pt on its shorter side, and never larger than those limits, so an icon stays small and sharp while a photo or a screenshot fills the limits as before; an image of unknown size (a PDF page, a Quick Look thumbnail) keeps its album as large as the limits, and a small album's corners round as an icon's. Card borders use the user bubble’s background tint. Attachment changes cross-fade, while ordinary reconfiguration does not. Presentation thumbnails are bounded and cached separately from the original attachment, which remains unchanged for sending, persistence and Quick Look. Ordinary blocks share a 16 pt gap. Unordered, ordered and task-list items use MarkdownView’s independent list spacing with no extra item gap, retaining the renderer’s 4 pt wrapped-line spacing; the transcript normalizer preserves this instead of replacing it with 16 pt. An empty body adds neither height nor spacing. Imports are bound to a chat and draft ID, so a late result cannot
-  land in a newly cleared draft. The model control is below the input, with
+  land in a newly cleared draft. The model control is above the input
+  (JanXiao, PR #40, 2026-11-11; it was below it through 0.4.3), so the
+  model a chat runs with is the first thing read: the model row, then the
+  import panel it gives way to, then the attachments and the text band on
+  their one ground, where the composer ends; an approval card covers the
+  text band's place. The row keeps
   the exact FlowDown BlockButton geometry and original editor SVGs, with
   reasoning choices from kwwk's supported-thinking-level metadata; High is
   selected by default when supported. The UI offers only supported Low,
@@ -3264,7 +3317,13 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
 - **The deb** is written by `DebPackageWriter`, never dpkg-deb: the logical
   layout through `PackageLayout`, `Depends` from `firmware (>= deployment
   target)`, `depends` and `dependsByBootstrap`, `Icon` after `Name` from
-  `package.icon` (an https URL, none without it), maintainer scripts with
+  `package.icon` (an https URL, none without it), then `Depiction` and
+  `SileoDepiction` from `package.depiction` and `package.sileoDepiction`
+  (owner, 2026-11-11, issue #44: https URLs of the icon's form, each
+  written only when the project has it, no template's; the first is the
+  web page, the second the native depiction JSON Sileo and Irisin draw,
+  where a changelog tab comes from. Apelin passes the addresses on and
+  hosts nothing), maintainer scripts with
   `@PREFIX@`/`@ROOTFS@` filled and `sh -n` passing, `control.tar.gz`
   (`controlCompression = .gzip`, which the host reads) and `data.tar.zst`. ApelinDebArchive brings
   `libarchive.xcframework` into apelin-build, reviewed in `Licenses/`.
@@ -4320,7 +4379,15 @@ force_with_lease, owner, 2026-10-31), and github.com through Sign In
 with GitHub. `apelin-package-repository` is the package
 repository (Distribution repository, below): its layout after
 owngoal-packages, the control fields a package needs, how Publish adds a
-release, and keeping old versions in check. `apelin-icli` (owner,
+release, and keeping old versions in check. `apelin-package-depiction`
+(owner, 2026-11-11, issue #44) is a package's page in a package manager:
+the `Depiction` and `SileoDepiction` control fields from
+`package.depiction` and `package.sileoDepiction`, added only with an
+address the user gave, where the files live (the package repository's
+`depictions/<package id>/`), and the native depiction's shape as Irisin's
+renderer reads it, with a page of two tabs, Details and Changelog, as its
+file `depiction.json`; a test holds that file to the views the skill names
+and that the prompt lists the skill without its body. `apelin-icli` (owner,
 2026-10-26) is running icli through shell_run: an argv, its help read
 first, Apelin's own tools where they exist, the commands its device
 acceptance ran as mobile, never its package, respring or uicache
