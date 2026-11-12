@@ -1136,3 +1136,5 @@ checkConversationSource()
 
 try checkSidebarTree()
 checkChatLineage()
+checkProcessPresentation()
+checkActivityLayout()

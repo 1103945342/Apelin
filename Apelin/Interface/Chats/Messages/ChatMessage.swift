@@ -112,6 +112,8 @@ struct ChatMessage: Identifiable, Hashable {
     /// line and the call it is on, and none of the steps under them — they are
     /// what opening the turn's header is for.
     var foldsProcessSteps = false
+    /// Adjacent process segments share one boundary inset, not two.
+    var activityJoinsPrevious = false
     /// On a running turn's header: the title of the summary it draws for the
     /// whole process, which is that summary's `activityTitle` while the turn
     /// is folded — the header says "Running: Thinking…" on one line, and the

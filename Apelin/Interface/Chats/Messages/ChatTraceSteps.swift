@@ -125,6 +125,7 @@ final class ChatTraceSteps: UIView {
     /// every layout pass, and a stack holding an opened call is not cheap to
     /// lay out.
     func fittingHeight(width: CGFloat) -> CGFloat {
+        guard !order.isEmpty else { return 0 }
         let size = traitCollection.preferredContentSizeCategory
         if let fit, fit.width == width, fit.size == size, fit.generation == generation {
             return fit.height
@@ -143,6 +144,7 @@ final class ChatTraceSteps: UIView {
     static func height(for summary: ChatMessage, width: CGFloat) -> CGFloat {
         guard width > 1 else { return 0 }
         let steps = drawn(summary)
+        guard !steps.isEmpty else { return 0 }
         let key = Measure(
             shapes: steps.map(ChatMessageShape.init),
             width: width,
@@ -166,7 +168,7 @@ final class ChatTraceSteps: UIView {
     /// text is measured and laid out instead of a thousand — an open thought
     /// is the most expensive thing a run draws.
     static func drawn(_ summary: ChatMessage) -> [ChatMessage] {
-        TraceStep.messages(of: summary).map { step in
+        ChatActivityContent.steps(summary).map { step in
             guard step.role.isThinking else { return step }
             var step = step
             step.text = ThinkingStreamGate.text(step.text, for: step.id)

@@ -19,7 +19,6 @@ final class ChatActivityRow: ListRowView {
     @objc dynamic var onOpenPage: (() -> Void)?
     private let header = ThinkingStatusLabel()
     private let sourceLabel = UILabel()
-    private static let sourceSpacing: CGFloat = 4
     private static let sizingSource = UILabel()
     /// Holds the title, and while the count shows fades its first line out
     /// before it (`titleMask`), so a long title runs under the count rather
@@ -44,10 +43,6 @@ final class ChatActivityRow: ListRowView {
     private static let receivedSpacing: CGFloat = 6
     /// How far the title fades out before the count.
     private static let titleFadeWidth: CGFloat = 20
-    /// Between the title and the line under it.
-    private static let bannerSpacing: CGFloat = 8
-    /// Between the last line the summary shows and its steps.
-    private static let expansionSpacing: CGFloat = 10
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -90,9 +85,9 @@ final class ChatActivityRow: ListRowView {
         header.animationIdentity = message.id
         // A folded turn's title and count are the header's line, right after
         // its state: this row keeps only the call it is on.
-        let title = message.foldsProcessSteps ? "" : message.activityTitle
+        let title = ChatActivityContent.title(message)
         header.text = title
-        sourceLabel.text = message.role.isThinking ? message.processingSource : nil
+        sourceLabel.text = ChatActivityContent.source(message)
         sourceLabel.isHidden = sourceLabel.text == nil
         isAccessibilityElement = false
         header.accessibilityLabel = title.isEmpty ? nil : title
@@ -117,8 +112,7 @@ final class ChatActivityRow: ListRowView {
         }
         let tokens = message.foldsProcessSteps ? nil : message.receivedTokens
         header.accessibilityValue = tokens.map(ReceivedTokensView.spoken)
-        showReceived(tokens, settles: message.receivedSettles, animated: isSameMessage)
-        if let call = Self.banner(of: message) {
+        if let call = ChatActivityContent.banner(message) {
             bannerView.show(call, animated: isSameMessage)
             bannerView.isHidden = false
         } else {
@@ -126,6 +120,8 @@ final class ChatActivityRow: ListRowView {
             bannerView.isHidden = true
         }
         header.isThinking = message.role.isThinking
+        showReceived(tokens, settles: message.receivedSettles,
+                     animated: isSameMessage && !message.foldsProcessSteps && !title.isEmpty)
         setNeedsLayout()
     }
 
@@ -156,46 +152,28 @@ final class ChatActivityRow: ListRowView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        let content = bounds.inset(by: ChatMessageRow.insets(for: bounds.width))
-        let textWidth = max(1, content.width)
-        let scale = max(traitCollection.displayScale, 1)
-        func pixel(_ value: CGFloat) -> CGFloat {
-            (value * scale).rounded() / scale
-        }
-        let sourceHeight = Self.sourceHeight(sourceLabel.text, width: textWidth)
-        sourceLabel.font = .preferredFont(forTextStyle: .caption1)
-        sourceLabel.frame = CGRect(x: content.minX, y: content.minY, width: textWidth,
-                                   height: max(0, sourceHeight - Self.sourceSpacing))
-        // The title runs across the reading width; a summary with nothing to
-        // say — a finished stretch — gives its line to what is under it.
-        let titleWidth = max(1, textWidth)
-        let titleHeight = (header.text ?? "").isEmpty && received.isHidden
-            ? 0
-            : ceil(header.sizeThatFits(CGSize(width: titleWidth, height: .greatestFiniteMagnitude)).height)
-        titleView.isHidden = titleHeight == 0
-        titleView.frame = CGRect(
-            x: pixel(content.minX),
-            y: pixel(content.minY + sourceHeight),
-            width: pixel(titleWidth),
-            height: pixel(titleHeight),
+        guard let message else { return }
+        let insets = ChatMessageRow.insets(for: bounds.width)
+        let textWidth = max(1, bounds.width - insets.left - insets.right)
+        let sourceHeight = Self.sourceHeight(ChatActivityContent.source(message), width: textWidth)
+        let titleHeight = Self.titleHeight(for: message, width: textWidth)
+        let stepsHeight = expansion.isHidden ? 0 : expansion.fittingHeight(width: textWidth)
+        let layout = ChatActivityLayout(
+            source: sourceHeight, title: titleHeight,
+            banner: bannerView.isHidden ? 0 : ToolCallBannerView.height, steps: stepsHeight,
+            top: message.activityJoinsPrevious ? 0 : insets.top, bottom: insets.bottom,
         )
+        sourceLabel.font = .preferredFont(forTextStyle: .caption1)
+        sourceLabel.frame = CGRect(x: insets.left, y: layout.sourceY, width: textWidth, height: sourceHeight)
+        titleView.isHidden = titleHeight == 0
+        titleView.frame = CGRect(x: insets.left, y: layout.titleY, width: textWidth, height: titleHeight)
         header.frame = titleView.bounds
-        // The count sits at the end of the title line.
-        layoutReceived(in: CGRect(
-            x: content.minX,
-            y: content.minY,
-            width: max(1, content.width),
-            height: content.height,
-        ))
+        layoutReceived(in: CGRect(x: insets.left, y: 0, width: textWidth, height: bounds.height))
         if !bannerView.isHidden {
-            // the line keeps the reading width, padding included; its
-            // ground is drawn out to the row's edges
             let padding = ChatMessageRow.horizontalPadding
             bannerView.frame = CGRect(
-                x: content.minX - padding,
-                y: titleView.frame.maxY + Self.bannerSpacing,
-                width: content.width + padding * 2,
-                height: ToolCallBannerView.height,
+                x: insets.left - padding, y: layout.bannerY,
+                width: textWidth + padding * 2, height: ToolCallBannerView.height,
             )
             bannerView.groundBleed = UIEdgeInsets(
                 top: 0,
@@ -204,12 +182,8 @@ final class ChatActivityRow: ListRowView {
                 right: max(0, bounds.width - bannerView.frame.maxX),
             )
         }
-        let above = bannerView.isHidden ? titleView.frame.maxY : bannerView.frame.maxY
         expansion.frame = expansion.isHidden ? .zero : CGRect(
-            x: content.minX,
-            y: above + Self.expansionSpacing,
-            width: textWidth,
-            height: expansion.fittingHeight(width: textWidth),
+            x: insets.left, y: layout.stepsY, width: textWidth, height: stepsHeight,
         )
     }
 
@@ -306,24 +280,25 @@ final class ChatActivityRow: ListRowView {
     static func height(for message: ChatMessage, width: CGFloat) -> CGFloat {
         let insets = ChatMessageRow.insets(for: width)
         let width = max(1, width - insets.left - insets.right)
-        var height = insets.top + insets.bottom
-        // A finished stretch has no title line: what it did is in its steps.
-        // Nor has one a folded turn, whose title the header draws.
-        if !message.foldsProcessSteps, !message.activityTitle.isEmpty {
-            sizingHeader.font = .preferredFont(forTextStyle: .body)
-            sizingHeader.text = message.activityTitle
-            height += ceil(
-                sizingHeader.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height,
-            )
-        }
-        height += sourceHeight(message.role.isThinking ? message.processingSource : nil, width: width)
-        if banner(of: message) != nil {
-            height += bannerSpacing + ToolCallBannerView.height
-        }
-        if !message.foldsProcessSteps {
-            height += expansionSpacing + ChatTraceSteps.height(for: message, width: width)
-        }
-        return height
+        return ChatActivityLayout(
+            source: sourceHeight(ChatActivityContent.source(message), width: width),
+            title: titleHeight(for: message, width: width),
+            banner: ChatActivityContent.banner(message) == nil ? 0 : ToolCallBannerView.height,
+            steps: message.foldsProcessSteps ? 0 : ChatTraceSteps.height(for: message, width: width),
+            top: message.activityJoinsPrevious ? 0 : insets.top, bottom: insets.bottom,
+        ).height
+    }
+
+    private static func titleHeight(for message: ChatMessage, width: CGFloat) -> CGFloat {
+        let title = ChatActivityContent.title(message)
+        let hasTokens = !message.foldsProcessSteps && message.receivedTokens != nil
+        guard !title.isEmpty || hasTokens else { return 0 }
+        sizingHeader.font = .preferredFont(forTextStyle: .body)
+        sizingHeader.text = title
+        let height = title.isEmpty ? 0 : ceil(
+            sizingHeader.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height,
+        )
+        return max(height, hasTokens ? ceil(sizingHeader.font.lineHeight) : 0)
     }
 
     @objc dynamic private static func sourceHeight(_ text: String?, width: CGFloat) -> CGFloat {
@@ -332,13 +307,6 @@ final class ChatActivityRow: ListRowView {
         sizingSource.numberOfLines = 0
         sizingSource.text = text
         return ceil(sizingSource.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height)
-            + sourceSpacing
-    }
-
-    /// Only a running summary has the line under it; the trace lists every
-    /// call whole.
-    private static func banner(of message: ChatMessage) -> ToolCallBanner? {
-        message.role.isThinking ? message.banner : nil
     }
 
     private static func isReasoning(_ message: ChatMessage) -> Bool {

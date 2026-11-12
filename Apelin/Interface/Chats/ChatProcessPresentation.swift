@@ -1,0 +1,91 @@
+import Foundation
+
+/// Semantic visibility shared by the projection, the row and its measurement.
+/// Empty thought placeholders are not steps; a running summary still has its
+/// activity title, even before the model supplies any thought text.
+enum ChatActivityContent {
+    static func title(_ message: ChatMessage) -> String {
+        message.foldsProcessSteps ? "" : message.activityTitle
+    }
+
+    static func source(_ message: ChatMessage) -> String? {
+        guard message.role.isThinking, let source = message.processingSource,
+              source.contains(where: { !$0.isWhitespace }) else { return nil }
+        return source
+    }
+
+    static func banner(_ message: ChatMessage) -> ToolCallBanner? {
+        message.role.isThinking ? message.banner : nil
+    }
+
+    static func steps(_ message: ChatMessage) -> [ChatMessage] {
+        guard !message.foldsProcessSteps else { return [] }
+        return TraceStep.messages(of: message).filter { step in
+            if case .thinking = step.role {
+                return step.text.contains(where: { !$0.isWhitespace })
+            }
+            return true
+        }
+    }
+
+    static func hasContent(_ message: ChatMessage) -> Bool {
+        !title(message).isEmpty || source(message) != nil || banner(message) != nil
+            || (!message.foldsProcessSteps && message.receivedTokens != nil)
+            || !steps(message).isEmpty
+    }
+}
+
+/// Folded process rows belong beside their turn header, not at the position
+/// of the newest model segment. Assistant text and attachments never move.
+enum ChatProcessPresentation {
+    static func rows(_ items: [ChatMessage], isExpanded: (UUID) -> Bool) -> [ChatMessage] {
+        var newest: [UUID: ChatMessage] = [:]
+        var headed = Set<UUID>()
+        for item in items {
+            guard let turn = item.turnMessageID else { continue }
+            if case .turn = item.role { headed.insert(turn) }
+            if case .thinking = item.role { newest[turn] = item }
+        }
+        var visible: [ChatMessage] = []
+        visible.reserveCapacity(items.count)
+        func append(_ message: ChatMessage) {
+            var row = message
+            if row.role.isActivity {
+                guard ChatActivityContent.hasContent(row) else { return }
+                row.activityJoinsPrevious = visible.last.map {
+                    $0.role.isActivity && $0.turnMessageID == row.turnMessageID
+                } ?? false
+            }
+            visible.append(row)
+        }
+        for item in items {
+            guard !item.role.isApproval else { continue }
+            if case let .turn(running, _) = item.role, let turn = item.turnMessageID,
+               !isExpanded(turn)
+            {
+                var header = item
+                if running, let summary = newest[turn] {
+                    header.headerActivityTitle = summary.activityTitle
+                    header.headerReceivedTokens = summary.receivedTokens
+                    header.headerReceivedSettles = summary.receivedSettles
+                    append(header)
+                    var process = summary
+                    process.id = ChatTranscript.rowID(forProcess: turn)
+                    process.foldsProcessSteps = true
+                    append(process)
+                } else {
+                    append(header)
+                }
+                continue
+            }
+            if case .thinking = item.role, let turn = item.turnMessageID,
+               headed.contains(turn), !isExpanded(turn)
+            {
+                // Already represented beside the header (or finished and folded).
+                continue
+            }
+            append(item)
+        }
+        return visible
+    }
+}
