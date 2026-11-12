@@ -267,6 +267,19 @@ final class ChatController: UIViewController {
         latestMessageButton.addAction(UIAction { [weak self] _ in
             self?.revealLatestMessage()
         }, for: .touchUpInside)
+        let collapsePress = UILongPressGestureRecognizer(
+            target: self,
+            action: #selector(collapseLatestMessagePressed(_:)),
+        )
+        collapsePress.cancelsTouchesInView = true
+        latestMessageButton.addGestureRecognizer(collapsePress)
+        latestMessageButton.accessibilityCustomActions = [
+            UIAccessibilityCustomAction(name: String(localized: "Collapse all and scroll to latest message")) { [weak self] _ in
+                guard let self, self.chat != nil else { return false }
+                self.collapseAndRevealLatestMessage()
+                return true
+            },
+        ]
         view.addSubview(latestMessageButton)
         latestMessageButton.snp.makeConstraints { make in
             make.centerX.equalTo(view.safeAreaLayoutGuide)
@@ -801,7 +814,40 @@ final class ChatController: UIViewController {
         updateLatestMessageButton()
     }
 
-    private func showTranscript(_ items: [ChatMessage]) {
+    @objc dynamic private func collapseLatestMessagePressed(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
+        collapseAndRevealLatestMessage()
+    }
+
+    @objc dynamic private func collapseAndRevealLatestMessage() {
+        guard chat != nil else { return }
+        var ids = Set<UUID>()
+        func collect(_ rows: [ChatMessage]) {
+            for row in rows {
+                ids.insert(row.id)
+                if let turn = row.turnMessageID { ids.insert(turn) }
+                collect(row.trace)
+            }
+        }
+        collect(messages)
+        ChatTraceExpansion.collapse(ids: ids)
+
+        // Expansion is not part of a message's equality. A fresh list drops
+        // every old row height and open view, including offscreen ones, rather
+        // than relying on an unchanged message to trigger reconfiguration.
+        readingPlace = nil
+        holdsLatestMessage = false
+        holdsHistoryTop = false
+        needsInitialScroll = true
+        replaceMessageList()
+        showTranscript(messages, animated: false)
+        messageList.scrollToBottom(animated: false)
+        // Reuse the bounded opening-layout pass to settle measured heights.
+        view.setNeedsLayout()
+        updateLatestMessageButton()
+    }
+
+    private func showTranscript(_ items: [ChatMessage], animated: Bool = true) {
         if let page = tracePage, let message = items.first(where: { $0.id == page.messageID }) {
             page.show(message)
         }
@@ -856,7 +902,7 @@ final class ChatController: UIViewController {
                 visible.append(row)
             }
         }
-        messageList.apply(visible, animated: !isSwitchingChat && !UIAccessibility.isReduceMotionEnabled)
+        messageList.apply(visible, animated: animated && !isSwitchingChat && !UIAccessibility.isReduceMotionEnabled)
         updateMessageRuler(visible)
         // a request its stopped session left can no longer be answered
         showApproval(chat?.isWorking == true ? items.first { $0.role.needsApproval } : nil)

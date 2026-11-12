@@ -18,6 +18,16 @@ enum ChatTraceExpansion {
     private static var thoughts: [UUID: Bool] = [:]
     private static var calls: [UUID: Bool] = [:]
 
+    /// Forget only the shown conversation's rows, including nested steps.
+    /// Other conversations keep what their reader opened.
+    static func collapse(ids: Set<UUID>) {
+        for id in ids {
+            turns.removeValue(forKey: id)
+            thoughts.removeValue(forKey: id)
+            calls.removeValue(forKey: id)
+        }
+    }
+
     /// Whether turn `id` shows its process, folded unless the reader opened
     /// it.
     static func isExpanded(turn id: UUID) -> Bool {
