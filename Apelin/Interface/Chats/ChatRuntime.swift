@@ -36,6 +36,8 @@ final class ChatRuntime {
     @objc dynamic private var revision = 0
     private var readers: [UUID: Task<Void, Never>] = [:]
     private var opening: [UUID: Task<AgentOpenResponse, Error>] = [:]
+    /// A newer Stop or Rewind supersedes an earlier Stop's queue continuation.
+    @objc dynamic private var stopContinuations: [UUID: UUID] = [:]
     private var attachmentCache: [String: ComposerAttachment] = [:]
     private var transcripts = ChatTranscriptCache()
     /// Conversations whose latest state is in memory only.
@@ -309,6 +311,7 @@ final class ChatRuntime {
     }
 
     private func closeSession(_ id: UUID) async throws {
+        stopContinuations[id] = nil
         // A send may still be opening the session when Delete is tapped.
         var sessionID = records[id]?.sessionID
         if let pending = opening[id], let opened = try? await pending.value {
@@ -582,16 +585,28 @@ final class ChatRuntime {
         )
     }
 
-    func stop(_ id: UUID) async throws {
+    func stop(_ id: UUID, continueQueue: Bool = true) async throws {
         guard let sessionID = records[id]?.sessionID else { return }
+        let continuation = UUID()
+        stopContinuations[id] = continuation
+        defer {
+            if stopContinuations[id] == continuation { stopContinuations[id] = nil }
+        }
         do {
             try await ApelinService.app.agentAbort(sessionID: sessionID)
-            // Taken: the turn ends when the host's end arrives. Until then it
-            // is stopping, so neither the header nor the button claims more
-            // than the app knows.
-            records[id]?.run = .stopping
-            changed(id)
+            guard stopContinuations[id] == continuation,
+                  records[id]?.sessionID == sessionID else { return }
+            // The host has now cancelled the old run's shell calls. Only
+            // then request FIFO continuation; the session waits for cleanup.
+            if records[id]?.summary.isWorking == true {
+                records[id]?.run = .stopping
+                changed(id)
+            }
+            if continueQueue {
+                _ = try await ApelinService.app.agentQueue(AgentQueueRequest(sessionID: sessionID, action: .resume))
+            }
         } catch let error as ApelinError where error.code == .notFound {
+            guard stopContinuations[id] == continuation else { return }
             // The session ended with the process that ran it (the app was
             // quit, or the host restarted): there is no run left to stop, and
             // the row must not keep saying it is. Waiting on a host that has
@@ -600,9 +615,10 @@ final class ChatRuntime {
             records[id]?.run = .ended
             changed(id, urgent: true)
             return
-        } catch let error as ApelinError where error.code == .timeout {
-            // No answer: the run may still be going, so the row stays as it
-            // is; keep the existing localized timeout message.
+        } catch {
+            guard stopContinuations[id] == continuation else { return }
+            // A current request's failure stays visible. A superseded Stop
+            // must not report a conflict over the Rewind that replaced it.
             throw error
         }
     }
@@ -613,6 +629,7 @@ final class ChatRuntime {
     /// `truncate` the message and everything after it leave the
     /// conversation. The session is opened again for it when it has ended.
     func rewind(_ messageID: UUID, in id: UUID, truncate: Bool) async throws {
+        stopContinuations[id] = nil
         let opened = try await open(id)
         try await ApelinService.app.agentRewind(sessionID: opened.sessionID, messageID: messageID, truncate: truncate)
     }

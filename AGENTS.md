@@ -1532,9 +1532,16 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   before acceptance in `pending.json`, not kwwk's steering queue. A
   `pendingQueue` {messages: [{id, text, attachments, editing, sender?, delivery?, modelChoice?}], paused}
   snapshot replaces the app's waiting list; it is not conversation history.
-  One message starts a new run after the previous run succeeds. Stop, a
-  failed run or a recovered session pauses the queue without losing it;
-  Resume Queue continues it. `agentQueue` is app-only: hold/edit/resume
+  One message starts a new run after the previous run succeeds. The app's
+  Stop cancels the current run, waits for the host to stop its shell calls,
+  then requests Resume Queue: existing input continues in FIFO order once
+  the old run and preparation have settled. An empty stopped queue stays
+  paused. Stop-and-delete, source stops, failed runs and recovered sessions
+  keep input paused; Resume Queue or a fresh reader Send continues it.
+  A source delivery or duplicate retry never resumes a paused queue.
+  A newer Stop or Rewind supersedes an older restart; the app invalidates
+  unsent Stop continuations on Rewind/close, and the session checks the Stop
+  generation after awaiting cleanup. `agentQueue` is app-only: hold/edit/resume
   reserve an editor's message, delete removes it, reorder names the complete
   set of current IDs, and steer explicitly inserts a chosen message into
   a live run. Preparation rechecks the queue revision and stop generation
@@ -1545,11 +1552,16 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   messages use the same durable FIFO, not kwwk's follow-up queue. The sender
   chooses `delivery: queue|steer`: queue starts a separate run after success;
   steer is inserted at the active run's next input boundary without killing
-  tools or bypassing approvals. Stops, failures and reopening retain input
-  paused. Each reader input retains its own credential-free model choice,
+  tools or bypassing approvals. Source stops, failures and reopening retain
+  input paused. Each reader input retains its own credential-free model choice,
   resolved only at dispatch; source input never brings the sender's model.
-  Destructive history changes first settle consumed handoffs; a stale Resume
-  rechecks the Stop generation after its awaits. At dispatch, `conversationMessageQueued` becomes
+  Rewind claims the history boundary before stopping, settles consumed
+  handoffs, then clears all waiting input (including holds and unconsumed
+  handoffs) after replacing history. Seen IDs stay, so retries cannot revive
+  the cleared queue. The app's existing refillComposer restores only the
+  selected original message and attachments, under a fresh draft ID. A
+  code-only restore pauses but keeps input. A stale Resume rechecks the Stop
+  generation after its awaits. At dispatch, `conversationMessageQueued` becomes
   `queued` {id, text, from}; only the matching model `messageStart` emits
   `conversationMessageTaken`, mapped to `prompt` with the same id and from.
   The app shows that source above the active thinking row and outlines its

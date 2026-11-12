@@ -8,6 +8,123 @@ import Testing
 @Suite("Pending input starts complete runs")
 struct PendingSessionTests {
     @Test(.timeLimit(.minutes(1)))
+    func `a fresh reader send after stop starts without a separate resume`() async throws {
+        let home = try TemporaryHome()
+        defer { home.remove() }
+        let faux = await registerFauxProvider()
+        defer { faux.unregister() }
+        faux.setResponses([.message(fauxAssistantMessage("Started."))])
+        let session = try await AgentSession(configuration: .init(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot), backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
+        await session.abort()
+        await session.waitForIdle()
+        let next = UUID()
+        try await session.prompt("start now", messageID: next)
+        await session.waitForIdle()
+        let events = try await session.log.records(afterSeq: 0).map(\.event)
+        #expect(events.filter { if case .userMessage(next, "start now", _) = $0 { return true }; return false }.count == 1)
+        #expect(events.contains(.finished(reason: .completed)))
+        await session.close()
+    }
+
+    @Test(.timeLimit(.minutes(1)), arguments: [false, true])
+    func `resume during stopped run cleanup starts once after cleanup`(send: Bool) async throws {
+        let home = try TemporaryHome()
+        defer { home.remove() }
+        let faux = await registerFauxProvider()
+        defer { faux.unregister() }
+        faux.setResponses([
+            .message(fauxAssistantMessage("Recovered first.")),
+            .message(fauxAssistantMessage("Recovered second.")),
+        ])
+        let session = try await AgentSession(configuration: .init(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot), backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
+        let barrier = PendingResumeBarrier()
+        await session.observePendingModel { _ in await barrier.enter() }
+        let first = UUID(), second = UUID()
+        try await session.prompt("first", messageID: first, modelChoice: PendingModelChoice(provider: .registered(faux.getModel())))
+        await barrier.waitUntilEntered()
+        await session.abort()
+        let continuation = Task {
+            if send {
+                try await session.prompt("second", messageID: second)
+            } else {
+                try await session.manageQueue(.init(sessionID: session.id, action: .resume))
+            }
+        }
+        // Let the explicit request reach its suspension before the old run
+        // exits. The observer ignores task cancellation until released.
+        for _ in 0..<30 { await Task.yield() }
+        await barrier.release()
+        try await continuation.value
+        await session.waitForIdle()
+        let events = try await session.log.records(afterSeq: 0).map(\.event)
+        let state = try JSONDecoder().decode(PendingQueue.State.self, from: Data(contentsOf: session.log.directory.appendingPathComponent("pending.json")))
+        #expect(state.messages.isEmpty && state.handoffs.isEmpty && !state.paused)
+        #expect(events.filter { $0 == .finished(reason: .completed) }.count == (send ? 2 : 1))
+        if send {
+            #expect(events.filter { if case .userMessage(second, "second", _) = $0 { return true }; return false }.count == 1)
+        }
+        await session.close()
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func `source input stays paused but a fresh reader send resumes FIFO`() async throws {
+        let home = try TemporaryHome()
+        defer { home.remove() }
+        let faux = await registerFauxProvider()
+        defer { faux.unregister() }
+        faux.setResponses([
+            .message(fauxAssistantMessage("Source finished.")),
+            .message(fauxAssistantMessage("Reader finished.")),
+        ])
+        let session = try await AgentSession(configuration: .init(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot), backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
+        await session.abort()
+        let source = UUID(), reader = UUID()
+        try await session.prompt("source", messageID: source, from: ConversationSender(sessionID: "reviewer", title: "Review"))
+        await session.waitForIdle()
+        let before = try await session.log.records(afterSeq: 0).map(\.event)
+        #expect(!before.contains { if case .finished = $0 { return true }; return false })
+        try await session.prompt("reader", messageID: reader)
+        await session.waitForIdle()
+        let events = try await session.log.records(afterSeq: 0).map(\.event)
+        let sourceAt = try #require(events.firstIndex(of: .conversationMessageTaken(id: source, text: "source", from: "reviewer")))
+        let readerAt = try #require(events.firstIndex { if case .userMessage(reader, "reader", _) = $0 { return true }; return false })
+        #expect(sourceAt < readerAt)
+        #expect(events.filter { $0 == .finished(reason: .completed) }.count == 2)
+        await session.close()
+    }
+    @Test(.timeLimit(.minutes(1)))
+    func `a second stop wins over a fresh send waiting for cleanup`() async throws {
+        let home = try TemporaryHome()
+        defer { home.remove() }
+        let faux = await registerFauxProvider()
+        defer { faux.unregister() }
+        let session = try await AgentSession(configuration: .init(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot), backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
+        let barrier = PendingResumeBarrier()
+        await session.observePendingModel { _ in await barrier.enter() }
+        let first = UUID(), second = UUID()
+        try await session.prompt("first", messageID: first, modelChoice: PendingModelChoice(provider: .registered(faux.getModel())))
+        await barrier.waitUntilEntered()
+        await session.abort()
+        let stream = try await session.events(afterSeq: 0)
+        let send = Task { try await session.prompt("second", messageID: second) }
+        // This publication proves the send captured the first Stop's
+        // generation, without depending on executor scheduling or sleeps.
+        for await record in stream {
+            if case let .pendingQueue(messages, _) = record.event,
+               messages.contains(where: { $0.id == second }) { break }
+        }
+        await session.abort()
+        await barrier.release()
+        try await send.value
+        await session.waitForIdle()
+        let state = try JSONDecoder().decode(PendingQueue.State.self, from: Data(contentsOf: session.log.directory.appendingPathComponent("pending.json")))
+        #expect(state.paused && state.messages.map(\.id) == [first, second])
+        let events = try await session.log.records(afterSeq: 0).map(\.event)
+        #expect(!events.contains { if case .messageStarted = $0 { return true }; return false })
+        await session.close()
+    }
+
+    @Test(.timeLimit(.minutes(1)))
     func `held head blocks FIFO until edit and each input starts a new run`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }

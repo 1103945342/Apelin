@@ -281,7 +281,7 @@ final class SidebarSessionsController: UIViewController {
     private func delete(_ id: UUID, onDeleted: @escaping () -> Void) {
         Task {
             if runtime.records[id]?.summary.isWorking == true {
-                try? await runtime.stop(id)
+                try? await runtime.stop(id, continueQueue: false)
             }
             do {
                 try await runtime.delete(id)

@@ -708,6 +708,12 @@ public actor AgentSession {
             try await publishPending().value
             return
         }
+        // A fresh reader send is an explicit request to continue a stopped
+        // chat. Source messages and duplicate deliveries must not wake it.
+        let resumeGeneration: UInt64? = sender == nil
+            && (runTask == nil || aborted || runEnding || runFailed)
+            && (pendingBlocked || pending.state.paused || aborted || runFailed)
+            ? stopGeneration : nil
         let attachments = try files.map { try saveAttachment(name: $0.name, mimeType: $0.mimeType, data: $0.data) }
         try pending.enqueue(PendingMessage(id: id, text: text, attachments: attachments, sender: sender, delivery: delivery, modelChoice: modelChoice))
         submitted.insert(id)
@@ -717,6 +723,18 @@ public actor AgentSession {
         let publication = publishPending()
         schedulePending()
         try await publication.value
+        if let generation = resumeGeneration {
+            do {
+                try await resumePending(after: generation)
+            } catch {
+                // The input is already durable and acknowledged to the app.
+                // Keep it visible in the queue rather than restoring a second
+                // copy to the composer. A newer Stop deliberately wins.
+                if generation == stopGeneration {
+                    await record(.error(message: error.localizedDescription))
+                }
+            }
+        }
         if delivery == .steer {
             while pendingSteers.contains(id), let drain = pendingDrain {
                 await drain.value
@@ -751,11 +769,33 @@ public actor AgentSession {
         return task
     }
 
-    public func manageQueue(_ request: AgentQueueRequest) async throws {
-        let generation = stopGeneration
+    /// Both a reader send to an idle/ending chat and Resume use this path.
+    /// Do not clear the pause until the old run and its preparation have
+    /// finished: either can still publish a pause while unwinding a Stop.
+    private func resumePending(after generation: UInt64) async throws {
+        if aborted || runEnding || runFailed {
+            await runTask?.value
+            await compaction?.value
+        }
+        if pendingBlocked || pending.state.paused {
+            await pendingDrain?.value
+        }
+        // Settle older publications before resetting their failure latch.
+        // A failed publication advances stopGeneration and is not ignored
+        // by the guard below; a later explicit retry can repair it.
+        _ = try? await pendingEvents?.value
+        guard generation == stopGeneration else {
+            throw ApelinError(.conflict, "The queue was stopped while this request was preparing. Resume it again to continue.")
+        }
+        guard !historyMutation else {
+            throw ApelinError(.conflict, "Wait for the history change before retrying pending input.")
+        }
+        // An empty queue needs no continuation. Keep a stopped chat paused
+        // so a later source delivery does not wake it on its own.
+        guard !pending.state.messages.isEmpty || !pending.state.handoffs.isEmpty else { return }
         var repairing = false
         defer { if repairing { endHistoryMutation() } }
-        if request.action == .resume, request.messageID == nil, !pending.state.handoffs.isEmpty {
+        if !pending.state.handoffs.isEmpty {
             guard canMutateHistory else {
                 throw ApelinError(.conflict, "Wait for the current reply before retrying pending input.")
             }
@@ -773,6 +813,18 @@ public actor AgentSession {
         guard generation == stopGeneration else {
             throw ApelinError(.conflict, "The queue was stopped while this request was preparing. Resume it again to continue.")
         }
+        try pending.change(.init(sessionID: id, action: .resume))
+        pendingBlocked = false
+        let publication = publishPending()
+        schedulePending()
+        try await publication.value
+    }
+
+    public func manageQueue(_ request: AgentQueueRequest) async throws {
+        if request.action == .resume, request.messageID == nil {
+            try await resumePending(after: stopGeneration)
+            return
+        }
         if request.action == .steer {
             guard let id = request.messageID, !pendingSteers.contains(id),
                   pending.state.messages.contains(where: { $0.id == id && !$0.editing }),
@@ -782,7 +834,6 @@ public actor AgentSession {
             pendingSteers.insert(id)
         } else {
             try pending.change(request)
-            if request.action == .resume, request.messageID == nil { pendingBlocked = false }
         }
         defer {
             if request.action == .steer, let id = request.messageID {
@@ -1530,6 +1581,22 @@ public actor AgentSession {
         guard await checkpoint(), acceptedPending.isEmpty else {
             throw ApelinError(.unavailable, "Consumed input still awaits durable history. Retry before changing history.")
         }
+    }
+
+    /// Rewind owns historyMutation and has joined the old run/preparation.
+    /// Consumed handoffs were acknowledged before replacing history; any
+    /// remaining ones never entered it. Keep seen IDs so a delivery retry
+    /// cannot resurrect input the reader just discarded.
+    func discardPendingForRewind() async throws {
+        try pending.update {
+            $0.messages.removeAll()
+            $0.handoffs.removeAll()
+            $0.paused = true
+        }
+        pendingSteers.removeAll()
+        dispatchedSteers.removeAll()
+        pendingBlocked = true
+        try await publishPending().value
     }
 
     /// Appends what the conversation gained since the last write.

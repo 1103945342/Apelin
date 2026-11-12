@@ -35,18 +35,23 @@ extension AgentSession {
     /// Stops the run and waits for it, then with `truncate` takes message
     /// `id` and everything after it out of the conversation.
     public func rewind(to id: UUID, truncate: Bool) async throws {
-        if runTask != nil || compaction != nil || pendingDrain != nil {
-            await abort()
-            await waitForIdle()
+        guard !historyMutation else {
+            throw ApelinError(.conflict, "Wait for the history change before retrying pending input.")
         }
-        guard truncate else { return }
-        try beginHistoryMutation()
+        // Own the boundary before suspending. A Stop's pending Resume must
+        // not start another run while this rewind waits for the old one.
+        historyMutation = true
         defer { endHistoryMutation() }
+        // Even an idle rewind invalidates older Send/Resume requests.
+        await abort()
+        await waitForIdle()
+        guard truncate else { return }
         let messages = agent.state.messages
         guard let index = try await located(id, in: messages)?.index else {
             throw Self.notInHistory
         }
         try await replaceHistory(Array(messages[..<index]))
+        try await discardPendingForRewind()
         anchors[id.uuidString.lowercased()] = nil
         if index == 0 {
             // the next message is the conversation's first again
