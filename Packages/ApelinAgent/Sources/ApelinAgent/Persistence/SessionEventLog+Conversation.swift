@@ -135,7 +135,7 @@ extension SessionEventLog {
         guard let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
               let size = attributes[.size] as? Int, size > 0
         else { return }
-        guard let handle = FileHandle(forReadingAtPath: url) else {
+        guard let handle = FileHandle(forReadingAtPath: url.path) else {
             throw SessionStoreError.io("could not read messages.jsonl")
         }
         let tail: Data
@@ -161,7 +161,7 @@ extension SessionEventLog {
         guard descriptor >= 0 else {
             throw SessionStoreError.io("could not open messages.jsonl")
         }
-        defer { close(descriptor) }
+        defer { Darwin.close(descriptor) }
         try data.withUnsafeBytes { buffer in
             guard let base = buffer.baseAddress else { return }
             var written = 0
