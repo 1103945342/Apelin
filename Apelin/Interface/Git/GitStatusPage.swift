@@ -20,6 +20,11 @@ struct GitFileItem {
     let code: String
     let staged: Bool
     let conflicted: Bool
+    /// A file listed inside its folder in the untracked group: indented under
+    /// the folder's row, in the same card, and shown by the part of its path
+    /// that is left once the folder it hangs under is dropped.
+    var nested = false
+    var base: String?
 }
 
 struct GitDirectoryItem {
@@ -120,34 +125,6 @@ final class GitStatusPage: UIViewController, GitPage {
         session.conflicted.map { GitFileItem(entry: $0, code: "U", staged: false, conflicted: true) }
     }
 
-    private var untrackedSections: ([GitFileItem], [GitDirectoryItem]) {
-        var top: [GitEntry] = []
-        var grouped: [String: [GitEntry]] = [:]
-        for entry in session.untracked {
-            let path = entry.path
-            if path.hasSuffix("/") {
-                grouped[path, default: []].append(entry)
-                continue
-            }
-            if let slash = path.firstIndex(of: "/") {
-                let dir = String(path[..<slash]) + "/"
-                grouped[dir, default: []].append(entry)
-            } else {
-                top.append(entry)
-            }
-        }
-        let files = top.map { GitFileItem(entry: $0, code: "?", staged: false, conflicted: false) }
-        let dirs = grouped.keys.sorted().map { path in
-            let children = (grouped[path] ?? []).filter { $0.path != path }
-            return GitDirectoryItem(
-                path: path,
-                children: children.sorted { $0.path < $1.path },
-                expanded: expandedDirs.contains(path),
-            )
-        }
-        return (files, dirs)
-    }
-
     private var hasChanges: Bool { session.hasChanges }
     private var hasRemote: Bool { session.upstream != nil || !session.remoteBranches.isEmpty }
     private var isMerging: Bool { session.isMerging }
@@ -190,16 +167,36 @@ final class GitStatusPage: UIViewController, GitPage {
                 )))
                 appendFiles(modifiedFiles, to: &items)
             }
-            let (untrackedFiles, untrackedDirs) = untrackedSections
-            if !untrackedFiles.isEmpty || !untrackedDirs.isEmpty {
+            let (untrackedFiles, untrackedFolders) = GitUntrackedGroup.split(session.untracked)
+            if !untrackedFiles.isEmpty || !untrackedFolders.isEmpty {
                 items.append(.header(GitHeader(
-                    title: String(localized: "Untracked (\(untrackedFiles.count + untrackedDirs.count))"),
+                    title: String(localized: "Untracked (\(GitUntrackedGroup.fileCount(session.untracked)))"),
                 )))
-                for file in untrackedFiles {
-                    items.append(.file(file, position: .single))
+                for entry in untrackedFiles {
+                    items.append(.file(
+                        GitFileItem(entry: entry, code: "?", staged: false, conflicted: false),
+                        position: .single,
+                    ))
                 }
-                for directory in untrackedDirs {
-                    items.append(.directory(directory, position: .single))
+                for folder in untrackedFolders {
+                    // A folder opens where it stands: its files join the same
+                    // card under it, one row each, so what is inside is read
+                    // without leaving the group.
+                    let open = !folder.children.isEmpty && expandedDirs.contains(folder.path)
+                    items.append(.directory(
+                        GitDirectoryItem(path: folder.path, children: folder.children, expanded: open),
+                        position: open ? .first : .single,
+                    ))
+                    guard open else { continue }
+                    for (index, entry) in folder.children.enumerated() {
+                        var file = GitFileItem(entry: entry, code: "?", staged: false, conflicted: false)
+                        file.nested = true
+                        file.base = folder.path
+                        items.append(.file(
+                            file,
+                            position: index == folder.children.count - 1 ? .last : .middle,
+                        ))
+                    }
                 }
             }
         }
@@ -706,7 +703,7 @@ extension GitStatusPage: UITableViewDataSource, UITableViewDelegate {
                 position: position,
                 busy: busy,
                 onToggle: { [weak self] in
-                    guard let self else { return }
+                    guard let self, !directory.children.isEmpty else { return }
                     if self.expandedDirs.contains(directory.path) {
                         self.expandedDirs.remove(directory.path)
                     } else {
@@ -732,6 +729,7 @@ extension GitStatusPage: UITableViewDataSource, UITableViewDelegate {
         case let .file(file, _):
             openDiff(path: file.entry.path, staged: file.staged)
         case let .directory(directory, _):
+            guard !directory.children.isEmpty else { break }
             if expandedDirs.contains(directory.path) {
                 expandedDirs.remove(directory.path)
             } else {
@@ -1161,9 +1159,16 @@ private final class GitFileCell: UITableViewCell {
         chip = badge
         let path = file.entry.path
         name.text = (path as NSString).lastPathComponent
-        let dir = (path as NSString).deletingLastPathComponent
+        let dir = GitUntrackedGroup.shownFolder(of: path, under: file.base)
         directory.text = dir.isEmpty ? nil : dir
         directory.isHidden = dir.isEmpty
+        // A file opened under its folder is set in from the card's edge, so
+        // the rows under a folder read as what is inside it.
+        card.snp.remakeConstraints { make in
+            make.top.bottom.equalToSuperview()
+            make.leading.equalToSuperview().inset(file.nested ? Self.nestIndent : 16)
+            make.trailing.equalToSuperview().inset(16)
+        }
         let symbol = file.staged ? GitIcon.Name.minus : GitIcon.Name.plus
         action.setImage(GitIcon.image(symbol, pointSize: 17), for: .normal)
         action.accessibilityLabel = file.staged ? String(localized: "Unstage") : String(localized: "Stage")
@@ -1173,6 +1178,9 @@ private final class GitFileCell: UITableViewCell {
         isAccessibilityElement = false
         accessibilityElements = [badge, name, directory, action]
     }
+
+    /// How far a file opened under its folder is set in from the card's edge.
+    private static let nestIndent: CGFloat = 36
 
     private func statusWord(_ code: String) -> String {
         switch code {
@@ -1213,6 +1221,8 @@ private final class GitDirCell: UITableViewCell {
     private let separator = UIView()
     private var onToggle: (() -> Void)?
     private var onStage: (() -> Void)?
+    /// Whether the folder holds anything to open.
+    private var expandable = false
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -1280,20 +1290,64 @@ private final class GitDirCell: UITableViewCell {
     ) {
         self.onToggle = onToggle
         self.onStage = onStage
+        expandable = !directory.children.isEmpty
         chipHost.subviews.forEach { $0.removeFromSuperview() }
         let badge = GitStatusChip(code: "?")
+        badge.isAccessibilityElement = false
         chipHost.addSubview(badge)
         badge.snp.makeConstraints { make in make.edges.equalToSuperview() }
         pathLabel.text = directory.path
-        count.text = directory.expanded ? "\(directory.children.count)" : nil
+        // How much the folder holds is on its row whether or not it is open,
+        // so a folder says what is inside before it is tapped.
+        count.text = expandable ? "\(directory.children.count)" : nil
+        count.isHidden = !expandable
+        chevron.isHidden = !expandable
         chevron.image = GitIcon.image(
             directory.expanded ? GitIcon.Name.chevronDown : GitIcon.Name.chevronRight, pointSize: 16,
         )
         action.isEnabled = !busy
         separator.isHidden = position == .last || position == .single
         GitCellCard.apply(to: card, position: position)
-        isAccessibilityElement = false
-        accessibilityElements = [badge, pathLabel, count, chevron, action]
+        // One stop a folder: whether it is open is said, not only drawn, and
+        // opening it and staging what it holds are the actions it offers, so
+        // grouping the row never hides either of them.
+        isAccessibilityElement = true
+        accessibilityLabel = directory.path
+        accessibilityValue = expandable
+            ? (directory.expanded ? String(localized: "Expanded") : String(localized: "Collapsed"))
+            : nil
+        accessibilityTraits = .button
+        var actions: [UIAccessibilityCustomAction] = []
+        if expandable {
+            actions.append(UIAccessibilityCustomAction(
+                name: directory.expanded ? String(localized: "Collapse") : String(localized: "Expand"),
+                target: self,
+                selector: #selector(toggleFromAccessibility),
+            ))
+        }
+        actions.append(UIAccessibilityCustomAction(
+            name: String(localized: "Stage"),
+            target: self,
+            selector: #selector(stageFromAccessibility),
+        ))
+        accessibilityCustomActions = actions
+        action.isAccessibilityElement = false
+    }
+
+    override func accessibilityActivate() -> Bool {
+        guard expandable else { return false }
+        onToggle?()
+        return true
+    }
+
+    @objc dynamic private func toggleFromAccessibility() -> Bool {
+        onToggle?()
+        return true
+    }
+
+    @objc dynamic private func stageFromAccessibility() -> Bool {
+        onStage?()
+        return true
     }
 }
 
