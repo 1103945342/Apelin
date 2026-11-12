@@ -195,6 +195,12 @@ final class ChatRuntime {
     private func adopt(_ record: ChatRecord?) {
         guard let record, let task = record.task else { return }
         records[record.summary.id] = record
+        // A delegated chat starts on the model Settings ▸ Default Models
+        // gives it, the one its opener's session was opened with; the
+        // composer must show the model that turn ran on.
+        if record.summary.relationship == .derived {
+            ComposerModelSelection.seedDelegated(for: record.summary.id)
+        }
         restoreLineage()
         changed(record.summary.id)
         follow(record.summary.id, task: task)
@@ -215,6 +221,11 @@ final class ChatRuntime {
         let reused = untouched.first { $0.summary.id == current }
             ?? untouched.max { $0.summary.lastInteraction < $1.summary.lastInteraction }
         let summary = reused?.summary ?? ChatSummary.untitled(lastInteraction: Date(), projectName: project)
+        // A row that was shown and left empty starts as a new chat again: on
+        // the model the reader last picked, not the one it was shown with.
+        if let reused {
+            ComposerModelSelection.forget(reused.summary.id)
+        }
         if reused == nil {
             records[summary.id] = ChatRecord(summary: summary)
         }

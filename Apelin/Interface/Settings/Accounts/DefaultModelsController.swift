@@ -45,7 +45,7 @@ final class DefaultModelsController: TableController {
         tableView.estimatedRowHeight = 44
         dataSource.headerTitle = { _ in String(localized: "Agent") }
         dataSource.footerTitle = { _ in
-            String(localized: "These models are used for auxiliary tasks and do not change the model selected for a conversation.")
+            String(localized: "These models are used for auxiliary tasks and for conversations an agent opens; they do not change the model selected for a conversation.")
         }
         dataSource.update([(.models, rows())])
     }
@@ -113,7 +113,7 @@ final class DefaultModelsController: TableController {
         var groups = [ComposerChoiceSheet.Group(
             title: nil,
             choices: [ComposerChoiceSheet.Choice(
-                title: String(localized: "Use Conversation Model"),
+                title: kind.followingTitle,
                 isSelected: current == nil,
             ) { [weak self] in
                 Preferences.DefaultModels.remove(for: kind)

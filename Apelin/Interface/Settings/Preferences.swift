@@ -11,6 +11,9 @@ enum Preferences {
         case title
         case vision
         case imageGeneration
+        /// A conversation an agent opens (`apelin_conversation_create`),
+        /// listed in the sidebar under Delegated Chats.
+        case derivedConversation
 
         var title: String {
             switch self {
@@ -19,6 +22,17 @@ enum Preferences {
             case .title: String(localized: "Title Generation")
             case .vision: String(localized: "Image Understanding")
             case .imageGeneration: String(localized: "Image Generation")
+            case .derivedConversation: String(localized: "Delegated Conversations")
+            }
+        }
+
+        /// What the row says when nothing is chosen: an auxiliary operation
+        /// follows the conversation's model, a delegated chat the one of the
+        /// conversation that opened it.
+        var followingTitle: String {
+            switch self {
+            case .derivedConversation: String(localized: "Follow the Opening Chat")
+            default: String(localized: "Use Conversation Model")
             }
         }
     }
@@ -55,7 +69,7 @@ enum Preferences {
 
         static func summary(for kind: DefaultModelKind, defaults: UserDefaults = .standard) -> String {
             guard let selection = selection(for: kind, defaults: defaults) else {
-                return String(localized: "Use Conversation Model")
+                return kind.followingTitle
             }
             return "\(selection.provider.displayName) · \(selection.model)"
         }
@@ -76,7 +90,8 @@ enum Preferences {
                 compression: convert(.compression),
                 title: convert(.title),
                 vision: convert(.vision),
-                imageGeneration: convert(.imageGeneration)
+                imageGeneration: convert(.imageGeneration),
+                derivedConversation: convert(.derivedConversation)
             )
         }
 

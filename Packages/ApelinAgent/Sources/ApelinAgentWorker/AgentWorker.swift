@@ -450,11 +450,13 @@ actor WorkerState {
             modelParameters: open.modelParameters,
         )
 
+        await modelChoice.setDefaults(open.modelDefaults)
         let choiceStore = modelChoice
         await session.observePendingModel { choice in
             await choiceStore.set(provider: choice.wireProvider, model: choice.model,
                                   reasoningEffort: choice.reasoningEffort, serviceTier: choice.serviceTier,
                                   modelParameters: choice.parameters)
+            if let defaults = choice.defaults { await choiceStore.setDefaults(defaults) }
         }
 
         // The total this open's model reads. A conversation whose log ends on

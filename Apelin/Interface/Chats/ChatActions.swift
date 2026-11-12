@@ -217,13 +217,15 @@ enum ChatActions {
 
     /// The pick goes through: kept for the chat, and told to the session, which
     /// records the total the new model reads — that record is what the ring and
-    /// the panel draw. A run going takes the choice with the next prompt.
+    /// the panel draw. A run going takes the choice with the next prompt. The
+    /// model is also what the next new conversation starts with.
     private static func apply(
         _ selection: ComposerModelSelection,
         to id: UUID,
         runtime: ChatRuntime,
     ) {
         ComposerModelSelection.choose(selection, for: id)
+        ComposerModelSelection.rememberSelection(selection)
         Task { await runtime.configureModel(id, selection: selection) }
     }
 

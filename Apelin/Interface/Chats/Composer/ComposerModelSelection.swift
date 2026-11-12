@@ -43,8 +43,10 @@ struct ComposerModelSelection: Codable, Equatable {
         return chosen.flatMap { (supportedTiers ?? []).contains($0) ? $0 : nil }
     }
 
-    /// The old global choice is only a seed. No conversation writes it back,
-    /// so even an old chat opened later cannot inherit another chat's edits.
+    /// The model the last conversation used, written on every pick and read
+    /// by the next new conversation, which starts on what the reader was
+    /// last working with rather than on an older default. It carries no
+    /// effort or speed of its own: those are `ComposerModelPreferences`.
     static func selection(for id: UUID, defaults: UserDefaults = .standard) -> Self? {
         let scopedKey = key + ".conversation." + id.uuidString
         if let data = defaults.data(forKey: scopedKey) {
@@ -56,6 +58,17 @@ struct ComposerModelSelection: Codable, Equatable {
         seed.preferredTier = ComposerModelPreferences.tier
         save(seed, for: id, defaults: defaults)
         return seed
+    }
+
+    /// The model the reader picked for a conversation, kept for the next new
+    /// conversation to start on: the app's last-known choice, without this
+    /// conversation's own effort and speed, which the reader's picks keep.
+    static func rememberSelection(_ selection: Self) {
+        var stored = selection
+        stored.conversationScoped = nil
+        stored.preferredEffort = nil
+        stored.preferredTier = nil
+        current = stored
     }
 
     /// Changing models or refreshing the catalog keeps this chat's picks.
@@ -72,12 +85,47 @@ struct ComposerModelSelection: Codable, Equatable {
         guard var selected = selection(for: id, defaults: defaults) else { return }
         selected.preferredEffort = effort
         save(selected, for: id, defaults: defaults)
+        // The reader's pick is the app's from now on: a conversation started
+        // afterwards is seeded with it, as it is with the model.
+        ComposerModelPreferences.effort = effort
     }
 
     static func setTier(_ tier: AgentServiceTier?, for id: UUID, defaults: UserDefaults = .standard) {
         guard var selected = selection(for: id, defaults: defaults) else { return }
         selected.preferredTier = tier
         save(selected, for: id, defaults: defaults)
+        ComposerModelPreferences.tier = tier
+    }
+
+    /// A conversation an agent opened (`ChatAdoption`) starts on the model
+    /// Settings ▸ Default Models names for delegated chats, where the reader
+    /// named one: the session its opener opened already runs on it. Counts
+    /// and speeds are left to `ensureModelSelection`, which fills them from
+    /// the catalog as it refreshes the row. A conversation with a pick of its
+    /// own is never seeded, nor is one whose settings name none.
+    static func seedDelegated(for id: UUID, defaults: UserDefaults = .standard) {
+        guard defaults.data(forKey: key + ".conversation." + id.uuidString) == nil,
+              let chosen = Preferences.DefaultModels.selection(for: .derivedConversation, defaults: defaults)
+        else { return }
+        var seed = Self(
+            provider: chosen.provider,
+            model: chosen.model,
+            supportedEfforts: [],
+            supportedTiers: [],
+        )
+        seed.conversationScoped = true
+        seed.preferredEffort = ComposerModelPreferences.effort
+        seed.preferredTier = ComposerModelPreferences.tier
+        save(seed, for: id, defaults: defaults)
+    }
+
+    /// A conversation shown but never written in keeps no pick of its own:
+    /// started again, it is a new conversation and takes the model the
+    /// reader last picked, not the one it was seeded with when it was first
+    /// shown.
+    static func forget(_ id: UUID, defaults: UserDefaults = .standard) {
+        defaults.removeObject(forKey: key + ".conversation." + id.uuidString)
+        NotificationCenter.default.post(name: .composerModelSelectionChanged, object: id)
     }
 
     /// A conversation made from another one keeps its picks: a branch of a

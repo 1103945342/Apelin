@@ -233,6 +233,10 @@ public struct AgentModelDefaults: Codable, Sendable, Equatable, Hashable {
     public var title: AgentModelSelection?
     public var vision: AgentModelSelection?
     public var imageGeneration: AgentModelSelection?
+    /// The model a conversation an agent opens starts with
+    /// (`apelin_conversation_create`). Absent leaves it on the model of the
+    /// conversation that opened it.
+    public var derivedConversation: AgentModelSelection?
 
     public init(
         promptRewrite: AgentModelSelection? = nil,
@@ -240,12 +244,14 @@ public struct AgentModelDefaults: Codable, Sendable, Equatable, Hashable {
         title: AgentModelSelection? = nil,
         vision: AgentModelSelection? = nil,
         imageGeneration: AgentModelSelection? = nil,
+        derivedConversation: AgentModelSelection? = nil,
     ) {
         self.promptRewrite = promptRewrite
         self.compression = compression
         self.title = title
         self.vision = vision
         self.imageGeneration = imageGeneration
+        self.derivedConversation = derivedConversation
     }
 }
 

@@ -14,6 +14,15 @@ public actor SessionModelChoice {
 
     public private(set) var current = Choice()
 
+    /// The app's model defaults, as the last open or prompt carried them: a
+    /// conversation this session opens reads the model delegated chats are
+    /// given here, since the backend keeps only the open's copy.
+    public private(set) var defaults: AgentModelDefaults?
+
+    public func setDefaults(_ defaults: AgentModelDefaults?) {
+        self.defaults = defaults
+    }
+
     public init(
         provider: AgentProvider? = nil,
         model: String? = nil,

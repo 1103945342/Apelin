@@ -833,85 +833,85 @@
       }
     }
   },
-  "These models are used for auxiliary tasks and do not change the model selected for a conversation.": {
+  "These models are used for auxiliary tasks and for conversations an agent opens; they do not change the model selected for a conversation.": {
     "extractionState": "manual",
     "localizations": {
       "ar": {
         "stringUnit": {
           "state": "translated",
-          "value": "تُستخدم هذه النماذج لمهام مساعدة ولا تغيّر النموذج المحدد للمحادثة."
+          "value": "تُستخدم هذه النماذج لمهام مساعدة وللمحادثات التي يفتحها وكيل؛ ولا تغيّر النموذج المحدد للمحادثة."
         }
       },
       "de": {
         "stringUnit": {
           "state": "translated",
-          "value": "Diese Modelle werden für Hilfsaufgaben verwendet und ändern nicht das für eine Unterhaltung ausgewählte Modell."
+          "value": "Diese Modelle werden für Hilfsaufgaben und für Chats verwendet, die ein Agent öffnet; sie ändern nicht das für eine Unterhaltung ausgewählte Modell."
         }
       },
       "en": {
         "stringUnit": {
           "state": "translated",
-          "value": "These models are used for auxiliary tasks and do not change the model selected for a conversation."
+          "value": "These models are used for auxiliary tasks and for conversations an agent opens; they do not change the model selected for a conversation."
         }
       },
       "es": {
         "stringUnit": {
           "state": "translated",
-          "value": "Estos modelos se usan para tareas auxiliares y no cambian el modelo seleccionado para una conversación."
+          "value": "Estos modelos se usan para tareas auxiliares y para las conversaciones que abre un agente; no cambian el modelo seleccionado para una conversación."
         }
       },
       "fr": {
         "stringUnit": {
           "state": "translated",
-          "value": "Ces modèles servent aux tâches auxiliaires et ne modifient pas le modèle sélectionné pour une conversation."
+          "value": "Ces modèles servent aux tâches auxiliaires et aux conversations ouvertes par un agent ; ils ne modifient pas le modèle sélectionné pour une conversation."
         }
       },
       "it": {
         "stringUnit": {
           "state": "translated",
-          "value": "Questi modelli vengono usati per attività ausiliarie e non cambiano il modello selezionato per una conversazione."
+          "value": "Questi modelli vengono usati per attività ausiliarie e per le chat aperte da un agente; non cambiano il modello selezionato per una conversazione."
         }
       },
       "ja": {
         "stringUnit": {
           "state": "translated",
-          "value": "これらのモデルは補助的なタスクに使用され、会話で選択したモデルは変更されません。"
+          "value": "これらのモデルは補助的なタスクと、エージェントが開くチャットに使用され、会話で選択したモデルは変更されません。"
         }
       },
       "ko": {
         "stringUnit": {
           "state": "translated",
-          "value": "이 모델은 보조 작업에 사용되며 대화에서 선택한 모델을 변경하지 않습니다."
+          "value": "이 모델은 보조 작업과 에이전트가 여는 대화에 사용되며, 대화에서 선택한 모델은 변경하지 않습니다."
         }
       },
       "pt-BR": {
         "stringUnit": {
           "state": "translated",
-          "value": "Esses modelos são usados para tarefas auxiliares e não alteram o modelo selecionado para uma conversa."
+          "value": "Esses modelos são usados para tarefas auxiliares e para as conversas que um agente abre; não alteram o modelo selecionado para uma conversa."
         }
       },
       "ru": {
         "stringUnit": {
           "state": "translated",
-          "value": "Эти модели используются для вспомогательных задач и не меняют модель, выбранную для разговора."
+          "value": "Эти модели используются для вспомогательных задач и для разговоров, которые открывает агент; они не меняют модель, выбранную для разговора."
         }
       },
       "vi": {
         "stringUnit": {
           "state": "translated",
-          "value": "Các mô hình này được dùng cho tác vụ phụ trợ và không thay đổi mô hình đã chọn cho cuộc trò chuyện."
+          "value": "Các mô hình này được dùng cho tác vụ phụ trợ và cho các cuộc trò chuyện do agent mở; chúng không thay đổi mô hình đã chọn cho cuộc trò chuyện."
         }
       },
       "zh-Hans": {
         "stringUnit": {
           "state": "translated",
-          "value": "这些模型用于辅助任务，不会更改对话中所选的模型。"
+          "value": "这些模型用于辅助任务和 Agent 发起的对话，不会更改对话中所选的模型。"
         }
       },
       "zh-Hant": {
         "stringUnit": {
           "state": "translated",
-          "value": "這些模型用於輔助任務，不會變更對話中選取的模型。"
+          "value": "這些模型用於輔助任務和 Agent 發起的對話，不會變更對話中選取的模型。"
         }
       }
     }
@@ -41151,6 +41151,172 @@
           "stringUnit": {
             "state": "translated",
             "value": "強制推送到遠端"
+          }
+        }
+      }
+    },
+    "Follow the Opening Chat": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اتّباع المحادثة المُنشئة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eröffnendem Chat folgen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Follow the Opening Chat"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguir el chat que la abre"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suivre la conversation d'origine"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segui la chat di origine"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開始したチャットに従う"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시작한 채팅 따르기"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguir a conversa de origem"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Как в исходном чате"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Theo cuộc trò chuyện khởi tạo"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跟随发起的对话"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跟隨發起的對話"
+          }
+        }
+      }
+    },
+    "Delegated Conversations": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المحادثات المفوّضة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delegierte Unterhaltungen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delegated Conversations"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conversaciones delegadas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conversations déléguées"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conversazioni delegate"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "委任した会話"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위임된 대화"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conversas delegadas"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Делегированные разговоры"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuộc trò chuyện được giao"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "派生对话"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "衍生對話"
           }
         }
       }
