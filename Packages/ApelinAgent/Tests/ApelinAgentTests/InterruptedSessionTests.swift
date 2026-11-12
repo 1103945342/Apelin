@@ -41,19 +41,28 @@ struct InterruptedSessionTests {
             : [.finished(reason: .aborted)]
         let records = try await session.log.records(afterSeq: 0)
         #expect(Array(records.prefix(original.count)) == original, "never rewrite or delete the interrupted history")
-        #expect(records.dropFirst(original.count).map(\.event) == expected)
+        let recoveryEvents = records.dropFirst(original.count).map(\.event).filter {
+            if case .pendingQueue = $0 { return false }; return true
+        }
+        #expect(recoveryEvents == expected)
         #expect(try await session.replayBoundary() == records.last?.seq, "recovery belongs to history, not a fresh live completion")
         await session.abort()
         await session.waitForIdle()
         await session.close()
 
         let reopened = try await open()
-        #expect(try await reopened.log.records(afterSeq: 0) == records, "opening and Stop must not duplicate the end")
+        let reopenedEvents = try await reopened.log.records(afterSeq: 0).map(\.event).filter {
+            if case .pendingQueue = $0 { return false }; return true
+        }
+        #expect(reopenedEvents == records.map(\.event).filter {
+            if case .pendingQueue = $0 { return false }; return true
+        }, "opening and Stop must not duplicate the end")
         #expect(await reopened.log.opened.interruptionEvents.isEmpty)
         // Wait for an actual event, not waitForIdle before prompt's queued
         // acceptance has established runTask.
         let events = try await reopened.events(afterSeq: records.last?.seq ?? 0)
         faux.setResponses([.message(fauxAssistantMessage("Next reply"))])
+        try await reopened.manageQueue(.init(sessionID: reopened.id, action: .resume))
         try await reopened.prompt("Continue")
         var completed = false
         for await record in events {

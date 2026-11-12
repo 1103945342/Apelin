@@ -122,5 +122,37 @@ func checkReplayEnd() {
                  "a second attach that says the task finished finds nothing missing")
     precondition(!swallowed.takeMissedEnd(lost, at: lost.seq) && swallowed.events.count == history.count + 1,
                  "and the end is taken once")
-    print("ok: a reopened session's task that ends during its replay ends the turn, and one read past is taken again once")
+    // Queue-only changes must leave replay too: recovery, reorder, editing
+    // and deletion do not need a new user prompt to become visible.
+    let waitingID = UUID()
+    func queue(_ seq: UInt64, text: String?, paused: Bool) -> TaskEvent {
+        event(seq, "pendingQueue", [
+            "paused": .bool(paused),
+            "messages": .array(text.map { [.object([
+                "id": .string(waitingID.uuidString), "text": .string($0),
+                "attachments": .array([]), "editing": .bool(false),
+            ])] } ?? []),
+        ])
+    }
+    let oldQueue = queue(9, text: "Waiting", paused: false)
+    var queueRecord = reopened()
+    queueRecord.events.append(oldQueue)
+    queueRecord.reopen(as: TaskHandle(taskID: .make(), kind: .agent))
+    precondition(queueRecord.take(history).isEmpty)
+    // A relaunch while partway through replay keeps the remaining count.
+    queueRecord = try! JSONDecoder().decode(ChatRecord.self, from: JSONEncoder().encode(queueRecord))
+    precondition(queueRecord.take([oldQueue]).isEmpty)
+    let recovered = queue(10, text: "Waiting", paused: true)
+    precondition(queueRecord.take([recovered]) == [recovered] && queueRecord.replay == nil)
+    precondition(ChatTranscript(events: queueRecord.events) { _ in nil }.pendingPaused)
+    let edited = queue(11, text: "Edited", paused: true)
+    precondition(queueRecord.take([edited]) == [edited])
+    precondition(ChatTranscript(events: queueRecord.events) { _ in nil }.pendingMessages.first?.text == "Edited")
+    let deleted = queue(12, text: nil, paused: true)
+    precondition(queueRecord.take([deleted]) == [deleted])
+    precondition(ChatTranscript(events: queueRecord.events) { _ in nil }.pendingMessages.isEmpty)
+    var noOldQueue = reopened()
+    precondition(noOldQueue.take(history).isEmpty)
+    precondition(noOldQueue.take([oldQueue]) == [oldQueue], "a first pending receipt ends replay")
+    print("ok: replay end, partial replay recovery and queue-only changes after reopening")
 }

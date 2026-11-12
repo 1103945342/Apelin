@@ -469,6 +469,13 @@ public struct AgentAttachment: Codable, Sendable, Hashable {
     }
 }
 
+public enum AgentMessageDelivery: String, Codable, Sendable, CaseIterable {
+    /// A complete new run after the active run succeeds.
+    case queue
+    /// Guide the active run at its next input boundary; idle falls back to queue.
+    case steer
+}
+
 public struct AgentPromptRequest: OperationRequest {
     public typealias Response = Acknowledged
     public static let operation = AppOperation.agentPrompt
@@ -502,6 +509,8 @@ public struct AgentPromptRequest: OperationRequest {
     /// agent's prompt and cleared for the app's; the worker records it on
     /// the `prompt` event as `from`.
     public var fromSessionID: String?
+    /// Absent on older callers means queue. Only an explicit steer guides a live run.
+    public var delivery: AgentMessageDelivery?
 
     public init(
         sessionID: String,
@@ -517,6 +526,7 @@ public struct AgentPromptRequest: OperationRequest {
         asksBeforeScreen: Bool? = nil,
         runMode: AgentRunMode? = nil,
         fromSessionID: String? = nil,
+        delivery: AgentMessageDelivery? = nil,
         modelParameters: AgentModelParameters? = nil,
     ) {
         self.sessionID = sessionID
@@ -533,6 +543,7 @@ public struct AgentPromptRequest: OperationRequest {
         self.asksBeforeScreen = asksBeforeScreen
         self.runMode = runMode
         self.fromSessionID = fromSessionID
+        self.delivery = delivery
     }
 }
 
@@ -644,12 +655,32 @@ public struct AgentCompactionResult: Codable, Sendable, Hashable {
     }
 }
 
-/// The model the next message will use, applied to a session that is already
-/// open — the composer's row sends it when the reader picks another model, so
-/// what the ring draws is that model's total before anything is sent. The
-/// session applies it between runs; the figure is recorded again, which is
-/// what the app shows. A choice that never arrives still rides the next
-/// `agentPrompt`, so nothing depends on this call having landed.
+/// Operations on reader input not yet dispatched to a model run.
+public enum AgentQueueAction: String, Codable, Sendable {
+    case steer, edit, delete, reorder, hold, resume
+}
+
+/// App-only management of input waiting for a new complete run.
+public struct AgentQueueRequest: OperationRequest {
+    public typealias Response = Acknowledged
+    public static let operation = AppOperation.agentQueue
+    public var sessionID: String
+    public var action: AgentQueueAction
+    public var messageID: UUID?
+    public var text: String?
+    public var order: [UUID]?
+
+    public init(sessionID: String, action: AgentQueueAction, messageID: UUID? = nil, text: String? = nil, order: [UUID]? = nil) {
+        self.sessionID = sessionID
+        self.action = action
+        self.messageID = messageID
+        self.text = text
+        self.order = order
+    }
+}
+
+/// The model the next message will use, applied to an already-open session.
+/// The next prompt still carries this choice if this update does not arrive.
 public struct AgentConfigureRequest: OperationRequest {
     public typealias Response = AgentConfigureResponse
     public static let operation = AppOperation.agentConfigure
@@ -793,6 +824,11 @@ public extension ApelinService {
 
     func agentSteer(sessionID: String, text: String) async throws {
         _ = try await send(AgentSteerRequest(sessionID: sessionID, text: text))
+    }
+
+    @discardableResult
+    func agentQueue(_ request: AgentQueueRequest) async throws -> Acknowledged {
+        try await send(request)
     }
 
     func agentAbort(sessionID: String) async throws {

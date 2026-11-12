@@ -39,9 +39,9 @@ public extension ChannelHostBackend {
         _ request: ConversationSendToolRequest,
     ) async throws -> ConversationActionToolResponse {
         try await conversation("apelin_conversation_send") {
-            _ = try await service.send(AgentPromptRequest(sessionID: request.sessionID, text: request.text))
+            _ = try await service.send(AgentPromptRequest(sessionID: request.sessionID, text: request.text, delivery: request.delivery))
         }
-        return ConversationActionToolResponse(sessionID: request.sessionID, done: "sent")
+        return ConversationActionToolResponse(sessionID: request.sessionID, done: request.delivery == .steer ? "steer requested; retained in the queue until taken" : "queued for a new run after the active run succeeds")
     }
 
     /// General Chat names no project and gets every project's it may reach,

@@ -86,7 +86,7 @@ enum AgentConversationRules {
         guard !prompt.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw ApelinError(.badRequest, "the message is empty")
         }
-        return AgentPromptRequest(sessionID: target.sessionID, text: prompt.text, fromSessionID: sender.sessionID)
+        return AgentPromptRequest(sessionID: target.sessionID, text: prompt.text, fromSessionID: sender.sessionID, delivery: prompt.delivery)
     }
 
     /// The app's prompt is the user's own: whatever `fromSessionID` it
@@ -94,6 +94,7 @@ enum AgentConversationRules {
     static func appPrompt(_ prompt: AgentPromptRequest) -> AgentPromptRequest {
         var prompt = prompt
         prompt.fromSessionID = nil
+        prompt.delivery = nil // Reader steering goes through agentQueue, not an untrusted prompt field.
         return prompt
     }
 
@@ -159,6 +160,7 @@ enum AgentConversationRules {
         return detail["projectID"]?.stringValue == target.project.id
             && detail["sessionID"]?.stringValue == target.sessionID
             && detail["text"]?.stringValue == prompt.text
+            && (detail["delivery"]?.stringValue ?? "queue") == (prompt.delivery ?? .queue).rawValue
     }
 
     /// `conversationOpened` on the opener's task: {sessionID, task, title?,

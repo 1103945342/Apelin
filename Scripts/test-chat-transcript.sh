@@ -58,6 +58,7 @@ sources=(
     "$root/Tests/ChatTranscript/TraceStepCheck.swift"
     "$root/Tests/ChatTranscript/ProcessPresentationCheck.swift"
     "$root/Tests/ChatTranscript/StreamPresentationCheck.swift"
+    "$root/Tests/ChatTranscript/PendingQueueCheck.swift"
     "$root/Tests/ChatTranscript/ToolCallSectionsCheck.swift"
     "$root/Tests/ChatTranscript/GitUntrackedGroupCheck.swift"
     "$root/Tests/ChatTranscript/ReplayEndCheck.swift"

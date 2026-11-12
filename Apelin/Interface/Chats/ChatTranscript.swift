@@ -12,6 +12,10 @@ import Foundation
 /// built from all of them at once, at that `now`, would.
 struct ChatTranscript {
     var messages: [ChatMessage] = []
+    /// Durable input waiting for its own run, separate from injected steering.
+    var pendingMessages: [ChatMessage] = []
+    var pendingPaused = false
+    var pendingHeld: Set<UUID> = []
     var isWorking = false
     /// Compacting between runs, as the app asked (`agentCompact`).
     var isCompacting = false
@@ -106,6 +110,7 @@ struct ChatTranscript {
     init(
         events: [TaskEvent],
         firstEvent: Int = 0,
+        pendingSnapshot: TaskEvent? = nil,
         sending: [ComposerDraft] = [],
         runEnded: Bool = false,
         conversationTitle: (String) -> String? = { _ in nil },
@@ -113,6 +118,7 @@ struct ChatTranscript {
         attachment: (AgentAttachment) -> ComposerAttachment?,
     ) {
         self.firstEvent = firstEvent
+        if let pendingSnapshot { readPending(pendingSnapshot.payload, conversationTitle: conversationTitle, attachment: attachment) }
         append(
             events,
             sending: sending,
@@ -183,6 +189,8 @@ struct ChatTranscript {
                 }
                 unanswered = messageID
                 isWorking = true
+            case "pendingQueue":
+                readPending(payload, conversationTitle: conversationTitle, attachment: attachment)
             case "queued":
                 guard let messageID = Self.userMessageID(of: event),
                       firstRows[messageID] == nil, !queued.contains(where: { $0.id == messageID })
@@ -462,11 +470,33 @@ struct ChatTranscript {
             messages[header].headerReceivedSettles = assistant != nil
         }
         messages += queued
-        for draft in sending where !messages.contains(where: { $0.id == draft.id }) {
+        for draft in sending where !messages.contains(where: { $0.id == draft.id })
+            && !pendingMessages.contains(where: { $0.id == draft.id }) {
             var message = ChatMessage(id: draft.id, role: .user, text: draft.text, attachments: draft.attachments)
             // A running turn takes it at its next step, as the host will say.
             message.isQueued = isWorking
             messages.append(message)
+        }
+    }
+
+    private mutating func readPending(_ payload: JSONValue?, conversationTitle: (String) -> String?, attachment: (AgentAttachment) -> ComposerAttachment?) {
+        pendingPaused = payload?["paused"]?.boolValue ?? false
+        pendingHeld = []
+        let values: [JSONValue]
+        if case let .array(items)? = payload?["messages"] { values = items } else { values = [] }
+        pendingMessages = values.compactMap { value in
+            guard let id = value["id"]?.stringValue.flatMap(UUID.init(uuidString:)) else { return nil }
+            if value["editing"]?.boolValue == true { pendingHeld.insert(id) }
+            var message = ChatMessage(
+                id: id, role: .user, text: value["text"]?.stringValue ?? "",
+                attachments: Self.attachments(in: value["attachments"]).compactMap(attachment)
+            )
+            message.isQueued = true
+            if let sender = value["sender"]?["sessionID"]?.stringValue {
+                message.sender = Self.senderLine(conversationTitle(sender) ?? value["sender"]?["title"]?.stringValue)
+            }
+            message.queueDelivery = value["delivery"]?.stringValue
+            return message
         }
     }
 
@@ -663,6 +693,16 @@ struct ChatTranscript {
     /// rail can name a message the page has not folded in yet.
     static func rowID(forEventAt index: Int) -> UUID {
         rowID("event:\(index)")
+    }
+
+    /// Queue snapshots also acknowledge input and its saved attachments. These
+    /// synthetic receipts are never appended to history.
+    static func acceptedMessages(in event: TaskEvent) -> [TaskEvent] {
+        guard event.kind == "pendingQueue" else { return [event] }
+        guard case let .array(values)? = event.payload?["messages"] else { return [] }
+        return values.map {
+            TaskEvent(seq: event.seq, kind: "queued", time: event.time, payload: $0)
+        }
     }
 
     /// The id of the user message an event shows: a `prompt`, `steer` or

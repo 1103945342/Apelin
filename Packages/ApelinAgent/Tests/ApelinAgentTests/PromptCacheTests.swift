@@ -167,6 +167,7 @@ struct PromptCacheTests {
         clock.set(Self.beforeMidnight.addingTimeInterval(7 * 60))
         session = try await AgentSession(configuration: configuration, backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
         await session.setApprovalMode(.relaxed)
+        try await session.manageQueue(.init(sessionID: session.id, action: .resume))
         try await session.prompt("Once more.", messageID: UUID())
         await session.waitForIdle()
         log += try await session.log.records(afterSeq: log.last?.seq ?? 0)
@@ -349,7 +350,7 @@ struct PromptCacheTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func `a change a dropped message carried is told again, and a compaction takes the prompt afresh`() async throws {
+    func `a deleted pending message consumes no delta and compaction takes the prompt afresh`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let provider = await registerFauxProvider()
@@ -380,11 +381,12 @@ struct PromptCacheTests {
             backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource(),
         )
         let stream = try await session.events(afterSeq: 0)
+        let pendingID = UUID()
         try await session.prompt("remove it")
         for await record in stream {
             if case .approvalRequested = record.event {
                 try store.save(MemoryRecord(title: "Logs", body: "Keep the logs."), revision: store.read().revision)
-                try await session.prompt("and keep the logs", messageID: UUID())
+                try await session.prompt("and keep the logs", messageID: pendingID)
                 await session.abort()
             }
             if case .finished = record.event {
@@ -392,6 +394,8 @@ struct PromptCacheTests {
             }
         }
         await session.waitForIdle()
+        try await session.manageQueue(.init(sessionID: session.id, action: .delete, messageID: pendingID))
+        try await session.manageQueue(.init(sessionID: session.id, action: .resume))
         try await session.prompt("one")
         await session.waitForIdle()
         for text in ["two", "three"] {

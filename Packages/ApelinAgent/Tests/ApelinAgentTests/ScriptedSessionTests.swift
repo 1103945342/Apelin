@@ -1,5 +1,6 @@
 @testable import ApelinAgent
 import Foundation
+import ApelinProtocol
 import KWWKAgent
 import KWWKAI
 import Testing
@@ -220,7 +221,7 @@ struct ScriptedSessionTests {
 
         let events = records.map(\.event)
         #expect(records.map(\.seq) == Array(1 ... UInt64(records.count)))
-        #expect(events.first == .promptSubmitted(text: "Turn the hook on, build, install and check it loaded."))
+        #expect(events.contains { if case .userMessage(_, "Turn the hook on, build, install and check it loaded.", _) = $0 { return true }; return false })
         let toolOrder = events.compactMap { event -> String? in
             switch event {
             case let .toolCallStarted(call): "start:\(call.name)"
@@ -314,7 +315,7 @@ struct ScriptedSessionTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func `a message sent during a run joins it after the tool call in progress`() async throws {
+    func `an explicit pending steer joins after the tool call in progress`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let faux = await registerFauxProvider()
@@ -337,6 +338,7 @@ struct ScriptedSessionTests {
             events.append(record.event)
             if case let .approvalRequested(request) = record.event {
                 try await session.prompt("and keep the logs", messageID: later)
+                try await session.manageQueue(.init(sessionID: session.id, action: .steer, messageID: later))
                 try await session.approve(requestID: request.id, decision: .approve(.once))
             }
             if case .finished = record.event {
@@ -372,7 +374,7 @@ struct ScriptedSessionTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func `a message queued when the run is stopped is dropped`() async throws {
+    func `a pending message when the run is stopped remains paused`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let faux = await registerFauxProvider()
@@ -403,7 +405,12 @@ struct ScriptedSessionTests {
                 break
             }
         }
-        #expect(dropped == [later])
+        #expect(dropped.isEmpty)
+        let snapshots = try await session.log.records(afterSeq: 0).map(\.event)
+        #expect(snapshots.contains {
+            if case let .pendingQueue(messages, paused) = $0 { return paused && messages.contains { $0.id == later } }
+            return false
+        })
         // a stop is a stop: no run follows to take the message
         await session.waitForIdle()
         let recorded = try await session.log.records(afterSeq: 0).map(\.event)
@@ -419,7 +426,7 @@ struct ScriptedSessionTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func `a message queued when the run fails starts the next run, and is read once`() async throws {
+    func `a pending message after failure requires resume and is read once`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let faux = await registerFauxProvider()
@@ -472,6 +479,12 @@ struct ScriptedSessionTests {
             }
             if case let .finished(reason) = record.event {
                 finished.append(reason)
+                if reason == .failed {
+                    await session.waitForIdle()
+                    let waiting = try await session.log.records(afterSeq: 0).map(\.event)
+                    #expect(!waiting.contains { if case .userMessage(later, _, _) = $0 { return true }; return false })
+                    try await session.manageQueue(.init(sessionID: session.id, action: .resume))
+                }
                 if finished.count == 2 {
                     break
                 }

@@ -1047,11 +1047,16 @@ actor ToolRunner {
             guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                 throw ToolArgumentError("the message is empty")
             }
+            let deliveryValue = arguments.argString("delivery") ?? "queue"
+            guard let delivery = AgentMessageDelivery(rawValue: deliveryValue) else {
+                throw ToolArgumentError("delivery must be queue or steer")
+            }
             return try await json(backend.conversationSend(ConversationSendToolRequest(
                 context: context,
                 sessionID: target,
                 text: text,
                 target: facts.targetProject,
+                delivery: delivery,
             )))
 
         case .conversationList:

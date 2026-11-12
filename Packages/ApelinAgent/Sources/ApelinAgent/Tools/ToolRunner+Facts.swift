@@ -319,6 +319,7 @@ extension ToolRunner {
             sessionID: arguments.argNonEmptyString("session_id"),
             text: name == .conversationCreate ? arguments.argString("prompt")
                 : name == .conversationSend ? arguments.argString("text") : nil,
+            delivery: name == .conversationSend ? arguments.argString("delivery") : nil,
         )
     }
 

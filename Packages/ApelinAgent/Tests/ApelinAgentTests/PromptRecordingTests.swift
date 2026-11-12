@@ -38,7 +38,7 @@ struct PromptRecordingTests {
         let refresh = try SlowRefresh(home)
         let sending = Task { try await session.prompt("Hello", messageID: id) }
 
-        let records = try await recorded(in: session) { $0 == .userMessage(id: id, text: "Hello", attachments: []) }
+        let records = try await recorded(in: session) { if case let .pendingQueue(messages, _) = $0 { return messages.contains { $0.id == id } }; return false }
         #expect(records != nil, "the message waited for the system prompt")
         #expect(records?.contains { $0.event == .messageStarted } == false)
         try refresh.saveMemory("fresh-memory-body")
@@ -54,7 +54,7 @@ struct PromptRecordingTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func `a message sent during a run is recorded as queued before a slow refresh`() async throws {
+    func `a message sent during a run is recorded as pending before a slow refresh`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let faux = await registerFauxProvider()
@@ -80,7 +80,7 @@ struct PromptRecordingTests {
         let refresh = try SlowRefresh(home)
         let sending = Task { try await session.prompt("Second", messageID: id) }
 
-        let records = try await recorded(in: session) { $0 == .userMessageQueued(id: id, text: "Second", attachments: []) }
+        let records = try await recorded(in: session) { if case let .pendingQueue(messages, _) = $0 { return messages.contains { $0.id == id } }; return false }
         #expect(records != nil, "the queued message waited for the system prompt")
         refresh.release()
         try await sending.value

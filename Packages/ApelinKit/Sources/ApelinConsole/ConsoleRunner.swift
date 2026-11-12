@@ -225,6 +225,9 @@ public actor ConsoleRunner {
         guard let operation = AppOperation(rawValue: step.op) else {
             throw ApelinError(.unknownOperation, step.op)
         }
+        guard operation != .agentQueue else {
+            throw ApelinError(.denied, "Pending input is managed only in the conversation.")
+        }
         // API configuration is exposed only to the explicit editing form.
         // Console responses are persisted and logged, so never fetch its key.
         guard operation != .agentAPIConfiguration else {

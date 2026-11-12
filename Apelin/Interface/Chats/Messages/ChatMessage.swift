@@ -58,6 +58,8 @@ struct ChatMessage: Identifiable, Hashable {
     var attachments: [ComposerAttachment]
     /// A user message sent during a run that the run has not taken yet.
     var isQueued = false
+    /// The requested delivery of durable input: queue or steer.
+    var queueDelivery: String?
     /// A user message another conversation's agent sent: the line shown
     /// over the bubble naming that conversation.
     var sender: String?

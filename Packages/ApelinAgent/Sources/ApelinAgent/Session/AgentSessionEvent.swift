@@ -15,6 +15,7 @@ public enum AgentSessionEvent: Sendable, Hashable, Codable {
     case conversationMessageTaken(id: UUID, text: String, from: String)
     /// Never restore these messages to the reader's composer.
     case conversationMessagesDropped(ids: [UUID])
+    case pendingQueue(messages: [PendingMessage], paused: Bool)
     case userMessage(id: UUID, text: String, attachments: [AgentAttachment])
     /// A message sent while a run was going: queued for the run's next
     /// step, and a `userMessage` of the same id once the run takes it.

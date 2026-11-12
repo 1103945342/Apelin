@@ -136,6 +136,7 @@ struct ChatTranscriptCache {
             transcript = ChatTranscript(
                 events: firstEvent == 0 ? record.events : Array(record.events[firstEvent...]),
                 firstEvent: firstEvent,
+                pendingSnapshot: record.events[..<firstEvent].last { $0.kind == "pendingQueue" },
                 sending: record.sending ?? [],
                 runEnded: runEnded,
                 conversationTitle: { sessionID in

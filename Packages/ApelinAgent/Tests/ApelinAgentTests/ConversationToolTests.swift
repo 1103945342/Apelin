@@ -48,7 +48,7 @@ struct ConversationToolTests {
         }
         #expect(schema(.conversationCreate).properties == ["prompt", "title", "project", "reason"])
         #expect(schema(.conversationCreate).required == ["prompt", "reason"])
-        #expect(schema(.conversationSend).required == ["session_id", "text", "reason"])
+        #expect(schema(.conversationSend).required == ["session_id", "text", "delivery", "reason"])
         #expect(schema(.conversationSend).properties.contains("project"))
         #expect(schema(.conversationList).properties == ["project", "reason"])
         #expect(schema(.conversationRead).properties == ["session_id", "after_seq", "wait_seconds", "project", "reason"])

@@ -70,21 +70,12 @@ public enum AgentWorker {
                 if let runMode = prompt.runMode {
                     await session.setRunMode(runMode)
                 }
-                if let provider = prompt.provider {
-                    try await session.configure(
-                        provider: AgentWorker.provider(AgentOpenRequest(provider: provider, model: prompt.model)),
-                        thinking: .init(rawValue: prompt.reasoningEffort?.rawValue ?? "off") ?? .off,
-                        serviceTier: AgentWorker.serviceTier(prompt.serviceTier),
-                        modelParameters: prompt.modelParameters ?? .init(),
-                        credentials: KeychainCredentialSource(accessGroup: keychainAccessGroup),
-                    )
-                    await state.modelChoice.set(
-                        provider: provider,
-                        model: prompt.model,
-                        reasoningEffort: prompt.reasoningEffort,
-                        serviceTier: prompt.serviceTier,
-                        modelParameters: prompt.modelParameters,
-                    )
+                let choice = try prompt.provider.map { provider in
+                    PendingModelChoice(
+                        provider: try AgentWorker.provider(provider: provider, model: prompt.model),
+                        wireProvider: provider, model: prompt.model,
+                        reasoningEffort: prompt.reasoningEffort, serviceTier: prompt.serviceTier,
+                        parameters: prompt.modelParameters ?? .init(), defaults: prompt.modelDefaults)
                 }
                 guard (prompt.attachments?.count ?? 0) <= 8 else {
                     throw ApelinError(.badRequest, "invalid attachment descriptor")
@@ -110,12 +101,14 @@ public enum AgentWorker {
                     guard data.count <= limit else { throw ApelinError(.badRequest, "attachment too large") }
                     return (attachment.name, attachment.mimeType, data)
                 }
-                await session.setModelDefaults(prompt.modelDefaults)
+                // A queued reader choice owns its auxiliary defaults too;
+                // do not change compression/image settings of the active run.
+                if choice == nil { await session.setModelDefaults(prompt.modelDefaults) }
                 var sender: ConversationSender?
                 if let from = prompt.fromSessionID {
                     sender = await AgentWorker.sender(from, context: context)
                 }
-                try await session.prompt(prompt.text, messageID: prompt.messageID, files: files, from: sender)
+                try await session.prompt(prompt.text, messageID: prompt.messageID, files: files, from: sender, delivery: prompt.delivery ?? .queue, modelChoice: choice)
                 await session.generateTitle(for: prompt.text)
                 return Acknowledged()
             }
@@ -128,6 +121,11 @@ public enum AgentWorker {
         case .agentSteer:
             await WorkerMain.serve(AgentSteerRequest.self, request) { steer in
                 try await state.session(steer.sessionID).steer(steer.text)
+                return Acknowledged()
+            }
+        case .agentQueue:
+            await WorkerMain.serve(AgentQueueRequest.self, request) { queue in
+                try await state.session(queue.sessionID).manageQueue(queue)
                 return Acknowledged()
             }
         case .agentAbort:
@@ -452,6 +450,13 @@ actor WorkerState {
             modelParameters: open.modelParameters,
         )
 
+        let choiceStore = modelChoice
+        await session.observePendingModel { choice in
+            await choiceStore.set(provider: choice.wireProvider, model: choice.model,
+                                  reasoningEffort: choice.reasoningEffort, serviceTier: choice.serviceTier,
+                                  modelParameters: choice.parameters)
+        }
+
         // The total this open's model reads. A conversation whose log ends on
         // another model's window would otherwise draw that one as this one's
         // until its next turn ended.
@@ -670,6 +675,11 @@ actor EventRelay {
     /// listed in AGENTS.md ▸ Decisions ▸ Agent sessions.
     static func events(for event: AgentSessionEvent, waiting: inout Int) -> [(String, ApelinCore.JSONValue?)] {
         switch event {
+        case let .pendingQueue(messages, paused):
+            return [("pendingQueue", .object([
+                "messages": (try? ApelinCore.JSONValue(encoding: messages)) ?? .array([]),
+                "paused": .bool(paused),
+            ]))]
         case let .userMessage(id, text, attachments):
             return [("prompt", .object([
                 "id": .string(id.uuidString),

@@ -539,6 +539,7 @@ struct ForkContextTests {
             #expect(ForkContext.hasCompleteToolResults(context.messages))
             return fauxAssistantMessage("Continuing safely")
         }])
+        try await session.manageQueue(.init(sessionID: session.id, action: .resume))
         try await session.prompt("Continue", messageID: UUID())
         await session.waitForIdle()
         let forkID = UUID().uuidString.lowercased()

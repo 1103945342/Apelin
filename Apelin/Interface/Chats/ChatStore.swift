@@ -72,6 +72,9 @@ struct SessionReplay: Codable, Sendable {
     /// The approvals the history asked and never saw resolved. Absent from
     /// older files, which take none.
     private var waitingApprovals: Set<String>?
+    /// Queue snapshots already shown by the app. A recovery or a queue-only
+    /// edit can be the first new event after reopening, with no prompt.
+    private var pendingSnapshots: Int?
 
     /// The replay of a session whose history is `events`.
     init(of events: [TaskEvent]) {
@@ -96,6 +99,7 @@ struct SessionReplay: Codable, Sendable {
         }
         historyChanges = changes
         waitingApprovals = waiting
+        pendingSnapshots = events.count { $0.kind == "pendingQueue" }
     }
 
     /// Whether `event` resolves an approval the history left waiting, which
@@ -117,6 +121,11 @@ struct SessionReplay: Codable, Sendable {
     mutating func replays(_ event: TaskEvent) -> Bool {
         if ChatTranscript.endsTask(event) {
             return false
+        }
+        if event.kind == "pendingQueue" {
+            guard let remaining = pendingSnapshots, remaining > 0 else { return false }
+            pendingSnapshots = remaining - 1
+            return true
         }
         if event.kind == Self.compactionKind {
             guard let remaining = compactions, remaining > 0 else { return false }
@@ -158,7 +167,8 @@ extension ChatRecord {
     /// text was changed since.
     mutating func takeEchoed(by events: [TaskEvent]) -> [(draft: ComposerDraft, event: TaskEvent)] {
         var echoed: [(draft: ComposerDraft, event: TaskEvent)] = []
-        for event in events {
+        let acknowledgements = events.flatMap(ChatTranscript.acceptedMessages)
+        for event in acknowledgements {
             guard let id = ChatTranscript.userMessageID(of: event) else { continue }
             if let index = sending?.firstIndex(where: { $0.id == id }), let draft = sending?.remove(at: index) {
                 echoed.append((draft, event))
@@ -181,7 +191,9 @@ extension ChatRecord {
         if sending?.isEmpty == true {
             sending = nil
         }
-        let recorded = events.contains { ChatTranscript.userMessageID(of: $0) == message.id }
+        let recorded = events.contains { event in
+            ChatTranscript.acceptedMessages(in: event).contains { ChatTranscript.userMessageID(of: $0) == message.id }
+        }
         guard !recorded, draft.text.isEmpty, draft.attachments.isEmpty else { return false }
         draft = message
         return true

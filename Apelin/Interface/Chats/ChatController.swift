@@ -28,6 +28,7 @@ final class ChatController: UIViewController {
     var onOpenChat: ((ChatSummary) -> Void)?
     private let titleView = ChatTitleView()
     private var messageList = ListView<ChatMessage>()
+    @objc dynamic private var openingQueueEditor = false
     private let composer = ComposerView()
     private let topBlur = ChatTopBlurView()
     /// A tap on the page, anywhere the composer is not, puts the keyboard
@@ -161,6 +162,11 @@ final class ChatController: UIViewController {
         view.addSubview(topBlur)
 
         composer.delegate = self
+        composer.queuePanel.onSteer = { [weak self] message in self?.changeQueue(.steer, messageID: message.id) }
+        composer.queuePanel.onRemove = { [weak self] message in self?.changeQueue(.delete, messageID: message.id) }
+        composer.queuePanel.onEdit = { [weak self] message in self?.editPendingMessage(message) }
+        composer.queuePanel.onReorder = { [weak self] order in self?.changeQueue(.reorder, order: order) }
+        composer.queuePanel.onResume = { [weak self] in self?.changeQueue(.resume) }
         composer.approvalSection.onDecision = { [weak self] request, decision in
             guard let self, let chat else { return }
             Task { await self.decide(request, decision, in: chat.id) }
@@ -634,6 +640,55 @@ final class ChatController: UIViewController {
         }
     }
 
+    private func changeQueue(_ action: AgentQueueAction, messageID: UUID? = nil, order: [UUID]? = nil) {
+        guard let chatID = chat?.id else { return }
+        Task {
+            do {
+                try await runtime.manageQueue(in: chatID, action: action, messageID: messageID, order: order)
+            } catch {
+                // A drag is optimistic only until the host answers. Restore the
+                // current authoritative order on a conflict, never silently retry.
+                if chat?.id == chatID { refreshRuntime() }
+                presentNotice(title: "Queue Not Updated", message: error.readableMessage)
+            }
+        }
+    }
+
+    private func editPendingMessage(_ message: ChatMessage) {
+        guard let chatID = chat?.id, !openingQueueEditor, presentedViewController == nil else { return }
+        openingQueueEditor = true
+        Task {
+            defer { openingQueueEditor = false }
+            do {
+                try await runtime.manageQueue(in: chatID, action: .hold, messageID: message.id)
+                guard chat?.id == chatID, presentedViewController == nil else {
+                    try await runtime.manageQueue(in: chatID, action: .resume, messageID: message.id)
+                    return
+                }
+                let runtime = self.runtime!
+                let sheet = EditMessageSheet(
+                    title: String(localized: "Edit Message"), text: message.text,
+                    allowsEmpty: !message.attachments.isEmpty,
+                    onCancel: { [weak self] in
+                        Task { @MainActor in
+                            do {
+                                try await runtime.manageQueue(in: chatID, action: .resume, messageID: message.id)
+                            } catch {
+                                self?.presentNotice(title: "Queue Not Updated", message: error.readableMessage)
+                            }
+                        }
+                    }, onSave: { _ in }
+                )
+                sheet.onCommit = { text in
+                    try await runtime.manageQueue(in: chatID, action: .edit, messageID: message.id, text: text)
+                }
+                EditMessageSheet.present(sheet, from: self)
+            } catch {
+                presentNotice(title: "Unable to Edit", message: error.readableMessage)
+            }
+        }
+    }
+
     func refreshRuntime() {
         guard let chat else { return }
         if let summary = runtime.summary(chat.id) {
@@ -646,7 +701,8 @@ final class ChatController: UIViewController {
             let transcript = runtime.transcript(chat.id)
             updateMessages(transcript.messages)
             composer.setBusy(summary.isWorking)
-            composer.queuePanel.show(transcript.messages.filter(\.isQueued))
+            composer.queuePanel.show(transcript.pendingMessages, paused: transcript.pendingPaused,
+                                     held: transcript.pendingHeld, canSteer: summary.isWorking)
             // The agent writes the list through a tool; reading it here is what
             // makes a change the app never saw an event for show up.
             if let sessionID = runtime.records[chat.id]?.sessionID {

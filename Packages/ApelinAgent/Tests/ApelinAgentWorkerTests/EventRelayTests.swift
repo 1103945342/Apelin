@@ -6,6 +6,22 @@ import Testing
 
 @Suite("The relay coalesces what streams")
 struct EventRelayTests {
+    @Test
+    func `pending snapshot is distinct from model queued events`() async throws {
+        let emitted = Emitted()
+        let relay = EventRelay { emitted.append($0, $1) }
+        let id = UUID()
+        let message = PendingMessage(id: id, text: "Later", attachments: [], editing: true)
+        await relay.relay(.pendingQueue(messages: [message], paused: true))
+        #expect(emitted.kinds == ["pendingQueue"])
+        let value = try #require(emitted.payloads(of: "pendingQueue").first ?? nil)
+        #expect(value["paused"]?.boolValue == true)
+        #expect(value["messages"] == .array([.object([
+            "id": .string(id.uuidString), "text": .string("Later"),
+            "attachments": .array([]), "editing": .bool(true),
+        ])]))
+    }
+
     /// What a relay emitted, in order.
     final class Emitted: @unchecked Sendable {
         private let lock = NSLock()

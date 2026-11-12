@@ -1,3 +1,4 @@
+import ApelinCore
 import SnapKit
 import UIKit
 
@@ -147,14 +148,23 @@ final class MessageActionSheet: UIViewController {
 /// A message's or a reply's text, edited in a sheet: Save gives it to the
 /// conversation, Cancel leaves it. The text view fills the sheet, on the
 /// same glass as `MessageActionSheet`.
-final class EditMessageSheet: UIViewController, UITextViewDelegate {
+final class EditMessageSheet: UIViewController, UITextViewDelegate, UIAdaptivePresentationControllerDelegate {
     private let initialText: String
     private let onSave: (String) -> Void
     private let textView = UITextView()
     private var saveItem: UIBarButtonItem?
+    private let allowsEmpty: Bool
+    private let onCancel: (() -> Void)?
+    @objc dynamic private var completed = false
+    @objc dynamic private var committing = false
+    /// A queue edit stays on screen if its atomic host update fails.
+    var onCommit: ((String) async throws -> Void)?
 
-    init(title: String, text: String, onSave: @escaping (String) -> Void) {
+    init(title: String, text: String, allowsEmpty: Bool = false, onCancel: (() -> Void)? = nil,
+         onSave: @escaping (String) -> Void) {
         initialText = text
+        self.allowsEmpty = allowsEmpty
+        self.onCancel = onCancel
         self.onSave = onSave
         super.init(nibName: nil, bundle: nil)
         self.title = title
@@ -184,12 +194,39 @@ final class EditMessageSheet: UIViewController, UITextViewDelegate {
             make.edges.equalTo(view.safeAreaLayoutGuide)
         }
         navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: UIAction { [weak self] _ in
+            self?.cancelEditing()
             self?.dismiss(animated: true)
         })
         let save = UIBarButtonItem(systemItem: .save, primaryAction: UIAction { [weak self] _ in
             guard let self else { return }
             let text = textView.text ?? ""
-            dismiss(animated: true) { self.onSave(text) }
+            if let onCommit {
+                guard !committing else { return }
+                committing = true
+                textView.isEditable = false
+                saveItem?.isEnabled = false
+                navigationItem.leftBarButtonItem?.isEnabled = false
+                navigationController?.isModalInPresentation = true
+                Task { @MainActor [self] in
+                    defer {
+                        self.committing = false
+                        self.textView.isEditable = true
+                        self.navigationItem.leftBarButtonItem?.isEnabled = true
+                        self.navigationController?.isModalInPresentation = false
+                        self.updateSave()
+                    }
+                    do {
+                        try await onCommit(text)
+                        self.completed = true
+                        self.dismiss(animated: true)
+                    } catch {
+                        self.presentNotice(title: "Unable to Edit", message: error.readableMessage)
+                    }
+                }
+            } else {
+                completed = true
+                dismiss(animated: true) { self.onSave(text) }
+            }
         })
         saveItem = save
         navigationItem.rightBarButtonItem = save
@@ -201,6 +238,21 @@ final class EditMessageSheet: UIViewController, UITextViewDelegate {
         textView.becomeFirstResponder()
     }
 
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        if isBeingDismissed || navigationController?.isBeingDismissed == true { cancelEditing() }
+    }
+
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        cancelEditing()
+    }
+
+    @objc dynamic private func cancelEditing() {
+        guard !completed else { return }
+        completed = true
+        onCancel?()
+    }
+
     func textViewDidChange(_: UITextView) {
         updateSave()
     }
@@ -208,7 +260,7 @@ final class EditMessageSheet: UIViewController, UITextViewDelegate {
     /// Nothing changed, or nothing left, saves nothing.
     private func updateSave() {
         let text = textView.text ?? ""
-        saveItem?.isEnabled = text != initialText && !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        saveItem?.isEnabled = text != initialText && (allowsEmpty || !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
     }
 
     static func present(_ sheet: EditMessageSheet, from presenter: UIViewController) {
@@ -228,6 +280,7 @@ final class EditMessageSheet: UIViewController, UITextViewDelegate {
             navigation.modalPresentationStyle = .formSheet
             navigation.preferredContentSize = CGSize(width: 540, height: 420)
         }
+        navigation.presentationController?.delegate = sheet
         presenter.present(navigation, animated: true)
     }
 }

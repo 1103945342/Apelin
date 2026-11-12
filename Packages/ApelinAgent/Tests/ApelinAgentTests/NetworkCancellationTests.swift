@@ -325,6 +325,7 @@ struct NetworkCancellationTests {
         }
         // Keep the old provider open across the next turn, including reopen
         // with the same ID after close. Do not confuse acceptance with idle.
+        try await next.manageQueue(.init(sessionID: next.id, action: .resume))
         try await next.prompt("Try again")
         let nextStarted = await Self.soon { provider.calls.count >= 2 }
         #expect(nextStarted, "prompt returns before its queued acceptance establishes runTask")

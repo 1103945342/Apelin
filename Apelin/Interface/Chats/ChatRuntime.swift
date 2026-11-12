@@ -552,6 +552,14 @@ final class ChatRuntime {
         changed(id)
     }
 
+    func manageQueue(in id: UUID, action: AgentQueueAction, messageID: UUID? = nil,
+                     text: String? = nil, order: [UUID]? = nil) async throws {
+        let opened = try await open(id)
+        _ = try await ApelinService.app.agentQueue(AgentQueueRequest(
+            sessionID: opened.sessionID, action: action, messageID: messageID, text: text, order: order
+        ))
+    }
+
     /// `ownerVerified`: the reader passed the device owner's check for this
     /// decision, which the host requires to approve a command as root.
     /// `answer`: the reader's answer, with approve, to a question.

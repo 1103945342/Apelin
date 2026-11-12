@@ -209,8 +209,8 @@ class ComposerView: ComposerSectionView {
         // own column, and push it down rather than covering what is typed. That
         // is as true of the card a request turns into: it starts under them,
         // never at the top of the composer, where they would be drawn over it.
-        var bandsTop = placePanel(queuePanel, at: presentingRequest ? spacing : inputTop)
-        bandsTop = placePanel(todoPanel, at: bandsTop)
+        var bandsTop = placePanel(todoPanel, at: presentingRequest ? spacing : inputTop)
+        bandsTop = placePanel(queuePanel, at: bandsTop)
         if !rewriteBar.isHidden {
             let height = max(20, UIFont.preferredFont(forTextStyle: .caption1).lineHeight)
             rewriteBar.frame = CGRect(

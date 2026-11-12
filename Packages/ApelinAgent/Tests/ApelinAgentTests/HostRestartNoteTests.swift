@@ -80,6 +80,7 @@ struct HostRestartNoteTests {
             configuration: Self.configuration(home, provider, id: id, hostRestarted: true),
             backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource(),
         )
+        try await session.manageQueue(.init(sessionID: session.id, action: .resume))
         try await session.prompt("Go on.", messageID: UUID())
         await session.waitForIdle()
         try await session.prompt("And again.", messageID: UUID())
@@ -152,12 +153,13 @@ struct HostRestartNoteTests {
             backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource(),
         )
         let stream = try await session.events(afterSeq: 0)
+        let pendingID = UUID()
         try await session.prompt("remove it")
         for await record in stream {
             if case .approvalRequested = record.event {
                 // due while the run waits, so the queued message carries it
                 await session.tellHostRestart()
-                try await session.prompt("and keep the logs", messageID: UUID())
+                try await session.prompt("and keep the logs", messageID: pendingID)
                 await session.abort()
             }
             if case .finished = record.event {
@@ -165,6 +167,8 @@ struct HostRestartNoteTests {
             }
         }
         await session.waitForIdle()
+        try await session.manageQueue(.init(sessionID: session.id, action: .delete, messageID: pendingID))
+        try await session.manageQueue(.init(sessionID: session.id, action: .resume))
         try await session.prompt("one")
         await session.waitForIdle()
         try await session.prompt("two")

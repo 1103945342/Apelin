@@ -1,5 +1,5 @@
 /// Another conversation of the project, as a message it sent names it.
-public struct ConversationSender: Sendable, Hashable {
+public struct ConversationSender: Sendable, Hashable, Codable {
     public var sessionID: String
     public var title: String?
 

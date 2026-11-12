@@ -35,17 +35,17 @@ extension AgentSession {
     /// Stops the run and waits for it, then with `truncate` takes message
     /// `id` and everything after it out of the conversation.
     public func rewind(to id: UUID, truncate: Bool) async throws {
-        if runTask != nil || compaction != nil {
+        if runTask != nil || compaction != nil || pendingDrain != nil {
             await abort()
             await waitForIdle()
         }
         guard truncate else { return }
-        try requireIdle()
+        try beginHistoryMutation()
+        defer { endHistoryMutation() }
         let messages = agent.state.messages
         guard let index = try await located(id, in: messages)?.index else {
             throw Self.notInHistory
         }
-        try requireIdle()
         try await replaceHistory(Array(messages[..<index]))
         anchors[id.uuidString.lowercased()] = nil
         if index == 0 {
@@ -66,7 +66,8 @@ extension AgentSession {
         guard text.count <= AgentHistoryRules.maximumEditLength else {
             throw ApelinError(.badRequest, "The text is longer than \(AgentHistoryRules.maximumEditLength) characters.")
         }
-        try requireIdle()
+        try beginHistoryMutation()
+        defer { endHistoryMutation() }
         var messages = agent.state.messages
         guard let found = try await located(id, in: messages) else { throw Self.notInHistory }
         let index = found.index
@@ -79,7 +80,6 @@ extension AgentSession {
             else { throw Self.replyNotFound }
             messages[replyIndex] = .assistant(ConversationHistory.replacingText(of: assistant, with: text))
             ConversationHistory.forgettingResponses(from: replyIndex, in: &messages)
-            try requireIdle()
             try await replaceHistory(messages)
             await record(.replyEdited(id: id, text: text))
         } else {
@@ -93,7 +93,6 @@ extension AgentSession {
             else { throw Self.notInHistory }
             messages[index] = .user(edited)
             ConversationHistory.forgettingResponses(from: index, in: &messages)
-            try requireIdle()
             try await replaceHistory(messages)
             anchors[id.uuidString.lowercased()] = HistoryAnchor(
                 digest: ConversationHistory.digest(ConversationHistory.text(of: edited)),
@@ -109,7 +108,8 @@ extension AgentSession {
     /// Deletes the reply that ends message `id`'s turn: its text, and the
     /// whole message unless it also made a call.
     public func deleteReply(_ id: UUID, expected: String?) async throws {
-        try requireIdle()
+        try beginHistoryMutation()
+        defer { endHistoryMutation() }
         var messages = agent.state.messages
         guard let index = try await located(id, in: messages)?.index else { throw Self.notInHistory }
         let end = ConversationHistory.nextReaderMessage(after: index, in: messages)
@@ -123,7 +123,6 @@ extension AgentSession {
             messages.remove(at: replyIndex)
         }
         ConversationHistory.forgettingResponses(from: replyIndex, in: &messages)
-        try requireIdle()
         try await replaceHistory(messages)
         await record(.replyDeleted(id: id))
         await recordContextUsage()
@@ -186,7 +185,8 @@ extension AgentSession {
         if context == nil {
             // Seed legacy sessions only from their surviving model messages;
             // a UI log is not a lossless substitute for a lost transcript.
-            try requireIdle()
+            try beginHistoryMutation()
+            defer { endHistoryMutation() }
             try await log.writeHistorySnapshot(agent.state.messages, anchors: anchors, seal: true)
             context = try await log.readForkContext(id)
         }
@@ -206,9 +206,14 @@ extension AgentSession {
         ApelinError(.conflict, "This reply changed since it was shown. Try again.")
     }
 
-    /// Refuses while a run or a compaction goes.
+    private func beginHistoryMutation() throws {
+        try requireIdle()
+        historyMutation = true
+    }
+
+    /// Refuses while a run, queue preparation or another history edit goes.
     private func requireIdle() throws {
-        guard runTask == nil, compaction == nil else {
+        guard canMutateHistory else {
             throw ApelinError(.conflict, "Wait for the current reply to finish, then try again.")
         }
     }
@@ -217,7 +222,7 @@ extension AgentSession {
     /// be written leaves it as it was.
     private func replaceHistory(_ messages: [Message]) async throws {
         let before = agent.state.messages
-        try requireIdle()
+        try await settlePendingBeforeHistoryChange()
         agent.state.messages = messages
         do {
             try await startConversationSegment(messages)

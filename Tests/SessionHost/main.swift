@@ -706,13 +706,14 @@ do {
 
     // The approval an open or a message in another project spends: the
     // user's of exactly that call.
-    func otherProjectAsk(_ tool: String, action: String, projectID: String, sessionID: String? = nil, text: String) -> JSONValue {
+    func otherProjectAsk(_ tool: String, action: String, projectID: String, sessionID: String? = nil, text: String, delivery: String? = nil) -> JSONValue {
         var detail: [String: JSONValue] = [
             "action": .string(action), "projectID": .string(projectID), "projectName": .string("Other"), "text": .string(text),
         ]
         if let sessionID {
             detail["sessionID"] = .string(sessionID)
         }
+        if let delivery { detail["delivery"] = .string(delivery) }
         return .object(["tool": .string(tool), "detail": .object([AgentConversationRules.otherProjectDetail: .object(detail)])])
     }
     let openAsk = otherProjectAsk("apelin_conversation_create", action: "create", projectID: other.id, text: "Import the repository")
@@ -774,10 +775,12 @@ do {
         serviceTier: .ultrafast,
         approvalMode: .relaxed,
         fromSessionID: "c-forged",
+        delivery: .steer,
     )
     let rewritten = try AgentConversationRules.childPrompt(sent, sender: opener, target: target, descriptorCount: 0)
     check(rewritten.sessionID == "c-target" && rewritten.text == "Review Tweak.x", "the message goes to the target as typed")
     check(rewritten.fromSessionID == "c-opener", "and is marked with the sender the host knows, not the one it claimed")
+    check(rewritten.delivery == .steer, "the sender's explicit steering survives host sanitization")
     check(
         rewritten.approvalMode == nil && rewritten.provider == nil && rewritten.model == nil
             && rewritten.reasoningEffort == nil && rewritten.serviceTier == nil && rewritten.attachments == nil
@@ -813,6 +816,21 @@ do {
     check(toElsewhere.fromSessionID == "c-opener", "a message goes to another project's conversation the same way")
     let sendAsk = otherProjectAsk("apelin_conversation_send", action: "send", projectID: other.id, sessionID: "c-elsewhere", text: "Build it")
     check(AgentConversationRules.coversSend(toElsewhere, target: elsewhere, asked: sendAsk), "an approval of this message to this conversation covers it")
+    var steerElsewhere = toElsewhere
+    steerElsewhere.delivery = .steer
+    let steerAsk = otherProjectAsk("apelin_conversation_send", action: "send", projectID: other.id, sessionID: "c-elsewhere", text: "Build it", delivery: "steer")
+    check(!AgentConversationRules.coversSend(steerElsewhere, target: elsewhere, asked: sendAsk), "a queued-message approval never authorizes steering")
+    check(AgentConversationRules.coversSend(steerElsewhere, target: elsewhere, asked: steerAsk), "steering is covered by approval of that delivery")
+    check(!AgentConversationRules.coversSend(toElsewhere, target: elsewhere, asked: steerAsk), "a steering approval is not reused for a queued message")
+    var explicitQueue = toElsewhere
+    explicitQueue.delivery = .queue
+    check(AgentConversationRules.coversSend(explicitQueue, target: elsewhere, asked: sendAsk), "legacy approvals without delivery still mean queue")
+    for delivery in [AgentMessageDelivery.queue, .steer] {
+        var wire = sent
+        wire.delivery = delivery
+        let decoded = try JSONDecoder().decode(AgentPromptRequest.self, from: JSONEncoder().encode(wire))
+        check(decoded.delivery == delivery, "delivery survives the prompt wire round trip")
+    }
     check(
         !AgentConversationRules.coversSend(AgentPromptRequest(sessionID: "c-elsewhere", text: "Push it"), target: elsewhere, asked: sendAsk),
         "not another text",
@@ -845,7 +863,7 @@ do {
         )
     }
     let fromApp = AgentConversationRules.appPrompt(sent)
-    check(fromApp.fromSessionID == nil && fromApp.approvalMode == .relaxed && fromApp.model == "gpt", "the app's prompt keeps everything but a forged sender")
+    check(fromApp.fromSessionID == nil && fromApp.delivery == nil && fromApp.approvalMode == .relaxed && fromApp.model == "gpt", "the app's prompt keeps model settings but drops a forged sender and direct steering")
 
     // Abort and close: only the conversations the caller opened.
     let mine = await session("c-mine", parent: "c-opener", depth: 1)

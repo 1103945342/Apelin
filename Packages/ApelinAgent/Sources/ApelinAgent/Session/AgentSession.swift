@@ -30,8 +30,22 @@ public actor AgentSession {
     private var toolExtensions: ToolExtensionOffer
     private var unsubscribe: Unsubscribe?
     var runTask: Task<Void, Never>?
-    /// The last prompt's remainder, so the next one queues behind it.
-    private var acceptanceTail: Task<Void, Never>?
+    private var pending: PendingQueue
+    var pendingDrain: Task<Void, Never>?
+    var historyMutation = false
+    private var pendingBlocked = false
+    private var pendingEvents: Task<Void, Error>?
+    private var pendingSteers: Set<UUID> = []
+    private var dispatchedSteers: Set<UUID> = []
+    private var openingMessageID: UUID?
+    private var acceptedPending: Set<UUID> = []
+    private var lastPendingTimestamp: Int64 = 0
+    private var runFailed = false
+    private var pendingModelObserver: (@Sendable (PendingModelChoice) async -> Void)?
+
+    public func observePendingModel(_ observer: @escaping @Sendable (PendingModelChoice) async -> Void) {
+        pendingModelObserver = observer
+    }
     /// From the moment a run's loop returns until its end is recorded: a
     /// message steered into it or followed up now would never be taken.
     private var runEnding = false
@@ -71,7 +85,7 @@ public actor AgentSession {
         /// message (a runtime aside, for example) must never take this entry.
         var injected: String
         var timestamp: Int64
-        /// Non-nil entries belong to kwwk's follow-up queue, not steering.
+        /// Provenance retained for either source or reader steering.
         var from: String? = nil
         /// What the model had been told before this message's delta, and
         /// whether the host's restart was still to tell: put back if the run
@@ -80,11 +94,8 @@ public actor AgentSession {
         var restartUntold: Bool
     }
 
-    /// Messages handed to either queue, oldest first; `from` distinguishes
-    /// follow-ups from reader steering, including their drop behaviour.
+    /// Explicit steering handed to kwwk, oldest first, until accepted.
     private var queued: [QueuedMessage] = []
-    /// Source messages still refreshing context, not handed to kwwk yet.
-    private var preparingConversations: Set<UUID> = []
     private var stopGeneration: UInt64 = 0
     /// What the system prompt showed when the session took it, plus every
     /// delta a message has carried since (`PromptState`).
@@ -277,6 +288,16 @@ public actor AgentSession {
         self.credentials = credentials
         self.modelDefaults = configuration.modelDefaults
         self.log = log
+        let savedAnchors = await log.readAnchors()
+        let taken = Set(savedAnchors.keys.compactMap(UUID.init(uuidString:)).filter { id in
+            guard let anchor = savedAnchors[id.uuidString.lowercased()] else { return false }
+            return transcript.contains { message in
+                guard case let .user(user) = message else { return false }
+                return user.timestamp == anchor.timestamp
+                    && ConversationHistory.digest(ConversationHistory.text(of: user)) == anchor.digest
+            }
+        })
+        pending = try PendingQueue(directory: log.directory, taken: taken)
         self.journal = journal
         self.agent = agent
         self.gate = gate
@@ -285,9 +306,9 @@ public actor AgentSession {
         self.mcpTools = mcpTools
         self.toolExtensions = toolExtensions
         // read in the log's opening pass, so the log is not read again
-        submitted = log.opened.userMessageIDs
+        submitted = log.opened.userMessageIDs.union(pending.state.seen)
         hasTitle = log.opened.hasTitle
-        anchors = await log.readAnchors()
+        anchors = savedAnchors
         savedMessageCount = transcript.count
         // A session that predates `messages.jsonl` is seeded from its
         // transcript once; from then on the log is what it goes on from.
@@ -297,6 +318,7 @@ public actor AgentSession {
         for diagnostic in skills.diagnostics {
             _ = try? await log.append(.error(message: "A skill has a problem. \(diagnostic)"))
         }
+        try await log.append(.pendingQueue(messages: pending.state.messages, paused: pending.state.paused))
         let subscription = agent.subscribe { [weak self] event, _ in
             await self?.handle(event)
         }
@@ -315,7 +337,7 @@ public actor AgentSession {
         modelParameters: AgentModelParameters = .init(),
         credentials: any CredentialSource,
     ) async throws -> Bool {
-        guard runTask == nil else { return false }
+        guard runTask == nil, pendingDrain == nil, !historyMutation else { return false }
         let stored = try await ProviderResolver.storedCredentials(provider, in: credentials)
         // What the ring reads as the total: a model, or a figure the reader
         // changed, is a new one before the next run has said anything.
@@ -323,7 +345,7 @@ public actor AgentSession {
         if provider == resolvedFrom.provider, stored == resolvedFrom.credentials,
            let record = recordModel
         {
-            guard runTask == nil else { return false }
+            guard runTask == nil, pendingDrain == nil, !historyMutation else { return false }
             // the same sign-in: only the figures the app may have changed
             agent.state.model = ProviderResolver.applying(modelParameters, to: record)
             agent.state.thinkingLevel = thinking
@@ -338,7 +360,7 @@ public actor AgentSession {
             credentials: credentials,
             modelParameters: modelParameters,
         )
-        guard runTask == nil else { return false }
+        guard runTask == nil, pendingDrain == nil, !historyMutation else { return false }
         recordModel = resolved.model
         agent.state.model = ProviderResolver.applying(modelParameters, to: resolved.model)
         agent.state.thinkingLevel = thinking
@@ -670,123 +692,318 @@ public actor AgentSession {
         await titleTask?.value
     }
 
-    /// Starts a run with `text`, or, while one is running, steers it: the
-    /// message is queued for the run's next step (after the tool call in
-    /// progress, or before the run would end) and recorded as a user
-    /// message only when the run takes it. Returns once it is recorded.
-    ///
-    /// The message is recorded before anything slower: the app shows it
-    /// from that event. The system prompt is the session's snapshot and
-    /// stays as it is (a compaction aside, after which the run this message
-    /// starts takes it afresh).
-    ///
-    /// The model reads the message after its `<system-state>`: the
-    /// language, time and approval mode when it was sent, what the system
-    /// prompt shows that changed since the model was last told
-    /// (`SystemState`, `PromptState`), and, the first time after the host
-    /// opened a conversation from before its start, that the host
-    /// restarted (`SystemState.restartNote`). The block is part of the
-    /// message, so the transcript keeps it as it went; the event the app
-    /// shows, and the title, have the text alone.
-    ///
-    /// `from`: another conversation of the project sent it
-    /// (`apelin_conversation_send`). It is recorded as the user's text, marked
-    /// with that conversation, and the model reads one line before it
-    /// saying it came from another agent, not from the user.
+    /// All input is durable before acceptance. Only explicit steering may
+    /// enter the active run; ordinary and source follow-ups start separate runs.
     public func prompt(
         _ text: String,
         messageID: UUID? = nil,
         files: [(name: String, mimeType: String, data: Data)] = [],
         from sender: ConversationSender? = nil,
+        delivery: AgentMessageDelivery = .queue,
+        modelChoice: PendingModelChoice? = nil,
     ) async throws {
-        if let messageID {
-            // Claimed before the first suspension: the same message sent
-            // again meanwhile is the duplicate.
-            guard submitted.insert(messageID).inserted else { return }
-        }
-        if let sender {
-            try await promptConversation(text, id: messageID ?? UUID(), files: files, from: sender)
+        let id = messageID ?? UUID()
+        guard !submitted.contains(id), !pending.state.seen.contains(id) else {
+            // A retry also repairs a missed acceptance event after an I/O failure.
+            try await publishPending().value
             return
         }
-        let queues = messageID != nil && runTask != nil && !runEnding
-        let attachments: [AgentAttachment]
-        do {
-            attachments = try files.map { try saveAttachment(name: $0.name, mimeType: $0.mimeType, data: $0.data) }
-            if let messageID {
-                try await log.append(queues
-                    ? .userMessageQueued(id: messageID, text: text, attachments: attachments)
-                    : .userMessage(id: messageID, text: text, attachments: attachments))
-            } else {
-                try await log.append(.promptSubmitted(text: text, from: sender?.sessionID))
-            }
-        } catch {
-            if let messageID {
-                submitted.remove(messageID)
-            }
-            throw error
+        let attachments = try files.map { try saveAttachment(name: $0.name, mimeType: $0.mimeType, data: $0.data) }
+        try pending.enqueue(PendingMessage(id: id, text: text, attachments: attachments, sender: sender, delivery: delivery, modelChoice: modelChoice))
+        submitted.insert(id)
+        if delivery == .steer, runTask != nil, !runEnding, !aborted, !pendingBlocked, !pending.state.paused {
+            pendingSteers.insert(id)
         }
-        let images = files
-            .filter { $0.mimeType.hasPrefix("image/") }
-            .map { ImageContent(data: $0.data.base64EncodedString(), mimeType: $0.mimeType) }
-        let suffix = ConversationHistory.attachmentSuffix(attachments.map { (name: $0.name, path: $0.path) })
-        let typed = text + suffix
-        // The message is the log's now, so it is accepted here. What came
-        // before the reply — waiting out a compaction, waiting for a run
-        // that is ending, saving a checkpoint, reading the repository — ran
-        // on the caller's clock, so a call was held open for as long as the
-        // conversation happened to be busy. It runs on instead, in the order
-        // the messages were accepted.
-        await appendAcceptance(Accepted(
-            text: text,
-            typed: typed,
-            suffix: suffix,
-            messageID: messageID,
-            attachments: attachments,
-            images: images,
-            sender: sender,
-            queues: queues,
-        ))
-    }
-
-    /// What a prompt left to do after it was recorded.
-    private struct Accepted {
-        var text: String
-        var typed: String
-        var suffix: String
-        var messageID: UUID?
-        var attachments: [AgentAttachment]
-        var images: [ImageContent]
-        var sender: ConversationSender?
-        var queues: Bool
-    }
-
-    /// Queues `accepted` behind the ones before it: each message's remainder
-    /// begins where the previous one's stopped, never beside it.
-    private func appendAcceptance(_ accepted: Accepted) async {
-        let previous = acceptanceTail
-        acceptanceTail = Task { [weak self] in
-            await previous?.value
-            await self?.accept(accepted)
+        let publication = publishPending()
+        schedulePending()
+        try await publication.value
+        if delivery == .steer {
+            while pendingSteers.contains(id), let drain = pendingDrain {
+                await drain.value
+            }
         }
     }
 
-    /// Uses the vision default only for a new run that contains image input.
-    private func prepareVisionModelIfNeeded(_ images: [ImageContent]) async {
-        guard !images.isEmpty, runTask == nil, modelRestoreAfterRun == nil,
-              let vision = modelDefaults.vision
-        else { return }
+    /// All queue transitions commit synchronously on this actor. Publication
+    /// is chained before suspending, so reentrant calls cannot reverse snapshots.
+    private func publishPending() -> Task<Void, Error> {
+        let event = AgentSessionEvent.pendingQueue(messages: pending.state.messages, paused: pending.state.paused)
+        return publishPendingEvents([event])
+    }
+
+    private func publishPendingEvents(_ events: [AgentSessionEvent]) -> Task<Void, Error> {
+        let previous = pendingEvents
+        let log = log
+        let task = Task {
+            _ = try? await previous?.value
+            do {
+                for event in events { try await log.append(event) }
+            } catch {
+                self.pendingBlocked = true
+                self.runFailed = true
+                self.stopGeneration &+= 1
+                self.agent.abort()
+                try? self.pending.update { $0.paused = true }
+                throw error
+            }
+        }
+        pendingEvents = task
+        return task
+    }
+
+    public func manageQueue(_ request: AgentQueueRequest) async throws {
+        let generation = stopGeneration
+        var repairing = false
+        defer { if repairing { endHistoryMutation() } }
+        if request.action == .resume, request.messageID == nil, !pending.state.handoffs.isEmpty {
+            guard canMutateHistory else {
+                throw ApelinError(.conflict, "Wait for the current reply before retrying pending input.")
+            }
+            historyMutation = true
+            repairing = true
+            pendingBlocked = true
+            guard await checkpoint() else {
+                throw ApelinError(.unavailable, "The conversation could not be saved. Pending input stays paused.")
+            }
+            await recoverPendingHandoffs(Set(pending.state.handoffs.map(\.id)))
+            guard pending.state.handoffs.isEmpty else {
+                throw ApelinError(.unavailable, "A consumed message still awaits durable history. Pending input stays paused.")
+            }
+        }
+        guard generation == stopGeneration else {
+            throw ApelinError(.conflict, "The queue was stopped while this request was preparing. Resume it again to continue.")
+        }
+        if request.action == .steer {
+            guard let id = request.messageID, !pendingSteers.contains(id),
+                  pending.state.messages.contains(where: { $0.id == id && !$0.editing }),
+                  runTask != nil, !runEnding, !aborted, !pendingBlocked else {
+                throw ApelinError(.conflict, "Steering requires a pending message and an active run.")
+            }
+            pendingSteers.insert(id)
+        } else {
+            try pending.change(request)
+            if request.action == .resume, request.messageID == nil { pendingBlocked = false }
+        }
+        defer {
+            if request.action == .steer, let id = request.messageID {
+                pendingSteers.remove(id)
+                dispatchedSteers.remove(id)
+            }
+        }
+        let publication = publishPending()
+        schedulePending()
+        try await publication.value
+        if request.action == .steer, let id = request.messageID {
+            while pendingSteers.contains(id), let drain = pendingDrain {
+                await drain.value
+            }
+            guard dispatchedSteers.contains(id) else {
+                throw ApelinError(.conflict, "The message changed or the run ended before steering could take it.")
+            }
+        }
+    }
+
+    var canMutateHistory: Bool {
+        runTask == nil && compaction == nil && pendingDrain == nil
+            && !historyMutation
+    }
+
+    func endHistoryMutation() {
+        historyMutation = false
+        schedulePending()
+    }
+
+    private func schedulePending() {
+        guard pendingDrain == nil, compaction == nil, !historyMutation, !runEnding, !pendingBlocked else { return }
+        let hasSteer = runTask != nil && !aborted && pending.state.messages.contains {
+            pendingSteers.contains($0.id) && !$0.editing
+        }
+        let hasNext = runTask == nil && !pending.state.paused && pending.state.messages.first?.editing == false
+        guard hasSteer || hasNext else { return }
+        pendingDrain = Task { [weak self] in await self?.drainPending() }
+    }
+
+    private func drainPending() async {
+        defer {
+            pendingDrain = nil
+            schedulePending()
+        }
+        let steering = runTask != nil
+        guard let item = steering
+            ? pending.state.messages.first(where: { pendingSteers.contains($0.id) && !$0.editing })
+            : pending.state.messages.first else { return }
+        let revision = pending.revision
+        let generation = stopGeneration
         do {
-            let resolved = try await ProviderResolver.resolve(
-                .auxiliary(provider: vision.provider, model: vision.model),
-                credentials: credentials,
+            try await pendingEvents?.value
+            if !steering, agent.state.messages.count < savedMessageCount {
+                await restoreSavedConversation()
+            }
+            if !steering, snapshotStale { takeSnapshot() }
+            let images = try item.attachments.filter { $0.mimeType.hasPrefix("image/") }.map { attachment in
+                let path = try workspace.resolveExisting(attachment.path)
+                // persisted-read: read-only image bytes; failure pauses the intact queue, never writes back a partial list.
+                let bytes = try Data(contentsOf: URL(fileURLWithPath: path))
+                guard bytes.count <= Self.maximumAttachmentBytes else {
+                    throw ApelinError(.badRequest, "Attachment too large.")
+                }
+                return ImageContent(data: bytes.base64EncodedString(), mimeType: attachment.mimeType)
+            }
+            let repository = !steering && needsProjectContext
+                ? await runner.repositoryStatus(within: Self.repositoryStatusWait) : nil
+            if !steering, !configuration.project.isTemporary,
+               await runner.saveCheckpoint(messageID: item.id, within: Self.checkpointWait) {
+                await record(.checkpointSaved(id: item.id))
+            }
+            var resolvedChoice: ResolvedProvider?
+            var resolvedVision: ResolvedProvider?
+            if !steering {
+                if let choice = item.modelChoice {
+                    let stored = try await ProviderResolver.storedCredentials(choice.provider, in: credentials)
+                    if choice.provider == resolvedFrom.provider, stored == resolvedFrom.credentials, let recordModel {
+                        resolvedChoice = ResolvedProvider(model: recordModel, authResolver: agent.authResolver, credentials: stored)
+                    } else {
+                        resolvedChoice = try await ProviderResolver.resolve(choice.provider, credentials: credentials, modelParameters: choice.parameters)
+                    }
+                }
+                if !images.isEmpty, let vision = (item.modelChoice?.defaults ?? modelDefaults).vision {
+                    // Optional auxiliary choice; keep the main model if it is unavailable.
+                    resolvedVision = try? await ProviderResolver.resolve(
+                        .auxiliary(provider: vision.provider, model: vision.model), credentials: credentials)
+                }
+            }
+            var facts = await SystemState.facts(
+                configuration.systemState, mode: runner.approvalMode,
+                runMode: runner.currentRunMode, asksBeforeScreen: runner.asksBeforeScreen,
+                installRoot: configuration.installRoot
             )
-            modelRestoreAfterRun = (agent.state.model, agent.authResolver)
-            agent.state.model = resolved.model
-            agent.authResolver = resolved.authResolver
+            // Every await is above this check. Hold/edit/reorder/stop and a run
+            // ending during preparation leave the item in the queue untouched.
+            guard generation == stopGeneration, revision == pending.revision,
+                  compaction == nil, !historyMutation, !runEnding, !pendingBlocked,
+                  steering ? (runTask != nil && !aborted && pendingSteers.contains(item.id)) : (runTask == nil && !pending.state.paused)
+            else {
+                if !steering { restoreModelAfterRun() }
+                return
+            }
+            let suffix = ConversationHistory.attachmentSuffix(item.attachments.map { (name: $0.name, path: $0.path) })
+            let toldBefore = told
+            let restartBefore = restartUntold
+            refreshToolExtensions()
+            let now = currentState()
+            facts.changes = now.changes(since: told)
+            facts.hostRestarted = restartUntold
+            let source = item.sender.map { $0.prefix + "\n" } ?? ""
+            let text = SystemState.make(facts) + source + item.text + suffix
+            let opening = steering ? text : withProjectContext(text, repository: repository)
+            var message = UserMessage(content: [.text(TextContent(text: opening))] + images.map { .image($0) })
+            message.timestamp = max(message.timestamp, lastPendingTimestamp + 1)
+            lastPendingTimestamp = message.timestamp
+            _ = try pending.take(item.id)
+            if !steering {
+                if let choice = item.modelChoice, let resolved = resolvedChoice {
+                    recordModel = resolved.model
+                    agent.state.model = ProviderResolver.applying(choice.parameters, to: resolved.model)
+                    agent.state.thinkingLevel = .init(rawValue: choice.reasoningEffort?.rawValue ?? "off") ?? .off
+                    agent.state.serviceTier = choice.serviceTier.flatMap { ServiceTier(rawValue: $0.rawValue) }
+                    agent.authResolver = resolved.authResolver
+                    resolvedFrom = (choice.provider, resolved.credentials)
+                    if let defaults = choice.defaults { modelDefaults = defaults }
+                    journal.modelChanged(to: agent.state.model)
+                }
+                if let vision = resolvedVision {
+                    modelRestoreAfterRun = (agent.state.model, agent.authResolver)
+                    agent.state.model = vision.model
+                    agent.authResolver = vision.authResolver
+                }
+            }
+            pendingSteers.remove(item.id)
+            told = now
+            restartUntold = false
+            let event: AgentSessionEvent
+            if let sender = item.sender {
+                event = .conversationMessageQueued(id: item.id, text: item.text, from: sender.sessionID)
+            } else {
+                event = steering
+                    ? .userMessageQueued(id: item.id, text: item.text, attachments: item.attachments)
+                    : .userMessage(id: item.id, text: item.text, attachments: item.attachments)
+            }
+            let publication = publishPendingEvents([
+                .pendingQueue(messages: pending.state.messages, paused: pending.state.paused), event,
+            ])
+            saveAnchor(item.id, modelText: opening, typed: item.text, suffix: suffix, timestamp: message.timestamp)
+            if steering {
+                dispatchedSteers.insert(item.id)
+                queued.append(QueuedMessage(id: item.id, text: item.text, attachments: item.attachments,
+                    injected: opening, timestamp: message.timestamp, from: item.sender?.sessionID, told: toldBefore, restartUntold: restartBefore))
+                agent.steer(message)
+            } else {
+                aborted = false
+                runFailed = false
+                openingMessageID = item.id
+                let agent = agent
+                let modelObserver = pendingModelObserver
+                // Reserve the run before any suspension; another prompt only enqueues.
+                runTask = Task { [weak self] in
+                    do {
+                        try await publication.value
+                        if let choice = item.modelChoice { await modelObserver?(choice) }
+                        await self?.recordContextUsage()
+                        guard await self?.aborted == false else {
+                            await self?.recoverPendingHandoff(item.id)
+                            await self?.runEnded()
+                            return
+                        }
+                        try await agent.prompt(opening, images: images)
+                    } catch {
+                        await self?.recoverPendingHandoff(item.id)
+                        await self?.recordRunError(error)
+                    }
+                    await self?.runEnded()
+                }
+            }
+            try await publication.value
+            await persistAnchors()
         } catch {
-            // Vision is an auxiliary preference: if its account cannot resolve,
-            // keep the conversation on its normal model and continue.
+            await pausePending(error: error)
         }
+    }
+
+    private func recoverPendingHandoff(_ id: UUID) async {
+        await recoverPendingHandoffs([id])
+    }
+
+    private func recoverPendingHandoffs(_ ids: Set<UUID>) async {
+        // Acceptance and acknowledgement are different: a failed history or
+        // pending.json write must never turn consumed input into a fresh run.
+        let recoverable = ids.subtracting(acceptedPending).subtracting(pendingIDs(in: agent.state.messages))
+        guard !recoverable.isEmpty else { return }
+        do {
+            try pending.update { state in
+                let recovered = state.handoffs.filter { recoverable.contains($0.id) }
+                state.handoffs.removeAll { recoverable.contains($0.id) }
+                state.messages.insert(contentsOf: recovered, at: 0)
+                state.paused = true
+            }
+            snapshotStale = true
+            if agent.state.messages.isEmpty { projectContextGiven = false }
+            try await publishPending().value
+        } catch { await pausePending(error: error) }
+    }
+
+    private func pausePending(error: Error? = nil) async {
+        pendingBlocked = true
+        if error != nil {
+            runFailed = true
+            stopGeneration &+= 1
+            agent.abort()
+        }
+        // Set the memory flag even on a full disk; never auto-send after a failure.
+        do {
+            try pending.update { $0.paused = true }
+            try await publishPending().value
+        } catch { await record(.error(message: error.localizedDescription)) }
+        if let error { await record(.error(message: error.localizedDescription)) }
     }
 
     private func restoreModelAfterRun() {
@@ -794,162 +1011,6 @@ public actor AgentSession {
         agent.state.model = restore.model
         agent.authResolver = restore.authResolver
         modelRestoreAfterRun = nil
-    }
-
-    /// Waits out what must end first, then starts or joins the run.
-    private func accept(_ accepted: Accepted) async {
-        let text = accepted.text
-        let typed = accepted.typed
-        let suffix = accepted.suffix
-        let messageID = accepted.messageID
-        let queues = accepted.queues
-        // A context that lost messages after the last write does not answer
-        // from the fragment: the saved conversation holds the chat.
-        if runTask == nil, agent.state.messages.count < savedMessageCount {
-            await restoreSavedConversation()
-        }
-        // The work tree as it is before this message's run, saved while the
-        // waits below go on and offered only when saved before the run
-        // starts: a message that joins a run going has none.
-        var checkpoint: Task<Bool, Never>?
-        if !queues, let messageID, !configuration.project.isTemporary {
-            let runner = runner
-            checkpoint = Task { await runner.saveCheckpoint(messageID: messageID, within: Self.checkpointWait) }
-        }
-        if !queues {
-            // A compaction going rewrites the system prompt for the run
-            // this message starts; the message says what changed after it.
-            while let compaction {
-                await compaction.value
-            }
-            if snapshotStale, runTask == nil || runEnding {
-                takeSnapshot()
-            }
-        }
-        // asked before the last wait below, which nothing may follow
-        let repository = !queues && needsProjectContext
-            ? await runner.repositoryStatus(within: Self.repositoryStatusWait)
-            : nil
-        if let checkpoint, let messageID, await checkpoint.value {
-            await record(.checkpointSaved(id: messageID))
-        }
-        let (prompt, toldBefore, restartUntoldBefore) = await withSystemState(
-            accepted.sender.map { $0.prefix + "\n" + typed } ?? typed,
-            delta: true,
-        )
-        let message = UserMessage(content: [.text(TextContent(text: prompt))] + accepted.images.map { .image($0) })
-        await waitForEndingRun()
-        if queues, let messageID {
-            if runTask != nil {
-                queued.append(QueuedMessage(
-                    id: messageID,
-                    text: text,
-                    attachments: accepted.attachments,
-                    injected: prompt,
-                    timestamp: message.timestamp,
-                    told: toldBefore,
-                    restartUntold: restartUntoldBefore,
-                ))
-                agent.steer(message)
-                saveAnchor(messageID, modelText: prompt, typed: text, suffix: suffix, timestamp: message.timestamp)
-                await persistAnchors()
-                return
-            }
-            // The run ended while this was recorded: it starts the next one.
-            await record(.userMessage(id: messageID, text: text, attachments: accepted.attachments))
-            await waitForEndingRun()
-        }
-        // the last wait: nothing below suspends before the run is started
-        while let compaction {
-            await compaction.value
-        }
-        if runTask != nil {
-            agent.followUp(message)
-            if let messageID {
-                saveAnchor(messageID, modelText: prompt, typed: text, suffix: suffix, timestamp: message.timestamp)
-                await persistAnchors()
-            }
-            return
-        }
-        aborted = false
-        await prepareVisionModelIfNeeded(accepted.images)
-        let agent = agent
-        let opening = withProjectContext(prompt, repository: repository)
-        if let messageID {
-            saveAnchor(messageID, modelText: opening, typed: text, suffix: suffix, timestamp: KWWKAI.Timestamp.now())
-        }
-        runTask = Task { [weak self] in
-            do {
-                try await agent.prompt(opening, images: accepted.images)
-            } catch {
-                await self?.recordRunError(error)
-            }
-            await self?.runEnded()
-        }
-        // the run has started: this wait holds nothing up
-        if messageID != nil {
-            await persistAnchors()
-        }
-    }
-
-    /// Source messages are follow-ups, never reader steering. Keep the
-    /// exact UserMessage even for an idle run (`prompt(String)` would
-    /// replace its timestamp), and announce acceptance only at messageStart.
-    private func promptConversation(
-        _ text: String,
-        id: UUID,
-        files: [(name: String, mimeType: String, data: Data)],
-        from sender: ConversationSender,
-    ) async throws {
-        let generation = stopGeneration
-        preparingConversations.insert(id)
-        let attachments: [AgentAttachment]
-        do {
-            attachments = try files.map { try saveAttachment(name: $0.name, mimeType: $0.mimeType, data: $0.data) }
-            try await log.append(.conversationMessageQueued(id: id, text: text, from: sender.sessionID))
-        } catch {
-            preparingConversations.remove(id)
-            submitted.remove(id)
-            throw error
-        }
-        defer { preparingConversations.remove(id) }
-        guard stopGeneration == generation else { return }
-        // A new send after Stop belongs to the next run, not to the
-        // cancelled loop that is still unwinding.
-        if aborted, let task = runTask { await task.value }
-        await waitForEndingRun()
-        while let compaction { await compaction.value }
-        guard stopGeneration == generation else { return }
-        if snapshotStale, runTask == nil { takeSnapshot() }
-        let repository = runTask == nil && needsProjectContext
-            ? await runner.repositoryStatus(within: Self.repositoryStatusWait)
-            : nil
-        guard stopGeneration == generation else { return }
-        let suffix = ConversationHistory.attachmentSuffix(attachments.map { (name: $0.name, path: $0.path) })
-        let (prompt, toldBefore, restartUntoldBefore) = await withSystemState(
-            sender.prefix + "\n" + text + suffix,
-            delta: true,
-        )
-        await waitForEndingRun()
-        while let compaction { await compaction.value }
-        guard stopGeneration == generation else { return }
-        // No suspension from here until the message and its run are owned.
-        let injected = runTask == nil ? withProjectContext(prompt, repository: repository) : prompt
-        let images = files.filter { $0.mimeType.hasPrefix("image/") }
-            .map { ImageContent(data: $0.data.base64EncodedString(), mimeType: $0.mimeType) }
-        let message = UserMessage(content: [.text(TextContent(text: injected))] + images.map { .image($0) })
-        queued.append(QueuedMessage(
-            id: id, text: text, attachments: attachments,
-            injected: injected, timestamp: message.timestamp, from: sender.sessionID,
-            told: toldBefore, restartUntold: restartUntoldBefore,
-        ))
-        preparingConversations.remove(id)
-        await prepareVisionModelIfNeeded(images)
-        agent.followUp(message)
-        if runTask == nil {
-            aborted = false
-            runTask = carryOver([])
-        }
     }
 
     /// Generates one image with the configured native image model when the
@@ -1054,7 +1115,7 @@ public actor AgentSession {
     /// it went, with the summary when compacted (`CompactionRecap`), `abort`
     /// stops it, and a message sent meanwhile waits for it.
     public func compact() async throws {
-        guard runTask == nil, compaction == nil else {
+        guard runTask == nil, compaction == nil, pendingDrain == nil, !historyMutation else {
             throw ApelinError(.conflict, "Wait for the current reply to finish, then compact the chat.")
         }
         aborted = false
@@ -1136,13 +1197,14 @@ public actor AgentSession {
             do {
                 try await startConversationSegment(agent.state.messages)
             } catch {
-                await record(.error(message: "Unable to save the conversation history: \(error.localizedDescription)"))
+                await pausePending(error: error)
             }
         }
         await record(.compactionFinished(result))
         // the context shrank (or did not): the figure after it
         await recordContextUsage()
         compaction = nil
+        schedulePending()
     }
 
     /// Stops the run. Waiting approvals resolve as denied. Once the loop's
@@ -1155,8 +1217,11 @@ public actor AgentSession {
         // Cancel before the first suspension; neither queue may sneak into
         // the next model step while dropped-message events are written.
         agent.abort()
+        runTask?.cancel()
         agent.clearSteeringQueue()
         agent.clearFollowUpQueue()
+        pendingSteers.removeAll()
+        await pausePending()
         let preparing = Array(preparingConversations)
         preparingConversations.removeAll()
         if !preparing.isEmpty { snapshotStale = true }
@@ -1195,7 +1260,7 @@ public actor AgentSession {
 
     /// Returns when no run or compaction is going.
     public func waitForIdle() async {
-        while let task = runTask ?? compaction {
+        while let task = runTask ?? compaction ?? pendingDrain {
             await task.value
         }
     }
@@ -1227,6 +1292,20 @@ public actor AgentSession {
             output = OutputTally()
             journal.runStarted(model: agent.state.model, messages: agent.state.messages.count)
         case let .messageStart(message):
+            if case let .user(user) = message, let id = openingMessageID {
+                let key = id.uuidString.lowercased()
+                if anchors[key]?.digest == ConversationHistory.digest(ConversationHistory.text(of: user)) {
+                    anchors[key]?.timestamp = user.timestamp
+                    lastPendingTimestamp = max(lastPendingTimestamp, user.timestamp)
+                    acceptedPending.insert(id)
+                    openingMessageID = nil
+                    let source = pending.state.handoffs.first { $0.id == id }
+                    await persistAnchors()
+                    if let source, let sender = source.sender {
+                        await record(.conversationMessageTaken(id: id, text: source.text, from: sender.sessionID))
+                    }
+                }
+            }
             switch message {
             case .assistant:
                 output.startMessage()
@@ -1245,6 +1324,8 @@ public actor AgentSession {
                     $0.injected == injected && $0.timestamp == user.timestamp
                 }) else { break }
                 let taken = queued.remove(at: index)
+                acceptedPending.insert(taken.id)
+                _ = try? await pendingEvents?.value
                 if let from = taken.from {
                     let suffix = ConversationHistory.attachmentSuffix(
                         taken.attachments.map { (name: $0.name, path: $0.path) },
@@ -1297,6 +1378,7 @@ public actor AgentSession {
                 ))
             }
             if assistant.stopReason == .error {
+                runFailed = true
                 journal.replyFailed(assistant)
                 await record(.error(
                     message: assistant.errorMessage.map(ErrorDescription.localized)
@@ -1326,7 +1408,7 @@ public actor AgentSession {
                 do {
                     try await startConversationSegment(agent.state.messages)
                 } catch {
-                    await record(.error(message: "Unable to save the conversation history: \(error.localizedDescription)"))
+                    await pausePending(error: error)
                 }
             }
         case let .toolExecutionStart(id, name, args):
@@ -1370,9 +1452,10 @@ public actor AgentSession {
         default:
             break
         }
-        if checkpoints {
-            await checkpoint()
-        }
+        // messageStart precedes insertion into agent.state.messages. Only a
+        // checkpoint that actually contains the user message may acknowledge
+        // its durable handoff (including when that checkpoint is retried).
+        if checkpoints { await checkpoint() }
     }
 
     /// The tools whose result tells the model what it changed in what the
@@ -1402,7 +1485,9 @@ public actor AgentSession {
         told = queued[0].told
         restartUntold = queued[0].restartUntold
         queued.removeAll()
-        submitted.subtract(readers + conversations)
+        let ids = readers + conversations
+        await recoverPendingHandoffs(Set(ids))
+        // Legacy injected rows are removed; the durable snapshot retains input.
         if !readers.isEmpty { await record(.queuedMessagesDropped(ids: readers)) }
         if !conversations.isEmpty { await record(.conversationMessagesDropped(ids: conversations)) }
     }
@@ -1416,9 +1501,42 @@ public actor AgentSession {
     /// and the reader's own edit each rewrite what the chat goes on from, and
     /// what they replace stays in the file, where a fork still reads it.
     func startConversationSegment(_ messages: [Message]) async throws {
+        try await log.writeAnchors(anchors)
         try await log.snapshotConversation(messages)
         try await log.writeTranscript(messages)
         savedMessageCount = messages.count
+        try acknowledgePending(in: messages)
+    }
+
+    /// A handoff is complete only if its exact user message is on disk.
+    /// Anchors (including kwwk's actual timestamp) are committed before that
+    /// message, so recovery can distinguish an untaken prompt from a taken one.
+    private func pendingIDs(in messages: [Message]) -> Set<UUID> {
+        Set(pending.state.handoffs.compactMap { item -> UUID? in
+            guard let anchor = anchors[item.id.uuidString.lowercased()],
+                  messages.contains(where: { message in
+                      guard case let .user(user) = message else { return false }
+                      return user.timestamp == anchor.timestamp
+                          && ConversationHistory.digest(ConversationHistory.text(of: user)) == anchor.digest
+                  }) else { return nil }
+            return item.id
+        })
+    }
+
+    private func acknowledgePending(in messages: [Message]) throws {
+        let ids = pendingIDs(in: messages)
+        guard !ids.isEmpty else { return }
+        try pending.update { $0.handoffs.removeAll { ids.contains($0.id) } }
+        acceptedPending.subtract(ids)
+    }
+
+    /// Before any destructive history change, consumed input must be durable
+    /// and acknowledged. Otherwise a removed anchor could strand its handoff.
+    func settlePendingBeforeHistoryChange() async throws {
+        guard !pending.state.handoffs.isEmpty else { return }
+        guard await checkpoint(), acceptedPending.isEmpty else {
+            throw ApelinError(.unavailable, "Consumed input still awaits durable history. Retry before changing history.")
+        }
     }
 
     /// Appends what the conversation gained since the last write.
@@ -1428,9 +1546,14 @@ public actor AgentSession {
     /// turn used to save nothing at all. One line per finished message is
     /// what keeps the turn through the process dying; a reply being streamed
     /// has not entered the conversation yet, so nothing partial is written.
-    private func checkpoint() async {
+    @discardableResult
+    private func checkpoint() async -> Bool {
         let messages = agent.state.messages
-        guard messages.count != savedMessageCount else { return }
+        if messages.count == savedMessageCount {
+            do { try acknowledgePending(in: messages) }
+            catch { await pausePending(error: error); return false }
+            return true
+        }
         // A shorter conversation is not this path's to write: a compaction,
         // a repair and the reader's edits start a segment of their own.
         // Appending a tail onto a history that shrank would stitch together
@@ -1440,16 +1563,20 @@ public actor AgentSession {
                 "conversation came back with \(messages.count) message(s) where \(savedMessageCount) are saved",
                 level: .warning,
             )
-            return
+            return false
         }
         do {
+            try await log.writeAnchors(anchors)
             try await log.appendConversation(Array(messages[savedMessageCount...]))
             savedMessageCount = messages.count
+            try acknowledgePending(in: messages)
             // a message or a tool's result has entered the conversation: the
             // ring's figure moves with it, not only when the turn ends.
             await recordContextUsageIfChanged()
+            return true
         } catch {
-            await record(.error(message: "Unable to save the conversation history: \(error.localizedDescription)"))
+            await pausePending(error: error)
+            return false
         }
     }
 
@@ -1459,7 +1586,7 @@ public actor AgentSession {
         do {
             try await log.writeTranscript(agent.state.messages)
         } catch {
-            await record(.error(message: "Unable to save the conversation history: \(error.localizedDescription)"))
+            await pausePending(error: error)
         }
     }
 
@@ -1528,6 +1655,7 @@ public actor AgentSession {
     }
 
     private func recordRunError(_ error: Error) async {
+        runFailed = true
         if aborted {
             return
         }
@@ -1546,18 +1674,22 @@ public actor AgentSession {
     /// (`carryOver`).
     private func runEnded(carrying carried: [UUID] = []) async {
         runEnding = true
+        if case let .assistant(message)? = agent.state.messages.last, message.stopReason == .aborted {
+            aborted = true
+        }
         let lastFinishedWithError: Bool = if case let .assistant(message)? = agent.state.messages.last {
             message.stopReason == .error
         } else {
             false
         }
-        let reason: FinishReason = aborted ? .aborted : (lastFinishedWithError ? .failed : .completed)
+        var reason: FinishReason = aborted ? .aborted : (lastFinishedWithError || runFailed ? .failed : .completed)
+        if reason != .completed { await pausePending() }
         // A loop that ended on an error, or just before a message was
         // queued, never drained it: the next run takes it. Not after a
         // stop, nor when this run was started for it and took none: only
         // dropped reader messages go back to the composer's input.
         let waiting = queued.map(\.id)
-        let next = aborted || waiting == carried ? [] : waiting
+        let next = reason != .completed || waiting == carried ? [] : waiting
         if next.isEmpty {
             // otherwise the next run would read them first
             agent.clearSteeringQueue()
@@ -1574,6 +1706,7 @@ public actor AgentSession {
                 // No tool result is invented, and a partial batch is never
                 // sent with the next prompt. Preserve the existing snapshot's
                 // model/UI pair instead of capturing the unfinished UI tail.
+                try await settlePendingBeforeHistoryChange()
                 agent.state.messages = try await log.recoverInterruptedHistory(agent.state.messages)
                 // the whole, shorter conversation starts a segment of its own
                 try await startConversationSegment(agent.state.messages)
@@ -1586,15 +1719,31 @@ public actor AgentSession {
                 await writeTranscriptCopy()
             }
         } catch {
-            await record(.error(message: "Unable to save the conversation history: \(error.localizedDescription)"))
+            await pausePending(error: error)
         }
+        // A provider can fail in preflight without emitting the user message
+        // and without throwing from Agent.prompt. Such a handoff is still input.
+        let stillQueued = Set(queued.map(\.id))
+        let untaken = Set(pending.state.handoffs.map(\.id)).subtracting(stillQueued)
+        if !untaken.isEmpty { await recoverPendingHandoffs(untaken) }
+        if pendingBlocked {
+            if reason == .completed { reason = .failed }
+            if !next.isEmpty {
+                agent.clearSteeringQueue()
+                agent.clearFollowUpQueue()
+                await dropQueued()
+            }
+        }
+        openingMessageID = nil
         // the turn's messages are in: what compaction would now go by
         restoreModelAfterRun()
         await recordContextUsage()
-        await record(.finished(reason: reason))
-        // a stop meanwhile dropped them
-        runTask = next.isEmpty || aborted ? nil : carryOver(next)
+        do { try await log.append(.finished(reason: reason)) }
+        catch { await pausePending(error: error) }
+        // a stop or a failed durable write meanwhile blocks continuation
+        runTask = next.isEmpty || aborted || pendingBlocked ? nil : carryOver(next)
         runEnding = false
+        schedulePending()
     }
 
     /// Starts a run with the queued messages `ids` a run ended without

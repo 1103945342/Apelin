@@ -1,4 +1,5 @@
 import enum ApelinProtocol.ApelinLink
+import enum ApelinProtocol.AgentMessageDelivery
 import Foundation
 
 // MARK: - conversations
@@ -45,11 +46,13 @@ public struct ConversationSendToolRequest: Sendable, Hashable, Codable {
     public var text: String
     /// The project the conversation is in, when not the session's own.
     public var target: ProjectIdentity?
-    public init(context: HostCallContext, sessionID: String, text: String, target: ProjectIdentity? = nil) {
+    public var delivery: AgentMessageDelivery?
+    public init(context: HostCallContext, sessionID: String, text: String, target: ProjectIdentity? = nil, delivery: AgentMessageDelivery? = nil) {
         self.context = context
         self.sessionID = sessionID
         self.text = text
         self.target = target
+        self.delivery = delivery
     }
 }
 

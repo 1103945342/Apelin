@@ -7,6 +7,7 @@ func event(_ seq: UInt64, _ kind: String, _ values: [String: JSONValue] = [:]) -
 }
 
 checkStreamPresentation()
+checkPendingQueuePresentation()
 
 let userID = UUID()
 let events = [

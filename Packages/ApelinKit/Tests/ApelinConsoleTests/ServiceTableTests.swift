@@ -143,6 +143,8 @@ final class ServiceTableTests: XCTestCase {
             return Row(reply: ack) { try await $0.agentAbort(sessionID: "s") }
         case .agentCompact:
             return Row(reply: ack) { try await $0.agentCompact(sessionID: "s") }
+        case .agentQueue:
+            return Row(reply: ack) { _ = try await $0.agentQueue(AgentQueueRequest(sessionID: "s", action: .resume)) }
         case .agentConfigure:
             return Row(reply: AgentConfigureResponse(applied: true, tokens: 1, window: 2)) {
                 _ = try await $0.agentConfigure(AgentConfigureRequest(

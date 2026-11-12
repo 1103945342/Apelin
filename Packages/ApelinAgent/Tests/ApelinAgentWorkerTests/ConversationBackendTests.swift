@@ -79,7 +79,24 @@ struct ConversationBackendTests {
         #expect(sent.approvalMode == nil && sent.provider == nil && sent.model == nil && sent.reasoningEffort == nil)
         #expect(sent.serviceTier == nil)
         #expect(sent.attachments == nil && sent.messageID == nil && sent.fromSessionID == nil, "the host writes the sender")
-        #expect(response.done == "sent")
+        #expect(response.done == "queued for a new run after the active run succeeds")
+        #expect(sent.delivery == nil)
+    }
+
+    @Test
+    func `send preserves each explicit delivery without taking the sender model`() async throws {
+        for delivery in [AgentMessageDelivery.queue, .steer] {
+            let fixture = try Fixture()
+            fixture.host.on(.agentPrompt, reply: Acknowledged())
+            let response = try await fixture.backend.conversationSend(ConversationSendToolRequest(
+                context: fixture.context(), sessionID: Self.child, text: "Review", delivery: delivery))
+            let sent = try #require(fixture.host.requests(AgentPromptRequest.self).first)
+            #expect(sent.delivery == delivery)
+            #expect(sent.provider == nil && sent.model == nil && sent.fromSessionID == nil)
+            #expect(response.done == (delivery == .steer
+                ? "steer requested; retained in the queue until taken"
+                : "queued for a new run after the active run succeeds"))
+        }
     }
 
     @Test

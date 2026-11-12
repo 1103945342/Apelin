@@ -403,12 +403,14 @@ public struct OtherProjectApproval: Sendable, Hashable, Codable {
     public var sessionID: String?
     /// The prompt or message, as the other agent will read it.
     public var text: String?
-    public init(action: String, projectID: String, projectName: String, sessionID: String? = nil, text: String? = nil) {
+    public var delivery: String?
+    public init(action: String, projectID: String, projectName: String, sessionID: String? = nil, text: String? = nil, delivery: String? = nil) {
         self.action = action
         self.projectID = projectID
         self.projectName = projectName
         self.sessionID = sessionID
         self.text = text
+        self.delivery = delivery
     }
 }
 

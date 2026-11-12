@@ -190,6 +190,7 @@ struct EnvironmentContextTests {
         await session.close()
 
         session = try await Self.session(home, faux, id: id)
+        try await session.manageQueue(.init(sessionID: session.id, action: .resume))
         try await session.prompt("after reopening", messageID: UUID())
         await session.waitForIdle()
         await session.close()

@@ -1526,25 +1526,37 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   is too large and compaction failed: …"); a status, a transport failure, a
   refusal and anything kwwk retries stay errors. Task events: `prompt`, `title` {text},
   `projectNameSuggested` {name} (only a concrete project intent),
-  `steer`, `queued` {id, text, attachments} (a message sent while a run
-  goes, handed to the run as a steer and recorded as its `prompt` of the
-  same id only when the run's loop takes it, after the tool call in
-  progress or before the run would end; one a run that failed or had just
-  ended never took starts the next run, whose kwwk `continue` takes it),
-  `queueDropped` {ids} (queued messages a stopped run never took, cleared
-  from kwwk's steering queue too so no later run reads them; the app puts
-  them back in the composer, text and files, ahead of what was typed
-  since, and says "N Messages Not Sent" once the reader sees the
-  conversation: `DroppedMessages`). Source messages instead use kwwk's
-  follow-up queue: `conversationMessageQueued` becomes `queued` {id, text,
-  from}; only the matching model `messageStart` emits
+  `steer`, `queued` {id, text, attachments} (only an explicit insertion
+  into the active run; its `prompt` uses the same id when the model takes
+  it). Ordinary Send goes to the session-owned `PendingQueue`, persisted
+  before acceptance in `pending.json`, not kwwk's steering queue. A
+  `pendingQueue` {messages: [{id, text, attachments, editing, sender?, delivery?, modelChoice?}], paused}
+  snapshot replaces the app's waiting list; it is not conversation history.
+  One message starts a new run after the previous run succeeds. Stop, a
+  failed run or a recovered session pauses the queue without losing it;
+  Resume Queue continues it. `agentQueue` is app-only: hold/edit/resume
+  reserve an editor's message, delete removes it, reorder names the complete
+  set of current IDs, and steer explicitly inserts a chosen message into
+  a live run. Preparation rechecks the queue revision and stop generation
+  after every suspension before consuming anything. Durable handoffs keep
+  input across a crash between taking it and saving model history.
+  `queueDropped` {ids} remains for legacy steering receipts and source
+  messages; ordinary pending messages never return through it. Source
+  messages use the same durable FIFO, not kwwk's follow-up queue. The sender
+  chooses `delivery: queue|steer`: queue starts a separate run after success;
+  steer is inserted at the active run's next input boundary without killing
+  tools or bypassing approvals. Stops, failures and reopening retain input
+  paused. Each reader input retains its own credential-free model choice,
+  resolved only at dispatch; source input never brings the sender's model.
+  Destructive history changes first settle consumed handoffs; a stale Resume
+  rechecks the Stop generation after its awaits. At dispatch, `conversationMessageQueued` becomes
+  `queued` {id, text, from}; only the matching model `messageStart` emits
   `conversationMessageTaken`, mapped to `prompt` with the same id and from.
   The app shows that source above the active thinking row and outlines its
   bubble in green. A queued source never replaces the active source until
-  taken. `conversationMessagesDropped` maps to `queueDropped`, but queued
-  events carrying `from` never return to the reader's composer. Both queues
-  are cleared on Stop; text plus the exact user-message timestamp match
-  acceptance, so a runtime aside cannot consume another message's entry.
+  taken. Source messages carrying `from` never return to the reader's
+  composer. Text plus the exact user-message timestamp match acceptance,
+  so a runtime aside cannot consume another message's entry.
   `messageStarted`,
   `messageDiscarded` (kwwk gave up the message streaming since the last
   `messageStarted` and asks for it again: its text and thinking are not the
@@ -2011,10 +2023,11 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   opener's task, from which the app adopts it as a conversation of that
   project without selecting it (and from `agentList`'s `parentSessionID`
   and `projectName` at launch: `ChatAdoption`). The worker names the new
-  session by its title, else generates one. apelin_conversation_send {project?}
-  → `agentPrompt` to another session as the user's message (never a
+  session by its title, else generates one. apelin_conversation_send {project?, delivery: queue|steer}
+  → `agentPrompt` to another session as a collaborating agent's message (never a
   temporary chat): the host writes `fromSessionID` (the app's is dropped)
-  and clears the mode, provider, model, effort, tier, message ID and
+  and preserves delivery (legacy absent means queue), binds it to cross-project
+  approval, and clears the approval/run mode, provider, model, effort, tier, message ID and
   attachments, and refuses descriptors; the worker records it as
   `prompt` {text, from}, the model reading one line before it naming the
   sending conversation (`ConversationSender`), and the app names the
@@ -3001,11 +3014,19 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   page's foot, and the list's bottom
   inset follows it. Its actions reach `ChatController` through
   `ComposerView.Delegate`; Send shows the message at once, a local row
-  under the draft's UUID, and empties the composer; the host's `prompt` or
-  `queued` event with that id takes the row's place. Until then the message
-  is kept on disk (`ChatRecord.sending`), and a launch puts one never echoed
-  back in the draft. A failed send removes the row and puts the draft back
-  in an empty composer. Only one submission is accepted
+  under the draft's UUID, and empties the composer; the host's `prompt`,
+  `queued` or `pendingQueue` receipt with that id takes the row's place.
+  Pending messages live in one compact, scrollable, height-capped panel
+  below the todo list and above the input, never in the transcript until
+  taken. Its rows show text and attachment names, reorder handles and
+  Send Now, Edit and Delete actions. An editor holds its message before
+  opening and keeps the sheet open on a failed save. Snapshot receipts
+  retain attachment metadata for the same file cache as normal prompts.
+  `SessionReplay` counts old snapshots so the first new one ends replay
+  even when recovery, editing or deleting produces no new prompt.
+  Until acceptance the message is kept on disk (`ChatRecord.sending`),
+  and a launch puts one never echoed back in the draft. A failed send
+  removes the row and puts the draft back in an empty composer. Only one submission is accepted
   at a time; switching conversations invalidates its completion so a late
   reply cannot touch the incoming draft. More uses FlowDown's inline
   ControlPanel and GiantButton layout, with its camera, photo, file and web
