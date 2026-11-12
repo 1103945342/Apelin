@@ -43,6 +43,12 @@ extension SessionEventLog {
     /// events numbered from 1, the model's conversation and the anchors.
     /// Refused when the folder is there already; a write that fails takes
     /// the folder away again.
+    ///
+    /// `snapshot`: also write the legacy fork snapshot for `messageID` and
+    /// copy the source's ancestor snapshots. A conversation that came from
+    /// `messages.jsonl` needs neither — the log holds every turn — and the
+    /// objects are one file per message, so a fork that took the log leaves
+    /// five files rather than thousands.
     static func writeFork(
         sessionsRoot: URL,
         metadata: SessionMetadata,
@@ -53,6 +59,7 @@ extension SessionEventLog {
         history: [SessionEventRecord],
         through messageID: UUID,
         savedObjects: [String: Data] = [:],
+        snapshot: Bool = true,
     ) throws {
         guard isValidSessionID(metadata.id) else { throw SessionStoreError.invalidSessionID(metadata.id) }
         let encoder = historyEncoder()
@@ -66,20 +73,22 @@ extension SessionEventLog {
             attributes: [.posixPermissions: 0o700],
         )
         do {
-            let ids = Set(records.compactMap { record -> UUID? in
-                switch record.event {
-                case let .userMessage(id, _, _), let .conversationMessageTaken(id, _, _): return id
-                default: return nil
-                }
-            }).subtracting([messageID])
-            try copyForkHistory(
-                from: historySource, to: folder, ids: ids,
-                history: history, savedObjects: savedObjects,
-            )
-            try writeForkContext(
-                ForkContext(messages: transcript, records: records, anchors: anchors),
-                id: messageID, directory: folder,
-            )
+            if snapshot {
+                let ids = Set(records.compactMap { record -> UUID? in
+                    switch record.event {
+                    case let .userMessage(id, _, _), let .conversationMessageTaken(id, _, _): return id
+                    default: return nil
+                    }
+                }).subtracting([messageID])
+                try copyForkHistory(
+                    from: historySource, to: folder, ids: ids,
+                    history: history, savedObjects: savedObjects,
+                )
+                try writeForkContext(
+                    ForkContext(messages: transcript, records: records, anchors: anchors),
+                    id: messageID, directory: folder,
+                )
+            }
             var events = Data()
             for record in records {
                 let line = try encoder.encode(record)

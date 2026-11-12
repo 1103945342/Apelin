@@ -140,9 +140,10 @@ extension AgentSession {
         guard var metadata = try await log.readMetadata() else {
             throw ApelinError(.notFound, "This chat's record could not be read.")
         }
-        guard let context = try await forkedContext(through: id) else {
+        guard let forked = try await forkedContext(through: id) else {
             throw ApelinError(.conflict, "No saved model context exists for this message. Older versions did not preserve context removed by compaction or rewind; queued messages have no model context until taken.")
         }
+        let context = forked.context
         // persisted-read: an unreadable log leaves the fork to the snapshot's
         // own objects, which `forkedContext` already fell back to
         let history: [SessionEventRecord] = (try? await log.historyRecords()) ?? context.records
@@ -159,6 +160,7 @@ extension AgentSession {
                 history: history,
                 through: id,
                 savedObjects: context.savedObjects,
+                snapshot: !forked.fromLog,
             )
         } catch let error as SessionStoreError {
             throw ApelinError(.conflict, error.localizedDescription)
@@ -168,15 +170,16 @@ extension AgentSession {
     /// The conversation through the turn of `id`: the segment of the
     /// conversation log that holds that message, cut after it, so a turn a
     /// compaction has since replaced is still the context it was read in.
-    /// A session that predates the log, or a message the log cannot find,
-    /// falls back to the snapshots a fork used to be written from.
-    private func forkedContext(through id: UUID) async throws -> ForkContext? {
+    /// `fromLog` says which answered: a session that predates the log, or a
+    /// message the log cannot find, falls back to the snapshots a fork used
+    /// to be written from, and only that fallback needs them written.
+    private func forkedContext(through id: UUID) async throws -> (context: ForkContext, fromLog: Bool)? {
         if let forked = try await log.conversation(through: id, anchors: anchors) {
             let messages = try await LegacyToolNames.migrate(forked)
             // persisted-read: a log that cannot be read falls back to the
             // snapshots below, never to an empty history
             if let records = (try? await log.historyRecords())?.forkRecords(through: id) {
-                return ForkContext(messages: messages, records: records, anchors: anchors)
+                return (ForkContext(messages: messages, records: records, anchors: anchors), true)
             }
         }
         var context = try await log.readForkContext(id)
@@ -187,7 +190,7 @@ extension AgentSession {
             try await log.writeHistorySnapshot(agent.state.messages, anchors: anchors, seal: true)
             context = try await log.readForkContext(id)
         }
-        return context
+        return context.map { (context: $0, fromLog: false) }
     }
 
     // MARK: Helpers
