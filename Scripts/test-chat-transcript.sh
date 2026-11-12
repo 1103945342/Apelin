@@ -32,10 +32,12 @@ sources=(
     "$root/Apelin/Interface/Chats/Messages/TraceStep.swift"
     "$root/Apelin/Interface/Chats/ChatTranscript.swift"
     "$root/Apelin/Interface/Chats/ChatProcessPresentation.swift"
+    "$root/Apelin/Interface/Chats/Messages/ChatHeaderLayout.swift"
     "$root/Apelin/Interface/Chats/Messages/ChatActivityLayout.swift"
     "$root/Apelin/Interface/Chats/Messages/ToolCallSections.swift"
     "$root/Apelin/Interface/Git/GitUntrackedGroup.swift"
     "$root/Apelin/Interface/Chats/ChatTranscriptCache.swift"
+    "$root/Apelin/Interface/Chats/ModelSwitchFit.swift"
     "$root/Apelin/Interface/Chats/ChatStore.swift"
     "$root/Apelin/Interface/Chats/ChatFork.swift"
     "$root/Apelin/Interface/Chats/ChatAdoption.swift"
@@ -76,6 +78,7 @@ sources=(
     "$root/Tests/ChatTranscript/SquashCardCheck.swift"
     "$root/Tests/ChatTranscript/QuestionCardCheck.swift"
     "$root/Tests/ChatTranscript/SignInElsewhereCheck.swift"
+    "$root/Tests/ChatTranscript/ModelSwitchFitCheck.swift"
     "$root/Tests/ChatTranscript/main.swift"
 )
 

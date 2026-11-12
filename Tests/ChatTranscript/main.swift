@@ -1130,6 +1130,7 @@ checkSquashCard()
 
 checkQuestionCard()
 checkSignInElsewhere()
+checkModelSwitchFit()
 
 checkChatForkHistory()
 checkConversationSource()
