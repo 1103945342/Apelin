@@ -8,7 +8,9 @@ import UIKit
 /// row draws the stretch it was given, whole. The turn's latest summary
 /// carries the output the run has received so far at the trailing end of its
 /// title line, the title's first line fading out before it; a running
-/// summary's newest call is the line under it.
+/// summary's newest call is the line under it. While the turn is folded, that
+/// title and count are drawn on the header's line instead, and this row keeps
+/// only the call it is on.
 final class ChatActivityRow: ListRowView {
     /// A step inside was folded or unfolded: the list has to measure the row
     /// again.
@@ -86,11 +88,14 @@ final class ChatActivityRow: ListRowView {
         shownID = message.id
         self.message = message
         header.animationIdentity = message.id
-        header.text = message.activityTitle
+        // A folded turn's title and count are the header's line, right after
+        // its state: this row keeps only the call it is on.
+        let title = message.foldsProcessSteps ? "" : message.activityTitle
+        header.text = title
         sourceLabel.text = message.role.isThinking ? message.processingSource : nil
         sourceLabel.isHidden = sourceLabel.text == nil
         isAccessibilityElement = false
-        header.accessibilityLabel = message.activityTitle
+        header.accessibilityLabel = title.isEmpty ? nil : title
         var actions: [UIAccessibilityCustomAction] = []
         if Self.isReasoning(message) {
             actions.append(UIAccessibilityCustomAction(name: String(localized: "View Thoughts")) { [weak self] _ in
@@ -110,7 +115,7 @@ final class ChatActivityRow: ListRowView {
             expansion.show(message)
             expansion.isHidden = false
         }
-        let tokens = message.receivedTokens
+        let tokens = message.foldsProcessSteps ? nil : message.receivedTokens
         header.accessibilityValue = tokens.map(ReceivedTokensView.spoken)
         showReceived(tokens, settles: message.receivedSettles, animated: isSameMessage)
         if let call = Self.banner(of: message) {
@@ -303,7 +308,8 @@ final class ChatActivityRow: ListRowView {
         let width = max(1, width - insets.left - insets.right)
         var height = insets.top + insets.bottom
         // A finished stretch has no title line: what it did is in its steps.
-        if !message.activityTitle.isEmpty {
+        // Nor has one a folded turn, whose title the header draws.
+        if !message.foldsProcessSteps, !message.activityTitle.isEmpty {
             sizingHeader.font = .preferredFont(forTextStyle: .body)
             sizingHeader.text = message.activityTitle
             height += ceil(

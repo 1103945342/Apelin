@@ -812,6 +812,7 @@ final class ChatController: UIViewController {
         // row keeps the turn's name, so the next stretch's summary replaces
         // the one before it in place.
         var newestActivity: [UUID: Int] = [:]
+        var newestSummary: [UUID: ChatMessage] = [:]
         var runningTurns = Set<UUID>()
         for (offset, item) in items.enumerated() {
             guard let turn = item.turnMessageID else { continue }
@@ -820,12 +821,28 @@ final class ChatController: UIViewController {
             }
             if case .thinking = item.role {
                 newestActivity[turn] = offset
+                newestSummary[turn] = item
             }
         }
         var visible: [ChatMessage] = []
         visible.reserveCapacity(items.count)
         for (offset, item) in items.enumerated() {
             guard !item.role.isApproval else { continue }
+            // A running turn's state and what it is doing now share the
+            // header's line: the newest summary's title and count are the
+            // header's, and the summary row keeps only the call it is on.
+            if case let .turn(running, _) = item.role, running,
+               let turn = item.turnMessageID,
+               let summary = newestSummary[turn],
+               !ChatTraceExpansion.isExpanded(turn: turn)
+            {
+                var header = item
+                header.headerActivityTitle = summary.activityTitle
+                header.headerReceivedTokens = summary.receivedTokens
+                header.headerReceivedSettles = summary.receivedSettles
+                visible.append(header)
+                continue
+            }
             guard case .thinking = item.role, let turn = item.turnMessageID else {
                 visible.append(item)
                 continue

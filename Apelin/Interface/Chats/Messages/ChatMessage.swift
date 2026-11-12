@@ -112,6 +112,16 @@ struct ChatMessage: Identifiable, Hashable {
     /// line and the call it is on, and none of the steps under them — they are
     /// what opening the turn's header is for.
     var foldsProcessSteps = false
+    /// On a running turn's header: the title of the summary it draws for the
+    /// whole process, which is that summary's `activityTitle` while the turn
+    /// is folded — the header says "Running: Thinking…" on one line, and the
+    /// summary row under it keeps only the call it is on.
+    var headerActivityTitle = ""
+    /// On a running turn's header: the output tokens that summary has
+    /// received so far, and whether the count belongs to a reply the run is
+    /// writing after it (`receivedSettles`).
+    var headerReceivedTokens: Int?
+    var headerReceivedSettles = false
 
     /// What a summary's title line says: a stretch still going names the run
     /// and what it waits on, a finished one names what it did. aimini titles

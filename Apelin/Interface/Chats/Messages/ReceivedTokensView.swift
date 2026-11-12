@@ -1,8 +1,8 @@
 import LitextAnimation
 import UIKit
 
-/// At the trailing end of a summary's title line: the output tokens the run
-/// has received so far, then a downward arrow, "653 ↓"; right to left, the
+/// At the trailing end of a summary's title line: a downward arrow, then the
+/// output tokens the run has received so far, "↓ 653"; right to left, the
 /// arrow is at the edge and the figure on its right, still after it. The
 /// figure climbs to each count rather than jumping (`TokenClimb`), drawn
 /// again at most ten times a second with its digits rolling
@@ -121,21 +121,26 @@ final class ReceivedTokensView: UIView {
         ceil(max(symbol.intrinsicContentSize.height, figureFont.lineHeight))
     }
 
-    /// The arrow at the trailing edge, the label filling the rest of the
-    /// line with its figure set against the arrow.
+    /// The arrow first, the figure after it and ending at the trailing edge.
+    /// Right to left the cluster is mirrored, so the arrow still leads the
+    /// figure in the reading direction.
     override func layoutSubviews() {
         super.layoutSubviews()
         let symbolWidth = symbol.intrinsicContentSize.width
+        // the figure's slot is the arrived figure's width, so neither the
+        // arrow nor the figure moves while it climbs
+        let figureWidth = max(0, contentWidth - symbolWidth - Self.spacing)
+        let cluster = max(0, bounds.width - contentWidth)
         symbol.frame = directionalFrame(CGRect(
-            x: bounds.width - symbolWidth,
+            x: cluster,
             y: 0,
             width: symbolWidth,
             height: bounds.height,
         ))
         label.frame = directionalFrame(CGRect(
-            x: 0,
+            x: cluster + symbolWidth + Self.spacing,
             y: ((bounds.height - ceil(figureFont.lineHeight)) / 2).rounded(),
-            width: max(0, bounds.width - symbolWidth - Self.spacing),
+            width: figureWidth,
             height: ceil(figureFont.lineHeight),
         ))
     }
@@ -163,8 +168,8 @@ final class ReceivedTokensView: UIView {
         guard force || figure != shownFigure else { return }
         shownFigure = figure
         let paragraph = NSMutableParagraphStyle()
-        // against the arrow, which is at the trailing edge
-        paragraph.alignment = laysOutRightToLeft ? .left : .right
+        // against the arrow, which leads the figure
+        paragraph.alignment = laysOutRightToLeft ? .right : .left
         paragraph.lineBreakMode = .byClipping
         let text = NSAttributedString(string: Self.figure(figure), attributes: [
             .font: figureFont,
