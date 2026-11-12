@@ -77,9 +77,6 @@ final class ChatTurnHeaderRow: ListRowView {
         addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(toggle)))
         isAccessibilityElement = true
         accessibilityTraits = [.button, .header]
-        state.onShownTextChange = { [weak self] _ in
-            self?.setNeedsLayout()
-        }
     }
 
     @available(*, unavailable)
@@ -222,8 +219,15 @@ final class ChatTurnHeaderRow: ListRowView {
         super.layoutSubviews()
         let content = bounds.inset(by: ChatMessageRow.insets(for: bounds.width))
         let textWidth = max(1, content.width)
-        state.font = Style.stateFont
-        activityLabel.font = Style.activityFont
+        // Setting the font redraws the label and marks it for layout again
+        // (`ThinkingStatusLabel.updateText`), so it is set only when it
+        // differs: setting it on every pass would relayout forever.
+        if state.font != Style.stateFont {
+            state.font = Style.stateFont
+        }
+        if activityLabel.font != Style.activityFont {
+            activityLabel.font = Style.activityFont
+        }
         let stateWidth = min(
             textWidth,
             ceil(state.sizeThatFits(CGSize(width: textWidth, height: .greatestFiniteMagnitude)).width),
