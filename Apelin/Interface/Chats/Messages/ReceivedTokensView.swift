@@ -33,6 +33,8 @@ final class ReceivedTokensView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        clipsToBounds = true
+        label.clipsToBounds = true
         isUserInteractionEnabled = false
         accessibilityElementsHidden = true
         symbol.tintColor = Self.color
@@ -65,6 +67,7 @@ final class ReceivedTokensView: UIView {
             return
         }
         climb.aim(at: tokens, within: duration, at: CACurrentMediaTime())
+        setNeedsLayout()
         tick()
     }
 
@@ -167,6 +170,9 @@ final class ReceivedTokensView: UIView {
     @objc dynamic private func draw(_ figure: Int, rolls: Bool, force: Bool = false) {
         guard force || figure != shownFigure else { return }
         shownFigure = figure
+        // A new target can add a digit/group separator without resizing this
+        // view. Reposition the arrow and label before the new glyphs render.
+        setNeedsLayout()
         let paragraph = NSMutableParagraphStyle()
         // against the arrow, which leads the figure
         paragraph.alignment = laysOutRightToLeft ? .right : .left

@@ -8,8 +8,8 @@ import UIKit
 /// which one and how it began.
 ///
 /// It comes and goes as the system's own scroll indicator does (owner,
-/// 2026-11-06): it opens out of its middle by a few points as it arrives,
-/// promptly, and leaves more slowly once the reader stops. With fewer than
+/// 2026-11-12): it expands linearly from its middle towards both ends,
+/// and contracts back into the middle once the reader stops. With fewer than
 /// two of the reader's messages there is nothing to move between, and the
 /// system's scroll indicator is left in its place. VoiceOver reaches the same
 /// messages through the chat's "Your Messages" rotor, so the rail itself is
@@ -53,6 +53,7 @@ final class ChatMessageRuler: UIView {
         super.init(frame: frame)
         clipsToBounds = false
         alpha = 0
+        transform = CGAffineTransform(scaleX: 1, y: 0.001)
         isUserInteractionEnabled = false
         accessibilityElementsHidden = true
 
@@ -136,22 +137,19 @@ final class ChatMessageRuler: UIView {
         isUserInteractionEnabled = shown
         let change = {
             self.alpha = shown ? 1 : 0
-            self.layer.transform = shown
-                ? CATransform3DIdentity
-                : CATransform3DMakeScale(1, 0.94, 1)
+            self.transform = shown ? .identity : CGAffineTransform(scaleX: 1, y: 0.001)
         }
         guard animated, !UIAccessibility.isReduceMotionEnabled else {
+            layer.removeAllAnimations()
             change()
             return
         }
-        // Arriving promptly, out of its own middle, and leaving more slowly,
-        // is how the system's scroll indicator behaves; it is the one thing at
-        // this edge the reader already knows.
-        let curve: UIView.AnimationOptions = shown ? .curveEaseOut : .curveEaseIn
+        // Both ends travel equally far from the fixed midpoint, at constant
+        // speed. A reversal continues from its presentation state.
         UIView.animate(
-            withDuration: shown ? 0.24 : 0.32,
+            withDuration: 0.24,
             delay: 0,
-            options: [.beginFromCurrentState, .allowUserInteraction, curve],
+            options: [.beginFromCurrentState, .allowUserInteraction, .curveLinear],
             animations: change,
         )
     }

@@ -89,6 +89,22 @@ func checkProcessPresentation() {
 }
 
 func checkActivityLayout() {
+    for width: CGFloat in [0, 12, 28, 100, 240, 390, 700] {
+        for title: CGFloat in [40, 120, 500] {
+            for showsTokens in [false, true] {
+                let slots = ChatHeaderLayout(width: width, stateWidth: title, showsTokens: showsTokens)
+                precondition(slots.stateWidth >= 0 && slots.tokensWidth >= 0)
+                precondition(slots.stateWidth <= slots.tokensX)
+                precondition(slots.tokensX + slots.tokensWidth <= slots.chevronX)
+                precondition(slots.chevronX + slots.chevronWidth <= width)
+                // Mirroring these disjoint slots also keeps RTL disjoint.
+                let arrowEnd = width - slots.chevronX
+                let tokenStart = width - slots.tokensX - slots.tokensWidth
+                precondition(arrowEnd <= tokenStart)
+            }
+        }
+    }
+    print("ok: 42 header slot combinations; narrow widths, large titles and RTL stay disjoint")
     let empty = ChatActivityLayout(source: 0, title: 0, banner: 0, steps: 0, top: 8, bottom: 8)
     precondition(empty.height == 0, "an empty row has no insets")
     let steps = ChatActivityLayout(source: 0, title: 0, banner: 0, steps: 30, top: 8, bottom: 8)

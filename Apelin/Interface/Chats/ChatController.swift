@@ -84,6 +84,8 @@ final class ChatController: UIViewController {
     /// back at its end, and kept there as the rows above are measured again,
     /// until the reader drags it.
     private var holdsLatestMessage = false
+    /// A process disclosure owns the viewport until its new height settles.
+    @objc dynamic private var isResizingProcess = false
     /// Where a reader elsewhere in the conversation was when the page last
     /// changed width: the row at the top of what they saw, under the bar,
     /// and how far into it. The rows wrap again, and a long reply grows or
@@ -339,7 +341,9 @@ final class ChatController: UIViewController {
                     // rows are put in or taken out, and the list redraws.
                     row.onToggle = { [weak self] in
                         guard let self else { return }
-                        self.showTranscript(self.messages)
+                        self.resizeProcess(anchoredAt: message.id) {
+                            self.showTranscript(self.messages, animated: false)
+                        }
                     }
                 }
             ListRow(ChatActivityRow.self)
@@ -352,8 +356,10 @@ final class ChatController: UIViewController {
                     // being rebuilt.
                     row.onToggle = { [weak self] in
                         guard let self else { return }
-                        self.messageList.reconfigureRow(with: message.id)
-                        self.messageList.invalidateLayout(forRowWith: message.id)
+                        self.resizeProcess(anchoredAt: message.id) {
+                            self.messageList.reconfigureRow(with: message.id)
+                            self.messageList.invalidateLayout(forRowWith: message.id)
+                        }
                     }
                     row.onOpenPage = { [weak self] in
                         guard let self else { return }
@@ -847,6 +853,35 @@ final class ChatController: UIViewController {
         updateLatestMessageButton()
     }
 
+    /// A disclosure is reading, not following output. Keep the row's top at
+    /// its old screen coordinate, even when ListView compensates the growth
+    /// of a partially visible row into the offset. Its internal headings do
+    /// not move; only the content below the tapped heading grows.
+    @objc dynamic private func resizeProcess(anchoredAt id: ChatMessage.ID, change: () -> Void) {
+        guard !isResizingProcess else { return }
+        isResizingProcess = true
+        defer { isResizingProcess = false }
+        followedTurn = nil
+        holdsLatestMessage = false
+        readingPlace = nil
+        needsInitialScroll = false
+        messageList.cancelCurrentScrolling()
+        let offset = messageList.contentOffset
+        let top = messageList.rectForRow(with: id).minY
+        UIView.performWithoutAnimation {
+            change()
+            messageList.layoutIfNeeded()
+            let newTop = messageList.rectForRow(with: id).minY
+            let y = min(
+                max(offset.y + newTop - top, messageList.minimumContentOffset.y),
+                messageList.maximumContentOffset.y,
+            )
+            messageList.setContentOffset(CGPoint(x: offset.x, y: y), animated: false)
+            messageList.layoutIfNeeded()
+        }
+        updateLatestMessageButton()
+    }
+
     private func showTranscript(_ items: [ChatMessage], animated: Bool = true) {
         if let page = tracePage, let message = items.first(where: { $0.id == page.messageID }) {
             page.show(message)
@@ -945,7 +980,17 @@ final class ChatController: UIViewController {
                         subtitle: account.catalogTitle(for: model) == nil ? nil : model,
                         isSelected: account.provider == selected?.provider && model == selected?.model,
                         modelTest: AgentModelTestRequest(provider: account.provider, model: model),
-                    ) { ComposerModelSelection.choose(Self.selection(of: model, in: account), for: id) }
+                    ) { [weak self] in
+                        guard let self else { return }
+                        ChatActions.switchModel(
+                            to: Self.selection(of: model, in: account),
+                            named: account.displayName(for: model),
+                            catalogWindow: Self.window(of: model, in: account),
+                            for: id,
+                            runtime: runtime,
+                            from: self,
+                        )
+                    }
                 },
             )
         }
@@ -1014,6 +1059,14 @@ extension ChatController {
             supportedEfforts: (account.reasoningEfforts?[model] ?? []).filter { [.low, .high, .max].contains($0) },
             supportedTiers: account.serviceTiers?[model] ?? [],
         )
+    }
+
+    /// What the model holds, as the pick is judged against it: the figure the
+    /// reader set for it, and the catalogs' where they set none — the pair the
+    /// model's own settings page shows.
+    private static func window(of model: String, in account: AgentAccount) -> Int? {
+        ModelParameters.values(for: account.provider, model: model).contextWindow
+            ?? account.capabilities?[model]?.contextWindow
     }
 
     /// With no model picked, or one no longer enabled, the first enabled
@@ -1386,6 +1439,7 @@ extension ChatController: UIScrollViewDelegate {
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard !isResizingProcess else { return }
         if !scrollView.isTracking, !scrollView.isDecelerating {
             holdLatestMessage()
         }
@@ -1750,8 +1804,14 @@ extension ChatController {
         let width = ChatMessageRuler.width
         let x = view.effectiveUserInterfaceLayoutDirection == .rightToLeft ? list.minX : list.maxX - width
         let frame = CGRect(x: x, y: top, width: width, height: max(0, bottom - top))
-        if messageRuler.frame != frame {
-            messageRuler.frame = frame
+        // The ruler scales about its centre. A transformed frame is not its
+        // layout geometry, especially while hidden at almost zero height.
+        if messageRuler.bounds.size != frame.size {
+            messageRuler.bounds.size = frame.size
+        }
+        let center = CGPoint(x: frame.midX, y: frame.midY)
+        if messageRuler.center != center {
+            messageRuler.center = center
         }
     }
 

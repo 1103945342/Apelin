@@ -65,7 +65,6 @@ enum ChatProcessPresentation {
             {
                 var header = item
                 if running, let summary = newest[turn] {
-                    header.headerActivityTitle = summary.activityTitle
                     header.headerReceivedTokens = summary.receivedTokens
                     header.headerReceivedSettles = summary.receivedSettles
                     append(header)
