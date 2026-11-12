@@ -15,7 +15,10 @@ enum AgentGitBranchRules {
             return value
         }
         func paths(_ value: JSONValue?) -> [String]? {
-            value?.arrayValue?.compactMap(\.stringValue)
+            // ApelinCore's JSONValue carries no `arrayValue` accessor: the
+            // array is read as the case it is.
+            guard case let .array(items)? = value else { return nil }
+            return items.compactMap { $0.stringValue }
         }
         func tool(_ name: AgentToolName, _ projectID: String) -> Bool {
             asked["tool"]?.stringValue == name.rawValue && projectID == project
