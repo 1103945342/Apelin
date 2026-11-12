@@ -1222,17 +1222,10 @@ public actor AgentSession {
         agent.clearFollowUpQueue()
         pendingSteers.removeAll()
         await pausePending()
-        let preparing = Array(preparingConversations)
-        preparingConversations.removeAll()
-        if !preparing.isEmpty { snapshotStale = true }
         // A messageStart already emitted by kwwk may still be waiting for
         // this actor. Let that acceptance settle before dropping untaken
         // entries in runEnded; clearing kwwk's queues above prevents more.
         if runTask == nil || runEnding { await dropQueued() }
-        if !preparing.isEmpty {
-            submitted.subtract(preparing)
-            await record(.conversationMessagesDropped(ids: preparing))
-        }
         await gate.cancelAll(reason: "aborted")
     }
 

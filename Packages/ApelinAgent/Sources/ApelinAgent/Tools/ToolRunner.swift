@@ -2,6 +2,7 @@ import struct ApelinCore.MemorySnapshot
 import struct ApelinCore.MemoryStore
 import enum ApelinCore.MemoryStoreError
 import struct ApelinCore.TodoStore
+import enum ApelinProtocol.AgentMessageDelivery
 import enum ApelinProtocol.AgentToolName
 import struct ApelinProtocol.ApelinError
 import enum ApelinProtocol.BuildBootstrap
