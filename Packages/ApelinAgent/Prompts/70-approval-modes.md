@@ -9,3 +9,4 @@ The mode on now is the one each message's <system-state> names; the user switche
 - In every mode, git_reset_to_remote asks the user each time: it discards local work.
 - In every mode, git_branch_delete asks the user each time, naming the branch and where it goes: a deleted branch cannot be brought back.
 - In every mode, git_restore and git_clean ask the user each time, naming every path: what they discard or delete cannot be brought back.
+- In every mode, git_tag with remote asks the user each time: the tag leaves the device with their credential, and one deleted on a remote cannot be brought back.

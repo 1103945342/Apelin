@@ -114,6 +114,16 @@ public extension GitService {
         let name = try mapped {
             try repository.createTag(request.name, commit: request.commit, message: request.message, author: tagger)
         }
+        if let remote = request.remote {
+            try Self.checkRemoteName(remote)
+            // A tag goes where a push does, so its address is held to the
+            // same rule before anything is sent.
+            guard let url = repository.remoteURL(remote) else {
+                throw ApelinError(.notFound, "no remote \(remote.debugDescription)", reason: .noSuchRemote)
+            }
+            try checkRemoteURL(url)
+            try mapped { try repository.pushTag(name, remote: remote, credentials: credentialLookup) }
+        }
         return GitTagCreateResponse(name: name)
     }
 
@@ -122,7 +132,18 @@ public extension GitService {
         if let problem = GitBranchName.problem(request.name) {
             throw ApelinError(.badRequest, problem)
         }
-        try mapped { try repository.deleteTag(request.name) }
+        if let remote = request.remote {
+            try Self.checkRemoteName(remote)
+            guard let url = repository.remoteURL(remote) else {
+                throw ApelinError(.notFound, "no remote \(remote.debugDescription)", reason: .noSuchRemote)
+            }
+            try checkRemoteURL(url)
+            try mapped {
+                try repository.deleteRemoteTag(request.name, remote: remote, credentials: credentialLookup)
+            }
+        } else {
+            try mapped { try repository.deleteTag(request.name) }
+        }
         return GitTagDeleteResponse()
     }
 

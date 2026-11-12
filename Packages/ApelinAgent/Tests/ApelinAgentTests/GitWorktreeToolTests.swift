@@ -90,6 +90,31 @@ struct GitWorktreeToolTests {
     }
 
     @Test
+    func `a tag on a remote asks in every mode and names it`() async throws {
+        for mode: ApprovalMode in [.relaxed, .full, .confirm] {
+            let harness = try DigestApprovalTests.Harness(mode: mode)
+            defer { harness.home.remove() }
+            let (_, asked) = try await harness.run(
+                .gitTag,
+                ["action": "create", "name": "v1.0.0", "remote": "origin"],
+            )
+            #expect(asked.count == 1)
+            let reason = try #require(asked.first?.reason)
+            #expect(reason.contains("v1.0.0") && reason.contains("origin"))
+        }
+    }
+
+    @Test
+    func `a tag deletion on a remote says it cannot be brought back`() async throws {
+        let harness = try DigestApprovalTests.Harness()
+        defer { harness.home.remove() }
+        let (_, asked) = try await harness.run(.gitTag, ["action": "delete", "name": "v1", "remote": "origin"])
+        let reason = try #require(asked.first?.reason)
+        #expect(reason.contains("v1") && reason.contains("origin"))
+        #expect(reason.contains("bring"))
+    }
+
+    @Test
     func `bad arguments stop before approval`() async throws {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }

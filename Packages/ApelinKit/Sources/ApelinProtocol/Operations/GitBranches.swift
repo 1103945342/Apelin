@@ -246,11 +246,15 @@ public struct GitTagCreateRequest: OperationRequest {
     public var commit: String?
     /// Annotated when there is one.
     public var message: String?
-    public init(projectID: String, name: String, commit: String? = nil, message: String? = nil) {
+    /// Pushes the tag to this remote once it is made here, as
+    /// `git push <remote> <tag>` does.
+    public var remote: String?
+    public init(projectID: String, name: String, commit: String? = nil, message: String? = nil, remote: String? = nil) {
         self.projectID = projectID
         self.name = name
         self.commit = commit
         self.message = message
+        self.remote = remote
     }
 }
 
@@ -266,9 +270,13 @@ public struct GitTagDeleteRequest: OperationRequest {
     public static let operation = AppOperation.gitTagDelete
     public var projectID: String
     public var name: String
-    public init(projectID: String, name: String) {
+    /// Deletes the tag on this remote, as `git push <remote> :<tag>` does;
+    /// the local tag stays. Nil deletes the local one.
+    public var remote: String?
+    public init(projectID: String, name: String, remote: String? = nil) {
         self.projectID = projectID
         self.name = name
+        self.remote = remote
     }
 }
 
@@ -342,7 +350,7 @@ public extension ApelinService {
         try await send(request)
     }
 
-    func gitTagDelete(projectID: String, name: String) async throws {
-        _ = try await send(GitTagDeleteRequest(projectID: projectID, name: name))
+    func gitTagDelete(projectID: String, name: String, remote: String? = nil) async throws {
+        _ = try await send(GitTagDeleteRequest(projectID: projectID, name: name, remote: remote))
     }
 }

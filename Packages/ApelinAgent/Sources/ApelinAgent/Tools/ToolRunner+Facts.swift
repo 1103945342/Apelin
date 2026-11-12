@@ -107,10 +107,13 @@ extension ToolRunner {
             if let commit = arguments.argNonEmptyString("commit") {
                 try GitBranchTools.checkRevision(commit)
             }
+            let remote = arguments.argNonEmptyString("remote")
+            try GitRemoteTools.checkName(remote)
             facts.tagChange = InvocationFacts.TagChange(
                 name: name,
                 deleting: tagAction == .delete,
                 annotated: arguments.argNonEmptyString("message") != nil,
+                remote: remote,
             )
         case .gitStash:
             let action = try arguments.requireString("action")

@@ -46,11 +46,13 @@ enum AgentGitBranchRules {
                     && arguments["name"]?.stringValue == value.name
                     && optional("commit") == value.commit
                     && optional("message") == value.message
+                    && optional("remote") == value.remote
             case .gitTagDelete:
                 let value = try request.decode(GitTagDeleteRequest.self)
                 return tool(.gitTag, value.projectID)
                     && arguments["action"]?.stringValue == "delete"
                     && arguments["name"]?.stringValue == value.name
+                    && optional("remote") == value.remote
             case .gitRestore:
                 let value = try request.decode(GitRestoreRequest.self)
                 return tool(.gitRestore, value.projectID)

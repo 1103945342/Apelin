@@ -22,9 +22,11 @@ struct GitWorktreeBackendTests {
 
         let context = fixture.context()
         let made = try await fixture.backend.gitTag(GitTagToolRequest(
-            context: context, action: .create, name: "v1.0.0", commit: "HEAD~1", message: "First",
+            context: context, action: .create, name: "v1.0.0", commit: "HEAD~1", message: "First", remote: "origin",
         ))
-        _ = try await fixture.backend.gitTag(GitTagToolRequest(context: context, action: .delete, name: "v1.0.0"))
+        _ = try await fixture.backend.gitTag(GitTagToolRequest(
+            context: context, action: .delete, name: "v1.0.0", remote: "origin",
+        ))
         _ = try await fixture.backend.gitStash(GitStashToolRequest(context: context, action: .list))
         let saved = try await fixture.backend.gitStash(GitStashToolRequest(
             context: context, action: .save, message: "wip", includeUntracked: true,
@@ -50,6 +52,8 @@ struct GitWorktreeBackendTests {
         }
         let create = try #require(fixture.host.requests(GitTagCreateRequest.self).first)
         #expect(create.name == "v1.0.0" && create.commit == "HEAD~1" && create.message == "First")
+        #expect(create.remote == "origin")
+        #expect(fixture.host.requests(GitTagDeleteRequest.self).first?.remote == "origin")
         let save = try #require(fixture.host.requests(GitStashSaveRequest.self).first)
         #expect(save.message == "wip" && save.includeUntracked)
         let apply = try #require(fixture.host.requests(GitStashApplyRequest.self).first)

@@ -14,10 +14,11 @@ public extension ChannelHostBackend {
                     name: request.name,
                     commit: request.commit,
                     message: request.message,
+                    remote: request.remote,
                 ))
                 return GitTagToolResponse(name: made.name)
             case .delete:
-                try await service.gitTagDelete(projectID: project.id, name: request.name)
+                try await service.gitTagDelete(projectID: project.id, name: request.name, remote: request.remote)
                 return GitTagToolResponse(name: request.name)
             }
         }

@@ -24,8 +24,8 @@ func gitBranchChecks(scratch: URL, scratchPath: String) async throws {
         (try WireRequest(GitBranchRenameRequest(projectID: project.id, from: "feature", to: "reviewed")), card(.gitBranchRename, #"{"from":"feature","to":"reviewed"}"#)),
         (try WireRequest(GitMergeRequest(projectID: project.id, branch: "reviewed", noFastForward: true)), card(.gitMerge, #"{"branch":"reviewed","no_fast_forward":true}"#)),
         (try WireRequest(GitMergeAbortRequest(projectID: project.id)), card(.gitMergeAbort, "{}")),
-        (try WireRequest(GitTagCreateRequest(projectID: project.id, name: "v1", commit: "HEAD~1", message: "First")), card(.gitTag, #"{"action":"create","name":"v1","commit":"HEAD~1","message":"First"}"#)),
-        (try WireRequest(GitTagDeleteRequest(projectID: project.id, name: "v1")), card(.gitTag, #"{"action":"delete","name":"v1"}"#)),
+        (try WireRequest(GitTagCreateRequest(projectID: project.id, name: "v1", commit: "HEAD~1", message: "First", remote: "origin")), card(.gitTag, #"{"action":"create","name":"v1","commit":"HEAD~1","message":"First","remote":"origin"}"#)),
+        (try WireRequest(GitTagDeleteRequest(projectID: project.id, name: "v1", remote: "origin")), card(.gitTag, #"{"action":"delete","name":"v1","remote":"origin"}"#)),
         (try WireRequest(GitRestoreRequest(projectID: project.id, paths: ["a.swift"], source: .index)), card(.gitRestore, #"{"paths":["a.swift"],"source":"index"}"#)),
         (try WireRequest(GitDeletePathsRequest(projectID: project.id, paths: ["build"])), card(.gitClean, #"{"paths":["build"]}"#)),
         (try WireRequest(GitStashSaveRequest(projectID: project.id, message: "wip", includeUntracked: true)), card(.gitStash, #"{"action":"save","message":"wip","include_untracked":true}"#)),
@@ -44,6 +44,8 @@ func gitBranchChecks(scratch: URL, scratchPath: String) async throws {
     check(!AgentGitBranchRules.covers(cases[0].0, project: project.id, asked: card(.gitBranchCreate, #"{"name":"feature","start_point":"main","checkout":false}"#)), "create alone cannot approve switching")
     check(!AgentGitBranchRules.covers(cases[4].0, project: project.id, asked: card(.gitMerge, #"{"branch":"reviewed"}"#)), "merge mode is bound")
     check(!AgentGitBranchRules.covers(cases[2].0, project: project.id, asked: card(.gitBranchDelete, #"{"name":"old","remote":"origin"}"#)), "force cannot be granted without being named")
+    check(!AgentGitBranchRules.covers(cases[6].0, project: project.id, asked: card(.gitTag, #"{"action":"create","name":"v1","commit":"HEAD~1","message":"First"}"#)), "a tag's remote cannot be granted without being named")
+    check(!AgentGitBranchRules.covers(cases[7].0, project: project.id, asked: card(.gitTag, #"{"action":"delete","name":"v1","remote":"upstream"}"#)), "another remote is refused")
     check(!AgentGitBranchRules.covers(checkout, project: project.id, asked: card(.gitBranchCheckout, "invalid JSON")), "bad event fails closed")
 
     let registry = TaskRegistry(directory: scratch.appendingPathComponent("branch-tasks"))

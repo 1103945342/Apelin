@@ -397,6 +397,47 @@ public extension GitRepository {
         }
     }
 
+    /// Pushes the local tag `name` to `remote`, as `git push <remote> <name>`
+    /// does: only a tag that exists here goes, and one the remote already has
+    /// elsewhere is refused.
+    func pushTag(_ name: String, remote: String, credentials: GitCredentialLookup? = nil) throws {
+        try Self.checkBranchName(name)
+        try pushRefspec("refs/tags/\(name):refs/tags/\(name)", remote: remote, credentials: credentials, verb: "push \(name)")
+    }
+
+    /// Deletes `name` on `remote`, as `git push <remote> :refs/tags/<name>`
+    /// does; the local tag stays.
+    func deleteRemoteTag(_ name: String, remote: String, credentials: GitCredentialLookup? = nil) throws {
+        try Self.checkBranchName(name)
+        try pushRefspec(":refs/tags/\(name)", remote: remote, credentials: credentials, verb: "delete \(name)")
+    }
+
+    /// One refspec to `remote`, its credentials offered and its refusals read
+    /// back as `rejected`.
+    private func pushRefspec(
+        _ refspec: String,
+        remote: String,
+        credentials: GitCredentialLookup?,
+        verb: String,
+    ) throws {
+        let handle = try lookupRemote(remote)
+        defer { git_remote_free(handle) }
+        let callbacks = RemoteCallbacks(credentials: credentials)
+        var options = git_push_options()
+        git_push_options_init(&options, UInt32(GIT_PUSH_OPTIONS_VERSION))
+        callbacks.install(&options.callbacks)
+        let code = withExtendedLifetime(callbacks) {
+            Self.withStrings([refspec]) { refspecs in
+                var refspecs = refspecs
+                return git_remote_push(handle, &refspecs, &options)
+            }
+        }
+        guard code == 0 else { throw callbacks.failure(code, "\(verb) on \(remote)") }
+        if let rejected = callbacks.rejections.first {
+            throw GitError(.rejected, "\(remote) refused to \(verb) \(rejected.ref): \(rejected.status)")
+        }
+    }
+
     /// Renames a local branch, and moves its upstream configuration to the
     /// new name with it.
     @discardableResult

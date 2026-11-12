@@ -80,10 +80,14 @@ public struct InvocationFacts: Sendable, Hashable {
         public var name: String
         public var deleting: Bool
         public var annotated: Bool
-        public init(name: String, deleting: Bool, annotated: Bool) {
+        /// The remote it is pushed to, or whose tag goes; nil is the local
+        /// repository alone.
+        public var remote: String?
+        public init(name: String, deleting: Bool, annotated: Bool, remote: String? = nil) {
             self.name = name
             self.deleting = deleting
             self.annotated = annotated
+            self.remote = remote
         }
     }
 
@@ -276,6 +280,11 @@ public struct ApprovalPolicy: Sendable, Hashable {
         if case .local(.gitClean) = facts.tool, let paths = facts.discardedPaths {
             return Self.discardedPathsVerdict(paths, discarding: false)
         }
+        // A tag pushed to, or deleted from, a remote leaves the device with
+        // the user's credential: it asks in every mode, as a push does.
+        if case .local(.gitTag) = facts.tool, let tag = facts.tagChange, let remote = tag.remote {
+            return Self.tagRemoteVerdict(tag, remote: remote)
+        }
         if mode != .confirm {
             return .allow(.relaxed)
         }
@@ -368,6 +377,21 @@ public struct ApprovalPolicy: Sendable, Hashable {
         let verb = discarding ? "Discards the changes to" : "Deletes the untracked files at"
         return .ask(
             reason: "\(verb) \(what) \(named)\(more): nothing in this conversation brings them back.",
+            detail: .none,
+        )
+    }
+
+    /// A tag published to, or deleted from, a remote: it leaves the device
+    /// with the user's credential, as a push does, so it asks in every mode.
+    static func tagRemoteVerdict(_ tag: InvocationFacts.TagChange, remote: String) -> GateVerdict {
+        if tag.deleting {
+            return .ask(
+                reason: "Deletes the tag \(tag.name) on \(remote): nothing in this conversation brings it back.",
+                detail: .none,
+            )
+        }
+        return .ask(
+            reason: "Makes the \(tag.annotated ? "annotated " : "")tag \(tag.name) here and pushes it to \(remote), publishing it.",
             detail: .none,
         )
     }

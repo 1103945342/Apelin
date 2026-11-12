@@ -17,12 +17,23 @@ public struct GitTagToolRequest: Sendable, Hashable, Codable {
     public var commit: String?
     /// The message an annotated tag carries.
     public var message: String?
-    public init(context: HostCallContext, action: Action, name: String, commit: String? = nil, message: String? = nil) {
+    /// With create: the remote the new tag is pushed to. With delete: the
+    /// remote whose tag goes; the local one stays.
+    public var remote: String?
+    public init(
+        context: HostCallContext,
+        action: Action,
+        name: String,
+        commit: String? = nil,
+        message: String? = nil,
+        remote: String? = nil,
+    ) {
         self.context = context
         self.action = action
         self.name = name
         self.commit = commit
         self.message = message
+        self.remote = remote
     }
 }
 

@@ -890,6 +890,7 @@ actor ToolRunner {
                 name: try arguments.requireString("name"),
                 commit: arguments.argNonEmptyString("commit"),
                 message: arguments.argNonEmptyString("message"),
+                remote: arguments.argNonEmptyString("remote"),
             )))
 
         case .gitStash:
