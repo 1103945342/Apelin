@@ -16,9 +16,8 @@ final class ChatTraceSteps: UIView {
     private let stack = UIStackView()
     private var order: [UUID] = []
     private var views: [UUID: UIView] = [:]
-    /// What each view shows now, so a step that has not changed is not read
-    /// again — a call's arguments can be a whole file, and comparing that on
-    /// every event of a run costs more than the row does.
+    /// What each view shows now. Compare only the fields it draws rather
+    /// than the whole message, its attachments and nested trace.
     private var shown: [UUID: ChatMessageShape] = [:]
     /// The height these steps were last fitted at, and the state they were
     /// fitted in: laying out a stack whose call is open is not free, and a
@@ -76,8 +75,7 @@ final class ChatTraceSteps: UIView {
         }
     }
 
-    /// The steps are drawn differently now: the height fitted before is not
-    /// theirs any more.
+    /// A content or expansion change invalidates the fitted height.
     private func changed() {
         generation &+= 1
     }
@@ -163,17 +161,11 @@ final class ChatTraceSteps: UIView {
         return measured
     }
 
-    /// The steps as they are drawn now: a thought that is still streaming
-    /// takes its text a few times a second rather than on every token, so one
-    /// text is measured and laid out instead of a thousand — an open thought
-    /// is the most expensive thing a run draws.
+    /// Measurement and display consume the same immutable step snapshot.
+    /// Preview animations throttle themselves; body text must not change
+    /// between the list's height pass and row configuration.
     static func drawn(_ summary: ChatMessage) -> [ChatMessage] {
-        ChatActivityContent.steps(summary).map { step in
-            guard step.role.isThinking else { return step }
-            var step = step
-            step.text = ThinkingStreamGate.text(step.text, for: step.id)
-            return step
-        }
+        ChatActivityContent.steps(summary)
     }
 
     /// Whether the reader has this step open: a thought by its own flag, a
@@ -185,10 +177,8 @@ final class ChatTraceSteps: UIView {
         return ChatTraceExpansion.isExpanded(call: step.id)
     }
 
-    /// What a height was measured from: the steps, how wide, at which text
-    /// size, and which of the steps the reader had open. What the steps hold
-    /// is enough, and their strings stay out of it: hashing a file's worth of
-    /// arguments on every pass costs more than the measurement saves.
+    /// What a height was measured from: exact step identities/content, width,
+    /// text size and expansion state. Equal byte counts are not equal layout.
     private struct Measure: Hashable {
         let shapes: [ChatMessageShape]
         let width: CGFloat
@@ -213,34 +203,6 @@ final class ChatTraceSteps: UIView {
 
     /// The one view the list's heights are measured in.
     private static let sizing = ChatTraceSteps()
-}
-
-/// How often a thought that is still streaming takes a new text where it is
-/// shown open, and what it showed before. Every token used to be laid out
-/// again — the label, the row holding it, and the list's height under it —
-/// which is what made an open process stutter through a stream; the text
-/// arrives far faster than it can be read.
-@MainActor
-enum ThinkingStreamGate {
-    /// Four times a second: fast enough to read as a stream, a hundredth of
-    /// the layout a token-by-token text asks for.
-    static let interval: TimeInterval = 0.25
-
-    private static var shown: [UUID: (text: String, at: Date)] = [:]
-
-    /// The text the thought `id` shows now: `text` when it is time for a new
-    /// one, and the one before it when it is not. A text that did not grow, or
-    /// that begins differently — a thought restarted — is taken at once.
-    static func text(_ text: String, for id: UUID) -> String {
-        let now = Date()
-        if let last = shown[id], text.utf8.count > last.text.utf8.count, text.hasPrefix(last.text),
-           now.timeIntervalSince(last.at) < interval
-        {
-            return last.text
-        }
-        shown[id] = (text, now)
-        return text
-    }
 }
 
 /// One thought of a run, folded into a line: how long it thought, and — once

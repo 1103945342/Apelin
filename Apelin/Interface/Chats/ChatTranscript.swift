@@ -173,6 +173,7 @@ struct ChatTranscript {
                     message.sender = payload?["from"]?.stringValue.map { Self.senderLine(conversationTitle($0)) }
                     message.sentAt = event.time
                     if event.kind == "prompt" {
+                        receivedTokens = nil
                         let named = payload?["from"]?.stringValue == nil ? Self.userMessageID(of: event) : nil
                         message.turnMessageID = named
                         endTurn(at: event.time)
@@ -448,6 +449,18 @@ struct ChatTranscript {
             began: turnBegan,
             now: lastEventTime ?? Date(),
         )
+        // The count belongs to the turn, even when its newest model segment
+        // has no thought or call to draw. Never route it through an optional
+        // summary: that made plain-text deltas hide and restart the counter.
+        if isWorking, let turn = turns.last?.messageID,
+           let header = messages.firstIndex(where: {
+               if case .turn = $0.role { return $0.turnMessageID == turn }
+               return false
+           })
+        {
+            messages[header].headerReceivedTokens = receivedTokens
+            messages[header].headerReceivedSettles = assistant != nil
+        }
         messages += queued
         for draft in sending where !messages.contains(where: { $0.id == draft.id }) {
             var message = ChatMessage(id: draft.id, role: .user, text: draft.text, attachments: draft.attachments)

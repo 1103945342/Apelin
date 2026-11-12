@@ -235,12 +235,9 @@ final class ChatActivityRow: ListRowView {
     private func showReceived(_ tokens: Int?, settles: Bool, animated: Bool) {
         let moves = animated && window != nil && !UIAccessibility.isReduceMotionEnabled
         if let tokens {
-            if !moves {
+            if !moves || !showsReceived {
                 received.show(tokens)
             } else {
-                if !showsReceived {
-                    received.show(0)
-                }
                 received.climb(to: tokens, within: settles ? TokenClimb.settling : TokenClimb.running)
             }
         }

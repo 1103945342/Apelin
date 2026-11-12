@@ -6,6 +6,8 @@ func event(_ seq: UInt64, _ kind: String, _ values: [String: JSONValue] = [:]) -
     TaskEvent(seq: EventSeq(seq), kind: kind, time: Date(timeIntervalSince1970: Double(seq)), payload: .object(values))
 }
 
+checkStreamPresentation()
+
 let userID = UUID()
 let events = [
     event(1, "prompt", ["id": .string(userID.uuidString), "text": .string("Make a change")]),

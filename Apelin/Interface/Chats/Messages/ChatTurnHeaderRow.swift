@@ -94,12 +94,11 @@ final class ChatTurnHeaderRow: ListRowView {
     private func showReceived(_ tokens: Int?, settles: Bool, animated: Bool) {
         let moves = animated && window != nil && !UIAccessibility.isReduceMotionEnabled
         if let tokens {
-            if !moves {
+            if !moves || !showsReceived {
+                // First appearance (or a reused row) starts at the actual
+                // count, never a synthetic zero. Later updates interpolate.
                 received.show(tokens)
             } else {
-                if !showsReceived {
-                    received.show(0)
-                }
                 received.climb(to: tokens, within: settles ? TokenClimb.settling : TokenClimb.running)
             }
         }

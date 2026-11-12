@@ -114,9 +114,9 @@ struct ChatMessage: Identifiable, Hashable {
     var foldsProcessSteps = false
     /// Adjacent process segments share one boundary inset, not two.
     var activityJoinsPrevious = false
-    /// On a folded running turn's header: the output tokens that summary has
-    /// received so far, and whether the count belongs to a reply the run is
-    /// writing after it (`receivedSettles`).
+    /// On a running turn's header, folded or expanded: the output tokens
+    /// received so far, and whether the run is writing a reply so the count
+    /// settles sooner (`receivedSettles`).
     var headerReceivedTokens: Int?
     var headerReceivedSettles = false
 
@@ -190,23 +190,25 @@ struct ChatMessage: Identifiable, Hashable {
     }
 }
 
-/// What a row draws of a message, without the strings themselves: its role,
-/// how much text and detail it holds, and whether its call is still out. Two
-/// rows showing the same message compare with it cheaply — comparing whole
-/// messages, arguments and results included, on every event of a running
-/// turn is what made a stream stutter.
+/// The identity and content a step draws. Strings are copy-on-write; keeping
+/// them here distinguishes equal-length edits and different line wrapping.
+/// A byte count alone let unrelated steps reuse each other's measured height.
 struct ChatMessageShape: Hashable {
+    let id: UUID
     let role: ChatMessage.Role
-    /// Bytes, not characters: counting a string's characters walks all of it,
-    /// and this is asked on every event.
-    let text: Int
-    let detail: Int
+    let text: String
+    let detail: String
+    let tool: String?
+    let banner: ToolCallBanner?
     let awaitsResult: Bool
 
     init(_ message: ChatMessage) {
+        id = message.id
         role = message.role
-        text = message.text.utf8.count
-        detail = message.detail.utf8.count
+        text = message.text
+        detail = message.detail
+        tool = message.tool
+        banner = message.banner
         awaitsResult = message.awaitsResult
     }
 }
