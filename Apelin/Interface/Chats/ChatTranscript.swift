@@ -857,9 +857,11 @@ struct ChatTranscript {
         let path = values?["path"]?.stringValue ?? ""
         switch tool {
         case .fileRead: return path.isEmpty ? String(localized: "Read a file") : String(localized: "Read \(path)")
-        case .fileWrite, .fileCreate:
-            return path.isEmpty ? String(localized: "Write a file") : String(localized: "Write \(path)")
-        case .fileEdit: return path.isEmpty ? String(localized: "Edit a file") : String(localized: "Edit \(path)")
+        case .fileWrite, .fileEdit, .fileCreate:
+            // One verb for the three tools that write a file: what they were
+            // given differs, what the reader sees does not — the diff or the
+            // content under the line tells them apart.
+            return path.isEmpty ? String(localized: "Edit a file") : String(localized: "Edit \(path)")
         case .fileList: return String(localized: "List files")
         case .fileGrep, .fileFind: return String(localized: "Search files")
         case .fileShow:
