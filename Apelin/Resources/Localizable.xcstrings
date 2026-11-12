@@ -6538,6 +6538,89 @@
         }
       }
     },
+    "A reply is still going. Wait for it to end, then pick this model again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا يزال هناك رد قيد التنفيذ. انتظر انتهاءه ثم اختر هذا النموذج مرة أخرى."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine Antwort läuft noch. Warte, bis sie endet, und wähle dieses Modell dann erneut."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A reply is still going. Wait for it to end, then pick this model again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía hay una respuesta en curso. Espera a que termine y vuelve a elegir este modelo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une réponse est en cours. Attendez qu’elle se termine, puis choisissez à nouveau ce modèle."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una risposta è ancora in corso. Attendi che finisca, poi scegli di nuovo questo modello."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "まだ応答中です。終わってから、このモデルをもう一度選んでください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 응답 중입니다. 끝난 뒤 이 모델을 다시 선택하세요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ainda há uma resposta em andamento. Espere terminar e escolha este modelo de novo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ответ ещё идёт. Дождитесь его завершения и выберите эту модель снова."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vẫn còn một phản hồi đang chạy. Hãy đợi kết thúc rồi chọn lại mô hình này."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还有一条回复正在进行。等它结束后再选择这个模型。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "還有一則回覆正在進行。等它結束後再選擇這個模型。"
+          }
+        }
+      }
+    },
     "A short title": {
       "extractionState": "manual",
       "localizations": {
@@ -23553,6 +23636,89 @@
           "stringUnit": {
             "state": "translated",
             "value": "立即壓縮此對話"
+          }
+        }
+      }
+    },
+    "Compact and Switch": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اضغط ثم بدّل"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komprimieren und wechseln"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compact and Switch"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compactar y cambiar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compacter et changer"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprimi e passa"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "圧縮して切り替え"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "압축 후 전환"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compactar e mudar"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сжать и переключить"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nén rồi chuyển"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "压缩并切换"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "壓縮並切換"
           }
         }
       }
@@ -60202,6 +60368,172 @@
         }
       }
     },
+    "Not Switched Yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لم يتم التبديل بعد"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch nicht gewechselt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not Switched Yet"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no se cambió"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas encore changé"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non ancora cambiato"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "まだ切り替えていません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 전환하지 않음"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ainda não alterado"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Модель пока не изменена"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa chuyển"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未切换"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未切換"
+          }
+        }
+      }
+    },
+    "Not Switched": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لم يتم التبديل"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht gewechselt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not Switched"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se cambió"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modèle inchangé"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non cambiato"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切り替えていません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전환하지 않음"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não alterado"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Модель не изменена"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chưa chuyển"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未切换"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未切換"
+          }
+        }
+      }
+    },
     "Not a repo": {
       "localizations": {
         "ar": {
@@ -92888,6 +93220,89 @@
         }
       }
     },
+    "The chat was compacted, but it still takes more tokens than %@ holds, so it was not switched to.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم ضغط المحادثة، لكنها لا تزال تستخدم رموزًا أكثر مما يتسع له %@، لذلك لم يتم التبديل إليه."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Chat wurde komprimiert, belegt aber weiterhin mehr Tokens, als %@ fasst; es wurde nicht gewechselt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The chat was compacted, but it still takes more tokens than %@ holds, so it was not switched to."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El chat se compactó, pero aún ocupa más tokens de los que admite %@, así que no se cambió."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La conversation a été compactée, mais elle utilise encore plus de jetons que %@ n’en contient : le passage n’a pas eu lieu."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La conversazione è stata compressa, ma occupa ancora più token di quanti %@ ne contenga, quindi non si è passati al nuovo modello."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "圧縮しましたが、%@ の上限を超えるトークンが残っているため、切り替えていません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "압축했지만 여전히 %@ 의 한도를 넘는 토큰이 남아 있어 전환하지 않았습니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A conversa foi compactada, mas ainda usa mais tokens do que %@ comporta, então não foi alterada."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Беседа сжата, но всё ещё занимает больше токенов, чем вмещает %@, поэтому модель не изменена."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuộc trò chuyện đã được nén, nhưng vẫn dùng nhiều token hơn %@ chứa, nên chưa chuyển."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已压缩对话，但剩余内容仍超过 %@ 的上限，因此没有切换。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已壓縮對話，但剩餘內容仍超過 %@ 的上限，因此沒有切換。"
+          }
+        }
+      }
+    },
     "The chats that are working or waiting for your approval.": {
       "localizations": {
         "ar": {
@@ -96718,6 +97133,89 @@
         }
       }
     },
+    "This Model Holds Less Than the Chat": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "هذا النموذج يتسع لأقل مما تحتويه المحادثة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieses Modell fasst weniger als der Chat"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Model Holds Less Than the Chat"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este modelo admite menos que este chat"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce modèle contient moins que la conversation"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo modello contiene meno della conversazione"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このモデルのコンテキストは会話より小さいです"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 모델의 컨텍스트가 대화보다 작습니다"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este modelo comporta menos que esta conversa"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "У этой модели контекст меньше, чем у беседы"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mô hình này chứa ít hơn cuộc trò chuyện"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所选模型的上下文小于本对话"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所選模型的上下文小於本對話"
+          }
+        }
+      }
+    },
     "This account has no repositories of its own.": {
       "localizations": {
         "ar": {
@@ -96866,6 +97364,172 @@
           "stringUnit": {
             "state": "translated",
             "value": "此分支是「master」，不追蹤任何內容。請改為推送到 main，或保留 master 不變。"
+          }
+        }
+      }
+    },
+    "This chat has too little to summarise, so it was not compacted, and %@ was not switched to.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تحتوي هذه المحادثة على القليل الذي يمكن تلخيصه، لذلك لم يتم ضغطها ولم يتم التبديل إلى %@."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Chat hat zu wenig zum Zusammenfassen, wurde also nicht komprimiert, und es wurde nicht zu %@ gewechselt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chat has too little to summarise, so it was not compacted, and %@ was not switched to."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este chat tiene muy poco que resumir, así que no se compactó y no se cambió a %@."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cette conversation a trop peu à résumer : elle n’a pas été compactée et le passage à %@ n’a pas eu lieu."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questa conversazione ha troppo poco da riassumere, quindi non è stata compressa e non si è passati a %@."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要約する内容が少ないため圧縮されず、%@ に切り替えていません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "요약할 내용이 적어 압축하지 않았으며 %@(으)로 전환하지 않았습니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta conversa tem pouco para resumir, então não foi compactada e não foi alterada para %@."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В беседе слишком мало для сжатия: она не была сжата, и модель не изменена на %@."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuộc trò chuyện này có quá ít nội dung để tóm tắt nên không được nén, và chưa chuyển sang %@."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本对话内容太少，无需压缩，因此没有切换到 %@。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本對話內容太少，無需壓縮，因此沒有切換到 %@。"
+          }
+        }
+      }
+    },
+    "This chat already takes %@ tokens, and %@ holds %@. Compact the chat with the model you are on first, then switch to %@?": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تستخدم هذه المحادثة بالفعل %@ من الرموز، بينما يتسع %@ لـ %@. هل تريد ضغط المحادثة بالنموذج الحالي ثم التبديل إلى %@؟"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Chat belegt bereits %@ Tokens, und %@ fasst %@. Den Chat zuerst mit dem aktuellen Modell komprimieren und dann zu %@ wechseln?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chat already takes %@ tokens, and %@ holds %@. Compact the chat with the model you are on first, then switch to %@?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este chat ya ocupa %@ tokens y %@ admite %@. ¿Compactar el chat con el modelo actual y luego cambiar a %@?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cette conversation utilise déjà %@ jetons, et %@ en contient %@. Compacter d’abord avec le modèle actuel, puis passer à %@ ?"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questa conversazione occupa già %@ token e %@ ne contiene %@. Comprimere prima la conversazione con il modello attuale e poi passare a %@?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この会話はすでに %@ トークンを使用しており、%@ は %@ までです。現在のモデルで先に圧縮してから %@ に切り替えますか？"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 대화는 이미 %@ 토큰을 사용했고 %@ 모델은 %@ 까지입니다. 현재 모델로 먼저 압축한 뒤 %@(으)로 전환할까요?"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta conversa já usa %@ tokens e %@ comporta %@. Compactar a conversa com o modelo atual e depois mudar para %@?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эта беседа уже занимает %@ токенов, а %@ вмещает %@. Сжать беседу текущей моделью и затем переключиться на %@?"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuộc trò chuyện này đã dùng %@ token, còn %@ chứa %@. Nén cuộc trò chuyện bằng mô hình hiện tại rồi chuyển sang %@?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本对话已占用 %@ 个 token，而 %@ 只能容纳 %@ 个。先用当前模型压缩对话，再切换到 %@？"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本對話已佔用 %@ 個 token，而 %@ 只能容納 %@ 個。先用目前模型壓縮對話，再切換到 %@？"
           }
         }
       }

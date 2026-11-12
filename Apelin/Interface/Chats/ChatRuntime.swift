@@ -745,6 +745,32 @@ final class ChatRuntime {
         (try? event.payload?.decode(AgentCompactionResult.self)) ?? AgentCompactionResult(outcome: .failed)
     }
 
+    /// Tells the open session which model the next message will use, so the
+    /// total the ring draws is that model's before anything is sent. Answers
+    /// the figure the session measured, or nil when there is no session to
+    /// tell or a run was going — the next prompt carries the choice then.
+    @discardableResult
+    func configureModel(
+        _ id: UUID,
+        selection: ComposerModelSelection,
+    ) async -> (tokens: Int, window: Int)? {
+        guard let sessionID = records[id]?.sessionID else { return nil }
+        do {
+            let answer = try await ApelinService.app.agentConfigure(AgentConfigureRequest(
+                sessionID: sessionID,
+                provider: selection.provider,
+                model: selection.model,
+                reasoningEffort: selection.effort,
+                serviceTier: selection.tier,
+                modelParameters: ModelParameters.values(for: selection.provider, model: selection.model).wire,
+            ))
+            guard answer.applied, let tokens = answer.tokens, let window = answer.window else { return nil }
+            return (tokens: tokens, window: window)
+        } catch {
+            return nil
+        }
+    }
+
     /// Follow a saved session when the reader opens its page, without sending
     /// a prompt. In particular an empty fork must retry a failed first open.
     func loadHistory(_ id: UUID) async throws {

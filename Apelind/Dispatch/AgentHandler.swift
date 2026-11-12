@@ -45,6 +45,10 @@ enum AgentHandler: DomainHandler {
             return reply
         case .agentCompact:
             return await forward(request, AgentCompactRequest.self, host: host) { $0.sessionID }
+        // The composer's row picked another model: the session applies it
+        // between runs, and records the total that model reads.
+        case .agentConfigure:
+            return await forward(request, AgentConfigureRequest.self, host: host) { $0.sessionID }
         // The reader's changes to the history, the app's alone (CallerPolicy):
         // the session's worker makes each one, between runs.
         case .agentRewind:

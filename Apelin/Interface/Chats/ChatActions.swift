@@ -164,4 +164,137 @@ enum ChatActions {
             break
         }
     }
+
+    // MARK: Another model
+
+    /// The reader picked another model in the composer's row. One that holds
+    /// less than the chat already takes is not switched to on the spot: the
+    /// chat is compacted, with the model it is on, and only then does the pick
+    /// go through. A cancel anywhere leaves the chat on the model it had.
+    static func switchModel(
+        to selection: ComposerModelSelection,
+        named name: String,
+        catalogWindow: Int?,
+        for id: UUID,
+        runtime: ChatRuntime,
+        from presenter: UIViewController,
+    ) {
+        let used = runtime.transcript(id).contextUsage?.tokens
+        switch ModelSwitchFit.evaluate(used: used, candidateWindow: catalogWindow) {
+        case .fits, .unknown:
+            apply(selection, to: id, runtime: runtime)
+        case let .over(used, window):
+            // Compacting runs between turns only: a reply going waits for it.
+            guard runtime.canCompact(id) else {
+                presenter.presentNotice(
+                    title: "Not Switched Yet",
+                    message: "A reply is still going. Wait for it to end, then pick this model again.",
+                )
+                return
+            }
+            presenter.presentConfirmation(
+                title: "This Model Holds Less Than the Chat",
+                message: """
+                This chat already takes \(used.formatted()) tokens, and \(name) holds \(window.formatted()). \
+                Compact the chat with the model you are on first, then switch to \(name)?
+                """,
+                confirmTitle: "Compact and Switch",
+            ) { [weak presenter, weak runtime] in
+                guard let presenter, let runtime else { return }
+                Task {
+                    await compactThenSwitch(
+                        selection,
+                        named: name,
+                        fitting: window,
+                        for: id,
+                        runtime: runtime,
+                        from: presenter,
+                    )
+                }
+            }
+        }
+    }
+
+    /// The pick goes through: kept for the chat, and told to the session, which
+    /// records the total the new model reads — that record is what the ring and
+    /// the panel draw. A run going takes the choice with the next prompt.
+    private static func apply(
+        _ selection: ComposerModelSelection,
+        to id: UUID,
+        runtime: ChatRuntime,
+    ) {
+        ComposerModelSelection.choose(selection, for: id)
+        Task { await runtime.configureModel(id, selection: selection) }
+    }
+
+    private static func compactThenSwitch(
+        _ selection: ComposerModelSelection,
+        named name: String,
+        fitting window: Int,
+        for id: UUID,
+        runtime: ChatRuntime,
+        from presenter: UIViewController,
+    ) async {
+        let before = runtime.transcript(id).contextUsage?.tokens
+        let result: AgentCompactionResult
+        do {
+            result = try await ProgressCard.run(
+                title: String(localized: "Compacting Chat"),
+                message: String(localized: "Summarizing the earlier messages…"),
+                cancellable: true,
+                from: presenter,
+            ) { _ in try await runtime.compact(id) }
+        } catch is CancellationError {
+            return
+        } catch {
+            ConversationJournal.compactFailed(error, session: runtime.records[id]?.sessionID)
+            presenter.presentNotice(title: "Unable to Compact Chat", message: error.readableMessage)
+            return
+        }
+        switch result.outcome {
+        case .compacted:
+            break
+        case .tooShort:
+            presenter.presentNotice(
+                title: "Not Switched",
+                message: "This chat has too little to summarise, so it was not compacted, and \(name) was not switched to.",
+            )
+            return
+        case .failed:
+            presenter.presentNotice(
+                title: "Unable to Compact Chat",
+                message: result.message ?? String(localized: "Something went wrong. Try again."),
+            )
+            return
+        case .cancelled:
+            return
+        }
+        // The figure is written right after the outcome, in the same log, and
+        // may arrive a moment later: a compaction can leave more than a small
+        // model holds, and that is not a switch to make.
+        let used = await usageAfterCompaction(in: id, runtime: runtime, differingFrom: before)
+        guard let used, used <= window else {
+            presenter.presentNotice(
+                title: "Not Switched",
+                message: "The chat was compacted, but it still takes more tokens than \(name) holds, so it was not switched to.",
+            )
+            return
+        }
+        apply(selection, to: id, runtime: runtime)
+    }
+
+    /// What the chat takes once the compaction's own record has landed.
+    private static func usageAfterCompaction(
+        in id: UUID,
+        runtime: ChatRuntime,
+        differingFrom before: Int?,
+    ) async -> Int? {
+        for _ in 0 ..< 40 {
+            if let now = runtime.transcript(id).contextUsage?.tokens, now != before {
+                return now
+            }
+            try? await Task.sleep(nanoseconds: 50_000_000)
+        }
+        return runtime.transcript(id).contextUsage?.tokens
+    }
 }

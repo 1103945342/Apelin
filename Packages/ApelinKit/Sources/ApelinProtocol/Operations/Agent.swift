@@ -644,6 +644,55 @@ public struct AgentCompactionResult: Codable, Sendable, Hashable {
     }
 }
 
+/// The model the next message will use, applied to a session that is already
+/// open — the composer's row sends it when the reader picks another model, so
+/// what the ring draws is that model's total before anything is sent. The
+/// session applies it between runs; the figure is recorded again, which is
+/// what the app shows. A choice that never arrives still rides the next
+/// `agentPrompt`, so nothing depends on this call having landed.
+public struct AgentConfigureRequest: OperationRequest {
+    public typealias Response = AgentConfigureResponse
+    public static let operation = AppOperation.agentConfigure
+    public var sessionID: String
+    public var provider: AgentProvider
+    public var model: String
+    public var reasoningEffort: AgentReasoningEffort?
+    public var serviceTier: AgentServiceTier?
+    public var modelParameters: AgentModelParameters?
+
+    public init(
+        sessionID: String,
+        provider: AgentProvider,
+        model: String,
+        reasoningEffort: AgentReasoningEffort? = nil,
+        serviceTier: AgentServiceTier? = nil,
+        modelParameters: AgentModelParameters? = nil,
+    ) {
+        self.sessionID = sessionID
+        self.provider = provider
+        self.model = model
+        self.reasoningEffort = reasoningEffort
+        self.serviceTier = serviceTier
+        self.modelParameters = modelParameters
+    }
+}
+
+public struct AgentConfigureResponse: Codable, Sendable, Equatable {
+    /// False when a run was going: nothing changed, and the choice is the
+    /// next prompt's to take.
+    public var applied: Bool
+    /// What the session measured after it applied the model, absent when it
+    /// did not apply it.
+    public var tokens: Int?
+    public var window: Int?
+
+    public init(applied: Bool, tokens: Int? = nil, window: Int? = nil) {
+        self.applied = applied
+        self.tokens = tokens
+        self.window = window
+    }
+}
+
 public struct AgentApproveRequest: OperationRequest {
     public typealias Response = Acknowledged
     public static let operation = AppOperation.agentApprove
@@ -752,6 +801,11 @@ public extension ApelinService {
 
     func agentCompact(sessionID: String, modelDefaults: AgentModelDefaults? = nil) async throws {
         _ = try await send(AgentCompactRequest(sessionID: sessionID, modelDefaults: modelDefaults))
+    }
+
+    @discardableResult
+    func agentConfigure(_ request: AgentConfigureRequest) async throws -> AgentConfigureResponse {
+        try await send(request)
     }
 
     func agentApprove(

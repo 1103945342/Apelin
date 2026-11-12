@@ -305,31 +305,40 @@ public actor AgentSession {
 
     /// Model changes take effect between runs, never halfway through a tool turn.
     /// A signed-out provider is refused here, as when the session opened.
+    /// False when a run was going: nothing changed, and the choice the app
+    /// sent is the one the next prompt takes.
+    @discardableResult
     public func configure(
         provider: ProviderConfiguration,
         thinking: ThinkingLevel,
         serviceTier: ServiceTier? = nil,
         modelParameters: AgentModelParameters = .init(),
         credentials: any CredentialSource,
-    ) async throws {
-        guard runTask == nil else { return }
+    ) async throws -> Bool {
+        guard runTask == nil else { return false }
         let stored = try await ProviderResolver.storedCredentials(provider, in: credentials)
+        // What the ring reads as the total: a model, or a figure the reader
+        // changed, is a new one before the next run has said anything.
+        let before = (agent.state.model.id, agent.state.model.contextWindow)
         if provider == resolvedFrom.provider, stored == resolvedFrom.credentials,
            let record = recordModel
         {
-            guard runTask == nil else { return }
+            guard runTask == nil else { return false }
             // the same sign-in: only the figures the app may have changed
             agent.state.model = ProviderResolver.applying(modelParameters, to: record)
             agent.state.thinkingLevel = thinking
             agent.state.serviceTier = serviceTier
-            return
+            if (agent.state.model.id, agent.state.model.contextWindow) != before {
+                await recordContextUsage()
+            }
+            return true
         }
         let resolved = try await ProviderResolver.resolve(
             provider,
             credentials: credentials,
             modelParameters: modelParameters,
         )
-        guard runTask == nil else { return }
+        guard runTask == nil else { return false }
         recordModel = resolved.model
         agent.state.model = ProviderResolver.applying(modelParameters, to: resolved.model)
         agent.state.thinkingLevel = thinking
@@ -337,6 +346,10 @@ public actor AgentSession {
         agent.authResolver = resolved.authResolver
         resolvedFrom = (provider, resolved.credentials)
         journal.modelChanged(to: agent.state.model)
+        if (agent.state.model.id, agent.state.model.contextWindow) != before {
+            await recordContextUsage()
+        }
+        return true
     }
 
     /// Applies app-wide auxiliary model settings to subsequent operations.
@@ -1432,6 +1445,9 @@ public actor AgentSession {
         do {
             try await log.appendConversation(Array(messages[savedMessageCount...]))
             savedMessageCount = messages.count
+            // a message or a tool's result has entered the conversation: the
+            // ring's figure moves with it, not only when the turn ends.
+            await recordContextUsageIfChanged()
         } catch {
             await record(.error(message: "Unable to save the conversation history: \(error.localizedDescription)"))
         }
@@ -1483,9 +1499,32 @@ public actor AgentSession {
 
     /// How full the context is, for the ring beside the composer: kwwk's own
     /// measure, the one compaction goes by.
-    func recordContextUsage() async {
+    public func recordContextUsage() async {
         let usage = contextUsage
+        lastRecordedUsage = (usage.tokens, usage.window)
         await record(.contextUsage(tokens: usage.tokens, window: usage.window))
+    }
+
+    /// The figure the ring draws right now: what the conversation takes and
+    /// what the model in force holds.
+    public func contextFigure() async -> (tokens: Int, window: Int) {
+        let usage = contextUsage
+        return (usage.tokens, usage.window)
+    }
+
+    /// The figure the last record wrote, so a step that changed nothing writes
+    /// nothing: a turn makes this pass many times.
+    private var lastRecordedUsage: (tokens: Int, window: Int)?
+
+    /// Records the figure when it differs from the last one written. Called as
+    /// each message enters the conversation, so the ring climbs with the turn
+    /// instead of jumping once it ends.
+    private func recordContextUsageIfChanged() async {
+        let usage = contextUsage
+        if let last = lastRecordedUsage, last.tokens == usage.tokens, last.window == usage.window {
+            return
+        }
+        await recordContextUsage()
     }
 
     private func recordRunError(_ error: Error) async {

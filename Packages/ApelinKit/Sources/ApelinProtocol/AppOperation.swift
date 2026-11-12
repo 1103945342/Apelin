@@ -69,6 +69,9 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
     case agentSteer
     case agentAbort
     case agentCompact
+    /// The model the next message will use, applied to a session that is
+    /// already open, so the total the ring draws is the new model's at once.
+    case agentConfigure
     case agentApprove
     case agentAttach
     case agentList
@@ -179,7 +182,7 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .ptyOpen, .ptyAttach, .ptyResize, .ptyClose: .terminal
         case .logStream, .crashList, .crashOpen, .crashSymbolicate: .logs
         case .confirmLoaded, .confirmLoadedAttach, .captureScreen, .readUITree, .uiAction: .diagnostics
-        case .agentOpen, .agentPrompt, .agentGenerateImage, .agentSteer, .agentAbort, .agentCompact, .agentApprove, .agentAttach, .agentList,
+        case .agentOpen, .agentPrompt, .agentGenerateImage, .agentSteer, .agentAbort, .agentCompact, .agentConfigure, .agentApprove, .agentAttach, .agentList,
              .agentClose, .agentRunCode, .agentCredentialImport, .agentAccountList, .agentSkillList,
              .agentRewritePrompt, .agentModelTest,
              .agentAPIConfiguration, .agentModelList,
@@ -257,6 +260,7 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .agentSteer: AgentSteerRequest.self
         case .agentAbort: AgentAbortRequest.self
         case .agentCompact: AgentCompactRequest.self
+        case .agentConfigure: AgentConfigureRequest.self
         case .agentApprove: AgentApproveRequest.self
         case .agentAttach: AgentAttachRequest.self
         case .agentList: AgentListRequest.self

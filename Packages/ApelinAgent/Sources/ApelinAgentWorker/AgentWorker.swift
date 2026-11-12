@@ -142,6 +142,33 @@ public enum AgentWorker {
                 try await session.compact()
                 return Acknowledged()
             }
+        // The reader picked another model in the composer's row: applied
+        // between runs, and the total that model reads is recorded, so the
+        // ring is right before a prompt is sent.
+        case .agentConfigure:
+            await WorkerMain.serve(AgentConfigureRequest.self, request) { configure in
+                let session = try await state.session(configure.sessionID)
+                let applied = try await session.configure(
+                    provider: AgentWorker.provider(AgentOpenRequest(
+                        provider: configure.provider,
+                        model: configure.model,
+                    )),
+                    thinking: .init(rawValue: configure.reasoningEffort?.rawValue ?? "off") ?? .off,
+                    serviceTier: AgentWorker.serviceTier(configure.serviceTier),
+                    modelParameters: configure.modelParameters ?? .init(),
+                    credentials: KeychainCredentialSource(accessGroup: keychainAccessGroup),
+                )
+                guard applied else { return AgentConfigureResponse(applied: false) }
+                await state.modelChoice.set(
+                    provider: configure.provider,
+                    model: configure.model,
+                    reasoningEffort: configure.reasoningEffort,
+                    serviceTier: configure.serviceTier,
+                    modelParameters: configure.modelParameters,
+                )
+                let figure = await session.contextFigure()
+                return AgentConfigureResponse(applied: true, tokens: figure.tokens, window: figure.window)
+            }
         case .agentRewind:
             await WorkerMain.serve(AgentRewindRequest.self, request) { rewind in
                 try await state.session(rewind.sessionID).rewind(to: rewind.messageID, truncate: rewind.truncate)
@@ -424,6 +451,11 @@ actor WorkerState {
             serviceTier: open.serviceTier,
             modelParameters: open.modelParameters,
         )
+
+        // The total this open's model reads. A conversation whose log ends on
+        // another model's window would otherwise draw that one as this one's
+        // until its next turn ended.
+        await session.recordContextUsage()
 
         let boundary = try await session.replayBoundary()
         let events = try await session.events(afterSeq: 0)
