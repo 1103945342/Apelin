@@ -118,6 +118,13 @@ extension BuiltInSkills {
           and `git_pull`, then the push again; a branch that has diverged is
           merged or rebased only as the user agrees, never forced past the
           refusal.
+        - `git_branches` lists the tags too. `git_tag` makes one at HEAD or a
+          named commit — annotated when `message` is given, which needs the
+          user's identity — or deletes the local one; a deletion cannot be
+          undone from here. With `remote`, create pushes the new tag there
+          and delete removes it there, leaving the local tag: a tag that
+          leaves the device goes with the user's credential, so it asks in
+          every mode, and only when the user asked for that tag.
         - A forced push overwrites the remote's branch with this one, and the
           commits only the remote had leave the branch for everyone who pulls
           it. Only when the user explicitly asks for it, this branch to this
