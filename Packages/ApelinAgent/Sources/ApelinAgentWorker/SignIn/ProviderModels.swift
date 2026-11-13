@@ -1,5 +1,6 @@
 import ApelinAgent
 import ApelinProtocol
+import Dispatch
 import Foundation
 import KWWKAI
 import os
@@ -66,20 +67,29 @@ enum ProviderModels {
         return models
     }
 
-    /// The reasoning levels each model takes, keyed by its id.
+    /// What the catalogs say about an account's models, both answers at once:
+    /// the reasoning levels each model takes and what it was read as.
     ///
-    /// WorkBuddy's own config is the authority: `fetch` reads it and keeps
-    /// what each model offers, and a model it named answers from there. A
-    /// model the config has not been read for — the account list is drawn
-    /// before any fetch, and again after a restart — falls back to the kwwk
-    /// catalog under this account's key, and then to what the model's name
-    /// finds in the catalogs Apelin reads: a relay's `cn:deepseek-v4.1-flash`
-    /// reasons, and at the levels DeepSeek's entry gives it.
-    static func reasoningEfforts(
+    /// An account list asks for both for every signed-in account, so they are
+    /// found together: kwwk's rows for the account's key first, then one
+    /// batched lookup over the catalogs Apelin reads for whatever those rows
+    /// did not name — `cn:deepseek-v4.1-flash` reasons, and at the levels
+    /// DeepSeek's entry gives it. One read of the two tables and one check of
+    /// models.dev's file serve the whole account, where a lookup per model and
+    /// per answer used to sit behind each of them.
+    struct CatalogFacts: Sendable {
+        var reasoningEfforts: [String: [AgentReasoningEffort]]
+        var capabilities: [String: AgentModelCapabilities]
+    }
+
+    /// A model the live WorkBuddy config named keeps its own levels; one it did
+    /// not is what the catalogs say — see `fetch`, which fills the cache.
+    static func catalogFacts(
         _ provider: AgentProvider,
         credentials: OAuthCredentials,
-        models: [String] = [],
-    ) -> [String: [AgentReasoningEffort]] {
+        models: [String],
+    ) -> CatalogFacts {
+        let started = DispatchTime.now().uptimeNanoseconds
         let catalog = catalogKey(provider, credentials: credentials)
         var efforts: [String: [AgentReasoningEffort]] = [:]
         if let catalog {
@@ -87,17 +97,39 @@ enum ProviderModels {
                 efforts[model.id] = supportedThinkingLevels(model).compactMap { AgentReasoningEffort(rawValue: $0.rawValue) }
             }
         }
-        let index = ModelCatalogIndex()
+        // Nothing to read for an account with no model, and an empty batch
+        // would check models.dev's file for nothing.
+        let found: [String: ModelCatalogIndex.Entry] = models.isEmpty
+            ? [:]
+            : ModelCatalogIndex().entries(for: models, catalogKey: catalog)
         for id in models where efforts[id] == nil {
-            guard let entry = index.entry(for: id, catalogKey: catalog) else { continue }
-            let levels = entry.reasoningEfforts
-            if !levels.isEmpty {
-                efforts[id] = levels
-            }
+            guard let levels = found[id]?.reasoningEfforts, !levels.isEmpty else { continue }
+            efforts[id] = levels
+        }
+        var capabilities: [String: AgentModelCapabilities] = [:]
+        for id in models {
+            guard let entry = found[id] else { continue }
+            capabilities[id] = entry.capabilities
         }
         // A model the live config named keeps its own levels; one it did not
         // is what the catalogs above say.
-        return efforts.merging(WorkBuddyEffortCache.shared.efforts(for: provider.storeID) ?? [:]) { _, live in live }
+        let levels = efforts.merging(WorkBuddyEffortCache.shared.efforts(for: provider.storeID) ?? [:]) { _, live in live }
+        // Says in the device log how the catalogs read this account's models: a
+        // model with no entry and a page that has not reloaded look the same on
+        // screen, and this tells the two apart. The timing is the whole read:
+        // the bundled rows and the batched lookup, never a credential.
+        Logger(subsystem: "wiki.qaq.apelin", category: "ModelCatalog")
+            .notice("named \(capabilities.count, privacy: .public) of \(models.count, privacy: .public) \(provider.storeID, privacy: .public) models, key \(catalog ?? "-", privacy: .public), \(Int((DispatchTime.now().uptimeNanoseconds &- started) / 1_000_000), privacy: .public) ms")
+        return CatalogFacts(reasoningEfforts: levels, capabilities: capabilities)
+    }
+
+    /// The reasoning levels each model takes, keyed by its id.
+    static func reasoningEfforts(
+        _ provider: AgentProvider,
+        credentials: OAuthCredentials,
+        models: [String] = [],
+    ) -> [String: [AgentReasoningEffort]] {
+        catalogFacts(provider, credentials: credentials, models: models).reasoningEfforts
     }
 
     /// What the catalogs say about each of the account's models, for the
@@ -107,19 +139,7 @@ enum ProviderModels {
         credentials: OAuthCredentials,
         models: [String],
     ) -> [String: AgentModelCapabilities] {
-        let catalog = catalogKey(provider, credentials: credentials)
-        let index = ModelCatalogIndex()
-        var found: [String: AgentModelCapabilities] = [:]
-        for id in models {
-            guard let entry = index.entry(for: id, catalogKey: catalog) else { continue }
-            found[id] = entry.capabilities
-        }
-        // Says in the device log how the catalogs read this account's models: a
-        // model with no entry and a page that has not reloaded look the same on
-        // screen, and this tells the two apart.
-        Logger(subsystem: "wiki.qaq.apelin", category: "ModelCatalog")
-            .notice("named \(found.count, privacy: .public) of \(models.count, privacy: .public) \(provider.storeID, privacy: .public) models, key \(catalog ?? "-", privacy: .public)")
-        return found
+        catalogFacts(provider, credentials: credentials, models: models).capabilities
     }
 
     /// The tiers Apelin offers that the catalog lists for each of the

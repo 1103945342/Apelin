@@ -612,6 +612,122 @@ struct AccountDeskTests {
         #expect(AgentProvider.signInOrder.count == AgentProvider.allCases.count)
     }
 
+    // MARK: - The narrower list
+
+    /// A store that lists an id it cannot read back, as a keychain item that
+    /// no longer decodes does.
+    actor UnreadableCredentialSource: CredentialSource {
+        private let ids: [String]
+        init(_ ids: [String]) { self.ids = ids }
+        func providerIds() -> [String] { ids }
+        func credentials(for providerId: String) -> OAuthCredentials? { nil }
+        func store(_ credentials: OAuthCredentials, for providerID: String) {}
+        func remove(_ providerID: String) {}
+    }
+
+    /// What the composer asks for: one model list per account, nothing else.
+    /// The asked-for models stand exactly as asked — a live provider's own
+    /// list is where its models come from, and it names models no bundled
+    /// catalog has, so nothing is cut against a catalog.
+    @Test
+    func `a narrower list answers only the models it was asked for`() async throws {
+        let relay = OAuthCredentials(access: "relay-SECRET", refresh: "", expires: .max, extras: [
+            "baseUrl": .string("https://relay.example.invalid/v1"), "defaultModel": .string("relay-default"),
+        ])
+        let subscription = OAuthCredentials(access: "token", refresh: "refresh", expires: 1)
+        let key = OAuthCredentials(access: "deepseek-SECRET", refresh: "", expires: .max)
+        let desk = AccountDesk(store: DeliveredCredentialSource([
+            CredentialProviderID.openAICompatible: relay,
+            CredentialProviderID.deepSeek: key,
+            "antigravity": subscription,
+        ]))
+        let asked = [
+            AgentProvider.openAICompatible.rawValue: ["cn:deepseek-v4.1-flash", "cn:deepseek-v4.1-flash", "", "another"],
+            AgentProvider.antigravity.rawValue: ["gemini-4-argon", "live-only-model"],
+        ]
+        let narrow = await desk.list(extraModels: asked, onlyExtraModels: true)
+
+        // Every provider is still answered, in kwwk's order, and still signed in.
+        #expect(narrow.accounts.map(\.provider) == AgentProvider.signInOrder)
+        let relayed = try #require(narrow.accounts.first { $0.provider == .openAICompatible })
+        #expect(relayed.signedIn)
+        #expect(relayed.models == ["cn:deepseek-v4.1-flash", "another"])
+        // A subscription keeps what it was asked for too, including a model
+        // only its live config names: the account list must not drop one the
+        // app enabled because a bundled catalog never heard of it.
+        let subscribed = try #require(narrow.accounts.first { $0.provider == .antigravity })
+        #expect(subscribed.signedIn)
+        #expect(subscribed.models == ["gemini-4-argon", "live-only-model"])
+
+        // An account asked for nothing names no model, and no catalog is read
+        // for it: no levels, no tiers, no capabilities.
+        let quiet = try #require(narrow.accounts.first { $0.provider == .deepSeek })
+        #expect(quiet.signedIn)
+        #expect(quiet.models == [])
+        #expect(quiet.reasoningEfforts == nil)
+        #expect(quiet.serviceTiers == nil)
+        #expect(quiet.capabilities == nil)
+
+        // Settings and onboarding read the whole catalogue, as before, with
+        // the caller's own models added to it.
+        let wide = await desk.list(extraModels: [AgentProvider.openAICompatible.rawValue: ["another"]]).accounts
+        let wideRelay = try #require(wide.first { $0.provider == .openAICompatible })
+        let wideSubscription = try #require(wide.first { $0.provider == .antigravity })
+        let wideKey = try #require(wide.first { $0.provider == .deepSeek })
+        #expect(wideRelay.models == ["relay-default", "another"])
+        #expect(wideSubscription.models?.contains("gemini-4-argon") == true)
+        #expect(wideKey.models == ["deepseek-flash", "deepseek-v4-pro"])
+        #expect(wideKey.capabilities?.isEmpty == false)
+    }
+
+    /// A narrower list does not carry the whole catalogue in its other fields
+    /// either: the levels and tiers it answers are the ones for the models it
+    /// named, while the whole list keeps every field it always had.
+    @Test
+    func `a narrower list trims the levels and tiers to the models it named`() async throws {
+        let subscription = OAuthCredentials(access: "token", refresh: "refresh", expires: 1)
+        let desk = AccountDesk(store: DeliveredCredentialSource([
+            AgentProvider.openAICodex.storeID: subscription,
+            AgentProvider.antigravity.storeID: subscription,
+        ]))
+        let asked = [
+            AgentProvider.openAICodex.rawValue: ["gpt-6-sol"],
+            AgentProvider.antigravity.rawValue: ["gemini-4-argon"],
+        ]
+        let narrow = await desk.list(extraModels: asked, onlyExtraModels: true).accounts
+        let codex = try #require(narrow.first { $0.provider == .openAICodex })
+        #expect(codex.models == ["gpt-6-sol"])
+        #expect(codex.serviceTiers?.keys.sorted() == ["gpt-6-sol"])
+        #expect(codex.reasoningEfforts?.keys.allSatisfy { $0 == "gpt-6-sol" } == true)
+        let antigravity = try #require(narrow.first { $0.provider == .antigravity })
+        #expect(antigravity.reasoningEfforts?.keys.sorted() == ["gemini-4-argon"])
+
+        let wide = await desk.list().accounts
+        let wideCodex = try #require(wide.first { $0.provider == .openAICodex })
+        #expect((wideCodex.serviceTiers?.count ?? 0) > 1)
+    }
+
+    /// An item that does not decode stays signed in — Sign Out is how it goes
+    /// away — and names no model, in either list.
+    @Test
+    func `an item that cannot be read stays signed in and names no model`() async throws {
+        let desk = AccountDesk(store: UnreadableCredentialSource(["anthropic-api-key", "openai-compatible"]))
+        let asked = [AgentProvider.openAICompatible.rawValue: ["asked-model"]]
+        for accounts in [
+            await desk.list(extraModels: asked, onlyExtraModels: true).accounts,
+            await desk.list(extraModels: asked).accounts,
+        ] {
+            #expect(Set(accounts.filter(\.signedIn).map(\.provider)) == [.anthropic, .openAICompatible])
+            for account in accounts where account.signedIn {
+                #expect(account.models == nil)
+                #expect(account.reasoningEfforts == nil)
+                #expect(account.serviceTiers == nil)
+                #expect(account.capabilities == nil)
+                #expect(account.account == nil)
+            }
+        }
+    }
+
     // MARK: - Every login kwwk offers
 
     @Test

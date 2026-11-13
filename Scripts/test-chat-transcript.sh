@@ -99,3 +99,10 @@ xcrun --sdk macosx swiftc -swift-version 5 -target arm64-apple-macos13.0 \
     -I "$root/Shared/XPCShim" -I "$modules" \
     "${objects[@]}" "${sources[@]}" -o "$work/chat-transcript"
 "$work/chat-transcript"
+
+# The model picker shares its first read with the automatic selection check.
+# This harness needs Foundation alone and also runs on-device with swiftc.
+xcrun --sdk macosx swiftc -swift-version 5 -parse-as-library -target arm64-apple-macos13.0 \
+    "$root/Apelin/Service/SharedModelLoad.swift" \
+    "$root/Tests/ModelPicker/SharedModelLoadCheck.swift" -o "$work/model-picker"
+"$work/model-picker"

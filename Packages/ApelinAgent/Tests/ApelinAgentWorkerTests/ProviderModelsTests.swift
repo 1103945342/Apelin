@@ -109,4 +109,25 @@ struct ProviderModelsTests {
         #expect(!ProviderModels.usesAPIKey(.githubCopilot, credentials: credentials))
         #expect(ProviderModels.usesAPIKey(.anthropic, credentials: credentials))
     }
+
+    /// The account list reads an account's levels and its capabilities in one
+    /// pass; both must still be what the catalogs say, and a model no catalog
+    /// knows is still left unmeasured.
+    @Test
+    func `an account's levels and capabilities come from one read of the catalogs`() {
+        let subscription = OAuthCredentials(access: "token", refresh: "refresh", expires: 1)
+        let facts = ProviderModels.catalogFacts(
+            .antigravity,
+            credentials: subscription,
+            models: ["gemini-4-argon", "made-up-model"],
+        )
+        #expect(facts.reasoningEfforts["gemini-4-argon"]?.isEmpty == false)
+        #expect(facts.capabilities["gemini-4-argon"] != nil)
+        #expect(facts.capabilities["made-up-model"] == nil)
+        #expect(ProviderModels.capabilities(.antigravity, credentials: subscription, models: ["gemini-4-argon"])
+            == facts.capabilities)
+        // Nothing to read for an account with no model.
+        let quiet = ProviderModels.catalogFacts(.antigravity, credentials: subscription, models: [])
+        #expect(quiet.capabilities.isEmpty)
+    }
 }

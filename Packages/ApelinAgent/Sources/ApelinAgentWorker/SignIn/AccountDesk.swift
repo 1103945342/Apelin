@@ -1,8 +1,10 @@
 import ApelinAgent
 import ApelinCore
 import ApelinProtocol
+import Dispatch
 import Foundation
 import KWWKAI
+import os
 
 /// Where a sign-in's events go: the host's task, as `WorkerContext` sends
 /// them. A test records them instead.
@@ -73,10 +75,40 @@ public actor AccountDesk {
 
     // MARK: - Accounts
 
-    public func list(extraModels: [String: [String]] = [:]) async -> AgentAccountListResponse {
+    /// Says in the device log what an account list cost, per account and in
+    /// all. Store ids, counts and milliseconds only: never a credential, never
+    /// an endpoint's key.
+    private static let log = Logger(subsystem: "wiki.qaq.apelin", category: "Accounts")
+
+    /// Whole milliseconds since a `DispatchTime.now().uptimeNanoseconds` stamp.
+    static func milliseconds(since start: UInt64) -> Int {
+        Int((DispatchTime.now().uptimeNanoseconds &- start) / 1_000_000)
+    }
+
+    /// Every provider, in kwwk's order.
+    ///
+    /// `onlyExtraModels` is a narrower list for a picker: each signed-in
+    /// account answers with the models it was asked for and nothing else, so
+    /// the composer does not carry every provider's whole catalogue. What it
+    /// was asked for is what it answers — the app's own list is where a live
+    /// provider's models come from (WorkBuddy's config, a relay's endpoint),
+    /// and those include models no bundled catalog names — so nothing is cut
+    /// against a catalog here, and an account asked for no model carries none
+    /// and reads no catalog at all: its levels, tiers and capabilities are
+    /// trimmed to the models it names, not left holding the whole catalogue's.
+    /// Absent or false keeps the whole list, exactly as before, which is what
+    /// Settings and onboarding draw.
+    public func list(
+        extraModels: [String: [String]] = [:],
+        onlyExtraModels: Bool = false,
+    ) async -> AgentAccountListResponse {
+        let started = DispatchTime.now().uptimeNanoseconds
         let stored = await Set(store.providerIds())
         var accounts: [AgentAccount] = []
+        accounts.reserveCapacity(AgentProvider.signInOrder.count)
         for provider in AgentProvider.signInOrder {
+            let accountStarted = DispatchTime.now().uptimeNanoseconds
+            let requested = extraModels[provider.rawValue] ?? []
             let others = Array(provider.signInMethods.dropFirst())
             var account = AgentAccount(
                 provider: provider,
@@ -85,35 +117,69 @@ public actor AccountDesk {
                 signedIn: stored.contains(provider.storeID),
             )
             // An item that does not decode is still signed in: Sign Out is
-            // how it goes away.
+            // how it goes away, and the account names no model.
             if account.signedIn, let credentials = try? await store.credentials(for: provider.storeID) {
                 account.account = Self.accountLabel(provider, credentials)
                 account.expiresAt = Self.lapses(credentials)
-                var models = ProviderModels.list(provider, credentials: credentials)
-                // A custom endpoint's models live in the app's settings, never
-                // in the credentials: without them the catalogs would have
-                // nothing to name for the models the app shows. The app keys
-                // them by the provider's own id, which every process knows.
-                for id in extraModels[provider.rawValue] ?? [] where !models.contains(id) {
-                    models.append(id)
-                }
+                let models = onlyExtraModels
+                    ? Self.narrowed(requested)
+                    : Self.widened(requested, provider: provider, credentials: credentials)
                 account.models = models
-                account.reasoningEfforts = ProviderModels.reasoningEfforts(
-                    provider,
-                    credentials: credentials,
-                    models: models,
-                )
-                account.serviceTiers = ProviderModels.serviceTiers(provider, credentials: credentials)
-                account.capabilities = ProviderModels.capabilities(
-                    provider,
-                    credentials: credentials,
-                    models: models,
-                )
+                // A narrower account with no model leaves the catalogs nothing
+                // to name, and reading them for it costs a file check apiece.
+                // The whole list keeps every field it always carried, empty
+                // model list or not, so nothing else changes for it.
+                if !models.isEmpty || !onlyExtraModels {
+                    let facts = ProviderModels.catalogFacts(provider, credentials: credentials, models: models)
+                    let tiers = ProviderModels.serviceTiers(provider, credentials: credentials)
+                    if onlyExtraModels {
+                        let asked = Set(models)
+                        account.reasoningEfforts = facts.reasoningEfforts.filter { asked.contains($0.key) }
+                        account.serviceTiers = tiers.filter { asked.contains($0.key) }
+                        account.capabilities = facts.capabilities
+                    } else {
+                        account.reasoningEfforts = facts.reasoningEfforts
+                        account.serviceTiers = tiers
+                        account.capabilities = facts.capabilities
+                    }
+                }
                 account.usesAPIKey = ProviderModels.usesAPIKey(provider, credentials: credentials) ? true : nil
             }
             accounts.append(account)
+            if account.signedIn {
+                Self.log.notice(
+                    "listed \(provider.storeID, privacy: .public) in \(Self.milliseconds(since: accountStarted), privacy: .public) ms: \(account.models?.count ?? 0, privacy: .public) models, catalog \(account.capabilities == nil ? 0 : 1, privacy: .public)",
+                )
+            }
         }
+        Self.log.notice(
+            "listed \(accounts.count, privacy: .public) providers in \(Self.milliseconds(since: started), privacy: .public) ms, \(onlyExtraModels ? "named" : "all", privacy: .public) models",
+        )
         return AgentAccountListResponse(accounts: accounts)
+    }
+
+    /// The whole list with the caller's own models added: what every account
+    /// list answered before there was a narrower one.
+    static func widened(
+        _ extraModels: [String],
+        provider: AgentProvider,
+        credentials: OAuthCredentials,
+    ) -> [String] {
+        var models = ProviderModels.list(provider, credentials: credentials)
+        var known = Set(models)
+        for id in extraModels where known.insert(id).inserted {
+            models.append(id)
+        }
+        return models
+    }
+
+    /// Only the caller's own models, in its order, once each: what a picker
+    /// asks for is what it gets, including a model no bundled catalog knows —
+    /// a live provider's own list is the app's to name, not this worker's to
+    /// second-guess.
+    static func narrowed(_ extraModels: [String]) -> [String] {
+        var seen: Set<String> = []
+        return extraModels.filter { !$0.isEmpty && seen.insert($0).inserted }
     }
 
     /// The explicit app-only editor reads the saved key directly; no task is

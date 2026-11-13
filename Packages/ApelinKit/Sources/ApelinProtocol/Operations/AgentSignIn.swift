@@ -136,8 +136,16 @@ public struct AgentAccountListRequest: OperationRequest {
     /// `openAICompatible`). The catalogs are read over these too, so a relay's
     /// model is named and measured like one of the provider's own.
     public var extraModels: [String: [String]]?
-    public init(extraModels: [String: [String]]? = nil) {
+    /// True for a caller that wants only the models it named: each signed-in
+    /// account then answers with the `extraModels` of its own provider and
+    /// nothing else, and an account it named none for has no model. Requested
+    /// IDs are preserved for every provider, including live or custom models
+    /// absent from bundled catalogs.
+    /// Absent keeps the whole list, with `extraModels` added to it.
+    public var onlyExtraModels: Bool?
+    public init(extraModels: [String: [String]]? = nil, onlyExtraModels: Bool? = nil) {
         self.extraModels = extraModels
+        self.onlyExtraModels = onlyExtraModels
     }
 }
 
@@ -268,8 +276,11 @@ public struct AgentSignOutRequest: OperationRequest {
 }
 
 public extension ApelinService {
-    func agentAccountList(extraModels: [String: [String]]? = nil) async throws -> AgentAccountListResponse {
-        try await send(AgentAccountListRequest(extraModels: extraModels))
+    func agentAccountList(
+        extraModels: [String: [String]]? = nil,
+        onlyExtraModels: Bool? = nil,
+    ) async throws -> AgentAccountListResponse {
+        try await send(AgentAccountListRequest(extraModels: extraModels, onlyExtraModels: onlyExtraModels))
     }
 
     func agentAPIConfiguration(provider: AgentProvider) async throws -> AgentAPIConfigurationResponse {

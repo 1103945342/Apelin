@@ -54,6 +54,17 @@ enum EnabledModels {
         return known
     }
 
+    /// Only the choices the composer can show, not disabled custom IDs. Kept
+    /// separate from knownModelIDs(), which settings needs in full.
+    static func selectedModelIDs() -> [String: [String]] {
+        var selected: [String: [String]] = [:]
+        for provider in AgentProvider.allCases {
+            let models = ids(for: provider).subtracting(hiddenIDs(for: provider))
+            if !models.isEmpty { selected[provider.rawValue] = models.sorted() }
+        }
+        return selected
+    }
+
     static func accounts(from accounts: [AgentAccount]) -> [AgentAccount] {
         accounts.compactMap { account in
             guard account.signedIn else { return nil }

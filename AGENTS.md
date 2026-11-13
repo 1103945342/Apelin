@@ -356,6 +356,24 @@ the same executable in session mode; the workers are its children.
   for it — it updates itself, and the page that had the buttons aborted inside
   UIKit's reconfigure when its second update arrived.
 
+- **The composer opens its model sheet before asking the worker.** Saved
+  enabled IDs (or the last in-memory account answer for those same IDs) are
+  previews only: rows stay disabled until a fresh account read supplies their
+  context windows and sign-in status. `SharedModelLoad` joins the automatic
+  selection check and the picker while a read is in flight; cancelling one
+  waiter leaves the other intact, and an older answer never replaces a newer
+  key's preview. The composer requests `agentAccountList` with
+  `onlyExtraModels: true` and `EnabledModels.selectedModelIDs()`; settings and
+  onboarding keep the full default request. `ProviderModels.catalogFacts`
+  reads both reasoning levels and capabilities in one batch, with one snapshot
+  file check per account. Catalog matching precedence is unchanged. Logs under
+  `ModelPicker`, `Accounts` and `ModelCatalog` separate the request, aggregation
+  and cold-index timings, without credentials. `Tests/ModelPicker/SharedModelLoadCheck.swift`
+  is a Foundation-only executable, run by `Scripts/test-chat-transcript.sh`
+  in CI; on-device it can be compiled with `SharedModelLoad.swift`, signed and
+  run independently. UI presentation, dismissal, retry and small-window model
+  switching still require testing the built app.
+
 ## Decisions
 
 What `CHECKLIST.md` asked to be written down, and where the answer lives.

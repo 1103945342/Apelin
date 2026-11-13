@@ -1,6 +1,8 @@
 import ApelinCore
+import Dispatch
 import Foundation
 import KWWKAI
+import os
 
 /// The catalogs Apelin reads a model against, and the one lookup that answers
 /// what a model is.
@@ -85,6 +87,40 @@ public struct ModelCatalogIndex: Sendable {
         }
         return best(in: snapshot.byID, for: candidates)
             ?? bestByName(in: snapshot.byName, for: candidates)
+    }
+
+    /// The entries of several models at once, over one read of each table.
+    ///
+    /// Each model is read exactly as `entry(for:catalogKey:)` reads it — a
+    /// provider's own catalog first (its bundled copy, then models.dev's),
+    /// then every copy of every provider — so a batch and a single lookup can
+    /// never disagree. What a batch saves is the work around the rules: the
+    /// file check behind models.dev's copy, and the walk over the tables, once
+    /// for the whole list instead of once per model.
+    public func entries(for ids: [String], catalogKey: String? = nil) -> [String: Entry] {
+        Self.entries(
+            for: ids,
+            catalogKey: catalogKey,
+            bundled: Self.shared.bundled,
+            snapshot: Self.shared.snapshot(),
+        )
+    }
+
+    /// The same batch over two tables, so the rules are read without a
+    /// device's files behind them.
+    static func entries(
+        for ids: [String],
+        catalogKey: String?,
+        bundled: Table,
+        snapshot: Table,
+    ) -> [String: Entry] {
+        var found: [String: Entry] = [:]
+        for id in ids where found[id] == nil {
+            if let entry = entry(for: id, catalogKey: catalogKey, bundled: bundled, snapshot: snapshot) {
+                found[id] = entry
+            }
+        }
+        return found
     }
 
     /// Every model a catalog keys under `catalogKey`, as that catalog names
@@ -270,6 +306,10 @@ public struct ModelCatalogIndex: Sendable {
 /// The bundled table and the one read from `ModelData/models.json`, held
 /// together so a lookup allocates nothing but its candidates.
 private final class SharedIndex: @unchecked Sendable {
+    /// Says in the device log how long a catalogue costs to build. The names
+    /// are the whole content: no model, no account, no secret.
+    private static let log = Logger(subsystem: "wiki.qaq.apelin", category: "ModelCatalog")
+
     /// kwwk's catalog: a constant of the build, read once.
     let bundled: ModelCatalogIndex.Table
 
@@ -277,8 +317,18 @@ private final class SharedIndex: @unchecked Sendable {
     private var signature: String?
     private var table = ModelCatalogIndex.Table()
 
+    /// Whole milliseconds since a `DispatchTime.now().uptimeNanoseconds` stamp.
+    static func milliseconds(since start: UInt64) -> Int {
+        Int((DispatchTime.now().uptimeNanoseconds &- start) / 1_000_000)
+    }
+
     init() {
-        bundled = ModelCatalogIndex.bundledTable()
+        let start = DispatchTime.now().uptimeNanoseconds
+        let built = ModelCatalogIndex.bundledTable()
+        bundled = built
+        Self.log.notice(
+            "built kwwk's catalog in \(Self.milliseconds(since: start), privacy: .public) ms, \(built.byProvider.count, privacy: .public) providers, \(built.byID.count, privacy: .public) models",
+        )
     }
 
     /// models.dev's copy at `ModelData/models.json`, re-read only when the file
@@ -296,9 +346,15 @@ private final class SharedIndex: @unchecked Sendable {
         if signature == self.signature {
             return table
         }
-        let table = ModelDataSnapshot.read(url).map(ModelCatalogIndex.snapshotTable) ?? ModelCatalogIndex.Table()
+        let start = DispatchTime.now().uptimeNanoseconds
+        let read = ModelDataSnapshot.read(url)
+        let built = read.map(ModelCatalogIndex.snapshotTable) ?? ModelCatalogIndex.Table()
+        let elapsed = Self.milliseconds(since: start)
         self.signature = signature
-        self.table = table
-        return table
+        self.table = built
+        Self.log.notice(
+            "built models.dev's catalog in \(elapsed, privacy: .public) ms, \(built.byProvider.count, privacy: .public) providers, \(built.byID.count, privacy: .public) models, \(read == nil ? 0 : 1, privacy: .public) file",
+        )
+        return built
     }
 }

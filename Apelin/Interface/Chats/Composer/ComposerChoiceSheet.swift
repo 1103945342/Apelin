@@ -38,7 +38,14 @@ final class ComposerChoiceSheet: UIViewController {
     static let height: CGFloat = 620
 
     private let heading: String
-    private let groups: [Group]
+    private var groups: [Group]
+    @objc private dynamic var loading = false
+    @objc private dynamic var failure: String?
+    @objc dynamic var onRetry: (() -> Void)?
+    private let statusLabel = UILabel()
+    private let spinner = UIActivityIndicatorView(style: .medium)
+    private let retryButton = UIButton(type: .system)
+    private let statusStack = UIStackView()
     private let scrollView = UIScrollView()
     private let stack = UIStackView()
     /// Each row with the height it asks for: a row sizes itself to its text,
@@ -76,6 +83,70 @@ final class ComposerChoiceSheet: UIViewController {
 
         stack.axis = .vertical
         stack.spacing = 8
+        renderChoices()
+
+        scrollView.alwaysBounceVertical = false
+        view.addSubview(scrollView)
+        scrollView.addSubview(stack)
+        statusStack.axis = .vertical
+        statusStack.alignment = .center
+        statusStack.spacing = 8
+        statusLabel.font = .preferredFont(forTextStyle: .footnote)
+        statusLabel.adjustsFontForContentSizeCategory = true
+        statusLabel.textColor = .secondaryLabel
+        statusLabel.numberOfLines = 0
+        statusLabel.textAlignment = .center
+        retryButton.setTitle(String(localized: "Retry"), for: .normal)
+        retryButton.addAction(UIAction { [weak self] _ in self?.onRetry?() }, for: .touchUpInside)
+        for item in [spinner, statusLabel, retryButton] { statusStack.addArrangedSubview(item) }
+        view.addSubview(statusStack)
+        updateStatus()
+
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(Self.margin)
+            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(Self.margin)
+        }
+        statusStack.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom)
+            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(Self.margin)
+        }
+        scrollView.snp.makeConstraints { make in
+            make.top.equalTo(statusStack.snp.bottom).offset(12)
+            make.leading.trailing.bottom.equalTo(view.safeAreaLayoutGuide)
+        }
+        stack.snp.makeConstraints { make in
+            make.top.equalTo(scrollView.contentLayoutGuide)
+            make.bottom.equalTo(scrollView.contentLayoutGuide).offset(-Self.margin)
+            make.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(Self.margin)
+        }
+    }
+
+    /// Provisional rows stay read-only until their account and context window
+    /// have been checked. Updating this sheet never presents another one.
+    func update(groups: [Group], loading: Bool = false, failure: String? = nil) {
+        self.groups = groups
+        self.loading = loading
+        self.failure = failure
+        guard isViewLoaded else { return }
+        renderChoices()
+        updateStatus()
+        view.setNeedsLayout()
+    }
+
+    @objc private dynamic func updateStatus() {
+        statusLabel.text = failure ?? (loading ? String(localized: "Loading…") : nil)
+        statusLabel.isHidden = statusLabel.text == nil
+        retryButton.isHidden = failure == nil
+        if loading { spinner.startAnimating() } else { spinner.stopAnimating() }
+        spinner.isHidden = !loading
+    }
+
+    @objc private dynamic func renderChoices() {
+        for child in stack.arrangedSubviews {
+            stack.removeArrangedSubview(child)
+            child.removeFromSuperview()
+        }
+        rows.removeAll()
         for group in groups {
             // A heading stands closer to the choices it names than to the ones
             // above it, so a provider's list reads as one block.
@@ -95,7 +166,12 @@ final class ComposerChoiceSheet: UIViewController {
             }
             for choice in group.choices {
                 let row = ChoiceRow(title: choice.title, detail: choice.subtitle, chosen: choice.isSelected)
-                if let request = choice.modelTest {
+                row.isEnabled = !loading && failure == nil
+                if !row.isEnabled {
+                    row.alpha = 0.55
+                    row.accessibilityTraits.insert(.notEnabled)
+                }
+                if row.isEnabled, let request = choice.modelTest {
                     row.configureTestAction { [weak self] in
                         guard let self, presentedViewController == nil else { return }
                         let report = SheetNavigationController(
@@ -128,24 +204,6 @@ final class ComposerChoiceSheet: UIViewController {
                 rows.append((row, fit(row)))
                 stack.addArrangedSubview(row)
             }
-        }
-
-        scrollView.alwaysBounceVertical = false
-        view.addSubview(scrollView)
-        scrollView.addSubview(stack)
-
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(Self.margin)
-            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(Self.margin)
-        }
-        scrollView.snp.makeConstraints { make in
-            make.top.equalTo(titleLabel.snp.bottom).offset(12)
-            make.leading.trailing.bottom.equalTo(view.safeAreaLayoutGuide)
-        }
-        stack.snp.makeConstraints { make in
-            make.top.equalTo(scrollView.contentLayoutGuide)
-            make.bottom.equalTo(scrollView.contentLayoutGuide).offset(-Self.margin)
-            make.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(Self.margin)
         }
     }
 

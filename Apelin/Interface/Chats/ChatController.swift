@@ -4,6 +4,7 @@ import ListViewKit
 import SnapKit
 import SPIndicator
 import UIKit
+import os
 
 /// The conversation page, the detail column's root while one is picked.
 /// There is one, made once: picking another conversation hands it that
@@ -104,6 +105,9 @@ final class ChatController: UIViewController {
     /// the top of the page can be read against.
     private var loadedRulerIndices: [Int] = []
     private var modelLoader: Task<Void, Never>?
+    private let modelAccounts = SharedModelLoad<[String: [String]], [AgentAccount]>()
+    @objc private dynamic weak var modelSheet: ComposerChoiceSheet?
+    private static let modelLogger = Logger(subsystem: "wiki.qaq.apelin", category: "ModelPicker")
     private var selectionCheck: Task<Void, Never>?
     private var attachmentImport: ComposerAttachmentImport?
     private var skillsLoaded = false
@@ -556,6 +560,11 @@ final class ChatController: UIViewController {
     func use(_ chat: ChatSummary) {
         loadViewIfNeeded()
         let previous = self.chat
+        if previous?.id != chat.id {
+            modelLoader?.cancel()
+            modelSheet?.dismiss(animated: false)
+            modelSheet = nil
+        }
         self.chat = chat
         ConversationNotices.shared.withdraw(session: runtime.records[chat.id]?.sessionID)
         Task { [weak self] in
@@ -966,6 +975,10 @@ final class ChatController: UIViewController {
     /// A model disabled in Settings stops being the one the next message uses.
     @objc private func enabledModelsChanged() {
         ensureModelSelection()
+        if let id = chat?.id, let sheet = modelSheet,
+           presentedViewController === sheet, !sheet.isBeingDismissed {
+            refreshModelSheet(sheet, for: id)
+        }
     }
 
     /// The list scrolls clear of the composer, and of the keyboard under it.
@@ -996,36 +1009,119 @@ final class ChatController: UIViewController {
         }
     }
 
-    /// The mark was tapped: what the signed-in providers have enabled, read
-    /// again at each tap, including after setup, and shown in the sheet every
-    /// picker of this row opens in.
-    private func presentModelSheet() {
-        guard let chat else { return }
+    /// Show saved IDs immediately; no process launch or catalog lookup holds
+    /// the sheet off screen. Provisional rows cannot switch a model before its
+    /// account and context window have been read.
+    @objc private dynamic func presentModelSheet() {
+        guard let id = chat?.id, presentedViewController == nil else { return }
+        let sheet = ComposerChoiceSheet(heading: String(localized: "Model"), groups: [])
+        modelSheet = sheet
+        sheet.onRetry = { [weak self, weak sheet] in
+            guard let self, let sheet, self.chat?.id == id else { return }
+            self.refreshModelSheet(sheet, for: id)
+        }
+        refreshModelSheet(sheet, for: id)
+        ComposerChoiceSheet.present(sheet, from: self)
+    }
+
+    private func previewModelGroups(for id: UUID) -> [ComposerChoiceSheet.Group] {
+        let models = EnabledModels.selectedModelIDs()
+        if let cached = modelAccounts.preview(for: models) {
+            return modelGroups(EnabledModels.accounts(from: cached.filter { $0.models != nil }), for: id)
+        }
+        let selection = ComposerModelSelection.selection(for: id)
+        return AgentProvider.allCases.compactMap { provider in
+            guard let ids = models[provider.rawValue], !ids.isEmpty else { return nil }
+            return ComposerChoiceSheet.Group(
+                title: provider.displayName,
+                choices: ids.map { model in
+                    ComposerChoiceSheet.Choice(
+                        title: model,
+                        isSelected: provider == selection?.provider && model == selection?.model,
+                        handler: {},
+                    )
+                },
+            )
+        }
+    }
+
+    @objc private dynamic func refreshModelSheet(_ sheet: ComposerChoiceSheet, for id: UUID) {
         modelLoader?.cancel()
-        modelLoader = Task { [weak self] in
-            guard let self else { return }
+        sheet.update(groups: previewModelGroups(for: id), loading: true)
+        modelLoader = Task { [weak self, weak sheet] in
+            guard let self, let sheet else { return }
+            let start = ProcessInfo.processInfo.systemUptime
             do {
-                let accounts = try await EnabledModels.accounts(from: ApelinService.app.agentAccountsWithKnownModels())
-                guard !Task.isCancelled, self.chat?.id == chat.id else { return }
-                // Nothing enabled is nothing to pick: the accounts page is.
+                let listed = try await loadModelAccounts()
+                guard !Task.isCancelled, self.chat?.id == id,
+                      presentedViewController === sheet, !sheet.isBeingDismissed
+                else { return }
+                let accounts = EnabledModels.accounts(from: listed.filter { $0.models != nil })
                 guard !accounts.isEmpty else {
-                    guard presentedViewController == nil else { return }
-                    presentPageAsFormSheet(ModelProvidersController())
+                    // A saved sign-in that failed to read is not an instruction
+                    // to send the reader through setup or pick another model.
+                    if listed.contains(where: { $0.signedIn && $0.models == nil }) {
+                        sheet.update(groups: [], failure: String(localized: "Models Unavailable"))
+                    } else {
+                        showModelProviders(after: sheet, for: id)
+                    }
                     return
                 }
-                showModels(accounts)
+                sheet.update(groups: modelGroups(accounts, for: id))
+                let elapsed = Int((ProcessInfo.processInfo.systemUptime - start) * 1000)
+                Self.modelLogger.notice("picker choices ready in \(elapsed, privacy: .public) ms")
             } catch {
-                guard !Task.isCancelled, self.chat?.id == chat.id else { return }
-                presentNotice(title: "Models Unavailable", message: error.readableMessage)
+                guard !Task.isCancelled, self.chat?.id == id,
+                      presentedViewController === sheet, !sheet.isBeingDismissed
+                else { return }
+                sheet.update(groups: previewModelGroups(for: id), failure: error.readableMessage)
             }
         }
     }
 
-    /// One group of models per signed-in provider, the one in use marked.
-    private func showModels(_ accounts: [AgentAccount]) {
-        guard let id = chat?.id, presentedViewController == nil else { return }
+    /// An empty answer can beat the presentation animation. Wait for that
+    /// transition before replacing the sheet, and never reopen one the reader
+    /// dismissed or one whose conversation has changed.
+    @objc private dynamic func showModelProviders(after sheet: ComposerChoiceSheet, for id: UUID) {
+        let replace = { [weak self, weak sheet] in
+            guard let self, let sheet, self.chat?.id == id,
+                  self.presentedViewController === sheet, !sheet.isBeingDismissed
+            else { return }
+            sheet.dismiss(animated: true) { [weak self] in
+                guard let self, self.chat?.id == id, self.presentedViewController == nil else { return }
+                self.presentPageAsFormSheet(ModelProvidersController())
+            }
+        }
+        if sheet.isBeingPresented, let transition = sheet.transitionCoordinator,
+           transition.animate(alongsideTransition: nil, completion: { _ in replace() }) {
+            return
+        }
+        replace()
+    }
+
+    /// Revalidate on each read, joining one already in flight. A preferences
+    /// change while it runs asks again with the new IDs, never publishes the
+    /// old account answer as the new choices.
+    private func loadModelAccounts() async throws -> [AgentAccount] {
+        let logger = Self.modelLogger
+        while true {
+            try Task.checkCancellation()
+            let models = EnabledModels.selectedModelIDs()
+            let accounts = try await modelAccounts.value(for: models) { models in
+                let start = ProcessInfo.processInfo.systemUptime
+                let response = try await ApelinService.app.agentAccountList(extraModels: models, onlyExtraModels: true)
+                let elapsed = Int((ProcessInfo.processInfo.systemUptime - start) * 1000)
+                logger.notice("account request including connection and worker: \(elapsed, privacy: .public) ms")
+                return response.accounts
+            }
+            if models == EnabledModels.selectedModelIDs() { return accounts }
+        }
+    }
+
+    /// One group per signed-in provider, only after the current read answered.
+    private func modelGroups(_ accounts: [AgentAccount], for id: UUID) -> [ComposerChoiceSheet.Group] {
         let selected = ComposerModelSelection.selection(for: id)
-        let groups = accounts.map { account in
+        return accounts.map { account in
             ComposerChoiceSheet.Group(
                 title: account.account ?? account.provider.displayName,
                 choices: (account.models ?? []).map { model in
@@ -1037,7 +1133,7 @@ final class ChatController: UIViewController {
                         isSelected: account.provider == selected?.provider && model == selected?.model,
                         modelTest: AgentModelTestRequest(provider: account.provider, model: model),
                     ) { [weak self] in
-                        guard let self else { return }
+                        guard let self, self.chat?.id == id else { return }
                         ChatActions.switchModel(
                             to: Self.selection(of: model, in: account),
                             named: account.displayName(for: model),
@@ -1050,10 +1146,6 @@ final class ChatController: UIViewController {
                 },
             )
         }
-        ComposerChoiceSheet.present(
-            ComposerChoiceSheet(heading: String(localized: "Model"), groups: groups),
-            from: self,
-        )
     }
 
     /// The sparks were tapped: the levels this model offers, in the same sheet.
@@ -1134,10 +1226,10 @@ extension ChatController {
         selectionCheck?.cancel()
         guard let id = chat?.id else { return }
         selectionCheck = Task {
-            guard let listed = try? await ApelinService.app.agentAccountsWithKnownModels(),
+            guard let listed = try? await loadModelAccounts(),
                   !Task.isCancelled, self.chat?.id == id
             else { return }
-            let accounts = EnabledModels.accounts(from: listed)
+            let accounts = EnabledModels.accounts(from: listed.filter { $0.models != nil })
             if let current = ComposerModelSelection.selection(for: id) {
                 if let account = accounts.first(where: { account in
                     account.provider == current.provider && (account.models ?? []).contains(current.model)

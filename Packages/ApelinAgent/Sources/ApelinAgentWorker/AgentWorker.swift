@@ -210,7 +210,10 @@ public enum AgentWorker {
             }
         case .agentAccountList:
             await WorkerMain.serve(AgentAccountListRequest.self, request) { list in
-                await accounts.list(extraModels: list.extraModels ?? [:])
+                await accounts.list(
+                    extraModels: list.extraModels ?? [:],
+                    onlyExtraModels: list.onlyExtraModels ?? false,
+                )
             }
         case .agentSkillList:
             await WorkerMain.serve(AgentSkillListRequest.self, request) { _ in
