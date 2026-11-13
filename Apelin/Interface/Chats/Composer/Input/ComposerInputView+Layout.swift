@@ -83,7 +83,10 @@ extension ComposerInputView {
         let width = bounds.width - inset.left - inset.right - rewriteRoom
         let frame = textFrame(width: width)
         textView.frame = frame
-        placeholderLabel.frame = frame
+        // The tip rolls with a transform on it, and a view carrying one has no
+        // frame to set: its bounds and centre are what a layout pass may write.
+        placeholderLabel.bounds = CGRect(origin: .zero, size: frame.size)
+        placeholderLabel.center = CGPoint(x: frame.midX, y: frame.midY)
         placeRewriteButton()
     }
 

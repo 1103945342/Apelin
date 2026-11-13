@@ -354,6 +354,7 @@ final class ChatController: UIViewController {
                         self.resizeProcess(anchoredAt: message.id) {
                             self.showTranscript(self.messages, animated: false)
                         }
+                        self.refreshExpandedProcess()
                     }
                 }
             ListRow(ChatActivityRow.self)
@@ -370,6 +371,7 @@ final class ChatController: UIViewController {
                             self.messageList.reconfigureRow(with: message.id)
                             self.messageList.invalidateLayout(forRowWith: message.id)
                         }
+                        self.refreshExpandedProcess()
                     }
                     row.onOpenPage = { [weak self] in
                         guard let self else { return }
@@ -608,6 +610,7 @@ final class ChatController: UIViewController {
         turnMessage = TurnFollowing.turnMessage(in: messages)
         followedTurn = runtime.records[chat.id]?.summary.isWorking == true ? turnMessage : nil
         showTranscript(messages)
+        refreshExpandedProcess()
         refreshRuntime()
         messageList.scrollToBottom(animated: false)
         updateLatestMessageButton()
@@ -902,6 +905,8 @@ final class ChatController: UIViewController {
         }
         collect(messages)
         ChatTraceExpansion.collapse(ids: ids)
+        // Nothing is open after this, so the box goes back to its own tips.
+        composer.setExpandedProcess(false)
 
         // Expansion is not part of a message's equality. A fresh list drops
         // every old row height and open view, including offscreen ones, rather
@@ -916,6 +921,23 @@ final class ChatController: UIViewController {
         // Reuse the bounded opening-layout pass to settle measured heights.
         view.setNeedsLayout()
         updateLatestMessageButton()
+    }
+
+    /// Whether anything the reader opened is still open — a turn's process, a
+    /// thought's text, a call's arguments — anywhere in the transcript, steps
+    /// inside steps included. While there is, the box leads with the tip about
+    /// folding it back.
+    private func refreshExpandedProcess() {
+        composer.setExpandedProcess(messages.contains(where: isOpenInTranscript))
+    }
+
+    private func isOpenInTranscript(_ row: ChatMessage) -> Bool {
+        if ChatTraceExpansion.isExpanded(turn: row.id)
+            || ChatTraceExpansion.isExpanded(thought: row.id)
+            || ChatTraceExpansion.isExpanded(call: row.id) {
+            return true
+        }
+        return row.trace.contains(where: isOpenInTranscript)
     }
 
     /// A disclosure is reading, not following output. Keep the row's top at

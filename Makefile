@@ -472,6 +472,11 @@ harness:
 		-o "$$harness_dir/composer-drop" && \
 	"$$harness_dir/composer-drop" && \
 	xcrun --sdk macosx swiftc -swift-version 5 \
+		"$(ROOT_DIR)/Apelin/Interface/Chats/Composer/Input/ComposerTips.swift" \
+		"$(ROOT_DIR)/Tests/ComposerTips/main.swift" \
+		-o "$$harness_dir/composer-tips" && \
+		"$$harness_dir/composer-tips" && \
+	xcrun --sdk macosx swiftc -swift-version 5 \
 		"$(ROOT_DIR)/Apelin/Interface/Settings/Logs/JournalFiles.swift" \
 		"$(ROOT_DIR)/Apelin/Interface/Settings/Logs/JournalLines.swift" \
 		"$(ROOT_DIR)/Packages/ApelinKit/Sources/ApelinCore/LogText.swift" \

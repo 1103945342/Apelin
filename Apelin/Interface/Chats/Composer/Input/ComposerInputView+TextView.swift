@@ -130,8 +130,11 @@ extension ComposerInputView: UITextViewDelegate {
         return true
     }
 
+    /// Shows or hides the tip with the text, and only when that changed: a roll
+    /// animates the label's own alpha, and a layout pass that wrote it again
+    /// would cut the animation short.
     @objc dynamic func updatePlaceholderAlpha() {
-        placeholderLabel.alpha = textView.text.isEmpty ? 1 : 0
+        setPlaceholderVisible(textView.text.isEmpty)
     }
 
     @objc dynamic func updateTextHeight() {

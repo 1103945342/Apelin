@@ -649,6 +649,13 @@ class ComposerView: ComposerSectionView {
         inputEditor.hasContent = !text.isEmpty || !currentDraft.attachments.isEmpty
         modelBar.setSendState(isBusy: busy, hasContent: inputEditor.hasContent)
     }
+
+    /// Something in the transcript is open: the box leads with the tip about
+    /// folding it, since folding it back is what the reader just learnt they
+    /// can do with the button under their thumb.
+    func setExpandedProcess(_ expanded: Bool) {
+        inputEditor.showsExpandedProcess = expanded
+    }
 }
 
 extension ComposerView: ComposerInputView.Delegate {
