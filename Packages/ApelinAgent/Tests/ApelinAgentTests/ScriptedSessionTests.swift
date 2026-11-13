@@ -32,8 +32,8 @@ struct ScriptedSessionTests {
         let after = try #require(records.last?.seq)
         provider.setResponses([.message(fauxAssistantMessage(#"{"title":"Build a widget","projectName":"Weather Widget"}"#))])
         events = try await session.events(afterSeq: after)
-        // The first request's task finalizer is actor-queued after its title.
-        await Task.yield()
+        // Wait for the title task's finalizer, not merely its emitted title.
+        await session.waitForTitle()
         await session.generateTitle(for: "Build a weather widget in this project")
         for await record in events {
             if case .projectNameSuggested = record.event {
@@ -104,8 +104,12 @@ struct ScriptedSessionTests {
             project: home.project, provider: .registered(provider.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot,
         ),
         backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
-        for _ in 0 ..< AgentSession.maximumTitleMisses + 2 {
-            await session.generateTitle(for: "Explain the title view")
+        // One trigger exhausts the bounded retries: no second reader send is needed.
+        await session.generateTitle(for: "Explain the title view")
+        await session.waitForTitle()
+        #expect(await asked.value == AgentSession.maximumTitleMisses)
+        for _ in 0 ..< 2 {
+            await session.generateTitle(for: "A different follow-up")
             await session.waitForTitle()
         }
         #expect(await asked.value == AgentSession.maximumTitleMisses)

@@ -76,6 +76,7 @@ struct LongLogTests {
         #expect(await session.log.decodes == opening + Int(seq), "each line the replay read, once")
         #expect(await session.log.opened == SessionEventLog.Summary(Array(replayed.prefix(lines))))
         #expect(await session.log.opened.userMessageIDs == [first, second])
+        #expect(await session.log.opened.titleSource == "Write a long essay.")
         #expect(await session.log.opened.openApprovals == [abandoned.id])
         let closings = replayed.filter {
             $0.event == .approvalResolved(requestID: abandoned.id, decision: .deny(reason: "the session restarted"))

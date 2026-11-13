@@ -13,6 +13,9 @@ extension SessionEventLog {
         /// where a chat whose history came back empty is read back from.
         var lastUserMessageID: UUID?
         var hasTitle = false
+        /// Raw opening input, not the injected model context. Retained so an
+        /// unfinished title uses the same message after the worker reopens.
+        var titleSource: String?
         /// Approvals asked and never resolved, in the order asked.
         var openApprovals: [String] = []
         /// A previous process left these operations without their terminal
@@ -46,7 +49,11 @@ extension SessionEventLog {
         mutating func add(_ record: SessionEventRecord) {
             lastSeq = record.seq
             switch record.event {
-            case let .userMessage(id, _, _), let .conversationMessageTaken(id, _, _):
+            case let .userMessage(id, text, _), let .conversationMessageTaken(id, text, _):
+                if titleSource == nil {
+                    let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !text.isEmpty { titleSource = String(text.prefix(3000)) }
+                }
                 userMessageIDs.insert(id)
                 lastUserMessageID = id
                 unfinishedTurn = true
