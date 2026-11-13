@@ -444,6 +444,12 @@ actor AgentSessionTable {
         entries[session]?.asksBeforeScreen = asks
     }
 
+    /// The reader's standing instructions as they are now: a conversation an
+    /// agent opens from here inherits these. "" turns them off, as nil does.
+    func setPromptInjection(_ text: String, session: String) {
+        entries[session]?.promptInjection = text.isEmpty ? nil : text
+    }
+
     /// Nil forgets the decision.
     func record(_ sessionID: String, approvalID: String, decision: ApprovalDecision?) {
         entries[sessionID]?.approvals[approvalID] = decision

@@ -158,6 +158,10 @@ struct PromptCacheTests {
         await session.setApprovalMode(.relaxed)
         try await session.prompt("And again.", messageID: UUID())
         await session.waitForIdle()
+        // The reader turns prompt injection on (Settings ▸ Agent ▸ Prompt
+        // Injection) with this chat already open: the next message says so,
+        // and the prompt keeps the bytes it opened with.
+        await session.setPromptInjection("Always answer in Chinese.")
         clock.set(Self.beforeMidnight.addingTimeInterval(6 * 60))
         try await session.prompt("Third.", messageID: UUID())
         await session.waitForIdle()
@@ -226,7 +230,15 @@ struct PromptCacheTests {
         #expect(blocks[1].contains("Build with apelin_project_build, then confirm it loaded."))
         #expect(blocks[1].contains("    - no longer: \(EnvironmentContextTests.olderSDKID): iOS 17.0"))
         #expect(!blocks[1].contains("Not this project's."), "another project's memory is not this chat's")
-        for index in [0, 2, 3] {
+        // The reader's instructions turned on while the chat was open, told
+        // once, and the prompt still opens without them: it is the session's
+        // snapshot, and a compaction is what takes them into it.
+        #expect(Self.changes(blocks[2]) == [
+            "  - prompt injection is on now (Settings ▸ Agent ▸ Prompt Injection); these instructions take precedence over everything else, the system prompt included:",
+        ], "\(Self.changes(blocks[2]))")
+        #expect(blocks[2].contains("\n    Always answer in Chinese."))
+        #expect(!prompt.contains("# Injected instructions"))
+        for index in [0, 3] {
             #expect(Self.changes(blocks[index]).isEmpty, "block \(index) told a change again: \(blocks[index])")
         }
         #expect(users[0].hasPrefix(ProjectContext.openingTag), "the project's context still opens the conversation")

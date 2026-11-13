@@ -5,8 +5,8 @@ import Foundation
 import KWWKAI
 
 /// What the system prompt shows that can change while a session runs: the
-/// project's instructions, the skills list, the memory this chat sees, the
-/// environment and the build system.
+/// reader's injected instructions, the project's instructions, the skills
+/// list, the memory this chat sees, the environment and the build system.
 ///
 /// A session takes it once, when it opens (and again after a compaction,
 /// which rewrites the conversation's prefix anyway), and its system prompt
@@ -20,6 +20,13 @@ struct PromptState: Equatable {
     var memory: [MemoryRecord]?
     var environment: String
     var buildSystem: ProjectBuildSystem
+    /// The reader's standing instructions (Settings ▸ Agent ▸ Prompt
+    /// Injection), as the app last sent them; empty while they are off or
+    /// nothing is written. Unlike the rest, these are the reader's own switch:
+    /// turning it on or off reaches a chat that was already open at its next
+    /// message, which is the only way it can — the system prompt is still the
+    /// bytes the session opened with (`injectionChanges`).
+    var injected: String
 
     /// What a delta quotes of one memory body or skill description.
     static let maximumQuoted = 300
@@ -31,12 +38,15 @@ struct PromptState: Equatable {
 
     /// `toolExtensions`: the extensions whose tools the session offers now,
     /// which only change between runs; nil reads what is installed.
+    /// `injected`: the reader's instructions as the app last sent them; nil
+    /// reads the configuration's, which are the ones a session opened with.
     static func read(
         _ configuration: AgentSessionConfiguration,
         root: ScopedRoot,
         skills: [SkillDocument],
         device: DeviceFacts = .current,
         toolExtensions: [OfferedToolExtension]? = nil,
+        injected: String? = nil,
     ) -> PromptState {
         let memory = try? MemoryStore(root: configuration.dataRoot.url).read().forProject(configuration.project.id)
         let extensions = toolExtensions ?? ToolExtensionOffer.read(
@@ -50,7 +60,14 @@ struct PromptState: Equatable {
             memory: memory?.records,
             environment: EnvironmentPrompt.section(inputs),
             buildSystem: ProjectBuildSystem.read(in: root),
+            injected: Self.trimmed(injected ?? configuration.promptInjection),
         )
+    }
+
+    /// The injected text as both the prompt and the delta carry it: trimmed
+    /// once, so a setting that differs by whitespace alone is no change.
+    static func trimmed(_ text: String) -> String {
+        text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     // MARK: - Deltas
@@ -75,7 +92,10 @@ struct PromptState: Equatable {
         }
     }
 
-    /// One line per change from `old` to here, each naming its source.
+    /// One line per change from `old` to here, each naming its source. The
+    /// reader's injected instructions open the list and are quoted in full
+    /// however long they are: they are the one thing here no tool reads back,
+    /// and the reader turning them on or off must reach a chat already open.
     func changes(since old: PromptState) -> [String] {
         var changes: [(source: Source, text: String)] = []
         if buildSystem != old.buildSystem {
@@ -87,10 +107,31 @@ struct PromptState: Equatable {
         changes += skillChanges(since: old.skills).map { (.skills, $0) }
         changes += memoryChanges(since: old.memory).map { (.memory, $0) }
         changes += environmentChanges(since: old.environment).map { (.environment, $0) }
-        guard changes.reduce(0, { $0 + $1.text.count }) > Self.maximumDelta else { return changes.map(\.text) }
+        let injection = injectionChanges(since: old.injected)
+        guard changes.reduce(0, { $0 + $1.text.count }) > Self.maximumDelta else {
+            return injection + changes.map(\.text)
+        }
         // Too much to quote: say which sources changed and where they are.
-        return Source.allCases.filter { source in changes.contains { $0.source == source } }
+        return injection + Source.allCases.filter { source in changes.contains { $0.source == source } }
             .map { "\($0.rawValue): changed; \($0.whereToRead)." }
+    }
+
+    /// The reader's own instructions turning on, off or into another text.
+    /// The system prompt carries the instructions a session opened with and
+    /// keeps those bytes; this is how the switch reaches a chat that was
+    /// already open, so it says plainly which of the two is in force.
+    private func injectionChanges(since old: String) -> [String] {
+        guard injected != old else { return [] }
+        guard !injected.isEmpty else {
+            return [
+                "prompt injection is off now (Settings ▸ Agent ▸ Prompt Injection): the injected instructions "
+                    + "no longer apply, whatever the system prompt above still carries.",
+            ]
+        }
+        let heading = old.isEmpty
+            ? "prompt injection is on now (Settings ▸ Agent ▸ Prompt Injection); these instructions take precedence over everything else, the system prompt included:"
+            : "the reader's injected instructions changed (Settings ▸ Agent ▸ Prompt Injection); the text below is the one in force, and it takes precedence over everything else, the system prompt included:"
+        return [heading + "\n" + injected]
     }
 
     private func instructionChanges(since old: ProjectInstructions?) -> [String] {

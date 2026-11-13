@@ -106,8 +106,9 @@ enum Preferences {
 
     /// The text the reader wants every conversation to start under: what the
     /// agent's system prompt carries before anything else. Kept beside the
-    /// other settings, and sent with each session as it opens — a
-    /// conversation already running keeps the prompt it opened with.
+    /// other settings; a session's open carries it, and so does every prompt
+    /// (`forPrompt`), so turning it on or off reaches a chat that is already
+    /// open at its next message.
     enum PromptInjection {
         /// What one prompt may carry, as project instructions are capped.
         static let maximumCharacters = 16 * 1024
@@ -139,6 +140,15 @@ enum Preferences {
         static var wire: String? {
             let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
             return enabled && !trimmed.isEmpty ? trimmed : nil
+        }
+
+        /// What every prompt carries, to a chat that was already open too:
+        /// the text while the switch is on and something is written, "" while
+        /// it is off — where `wire` is nil in both cases, and a prompt that
+        /// said nothing would leave an open chat under instructions the reader
+        /// has turned off.
+        static var forPrompt: String {
+            wire ?? ""
         }
     }
 

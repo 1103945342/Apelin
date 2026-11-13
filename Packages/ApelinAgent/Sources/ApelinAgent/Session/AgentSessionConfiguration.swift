@@ -25,7 +25,10 @@ public struct AgentSessionConfiguration: Sendable {
     public var modelDefaults: AgentModelDefaults
     /// The reader's standing instructions (Settings ▸ Agent ▸ Prompt
     /// Injection), which the system prompt carries before anything else;
-    /// empty when there are none.
+    /// empty when there are none. What the session opens with: the app's next
+    /// prompt can change them for the session's life
+    /// (`AgentSession.setPromptInjection`), and the model hears that in the
+    /// message's `<system-state>` — this prompt keeps the bytes it opened with.
     public var promptInjection: String
     /// Hard cap on assistant turns per run; nil for none.
     public var maxTurns: Int?

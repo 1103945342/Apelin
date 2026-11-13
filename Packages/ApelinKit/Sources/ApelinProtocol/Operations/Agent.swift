@@ -382,7 +382,10 @@ public struct AgentOpenRequest: OperationRequest {
     public var modelParameters: AgentModelParameters?
     /// The reader's standing instructions, from Settings ▸ Agent ▸ Prompt
     /// Injection: the text the system prompt carries before anything else.
-    /// The app sends it; a conversation an agent opens has its opener's.
+    /// The app sends it; a conversation an agent opens has its opener's. An
+    /// open of a session that is already running answers with its task and
+    /// reaches no worker, so a chat opened before the setting changed hears it
+    /// through every prompt instead (`AgentPromptRequest.promptInjection`).
     public var promptInjection: String?
     /// A first prompt, submitted as soon as the session is open.
     public var prompt: String?
@@ -511,6 +514,13 @@ public struct AgentPromptRequest: OperationRequest {
     /// message's `<system-state>`, which is where a setting that can change
     /// between messages belongs (the system prompt is the session's snapshot).
     public var runMode: AgentRunMode?
+    /// The reader's standing instructions (Settings ▸ Agent ▸ Prompt
+    /// Injection), as the app has them now, carried by every prompt so a
+    /// conversation that is already open hears the switch too: the text while
+    /// it is on, "" while it is off or nothing is written, which withdraws
+    /// instructions that session opened with. nil leaves the session's as it
+    /// is, as a nil `approvalMode` does; an agent's prompt carries none.
+    public var promptInjection: String?
     /// The session whose agent sent this, written by the host for an
     /// agent's prompt and cleared for the app's; the worker records it on
     /// the `prompt` event as `from`.
@@ -531,6 +541,7 @@ public struct AgentPromptRequest: OperationRequest {
         approvalMode: ApprovalMode? = nil,
         asksBeforeScreen: Bool? = nil,
         runMode: AgentRunMode? = nil,
+        promptInjection: String? = nil,
         fromSessionID: String? = nil,
         delivery: AgentMessageDelivery? = nil,
         modelParameters: AgentModelParameters? = nil,
@@ -548,6 +559,7 @@ public struct AgentPromptRequest: OperationRequest {
         self.approvalMode = approvalMode
         self.asksBeforeScreen = asksBeforeScreen
         self.runMode = runMode
+        self.promptInjection = promptInjection
         self.fromSessionID = fromSessionID
         self.delivery = delivery
     }

@@ -122835,79 +122835,79 @@
         }
       }
     },
-    "This text goes at the top of the system prompt, before everything else, for every conversation opened from now on. The switch turns it off without losing what you wrote.": {
+    "This text goes at the top of the system prompt, before everything else, for every conversation; one that is already open hears it in its next message. The switch turns it off without losing what you wrote.": {
       "extractionState": "manual",
       "localizations": {
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "يوضع هذا النص في أعلى توجيه النظام، قبل كل شيء آخر، في كل محادثة تُفتح من الآن. يوقفه المفتاح دون فقدان ما كتبته."
+            "value": "يوضع هذا النص في أعلى توجيه النظام، قبل كل شيء آخر، في كل محادثة؛ والمحادثة المفتوحة بالفعل تسمعه في رسالتها التالية. يوقفه المفتاح دون فقدان ما كتبته."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dieser Text steht im System-Prompt ganz oben, vor allem anderen, in jeder ab jetzt geöffneten Unterhaltung. Der Schalter schaltet ihn ab, ohne dass dein Text verloren geht."
+            "value": "Dieser Text steht im System-Prompt ganz oben, vor allem anderen, in jeder Unterhaltung; eine bereits geöffnete erfährt ihn mit ihrer nächsten Nachricht. Der Schalter schaltet ihn ab, ohne dass dein Text verloren geht."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Este texto va al principio del prompt del sistema, antes que todo lo demás, en cada conversación que se abra a partir de ahora. El interruptor lo desactiva sin perder lo que escribiste."
+            "value": "Este texto va al principio del prompt del sistema, antes que todo lo demás, en cada conversación; una que ya está abierta lo recibe en su siguiente mensaje. El interruptor lo desactiva sin perder lo que escribiste."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ce texte passe en tête du prompt système, avant tout le reste, dans chaque conversation ouverte désormais. L’interrupteur le désactive sans effacer ce que tu as écrit."
+            "value": "Ce texte passe en tête du prompt système, avant tout le reste, dans chaque conversation ; une conversation déjà ouverte le reçoit à son message suivant. L’interrupteur le désactive sans effacer ce que tu as écrit."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Questo testo va in cima al prompt di sistema, prima di ogni altra cosa, in ogni conversazione aperta da adesso. L’interruttore lo disattiva senza perdere ciò che hai scritto."
+            "value": "Questo testo va in cima al prompt di sistema, prima di ogni altra cosa, in ogni conversazione; una già aperta lo riceve nel suo messaggio successivo. L’interruttore lo disattiva senza perdere ciò che hai scritto."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "この文言はシステムプロンプトの先頭、ほかのすべてより前に、これから開くすべての会話で入ります。スイッチを切っても書いた内容は残ります。"
+            "value": "この文言はシステムプロンプトの先頭、ほかのすべてより前に、すべての会話で入ります。すでに開いている会話には次のメッセージで伝わります。スイッチを切っても書いた内容は残ります。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이 문장은 시스템 프롬프트 맨 앞, 다른 모든 것보다 먼저, 앞으로 여는 모든 대화에 들어갑니다. 스위치를 꺼도 작성한 내용은 남습니다."
+            "value": "이 문장은 시스템 프롬프트 맨 앞, 다른 모든 것보다 먼저, 모든 대화에 들어갑니다. 이미 열려 있는 대화는 다음 메시지에서 이를 받습니다. 스위치를 꺼도 작성한 내용은 남습니다."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Este texto vai no topo do prompt do sistema, antes de tudo o mais, em toda conversa aberta daqui em diante. O interruptor desliga sem perder o que você escreveu."
+            "value": "Este texto vai no topo do prompt do sistema, antes de tudo o mais, em toda conversa; uma que já está aberta o recebe na próxima mensagem. O interruptor desliga sem perder o que você escreveu."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Этот текст идёт в начало системного промпта, раньше всего остального, в каждой беседе, открытой с этого момента. Выключатель отключает его, не теряя написанного."
+            "value": "Этот текст идёт в начало системного промпта, раньше всего остального, в каждой беседе; уже открытая узнаёт его в следующем сообщении. Выключатель отключает его, не теряя написанного."
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Đoạn này được đặt ở đầu prompt hệ thống, trước mọi thứ khác, trong mọi cuộc trò chuyện mở từ giờ. Công tắc sẽ tắt nó mà không mất nội dung bạn viết."
+            "value": "Đoạn này được đặt ở đầu prompt hệ thống, trước mọi thứ khác, trong mọi cuộc trò chuyện; cuộc trò chuyện đang mở sẽ nhận được nó ở tin nhắn tiếp theo. Công tắc sẽ tắt nó mà không mất nội dung bạn viết."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "这段文字会放在系统提示词的最前面、优先于其他一切内容，对之后新开的每个对话生效。关掉开关不会丢掉你写的内容。"
+            "value": "这段文字会放在系统提示词的最前面、优先于其他一切内容，对每个对话生效；已经打开的对话会在下一条消息里收到。关掉开关不会丢掉你写的内容。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "這段文字會放在系統提示詞的最前面、優先於其他一切內容，對之後新開的每個對話生效。關掉開關不會丟掉你寫的內容。"
+            "value": "這段文字會放在系統提示詞的最前面、優先於其他一切內容，對每個對話生效；已經開啟的對話會在下一則訊息裡收到。關掉開關不會丟掉你寫的內容。"
           }
         }
       }

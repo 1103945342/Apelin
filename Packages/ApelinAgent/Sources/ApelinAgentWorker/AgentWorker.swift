@@ -70,6 +70,12 @@ public enum AgentWorker {
                 if let runMode = prompt.runMode {
                     await session.setRunMode(runMode)
                 }
+                // Each prompt carries the reader's injection as the app has
+                // it now, so a chat that was already open hears the switch:
+                // the worker says so in this message's `<system-state>`.
+                if let injection = prompt.promptInjection {
+                    await session.setPromptInjection(injection)
+                }
                 let choice = try prompt.provider.map { provider in
                     PendingModelChoice(
                         provider: try AgentWorker.provider(provider: provider, model: prompt.model),

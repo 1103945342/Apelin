@@ -155,6 +155,17 @@ public final class SessionJournal: @unchecked Sendable {
         perform { $0.write(.session, "Approval mode is now \(mode.rawValue)") }
     }
 
+    /// The app sent different instructions from the ones this session opened
+    /// with. What the model hears is the next message's delta; this is the
+    /// same change for whoever reads the journal, without the text itself.
+    func promptInjectionChanged(to text: String) {
+        perform {
+            $0.write(.session, text.isEmpty
+                ? "Injected instructions: off"
+                : "Injected instructions: on, \(text.count) characters")
+        }
+    }
+
     /// The session closes: calls still running are interrupted. `flush`
     /// waits for the lines.
     @objc dynamic func sessionClosed() {

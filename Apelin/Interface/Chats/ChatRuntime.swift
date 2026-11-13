@@ -558,6 +558,7 @@ final class ChatRuntime {
                 approvalMode: AgentPermissions.mode,
                 asksBeforeScreen: AgentPermissions.asksBeforeScreen,
                 runMode: ComposerModeStore.mode(for: id).runMode,
+                promptInjection: Preferences.PromptInjection.forPrompt,
                 modelParameters: ModelParameters.values(for: selected?.provider, model: selected?.model).wire,
             ),
             descriptors: descriptors,

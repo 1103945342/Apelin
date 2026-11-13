@@ -106,6 +106,11 @@ public actor AgentSession {
     /// host opens one with history after it started, and taken, as a delta
     /// is, by the message that carries it.
     private var restartUntold: Bool
+    /// The reader's standing instructions as the app last sent them; nil
+    /// until it says, and then the configuration's own are the ones the
+    /// system prompt carries. A change is a `PromptState` delta in the next
+    /// message, since the prompt keeps the bytes it opened with.
+    private var promptInjection: String?
     /// A compaction rewrote the conversation: the next run takes the system
     /// prompt afresh, since its prefix is written anew anyway.
     var snapshotStale = false
@@ -406,6 +411,21 @@ public actor AgentSession {
         await runner.setAsksBeforeScreen(asks)
     }
 
+    /// The reader's standing instructions (Settings ▸ Agent ▸ Prompt
+    /// Injection), as the app has them now: "" while the switch is off.
+    ///
+    /// A chat already open keeps the system prompt it opened with, so the
+    /// change reaches the model as a `PromptState` delta in the next
+    /// message — the reader turning injection on, editing it, or turning it
+    /// off, whichever this session opened with. A compaction writes the
+    /// prompt afresh and takes the text into it (`takeSnapshot`).
+    public func setPromptInjection(_ text: String) {
+        let text = PromptState.trimmed(text)
+        guard text != (promptInjection ?? configuration.promptInjection) else { return }
+        promptInjection = text
+        journal.promptInjectionChanged(to: text)
+    }
+
     /// The approval mode the app last said, so a run-mode change away from
     /// `auto` can put it back: `auto` is the one thing that overrode it.
     private var appApprovalMode: ApprovalMode?
@@ -435,6 +455,7 @@ public actor AgentSession {
             root: workspace,
             skills: SkillCatalog.load(userDirectory: configuration.dataRoot.skills).skills,
             toolExtensions: toolExtensions.extensions,
+            injected: promptInjection,
         )
     }
 
@@ -468,10 +489,11 @@ public actor AgentSession {
     /// The system prompt a session takes once, when it opens (and after a
     /// compaction), and keeps byte for byte: the provider's cache of the
     /// conversation, which starts at the tools and this prompt, holds only
-    /// while it does (`PromptCacheTests`). What changes later — the
-    /// project's instructions, a skill, memory, the environment — reaches
-    /// the model as a delta in the next message's `<system-state>`, and
-    /// the approval mode and the time are each message's.
+    /// while it does (`PromptCacheTests`). What changes later — the reader's
+    /// injected instructions, the project's instructions, a skill, memory,
+    /// the environment — reaches the model as a delta in the next message's
+    /// `<system-state>`, and the approval mode and the time are each
+    /// message's.
     static func systemPrompt(_ configuration: AgentSessionConfiguration, root: ScopedRoot, state: PromptState) -> String {
         SystemPrompt.make(
             project: configuration.project,
@@ -482,7 +504,7 @@ public actor AgentSession {
             buildSystem: state.buildSystem,
             memory: MemoryTools.prompt(state.memory),
             environment: state.environment,
-            injected: configuration.promptInjection,
+            injected: state.injected,
         )
     }
 

@@ -476,6 +476,12 @@ enum AgentHandler: DomainHandler {
             if let asks = prompt.asksBeforeScreen {
                 await AgentSessionTable.shared.setAsksBeforeScreen(asks, session: prompt.sessionID)
             }
+            // The reader's instructions as the app has them now: a
+            // conversation an agent opens from here inherits these, not the
+            // ones this session opened with.
+            if let injection = prompt.promptInjection {
+                await AgentSessionTable.shared.setPromptInjection(injection, session: prompt.sessionID)
+            }
             guard let mode = prompt.approvalMode else { return }
             await host.approvals.setMode(mode, session: prompt.sessionID)
             await AgentSessionTable.shared.setMode(mode, session: prompt.sessionID)

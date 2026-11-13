@@ -2,10 +2,11 @@ import ApelinCore
 import UIKit
 
 /// Settings ▸ Agent ▸ Prompt Injection: the switch, and the text every
-/// conversation opened from here on carries before the rest of its prompt.
-/// Both save as they change — there is nothing to confirm, and a page that
-/// asked for a Save button would keep a half-typed prompt out of the next
-/// chat.
+/// conversation carries before the rest of its prompt — a chat already open
+/// hears it in its next message, since a session's prompt is the snapshot it
+/// opened with. Both save as they change — there is nothing to confirm, and a
+/// page that asked for a Save button would keep a half-typed prompt out of the
+/// next chat.
 final class PromptInjectionController: TableController, UITextViewDelegate {
     private enum Row: Equatable {
         case enabled
@@ -75,8 +76,8 @@ final class PromptInjectionController: TableController, UITextViewDelegate {
         dataSource.headerTitle = { _ in nil }
         dataSource.footerTitle = { _ in
             String(localized: """
-            This text goes at the top of the system prompt, before everything else, for every conversation \
-            opened from now on. The switch turns it off without losing what you wrote.
+            This text goes at the top of the system prompt, before everything else, for every conversation; one \
+            that is already open hears it in its next message. The switch turns it off without losing what you wrote.
             """)
         }
         dataSource.update([(0, [.enabled, .text])])
