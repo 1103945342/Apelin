@@ -4220,10 +4220,10 @@ project metadata without changing the selected folder or chat. All Projects
 uses type section headers and single-line display names.
 
 The chat's More menu (`ChatActions`) acts on its conversation and its current
-project, in four groups: Rename… and Compact… (the conversation); Open in
-iGhostVT and Open in Fila; the project's Rename…, Export… and Distribute…;
+project, in four groups: Rename… and Compact… (the conversation); Open Terminal
+and Browse Files; the project's Rename…, Export… and Distribute…;
 and Delete Conversation…. General
-Chat has Rename…, Compact…, the two Open items for the conversation's own `Temporary/<conversation>/`,
+Chat has Rename…, Compact…, the two folder items for the conversation's own `Temporary/<conversation>/`,
 made if missing (`ProjectActions.temporaryDirectory`), and Delete
 Conversation…. Delete Conversation… (owner, 2026-10-30) is the sidebar's
 Delete (`SidebarController.delete(_:from:presenter:)`), but always asks
@@ -4255,9 +4255,24 @@ owner, 2026-10-24); it is disabled, saying what is missing, for a manifest
 with no `build` and for a workspace with no `external` script, and the
 distribution page checks again, lists the check's errors (a script that is
 not in the project, say) and keeps Build off until they are fixed.
-Fila opens the canonical folder with `fila://open?path=…&tab=new`;
-iGhostVT 1.6.19 or later opens `ighostvt://new?directory=…`, a directory-only URL
-that cannot carry a shell command. Both apps are package dependencies. Project
+Open Terminal and Browse Files are Apelin's own pages, `TerminalPresenter` and
+`FileBrowserPresenter`, which the app shows in place of the page it came from;
+neither needs another app installed. A project's chat hands over its canonical
+folder as both the directory and the project root; a General Chat hands over its
+temporary folder and no project root, so nothing is opened at the user's home.
+The sidebar's file rows offer Open Terminal in their long-press menu — the
+folder a file sits in, or a folder row, itself — with the root the browser
+already holds, while a tap still opens the file, or toggles the folder, as
+before. Settings ▸ SDKs and
+Toolchains reach the same browser on their own folders (`browseFiles`, the old
+`revealInFila` replaced); those folders are a browser's to look at, not to edit,
+and each of those pages still removes an SDK or a toolchain with its own Remove,
+which takes the record with the files. Neither Fila nor iGhostVT is a package
+dependency any more, and `Scripts/check-retired-apps.py`, which `make check`
+runs, keeps it that way: it refuses a `fila://` or `ighostvt://` URL, a `scheme`
+assigned either name, either bundle identifier written into a source file, a
+`LSApplicationQueriesSchemes` entry for either, and either package in `control`'s
+Depends — attribution in a comment names none of those and passes. Project
 export reuses `transferExport` and the real `.apeproj` transfer format; no new
 archive format or exporter is introduced. Distribution sends `buildStart` with
 its optional `bootstrap` (`roothide` or `rootless`); omission retains the current
@@ -4915,6 +4930,22 @@ it compiles and signs its project-local harness, also type-checks the UIKit tree
 cell, and installs nothing. It does not replace the full app build, controller
 integration tests, or device UI testing (expansion, guides, Dynamic Type, RTL and
 VoiceOver).
+
+The terminal and the file browser have the same two-sided arrangement, and the
+same limits. `Scripts/test-file-browser.sh`, `Tests/TerminalUI/run.sh` and
+`Scripts/test-terminal.sh` each take `--device <tool.entitlements>` and run their
+model checks on a device; each points `TMPDIR` at a folder of its own under
+`build/`, made through the path the bootstrap's shell sees and handed on as the
+run-time real path, so a fixture never lands outside the project. `make harness`
+runs the terminal page's through `Tests/TerminalUI/run.sh` on the Mac and the
+backend's through `test-session-host.sh`, against the modules `swift build`
+leaves; `Scripts/test-terminal.sh` exists for the device, where `swift build`
+does not run, and copies the sources into one scratch module with the package
+imports, Swift 6's trailing commas and a `\.self` key path rewritten. None of
+them builds the whole app, links Ghostty, or presses anything on screen: the
+page and the session are type-checked against stubs or parsed only, and the
+backend's checks compile `SpawnIdentity`/`ProcessCredentials`/`verifyDropped`
+stand-ins, so a real root host starting a mobile shell is still not run.
 
 ## Building without a Mac
 

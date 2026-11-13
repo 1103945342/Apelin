@@ -18,6 +18,20 @@ final class FileEditorController: UIViewController {
     /// Called after a save, so the page behind can show the new size.
     var onSaved: (() -> Void)?
 
+    /// Asked before the file is made writable (the pencil) and again just
+    /// before a save starts: the page that opened it may refuse — a file in
+    /// one of Apelin's own records belongs to the page that manages it — with
+    /// the sentence to show. A page that leaves it nil, as the sidebar's files
+    /// page does, opens every file as it always did.
+    var writeRefusal: (() -> String?)?
+
+    /// Asked inside the write's own task, immediately before the file is
+    /// written: the last moment before the atomic replace, with no scheduling
+    /// step between the answer and the write. It runs off the main thread, so
+    /// what it captures has to be safe there. A page that leaves it nil, as the
+    /// sidebar's files page does, asks nothing and writes as it always did.
+    var writeGuard: (@Sendable () -> String?)?
+
     private let url: URL
     private let relativePath: String
     /// The line to put the caret on once the file is on screen: a content
@@ -449,6 +463,12 @@ final class FileEditorController: UIViewController {
             stopEditing()
             return
         }
+        // The page that opened a file it may only read says so here, before
+        // the keyboard or a keystroke arrives.
+        if let refusal = writeRefusal?() {
+            presentNotice(title: "Unable to Edit", message: refusal)
+            return
+        }
         isWriting = true
         textView.isEditable = true
         // No automatic keyboard: user taps where they want to edit
@@ -466,14 +486,35 @@ final class FileEditorController: UIViewController {
         applyBarItem()
     }
 
-    private func save() {
-        guard isDirty, !isSaving else { return }
+    /// Writes the file. `then` is told whether it was written: the page that
+    /// opened the file uses it to stay open when a save did not happen, and the
+    /// sidebar's page passes none, so its writing is the writing it always had.
+    private func save(then completion: ((Bool) -> Void)? = nil) {
+        guard isDirty, !isSaving else {
+            completion?(false)
+            return
+        }
+        // Asked on the page for the reader's benefit, while the pencil is still
+        // down; the write itself is asked again below, next to the file.
+        if let refusal = writeRefusal?() {
+            presentNotice(title: "Unable to Save", message: refusal)
+            completion?(false)
+            return
+        }
         isSaving = true
         let text = textView.text
         let url = url
+        let guardAtWrite = writeGuard
         Task { [weak self] in
             do {
                 try await Task.detached(priority: .userInitiated) {
+                    // The write's own moment. A check made on the page before
+                    // this task was scheduled is a step away from the file; this
+                    // one is adjacent to the write, and a refusal here keeps
+                    // what was typed on screen.
+                    if let refusal = guardAtWrite?() {
+                        throw WriteRefused(sentence: refusal)
+                    }
                     try ProjectFileContent.write(text, to: url)
                 }.value
                 guard let self else { return }
@@ -484,10 +525,12 @@ final class FileEditorController: UIViewController {
                 stopEditing()
                 onSaved?()
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
+                completion?(true)
             } catch {
                 guard let self else { return }
                 isSaving = false
                 presentNotice(title: "Unable to Save", message: error.readableMessage)
+                completion?(false)
             }
         }
     }
@@ -512,8 +555,19 @@ final class FileEditorController: UIViewController {
             context.addAction(title: "Save", attribute: .accent) {
                 context.dispose { [weak self] in
                     guard let self else { return }
-                    save()
-                    dismiss(animated: true)
+                    // A page that opened the file with a guard closes only once
+                    // the write happened: a refused or failed save keeps the
+                    // sheet, and what was typed in it. The sidebar, which has
+                    // no guard, closes at once as it always did.
+                    guard writeRefusal != nil || writeGuard != nil else {
+                        save()
+                        dismiss(animated: true)
+                        return
+                    }
+                    save { [weak self] saved in
+                        guard saved else { return }
+                        self?.dismiss(animated: true)
+                    }
                 }
             }
         }
@@ -660,4 +714,13 @@ extension FileEditorController: UISearchBarDelegate {
         searchBar.setImage(UIImage(systemName: iconName), for: .bookmark, state: .normal)
         performSearch()
     }
+}
+
+/// A save the page that opened the file refused at the moment of writing,
+/// carried out of the writer's task so the page can show the sentence and keep
+/// what was typed.
+private struct WriteRefused: LocalizedError, Sendable {
+    let sentence: String
+
+    var errorDescription: String? { sentence }
 }

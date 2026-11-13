@@ -71,6 +71,7 @@ sources=(
     "$root/Tests/SessionHost/GitBranchChecks.swift"
     "$root/Tests/SessionHost/ToolchainEndToEnd.swift"
     "$root/Tests/SessionHost/ToolchainPruneChecks.swift"
+    "$root/Tests/SessionHost/TerminalChecks.swift"
     "$root/Tests/SessionHost/main.swift"
 )
 

@@ -168,13 +168,31 @@ public struct TaskEventBatch: Codable, Sendable, Equatable {
     public var state: TaskState
     public var lastSeq: EventSeq
     public var finished: Bool
+    /// The newest event the task had when this batch was taken — the end of
+    /// the history a reader catching up has to reach — or nil, as it is for
+    /// every task whose answer nobody has to catch up on.
+    ///
+    /// A terminal keeps writing while it is read, so its batches never come
+    /// back empty on their own: a reader would not know when it had finished
+    /// replaying. The first batch names that end (`snapshotLastSeq`), and the
+    /// reader replays up to it and no further; `lastSeq` stays the paging
+    /// cursor, which goes on rising with the shell's output.
+    public var snapshotLastSeq: EventSeq?
 
-    public init(taskID: TaskID, events: [TaskEvent], state: TaskState, lastSeq: EventSeq, finished: Bool) {
+    public init(
+        taskID: TaskID,
+        events: [TaskEvent],
+        state: TaskState,
+        lastSeq: EventSeq,
+        finished: Bool,
+        snapshotLastSeq: EventSeq? = nil,
+    ) {
         self.taskID = taskID
         self.events = events
         self.state = state
         self.lastSeq = lastSeq
         self.finished = finished
+        self.snapshotLastSeq = snapshotLastSeq
     }
 }
 

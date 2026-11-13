@@ -116,8 +116,8 @@ final class ChatRuntime {
         for record in records.values where isUntouched(record) && record.summary.id != selected {
             try? await removeRecord(record.summary.id)
             if record.summary.projectName == nil {
-                // the folder the menu's Open in iGhostVT or Fila made, if
-                // it was left empty; rmdir takes nothing else
+                // the folder the menu's Open Terminal or Browse Files made,
+                // if it was left empty; rmdir takes nothing else
                 rmdir(DataFolder.app.root.appendingPathComponent("Temporary/" + record.summary.id.uuidString).path)
             }
         }

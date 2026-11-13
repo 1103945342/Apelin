@@ -395,30 +395,18 @@ final class SidebarFilesController: UIViewController {
         }
     }
 
-    /// The row in iGhostVT: a folder opens there as the session's directory, a
-    /// file opens the folder that holds it — which is where the file is to be
-    /// worked on. The scheme is the one the chat menu already opens projects
-    /// with, so both places reach the terminal the same way.
-    private func openInGhostVT(_ file: ProjectFile) {
+    /// The row in the terminal: a folder opens there as the session's working
+    /// directory, a file opens the folder that holds it — which is where the
+    /// file is to be worked on. The browser's own root goes along as the
+    /// project root, so the terminal names the workspace the row belongs to.
+    private func openTerminal(_ file: ProjectFile) {
         guard let files else { return }
-        let directory = file.isDirectory ? file.relativePath : parent(of: file.relativePath)
-        let path = files.url(of: directory).path
-        var components = URLComponents()
-        components.scheme = "ighostvt"
-        components.host = "new"
-        components.queryItems = [
-            URLQueryItem(name: "directory", value: CanonicalPath.resolve(path) ?? path),
-        ]
-        guard let url = components.url else { return }
-        UIApplication.shared.open(url) { [weak self] opened in
-            guard !opened, let self else { return }
-            presentNotice(
-                title: "Unable to Open iGhostVT",
-                message: String(
-                    localized: "Install or update the required app with your preferred package manager, then try again.",
-                ),
-            )
-        }
+        let directory = directory(for: file)
+        TerminalPresenter.open(
+            directory: files.url(of: directory),
+            projectRoot: files.root,
+            from: self,
+        )
     }
 
     /// The file — or the folder — handed to another app, or kept somewhere
@@ -536,13 +524,13 @@ extension SidebarFilesController: UITableViewDelegate {
                 })
             }
             // What leaves the folder: the file itself to another app, and the
-            // folder it sits in to a terminal.
+            // folder it sits in to the built-in terminal.
             actions.append(UIMenu(options: .displayInline, children: [
                 UIAction(
-                    title: String(localized: "Open in iGhostVT"),
+                    title: String(localized: "Open Terminal"),
                     image: UIImage(systemName: "terminal"),
                 ) { [weak self] _ in
-                    self?.openInGhostVT(file)
+                    self?.openTerminal(file)
                 },
                 UIAction(
                     title: String(localized: "Share…"),

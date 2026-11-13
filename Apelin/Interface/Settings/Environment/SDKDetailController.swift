@@ -25,12 +25,15 @@ final class SDKDetailController: TableController {
 
     private let record: SDKRecord
 
-    /// `…` in the bar: Export, anchoring the share sheet that follows.
+    /// `…` in the bar: Browse Files (the SDK's own folder, in the app's file
+    /// browser), Export, and Remove — which is the only way the folder goes,
+    /// so its record goes with it.
     @objc private dynamic lazy var moreItem: UIBarButtonItem = .init(
         image: UIImage(systemName: "ellipsis"),
         menu: UIMenu(children: [
-            UIAction(title: String(localized: "Show in Fila"), image: UIImage(systemName: "folder")) { [weak self] _ in
-                self?.revealInFila(path: self?.record.path ?? "")
+            UIAction(title: String(localized: "Browse Files"), image: UIImage(systemName: "folder")) { [weak self] _ in
+                guard let self else { return }
+                browseFiles(directory: record.path)
             },
             UIAction(
                 title: String(localized: "Export…"),

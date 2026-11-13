@@ -5,8 +5,9 @@ import UIKit
 
 /// The chat page's `…` menu: Rename… and Compact… for the conversation,
 /// then its project's actions (`ProjectActions`). General Chat has no
-/// project, so after them come Open in iGhostVT and Open in Fila for the
-/// conversation's own working folder, `Temporary/<conversation>/`. Last,
+/// project, so after them come Open Terminal and Browse Files for the
+/// conversation's own working folder, `Temporary/<conversation>/`, which
+/// stands in for the project root a project's chat hands over. Last,
 /// in a group of its own, Delete Conversation…, which `onDelete` asks
 /// about and carries out as the sidebar's Delete does (`ChatDeletion`).
 @MainActor
@@ -27,7 +28,10 @@ enum ChatActions {
         let deletion = UIMenu(options: .displayInline, children: [deleteAction(for: chat.id, onDelete: onDelete)])
         guard let projectName = chat.projectName else {
             let folders = ProjectActions.folderActions(from: presenter, failureTitle: "Unable to Open Folder") {
-                try ProjectActions.temporaryDirectory(of: chat.id)
+                ProjectActions.FolderTarget(
+                    directory: try ProjectActions.temporaryDirectory(of: chat.id),
+                    projectRoot: nil,
+                )
             }
             completion([
                 UIMenu(options: .displayInline, children: chatActions),

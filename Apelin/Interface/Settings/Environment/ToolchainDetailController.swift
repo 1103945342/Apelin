@@ -51,8 +51,9 @@ final class ToolchainDetailController: TableController {
 
     @objc private dynamic func menuItems() -> [UIMenuElement] {
         var items: [UIMenuElement] = [
-            UIAction(title: String(localized: "Show in Fila"), image: UIImage(systemName: "folder")) { [weak self] _ in
-                self?.revealInFila(path: self?.record.path ?? "")
+            UIAction(title: String(localized: "Browse Files"), image: UIImage(systemName: "folder")) { [weak self] _ in
+                guard let self else { return }
+                browseFiles(directory: record.path)
             },
             UIAction(
                 title: String(localized: "Export…"),

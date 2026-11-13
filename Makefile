@@ -72,6 +72,7 @@ SHELL_DELETES_CHECK := $(ROOT_DIR)/Scripts/check-shell-deletes.py
 PERSISTED_READS_CHECK := $(ROOT_DIR)/Scripts/check-persisted-reads.py
 OBJC_DATA_CHECK := $(ROOT_DIR)/Scripts/check-objc-data.py
 CHAT_PAIRING_CHECK := $(ROOT_DIR)/Scripts/check-chat-pairing.py
+RETIRED_APPS_CHECK := $(ROOT_DIR)/Scripts/check-retired-apps.py
 SYMBOL_CHECK        := $(ROOT_DIR)/Scripts/check-symbol-availability.py
 RPATH_CHECK         := $(ROOT_DIR)/Scripts/check-rpath-dependencies.py
 # The agent's system prompt is Packages/ApelinAgent/Prompts/*.md, compiled in
@@ -261,7 +262,7 @@ check:
 	@for script in "$(DEB_PACKAGER)" "$(DEVICE_INSTALLER)" "$(VERSION_APPLIER)" "$(XCODEBUILD_WRAPPER)" \
 		"$(LICENSE_COLLECTOR)" "$(ACCESSIBILITY_CHECK)" "$(STALE_STRINGS_CHECK)" "$(FORMAT_STRINGS_CHECK)" "$(TRANSLATIONS_CHECK)" \
 		"$(CATALOG_KEYS_CHECK)" "$(SHELL_DELETES_CHECK)" "$(PERSISTED_READS_CHECK)" "$(OBJC_DATA_CHECK)" \
-		"$(CHAT_PAIRING_CHECK)" \
+		"$(CHAT_PAIRING_CHECK)" "$(RETIRED_APPS_CHECK)" \
 		"$(SYMBOL_CHECK)" "$(RPATH_CHECK)" "$(PROMPTS_EMBEDDER)" "$(SCHEMA_FIXTURES_CHECK)" "$(TEMPLATES_CHECK)" \
 		"$(EXTENSIONS_PACKAGER)" "$(AGENT_TOOLS_BUILDER)" "$(DEVICE_TOOL)"; do \
 		test -x "$$script" || { echo "error: $${script#$(ROOT_DIR)/} is not executable" >&2; exit 66; }; \
@@ -308,6 +309,10 @@ check:
 		|| { echo "error: control must recommend exactly: $(DEV_RECOMMENDS)" >&2; exit 65; }
 	@! grep -nE '^(Pre-Depends|Depends):.*wiki\.qaq\.apelin\.|^(Recommends|Suggests):.*agent-tools' "$(CONTROL_TEMPLATE)" \
 		|| { echo "error: the IDE depends on an extension or recommends an agent tool (above)" >&2; exit 65; }
+	@# The terminal and the file browser are the app's own pages: no source
+	@# opens a Fila or iGhostVT URL or queries one, and the package depends on
+	@# neither. Attribution in a comment names no URL and passes.
+	@python3 "$(RETIRED_APPS_CHECK)" "$(ROOT_DIR)"
 	@for extension in $(DEV_EXTENSIONS); do \
 		test -f "$(ROOT_DIR)/Extensions/Development/$$extension/manifest.json" \
 			|| { echo "error: control recommends $$extension, which Extensions/Development does not have" >&2; exit 66; }; \
@@ -443,6 +448,8 @@ check:
 # out.
 harness:
 	@bash "$(ROOT_DIR)/Scripts/test-application-install.sh"
+	@bash "$(ROOT_DIR)/Scripts/test-file-browser.sh"
+	@bash "$(ROOT_DIR)/Tests/TerminalUI/run.sh"
 	@python3 -I -B "$(ROOT_DIR)/Tests/ToolchainAudit/test_inventory.py"
 	@harness_dir="$$(mktemp -d /private/tmp/apelin-harness.XXXXXX)"; \
 	trap 'rm -rf -- "$${harness_dir:?}"' EXIT; \

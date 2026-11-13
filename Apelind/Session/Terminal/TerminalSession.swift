@@ -33,6 +33,10 @@ final class TerminalSession: @unchecked Sendable {
         var identity: SpawnIdentity?
         var workingDirectory: String
         var fallbackDirectory: String
+        /// The folder was chosen for this terminal (a project, a folder inside
+        /// one, or one the app picked): a shell that cannot enter it fails,
+        /// rather than quietly starting in `fallbackDirectory`.
+        var requiresDirectory: Bool = false
         var columns: UInt16
         var rows: UInt16
     }
@@ -47,7 +51,11 @@ final class TerminalSession: @unchecked Sendable {
             case let .child(step, code):
                 let what = step == TerminalSession.stepExec
                     ? "starting the shell"
-                    : step == TerminalSession.stepTTY ? "handing the terminal to mobile" : "dropping to mobile"
+                    : step == TerminalSession.stepTTY
+                    ? "handing the terminal to mobile"
+                    : step == TerminalSession.stepDirectory
+                    ? "entering the terminal's folder"
+                    : "dropping to mobile"
                 return "\(what): \(String(cString: strerror(code)))"
             }
         }
@@ -56,6 +64,7 @@ final class TerminalSession: @unchecked Sendable {
     static let stepTTY: Int32 = 1
     static let stepDrop: Int32 = 2
     static let stepExec: Int32 = 3
+    static let stepDirectory: Int32 = 4
     /// Output is delivered in pieces of at most this, joined from reads already waiting.
     static let deliveryBytes = 16 * 1024
 
@@ -65,6 +74,13 @@ final class TerminalSession: @unchecked Sendable {
     private var readSource: DispatchSourceRead?
     private var exitSource: DispatchSourceProcess?
     private var peers: [Int32: DispatchSourceRead] = [:]
+    /// The peers that carry the user's typing only: the app reads the shell's
+    /// output as numbered events, and a second live copy on a socket would let
+    /// the two disagree.
+    private var inputOnlyPeers: Set<Int32> = []
+    /// The pty is not being read while the consumer is behind: the kernel's
+    /// buffer holds the output, then the shell blocks on its next write.
+    private var outputPaused = false
     private var onOutput: ((Data) -> Void)?
     @objc dynamic private var onExit: ((Int32) -> Void)?
     @objc dynamic private var alive = true
@@ -93,6 +109,7 @@ final class TerminalSession: @unchecked Sendable {
         var size = winsize(ws_row: launch.rows, ws_col: launch.columns, ws_xpixel: 0, ws_ypixel: 0)
         var groups: [gid_t] = launch.identity.map { [$0.gid] } ?? []
         let identity = launch.identity
+        let requiresDirectory = launch.requiresDirectory
 
         var reportPipe: [Int32] = [-1, -1]
         guard pipe(&reportPipe) == 0 else { throw Failure.system("pipe", errno) }
@@ -146,6 +163,11 @@ final class TerminalSession: @unchecked Sendable {
                 }
             }
             if chdir(directory) != 0 {
+                let failure = errno
+                if requiresDirectory {
+                    errno = failure
+                    fail(stepDirectory)
+                }
                 _ = chdir(fallback)
             }
             signal(SIGPIPE, SIG_DFL)
@@ -202,7 +224,7 @@ final class TerminalSession: @unchecked Sendable {
             self.onOutput = onOutput
             self.onExit = onExit
             let source = DispatchSource.makeReadSource(fileDescriptor: master, queue: queue)
-            source.setEventHandler { [weak self] in self?.drain() }
+            source.setEventHandler { [weak self] in self?.drain(final: false) }
             readSource = source
             source.activate()
             let exit = DispatchSource.makeProcessSource(identifier: pid, eventMask: .exit, queue: queue)
@@ -227,8 +249,9 @@ final class TerminalSession: @unchecked Sendable {
     }
 
     /// One end of a new socket for the app: what it writes is typed into
-    /// the terminal, and the shell's output is copied to it from now on.
-    func attachPeer() throws -> Int32 {
+    /// the terminal, and — unless it is `inputOnly` — the shell's output is
+    /// copied to it from now on.
+    func attachPeer(inputOnly: Bool = false) throws -> Int32 {
         var pair: [Int32] = [-1, -1]
         guard socketpair(AF_UNIX, SOCK_STREAM, 0, &pair) == 0 else { throw Failure.system("socketpair", errno) }
         for descriptor in pair {
@@ -243,9 +266,31 @@ final class TerminalSession: @unchecked Sendable {
             source.setEventHandler { [weak self] in self?.readPeer(local) }
             source.setCancelHandler { close(local) }
             peers[local] = source
+            if inputOnly {
+                inputOnlyPeers.insert(local)
+            }
             source.activate()
         }
         return pair[1]
+    }
+
+    /// Stops reading the pty, and starts again: the consumer of the shell's
+    /// output is behind, so the kernel's buffer holds it and the shell waits on
+    /// its next write. Nothing is dropped.
+    func pauseOutput() {
+        queue.async { [self] in
+            guard alive, !outputPaused, let source = readSource else { return }
+            outputPaused = true
+            source.suspend()
+        }
+    }
+
+    func resumeOutput() {
+        queue.async { [self] in
+            guard outputPaused else { return }
+            outputPaused = false
+            readSource?.resume()
+        }
     }
 
     /// SIGHUP to the shell's process group, SIGKILL after `grace`.
@@ -264,28 +309,46 @@ final class TerminalSession: @unchecked Sendable {
 
     // MARK: Private (on the queue)
 
-    @objc dynamic private func drain() {
-        var chunk = Data()
+    /// Reads what the pty holds, in pieces of at most `deliveryBytes`. With
+    /// `final` it reads to the end instead: the shell has exited, nothing more
+    /// can be written, and one piece would leave the rest of a flood — or of
+    /// what waited while the pty was paused — behind.
+    @objc dynamic private func drain(final: Bool) {
         var buffer = [UInt8](repeating: 0, count: 4096)
-        while chunk.count < Self.deliveryBytes {
-            let count = buffer.withUnsafeMutableBytes { read(master, $0.baseAddress, $0.count) }
-            if count > 0 {
-                chunk.append(contentsOf: buffer[0 ..< count])
-                continue
+        var chunk = Data()
+        while true {
+            var ended = false
+            while final || chunk.count < Self.deliveryBytes {
+                let count = buffer.withUnsafeMutableBytes { read(master, $0.baseAddress, $0.count) }
+                if count > 0 {
+                    chunk.append(contentsOf: buffer[0 ..< count])
+                    continue
+                }
+                if count < 0, errno == EINTR {
+                    continue
+                }
+                if count == 0 || (count < 0 && errno != EAGAIN) {
+                    // EOF or EIO: the slave side is gone.
+                    readSource?.cancel()
+                    readSource = nil
+                    ended = true
+                }
+                break
             }
-            if count < 0, errno == EINTR {
-                continue
+            guard !chunk.isEmpty else { return }
+            deliver(chunk)
+            chunk = Data()
+            if !final || ended {
+                return
             }
-            if count == 0 || (count < 0 && errno != EAGAIN) {
-                // EOF or EIO: the slave side is gone.
-                readSource?.cancel()
-                readSource = nil
-            }
-            break
         }
-        guard !chunk.isEmpty else { return }
+    }
+
+    /// Hands one piece of the shell's output to the consumer and to the peers
+    /// that asked for live output.
+    private func deliver(_ chunk: Data) {
         onOutput?(chunk)
-        for (peer, _) in peers {
+        for (peer, _) in peers where !inputOnlyPeers.contains(peer) {
             chunk.withUnsafeBytes { bytes in
                 var sent = 0
                 while sent < bytes.count {
@@ -308,6 +371,7 @@ final class TerminalSession: @unchecked Sendable {
         if count > 0 {
             writeAll(Data(buffer[0 ..< count]))
         } else if count == 0 || (errno != EAGAIN && errno != EINTR) {
+            inputOnlyPeers.remove(peer)
             peers.removeValue(forKey: peer)?.cancel()
         }
     }
@@ -345,13 +409,22 @@ final class TerminalSession: @unchecked Sendable {
         let result = waitpid(pid, &status, WNOHANG)
         if result == pid {
             alive = false
-            drain()
+            // A suspended source must be resumed before it is cancelled and
+            // released, or the cancellation never runs.
+            if outputPaused {
+                outputPaused = false
+                readSource?.resume()
+            }
+            // Everything the pty still holds, not one piece of it: what
+            // waited while the pty was paused is part of what the shell wrote.
+            drain(final: true)
             readSource?.cancel()
             readSource = nil
             exitSource?.cancel()
             exitSource = nil
             peers.values.forEach { $0.cancel() }
             peers.removeAll()
+            inputOnlyPeers.removeAll()
             close(master)
             onExit?(status)
             onExit = nil

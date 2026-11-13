@@ -7,6 +7,14 @@ import UIKit
 /// identities; links are made from their canonical path, never an install prefix.
 @MainActor
 enum ProjectActions {
+    /// Where a folder action opens: the directory to show, and the project
+    /// whose root it sits under — nil for a conversation's temporary folder,
+    /// which belongs to no project and is not in any project's folder.
+    struct FolderTarget {
+        let directory: String
+        let projectRoot: String?
+    }
+
     /// `chatActions` form the first group;
     /// `distributionBlocker` says why a project with no build description
     /// or script (`ProjectBuildMethod`), which has nothing to package,
@@ -22,7 +30,8 @@ enum ProjectActions {
         onPrepareDistribution: ((String) -> Void)? = nil,
     ) -> UIMenu {
         let folders = folderActions(from: presenter, failureTitle: "Unable to Open Project") {
-            try directory(named: projectName)
+            let path = try directory(named: projectName)
+            return FolderTarget(directory: path, projectRoot: path)
         }
         let renameAction = UIAction(
             title: String(localized: "Rename…"),
@@ -61,29 +70,40 @@ enum ProjectActions {
         ])
     }
 
-    /// Open in iGhostVT and Open in Fila, for the folder `folder` answers
-    /// when one is picked; a folder it cannot answer is `failureTitle`'s
-    /// notice. `UIKit.UIAction` is spelled out in types here: ApelinProtocol
-    /// has a `UIAction` of its own, the wire's.
+    /// Open Terminal and Browse Files, for the folder `folder` answers when
+    /// one is picked; a folder it cannot answer is `failureTitle`'s notice.
+    /// Both pages are Apelin's own — the terminal (`TerminalPresenter`) and
+    /// the file browser (`FileBrowserPresenter`) — so neither action needs
+    /// another app installed. `UIKit.UIAction` is spelled out in types here:
+    /// ApelinProtocol has a `UIAction` of its own, the wire's.
     static func folderActions(
         from presenter: UIViewController,
         failureTitle: String.LocalizationValue,
-        folder: @escaping () throws -> String,
+        folder: @escaping () throws -> FolderTarget,
     ) -> [UIKit.UIAction] {
-        let openFolder = { [weak presenter] (scheme: String) in
+        let resolve = { [weak presenter] (open: (URL, URL?, UIViewController) -> Void) in
             guard let presenter else { return }
             do {
-                try open(folder(), in: scheme, from: presenter)
+                let target = try folder()
+                open(
+                    URL(fileURLWithPath: target.directory, isDirectory: true),
+                    target.projectRoot.map { URL(fileURLWithPath: $0, isDirectory: true) },
+                    presenter,
+                )
             } catch {
                 presenter.presentNotice(title: failureTitle, message: error.readableMessage)
             }
         }
         return [
-            UIAction(title: String(localized: "Open in iGhostVT"), image: UIImage(systemName: "terminal")) { _ in
-                openFolder("ighostvt")
+            UIAction(title: String(localized: "Open Terminal"), image: UIImage(systemName: "terminal")) { _ in
+                resolve { directory, root, from in
+                    TerminalPresenter.open(directory: directory, projectRoot: root, from: from)
+                }
             },
-            UIAction(title: String(localized: "Open in Fila"), image: UIImage(systemName: "folder")) { _ in
-                openFolder("fila")
+            UIAction(title: String(localized: "Browse Files"), image: UIImage(systemName: "folder")) { _ in
+                resolve { directory, root, from in
+                    FileBrowserPresenter.open(directory: directory, projectRoot: root, from: from)
+                }
             },
         ]
     }
@@ -131,9 +151,11 @@ enum ProjectActions {
     }
 
     /// A temporary conversation's working folder, `Temporary/<id>/`, made
-    /// when it is not there yet: what a General Chat opens in iGhostVT and
-    /// Fila. Made level by level as `ChatRuntime` makes it, never through a
-    /// link, and the one real directory directly inside `Temporary/`.
+    /// when it is not there yet: what a General Chat opens in the terminal
+    /// and the file browser. Made level by level as `ChatRuntime` makes it,
+    /// never through a link, and the one real directory directly inside
+    /// `Temporary/` — never the user's home, which General Chat has no
+    /// project folder to stand for.
     static func temporaryDirectory(of id: UUID) throws -> String {
         let folder = DataFolder.app.root.appendingPathComponent("Temporary/" + id.uuidString)
         guard (try? DataFolder.app.makeLevels(to: folder)) != nil,
@@ -144,21 +166,5 @@ enum ProjectActions {
             throw ApelinError(.notFound, String(localized: "The chat’s folder is not available."))
         }
         return path
-    }
-
-    /// `path` in iGhostVT (`ighostvt://new?directory=`, a directory and no
-    /// command) or Fila (`fila://open?path=&tab=new`).
-    private static func open(_ path: String, in scheme: String, from presenter: UIViewController) {
-        var components = URLComponents()
-        components.scheme = scheme
-        components.host = scheme == "fila" ? "open" : "new"
-        components.queryItems = scheme == "fila"
-            ? [URLQueryItem(name: "path", value: path), URLQueryItem(name: "tab", value: "new")]
-            : [URLQueryItem(name: "directory", value: path)]
-        guard let url = components.url else { return }
-        UIApplication.shared.open(url) { [weak presenter] opened in
-            guard !opened, let presenter else { return }
-            presenter.presentNotice(title: "Unable to Open App", message: String(localized: "Install or update the required app with your preferred package manager, then try again."))
-        }
     }
 }
