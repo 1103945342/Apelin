@@ -1358,8 +1358,14 @@ public actor AgentSession {
     /// Answers a waiting approval. The host relays this from the app after
     /// its own check, and records digest approvals in its ledger itself.
     /// `answer` goes with an approval of a question (`detail.question`).
+    /// A gate's refusal is rethrown as a message: the worker would send the
+    /// bare case name, which is what an alert read as "answerDoesNotFit".
     public func approve(requestID: String, decision: ApprovalDecision, answer: AgentQuestionAnswer? = nil) async throws {
-        try await gate.resolve(requestID, decision: decision, answer: answer)
+        do {
+            try await gate.resolve(requestID, decision: decision, answer: answer)
+        } catch let error as ApprovalError {
+            throw ApelinError(.badRequest, error.errorDescription ?? String(describing: error))
+        }
     }
 
     public var pendingApprovals: [ApprovalRequest] {

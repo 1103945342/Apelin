@@ -72,4 +72,27 @@ public enum AgentQuestionRules {
         let given = answer.selected.count + (other.isEmpty ? 0 : 1)
         return question.multiple ? given >= 1 : given == 1
     }
+
+    /// `answer` as `question` takes it, so a card sends what the gate will
+    /// keep: labels that are not its options and repeats of one go, Other is
+    /// cut to its limit, and a question that takes one option ends with one
+    /// of the two — what the reader wrote standing in place of the option
+    /// they had tapped, since a card reaches both (tap an option, then
+    /// Other…) and `accepts` refuses that. Nothing is invented: an answer
+    /// with neither still has neither.
+    public static func fitting(_ answer: AgentQuestionAnswer, to question: AgentQuestion) -> AgentQuestionAnswer {
+        let labels = Set(question.options.map(\.label))
+        var seen: Set<String> = []
+        var selected = answer.selected.filter { labels.contains($0) && seen.insert($0).inserted }
+        let written = answer.other?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let other = String(written.prefix(maximumOtherLength))
+        if !question.multiple {
+            if !other.isEmpty {
+                selected = []
+            } else {
+                selected = Array(selected.prefix(1))
+            }
+        }
+        return AgentQuestionAnswer(selected: selected, other: other.isEmpty ? nil : other)
+    }
 }

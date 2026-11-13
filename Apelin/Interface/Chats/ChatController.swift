@@ -795,8 +795,13 @@ final class ChatController: UIViewController {
     }
 
     /// Sends the reader's answer to the agent's question, or that they
-    /// skipped it (nil).
+    /// skipped it (nil). The answer goes as the question takes it
+    /// (`AgentQuestionRules.fitting`), so a card that reached one the gate
+    /// refuses still sends what the reader meant instead of an error.
     private func answer(_ request: ChatMessage, _ answer: AgentQuestionAnswer?, in chatID: UUID) async {
+        let answer = answer.map { given in
+            request.question.map { AgentQuestionRules.fitting(given, to: $0) } ?? given
+        }
         do {
             try await runtime.approve(
                 request.id,

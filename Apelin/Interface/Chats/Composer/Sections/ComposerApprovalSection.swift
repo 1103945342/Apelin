@@ -250,7 +250,10 @@ final class ComposerApprovalSection: ComposerSectionView {
 
     private func answerOther() {
         guard let request, let question = request.question else { return }
-        onAnswerOther?(request, chosenLabels(of: question))
+        // A question that takes one option is answered by what the reader
+        // writes: sending the option they had tapped beside it is an answer
+        // the gate refuses, so the card would fail to send anything.
+        onAnswerOther?(request, question.multiple ? chosenLabels(of: question) : [])
     }
 
     private func decide(_ decision: ApprovalDecision) {

@@ -2127,7 +2127,14 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   (`AgentQuestionRules.accepts`: labels of its options, each once,
   something given, one choice unless `multiple`), and leaves the question
   waiting otherwise; the host matches nothing to it, since the answer
-  reaches only the model, as the call's result. Owner's decision
+  reaches only the model, as the call's result. The card sends what the
+  gate takes (`AgentQuestionRules.fitting`, 2026-11-13): a card can reach
+  an option tapped and then Other… written, which `accepts` refuses, so
+  what the reader wrote stands in place of the option on a question that
+  takes one, labels that are not its options and repeats go, and Other is
+  cut to its limit — the alert no longer reads "answerDoesNotFit" for the
+  card's own doing, and a gate that does refuse reaches it as its sentence
+  (`AgentSession.approve` rethrows it as an `ApelinError`). Owner's decision
   (2026-11-05): the call blocks rather than ending the turn, so the answer
   is the same turn's; it rides the approval path so a question survives a
   closed app, a reconnect and a new attach, and the banner says "Answer
