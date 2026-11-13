@@ -230,6 +230,21 @@ public final class BuildPipeline: @unchecked Sendable {
         "\(arch.rawValue)-apple-ios\(project.deploymentTarget)"
     }
 
+    /// The C++ importer sees the same declared standard and preprocessor flags
+    /// as native C++ compilation. Settings include transitive Swift modules.
+    private func cxxImportFlags(_ settings: CXXInteropSettings) throws -> [String] {
+        guard settings.enabled else { return [] }
+        var flags = ["-cxx-interoperability-mode=default"]
+        flags += (configuration.cFlags ?? []).flatMap { ["-Xcc", $0] }
+        flags += ["-Xcc", "-std=" + (settings.standard ?? "c++17")]
+        for path in settings.headerSearchPaths {
+            let resolved = try ProjectFiles.resolve(path, in: inputs.projectRoot)
+            flags += ["-I", resolved, "-Xcc", "-I" + resolved]
+        }
+        flags += (configuration.cxxFlags ?? []).flatMap { ["-Xcc", $0] }
+        return flags
+    }
+
     // MARK: Swift modules a project carries
 
     /// A module the project's sources make, built for one architecture: the
@@ -319,9 +334,9 @@ public final class BuildPipeline: @unchecked Sendable {
         return order
     }
 
-    /// Builds each declared module for `arch`, once per build. The project's
-    /// defines are not passed: a package's own configuration is its own, and
-    /// `APELIN_BUILD_ID` is not something it reads.
+    /// Builds each declared module for `arch`, once per build. Plain Swift
+    /// modules keep their own configuration. A C++ interop module also imports
+    /// the project's native defines so macro-selected C++ layouts agree.
     private func buildModules(for arch: Architecture) throws -> [String: BuiltModule] {
         if let built = moduleCache[arch] {
             return built
@@ -350,6 +365,13 @@ public final class BuildPipeline: @unchecked Sendable {
                 }
                 argv += ["-I", found.include]
             }
+            let interop = try project.cxxInteropSettings(for: module)
+            argv += try cxxImportFlags(interop)
+            if interop.enabled {
+                // A C++ declaration must have the same macro-selected layout
+                // when imported here and when compiled in a native product.
+                argv += defines.flatMap { ["-Xcc", "-D\($0.0)=\($0.1)"] }
+            }
             argv += ["-emit-module", "-emit-module-path", directory + "/\(module.name).swiftmodule"]
             argv += sources.map(\.relative)
             argv += ["-o", object]
@@ -371,6 +393,7 @@ public final class BuildPipeline: @unchecked Sendable {
 
     private func compile(_ product: ProjectDocument.Product, flags: [String]) throws {
         let plan = try ProductSourcePlan(paths: sources(of: product).map(\.relative))
+        let interop = try project.cxxInteropSettings(for: product)
         let support = try support(for: product)
         let includes = try (product.headerSearchPaths ?? [])
             .map { try ProjectFiles.resolve($0, in: inputs.projectRoot) } + support.includes
@@ -380,6 +403,19 @@ public final class BuildPipeline: @unchecked Sendable {
         if let path = product.bridgingHeader {
             guard plan.usesSwift else {
                 throw BuildFailure("\(product.id): bridgingHeader requires Swift sources in this product")
+            }
+            // Swift's C++ importer and a bridging header do not coexist here:
+            // with -cxx-interoperability-mode on, the bridging header is not
+            // imported at all and every declaration in it disappears silently
+            // (measured on CLT 15.3 / Swift 5.10, with and without -Xcc -std).
+            // Refuse rather than hand back a Swift file that cannot see it.
+            if interop.enabled {
+                throw BuildFailure(
+                    "\(product.id): bridgingHeader cannot be combined with C++ interop: Swift's importer drops the "
+                        + "bridging header when -cxx-interoperability-mode is on, so its declarations would vanish. "
+                        + "Declare those C declarations in a module of a module.modulemap under headerSearchPaths "
+                        + "and import that module instead",
+                )
             }
             _ = try ProjectFiles.read(path, in: inputs.projectRoot)
             bridge = try ProjectFiles.resolve(path, in: inputs.projectRoot)
@@ -411,8 +447,11 @@ public final class BuildPipeline: @unchecked Sendable {
                 argv += ["-D", bootstrapDefine, "-D", configurationDefine]
                 argv += includes.flatMap { ["-I", $0, "-Xcc", "-I" + $0] }
                 argv += frameworks.flatMap { ["-F", $0] }
+                argv += try cxxImportFlags(interop)
                 if let bridge {
                     argv += ["-import-objc-header", bridge]
+                }
+                if bridge != nil || interop.enabled {
                     argv += defines.flatMap { ["-Xcc", "-D\($0.0)=\($0.1)"] }
                     argv += ["-Xcc", "-DAPELIN_PRODUCT_NAME=\"\(product.name)\""]
                 }
@@ -452,7 +491,14 @@ public final class BuildPipeline: @unchecked Sendable {
                 }
                 argv += configuration.cFlags ?? []
                 if source.language.isCXX {
-                    if let standard = product.cxxStandard { argv.append("-std=" + standard) }
+                    if let standard = interop.enabled ? interop.standard : product.cxxStandard {
+                        argv.append("-std=" + standard)
+                    }
+                    if interop.enabled {
+                        argv += try interop.headerSearchPaths.map {
+                            "-I" + (try ProjectFiles.resolve($0, in: inputs.projectRoot))
+                        }
+                    }
                     argv += configuration.cxxFlags ?? []
                 }
                 argv += flags
@@ -471,6 +517,7 @@ public final class BuildPipeline: @unchecked Sendable {
             throw BuildFailure("\(product.id): link before compile")
         }
         let support = try support(for: product)
+        let interop = try project.cxxInteropSettings(for: product)
         let usesSwift = plan.usesSwift || !(product.swiftModules ?? []).isEmpty
         let libraries = try (product.librarySearchPaths ?? [])
             .map { try ProjectFiles.resolve($0, in: inputs.projectRoot) } + support.libraryDirectories
@@ -513,7 +560,7 @@ public final class BuildPipeline: @unchecked Sendable {
             argv += (product.frameworks ?? []).flatMap { ["-framework", $0] }
             argv += (product.weakFrameworks ?? []).flatMap { ["-Xlinker", "-weak_framework", "-Xlinker", $0] }
             argv += (product.libraries ?? []).map { "-l" + $0 }
-            if plan.usesCXX, !(product.libraries ?? []).contains("c++") {
+            if plan.usesCXX || interop.enabled, !(product.libraries ?? []).contains("c++") {
                 argv.append("-lc++")
             }
             argv += configuration.linkFlags ?? []

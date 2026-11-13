@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "projectID": "6f1d2f0e-6a1c-4d1e-9a1b-2c3d4e5f6082",
+  "kind": "cli",
+  "template": {
+    "extensionID": "wiki.qaq.apelin.dev.cli",
+    "templateID": "swift",
+    "version": "0.1.2",
+    "digest": "sha256:ba1812f5d18b75f193dde0277db553e147c1f01e2f0e7f14fe1eb43907dc59ff"
+  },
+  "environment": {
+    "toolchain": {
+      "id": "clt-27.0-sample",
+      "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    "sdk": {
+      "id": "iPhoneOS27.0-00000000",
+      "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+    }
+  },
+  "language": "swift",
+  "deploymentTarget": "16.0",
+  "architectures": {
+    "rootless": [
+      "arm64"
+    ]
+  },
+  "configurations": {
+    "Debug": {
+      "optimization": "0",
+      "debugInfo": true
+    },
+    "Release": {
+      "optimization": "2",
+      "debugInfo": true
+    }
+  },
+  "products": [
+    {
+      "id": "tool",
+      "type": "executable",
+      "name": "cxxprobe",
+      "sources": [
+        "Sources/*.swift"
+      ],
+      "cxxInterop": true,
+      "swiftModules": [
+        "AlphaKit",
+        "BetaKit"
+      ]
+    }
+  ],
+  "swiftModules": [
+    {
+      "name": "AlphaKit",
+      "sources": [
+        "Vendor/AlphaKit/Sources/*.swift"
+      ],
+      "cxxInterop": true,
+      "cxxStandard": "c++17"
+    },
+    {
+      "name": "BetaKit",
+      "sources": [
+        "Vendor/BetaKit/Sources/*.swift"
+      ],
+      "cxxInterop": true,
+      "cxxStandard": "c++20"
+    }
+  ],
+  "build": {
+    "steps": [
+      {
+        "type": "compile",
+        "product": "tool"
+      },
+      {
+        "type": "link",
+        "product": "tool"
+      },
+      {
+        "type": "lipo",
+        "product": "tool"
+      },
+      {
+        "type": "sign",
+        "product": "tool",
+        "identity": "adhoc"
+      }
+    ]
+  },
+  "package": {
+    "id": "com.example.cxxprobe",
+    "name": "C++ Probe",
+    "version": "0.0.1",
+    "description": "Two standards in one closure.",
+    "author": "Apelin User",
+    "section": "Development",
+    "layout": [
+      {
+        "path": "/usr/bin/cxxprobe",
+        "product": "tool"
+      }
+    ]
+  }
+}

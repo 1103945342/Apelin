@@ -344,6 +344,20 @@ enum EmbeddedSchemas {
           "uniqueItems": true,
           "maxItems": 32,
           "items": { "$ref": "#/$defs/identifier" }
+        },
+        "cxxInterop": {
+          "description": "Swift's direct C++ interop for this module: its Swift sources import C++ declarations, not just a C facade. Off unless named. A module that names it turns interop on for every product that compiles against this one and for the modules this one imports; `false` beside an enabled module it depends on is refused.",
+          "type": "boolean"
+        },
+        "headerSearchPaths": {
+          "description": "Directories holding the C++ headers this module's Swift sources import, given to the clang importer and to the native C++ files of the products that compile against it.",
+          "type": "array",
+          "maxItems": 32,
+          "items": { "$ref": "#/$defs/relativePath" }
+        },
+        "cxxStandard": {
+          "description": "The C++ standard this module's interop closure sees: c++14 or newer, one value for the whole closure, c++17 when nothing names one.",
+          "$ref": "#/$defs/cxxStandard"
         }
       }
     },
@@ -392,8 +406,12 @@ enum EmbeddedSchemas {
         },
         "objcARC": { "type": "boolean" },
         "cxxStandard": {
-          "description": "The C++ standard for this product's .cpp, .cc, .cxx, .C and .mm sources, passed as -std=<value>.",
+          "description": "The C++ standard for this product's .cpp, .cc, .cxx, .C and .mm sources, passed as -std=<value>. With cxxInterop on it is also the importer's standard, so it must be c++14 or newer and agree with every module in the closure.",
           "$ref": "#/$defs/cxxStandard"
+        },
+        "cxxInterop": {
+          "description": "Swift's direct C++ interop for this product: its .swift sources import C++ declarations instead of going through a C facade, and the importer sees the product's headerSearchPaths, cxxFlags and defines. Off unless named; a swiftModules entry in its closure turns it on too, and then `false` here is refused. Needs Command Line Tools 15.0 (Swift 5.9) or newer.",
+          "type": "boolean"
         },
         "frameworks": {
           "type": "array",

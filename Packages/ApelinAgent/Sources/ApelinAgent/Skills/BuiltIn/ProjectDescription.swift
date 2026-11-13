@@ -74,12 +74,16 @@ extension BuiltInSkills {
           `infoPlist` and `resources` (app, appex and bundle only).
         - `bridgingHeader`: an optional project-relative C/Objective-C header
           imported by Swift with `-import-objc-header`. Put C++ behind C ABI
-          declarations or an Objective-C wrapper implemented in `.mm`; do not
-          put C++ declarations into this header. Swift and native code share
+          declarations or an Objective-C wrapper implemented in `.mm`. It
+          cannot be combined with `cxxInterop` (below): the importer stops
+          reading it when interop is on, silently. Swift and native code share
           `headerSearchPaths` and the configuration's preprocessor defines.
         - `cxxStandard`: optional, for example `c++17` or `c++20`, passed only
           to `.cpp`, `.cc`, `.cxx`, `.C` and `.mm`. `objcARC` applies only to
-          `.m` and `.mm`. C++ sources automatically link `libc++`.
+          `.m` and `.mm`. C++ sources automatically link `libc++`. With
+          `cxxInterop` on it is also the importer's standard.
+        - `cxxInterop`: optional, `true` or `false`; Swift's direct C++ interop
+          (below). Off unless named.
         - With both Swift and Objective-C/Objective-C++, the build emits
           `<name>-Swift.h` before compiling `.m`/`.mm` and adds its generated
           directory to their includes. Import it in implementations, not in
@@ -105,6 +109,56 @@ extension BuiltInSkills {
           "preferences"}`, `frameworks` with `Preferences`, and depends on
           `preferenceloader`.
 
+        ## Swift and C++
+
+        A product may import C++ directly instead of through a C facade:
+        `"cxxInterop": true`, and its Swift compiler gets
+        `-cxx-interoperability-mode=default`. The arrangement:
+
+        ```json
+        "products": [{
+          "id": "tool", "type": "executable", "name": "cxxprobe",
+          "sources": ["Sources/*.swift"], "headerSearchPaths": ["Vendor/CxxKit/include"],
+          "cxxInterop": true, "cxxStandard": "c++20", "swiftModules": ["CxxKit"]
+        }],
+        "swiftModules": [{
+          "name": "CxxKit", "sources": ["Vendor/CxxKit/Sources/*.swift"],
+          "cxxInterop": true, "headerSearchPaths": ["Vendor/CxxKit/include"], "cxxStandard": "c++20"
+        }]
+        ```
+
+        - Off unless named. A `swiftModules` entry with `cxxInterop: true`
+          turns it on for every product that names it (directly or through a
+          module that imports it) and for the modules it imports;
+          `cxxInterop: false` beside such a member is an error.
+        - A module's `headerSearchPaths` and `cxxStandard` reach the products
+          that compile against it; the product's own `headerSearchPaths` reach
+          the importer too. A module still compiles `.swift` sources only —
+          the C++ is in the headers.
+        - The closure names one `-std`: `c++17` when nobody names one, and
+          the same value for the importer and native C++. Two different
+          standards, or `c++11`/`gnu++11`, are refused. A module is compiled
+          on its own, so a module inside a closure that compiles as other than
+          `c++17` must name that standard itself.
+        - No bridging header: with interop on Swift's importer never reads
+          `bridgingHeader` and says nothing about it, so a product that names
+          one is refused (`project.cxxInterop.bridgingHeader`, also when a
+          swiftModules entry turned interop on). Put those C declarations in a
+          C module instead: a `module.modulemap` with
+          `module CAPI [extern_c] { header "API.h" export * }`, its folder in
+          `headerSearchPaths`, and `import CAPI` in Swift — beside any C++
+          module, in the same product. `[extern_c]` (or the header's own
+          `extern "C"` guards) is needed: the importer reads that header as
+          C++, and without it the C functions are exported C++-mangled and
+          fail only at link, with no diagnostic.
+        - The product's `cFlags` and `cxxFlags` reach the importer as `-Xcc`,
+          and its defines as `-Xcc -D…`; `APELIN_PRODUCT_NAME` stays a
+          product's own.
+        - It needs Command Line Tools 15.0 (Swift 5.9) or newer and a CPU
+          that can build clang modules (A13 on); `projectCheck` says which is
+          missing. The product must compile a `.swift` source or name a swift
+          module.
+
         ## swiftModules
         Swift modules built out of the project's own files, such as one target
         of a package the project vendors (each module stays Swift-only):
@@ -113,7 +167,10 @@ extension BuiltInSkills {
         "swiftModules": [
           {"name": "LogKit", "sources": ["Vendor/LogKit/Sources/**/*.swift"]},
           {"name": "NetKit", "sources": ["Vendor/NetKit/Sources/**/*.swift"],
-           "dependencies": ["LogKit"]}
+           "dependencies": ["LogKit"]},
+          {"name": "CxxKit", "sources": ["Vendor/CxxKit/Sources/**/*.swift"],
+           "cxxInterop": true, "headerSearchPaths": ["Vendor/CxxKit/include"],
+           "cxxStandard": "c++20"}
         ]
         ```
 
@@ -121,11 +178,14 @@ extension BuiltInSkills {
         files; `dependencies` the modules it imports, built before it. Each
         module becomes one `.swiftmodule` and one object per architecture, and
         a Swift product that lists it in `swiftModules` compiles against it
-        and links it. SwiftPM never runs and nothing is downloaded: to use a
-        package, copy its sources into the project and describe each target
-        this way; its own `Package.swift` is never read, so its resources and
-        `Bundle.module` are not available. Names are unique and never a
-        product's name, and modules may not depend on each other in a cycle.
+        and links it. `cxxInterop`, `headerSearchPaths` and `cxxStandard` are
+        the module's side of Swift and C++ (above); `sources` stays `.swift`
+        only — a module never carries C or C++ sources. SwiftPM never runs and
+        nothing is downloaded: to use a package, copy its sources into the
+        project and describe each target this way; its own `Package.swift` is
+        never read, so its resources and `Bundle.module` are not available.
+        Names are unique and never a product's name, and modules may not
+        depend on each other in a cycle.
 
         ## build.steps
         Per product, in this order: `compile`, `link`, `bundle-resources`

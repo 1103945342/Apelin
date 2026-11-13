@@ -52,7 +52,8 @@ def prepare_harness():
     harness = harness.replace("    // INSERT_PIPELINE_METHODS", target + methods)
     text = "\n".join([
         source("ApelinCore/CanonicalPath.swift"), document,
-        source("ApelinProject/Project/SourceLanguage.swift"), files,
+        source("ApelinProject/Project/SourceLanguage.swift"),
+        source("ApelinProject/Project/CXXInteropSettings.swift"), files,
         source("ApelinProject/Project/ProjectGlob.swift"),
         source("ApelinBuild/Process/ToolRunner.swift"),
         source("ApelinBuild/Pipeline/ProductSourcePlan.swift"), harness,
@@ -181,13 +182,113 @@ int main() { std::vector<int> v{3,4}; if(v[0]+v[1]!=7) return 1; puts("PASS cpp-
         "Sources/a__b.c": "int second(void) { return 4; }\n",
         "Sources/main.c": '#include <stdio.h>\nint first(void); int second(void);\nint main(void) { if(first()+second()!=7) return 1; puts("PASS object-collision"); return 0; }\n',
     }, project(["Sources/**/*.c"]))
+    # No extern "C", @_silgen_name or ObjC wrapper: Swift constructs a C++
+    # class and calls its out-of-line method. Its module map is project input.
+    cpp_header = '''#pragma once
+    #if SHARED_VALUE != 5 || !defined(CXX_ONLY) || BASE_FLAG != 7
+    #error C++ importer lost the native preprocessor settings
+    #endif
+    static_assert(__cplusplus >= 201703L);
+    class Counter {
+        int value;
+    public:
+        Counter(int v): value(v) {}
+        int add(int x) const;
+        int heapValue() const { int *p = new int(value); int n = *p; delete p; return n; }
+    };
+    '''
+    cpp_module = 'module CxxCounter { requires cplusplus header "Counter.hpp" export * }\n'
+    cpp_files = {
+        "Include Space/module.modulemap": cpp_module,
+        "Include Space/Counter.hpp": cpp_header,
+        "Sources/Counter.cpp": '#include "Counter.hpp"\nint Counter::add(int x) const { return value + x; }\n',
+        "Sources/main.swift": '''import CxxCounter
+let counter = Counter(40)
+precondition(counter.add(2) == 42)
+precondition(counter.heapValue() == 40)
+print("PASS cxx-direct")
+''',
+    }
+    manifest = project(["Sources/*.swift", "Sources/*.cpp"])
+    manifest["products"][0]["cxxInterop"] = True
+    cases["cxx-direct"] = (cpp_files, manifest)
+
+    # C declarations reach Swift through a module map, not a bridging header:
+    # Swift's importer drops the bridging header while C++ interop is on.
+    manifest = project(["Sources/*.swift", "Sources/*.cpp", "Sources/*.c"])
+    manifest["products"][0]["cxxInterop"] = True
+    cases["cxx-c-module"] = ({
+        "Include Space/module.modulemap": ('module CAPI [extern_c] { header "API.h" export * }\n'
+                                           'module CxxCounter { requires cplusplus header "Counter.hpp" export * }\n'),
+        "Include Space/API.h": '#pragma once\nint c_value(void);\n',
+        "Include Space/Counter.hpp": cpp_header,
+        "Sources/Counter.cpp": cpp_files["Sources/Counter.cpp"],
+        "Sources/core.c": '#include "API.h"\nint c_value(void) { return SHARED_VALUE; }\n',
+        "Sources/main.swift": '''import CAPI
+import CxxCounter
+precondition(c_value() == 5)
+precondition(Counter(40).add(c_value()) == 45)
+print("PASS cxx-c-module")
+''',
+    }, manifest)
+
+    manifest = project(["Sources/*.swift"])
+    manifest["products"][0]["cxxInterop"] = True
+    cases["cxx-header-only"] = ({
+        "Include Space/module.modulemap": cpp_module,
+        "Include Space/Counter.hpp": cpp_header,
+        "Sources/main.swift": '''import CxxCounter
+precondition(Counter(42).heapValue() == 42)
+print("PASS cxx-header-only")
+''',
+    }, manifest)
+
+    manifest = project(["Sources/*.swift", "Sources/*.cpp"])
+    # The product deliberately has neither cxxInterop nor a header path:
+    # both come from Leaf through Middle, as does the C++20 standard.
+    manifest["products"][0].pop("headerSearchPaths")
+    manifest["products"][0]["swiftModules"] = ["Middle"]
+    manifest["swiftModules"] = [
+        {"name": "Leaf", "sources": ["Modules/Leaf.swift"], "cxxInterop": True,
+         "headerSearchPaths": ["Include Space"], "cxxStandard": "c++20"},
+        {"name": "Middle", "sources": ["Modules/Middle.swift"], "dependencies": ["Leaf"]},
+    ]
+    cases["cxx-module-chain"] = ({
+        "Include Space/module.modulemap": cpp_module,
+        "Include Space/Counter.hpp": cpp_header.replace("201703L", "202002L"),
+        "Sources/Counter.cpp": cpp_files["Sources/Counter.cpp"],
+        "Modules/Leaf.swift": 'import CxxCounter\npublic func makeCounter() -> Counter { Counter(40) }\n',
+        "Modules/Middle.swift": 'import Leaf\npublic func answer() -> Int32 { makeCounter().add(2) }\n',
+        "Sources/main.swift": 'import Middle\nprecondition(answer() == 42)\nprint("PASS cxx-module-chain")\n',
+    }, manifest)
+
     for name, (files, manifest) in cases.items():
+        if name.startswith("cxx-"):
+            for config in manifest["configurations"].values():
+                # Debug and Release share the same dict in this fixture.
+                config["cFlags"] = ["-Werror", "-DBASE_FLAG=7"]
         for path, contents in files.items():
             write(name + "/" + path, contents)
         for directory in ["Include Space", "Vendor Lib", "Framework Space"]:
             (OUT / name / directory).mkdir(parents=True, exist_ok=True)
         write(name + "/project.json", json.dumps(manifest, indent=2))
     return cases
+
+
+def refusals():
+    """Builds the pipeline must turn down: one fixture per refusal, with the
+    phrase its message has to carry."""
+    manifest = project(["Sources/*.swift", "Sources/*.cpp"], bridge="Include Space/Bridge.h")
+    manifest["products"][0]["cxxInterop"] = True
+    return {
+        "refuse-bridge-and-interop": ({
+            "Include Space/module.modulemap": 'module CxxCounter { requires cplusplus header "Counter.hpp" export * }\n',
+            "Include Space/Counter.hpp": '#pragma once\nclass Counter { public: int v; Counter(int x): v(x) {} int add(int x) const; };\n',
+            "Include Space/Bridge.h": "int c_value(void);\n",
+            "Sources/Counter.cpp": '#include "Counter.hpp"\nint Counter::add(int x) const { return v + x; }\n',
+            "Sources/main.swift": "import CxxCounter\nlet counter = Counter(1)\nprint(counter.add(2))\n",
+        }, manifest, "bridgingHeader cannot be combined with C++ interop"),
+    }
 
 
 def main():
@@ -214,7 +315,25 @@ def main():
                 raise AssertionError(result)
             print(bootstrap + "/" + arch + ": " + result.strip(), flush=True)
             count += 1
-    print("PASS: {} compile/link/runtime cases; packaging and host integration not exercised".format(count))
+    refused = 0
+    for name, (files, manifest, expected) in refusals().items():
+        for path, contents in files.items():
+            write(name + "/" + path, contents)
+        (OUT / name / "Include Space").mkdir(parents=True, exist_ok=True)
+        write(name + "/project.json", json.dumps(manifest, indent=2))
+        result = subprocess.run(
+            [str(OUT / "check"), ".build/mixed-device/" + name, "rootless"],
+            cwd=REPO, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        )
+        write(name + "/rootless.log", result.stdout)
+        if result.returncode == 0:
+            raise AssertionError(name + ": the build was accepted\n" + result.stdout)
+        if expected not in result.stdout:
+            raise AssertionError(name + ": refused for another reason\n" + result.stdout)
+        print("refused: " + name, flush=True)
+        refused += 1
+    print("PASS: {} compile/link/runtime cases and {} refusals; packaging and host integration not exercised"
+          .format(count, refused))
 
 
 if __name__ == "__main__":

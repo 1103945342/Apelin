@@ -89,8 +89,8 @@ final class SourceLanguageTests: XCTestCase {
             projectJSON(sources: ["Sources/*"]),
             files: ["Sources/main.m", "Sources/core.cpp", "Sources/notes.rb"],
         )
-        let diagnostics = checkDiagnostics(at: root)
-        let unknown = diagnostics.filter { $0.code == "project.source.unsupported" }
+        let found = checkDiagnostics(at: root)
+        let unknown = found.filter { $0.code == "project.source.unsupported" }
         XCTAssertEqual(unknown.map(\.file), ["Sources/notes.rb"])
         XCTAssertEqual(unknown.first?.field, "/products/0/sources")
         XCTAssertEqual(unknown.first?.severity, .error)
@@ -102,26 +102,26 @@ final class SourceLanguageTests: XCTestCase {
             projectJSON(sources: ["Sources/*.m"], bridgingHeader: "Sources/Bridge.h"),
             files: ["Sources/main.m", "Sources/Bridge.h"],
         )
-        var diagnostics = checkDiagnostics(at: root)
-        XCTAssertTrue(diagnostics.contains { $0.code == "project.bridgingHeader.unused" }, "\(diagnostics)")
-        XCTAssertFalse(diagnostics.contains { $0.code == "project.bridgingHeader.missing" })
+        var found = checkDiagnostics(at: root)
+        XCTAssertTrue(found.contains { $0.code == "project.bridgingHeader.unused" }, "\(found)")
+        XCTAssertFalse(found.contains { $0.code == "project.bridgingHeader.missing" })
 
         // A header that is not there.
         root = try projectRoot(
             projectJSON(sources: ["Sources/*"], bridgingHeader: "Sources/Missing.h"),
             files: ["Sources/main.m", "Sources/Helper.swift"],
         )
-        diagnostics = checkDiagnostics(at: root)
-        XCTAssertTrue(diagnostics.contains { $0.code == "project.bridgingHeader.missing" }, "\(diagnostics)")
-        XCTAssertFalse(diagnostics.contains { $0.code == "project.bridgingHeader.unused" })
+        found = checkDiagnostics(at: root)
+        XCTAssertTrue(found.contains { $0.code == "project.bridgingHeader.missing" }, "\(found)")
+        XCTAssertFalse(found.contains { $0.code == "project.bridgingHeader.unused" })
 
         // A path that resolves outside the project is refused like a missing one.
         try FileManager.default.createSymbolicLink(
             atPath: root.appendingPathComponent("Sources/Missing.h").path,
             withDestinationPath: "/etc/hosts",
         )
-        diagnostics = checkDiagnostics(at: root)
-        XCTAssertTrue(diagnostics.contains { $0.code == "project.bridgingHeader.missing" }, "\(diagnostics)")
+        found = checkDiagnostics(at: root)
+        XCTAssertTrue(found.contains { $0.code == "project.bridgingHeader.missing" }, "\(found)")
     }
 
     func testAnActualSwiftSourceAsksForTheSwiftToolchain() throws {
@@ -129,18 +129,18 @@ final class SourceLanguageTests: XCTestCase {
             projectJSON(sources: ["Sources/*"], bridgingHeader: "Sources/Bridge.h"),
             files: ["Sources/main.m", "Sources/Helper.swift", "Sources/Bridge.h"],
         )
-        var diagnostics = checkDiagnostics(at: root)
-        XCTAssertTrue(diagnostics.contains { $0.code == "environment.toolchain.noSwift" }, "\(diagnostics)")
+        var found = checkDiagnostics(at: root)
+        XCTAssertTrue(found.contains { $0.code == "environment.toolchain.noSwift" }, "\(found)")
         XCTAssertTrue(
-            diagnostics.contains { $0.code == "environment.toolchain.incomplete" && $0.message.contains("swiftc") },
-            "\(diagnostics)",
+            found.contains { $0.code == "environment.toolchain.incomplete" && $0.message.contains("swiftc") },
+            "\(found)",
         )
 
         // The same product without Swift asks for clang alone.
         root = try projectRoot(projectJSON(sources: ["Sources/*"]), files: ["Sources/main.m", "Sources/core.cpp"])
-        diagnostics = checkDiagnostics(at: root)
-        XCTAssertFalse(diagnostics.contains { $0.code == "environment.toolchain.noSwift" }, "\(diagnostics)")
-        XCTAssertFalse(diagnostics.contains { $0.message.contains("swiftc") }, "\(diagnostics)")
+        found = checkDiagnostics(at: root)
+        XCTAssertFalse(found.contains { $0.code == "environment.toolchain.noSwift" }, "\(found)")
+        XCTAssertFalse(found.contains { $0.message.contains("swiftc") }, "\(found)")
     }
 
     func testASwiftModuleAsksForTheSwiftToolchain() throws {
@@ -148,8 +148,8 @@ final class SourceLanguageTests: XCTestCase {
             projectJSON(language: "objc", sources: ["Sources/main.m"], swiftModule: "LogKit"),
             files: ["Sources/main.m", "Vendor/LogKit/Sources/LogKit.swift"],
         )
-        let diagnostics = checkDiagnostics(at: root)
-        XCTAssertTrue(diagnostics.contains { $0.code == "environment.toolchain.noSwift" }, "\(diagnostics)")
+        let found = checkDiagnostics(at: root)
+        XCTAssertTrue(found.contains { $0.code == "environment.toolchain.noSwift" }, "\(found)")
     }
 
     /// `-fmodules` reaches clang's module machinery from `cxxFlags` as much as
@@ -172,12 +172,12 @@ final class SourceLanguageTests: XCTestCase {
         let registry = StaticEnvironmentRegistry(toolchains: [toolchain], sdks: [sdk])
 
         var root = try projectRoot(projectJSON(sources: ["Sources/core.cpp"], cxxFlags: ["-fmodules"]), files: ["Sources/core.cpp"])
-        var diagnostics = checkDiagnostics(at: root, registry: registry)
-        XCTAssertTrue(diagnostics.contains { $0.code == "environment.device.clangModules" }, "\(diagnostics)")
+        var found = checkDiagnostics(at: root, registry: registry)
+        XCTAssertTrue(found.contains { $0.code == "environment.device.clangModules" }, "\(found)")
 
         root = try projectRoot(projectJSON(sources: ["Sources/core.cpp"]), files: ["Sources/core.cpp"])
-        diagnostics = checkDiagnostics(at: root, registry: registry)
-        XCTAssertFalse(diagnostics.contains { $0.code == "environment.device.clangModules" }, "\(diagnostics)")
+        found = checkDiagnostics(at: root, registry: registry)
+        XCTAssertFalse(found.contains { $0.code == "environment.device.clangModules" }, "\(found)")
     }
 
     // MARK: Fixtures

@@ -171,6 +171,7 @@ def project_semantic_errors(project: dict) -> list[str]:
             if problem:
                 errors.append(f"/products/{index}/sources: {problem}")
     errors.extend(_swift_module_errors(project))
+    errors.extend(_cxx_interop_errors(project))
     return errors
 
 
@@ -224,6 +225,266 @@ def _swift_module_errors(project: dict) -> list[str]:
         for name in product.get("swiftModules", []):
             if name not in by_name:
                 errors.append(f"/products/{index}/swiftModules: unknown swift module {name}")
+    return errors
+
+
+# --------------------------------------------------------------------------
+# Swift's C++ interop (README ▸ Swift and C++)
+# --------------------------------------------------------------------------
+
+_INTEROP_MINIMUM_STANDARDS = {
+    "c++14", "c++17", "c++20", "c++23",
+    "gnu++14", "gnu++17", "gnu++20", "gnu++23",
+}
+_DEFAULT_CXX_STANDARD = "c++17"
+
+
+class _InteropError(Exception):
+    """The CXXInteropError the app and the host throw, message included."""
+
+    def __init__(self, field: str, reason: str) -> None:
+        self.field = field
+        self.reason = reason
+        self.text = f"{field}: {reason}" if field else reason
+        super().__init__(self.text)
+
+
+class _Interop:
+    """One resolution pass, resolved exactly as the build resolves it: the
+    closure of a product or a module, which members turn interop on, and the
+    one C++ standard all of them must see."""
+
+    def __init__(self, project: dict) -> None:
+        self.modules = project.get("swiftModules", [])
+        self.by_name: dict[str, dict] = {}
+        for module in self.modules:
+            self.by_name.setdefault(module["name"], module)
+
+    def position(self, name: str) -> int:
+        for index, module in enumerate(self.modules):
+            if module["name"] == name:
+                return index
+        return 0
+
+    def closure(self, names: list[str], field: str) -> list[str]:
+        visited: set[str] = set()
+        order: list[str] = []
+
+        def add(name: str) -> None:
+            if name in visited:
+                return
+            visited.add(name)
+            module = self.by_name.get(name)
+            if module is None:
+                raise _InteropError(field, f"the project declares no swift module {name}")
+            for dependency in module.get("dependencies", []):
+                add(dependency)
+            order.append(name)
+
+        for name in names:
+            add(name)
+        return order
+
+    def enabled(self, closure: list[str]) -> set[str]:
+        memo: dict[str, bool] = {}
+        stack: set[str] = set()
+
+        def enables(name: str) -> bool:
+            if name in memo:
+                return memo[name]
+            module = self.by_name.get(name)
+            if module is None:
+                return False
+            if module.get("cxxInterop") is True:
+                memo[name] = True
+                return True
+            if name in stack:
+                return False
+            stack.add(name)
+            result = False
+            for dependency in module.get("dependencies", []):
+                if result:
+                    break
+                result = enables(dependency)
+            stack.discard(name)
+            memo[name] = result
+            return result
+
+        return {name for name in closure if enables(name)}
+
+    def first_enabled_dependency(self, module: dict) -> str | None:
+        memo: dict[str, bool] = {}
+        stack: set[str] = set()
+
+        def enables(name: str) -> bool:
+            if name in memo:
+                return memo[name]
+            found = self.by_name.get(name)
+            if found is None:
+                return False
+            if found.get("cxxInterop") is True:
+                memo[name] = True
+                return True
+            if name in stack:
+                return False
+            stack.add(name)
+            result = False
+            for dependency in found.get("dependencies", []):
+                if result:
+                    break
+                result = enables(dependency)
+            stack.discard(name)
+            memo[name] = result
+            return result
+
+        return next((name for name in module.get("dependencies", []) if enables(name)), None)
+
+    def check_module_conflicts(self, closure: list[str]) -> None:
+        enabled = self.enabled(closure)
+        for name in closure:
+            if name not in enabled:
+                continue
+            module = self.by_name[name]
+            if module.get("cxxInterop") is not False:
+                continue
+            dependency = self.first_enabled_dependency(module)
+            if dependency is None:
+                continue
+            raise _InteropError(
+                f"/swiftModules/{self.position(name)}/cxxInterop",
+                f"{name} sets cxxInterop to false, but swift module {dependency} it depends on turns it on: "
+                "remove the false or the dependency's cxxInterop",
+            )
+
+    def standard(self, node: tuple[str, str, str] | None, names: list[str], fallback: str) -> str:
+        declared: list[tuple[str, str, str]] = []
+        if node is not None:
+            declared.append(node)
+        for name in names:
+            module = self.by_name[name]
+            if "cxxStandard" in module:
+                declared.append((module["cxxStandard"], f"swift module {name}",
+                                 f"/swiftModules/{self.position(name)}/cxxStandard"))
+        for value, _, field in declared:
+            if value not in _INTEROP_MINIMUM_STANDARDS:
+                raise _InteropError(
+                    field,
+                    f"{value} is older than Swift's C++ interop supports: the importer needs c++14 or newer "
+                    "(a project's own C++ files may keep c++11 while cxxInterop is off)",
+                )
+        values = [value for value, _, _ in declared]
+        if values and len(set(values)) > 1:
+            detail = ", ".join(f"{value} ({origin})" for value, origin, _ in declared)
+            field = next((f for value, _, f in declared if value != values[0]), fallback)
+            raise _InteropError(
+                field,
+                f"the C++ interop closure names more than one standard ({detail}): "
+                "the Swift importer and native C++ must see one -std",
+            )
+        chosen = values[0] if values else _DEFAULT_CXX_STANDARD
+        if chosen == _DEFAULT_CXX_STANDARD:
+            return chosen
+        # A module is compiled on its own, so it only ever sees what its own
+        # closure names: one that names nothing is built as c++17 and must not
+        # sit under a closure that compiles as something else.
+        for name in names:
+            own = self.closure([name], fallback)
+            named = [self.by_name[module]["cxxStandard"] for module in self.enabled(own)
+                     if "cxxStandard" in self.by_name[module]]
+            if not named:
+                raise _InteropError(
+                    f"/swiftModules/{self.position(name)}/cxxStandard",
+                    f"{name} names no cxxStandard and is built as {_DEFAULT_CXX_STANDARD} on its own, "
+                    f"while this closure compiles as {chosen}: name {chosen} on the module "
+                    "(the importer and native C++ must see one -std)",
+                )
+        return chosen
+
+    def product_settings(self, product: dict, index: int) -> dict:
+        field = f"/products/{index}"
+        closure = self.closure(product.get("swiftModules", []), f"{field}/swiftModules")
+        enabled = self.enabled(closure)
+        if product.get("cxxInterop") is False:
+            forced = next((name for name in closure if name in enabled), None)
+            if forced is not None:
+                raise _InteropError(
+                    f"{field}/cxxInterop",
+                    f"{product['id']} sets cxxInterop to false, but swift module {forced} in its closure turns it on: "
+                    "remove the false or the module's cxxInterop",
+                )
+        self.check_module_conflicts(closure)
+        if product.get("cxxInterop") is not True and not enabled:
+            return {"enabled": False, "headerSearchPaths": [], "standard": None}
+        named = [name for name in closure if name in enabled]
+        node = None
+        if "cxxStandard" in product:
+            node = (product["cxxStandard"], f"product {product['id']}", f"{field}/cxxStandard")
+        standard = self.standard(node, named, f"{field}/cxxStandard")
+        paths: list[str] = []
+        for name in named:
+            paths.extend(self.by_name[name].get("headerSearchPaths", []))
+        return {"enabled": True, "headerSearchPaths": list(dict.fromkeys(paths)), "standard": standard}
+
+    def module_settings(self, module: dict, index: int) -> dict:
+        field = f"/swiftModules/{index}"
+        closure = self.closure([module["name"]], f"{field}/dependencies")
+        enabled = self.enabled(closure)
+        if module.get("cxxInterop") is False and module["name"] in enabled:
+            dependency = self.first_enabled_dependency(module)
+            if dependency is not None:
+                raise _InteropError(
+                    f"{field}/cxxInterop",
+                    f"{module['name']} sets cxxInterop to false, but swift module {dependency} it depends on turns it on: "
+                    "remove the false or the dependency's cxxInterop",
+                )
+        self.check_module_conflicts(closure)
+        if module["name"] not in enabled:
+            return {"enabled": False, "headerSearchPaths": [], "standard": None}
+        named = [name for name in closure if name in enabled and name != module["name"]]
+        node = None
+        if "cxxStandard" in module:
+            node = (module["cxxStandard"], f"swift module {module['name']}", f"{field}/cxxStandard")
+        standard = self.standard(node, named, f"{field}/cxxStandard")
+        paths: list[str] = []
+        for name in [module["name"]] + named:
+            paths.extend(self.by_name[name].get("headerSearchPaths", []))
+        return {"enabled": True, "headerSearchPaths": list(dict.fromkeys(paths)), "standard": standard}
+
+
+def _cxx_interop_errors(project: dict) -> list[str]:
+    """Swift's C++ interop, resolved exactly as the build resolves it: a
+    `false` beside an enabled module, a standard below C++14, two standards in
+    one closure, or a module that would be built as c++17 under a closure that
+    is not. Each error once, field path included."""
+    resolution = _Interop(project)
+    errors: list[str] = []
+    seen: set[str] = set()
+
+    def take(work) -> None:
+        try:
+            work()
+        except _InteropError as error:
+            if error.text not in seen:
+                seen.add(error.text)
+                errors.append(error.text)
+
+    for index, product in enumerate(project["products"]):
+        def settings(product=product, index=index) -> None:
+            resolved = resolution.product_settings(product, index)
+            # The importer skips the bridging header entirely while interop is
+            # on, silently, so the two are refused together. A resolution error
+            # above is left to speak for itself.
+            header = product.get("bridgingHeader")
+            if resolved["enabled"] and header is not None:
+                raise _InteropError(
+                    f"/products/{index}/bridgingHeader",
+                    f"{header} cannot be combined with C++ interop: Swift's importer drops the bridging header "
+                    "when -cxx-interoperability-mode is on; declare those C declarations in a module of a "
+                    "module.modulemap under headerSearchPaths instead",
+                )
+        take(settings)
+    for index, module in enumerate(project.get("swiftModules", [])):
+        take(lambda module=module, index=index: resolution.module_settings(module, index))
     return errors
 
 

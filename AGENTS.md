@@ -3361,10 +3361,37 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   a per-product/per-architecture directory. A mixed executable without
   `main.swift` parses Swift as a library (native main or Swift `@main`);
   pure Swift executables retain their previous top-level behavior.
-  Direct Swift/C++ interop is not enabled: expose a C ABI wrapper instead.
+  Direct Swift/C++ interop is opt-in with `cxxInterop: true` on a product
+  or a vendored Swift module. A project's `module.modulemap` and C++ headers
+  live under its `headerSearchPaths`; Swift imports that Clang module and
+  uses the compiler-supported C++ types directly, without a C ABI wrapper.
+  `CXXInteropSettings` propagates interop, header search paths and explicit
+  standards through Swift module dependencies. An explicit `false` that
+  conflicts with an enabled dependency, conflicting standards and C++11 in
+  interop mode are errors; the default standard is C++17. CLT 15 / Swift 5.9
+  or newer and the module compiler's CPU features are required.
+  Swift gets `-cxx-interoperability-mode=default`, the resolved C++ standard,
+  the native defines, and `cFlags`/`cxxFlags` through `-Xcc`. Native C++ gets
+  the same standard and inherited header paths. Interop links libc++ even
+  for header-only C++ or C++ used only by a Swift module. Plain Swift modules
+  keep their previous configuration. Header and module-map contents are
+  source edits, never hashed into approval descriptions.
+  A product may not have both a `bridgingHeader` and C++ interop, and the
+  build refuses one that does: with the importer on, Swift never reads the
+  bridging header, so every declaration in it disappears with no diagnostic
+  (measured on CLT 15.3 / Swift 5.10, with and without `-Xcc -std`). C
+  declarations belong in a module of a `module.modulemap` under
+  `headerSearchPaths`, imported beside the C++ one, and that module carries
+  `[extern_c]` (or the header its own `extern "C"` guards): the importer
+  reads the header as C++ there, and without it the C functions are exported
+  C++-mangled and fail only at link, silently. That combination was
+  run on both architectures.
   `python3 Scripts/test-mixed-build-device.py` compiles the actual pipeline
-  methods in a small signed harness and runs seven cases for arm64 and
-  arm64e on device; its outputs stay in `.build/mixed-device`. It checks
+  methods in a small signed harness and runs eleven cases for arm64 and
+  arm64e on device, including direct C++ construction/member calls,
+  header-only heap allocation, a C module beside a C++ module, and
+  transitive Swift modules, plus the refusal above; its outputs
+  stay in `.build/mixed-device`. It checks
   compile/link/runtime only, not host integration, packaging or installation.
   XCTest and the full `make check` remain CI's job on this device without
   make/Xcode. Signing is `ApelinCodeSign`, no ldid:

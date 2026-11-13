@@ -142,6 +142,51 @@ public enum ProjectValidation {
             }
         }
         errors += swiftModuleErrors(project)
+        errors += cxxInteropErrors(project)
+        return errors
+    }
+
+    /// Swift's C++ interop, resolved exactly as the build resolves it, so a
+    /// file that contradicts itself never reaches a compiler: a `false` on a
+    /// product or module beside an enabled one in its closure, a standard the
+    /// importer cannot take, or two standards in one closure. Each error is
+    /// the resolver's, field path included, reported once.
+    private static func cxxInteropErrors(_ project: ProjectDocument) -> [String] {
+        var errors: [String] = []
+        var seen: Set<String> = []
+        func take(_ work: () throws -> CXXInteropSettings) {
+            do {
+                _ = try work()
+            } catch let error as CXXInteropError {
+                if seen.insert(error.description).inserted {
+                    errors.append(error.description)
+                }
+            } catch {
+                errors.append(String(describing: error))
+            }
+        }
+        for (index, product) in project.products.enumerated() {
+            take {
+                let settings = try project.cxxInteropSettings(for: product)
+                // Swift's ClangImporter does not import a bridging header at
+                // all while -cxx-interoperability-mode is on, and says
+                // nothing about it: every declaration it holds would simply be
+                // missing from Swift. A parse failure above is left to speak
+                // for itself rather than be replaced by this.
+                if settings.enabled, let header = product.bridgingHeader {
+                    throw CXXInteropError(
+                        field: "/products/\(index)/bridgingHeader",
+                        reason: "\(header) cannot be combined with C++ interop: Swift's importer drops the bridging header "
+                            + "when -cxx-interoperability-mode is on; declare those C declarations in a module of a "
+                            + "module.modulemap under headerSearchPaths instead"
+                    )
+                }
+                return settings
+            }
+        }
+        for module in project.swiftModules ?? [] {
+            take { try project.cxxInteropSettings(for: module) }
+        }
         return errors
     }
 

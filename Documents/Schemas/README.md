@@ -56,8 +56,8 @@ other hidden configuration.
 | `deploymentTarget` | `16.0` or later, as a string. |
 | `architectures` | `{rootless?, roothide?}` → `arm64`/`arm64e` lists. The keys present are the bootstraps the project packages for. Templates default to rootless `[arm64, arm64e]`, roothide `[arm64e]`. |
 | `configurations` | `Debug` and `Release`, each `{optimization: "0"…"3"/"s"/"z", debugInfo, defines?, cFlags?, cxxFlags?, swiftFlags?, linkFlags?}`. A define's name may not start with `APELIN_`. A flag is one argv element starting with `-`; nothing here is ever given to a shell. `cxxFlags` reach only the C++ and Objective-C++ files, after `cFlags`. |
-| `products` | 1–8 of `{id, type, name, sources, headerSearchPaths?, resources?, infoPlist?, entitlements?, bridgingHeader?, installName?, objcARC?, cxxStandard?, frameworks?, weakFrameworks?, libraries?, frameworkSearchPaths?, librarySearchPaths?, extensionSupport?, swiftModules?}`. `type` is `app`, `appex`, `bundle`, `dylib` or `executable`. `app`, `appex` and `bundle` require `infoPlist`; only they may have `resources`; only `dylib` may set `installName` (default `@rpath/<name>.dylib`). `extensionSupport` names `{extension, component}` from an installed extension's manifest; the build adds that component's include directories, link-stub directories for the bootstrap being built and rpaths. `bridgingHeader` and `cxxStandard` are the mixed-language members below. `swiftModules` names the project's modules this product compiles against and links (below). Ids and names are unique (beyond the schema). |
-| `swiftModules` | 1–32 when present, of `{name, sources, dependencies?}`, each a Swift module built out of the project's own files — one target of a vendored package, say. `name` is the name its Swift sources import; `sources` are its `.swift` files; `dependencies` names the modules it imports, which are built before it. Each module becomes one `.swiftmodule` and one object, per architecture, which a product that names it (or names a module that imports it) compiles against with `-I` and links. **Nothing is resolved, fetched or downloaded**: SwiftPM never runs, a vendored package is a folder of the project like any other, and its own `Package.swift` is never read, so its resources and `Bundle.module` are not supported in v1. Any project may carry modules whatever its `language`; names are unique and never a product's name, a module never depends on itself, every dependency is declared, and the modules may not depend on each other in a cycle (all beyond the schema). |
+| `products` | 1–8 of `{id, type, name, sources, headerSearchPaths?, resources?, infoPlist?, entitlements?, bridgingHeader?, installName?, objcARC?, cxxStandard?, cxxInterop?, frameworks?, weakFrameworks?, libraries?, frameworkSearchPaths?, librarySearchPaths?, extensionSupport?, swiftModules?}`. `type` is `app`, `appex`, `bundle`, `dylib` or `executable`. `app`, `appex` and `bundle` require `infoPlist`; only they may have `resources`; only `dylib` may set `installName` (default `@rpath/<name>.dylib`). `extensionSupport` names `{extension, component}` from an installed extension's manifest; the build adds that component's include directories, link-stub directories for the bootstrap being built and rpaths. `bridgingHeader`, `cxxStandard` and `cxxInterop` are the mixed-language members below. `swiftModules` names the project's modules this product compiles against and links (below). Ids and names are unique (beyond the schema). |
+| `swiftModules` | 1–32 when present, of `{name, sources, dependencies?, cxxInterop?, headerSearchPaths?, cxxStandard?}`, each a Swift module built out of the project's own files — one target of a vendored package, say. `name` is the name its Swift sources import; `sources` are its `.swift` files (Swift only: a module never carries C or C++ sources); `dependencies` names the modules it imports, which are built before it. `cxxInterop`, `headerSearchPaths` and `cxxStandard` are the module's side of Swift and C++, below. Each module becomes one `.swiftmodule` and one object, per architecture, which a product that names it (or names a module that imports it) compiles against with `-I` and links. **Nothing is resolved, fetched or downloaded**: SwiftPM never runs, a vendored package is a folder of the project like any other, and its own `Package.swift` is never read, so its resources and `Bundle.module` are not supported in v1. Any project may carry modules whatever its `language`; names are unique and never a product's name, a module never depends on itself, every dependency is declared, and the modules may not depend on each other in a cycle (all beyond the schema). |
 | `build.steps` | The typed steps, below. |
 | `package` | `{id, name, version, description, longDescription?, icon?, depiction?, sileoDepiction?, author, maintainer?, section, format?, depends?, dependsByBootstrap?, recommends?, suggests?, conflicts?, breaks?, replaces?, provides?, layout, maintainerScripts?, tweakFilter?}`. |
 
@@ -92,12 +92,87 @@ as clang compiles it.
   at least one `.swift` source (`project.bridgingHeader.unused`), and the
   file must exist, be regular and resolve inside the project
   (`project.bridgingHeader.missing`). Swift sees the header as C or
-  Objective-C: C++ declarations need an `extern "C"` facade, because Swift's
-  direct C++ interop is not part of v1.
+  Objective-C: C++ declarations need an `extern "C"` facade. A bridging
+  header cannot be combined with `cxxInterop` below — the importer stops
+  reading it the moment interop is on, without a diagnostic — so the C
+  declarations go in a module of a `module.modulemap` instead.
 - A project compiles Swift when a product's sources include a `.swift` file
   or the project carries `swiftModules`; that, not `language`, is what
   requires the toolchain's `swiftc` and its Swift component and what the
   Swift SDK checks apply to.
+
+### Swift and C++
+
+Swift's direct C++ interop is a product member, `cxxInterop`, and a
+`swiftModules` member. It is **off** unless named — the everyday answer — and
+when it is on the product's Swift sources import C++ declarations themselves
+(`-cxx-interoperability-mode=default`) instead of going through a C facade.
+
+- **A dependency turns it on.** A module that names `cxxInterop: true` turns
+  interop on for every product that names it, directly or through a module
+  that imports it, and for the modules it imports. `cxxInterop: false` on
+  such a product or module is refused, whichever reaches the compiler first:
+  it says no while something it builds with says yes.
+- **Headers.** The importer and the product's native C++ files see the
+  product's own `headerSearchPaths`, and the `headerSearchPaths` of every
+  enabled module in the closure, each module's own first. A module's paths
+  reach the products that compile against it, so a header lives once.
+- **One standard.** Nothing named means `c++17`, and an enabled product
+  compiles its Swift and its C++ files with the same `-std`, so the layouts
+  the importer sees and the ones clang builds agree. The closure may name one
+  standard, in the product's `cxxStandard` or a module's; two different ones
+  are refused (`names more than one standard`). One explicit standard is
+  accepted from any member and reaches the whole closure; a module is also
+  compiled on its own, so a module inside a closure that compiles as other
+  than `c++17` must name that standard itself — the check refuses the
+  mismatch instead of importing the same headers with different layouts.
+  `c++11` and `gnu++11` are refused once interop is on (the importer is
+  C++14); a project's own C++ files may keep them while it is off.
+- **No bridging header.** With interop on, Swift's importer does not read
+  the product's `bridgingHeader` at all and says nothing about it: every
+  declaration in it is simply missing, whatever the standard. A
+  `bridgingHeader` beside an enabled `cxxInterop` is refused
+  (`project.cxxInterop.bridgingHeader`, whether interop is the product's own
+  or comes from a `swiftModules` entry). C declarations the Swift code needs
+  go in a C module instead, under `headerSearchPaths`:
+
+  ```
+  Headers/CAPI/module.modulemap:
+    module CAPI [extern_c] { header "API.h" export * }
+
+  products: [{ "headerSearchPaths": ["Headers/CAPI"], "cxxInterop": true, … }]
+  Sources/Probe.swift:  import CAPI   // beside any import of a C++ module
+  ```
+
+  A C module and a C++ module may sit in the same product and the same
+  `headerSearchPaths`; `-std` reaches both. The `[extern_c]` attribute — or
+  the header's own `extern "C"` guards — is not optional: with interop on,
+  the importer reads that header as C++, and without it `c_value` is
+  exported as `__Z7c_valuev` with no diagnostic, failing only at link.
+- **Flags and defines.** The product's `cFlags` and `cxxFlags` reach the
+  importer as `-Xcc` after the `-std`, and the configuration's `defines` as
+  `-Xcc -D…`, so a header's macro-selected layout is the same on both sides.
+  `APELIN_PRODUCT_NAME` is a product's own and is not given to a module.
+- **What it needs.** Command Line Tools 15.0 (Swift 5.9) or newer
+  (`environment.toolchain.cxxInterop`), and a CPU that can run clang's module
+  machinery, because the importer builds each imported header as a clang
+  module (`environment.device.clangModules`: FEAT_SHA3, the A13 on). A
+  product that turns it on compiles at least one `.swift` source or names a
+  swift module (`project.cxxInterop.noSwift`).
+- A module still compiles `.swift` sources only: the C++ is in the headers
+  it imports, never in its `sources`.
+
+```json
+"products": [{
+  "id": "tool", "type": "executable", "name": "cxxprobe",
+  "sources": ["Sources/*.swift"], "headerSearchPaths": ["Vendor/CxxKit/include"],
+  "cxxInterop": true, "cxxStandard": "c++20", "swiftModules": ["CxxKit"]
+}],
+"swiftModules": [{
+  "name": "CxxKit", "sources": ["Vendor/CxxKit/Sources/*.swift"],
+  "cxxInterop": true, "headerSearchPaths": ["Vendor/CxxKit/include"], "cxxStandard": "c++20"
+}]
+```
 
 ### Build steps
 
@@ -133,6 +208,12 @@ with the SDK's physical path, `-mios-version-min` / `-target` from
 | `APELIN_CONFIGURATION_DEBUG` or `APELIN_CONFIGURATION_RELEASE` | `1`. |
 
 Swift gets the bootstrap and configuration names as `-D` conditions.
+With `cxxInterop` on, Swift also compiles with
+`-cxx-interoperability-mode=default`; the importer is told the closure's
+`-std=<standard>` and receives the configuration's `cFlags` and `cxxFlags`
+as `-Xcc` after it, and its `defines` as `-Xcc -D<name>=<value>`, so a C++
+header sees the same macros on both sides. `APELIN_PRODUCT_NAME` is a
+product's own and is not given to a module.
 
 ### Packaging
 
@@ -224,12 +305,16 @@ present: `kind`, `language`, `deploymentTarget`, `architectures`,
 
 So a compile or link flag, a define, an optimisation level, a step, a
 framework, a library, an extension support component, an install name, an
-entitlement, a build script's content, a Swift module's source patterns or
-dependencies, or a product naming another module each moves the build digest.
+entitlement, a build script's content, a product's `cxxInterop` or
+`cxxStandard`, or a Swift module's source patterns, dependencies,
+`cxxInterop`, `headerSearchPaths` or `cxxStandard`, or a product naming
+another module each moves the build digest.
 Editing, adding or removing a source, header or resource under the existing
 globs does not — a module's own files are sources like any other, and so is
 the product's bridging header: naming `bridgingHeader` moves the digest,
-editing the header's bytes does not — nor does `template`, `environment`,
+editing the header's bytes does not, and neither does editing a C++ header or
+a `module.modulemap` a Swift module's `headerSearchPaths` makes the importer
+read: their content is a source edit — nor does `template`, `environment`,
 `projectID` or `package`.
 
 ### Packaging description

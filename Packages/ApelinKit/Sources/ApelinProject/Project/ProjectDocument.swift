@@ -66,6 +66,22 @@ public struct ProjectDocument: Codable, Sendable, Equatable {
         public var sources: [String]
         /// Modules this one imports, built before it.
         public var dependencies: [String]?
+        /// Swift's direct C++ interop for this module: its `.swift` sources
+        /// import C++ declarations instead of a C facade. Off unless named; a
+        /// module that names it turns it on for every product that comes to
+        /// compile against this one, and for the modules this one imports
+        /// unless one of them says `false`.
+        public var cxxInterop: Bool?
+        /// Directories holding the C++ headers this module's Swift sources
+        /// import, given to the clang importer and to the native C++ files of
+        /// the products that compile against it.
+        public var headerSearchPaths: [String]?
+        /// The C++ standard the importer and native C++ see for this
+        /// module's closure, e.g. `c++17`. A module that names none is built
+        /// as `c++17`, so a module in a closure that compiles as another
+        /// standard must name it: the check refuses the mismatch rather than
+        /// importing the same headers with different layouts.
+        public var cxxStandard: String?
     }
 
     public struct TemplateSource: Codable, Sendable, Equatable {
@@ -137,8 +153,14 @@ public struct ProjectDocument: Codable, Sendable, Equatable {
         public var bridgingHeader: String?
         public var installName: String?
         public var objcARC: Bool?
+        /// Swift's direct C++ interop for this product: its `.swift` sources
+        /// import C++ declarations directly. Off unless named, or unless a
+        /// `swiftModules` entry in its closure turns it on; naming it `false`
+        /// beside such a module is an error.
+        public var cxxInterop: Bool?
         /// The C++ standard for this product's C++ and Objective-C++ files,
-        /// e.g. `c++17` or `c++20`, from the schema's list.
+        /// e.g. `c++17` or `c++20`, from the schema's list. With C++ interop
+        /// it is also the standard the Swift side is compiled with.
         public var cxxStandard: String?
         public var frameworks: [String]?
         public var weakFrameworks: [String]?

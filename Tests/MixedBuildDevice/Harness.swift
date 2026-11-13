@@ -94,6 +94,10 @@ final class DevicePipelineCheck {
 
 @main struct DeviceMixedBuildMain {
     static func main() throws {
+        // A build failure ends the process with a fatal error, which would
+        // discard a buffered log and leave nothing to read. Keep every printed
+        // command and its output.
+        setvbuf(stdout, nil, _IONBF, 0)
         let env = ProcessInfo.processInfo.environment
         let repo = URL(fileURLWithPath: env["APELIN_PROJECT_ROOT"]!)
         let relative = CommandLine.arguments[1]
