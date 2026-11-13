@@ -135,14 +135,9 @@ public enum ProjectValidation {
             }
         }
         for (index, product) in project.products.enumerated() {
-            let isSwift = project.language == .swift
             for source in product.sources {
-                let suffix = pathExtension(source)
-                if isSwift, suffix != ".swift" {
-                    errors.append("/products/\(index)/sources: a Swift project compiles .swift sources only in v1")
-                }
-                if !isSwift, suffix != ".c", suffix != ".m" {
-                    errors.append("/products/\(index)/sources: \(source) is not a .c or .m source")
+                if let problem = unsupportedSourceError(source) {
+                    errors.append("/products/\(index)/sources: \(problem)")
                 }
             }
         }
@@ -150,15 +145,44 @@ public enum ProjectValidation {
         return errors
     }
 
+    /// A product's `sources` entry names files this project can compile. A
+    /// definite extension must be one of the languages `SourceLanguage`
+    /// knows; a pattern may spell one (`Sources/*.mm`) or none at all
+    /// (`Sources/*`), and the files it expands to are classified by
+    /// `projectCheck`, which is the only place an actual file is seen.
+    static func unsupportedSourceError(_ source: String) -> String? {
+        if SourceLanguage(path: source) != nil {
+            return nil
+        }
+        let suffix = pathExtension(source)
+        let isPattern = source.contains("*") || source.contains("?")
+        guard !isPattern || (!suffix.isEmpty && !suffix.contains("*") && !suffix.contains("?")) else {
+            return nil
+        }
+        return "\(source) is not a .c, .m, .cpp, .cc, .cxx, .mm or .swift source"
+    }
+
+    /// A Swift module is Swift only, under the same pattern rule: what a
+    /// pattern expands to is checked once the files are known.
+    static func unsupportedModuleSourceError(_ source: String) -> String? {
+        if SourceLanguage(path: source) == .swift {
+            return nil
+        }
+        let suffix = pathExtension(source)
+        let isPattern = source.contains("*") || source.contains("?")
+        guard !isPattern || (!suffix.isEmpty && !suffix.contains("*") && !suffix.contains("?")) else {
+            return nil
+        }
+        return "\(source) is not a .swift source"
+    }
+
     /// The modules a project carries, and the ones its products name: each an
     /// identifier the schema already checked, built before what depends on it,
-    /// and never a product's own name.
+    /// and never a product's own name. Any project may carry them — a module
+    /// is Swift whatever the project's main language is.
     private static func swiftModuleErrors(_ project: ProjectDocument) -> [String] {
         let modules = project.swiftModules ?? []
         var errors: [String] = []
-        if !modules.isEmpty, project.language != .swift {
-            errors.append("/swiftModules: only a Swift project compiles Swift modules")
-        }
         var byName: [String: ProjectDocument.SwiftModule] = [:]
         for (index, module) in modules.enumerated() {
             if byName[module.name] == nil {
@@ -166,8 +190,10 @@ public enum ProjectValidation {
             } else {
                 errors.append("/swiftModules/\(index): module \(module.name) is declared twice")
             }
-            for source in module.sources where pathExtension(source) != ".swift" {
-                errors.append("/swiftModules/\(index)/sources: \(source) is not a .swift source")
+            for source in module.sources {
+                if let problem = unsupportedModuleSourceError(source) {
+                    errors.append("/swiftModules/\(index)/sources: \(problem)")
+                }
             }
         }
         let productNames = Set(project.products.map(\.name))

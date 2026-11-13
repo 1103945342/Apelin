@@ -52,9 +52,9 @@ public struct ProjectDocument: Codable, Sendable, Equatable {
     public var products: [Product]
     /// Swift modules compiled from sources a project carries — a dependency's,
     /// vendored under the project — one `.swiftmodule` and one object each,
-    /// which a Swift product names in `swiftModules`. SwiftPM itself never
-    /// runs: the project says which folders are a module and which modules it
-    /// needs, so a package's own `Package.swift` is not read.
+    /// which a product that compiles Swift names in `swiftModules`. SwiftPM
+    /// itself never runs: the project says which folders are a module and
+    /// which modules it needs, so a package's own `Package.swift` is not read.
     public var swiftModules: [SwiftModule]?
     public var build: Build
     public var package: Package
@@ -106,6 +106,9 @@ public struct ProjectDocument: Codable, Sendable, Equatable {
         public var debugInfo: Bool
         public var defines: [String: String]?
         public var cFlags: [String]?
+        /// C++ and Objective-C++ only, applied after `cFlags`: the files
+        /// `SourceLanguage.isCXX` names are the ones that see these.
+        public var cxxFlags: [String]?
         public var swiftFlags: [String]?
         public var linkFlags: [String]?
     }
@@ -129,8 +132,14 @@ public struct ProjectDocument: Codable, Sendable, Equatable {
         public var resources: [String]?
         public var infoPlist: String?
         public var entitlements: String?
+        /// The header the Swift compiler imports into every Swift file of
+        /// this product, giving Swift the C family's declarations.
+        public var bridgingHeader: String?
         public var installName: String?
         public var objcARC: Bool?
+        /// The C++ standard for this product's C++ and Objective-C++ files,
+        /// e.g. `c++17` or `c++20`, from the schema's list.
+        public var cxxStandard: String?
         public var frameworks: [String]?
         public var weakFrameworks: [String]?
         public var libraries: [String]?

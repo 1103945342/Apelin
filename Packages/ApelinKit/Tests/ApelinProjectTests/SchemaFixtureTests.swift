@@ -211,6 +211,13 @@ final class SchemaFixtureTests: XCTestCase {
             ("compile flag added", editJSON { set(&$0, ["build", "steps", "1", "flags"], .array([.string("-DEXTRA=1")])) }, true, false),
             ("build script edited", append("Scripts/generate-version.sh", "# edited\n"), true, false),
             ("entitlements edited", append("Packaging/Tool.entitlements", "\n"), true, false),
+            (
+                "bridging header set",
+                editJSON { set(&$0, ["products", "0", "bridgingHeader"], .string("Sources/Bridge.h")) },
+                true,
+                false,
+            ),
+            ("bridging header content edited", append("Sources/Bridge.h", "/* edited */\n"), false, false),
             ("deployment target raised", editJSON { set(&$0, ["deploymentTarget"], .string("17.0")) }, true, false),
             ("postinst edited", append("Packaging/postinst", "# edited\n"), false, true),
             ("installed data file edited", append("Packaging/apelinhello.conf", "x=1\n"), false, true),
@@ -242,6 +249,37 @@ final class SchemaFixtureTests: XCTestCase {
             XCTAssertEqual(after.build.digest != base.build.digest, buildMoves, "\(name): build")
             XCTAssertEqual(after.packaging.digest != base.packaging.digest, packagingMoves, "\(name): packaging")
         }
+    }
+
+    /// A bridging header is a product member, so naming one moves the build
+    /// digest; its bytes are a source edit, so editing them does not.
+    func testABridgingHeaderIsApprovedByItsPathNotItsBytes() throws {
+        let scratch = try scratchDirectory()
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        let root = scratch.appendingPathComponent("project")
+        try FileManager.default.copyItem(at: digestCase.appendingPathComponent("project"), to: root)
+        let base = try ApprovalDigests.compute(projectAt: root)
+
+        let projectFile = root.appendingPathComponent("apelin-project.json")
+        guard case var .object(object) = try StrictJSON.parse(contentsOf: projectFile),
+              case var .array(products)? = object["products"],
+              case var .object(tool) = products[0]
+        else {
+            return XCTFail("the digest fixture has no product")
+        }
+        tool["bridgingHeader"] = .string("Sources/Bridge.h")
+        products[0] = .object(tool)
+        object["products"] = .array(products)
+        try JSONWriter.compact(.object(object)).write(to: projectFile)
+
+        let named = try ApprovalDigests.compute(projectAt: root)
+        XCTAssertNotEqual(named.build.digest, base.build.digest, "the header's path is part of the build description")
+        XCTAssertEqual(named.packaging.digest, base.packaging.digest)
+
+        try Data("/* edited */\n".utf8).write(to: root.appendingPathComponent("Sources/Bridge.h"))
+        let edited = try ApprovalDigests.compute(projectAt: root)
+        XCTAssertEqual(edited.build.digest, named.build.digest, "the header's content is a source edit")
+        XCTAssertEqual(edited.packaging.digest, named.packaging.digest)
     }
 
     /// A referenced file that escapes the project makes the description

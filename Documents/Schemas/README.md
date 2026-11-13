@@ -52,14 +52,52 @@ other hidden configuration.
 | `kind` | `app`, `tweak`, `cli` or `preferences`. Requires a product of type `app`, `dylib` (plus `package.tweakFilter`), `executable` or `bundle` respectively. Only `tweak` may carry `tweakFilter`. |
 | `template` | `{extensionID, templateID, version, digest}`: the extension, its version and the template digest (below) the project was generated from. The Confirm baseline. |
 | `environment` | `{toolchain, sdk}`, each `{id, digest}`: the registered toolchain and SDK the project is pinned to. Changing either is an explicit operation (the agent's `apelin_project_set_environment`, checked first by `projectCheck` with `environment`); a new default never moves a project. |
-| `language` | `c`, `objc` or `swift`. A C-family project compiles `.c` and `.m`; a Swift one `.swift` only (beyond the schema). No mixing in v1. |
+| `language` | `c`, `objc` or `swift`: the main language, for the editor and the templates. A product is not limited to it (below). |
 | `deploymentTarget` | `16.0` or later, as a string. |
 | `architectures` | `{rootless?, roothide?}` → `arm64`/`arm64e` lists. The keys present are the bootstraps the project packages for. Templates default to rootless `[arm64, arm64e]`, roothide `[arm64e]`. |
-| `configurations` | `Debug` and `Release`, each `{optimization: "0"…"3"/"s"/"z", debugInfo, defines?, cFlags?, swiftFlags?, linkFlags?}`. A define's name may not start with `APELIN_`. A flag is one argv element starting with `-`; nothing here is ever given to a shell. |
-| `products` | 1–8 of `{id, type, name, sources, headerSearchPaths?, resources?, infoPlist?, entitlements?, installName?, objcARC?, frameworks?, weakFrameworks?, libraries?, frameworkSearchPaths?, librarySearchPaths?, extensionSupport?, swiftModules?}`. `type` is `app`, `appex`, `bundle`, `dylib` or `executable`. `app`, `appex` and `bundle` require `infoPlist`; only they may have `resources`; only `dylib` may set `installName` (default `@rpath/<name>.dylib`). `extensionSupport` names `{extension, component}` from an installed extension's manifest; the build adds that component's include directories, link-stub directories for the bootstrap being built and rpaths. `swiftModules` names the project's modules this product compiles against and links (below). Ids and names are unique (beyond the schema). |
-| `swiftModules` | 1–32 when present, of `{name, sources, dependencies?}`, each a Swift module built out of the project's own files — one target of a vendored package, say. `name` is the name its Swift sources import; `sources` are its `.swift` files; `dependencies` names the modules it imports, which are built before it. Each module becomes one `.swiftmodule` and one object, per architecture, which a product that names it (or names a module that imports it) compiles against with `-I` and links. **Nothing is resolved, fetched or downloaded**: SwiftPM never runs, a vendored package is a folder of the project like any other, and its own `Package.swift` is never read, so its resources and `Bundle.module` are not supported in v1. Only a Swift project compiles Swift modules; names are unique and never a product's name, a module never depends on itself, every dependency is declared, and the modules may not depend on each other in a cycle (all beyond the schema). |
+| `configurations` | `Debug` and `Release`, each `{optimization: "0"…"3"/"s"/"z", debugInfo, defines?, cFlags?, cxxFlags?, swiftFlags?, linkFlags?}`. A define's name may not start with `APELIN_`. A flag is one argv element starting with `-`; nothing here is ever given to a shell. `cxxFlags` reach only the C++ and Objective-C++ files, after `cFlags`. |
+| `products` | 1–8 of `{id, type, name, sources, headerSearchPaths?, resources?, infoPlist?, entitlements?, bridgingHeader?, installName?, objcARC?, cxxStandard?, frameworks?, weakFrameworks?, libraries?, frameworkSearchPaths?, librarySearchPaths?, extensionSupport?, swiftModules?}`. `type` is `app`, `appex`, `bundle`, `dylib` or `executable`. `app`, `appex` and `bundle` require `infoPlist`; only they may have `resources`; only `dylib` may set `installName` (default `@rpath/<name>.dylib`). `extensionSupport` names `{extension, component}` from an installed extension's manifest; the build adds that component's include directories, link-stub directories for the bootstrap being built and rpaths. `bridgingHeader` and `cxxStandard` are the mixed-language members below. `swiftModules` names the project's modules this product compiles against and links (below). Ids and names are unique (beyond the schema). |
+| `swiftModules` | 1–32 when present, of `{name, sources, dependencies?}`, each a Swift module built out of the project's own files — one target of a vendored package, say. `name` is the name its Swift sources import; `sources` are its `.swift` files; `dependencies` names the modules it imports, which are built before it. Each module becomes one `.swiftmodule` and one object, per architecture, which a product that names it (or names a module that imports it) compiles against with `-I` and links. **Nothing is resolved, fetched or downloaded**: SwiftPM never runs, a vendored package is a folder of the project like any other, and its own `Package.swift` is never read, so its resources and `Bundle.module` are not supported in v1. Any project may carry modules whatever its `language`; names are unique and never a product's name, a module never depends on itself, every dependency is declared, and the modules may not depend on each other in a cycle (all beyond the schema). |
 | `build.steps` | The typed steps, below. |
 | `package` | `{id, name, version, description, longDescription?, icon?, depiction?, sileoDepiction?, author, maintainer?, section, format?, depends?, dependsByBootstrap?, recommends?, suggests?, conflicts?, breaks?, replaces?, provides?, layout, maintainerScripts?, tweakFilter?}`. |
+
+### Mixed-language products
+
+A product is not one language: every source is compiled as its extension
+says, so C, Objective-C, C++, Objective-C++ and Swift may share it.
+
+| Extension | Compiled as | Applies |
+|---|---|---|
+| `.c` | C | `cFlags` |
+| `.m` | Objective-C | `cFlags`, `objcARC` |
+| `.cpp`, `.cc`, `.cxx`, `.C` | C++ | `cFlags`, then `cxxFlags`, with `cxxStandard` |
+| `.mm` | Objective-C++ | `cFlags`, then `cxxFlags`, with `cxxStandard`; `objcARC` |
+| `.swift` | Swift | `swiftFlags`, the product's `bridgingHeader` |
+
+`SourceLanguage` is the rule, in the app and the host alike; `.C` is C++,
+as clang compiles it.
+
+- A `sources` entry may be a glob. A definite extension must be one of the
+  table's; a pattern may spell one (`Sources/*.mm`) or none at all
+  (`Sources/*`), and `projectCheck` then classifies each file it expands to.
+  A file whose extension is not one of them is
+  `project.source.unsupported` for that file, and building stops.
+- `cxxStandard` (`c++11`…`c++23`, `gnu++11`…`gnu++23`) is the product's C++
+  standard, passed as `-std=<value>` for its C++ and Objective-C++ files.
+  `cxxFlags` is per configuration and reaches only those files, after
+  `cFlags`; a C or Objective-C file never sees either.
+- `bridgingHeader` is one regular file inside the project that the Swift
+  compiler imports into each Swift file of the product, which is how Swift
+  reaches the C family's declarations. A product that names one must compile
+  at least one `.swift` source (`project.bridgingHeader.unused`), and the
+  file must exist, be regular and resolve inside the project
+  (`project.bridgingHeader.missing`). Swift sees the header as C or
+  Objective-C: C++ declarations need an `extern "C"` facade, because Swift's
+  direct C++ interop is not part of v1.
+- A project compiles Swift when a product's sources include a `.swift` file
+  or the project carries `swiftModules`; that, not `language`, is what
+  requires the toolchain's `swiftc` and its Swift component and what the
+  Swift SDK checks apply to.
 
 ### Build steps
 
@@ -189,8 +227,10 @@ framework, a library, an extension support component, an install name, an
 entitlement, a build script's content, a Swift module's source patterns or
 dependencies, or a product naming another module each moves the build digest.
 Editing, adding or removing a source, header or resource under the existing
-globs does not — a module's own files are sources like any other — nor does
-`template`, `environment`, `projectID` or `package`.
+globs does not — a module's own files are sources like any other, and so is
+the product's bridging header: naming `bridgingHeader` moves the digest,
+editing the header's bytes does not — nor does `template`, `environment`,
+`projectID` or `package`.
 
 ### Packaging description
 

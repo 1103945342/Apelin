@@ -201,6 +201,8 @@ EDITS = [
     ("compile flag added", lambda r: edit_json(r / "apelin-project.json", lambda d: d["build"]["steps"][1].__setitem__("flags", ["-DEXTRA=1"])), True, False),
     ("build script edited", lambda r: append(r / "Scripts/generate-version.sh", "# edited\n"), True, False),
     ("entitlements edited", lambda r: append(r / "Packaging/Tool.entitlements", "\n"), True, False),
+    ("bridging header set", lambda r: edit_json(r / "apelin-project.json", lambda d: d["products"][0].__setitem__("bridgingHeader", "Sources/Bridge.h")), True, False),
+    ("bridging header content edited", lambda r: append(r / "Sources/Bridge.h", "/* edited */\n"), False, False),
     ("deployment target raised", lambda r: edit_json(r / "apelin-project.json", lambda d: d.__setitem__("deploymentTarget", "17.0")), True, False),
     ("postinst edited", lambda r: append(r / "Packaging/postinst", "# edited\n"), False, True),
     ("installed data file edited", lambda r: append(r / "Packaging/apelinhello.conf", "x=1\n"), False, True),

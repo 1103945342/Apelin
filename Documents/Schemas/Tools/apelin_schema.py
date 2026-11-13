@@ -80,6 +80,25 @@ def validate_manifest(document: Any) -> list[str]:
 
 _STEP_ORDER = {"compile": 0, "link": 1, "bundle-resources": 2, "lipo": 3, "dsym": 4, "strip": 5, "sign": 6}
 
+# The extensions SourceLanguage classifies, `.C` included as C++.
+_SOURCE_EXTENSIONS = (".c", ".m", ".cpp", ".cc", ".cxx", ".C", ".mm", ".swift")
+
+
+def _has_wildcard(text: str) -> bool:
+    return "*" in text or "?" in text
+
+
+def _unsupported_source(source: str) -> str | None:
+    """A product's source spelling: a definite extension must be one this project
+    compiles; a pattern may spell one (`Sources/*.mm`) or none (`Sources/*`), and
+    what it expands to is classified by the host's projectCheck."""
+    suffix = os.path.splitext(source)[1]
+    if suffix in _SOURCE_EXTENSIONS:
+        return None
+    if _has_wildcard(source) and (not suffix or _has_wildcard(suffix)):
+        return None
+    return f"{source} is not a .c, .m, .cpp, .cc, .cxx, .mm or .swift source"
+
 
 def project_semantic_errors(project: dict) -> list[str]:
     errors: list[str] = []
@@ -146,24 +165,20 @@ def project_semantic_errors(project: dict) -> list[str]:
     for key in package.get("dependsByBootstrap", {}):
         if key not in bootstraps:
             errors.append(f"/package/dependsByBootstrap/{key}: the project does not build for {key}")
-    is_swift = project["language"] == "swift"
     for index, product in enumerate(project["products"]):
         for source in product["sources"]:
-            suffix = os.path.splitext(source)[1]
-            if is_swift and suffix != ".swift":
-                errors.append(f"/products/{index}/sources: a Swift project compiles .swift sources only in v1")
-            elif not is_swift and suffix not in (".c", ".m"):
-                errors.append(f"/products/{index}/sources: {source} is not a .c or .m source")
+            problem = _unsupported_source(source)
+            if problem:
+                errors.append(f"/products/{index}/sources: {problem}")
     errors.extend(_swift_module_errors(project))
     return errors
 
 
 def _swift_module_errors(project: dict) -> list[str]:
-    """The modules a project carries, and the ones its products name."""
+    """The modules a project carries, and the ones its products name. Any
+    project may carry them; a module compiles Swift sources only."""
     modules = project.get("swiftModules", [])
     errors: list[str] = []
-    if modules and project["language"] != "swift":
-        errors.append("/swiftModules: only a Swift project compiles Swift modules")
     by_name: dict[str, dict] = {}
     for index, module in enumerate(modules):
         if module["name"] in by_name:
@@ -171,7 +186,8 @@ def _swift_module_errors(project: dict) -> list[str]:
         else:
             by_name[module["name"]] = module
         for source in module["sources"]:
-            if os.path.splitext(source)[1] != ".swift":
+            suffix = os.path.splitext(source)[1]
+            if suffix != ".swift" and not (_has_wildcard(source) and (not suffix or _has_wildcard(suffix))):
                 errors.append(f"/swiftModules/{index}/sources: {source} is not a .swift source")
     product_names = {p["name"] for p in project["products"]}
     for index, module in enumerate(modules):

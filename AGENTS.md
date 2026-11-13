@@ -3339,11 +3339,35 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   slices, products, dSYMs, `build.log`, the deb), never in the project. Tools
   are the registered toolchain's `usr/bin/<tool>`, posix_spawn'd by argv,
   stdin `/dev/null`, `POSIX_SPAWN_CLOEXEC_DEFAULT`, a process group each
-  (cancel kills the group). clang gets `-isysroot <SDK>`, `-arch`,
-  `-mios-version-min`, `-O`, `-g`, `-fobjc-arc`, `-Wall -Wextra`,
+  (cancel kills the group). clang gets `-isysroot <SDK>` and an explicit
+  `-target <arch>-apple-ios<deploymentTarget>` (the retargeted driver must not
+  infer macOS), `-O`, `-g`, `-Wall -Wextra`,
   `-Werror=unguarded-availability-new`, `-fvisibility=hidden`,
   `-ffile-prefix-map=<project>=.` and the `APELIN_*` defines, run in the
-  project folder with relative sources. Signing is `ApelinCodeSign`, no ldid:
+  project folder with relative sources. `ProductSourcePlan` classifies each
+  expanded source, not the manifest's primary `language`: `.c`, `.m`,
+  `.cc`/`.cpp`/`.cxx`/`.C`, `.mm`, and `.swift` may share one product.
+  Swift compiles first; native sources compile one by one with explicit
+  `-x`, ARC only for Objective-C/Objective-C++, and `cxxStandard` plus
+  configuration `cxxFlags` only for C++/Objective-C++. Native objects retain
+  their relative directories so similarly named sources never overwrite
+  each other. A product with Swift sources or linked `swiftModules` links
+  through swiftc; otherwise clang; C++ sources add libc++ automatically.
+  Both linkers receive library/framework search paths and weak frameworks.
+  A product's `bridgingHeader` imports C/Objective-C declarations into
+  Swift, with header search paths and the Clang defines; its path, not its
+  source bytes, is in the approval digest. In a mixed Swift/Objective-C
+  product, native sources may import `<ProductName-Swift.h>`, emitted into
+  a per-product/per-architecture directory. A mixed executable without
+  `main.swift` parses Swift as a library (native main or Swift `@main`);
+  pure Swift executables retain their previous top-level behavior.
+  Direct Swift/C++ interop is not enabled: expose a C ABI wrapper instead.
+  `python3 Scripts/test-mixed-build-device.py` compiles the actual pipeline
+  methods in a small signed harness and runs seven cases for arm64 and
+  arm64e on device; its outputs stay in `.build/mixed-device`. It checks
+  compile/link/runtime only, not host integration, packaging or installation.
+  XCTest and the full `make check` remain CI's job on this device without
+  make/Xcode. Signing is `ApelinCodeSign`, no ldid:
   byte for byte what `ldid -Hsha256 -S[entitlements]` writes. It is the one
   signer: the toolchain retarget (`Packages/ApelinToolchain`,
   `MachOImage.signed`) lays out its own slice but builds the blobs with the
@@ -4610,11 +4634,16 @@ one are out of reach without wrapping `AgentOptions.streamFn`, an owner
 decision): a tool call or an approval that outlasts it costs one such write
 too, which is why `apelin_conversation_read` waits at most 180 s and is
 called again rather than waiting ten minutes. Extra requests: a title
-completion (no tools, at most 3000 characters in and 160 tokens out) for the
-first message, for later ones until it names the chat (three that name
-nothing at most), and on every message while the project still has its
-generated name; compaction, automatic at 75 % of the window or
-`agentCompact`; nothing at reopen, where the transcript is read back (the
+completion (no tools, at most 3000 characters in; 512 output tokens, or
+4096 when the model reasons) for the first message. An empty, malformed or
+failed answer retries within the same task, after one second, up to three
+attempts of twenty seconds each; Stop cancels the attempt and the retry wait.
+The source is fixed when the first nonempty input is accepted, and recovered
+from the existing event log on reopen, never replaced by a follow-up. Once
+the chat has a title, later messages may still propose a name while the project
+has its generated name; they never replace the chat title. Compaction runs
+automatically at 75 % of the window or through `agentCompact`; nothing is
+requested at reopen, where the transcript is read back (the
 tool-name migration is idempotent) and the next request finds the prefix the
 last one cached. Known in kwwk, not worked around:
 `ProviderImageBudget.clamp` drops the oldest image one at a time past a

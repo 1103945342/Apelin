@@ -37,13 +37,19 @@ extension BuiltInSkills {
           `app` (an `app` product), `cli` (an `executable`) or `preferences`
           (a `bundle`). A project may carry more products than its kind's,
           such as a tweak with its own preference bundle.
-        - `language`: `objc` and `c` compile `.m` and `.c` files only;
-          `swift` compiles `.swift` only. A product never mixes them.
+        - `language`: `c`, `objc` or `swift`, the project's main language.
+          Each product may mix `.c`, `.m`, `.cpp`, `.cc`, `.cxx`, `.C`, `.mm`
+          and `.swift`. The build chooses a compiler for each actual source,
+          not from this label; Swift sources compile together per product.
         - `deploymentTarget`: a string, "16.0" or later.
         - `architectures`: `{"rootless": ["arm64", "arm64e"], "roothide":
           ["arm64e"]}`. The keys present are the bootstraps it packages for.
         - `configurations`: `Debug` and `Release`, each `{optimization,
-          debugInfo, defines?, cFlags?, swiftFlags?, linkFlags?}`.
+          debugInfo, defines?, cFlags?, cxxFlags?, swiftFlags?, linkFlags?}`.
+          `cFlags` goes to C, Objective-C, C++ and Objective-C++;
+          `cxxFlags` follows it for C++ and Objective-C++ only. `swiftFlags`
+          goes to the product's Swift compile. Keep language-specific flags
+          here, not in a shared compile step's `flags`.
           `optimization` is "0", "1", "2", "3", "s" or "z". `defines` maps a
           name to its value; no name starts with `APELIN_`. Each flag is one
           argument starting with `-`, never shell text: `-framework X` is two
@@ -66,6 +72,26 @@ extension BuiltInSkills {
           `objcARC`, `installName` (dylib only; default
           `@rpath/<name>.dylib`), `entitlements` (a project plist), and
           `infoPlist` and `resources` (app, appex and bundle only).
+        - `bridgingHeader`: an optional project-relative C/Objective-C header
+          imported by Swift with `-import-objc-header`. Put C++ behind C ABI
+          declarations or an Objective-C wrapper implemented in `.mm`; do not
+          put C++ declarations into this header. Swift and native code share
+          `headerSearchPaths` and the configuration's preprocessor defines.
+        - `cxxStandard`: optional, for example `c++17` or `c++20`, passed only
+          to `.cpp`, `.cc`, `.cxx`, `.C` and `.mm`. `objcARC` applies only to
+          `.m` and `.mm`. C++ sources automatically link `libc++`.
+        - With both Swift and Objective-C/Objective-C++, the build emits
+          `<name>-Swift.h` before compiling `.m`/`.mm` and adds its generated
+          directory to their includes. Import it in implementations, not in
+          the bridging header, to avoid a circular dependency. Mark Swift
+          declarations `@objc` and use Objective-C-representable types.
+          A mixed app/executable without `main.swift` uses `-parse-as-library`
+          (Swift `@main` or a native main); use `main.swift` for top-level
+          Swift statements. Provide exactly one entry point.
+        - `headerSearchPaths`, `frameworkSearchPaths`, `librarySearchPaths`
+          and `weakFrameworks` work for Swift as well as native products.
+          A product containing Swift, or linking `swiftModules`, links with
+          `swiftc`; a native-only product links with `clang`.
         - `swiftModules`: `[name]`, the project modules below this product
           compiles against and links, each together with the modules it
           imports.
@@ -81,7 +107,7 @@ extension BuiltInSkills {
 
         ## swiftModules
         Swift modules built out of the project's own files, such as one target
-        of a package the project vendors (Swift projects only):
+        of a package the project vendors (each module stays Swift-only):
 
         ```json
         "swiftModules": [

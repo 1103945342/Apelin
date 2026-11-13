@@ -17,6 +17,7 @@ public final class BuildPipeline: @unchecked Sendable {
     private let cancellation: BuildCancellation
 
     private var objects: [String: [Architecture: [String]]] = [:]
+    private var sourcePlans: [String: ProductSourcePlan] = [:]
     private var slices: [String: [Architecture: String]] = [:]
     /// The project's own Swift modules, built once per architecture.
     private var moduleCache: [Architecture: [String: BuiltModule]] = [:]
@@ -207,7 +208,8 @@ public final class BuildPipeline: @unchecked Sendable {
     }
 
     private func targetFlags(_ arch: Architecture) -> [String] {
-        ["-isysroot", inputs.sdk.path, "-arch", arch.rawValue, "-mios-version-min=\(project.deploymentTarget)"]
+        ["-target", swiftTarget(arch), "-isysroot", inputs.sdk.path, "-arch", arch.rawValue,
+         "-mios-version-min=\(project.deploymentTarget)"]
     }
 
     /// The SDK's Swift interfaces are built once per toolchain and SDK, into a
@@ -368,18 +370,37 @@ public final class BuildPipeline: @unchecked Sendable {
     }
 
     private func compile(_ product: ProjectDocument.Product, flags: [String]) throws {
-        let sources = try sources(of: product)
+        let plan = try ProductSourcePlan(paths: sources(of: product).map(\.relative))
         let support = try support(for: product)
+        let includes = try (product.headerSearchPaths ?? [])
+            .map { try ProjectFiles.resolve($0, in: inputs.projectRoot) } + support.includes
+        let frameworks = try (product.frameworkSearchPaths ?? [])
+            .map { try ProjectFiles.resolve($0, in: inputs.projectRoot) }
+        let bridge: String?
+        if let path = product.bridgingHeader {
+            guard plan.usesSwift else {
+                throw BuildFailure("\(product.id): bridgingHeader requires Swift sources in this product")
+            }
+            _ = try ProjectFiles.read(path, in: inputs.projectRoot)
+            bridge = try ProjectFiles.resolve(path, in: inputs.projectRoot)
+        } else {
+            bridge = nil
+        }
         var produced: [Architecture: [String]] = [:]
         for arch in architectures {
             let directory = work.appendingPathComponent("obj/\(product.id)/\(arch.rawValue)").path
+            let swiftDirectory = directory + "/swift"
             try makeDirectory(directory)
-            if project.language == .swift {
-                let object = directory + "/\(product.name).o"
+            var list: [String] = []
+            // Swift emits its Objective-C interface before native compilation,
+            // so .m/.mm may import <ProductName-Swift.h> without a script step.
+            if plan.usesSwift {
+                try makeDirectory(swiftDirectory)
+                let object = swiftDirectory + "/\(product.name).o"
                 var argv = [
                     "-sdk", inputs.sdk.path, "-target", swiftTarget(arch), "-wmo", "-c", "-module-name", product.name,
                 ] + swiftToolFlags
-                if product.type == .dylib || product.type == .bundle || product.type == .appex {
+                if plan.parsesSwiftAsLibrary(type: product.type) {
                     argv.append("-parse-as-library")
                 }
                 argv.append(configuration.optimization == "0" ? "-Onone" : "-O")
@@ -388,51 +409,73 @@ public final class BuildPipeline: @unchecked Sendable {
                     argv.append("-g")
                 }
                 argv += ["-D", bootstrapDefine, "-D", configurationDefine]
-                argv += support.includes.flatMap { ["-I", $0] }
+                argv += includes.flatMap { ["-I", $0, "-Xcc", "-I" + $0] }
+                argv += frameworks.flatMap { ["-F", $0] }
+                if let bridge {
+                    argv += ["-import-objc-header", bridge]
+                    argv += defines.flatMap { ["-Xcc", "-D\($0.0)=\($0.1)"] }
+                    argv += ["-Xcc", "-DAPELIN_PRODUCT_NAME=\"\(product.name)\""]
+                }
+                if plan.usesObjC {
+                    argv += ["-emit-objc-header", "-emit-objc-header-path", swiftDirectory + "/\(product.name)-Swift.h"]
+                }
                 argv += try builtModules(of: product, for: arch).flatMap { ["-I", $0.include] }
                 argv += configuration.swiftFlags ?? []
                 argv += flags
-                argv += sources.map(\.relative)
+                argv += plan.swift.map(\.path)
                 argv += ["-o", object]
                 try execute(tool("swiftc"), argv, label: "swiftc")
-                produced[arch] = [object]
-            } else {
-                var list: [String] = []
-                for source in sources {
-                    let object = directory + "/" + source.relative.replacingOccurrences(of: "/", with: "__") + ".o"
-                    var argv = targetFlags(arch)
-                    argv += [
-                        "-O\(configuration.optimization)", "-Wall", "-Wextra", "-Werror=unguarded-availability-new",
-                        "-fvisibility=hidden", "-ffile-prefix-map=\(root)=.", "-fno-color-diagnostics",
-                    ]
-                    if configuration.debugInfo {
-                        argv.append("-g")
-                    }
-                    if product.objcARC == true {
-                        argv.append("-fobjc-arc")
-                    }
-                    argv += defines.map { "-D\($0.0)=\($0.1)" }
-                    argv.append("-DAPELIN_PRODUCT_NAME=\"\(product.name)\"")
-                    argv += try (product.headerSearchPaths ?? [])
-                        .map { try "-I" + (ProjectFiles.resolve($0, in: inputs.projectRoot)) }
-                    argv += support.includes.map { "-I" + $0 }
-                    argv += configuration.cFlags ?? []
-                    argv += flags
-                    argv += ["-c", source.relative, "-o", object]
-                    try execute(tool("clang"), argv, label: "clang")
-                    list.append(object)
-                }
-                produced[arch] = list
+                list.append(object)
             }
+            for source in plan.clang {
+                // Preserve the relative directory: a/b.c and a__b.c must not
+                // overwrite each other, nor collide with the Swift object.
+                let object = directory + "/clang/" + source.path + ".o"
+                try makeDirectory(URL(fileURLWithPath: object).deletingLastPathComponent().path)
+                var argv = targetFlags(arch)
+                argv += [
+                    "-O\(configuration.optimization)", "-Wall", "-Wextra", "-Werror=unguarded-availability-new",
+                    "-fvisibility=hidden", "-ffile-prefix-map=\(root)=.", "-fno-color-diagnostics",
+                ]
+                if configuration.debugInfo {
+                    argv.append("-g")
+                }
+                if product.objcARC == true, source.language.isObjC {
+                    argv.append("-fobjc-arc")
+                }
+                argv += defines.map { "-D\($0.0)=\($0.1)" }
+                argv.append("-DAPELIN_PRODUCT_NAME=\"\(product.name)\"")
+                argv += includes.map { "-I" + $0 }
+                argv += frameworks.map { "-F" + $0 }
+                if plan.usesSwift, source.language.isObjC {
+                    argv += ["-I" + swiftDirectory]
+                }
+                argv += configuration.cFlags ?? []
+                if source.language.isCXX {
+                    if let standard = product.cxxStandard { argv.append("-std=" + standard) }
+                    argv += configuration.cxxFlags ?? []
+                }
+                argv += flags
+                argv += ["-x", ProductSourcePlan.clangLanguage(source.language), "-c", source.path, "-o", object]
+                try execute(tool("clang"), argv, label: "clang")
+                list.append(object)
+            }
+            produced[arch] = list
         }
+        sourcePlans[product.id] = plan
         objects[product.id] = produced
     }
 
     private func link(_ product: ProjectDocument.Product, flags: [String]) throws {
-        guard let produced = objects[product.id] else {
+        guard let produced = objects[product.id], let plan = sourcePlans[product.id] else {
             throw BuildFailure("\(product.id): link before compile")
         }
         let support = try support(for: product)
+        let usesSwift = plan.usesSwift || !(product.swiftModules ?? []).isEmpty
+        let libraries = try (product.librarySearchPaths ?? [])
+            .map { try ProjectFiles.resolve($0, in: inputs.projectRoot) } + support.libraryDirectories
+        let frameworks = try (product.frameworkSearchPaths ?? [])
+            .map { try ProjectFiles.resolve($0, in: inputs.projectRoot) } + support.libraryDirectories
         var out: [Architecture: String] = [:]
         for arch in architectures {
             let directory = work.appendingPathComponent("link/\(product.id)/\(arch.rawValue)").path
@@ -440,7 +483,7 @@ public final class BuildPipeline: @unchecked Sendable {
             let binary = directory + "/" + fileName(of: product)
             var argv: [String]
             let executable: String
-            if project.language == .swift {
+            if usesSwift {
                 executable = try tool("swiftc")
                 argv = ["-sdk", inputs.sdk.path, "-target", swiftTarget(arch)] + swiftToolFlags
                 switch product.type {
@@ -450,10 +493,6 @@ public final class BuildPipeline: @unchecked Sendable {
                 case .appex: argv += extensionEntryPoint
                 case .app, .executable: break
                 }
-                argv += support.libraryDirectories.flatMap { ["-L", $0, "-F", $0] }
-                argv += support.rpaths.flatMap { ["-Xlinker", "-rpath", "-Xlinker", $0] }
-                argv += (product.frameworks ?? []).flatMap { ["-framework", $0] }
-                argv += (product.libraries ?? []).map { "-l" + $0 }
             } else {
                 executable = try tool("clang")
                 argv = targetFlags(arch)
@@ -463,18 +502,19 @@ public final class BuildPipeline: @unchecked Sendable {
                 case .appex: argv += extensionEntryPoint
                 case .app, .executable: break
                 }
-                if product.objcARC == true {
+                if product.objcARC == true, plan.usesObjC {
                     argv.append("-fobjc-arc")
                 }
-                argv += support.libraryDirectories.flatMap { ["-L" + $0, "-F" + $0] }
-                argv += try (product.librarySearchPaths ?? [])
-                    .map { try "-L" + (ProjectFiles.resolve($0, in: inputs.projectRoot)) }
-                argv += try (product.frameworkSearchPaths ?? [])
-                    .map { try "-F" + (ProjectFiles.resolve($0, in: inputs.projectRoot)) }
-                argv += support.rpaths.map { "-Wl,-rpath," + $0 }
-                argv += (product.frameworks ?? []).flatMap { ["-framework", $0] }
-                argv += (product.weakFrameworks ?? []).flatMap { ["-weak_framework", $0] }
-                argv += (product.libraries ?? []).map { "-l" + $0 }
+            }
+            // Both drivers receive the same search paths and link inputs.
+            argv += libraries.flatMap { ["-L", $0] }
+            argv += frameworks.flatMap { ["-F", $0] }
+            argv += support.rpaths.flatMap { ["-Xlinker", "-rpath", "-Xlinker", $0] }
+            argv += (product.frameworks ?? []).flatMap { ["-framework", $0] }
+            argv += (product.weakFrameworks ?? []).flatMap { ["-Xlinker", "-weak_framework", "-Xlinker", $0] }
+            argv += (product.libraries ?? []).map { "-l" + $0 }
+            if plan.usesCXX, !(product.libraries ?? []).contains("c++") {
+                argv.append("-lc++")
             }
             argv += configuration.linkFlags ?? []
             argv += flags

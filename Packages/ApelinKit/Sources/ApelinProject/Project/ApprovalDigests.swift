@@ -63,7 +63,9 @@ public struct ApprovalDigests: Codable, Sendable, Equatable {
     /// `swiftModules` is here although the sources it names are not: what a
     /// module is made of is the project's decision, what its files say is a
     /// source edit like any other. A product's own `swiftModules` is a member
-    /// of `products`, and comes with it.
+    /// of `products`, and comes with it. `bridgingHeader` and `cxxStandard`
+    /// are product members too, so naming or changing them asks; the header's
+    /// bytes are never digested — its content is a source edit.
     private static let buildMembers = ["kind", "language", "deploymentTarget", "architectures", "configurations", "swiftModules"]
     private static let productInputMembers: Set<String> = ["sources", "headerSearchPaths", "resources"]
 

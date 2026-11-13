@@ -45,7 +45,7 @@ enum EmbeddedSchemas {
       }
     },
     "language": {
-      "description": "The main language. A product may still contain C sources beside Objective-C ones; Swift and C-family sources are never mixed in one product in v1.",
+      "description": "The main language, for the editor and the templates. A product is not limited to it: .c, .m, .cpp, .cc, .cxx, .C, .mm and .swift sources may share one product, each compiled as its extension says. Swift reaches the C family's declarations through the product's bridgingHeader.",
       "enum": ["c", "objc", "swift"]
     },
     "deploymentTarget": { "$ref": "#/$defs/iosVersion" },
@@ -75,7 +75,7 @@ enum EmbeddedSchemas {
       "items": { "$ref": "#/$defs/product" }
     },
     "swiftModules": {
-      "description": "Swift modules built out of the project's own files — one target of a vendored package, say — each one .swiftmodule and one object. A Swift product names the ones it compiles against and links in its own swiftModules. SwiftPM never runs and no Package.swift is read: the project says where each module's sources are and which modules it imports.",
+      "description": "Swift modules built out of the project's own files — one target of a vendored package, say — each one .swiftmodule and one object. A product that compiles Swift names the ones it compiles against and links in its own swiftModules. SwiftPM never runs and no Package.swift is read: the project says where each module's sources are and which modules it imports.",
       "type": "array",
       "minItems": 1,
       "maxItems": 32,
@@ -240,6 +240,13 @@ enum EmbeddedSchemas {
       "uniqueItems": true,
       "items": { "enum": ["arm64", "arm64e"] }
     },
+    "cxxStandard": {
+      "description": "A C++ language standard, passed to clang as -std=<value> for the C++ and Objective-C++ sources of the product that names it.",
+      "enum": [
+        "c++11", "c++14", "c++17", "c++20", "c++23",
+        "gnu++11", "gnu++14", "gnu++17", "gnu++20", "gnu++23"
+      ]
+    },
     "binding": {
       "description": "A registered toolchain or SDK, pinned by the id it was registered under and the content digest recorded at registration. Changing either is an explicit operation.",
       "type": "object",
@@ -295,6 +302,12 @@ enum EmbeddedSchemas {
           }
         },
         "cFlags": { "type": "array", "maxItems": 64, "items": { "$ref": "#/$defs/flag" } },
+        "cxxFlags": {
+          "description": "C++ and Objective-C++ sources only, applied after cFlags.",
+          "type": "array",
+          "maxItems": 64,
+          "items": { "$ref": "#/$defs/flag" }
+        },
         "swiftFlags": { "type": "array", "maxItems": 64, "items": { "$ref": "#/$defs/flag" } },
         "linkFlags": { "type": "array", "maxItems": 64, "items": { "$ref": "#/$defs/flag" } }
       }
@@ -368,12 +381,20 @@ enum EmbeddedSchemas {
         },
         "infoPlist": { "$ref": "#/$defs/relativePath" },
         "entitlements": { "$ref": "#/$defs/relativePath" },
+        "bridgingHeader": {
+          "description": "The header the Swift compiler imports into this product's Swift files, giving Swift the C family's declarations. A regular file inside the project; the product must compile at least one .swift source.",
+          "$ref": "#/$defs/relativePath"
+        },
         "installName": {
           "type": "string",
           "maxLength": 512,
           "pattern": "^(@rpath|@loader_path|@executable_path|/)[^\\u0000\\n\\r]*$"
         },
         "objcARC": { "type": "boolean" },
+        "cxxStandard": {
+          "description": "The C++ standard for this product's .cpp, .cc, .cxx, .C and .mm sources, passed as -std=<value>.",
+          "$ref": "#/$defs/cxxStandard"
+        },
         "frameworks": {
           "type": "array",
           "uniqueItems": true,
