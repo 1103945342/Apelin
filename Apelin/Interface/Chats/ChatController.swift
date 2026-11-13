@@ -928,7 +928,7 @@ final class ChatController: UIViewController {
     /// inside steps included. While there is, the box leads with the tip about
     /// folding it back.
     private func refreshExpandedProcess() {
-        composer.setExpandedProcess(messages.contains(where: isOpenInTranscript))
+        composer.setExpandedProcess(messages.contains { isOpenInTranscript($0) })
     }
 
     private func isOpenInTranscript(_ row: ChatMessage) -> Bool {
@@ -937,7 +937,7 @@ final class ChatController: UIViewController {
             || ChatTraceExpansion.isExpanded(call: row.id) {
             return true
         }
-        return row.trace.contains(where: isOpenInTranscript)
+        return row.trace.contains { isOpenInTranscript($0) }
     }
 
     /// A disclosure is reading, not following output. Keep the row's top at

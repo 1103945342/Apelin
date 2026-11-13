@@ -114,8 +114,9 @@ class ComposerInputView: ComposerSectionView {
     }
 
     deinit {
+        // The roller's clock cancels itself as it goes: `deinit` here is not
+        // main-actor isolated, and stopping it is a main-actor call.
         NotificationCenter.default.removeObserver(self)
-        tipRoller?.stop()
         delegate = nil
         cancellables.forEach { $0.cancel() }
         cancellables.removeAll()

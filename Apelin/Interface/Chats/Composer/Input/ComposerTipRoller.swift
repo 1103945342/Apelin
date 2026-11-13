@@ -31,14 +31,14 @@ final class ComposerTipRoller {
     /// names itself after it.
     var onShow: ((String) -> Void)?
 
+    /// The clock is a task that holds this weakly: `stop()` cancels it, and a
+    /// roller that goes away without one leaves the loop to end itself at its
+    /// next wake. There is no `deinit` cancelling it, because a `deinit` that
+    /// is not main-actor isolated may not reach it.
     init(label: UILabel, tips: [String]) {
         self.label = label
         self.tips = tips
         rotation = ComposerTipRotation(count: tips.count)
-    }
-
-    deinit {
-        roll?.cancel()
     }
 
     var current: String {
@@ -93,10 +93,9 @@ final class ComposerTipRoller {
         }
     }
 
-    /// Stops the clock where it is: the view calls it as it goes away, and
-    /// `setActive(false)` when the box fills with text. The tip it was on is
-    /// the one it comes back to.
-    func stop() {
+    /// Stops the clock where it is. Called as the box fills with text and as
+    /// the page goes away; the tip it was on is the one it comes back to.
+    private func stop() {
         roll?.cancel()
         roll = nil
     }
