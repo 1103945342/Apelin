@@ -158,6 +158,14 @@ extension BuiltInSkills {
           that can build clang modules (A13 on); `projectCheck` says which is
           missing. The product must compile a `.swift` source or name a swift
           module.
+        - The first build that imports the C++ standard library is slow:
+          Swift's importer compiles every header it reaches as a clang module,
+          and `<vector>` with `<string>` took 222 s on device before the
+          modules existed, 4 s once cached. The cache is
+          `Builds/.swift-module-cache`, shared by builds, but it is keyed on
+          the preprocessor state, so another project — or a changed define —
+          compiles it again. Keep C++ out of the headers Swift imports (a
+          pimpl or a C facade) where that matters.
 
         ## swiftModules
         Swift modules built out of the project's own files, such as one target

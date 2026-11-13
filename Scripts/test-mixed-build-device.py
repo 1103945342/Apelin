@@ -275,6 +275,21 @@ print("PASS cxx-header-only")
     return cases
 
 
+def check_importer_macros(name, log):
+    """Clang keys its module cache on the preprocessor state, so a macro that
+    changes every build rebuilds every imported standard library module. The
+    importer must not see APELIN_BUILD_ID while native compilation still does."""
+    lines = [line for line in log.splitlines() if line.startswith("$ ")]
+    swift = [line for line in lines if "/swiftc " in line]
+    native = [line for line in lines if "/clang " in line]
+    for line in swift:
+        if "-Xcc -DAPELIN_BUILD_ID" in line:
+            raise AssertionError(name + ": the C++ importer saw the build ID, so its module cache "
+                                 "would be rebuilt by every build\n" + line)
+    if native and not any("-DAPELIN_BUILD_ID=" in line for line in native):
+        raise AssertionError(name + ": native compilation lost the build ID\n" + "\n".join(native[:2]))
+
+
 def refusals():
     """Builds the pipeline must turn down: one fixture per refusal, with the
     phrase its message has to carry."""
@@ -308,6 +323,8 @@ def main():
             relative = ".build/mixed-device/" + name
             log = run([str(OUT / "check"), relative, bootstrap])
             write(name + "/" + bootstrap + ".log", log)
+            if name.startswith("cxx-"):
+                check_importer_macros(name, log)
             binary = relative + "/out-" + bootstrap + "/link/tool/" + arch + "/Mixed"
             run(["ldid", "-S" + ENTITLEMENTS, binary])
             result = run([str(REPO / binary)])

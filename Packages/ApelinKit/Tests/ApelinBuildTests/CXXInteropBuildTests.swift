@@ -83,6 +83,11 @@ final class CXXInteropBuildTests: XCTestCase {
             XCTAssertTrue(swift.contains("-Xcc -std=c++17"), "c++17 when the project names none: \(swift)")
             XCTAssertTrue(swift.contains("-Xcc -I\(include)"), "the modulemap's search path reaches clang: \(swift)")
             XCTAssertFalse(swift.contains("-import-objc-header"), "interop replaces the bridging header: \(swift)")
+            XCTAssertFalse(
+                swift.contains("-Xcc -DAPELIN_BUILD_ID"),
+                "the importer never sees the build ID: clang keys its module cache on the macro set, so every "
+                    + "build would rebuild the imported standard library: \(swift)"
+            )
 
             // The C++ file is still the product's own source, compiled by clang.
             let counter = try XCTUnwrap(NativeBuild.command(in: reporter, target, "-x c++ -c Sources/counter.cpp"))

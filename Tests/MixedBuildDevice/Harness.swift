@@ -46,7 +46,10 @@ final class DevicePipelineCheck {
     var bootstrapDefine: String { "APELIN_BOOTSTRAP_" + inputs.bootstrap.rawValue.uppercased() }
     var configurationDefine: String { "APELIN_CONFIGURATION_DEBUG" }
     var defines: [(String, String)] {
-        [(bootstrapDefine, "1"), (configurationDefine, "1")]
+        [("APELIN_BUILD_ID", "\"\(inputs.buildID)\""),
+         ("APELIN_PACKAGE_ID", "\"\(project.package.id)\""),
+         ("APELIN_VERSION", "\"\(project.package.version)\""),
+         (bootstrapDefine, "1"), (configurationDefine, "1")]
             + (configuration.defines ?? [:]).sorted { $0.key < $1.key }.map { ($0.key, $0.value) }
     }
     struct Support {

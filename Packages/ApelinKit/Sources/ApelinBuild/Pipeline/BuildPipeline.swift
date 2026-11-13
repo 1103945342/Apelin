@@ -230,6 +230,18 @@ public final class BuildPipeline: @unchecked Sendable {
         "\(arch.rawValue)-apple-ios\(project.deploymentTarget)"
     }
 
+    /// The defines Swift's C++ importer may see — every one but the build ID.
+    /// Clang keys its module cache on the preprocessor state it was given, so a
+    /// macro that changes with every build makes every imported header compile
+    /// again, the C++ standard library's included: measured on device, a warm
+    /// import of `<vector>` and `<string>` takes 4 s, and the same import with
+    /// one more `-D` takes 183 s and leaves a fresh copy of every module in the
+    /// cache. `APELIN_BUILD_ID` is the only define here that moves per build,
+    /// and no header's interface is allowed to depend on it.
+    private var importerDefines: [(String, String)] {
+        defines.filter { $0.0 != "APELIN_BUILD_ID" }
+    }
+
     /// The C++ importer sees the same declared standard and preprocessor flags
     /// as native C++ compilation. Settings include transitive Swift modules.
     private func cxxImportFlags(_ settings: CXXInteropSettings) throws -> [String] {
@@ -370,7 +382,7 @@ public final class BuildPipeline: @unchecked Sendable {
             if interop.enabled {
                 // A C++ declaration must have the same macro-selected layout
                 // when imported here and when compiled in a native product.
-                argv += defines.flatMap { ["-Xcc", "-D\($0.0)=\($0.1)"] }
+                argv += importerDefines.flatMap { ["-Xcc", "-D\($0.0)=\($0.1)"] }
             }
             argv += ["-emit-module", "-emit-module-path", directory + "/\(module.name).swiftmodule"]
             argv += sources.map(\.relative)
@@ -452,7 +464,8 @@ public final class BuildPipeline: @unchecked Sendable {
                     argv += ["-import-objc-header", bridge]
                 }
                 if bridge != nil || interop.enabled {
-                    argv += defines.flatMap { ["-Xcc", "-D\($0.0)=\($0.1)"] }
+                    let seen = interop.enabled ? importerDefines : defines
+                    argv += seen.flatMap { ["-Xcc", "-D\($0.0)=\($0.1)"] }
                     argv += ["-Xcc", "-DAPELIN_PRODUCT_NAME=\"\(product.name)\""]
                 }
                 if plan.usesObjC {

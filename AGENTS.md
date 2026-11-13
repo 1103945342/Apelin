@@ -3383,6 +3383,16 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   for header-only C++ or C++ used only by a Swift module. Plain Swift modules
   keep their previous configuration. Header and module-map contents are
   source edits, never hashed into approval descriptions.
+  The importer's macro set is part of clang's module-cache key, so it is
+  never given `APELIN_BUILD_ID`: one extra `-D` on device rebuilt every
+  imported standard-library module (a warm import of `<vector>` and
+  `<string>` took 4 s, the same import with one more `-D` took 183 s). For
+  the same reason the standard library is compiled once per project
+  configuration: two projects, or one after a define changes, do not share
+  it. The cache lives in `Builds/.swift-module-cache/<toolchain>-<sdk>`,
+  shared by every build, and the first build that imports the standard
+  library is slow — 222 s measured for `<vector>`/`<string>`, then 4 s — so
+  it is kept, never cleaned with the build.
   A product may not have both a `bridgingHeader` and C++ interop, and the
   build refuses one that does: with the importer on, Swift never reads the
   bridging header, so every declaration in it disappears with no diagnostic
