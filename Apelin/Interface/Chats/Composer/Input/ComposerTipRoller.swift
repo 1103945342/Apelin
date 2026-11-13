@@ -93,7 +93,10 @@ final class ComposerTipRoller {
         }
     }
 
-    private func stop() {
+    /// Stops the clock where it is: the view calls it as it goes away, and
+    /// `setActive(false)` when the box fills with text. The tip it was on is
+    /// the one it comes back to.
+    func stop() {
         roll?.cancel()
         roll = nil
     }
