@@ -106,13 +106,20 @@ final class TerminalInputSocket: @unchecked Sendable {
             }
             if count > 0 {
                 sent += count
+                // Progress: the peer is reading, however slowly. The bound below
+                // is for a stall, not for a slow consumer — a shell printing
+                // while it reads must not be cut off at five seconds.
+                waited = 0
                 continue
             }
             if count < 0, errno == EINTR {
                 continue
             }
             if count < 0, errno == EAGAIN || errno == EWOULDBLOCK {
-                guard waitWritable(descriptor, timeout: 0.2) else {
+                // Not writable right now: wait on the descriptor itself rather
+                // than spinning, and give up only once the wait has run out —
+                // a single 200 ms timeout is not a closed peer.
+                if !waitWritable(descriptor, timeout: 0.2) {
                     waited += 0.2
                     if waited >= 5 {
                         return false
