@@ -56,12 +56,21 @@ final class ChannelController: TableController {
         cell.selectionStyle = .none
         cell.contentView.addSubview(qrView)
         let margins = cell.contentView.layoutMarginsGuide
+        // The code is drawn at a size that fits the page, whatever version
+        // the code itself is: a phone scans 240 points across as well as it
+        // scans a larger one, and a page that grew to 600 pushed the rows
+        // it explains off the screen.
+        let preferred = qrView.heightAnchor.constraint(equalToConstant: 240)
+        preferred.priority = .defaultHigh
         NSLayoutConstraint.activate([
             qrView.centerXAnchor.constraint(equalTo: margins.centerXAnchor),
             qrView.topAnchor.constraint(equalTo: margins.topAnchor),
             qrView.bottomAnchor.constraint(equalTo: margins.bottomAnchor),
             qrView.widthAnchor.constraint(equalTo: qrView.heightAnchor),
-            qrView.heightAnchor.constraint(greaterThanOrEqualToConstant: 220),
+            qrView.heightAnchor.constraint(lessThanOrEqualToConstant: 240),
+            qrView.heightAnchor.constraint(greaterThanOrEqualToConstant: 160),
+            qrView.widthAnchor.constraint(lessThanOrEqualTo: margins.widthAnchor),
+            preferred,
         ])
         return cell
     }()
@@ -238,8 +247,23 @@ final class ChannelController: TableController {
         filter.message = Data(text.utf8)
         filter.correctionLevel = "M"
         guard let output = filter.outputImage else { return nil }
-        let scaled = output.transformed(by: CGAffineTransform(scaleX: 12, y: 12))
-        guard let cgImage = CIContext().createCGImage(scaled, from: scaled.extent) else { return nil }
+        // One size whatever the code's version: a longer code is denser, not
+        // wider, so the page keeps the rows that explain it and a phone still
+        // scans it from the screen.
+        let side: CGFloat = 600
+        let scale = side / max(output.extent.width, output.extent.height)
+        let scaled = output.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
+        // The white margin a scanner needs around the code.
+        let margin = side * 0.08
+        let canvas = CGRect(x: 0, y: 0, width: side + margin * 2, height: side + margin * 2)
+        let white = CIImage(color: CIColor(red: 1, green: 1, blue: 1)).cropped(to: canvas)
+        let placed = scaled.transformed(by: CGAffineTransform(
+            translationX: margin - scaled.extent.origin.x,
+            y: margin - scaled.extent.origin.y
+        ))
+        guard let cgImage = CIContext().createCGImage(placed.composited(over: white), from: canvas) else {
+            return nil
+        }
         return UIImage(cgImage: cgImage)
     }
 
@@ -249,7 +273,14 @@ final class ChannelController: TableController {
         tableView.deselectRow(at: indexPath, animated: true)
         guard let content = dataSource.value(at: indexPath) else { return }
         switch content.row {
-        case .status, .scan:
+        case .scan:
+            // Tapping the code shows it as large as the screen allows: a
+            // second phone scanning a 240-point code off this one is easier
+            // the bigger it is drawn.
+            if let qr = content.qr, let image = Self.qrImage(qr) {
+                present(UINavigationController(rootViewController: QRCodeController(image: image)), animated: true)
+            }
+        case .status:
             break
         case .code:
             askForNumber()
@@ -345,5 +376,66 @@ final class ChannelController: TableController {
         )
         alert.addAction(UIAlertAction(title: String(localized: "Done"), style: .default))
         present(alert, animated: true)
+    }
+}
+
+/// The sign-in code alone, as large as the screen allows and zoomable: what
+/// a second phone photographs or scans when the page's own row is too small.
+/// Nothing here signs anything in — the code is the host's, and this page
+/// only draws it.
+final class QRCodeController: UIViewController, UIScrollViewDelegate {
+    private let image: UIImage
+    private let scrollView = UIScrollView()
+    private let imageView = UIImageView()
+
+    init(image: UIImage) {
+        self.image = image
+        super.init(nibName: nil, bundle: nil)
+        title = String(localized: "WeChat sign-in code")
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            title: String(localized: "Done"),
+            primaryAction: UIAction { [weak self] _ in self?.dismiss(animated: true) }
+        )
+    }
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
+        fatalError("Use init(image:)")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .systemBackground
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.delegate = self
+        scrollView.minimumZoomScale = 1
+        scrollView.maximumZoomScale = 4
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.showsHorizontalScrollIndicator = false
+        view.addSubview(scrollView)
+        imageView.image = image
+        imageView.contentMode = .scaleAspectFit
+        imageView.isAccessibilityElement = true
+        imageView.accessibilityLabel = String(localized: "WeChat sign-in code")
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(imageView)
+        let visible = scrollView.frameLayoutGuide
+        let content = scrollView.contentLayoutGuide
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            imageView.topAnchor.constraint(equalTo: content.topAnchor),
+            imageView.bottomAnchor.constraint(equalTo: content.bottomAnchor),
+            imageView.leadingAnchor.constraint(equalTo: content.leadingAnchor),
+            imageView.trailingAnchor.constraint(equalTo: content.trailingAnchor),
+            imageView.widthAnchor.constraint(equalTo: visible.widthAnchor),
+            imageView.heightAnchor.constraint(equalTo: visible.heightAnchor),
+        ])
+    }
+
+    @objc dynamic func viewForZooming(in _: UIScrollView) -> UIView? {
+        imageView
     }
 }
