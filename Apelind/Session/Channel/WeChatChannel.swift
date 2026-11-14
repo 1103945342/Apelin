@@ -23,7 +23,7 @@ import Foundation
 actor WeChatChannel {
     /// What one WeChat peer's message asks of the host: a request, answered
     /// through the dispatcher as the app's.
-    typealias Route = @Sendable (WireRequest) async -> WireReply
+    typealias Route = @Sendable (WireRequest, [OwnedDescriptor]) async -> WireReply
 
     /// How long one status poll waits before asking again.
     static let pollInterval: UInt64 = 1_000_000_000
@@ -67,13 +67,31 @@ actor WeChatChannel {
         /// peer the channel holds no project for: the same one every time,
         /// or reopening it would find another folder.
         var temporaryID: String?
+        /// The project this phone's conversations are opened in
+        /// (`/workspace`); nil is General Chat.
+        var projectName: String?
+        /// What `/model` and `/effort` chose here. Nil leaves the
+        /// conversation's own model alone, which is what a conversation the
+        /// phone did not open keeps.
+        var provider: AgentProvider?
+        var model: String?
+        var effort: AgentReasoningEffort?
+        var tier: AgentServiceTier?
         var title: String?
         var updatedAt: Date
 
-        init(userID: String, sessionID: String, temporaryID: String?, title: String?, updatedAt: Date = Date()) {
+        init(
+            userID: String,
+            sessionID: String,
+            temporaryID: String?,
+            projectName: String? = nil,
+            title: String?,
+            updatedAt: Date = Date()
+        ) {
             self.userID = userID
             self.sessionID = sessionID
             self.temporaryID = temporaryID
+            self.projectName = projectName
             self.title = title
             self.updatedAt = updatedAt
         }
@@ -82,6 +100,11 @@ actor WeChatChannel {
             case userID
             case sessionID
             case temporaryID
+            case projectName
+            case provider
+            case model
+            case effort
+            case tier
             case title
             case updatedAt
         }
@@ -91,6 +114,11 @@ actor WeChatChannel {
             userID = try container.decode(String.self, forKey: .userID)
             sessionID = try container.decode(String.self, forKey: .sessionID)
             temporaryID = try container.decodeIfPresent(String.self, forKey: .temporaryID)
+            projectName = try container.decodeIfPresent(String.self, forKey: .projectName)
+            provider = try container.decodeIfPresent(AgentProvider.self, forKey: .provider)
+            model = try container.decodeIfPresent(String.self, forKey: .model)
+            effort = try container.decodeIfPresent(AgentReasoningEffort.self, forKey: .effort)
+            tier = try container.decodeIfPresent(AgentServiceTier.self, forKey: .tier)
             title = try container.decodeIfPresent(String.self, forKey: .title)
             updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt) ?? Date()
         }
@@ -120,7 +148,19 @@ actor WeChatChannel {
         var contextToken: String?
     }
 
+    /// A message as the conversation takes it: what was written, the notes
+    /// about what came with it, and the files themselves.
+    private struct Incoming: Sendable {
+        var text: String
+        var notes: [String] = []
+        var attachments: [AgentInputAttachment] = []
+        var descriptors: [OwnedDescriptor] = []
+    }
+
     private let folder: URL
+    /// Mobile's home, and the host's task registry: what `/sessions` lists.
+    private let home: String
+    private let registry: TaskRegistry
     private let route: Route
     private var record: Record
     private var peers: PreservedList<Peer>
@@ -139,9 +179,16 @@ actor WeChatChannel {
     /// later still answers in the same one.
     private var lastContextTokens: [String: String] = [:]
     private var clientCache: (base: String, token: String, client: IlinkClient)?
+    /// The list a phone was shown by `/sessions`, and when: its numbers are
+    /// what `/use` takes, so they must not move between two messages.
+    private var sessionList: (taken: Date, briefs: [ChannelDirectory.SessionBrief])?
+    /// The models a phone was shown by `/model`, kept the same way.
+    private var modelList: (taken: Date, models: [ChannelModel])?
 
-    init(folder: URL, route: @escaping Route) {
+    init(folder: URL, home: String, registry: TaskRegistry, route: @escaping Route) {
         self.folder = folder
+        self.home = home
+        self.registry = registry
         self.route = route
         record = Self.loadRecord(folder)
         peers = Self.loadPeers(folder)
@@ -426,13 +473,21 @@ actor WeChatChannel {
     private func handle(_ incoming: IlinkMessage) async {
         guard incoming.messageType == .user,
               let from = incoming.fromUserID, !from.isEmpty,
-              from != record.botID,
-              let text = incoming.readableText
+              from != record.botID
         else { return }
         lastMessageAt = Date()
         message = nil
+        let read = await read(incoming)
+        guard !read.text.isEmpty || !read.attachments.isEmpty else { return }
+        let text = read.text
         if let token = incoming.contextToken {
             lastContextTokens[from] = token
+        }
+        // A slash command is the channel's own: it changes where the next
+        // message goes, so it is answered here and never reaches the agent.
+        if let command = ChannelCommands.parse(text) {
+            await run(command, from: from)
+            return
         }
         if let pending = pendingAsks[from] {
             switch ChannelReplies.read(text, ask: pending.ask) {
@@ -460,82 +515,606 @@ actor WeChatChannel {
                 break
             }
         }
-        let reply = Reply(userID: from, contextToken: incoming.contextToken, text: "", turns: 0)
         if let peer = peers.items.first(where: { $0.userID == from }) {
-            await ask(peer, text: text, reply: reply)
+            await ask(peer, incoming: read)
         } else {
-            await openConversation(with: from, text: text, reply: reply)
+            await openConversation(with: from, incoming: read)
         }
     }
 
-    /// Sends a message to the conversation the phone already talks in. The
-    /// worker that served it may have ended while the phone was away: the
-    /// session host says so (`notFound`), and the same conversation is
-    /// opened again with this message as its prompt.
-    private func ask(_ peer: Peer, text: String, reply: Reply) async {
+    /// Sends a message to the conversation the phone already talks in, with
+    /// whatever files came with it. The worker that served it may have ended
+    /// while the phone was away: the session host says so (`notFound`), and
+    /// the same conversation is opened again and the message sent there.
+    private func ask(_ peer: Peer, incoming: Incoming) async {
+        let reply = Reply(
+            userID: peer.userID,
+            contextToken: lastContextTokens[peer.userID],
+            text: "",
+            turns: 0
+        )
         replies[peer.sessionID] = collect(reply, into: replies[peer.sessionID])
         do {
-            try await deliver(WireRequest(AgentPromptRequest(sessionID: peer.sessionID, text: text)))
+            var request = Self.prompt(for: peer, text: Self.promptText(incoming))
+            request.attachments = incoming.attachments.isEmpty ? nil : incoming.attachments
+            try await deliver(WireRequest(request), descriptors: incoming.descriptors)
         } catch let error as ApelinError where error.code == .notFound {
-            replies[peer.sessionID] = reply
-            await openConversation(with: peer.userID, text: text, reply: reply, reopening: peer)
+            replies[peer.sessionID] = nil
+            await openConversation(with: peer.userID, incoming: incoming, reopening: peer)
         } catch {
             replies[peer.sessionID] = nil
             failed(error, to: reply)
         }
     }
 
-    /// Opens the conversation a phone talks in — the channel's project, or a
-    /// temporary chat tied to a UUID the peer keeps — and sends the message
-    /// as its first prompt.
+    /// Opens the conversation a phone talks in — its project, or a temporary
+    /// chat tied to a UUID it keeps — and sends the message there.
     private func openConversation(
         with userID: String,
-        text: String,
-        reply: Reply,
+        incoming: Incoming,
         reopening peer: Peer? = nil
     ) async {
-        let sessionID = peer?.sessionID ?? UUID().uuidString.lowercased()
-        let temporaryID = peer?.temporaryID ?? UUID().uuidString.lowercased()
-        // Collected before the open: a turn can start writing while the
-        // reply to the open is still on its way.
-        replies[sessionID] = collect(reply, into: nil)
-        var request = AgentOpenRequest(
+        var owner = peer ?? Peer(
+            userID: userID,
+            sessionID: UUID().uuidString.lowercased(),
+            temporaryID: UUID().uuidString.lowercased(),
             projectName: record.projectName,
-            temporaryID: record.projectName == nil ? temporaryID : nil,
-            sessionID: sessionID,
-            approvalMode: record.approvalMode,
-            prompt: text,
-            title: peer == nil ? AgentConversationRules.title(text) : nil
+            title: AgentConversationRules.title(incoming.text)
         )
-        // A channel conversation is read, not watched: nothing asks for the
-        // screen on its behalf.
-        request.asksBeforeScreen = false
-        guard let wire = try? WireRequest(request) else {
-            replies[sessionID] = nil
-            message = "This message could not be turned into a request."
+        owner.title = owner.title ?? AgentConversationRules.title(incoming.text)
+        guard await open(owner, prompt: nil) else {
+            await send(
+                t("会话打不开：\(message ?? "未知原因")", "The conversation could not be opened: \(message ?? "unknown reason")"),
+                to: userID,
+                contextToken: lastContextTokens[userID]
+            )
             return
         }
-        let answer = await route(wire)
-        switch answer.result {
-        case let .failure(error):
-            replies[sessionID] = nil
-            message = error.message
-        case .success:
-            let stored = Peer(
-                userID: userID,
-                sessionID: sessionID,
-                temporaryID: record.projectName == nil ? temporaryID : nil,
-                title: peer?.title ?? AgentConversationRules.title(text),
-                updatedAt: Date()
-            )
-            if let index = peers.items.firstIndex(where: { $0.userID == userID }) {
-                peers.items[index] = stored
-            } else {
-                peers.items.append(stored)
+        owner.updatedAt = Date()
+        bind(owner)
+        await ask(owner, incoming: incoming)
+    }
+
+    /// What the conversation is told: what came with the message, then the
+    /// message itself.
+    private static func promptText(_ incoming: Incoming) -> String {
+        let body = incoming.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !incoming.notes.isEmpty else { return body }
+        let notes = incoming.notes.joined(separator: "\n")
+        return body.isEmpty ? notes : notes + "\n\n" + body
+    }
+
+
+    // MARK: Files from WeChat
+
+    /// A message read into what a conversation takes: the words, a note per
+    /// file, and the files themselves as descriptors — the same way the app
+    /// hands an attachment to a session.
+    ///
+    /// One file that cannot be fetched costs that file alone: the message
+    /// still reaches the conversation, with a note saying what was missing.
+    private func read(_ message: IlinkMessage) async -> Incoming {
+        var incoming = Incoming(text: message.readableText ?? "")
+        guard let client = signedClient() else { return incoming }
+        for item in message.items {
+            guard let media = item.media, let type = item.type else { continue }
+            let name: String
+            switch type {
+            case .image:
+                name = "wechat-\(Self.stampToken()).jpg"
+            case .video:
+                name = "wechat-\(Self.stampToken()).mp4"
+            case .file:
+                name = item.file?.fileName?.isEmpty == false ? item.file!.fileName! : "wechat-\(Self.stampToken()).bin"
+            default:
+                continue
             }
-            savePeers()
+            do {
+                let data = try await client.download(media, key: item.mediaKey)
+                guard let path = saveMedia(data, name: name) else {
+                    incoming.notes.append("[WeChat \(type): \(name) could not be saved]")
+                    continue
+                }
+                let descriptor = Darwin.open(path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC)
+                guard descriptor >= 0 else {
+                    incoming.notes.append("[WeChat \(type): \(name) could not be opened]")
+                    continue
+                }
+                incoming.attachments.append(AgentInputAttachment(
+                    descriptor: DescriptorSlot(index: incoming.descriptors.count),
+                    name: name,
+                    mimeType: Self.mime(name)
+                ))
+                incoming.descriptors.append(OwnedDescriptor(adopting: descriptor))
+                incoming.notes.append("[WeChat \(type): \(name), \(data.count) bytes]")
+            } catch {
+                let reason = (error as? IlinkFailure)?.message ?? "download failed"
+                incoming.notes.append("[WeChat \(type): \(name) was not received — \(reason)]")
+            }
+        }
+        return incoming
+    }
+
+    /// Writes a received file beside the channel's own state, where it stays
+    /// for the conversation to read.
+    private func saveMedia(_ data: Data, name: String) -> String? {
+        let attachments = folder.appendingPathComponent("attachments", isDirectory: true)
+        try? FileManager.default.createDirectory(at: attachments, withIntermediateDirectories: true)
+        let safe = String(name
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "\\", with: "_")
+            .prefix(120))
+        let url = attachments.appendingPathComponent("\(Self.stampToken())-\(safe)")
+        do {
+            try data.write(to: url, options: .atomic)
+            return url.path
+        } catch {
+            return nil
         }
     }
+
+    private static func stampToken() -> String {
+        "\(Int(Date().timeIntervalSince1970))-\(UUID().uuidString.prefix(4))"
+    }
+
+    private static func mime(_ name: String) -> String {
+        switch (name as NSString).pathExtension.lowercased() {
+        case "jpg", "jpeg": "image/jpeg"
+        case "png": "image/png"
+        case "gif": "image/gif"
+        case "webp": "image/webp"
+        case "heic": "image/heic"
+        case "pdf": "application/pdf"
+        case "txt", "md", "log": "text/plain"
+        case "json": "application/json"
+        case "zip": "application/zip"
+        case "mp4", "mov": "video/mp4"
+        case "mp3", "m4a": "audio/mpeg"
+        default: "application/octet-stream"
+        }
+    }
+
+    /// The folder a conversation works in: its project, or General Chat's
+    /// own workspace under `Temporary/`.
+    private func workspace(of peer: Peer) -> URL? {
+        let data = DataFolder(home: home)
+        if let project = peer.projectName, let url = data.project(named: project) {
+            return url
+        }
+        if let temporary = peer.temporaryID {
+            return data.root.appendingPathComponent("Temporary/" + temporary, isDirectory: true)
+        }
+        return nil
+    }
+
+    // MARK: Files to WeChat
+
+    /// `/send`: one file of the conversation's workspace, or a path inside
+    /// it, uploaded and delivered to the phone.
+    private func sendFile(_ path: String, from userID: String) async -> String {
+        let trimmed = path.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else {
+            return t("用法：/send <路径>（会话项目里的文件，或项目内的完整路径）。", "Usage: /send <path> — a file inside the conversation's project.")
+        }
+        guard let peer = peers.items.first(where: { $0.userID == userID }) else {
+            return t("还没有绑定会话。先发一条消息或用 /use 选一个。", "This phone has no conversation yet. Send a message or /use one.")
+        }
+        guard let root = workspace(of: peer) else {
+            return t("这个会话没有可读的工作目录。", "This conversation has no workspace to read.")
+        }
+        let url = trimmed.hasPrefix("/")
+            ? URL(fileURLWithPath: trimmed)
+            : root.appendingPathComponent(trimmed)
+        guard CanonicalPath.isCanonical(url.path, inside: root.path) else {
+            return t("只能发会话项目里的文件：\(root.lastPathComponent)。", "Only files inside \(root.lastPathComponent) can be sent.")
+        }
+        guard let data = try? Data(contentsOf: url) else {
+            return t("读不到这个文件：\(trimmed)", "That file could not be read: \(trimmed)")
+        }
+        guard data.count <= 25 * 1024 * 1024 else {
+            return t("文件太大（上限 25MB）。", "That file is over 25 MB.")
+        }
+        return await deliverFile(data, name: url.lastPathComponent, to: peer)
+    }
+
+    /// The files a turn produced (`toolResult` attachments): each is taken
+    /// from the conversation's workspace and sent to the phone.
+    private func relay(_ files: [AgentAttachment], peer: Peer) async {
+        guard let root = workspace(of: peer) else { return }
+        for file in files.prefix(8) {
+            let url = root.appendingPathComponent(file.path)
+            guard CanonicalPath.isCanonical(url.path, inside: root.path),
+                  let data = try? Data(contentsOf: url), data.count <= 25 * 1024 * 1024
+            else { continue }
+            _ = await deliverFile(data, name: file.name, to: peer)
+        }
+    }
+
+    private func deliverFile(_ data: Data, name: String, to peer: Peer) async -> String {
+        guard let client = signedClient() else {
+            return t("通道没有登录，发不了文件。", "The channel is not signed in, so nothing can be sent.")
+        }
+        do {
+            let type = IlinkMediaType.of(name: name)
+            let upload = try await client.upload(data, name: name, to: peer.userID, mediaType: type)
+            try await client.sendMedia(
+                upload,
+                name: name,
+                mediaType: type,
+                to: peer.userID,
+                contextToken: lastContextTokens[peer.userID]
+            )
+            return t("已发送 \(name)（\(data.count) 字节）。", "Sent \(name) (\(data.count) bytes).")
+        } catch {
+            return t(
+                "没发出去：\((error as? IlinkFailure)?.message ?? String(describing: error))",
+                "Not sent: \((error as? IlinkFailure)?.message ?? String(describing: error))"
+            )
+        }
+    }
+
+    // MARK: Commands
+
+    /// Answers one command in the phone's own words.
+    private func run(_ command: ChannelCommand, from userID: String) async {
+        let token = lastContextTokens[userID]
+        func reply(_ text: String) async {
+            await send(text, to: userID, contextToken: token)
+        }
+        switch command {
+        case .help:
+            await reply(Self.helpText)
+        case .sessions:
+            let briefs = await ChannelDirectory.sessions(home: home, registry: registry)
+            sessionList = (Date(), briefs)
+            await reply(sessionsText(briefs, for: userID))
+        case .current:
+            await reply(currentText(userID))
+        case let .use(argument):
+            await reply(await use(argument, from: userID))
+        case let .workspace(argument):
+            if let argument {
+                await reply(workspace(argument, from: userID))
+            } else {
+                await reply(workspaceListText(for: userID))
+            }
+        case let .model(argument, effort):
+            await reply(await model(argument: argument, effort: effort, from: userID))
+        case let .effort(argument):
+            await reply(effortArgument(argument, from: userID))
+        case let .send(path):
+            await reply(await sendFile(path, from: userID))
+        }
+    }
+
+    /// The conversations, numbered, with the one this phone talks in marked.
+    private func sessionsText(_ briefs: [ChannelDirectory.SessionBrief], for userID: String) -> String {
+        guard !briefs.isEmpty else {
+            return t("还没有任何会话。直接发消息会自动新建一个。", "No conversations yet. Send a message and one opens.")
+        }
+        let mine = peers.items.first(where: { $0.userID == userID })?.sessionID
+        var lines = [t("全部会话（共 \(briefs.count) 个，按最近活动排序）：", "Conversations (\(briefs.count), most recent first):"), ""]
+        for (index, brief) in briefs.enumerated() {
+            var line = "\(index + 1). \(brief.title) · \(brief.projectName ?? t("通用", "General")) · \(Self.stamp(brief.updatedAt))"
+            if brief.id == mine {
+                line += t("（当前）", " (current)")
+            } else if brief.running {
+                line += t("（进行中）", " (running)")
+            }
+            lines.append(line)
+        }
+        lines.append("")
+        lines.append(t("发 /use <序号> 切换，/use 新 新建。", "Send /use <number> to switch, /use new to start one."))
+        return lines.joined(separator: "\n")
+    }
+
+    private func currentText(_ userID: String) -> String {
+        guard let peer = peers.items.first(where: { $0.userID == userID }) else {
+            return t("还没有绑定会话。直接发消息会自动新建一个；或发 /sessions 选。", "This phone has no conversation yet. Send a message, or /sessions.")
+        }
+        let project = peer.projectName ?? t("通用", "General")
+        let model = peer.model.map { "\(peer.provider?.rawValue ?? "")·\($0)" } ?? t("会话自己的", "the conversation’s own")
+        let effort = peer.effort.map(ChannelCommands.effortName) ?? t("默认", "default")
+        return t(
+            "当前会话：\(peer.title ?? String(peer.sessionID.prefix(8))) · \(project)\n模型：\(model) · 强度：\(effort)",
+            "Conversation: \(peer.title ?? String(peer.sessionID.prefix(8))) · \(project)\nModel: \(model) · effort: \(effort)"
+        )
+    }
+
+    /// `/use`: by number, by id, or a new conversation in the phone's project.
+    private func use(_ argument: String, from userID: String) async -> String {
+        let trimmed = argument.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else {
+            return t("用法：/use <序号>，或 /use 新 新建。先发 /sessions 看序号。", "Usage: /use <number>, or /use new. Send /sessions for the numbers.")
+        }
+        let existing = peers.items.first(where: { $0.userID == userID })
+        if trimmed == "新" || trimmed.lowercased() == "new" {
+            let project = existing?.projectName ?? record.projectName
+            let temporary = UUID().uuidString.lowercased()
+            let sessionID = UUID().uuidString.lowercased()
+            var owner = existing ?? Peer(userID: userID, sessionID: sessionID, temporaryID: temporary, title: nil)
+            owner.sessionID = sessionID
+            owner.projectName = project
+            owner.temporaryID = project == nil ? temporary : nil
+            owner.title = nil
+            guard await open(owner, prompt: nil) else {
+                return t("新建会话失败：\(message ?? "未知原因")", "The conversation could not be opened: \(message ?? "unknown reason")")
+            }
+            var stored = owner
+            stored.updatedAt = Date()
+            bind(stored)
+            return t(
+                "已新建会话 \(String(sessionID.prefix(8))) · \(project ?? "通用")。之后的消息都进这个会话。",
+                "Started conversation \(String(sessionID.prefix(8))) · \(project ?? "General")."
+            )
+        }
+        var briefs = sessionList?.briefs ?? []
+        if briefs.isEmpty || Date().timeIntervalSince(sessionList?.taken ?? .distantPast) > 60 {
+            briefs = await ChannelDirectory.sessions(home: home, registry: registry)
+            sessionList = (Date(), briefs)
+        }
+        let target: ChannelDirectory.SessionBrief?
+        if let index = ChannelCommands.index(trimmed), briefs.indices.contains(index - 1) {
+            target = briefs[index - 1]
+        } else {
+            target = briefs.first { $0.id == trimmed || (trimmed.count >= 6 && $0.id.hasPrefix(trimmed)) }
+        }
+        guard let target else {
+            return t("没找到会话「\(trimmed)」。发 /sessions 看序号，或 /use 新 新建。", "No conversation “\(trimmed)”. Send /sessions, or /use new.")
+        }
+        var peer = existing ?? Peer(
+            userID: userID,
+            sessionID: target.id,
+            temporaryID: target.temporaryID,
+            title: target.title
+        )
+        peer.sessionID = target.id
+        peer.projectName = target.projectName
+        peer.temporaryID = target.temporaryID
+        peer.title = target.title
+        // The conversation has a model of its own; the phone's picks were
+        // for the one it was in.
+        peer.provider = nil
+        peer.model = nil
+        peer.effort = nil
+        peer.tier = nil
+        peer.updatedAt = Date()
+        bind(peer)
+        return t(
+            "已切换到「\(target.title)」· \(target.projectName ?? "通用")。之后的消息都进这个会话。",
+            "Switched to “\(target.title)” · \(target.projectName ?? "General")."
+        )
+    }
+
+    /// `/workspace`: the projects, numbered, with this phone's marked.
+    private func workspaceListText(for userID: String) -> String {
+        let projects = ChannelDirectory.projects(home: home)
+        guard !projects.isEmpty else {
+            return t("这台设备还没有任何项目。先在 Apelin 里建一个。", "No projects on this device yet. Make one in Apelin first.")
+        }
+        let current = peers.items.first(where: { $0.userID == userID })?.projectName ?? record.projectName
+        var lines = [t("项目（共 \(projects.count) 个）：", "Projects (\(projects.count)):"), ""]
+        for (index, name) in projects.enumerated() {
+            lines.append("\(index + 1). \(name)\(name == current ? t("（当前）", " (current)") : "")")
+        }
+        lines.append("")
+        lines.append(t("发 /workspace <序号> 设定默认项目，之后 /use 新 会在那里新建。", "Send /workspace <number> to set it; /use new opens there."))
+        return lines.joined(separator: "\n")
+    }
+
+    /// `/workspace <number|name>`: where new conversations are opened. A
+    /// conversation already bound keeps its own project.
+    private func workspace(_ argument: String, from userID: String) -> String {
+        let projects = ChannelDirectory.projects(home: home)
+        let trimmed = argument.trimmingCharacters(in: .whitespaces)
+        let target: String?
+        if let index = ChannelCommands.index(trimmed), projects.indices.contains(index - 1) {
+            target = projects[index - 1]
+        } else {
+            target = projects.first { $0.caseInsensitiveCompare(trimmed) == .orderedSame }
+        }
+        guard let target else {
+            return t("没找到项目「\(trimmed)」。发 /workspace 看序号。", "No project “\(trimmed)”. Send /workspace.")
+        }
+        var peer = peers.items.first(where: { $0.userID == userID })
+            ?? Peer(userID: userID, sessionID: UUID().uuidString.lowercased(), temporaryID: nil, title: nil)
+        peer.projectName = target
+        peer.updatedAt = Date()
+        bind(peer)
+        return t(
+            "已把默认项目设为「\(target)」。新建会话会在那里；已绑定的会话不变。发 /use 新 立即开一个。",
+            "Default project is now “\(target)”. New conversations open there; the current one stays. Send /use new."
+        )
+    }
+
+    /// `/model`: the models this device can use, numbered, or one of them.
+    private func model(argument: String?, effort: String?, from userID: String) async -> String {
+        let models = await models()
+        guard !models.isEmpty else {
+            return t("还没有可用的模型。先在 Apelin 的「模型供应商」里登录一个。", "No models yet. Sign in a provider in Apelin first.")
+        }
+        guard let argument else {
+            return modelListText(models, for: userID)
+        }
+        guard let index = ChannelCommands.index(argument), models.indices.contains(index - 1) else {
+            return t("用法：/model <序号> [lo|mid|hi]。发 /model 看序号。", "Usage: /model <number> [lo|mid|hi]. Send /model for the numbers.")
+        }
+        let chosen = models[index - 1]
+        var peer = peers.items.first(where: { $0.userID == userID })
+            ?? Peer(userID: userID, sessionID: UUID().uuidString.lowercased(), temporaryID: nil, title: nil)
+        peer.provider = chosen.provider
+        peer.model = chosen.model
+        if let effort, let parsed = ChannelCommands.effort(effort) {
+            peer.effort = parsed
+        } else if let effort {
+            return t("强度「\(effort)」不认识。用 lo、mid 或 hi。", "Unknown effort “\(effort)”. Use lo, mid or hi.")
+        }
+        peer.updatedAt = Date()
+        bind(peer)
+        await configure(peer)
+        let effortName = peer.effort.map(ChannelCommands.effortName) ?? t("会话默认", "the conversation’s")
+        return t(
+            "已切到 \(chosen.label) · 强度 \(effortName)。下一条消息就用它。",
+            "Now \(chosen.label) · effort \(effortName). The next message uses it."
+        )
+    }
+
+    private func modelListText(_ models: [ChannelModel], for userID: String) -> String {
+        let peer = peers.items.first(where: { $0.userID == userID })
+        var lines = [t("模型（共 \(models.count) 个）：", "Models (\(models.count)):"), ""]
+        for (index, model) in models.prefix(40).enumerated() {
+            let mark = model.model == peer?.model && model.provider == peer?.provider ? t("（当前）", " (current)") : ""
+            lines.append("\(index + 1). \(model.label)\(mark)")
+        }
+        if models.count > 40 {
+            lines.append(t("… 还有 \(models.count - 40) 个未列出。", "… \(models.count - 40) more not listed."))
+        }
+        lines.append("")
+        lines.append(t("发 /model <序号> [lo|mid|hi] 切换；/effort <lo|mid|hi> 只改强度。", "Send /model <number> [lo|mid|hi]; /effort <lo|mid|hi> changes only the effort."))
+        return lines.joined(separator: "\n")
+    }
+
+    /// `/effort`: what it is now, or what it becomes.
+    private func effortArgument(_ argument: String?, from userID: String) -> String {
+        guard let peer = peers.items.first(where: { $0.userID == userID }) else {
+            return t("还没有绑定会话。直接发消息会自动新建一个。", "This phone has no conversation yet. Send a message.")
+        }
+        guard let argument else {
+            let name = peer.effort.map(ChannelCommands.effortName) ?? t("会话默认", "the conversation’s")
+            return t("当前思考强度：\(name)。发 /effort lo|mid|hi 修改。", "Effort now: \(name). Send /effort lo|mid|hi.")
+        }
+        guard let parsed = ChannelCommands.effort(argument) else {
+            return t("强度「\(argument)」不认识。用 lo、mid 或 hi。", "Unknown effort “\(argument)”. Use lo, mid or hi.")
+        }
+        var updated = peer
+        updated.effort = parsed
+        updated.updatedAt = Date()
+        bind(updated)
+        let chosen = updated
+        Task { [weak self] in await self?.configure(chosen) }
+        return t("已把思考强度设为 \(ChannelCommands.effortName(parsed))。", "Effort is now \(ChannelCommands.effortName(parsed)).")
+    }
+
+    /// The models this device is signed in to, read from the agent's own
+    /// account list and kept for a minute.
+    private func models() async -> [ChannelModel] {
+        if let modelList, Date().timeIntervalSince(modelList.taken) < 60 {
+            return modelList.models
+        }
+        guard let wire = try? WireRequest(AgentAccountListRequest()) else { return [] }
+        let reply = await route(wire, [])
+        guard case let .success(data) = reply.result,
+              let answer = try? JSONCoding.decode(AgentAccountListResponse.self, from: data)
+        else { return [] }
+        var models: [ChannelModel] = []
+        for account in answer.accounts where account.signedIn {
+            for model in account.models ?? [] {
+                models.append(ChannelModel(
+                    provider: account.provider,
+                    model: model,
+                    label: "\(account.provider.rawValue)·\(model)"
+                ))
+            }
+        }
+        models.sort { $0.label.localizedStandardCompare($1.label) == .orderedAscending }
+        modelList = (Date(), models)
+        return models
+    }
+
+    /// Opens a conversation for `peer` — the same id when it has one, a new
+    /// one when it does not — with the phone's project and model, and this
+    /// message as its first prompt when there is one.
+    private func open(_ peer: Peer, prompt: String?) async -> Bool {
+        var request = AgentOpenRequest(
+            projectName: peer.projectName ?? record.projectName,
+            temporaryID: (peer.projectName ?? record.projectName) == nil ? peer.temporaryID : nil,
+            sessionID: peer.sessionID,
+            provider: peer.provider,
+            model: peer.model,
+            approvalMode: record.approvalMode,
+            reasoningEffort: peer.effort,
+            serviceTier: peer.tier,
+            prompt: prompt,
+            title: prompt.flatMap(AgentConversationRules.title)
+        )
+        request.asksBeforeScreen = false
+        guard let wire = try? WireRequest(request) else { return false }
+        let reply = await route(wire, [])
+        if case let .failure(error) = reply.result {
+            message = error.message
+            return false
+        }
+        return true
+    }
+
+    /// Applies the phone's model to a conversation that is already open.
+    private func configure(_ peer: Peer) async {
+        guard let provider = peer.provider, let model = peer.model else { return }
+        let request = AgentConfigureRequest(
+            sessionID: peer.sessionID,
+            provider: provider,
+            model: model,
+            reasoningEffort: peer.effort,
+            serviceTier: peer.tier
+        )
+        guard let wire = try? WireRequest(request) else { return }
+        // A conversation nothing serves now takes its model from the next
+        // open, which carries it; the host's refusal is not the phone's.
+        _ = await route(wire, [])
+    }
+
+    private func bind(_ peer: Peer) {
+        if let index = peers.items.firstIndex(where: { $0.userID == peer.userID }) {
+            peers.items[index] = peer
+        } else {
+            peers.items.append(peer)
+        }
+        savePeers()
+    }
+
+    private static func prompt(for peer: Peer, text: String) -> AgentPromptRequest {
+        AgentPromptRequest(
+            sessionID: peer.sessionID,
+            text: text,
+            provider: peer.provider,
+            model: peer.model,
+            reasoningEffort: peer.effort,
+            serviceTier: peer.tier
+        )
+    }
+
+    /// `MM-dd HH:mm`, the way a list of conversations shows a time.
+    private static func stamp(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MM-dd HH:mm"
+        return formatter.string(from: date)
+    }
+
+    private func t(_ chinese: String, _ english: String) -> String {
+        ChannelReplies.language == "en" ? english : chinese
+    }
+
+    static let helpText = """
+    /sessions  列出全部会话
+    /use <序号>  切换会话；/use 新 新建
+    /current  查看当前会话
+    /workspace  列出项目；/workspace <序号> 设定默认项目
+    /model  列出模型；/model <序号> [lo|mid|hi] 切换
+    /effort <lo|mid|hi>  修改思考强度
+    /send <路径>  把设备上的文件发到微信
+    /help  显示本帮助
+
+    直接发普通文字则交给会话里的 AI。需要授权或回答问题时，回数字即可。
+
+    /sessions  every conversation
+    /use <number>  switch; /use new  start one
+    /current  which conversation this phone is in
+    /workspace  the projects; /workspace <number>  the default one
+    /model  the models; /model <number> [lo|mid|hi]  pick one
+    /effort <lo|mid|hi>  only the effort
+    /send <path>  send a file of this device to WeChat
+    /help  this page
+    """
 
     /// Sends one approval or question to the phone that talks in this
     /// conversation, and keeps it for the reply.
@@ -577,7 +1156,7 @@ actor WeChatChannel {
             answer: answer.approved ? answer.answer : nil
         )
         guard let wire = try? WireRequest(request) else { return false }
-        let reply = await route(wire)
+        let reply = await route(wire, [])
         if case let .failure(error) = reply.result {
             message = error.message
             return false
@@ -615,8 +1194,8 @@ actor WeChatChannel {
         return existing
     }
 
-    private func deliver(_ request: WireRequest) async throws {
-        let reply = await route(request)
+    private func deliver(_ request: WireRequest, descriptors: [OwnedDescriptor] = []) async throws {
+        let reply = await route(request, descriptors)
         if case let .failure(error) = reply.result {
             throw error
         }
@@ -639,6 +1218,18 @@ actor WeChatChannel {
         }
         if kind == "approvalResolved" {
             clearAsk(payload?["approvalID"]?.stringValue)
+            return
+        }
+        // Files a tool wrote: sent to the phone that talks in this
+        // conversation, as the app shows them in its result row.
+        if kind == "toolResult", let payload,
+           let peer = peers.items.first(where: { $0.sessionID == sessionID }),
+           let attachments = payload["attachments"],
+           let files = try? attachments.decode([AgentAttachment].self), !files.isEmpty
+        {
+            Task { [weak self] in
+                await self?.relay(files, peer: peer)
+            }
             return
         }
         guard var reply = replies[sessionID] else { return }

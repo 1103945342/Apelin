@@ -463,8 +463,24 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   thing WeChat cannot give is a command as root: that takes the device
   owner's check (`ownerVerified`), so it is announced with a line saying so
   and approved only in Apelin. The credential is
-  `<data>/WeChatChannel/channel.json`, written as mobile's, never in a reply,
-  a log or an error; the phones it has talked to are `peers.json` (a
+  A phone asks for the rest with commands, answered by the channel and never
+  by the agent (`ChannelCommand`): `/sessions` lists the conversations the
+  host runs and the ones on disk (`ChannelDirectory`), `/use <n>` binds one
+  — the worker that served it may have gone, and the next message reopens
+  the same conversation — `/use new` opens one, `/workspace [n]` picks the
+  project new ones go in, `/model [n] [lo|mid|hi]` and `/effort` choose the
+  model and its effort from the agent's own account list, applied to the
+  open conversation with `agentConfigure` and carried by every prompt, and
+  `/send <path>` sends a file of the workspace. Files travel both ways: what
+  a phone sends is downloaded from the CDN, decrypted (AES-128-ECB, the
+  `aes_key` in either spelling), saved under the channel's `attachments/`
+  and given to the conversation as descriptors beside the prompt, the way
+  the app hands over an attachment; what a turn writes — a `toolResult`
+  with attachments — is uploaded and sent, as is `/send`. Uploads take a
+  ticket from `getuploadurl`, POST the ciphertext, and read
+  `x-encrypted-param` back (`IlinkMedia`, `IlinkMediaClient`).
+  The credential is
+ the phones it has talked to are `peers.json` (a
   `PreservedList`, so one unreadable entry costs no other). A channel that is
   on and signed in counts as work in `reportWork`, so apelind stays up and
   answers the phone while the app is closed, and `resume()` puts it back to

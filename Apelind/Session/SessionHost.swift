@@ -36,9 +36,9 @@ final class SessionHost: @unchecked Sendable {
     /// caller, since the reader turned it on and signed in to it there.
     lazy var channels: WeChatChannel = {
         let host = self
-        return WeChatChannel(folder: dataFolder.weChatChannel) { request in
+        return WeChatChannel(folder: dataFolder.weChatChannel, home: host.home, registry: host.registry) { request, descriptors in
             let handled = await Dispatcher.handle(
-                HostRequest(request: request, descriptors: [], caller: .app),
+                HostRequest(request: request, descriptors: descriptors, caller: .app),
                 host: host
             )
             return handled.0

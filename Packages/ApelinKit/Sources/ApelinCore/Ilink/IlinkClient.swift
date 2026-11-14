@@ -143,7 +143,7 @@ public struct IlinkClient {
         }
     }
 
-    private struct BaseInfo: Encodable {
+    struct BaseInfo: Encodable {
         var channel_version: String
         var bot_agent: String
     }
@@ -171,7 +171,7 @@ public struct IlinkClient {
         }
     }
 
-    private func baseInfo() -> BaseInfo {
+    func baseInfo() -> BaseInfo {
         BaseInfo(channel_version: "1.0", bot_agent: IlinkClient.agentName)
     }
 
@@ -185,7 +185,7 @@ public struct IlinkClient {
         _ = try await performData(request, label: label)
     }
 
-    private func url(path: String, query: [URLQueryItem] = [], baseURL: URL? = nil) -> URL {
+    func url(path: String, query: [URLQueryItem] = [], baseURL: URL? = nil) -> URL {
         var components = URLComponents(
             url: (baseURL ?? self.baseURL).appendingPathComponent(path),
             resolvingAgainstBaseURL: false
@@ -196,7 +196,7 @@ public struct IlinkClient {
         return components.url!
     }
 
-    private func makeRequest(path: String, baseURL: URL? = nil) throws -> URLRequest {
+    func makeRequest(path: String, baseURL: URL? = nil) throws -> URLRequest {
         var request = URLRequest(url: url(path: path, baseURL: baseURL))
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("ilink_bot_token", forHTTPHeaderField: "AuthorizationType")
@@ -215,7 +215,7 @@ public struct IlinkClient {
         Data(String(UInt32.random(in: 0 ... UInt32.max)).utf8).base64EncodedString()
     }
 
-    private func perform<T: Decodable>(_ request: URLRequest, as type: T.Type, label: String) async throws -> T {
+    func perform<T: Decodable>(_ request: URLRequest, as type: T.Type, label: String) async throws -> T {
         let data = try await performData(request, label: label)
         do {
             return try JSONDecoder().decode(T.self, from: data)
@@ -224,7 +224,7 @@ public struct IlinkClient {
         }
     }
 
-    private func performData(_ request: URLRequest, label: String) async throws -> Data {
+    func performData(_ request: URLRequest, label: String) async throws -> Data {
         let data: Data
         let response: URLResponse
         do {
@@ -239,6 +239,26 @@ public struct IlinkClient {
             throw IlinkFailure.http(status: response.statusCode, message: "WeChat answered \(response.statusCode) to the \(label) request")
         }
         return data
+    }
+
+    /// The body and the response itself, for a call whose answer is a
+    /// header (a CDN upload answers with `x-encrypted-param`).
+    func performRaw(_ request: URLRequest, label: String) async throws -> (Data, HTTPURLResponse?) {
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await session.data(for: request)
+        } catch let error as URLError {
+            if error.code == .timedOut {
+                throw IlinkFailure.timeout(label: label)
+            }
+            throw IlinkFailure.http(status: nil, message: "WeChat could not be reached (\(error.code.rawValue)); check the network and try again")
+        }
+        let http = response as? HTTPURLResponse
+        if let http, !(200 ... 299).contains(http.statusCode) {
+            throw IlinkFailure.http(status: http.statusCode, message: "WeChat answered \(http.statusCode) to the \(label) request")
+        }
+        return (data, http)
     }
 }
 

@@ -104,16 +104,123 @@ public enum IlinkItemType: Int, Codable, Sendable {
     case toolCallResult = 12
 }
 
+/// A media reference on the CDN: the parameter the download takes, and the
+/// key its ciphertext was encrypted with (base64 over the wire).
+public struct IlinkCDNMedia: Codable, Sendable, Equatable {
+    public var encryptQueryParam: String?
+    public var aesKey: String?
+    /// 0 encrypts the file id alone, 1 packages the thumbnail and the
+    /// middle image too.
+    public var encryptType: Int?
+    /// The whole download URL, when the server sent one.
+    public var fullURL: String?
+
+    public init(encryptQueryParam: String? = nil, aesKey: String? = nil, encryptType: Int? = nil, fullURL: String? = nil) {
+        self.encryptQueryParam = encryptQueryParam
+        self.aesKey = aesKey
+        self.encryptType = encryptType
+        self.fullURL = fullURL
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case encryptQueryParam = "encrypt_query_param"
+        case aesKey = "aes_key"
+        case encryptType = "encrypt_type"
+        case fullURL = "full_url"
+    }
+}
+
+public struct IlinkImageItem: Codable, Sendable, Equatable {
+    public var media: IlinkCDNMedia?
+    public var thumbMedia: IlinkCDNMedia?
+    /// The raw AES key as 32 hex characters, which inbound images carry.
+    public var aesKey: String?
+    public var url: String?
+    public var middleSize: Int?
+    public var thumbSize: Int?
+
+    public init(media: IlinkCDNMedia? = nil, thumbMedia: IlinkCDNMedia? = nil, aesKey: String? = nil, url: String? = nil, middleSize: Int? = nil, thumbSize: Int? = nil) {
+        self.media = media
+        self.thumbMedia = thumbMedia
+        self.aesKey = aesKey
+        self.url = url
+        self.middleSize = middleSize
+        self.thumbSize = thumbSize
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case media
+        case thumbMedia = "thumb_media"
+        case aesKey = "aeskey"
+        case url
+        case middleSize = "mid_size"
+        case thumbSize = "thumb_size"
+    }
+}
+
+public struct IlinkFileItem: Codable, Sendable, Equatable {
+    public var media: IlinkCDNMedia?
+    public var fileName: String?
+    public var md5: String?
+    /// The plaintext size, as a string.
+    public var length: String?
+
+    public init(media: IlinkCDNMedia? = nil, fileName: String? = nil, md5: String? = nil, length: String? = nil) {
+        self.media = media
+        self.fileName = fileName
+        self.md5 = md5
+        self.length = length
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case media
+        case fileName = "file_name"
+        case md5
+        case length = "len"
+    }
+}
+
+public struct IlinkVideoItem: Codable, Sendable, Equatable {
+    public var media: IlinkCDNMedia?
+    public var videoSize: Int?
+    public var playLength: Int?
+
+    public init(media: IlinkCDNMedia? = nil, videoSize: Int? = nil, playLength: Int? = nil) {
+        self.media = media
+        self.videoSize = videoSize
+        self.playLength = playLength
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case media
+        case videoSize = "video_size"
+        case playLength = "play_length"
+    }
+}
+
 public struct IlinkMessageItem: Codable, Sendable, Equatable {
     public var type: IlinkItemType?
     public var text: String?
     /// Read for a voice message: what WeChat transcribed it to, when it did.
     public var voiceText: String?
+    public var image: IlinkImageItem?
+    public var file: IlinkFileItem?
+    public var video: IlinkVideoItem?
 
-    public init(type: IlinkItemType? = nil, text: String? = nil, voiceText: String? = nil) {
+    public init(
+        type: IlinkItemType? = nil,
+        text: String? = nil,
+        voiceText: String? = nil,
+        image: IlinkImageItem? = nil,
+        file: IlinkFileItem? = nil,
+        video: IlinkVideoItem? = nil
+    ) {
         self.type = type
         self.text = text
         self.voiceText = voiceText
+        self.image = image
+        self.file = file
+        self.video = video
     }
 
     private struct TextItem: Codable, Sendable, Equatable {
@@ -128,6 +235,9 @@ public struct IlinkMessageItem: Codable, Sendable, Equatable {
         case type
         case textItem = "text_item"
         case voiceItem = "voice_item"
+        case imageItem = "image_item"
+        case fileItem = "file_item"
+        case videoItem = "video_item"
     }
 
     public init(from decoder: any Decoder) throws {
@@ -135,6 +245,9 @@ public struct IlinkMessageItem: Codable, Sendable, Equatable {
         type = try container.decodeIfPresent(IlinkItemType.self, forKey: .type)
         text = try container.decodeIfPresent(TextItem.self, forKey: .textItem)?.text
         voiceText = try container.decodeIfPresent(VoiceItem.self, forKey: .voiceItem)?.text
+        image = try container.decodeIfPresent(IlinkImageItem.self, forKey: .imageItem)
+        file = try container.decodeIfPresent(IlinkFileItem.self, forKey: .fileItem)
+        video = try container.decodeIfPresent(IlinkVideoItem.self, forKey: .videoItem)
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -146,6 +259,29 @@ public struct IlinkMessageItem: Codable, Sendable, Equatable {
         if let voiceText {
             try container.encode(VoiceItem(text: voiceText), forKey: .voiceItem)
         }
+        try container.encodeIfPresent(image, forKey: .imageItem)
+        try container.encodeIfPresent(file, forKey: .fileItem)
+        try container.encodeIfPresent(video, forKey: .videoItem)
+    }
+
+    /// The media a message carries, when it carries one of the three the
+    /// channel can take down from the CDN.
+    public var media: IlinkCDNMedia? {
+        switch type {
+        case .image?: image?.media
+        case .file?: file?.media
+        case .video?: video?.media
+        default: nil
+        }
+    }
+
+    /// The key that decrypts `media`: for an image the item's own `aeskey`
+    /// (32 hex characters) takes precedence over the media's field.
+    public var mediaKey: String? {
+        if type == .image, let aesKey = image?.aesKey, !aesKey.isEmpty {
+            return aesKey
+        }
+        return media?.aesKey
     }
 }
 
