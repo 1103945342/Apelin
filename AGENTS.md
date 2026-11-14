@@ -412,7 +412,8 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `distributionRepositoryList`, `distributionRepositoryCreate`,
   `distributionRepositoryLink`, `distributionRepositoryUnlink`,
   `distributionPublish`, `feedbackSend`, `feedbackRead`, `feedbackEdit`,
-  `feedbackStarState`, `feedbackStar`;
+  `feedbackStarState`, `feedbackStar`; `channelStatus`, `channelSignIn`,
+  `channelVerifyCode`, `channelConfigure`, `channelSignOut`;
   `transferExport`, `transferInspect`, `transferImport`. Every one is
   in the list today; most answer `unimplemented` until their domain lands.
   The envelope (protocol version 2) carries `op`, `protocolVersion`,
@@ -439,6 +440,26 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `Apelind/Dispatch/<Domain>Handler.swift` (and `CallerPolicy` if a worker may
   call it); and this list. A worker-served operation is then a case in that
   worker's handler.
+- **A chat channel belongs to the session host, not to a worker**
+  (`Apelind/Session/Channel/WeChatChannel.swift`; the wire in
+  `Operations/Channel.swift`, the page in `Interface/Settings/ChannelController.swift`).
+  Settings ▸ Plugins signs one in — today the WeChat ClawBot plugin, through
+  its iLink bot API (`ApelinCore/Ilink`): a QR code the reader scans with a
+  phone, a long poll for messages, one POST per reply. It lives in the host
+  because what a message becomes is the host's own work: the channel asks
+  through the dispatcher as the app's caller, so a message gets every check a
+  request gets — `agentOpen` in the project the reader chose (or a temporary
+  chat), `agentPrompt` with the message's text — and the reply is that
+  turn's own `text`/`message` events, sent when `finished` or the task's
+  final `state` arrives. Approvals are never given from WeChat: a turn that
+  needs one waits for the app, and the page says so. The credential is
+  `<data>/WeChatChannel/channel.json`, written as mobile's, never in a reply,
+  a log or an error; the phones it has talked to are `peers.json` (a
+  `PreservedList`, so one unreadable entry costs no other). A channel that is
+  on and signed in counts as work in `reportWork`, so apelind stays up and
+  answers the phone while the app is closed, and `resume()` puts it back to
+  reading when the host starts again. Text only in this version: an image, a
+  file or a voice note reads as no message unless WeChat transcribed it.
 - **The authenticator** (`Apelind/PeerAuthenticator.swift`) decides before a
   request field is decoded, in this order: the kernel audit token; pid > 1;
   euid 0 or 501; the entitlements `wiki.qaq.apelin.client`,

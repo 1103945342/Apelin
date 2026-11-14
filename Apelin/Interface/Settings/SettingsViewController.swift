@@ -11,6 +11,7 @@ final class SettingsViewController: TableController {
         case agent
         case environment
         case git
+        case plugins
         case about
     }
 
@@ -28,6 +29,8 @@ final class SettingsViewController: TableController {
         /// Settings ▸ Apps: the apps under the bootstrap's `Applications`.
         case apps
         case templates
+        /// Settings ▸ Plugins: the WeChat ClawBot channel.
+        case weChat
         case git
         case version
         case licenses
@@ -57,6 +60,7 @@ final class SettingsViewController: TableController {
                 case .promptInjection: Preferences.PromptInjection.enabled
                     ? String(localized: "On")
                     : String(localized: "Off")
+                case .weChat: channelSummary
                 case .memories: memorySummary
                 default: nil
                 }
@@ -66,6 +70,8 @@ final class SettingsViewController: TableController {
     }
 
     @objc private dynamic var memorySummary: String?
+    /// Whether the WeChat channel is on, as the background service has it.
+    @objc private dynamic var channelSummary: String?
     private var loader: Task<Void, Never>?
 
     init() {
@@ -102,6 +108,18 @@ final class SettingsViewController: TableController {
         dataSource.beginLoad()
         updateRows()
         loadMemorySummary()
+        loadChannelSummary()
+    }
+
+    /// The channel's switch, read from the service that holds it: the page
+    /// that changes it is the one that knows, and this row follows.
+    private func loadChannelSummary() {
+        Task { [weak self] in
+            let state = try? await ApelinService.app.channelStatus()
+            guard let self, let state else { return }
+            channelSummary = state.enabled ? String(localized: "On") : String(localized: "Off")
+            updateRows()
+        }
     }
 
     private func rows(in section: Section) -> [Row] {
@@ -110,6 +128,7 @@ final class SettingsViewController: TableController {
         case .agent: [.modelProviders, .defaultModels, .permissionMode, .promptInjection, .memories, .skills]
         case .environment: [.toolchain, .sdks, .apps, .templates]
         case .git: [.git]
+        case .plugins: [.weChat]
         case .about: [.version, .licenses, .logs]
         }
     }
@@ -133,6 +152,7 @@ final class SettingsViewController: TableController {
         case .agent: String(localized: "Agent")
         case .environment: String(localized: "Environment")
         case .git: nil
+        case .plugins: String(localized: "Plugins")
         case .about: String(localized: "About")
         }
     }
@@ -142,6 +162,7 @@ final class SettingsViewController: TableController {
         case .chat: nil
         case .agent: nil
         case .environment: nil
+        case .plugins: nil
         case .git:
             String(localized: "The author of your commits, your GitHub account, and the package repository your releases are published to.")
         case .about: nil
@@ -178,6 +199,8 @@ final class SettingsViewController: TableController {
             content.text = String(localized: "Apps")
         case .templates:
             content.text = String(localized: "Templates")
+        case .weChat:
+            content.text = String(localized: "WeChat")
         case .git:
             content.text = String(localized: "Git")
         case .version:
@@ -220,6 +243,7 @@ final class SettingsViewController: TableController {
         case .sdks: page = SDKListController()
         case .apps: page = AppsController()
         case .templates: page = TemplatesController()
+        case .weChat: page = ChannelController()
         case .git: page = GitSettingsController()
         case .licenses: page = LicensesViewController()
         case .logs: page = LogsController()

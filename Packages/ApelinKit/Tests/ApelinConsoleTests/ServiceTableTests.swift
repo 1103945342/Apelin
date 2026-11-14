@@ -217,6 +217,16 @@ final class ServiceTableTests: XCTestCase {
             return Row(reply: ack) { try await $0.distributionRepositoryUnlink() }
         case .distributionPublish:
             return Row(reply: handle) { _ = try await $0.distributionPublish(files: ["/tmp/a.deb"]) }
+        case .channelStatus:
+            return Row(reply: ChannelState()) { _ = try await $0.channelStatus() }
+        case .channelSignIn:
+            return Row(reply: ChannelState()) { _ = try await $0.channelSignIn() }
+        case .channelVerifyCode:
+            return Row(reply: ChannelState()) { _ = try await $0.channelVerifyCode("123456") }
+        case .channelConfigure:
+            return Row(reply: ChannelState()) { _ = try await $0.channelConfigure(enabled: true) }
+        case .channelSignOut:
+            return Row(reply: ChannelState()) { _ = try await $0.channelSignOut() }
         case .feedbackSend:
             return Row(reply: FeedbackSendResponse(number: 1, url: "https://github.com/owngoal-dev/Apelin/issues/1")) {
                 _ = try await $0.feedbackSend(title: "t", body: "b")

@@ -29,6 +29,21 @@ final class SessionHost: @unchecked Sendable {
     let toolHosts: ToolHostSessions
     /// Banners for agent sessions, posted as the app.
     let notices: AgentNotices
+    /// Settings ▸ Plugins: the WeChat ClawBot channel — its sign-in, its long
+    /// poll, and the conversation each WeChat phone talks in
+    /// (`Session/Channel/WeChatChannel`). It is made on first use; what it
+    /// asks of a conversation goes through the dispatcher as the app's own
+    /// caller, since the reader turned it on and signed in to it there.
+    lazy var channels: WeChatChannel = {
+        let host = self
+        return WeChatChannel(folder: dataFolder.weChatChannel) { request in
+            let handled = await Dispatcher.handle(
+                HostRequest(request: request, descriptors: [], caller: .app),
+                host: host
+            )
+            return handled.0
+        }
+    }()
     /// Resumers by task kind: given a task the previous host left running,
     /// answer true once it is handled — kept, or ended with its own reason.
     /// Every other unfinished task is `interrupted`.
@@ -174,6 +189,12 @@ final class SessionHost: @unchecked Sendable {
                     }
                     await registry.append(taskID, kind: kind, payload: payload)
                     await notices.relayed(record, kind: kind, payload: payload)
+                    // What a conversation wrote, for the WeChat channel
+                    // answering the phone that asked for it. Cheap when no
+                    // reply is being collected for that session.
+                    if worker.role == .agent {
+                        await channels.relayed(sessionID: worker.key, kind: kind, payload: payload)
+                    }
                 case let .exit(worker):
                     await registry.ownerExited(role: worker.role, key: worker.key)
                     if worker.role == .agent {
@@ -221,6 +242,9 @@ final class SessionHost: @unchecked Sendable {
             }
             let resumed = Date()
             await install.reconcile()
+            // A channel that was on when the host last stopped goes back to
+            // reading WeChat; one that was signed out stays off.
+            await channels.resume()
             let reconciled = Date()
             func elapsed(_ from: Date, _ to: Date) -> Int {
                 Int(to.timeIntervalSince(from) * 1000)
@@ -247,9 +271,12 @@ final class SessionHost: @unchecked Sendable {
         await workers.sweep()
         // Every kind of work: builds, environment tasks, terminals, agent
         // sessions and installs are tasks; workers and tool extensions are
-        // processes. The proxy counts the connected app itself.
+        // processes; a WeChat channel that is on and signed in holds the host
+        // up too, so the phone is answered while the app is closed. The proxy
+        // counts the connected app itself.
+        let holding = await channels.isHolding
         let report = await WorkReport(
-            activeTasks: registry.activeCount,
+            activeTasks: registry.activeCount + (holding ? 1 : 0),
             workers: workers.count,
             toolHosts: toolHosts.count,
             tasksByKind: registry.activeByKind,
@@ -266,6 +293,9 @@ final class SessionHost: @unchecked Sendable {
             await terminals.stopAll()
             await toolHosts.stopAll()
             await workers.stopAll()
+            // The channel tells WeChat it is stopping, so no message is
+            // delivered to a client that is gone.
+            await channels.stop()
             AgentRunCode.stopAll()
             unlink(pidFile.path)
             exit(0)

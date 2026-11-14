@@ -18,6 +18,11 @@ final class ConsoleScriptsTests: XCTestCase {
         .agentConfigure: "A conversation's model is picked in the composer's row, where the total it must fit is shown beside it; the console leaves that choice to the reader.",
         .gitCredentialSet: "A git credential comes only from Sign In with GitHub in Settings ▸ Git; the console refuses it before sending.",
         .feedbackStar: "A star is given on the reader's GitHub account only by their tap in the app; the console refuses it before sending.",
+        .channelStatus: "A channel is read on its Settings page, where the code it is waiting for is drawn; the console has nothing to show for it.",
+        .channelSignIn: "A sign-in is a QR code scanned with a phone and drawn on the page that asked for it.",
+        .channelVerifyCode: "The number WeChat shows goes in on the page that is signing in; it comes from the phone, not from a script.",
+        .channelConfigure: "Where a channel's conversations run, and under which approval mode, is set on its page in Settings.",
+        .channelSignOut: "Signing out of a channel is the reader's, on its page in Settings.",
     ]
 
     private static func consoleFolder(_ name: String) -> URL {

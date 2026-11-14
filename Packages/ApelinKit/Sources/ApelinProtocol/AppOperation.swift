@@ -158,6 +158,14 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
     case distributionRepositoryLink
     case distributionRepositoryUnlink
     case distributionPublish
+    /// Settings ▸ Plugins: the WeChat ClawBot channel — signing in with a
+    /// code to scan, the project its conversations run in, and whether it is
+    /// on. Served by the session host, which holds the sign-in and the poll.
+    case channelStatus
+    case channelSignIn
+    case channelVerifyCode
+    case channelConfigure
+    case channelSignOut
     case feedbackSend
     case feedbackRead
     case feedbackEdit
@@ -206,6 +214,8 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
              .distributionRepositoryUnlink, .distributionPublish, .feedbackSend, .feedbackRead, .feedbackEdit,
              .feedbackStarState, .feedbackStar:
             .distribution
+        case .channelStatus, .channelSignIn, .channelVerifyCode, .channelConfigure, .channelSignOut:
+            .channel
         }
     }
 
@@ -347,6 +357,11 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .transferExport: TransferExportRequest.self
         case .transferInspect: TransferInspectRequest.self
         case .transferImport: TransferImportRequest.self
+        case .channelStatus: ChannelStatusRequest.self
+        case .channelSignIn: ChannelSignInRequest.self
+        case .channelVerifyCode: ChannelVerifyCodeRequest.self
+        case .channelConfigure: ChannelConfigureRequest.self
+        case .channelSignOut: ChannelSignOutRequest.self
         }
     }
 }
@@ -369,6 +384,7 @@ public enum OperationDomain: String, Codable, CaseIterable, Sendable {
     case git
     case transfer
     case distribution
+    case channel
 }
 
 /// A request on the wire. Each operation has exactly one request type, and
