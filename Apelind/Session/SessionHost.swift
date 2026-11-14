@@ -29,6 +29,18 @@ final class SessionHost: @unchecked Sendable {
     let toolHosts: ToolHostSessions
     /// Banners for agent sessions, posted as the app.
     let notices: AgentNotices
+    /// The WeChat channels: what the app configured, their workers, and the
+    /// four calls those workers may make. No root process opens a socket.
+    let channels: ChannelHost
+    /// The reader's own approval mode, as the app last sent it. A channel
+    /// never opens a conversation looser than this.
+    var appApprovalMode: ApprovalMode {
+        get { modeLock.withLock { storedAppMode } }
+        set { modeLock.withLock { storedAppMode = newValue } }
+    }
+
+    private let modeLock = PthreadLock()
+    private var storedAppMode = ApprovalMode.confirm
     /// Resumers by task kind: given a task the previous host left running,
     /// answer true once it is handled — kept, or ended with its own reason.
     /// Every other unfinished task is `interrupted`.
@@ -80,6 +92,7 @@ final class SessionHost: @unchecked Sendable {
             attachments: stateDirectory.appendingPathComponent("attachments", isDirectory: true),
         )
         notices = AgentNotices(stateDirectory: stateDirectory, sessions: dataFolder.sessions)
+        channels = ChannelHost(stateDirectory: stateDirectory, home: home)
         proxy = WorkerChannel(adopting: WorkerMain.channelDescriptor)
         resumers[.install] = { [install] record in await install.resume(record) }
         let restart = TaskResume(
@@ -114,6 +127,9 @@ final class SessionHost: @unchecked Sendable {
 
     @objc dynamic func run() -> Never {
         signal(SIGPIPE, SIG_IGN)
+        // Channels are resumed by the host itself, under the task the previous
+        // run left: registered here, where `self` is fully formed.
+        resumers[.channel] = { [unowned self] record in await channels.resume(record, host: self) }
         var metadata = stat()
         guard fstat(WorkerMain.channelDescriptor, &metadata) == 0, metadata.st_mode & S_IFMT == S_IFSOCK else {
             NSLog("apelind-session: start this through apelind")
@@ -172,10 +188,25 @@ final class SessionHost: @unchecked Sendable {
                     {
                         await AgentSessionTable.shared.setTitle(title, session: key)
                     }
+                    // What a channel reports about itself: its login state and
+                    // any error, kept as the channel's state and passed on to
+                    // the app through the same task.
+                    if worker.role == .channel, kind == "channelState", let key = worker.key {
+                        await channels.observedState(payload, channel: key, host: self)
+                    }
                     await registry.append(taskID, kind: kind, payload: payload)
                     await notices.relayed(record, kind: kind, payload: payload)
                 case let .exit(worker):
-                    await registry.ownerExited(role: worker.role, key: worker.key)
+                    // A channel's task outlives a worker that exited: the host
+                    // brings the worker back, under the same task, unless the
+                    // channel was switched off or has given up.
+                    if worker.role == .channel {
+                        if let key = worker.key {
+                            await channels.workerExited(channel: key, host: self)
+                        }
+                    } else {
+                        await registry.ownerExited(role: worker.role, key: worker.key)
+                    }
                     if worker.role == .agent {
                         await toolHosts.closeAll(ownedBy: .worker(.agent, instance: worker.key))
                     }
@@ -220,6 +251,9 @@ final class SessionHost: @unchecked Sendable {
                 interrupted += 1
             }
             let resumed = Date()
+            // Channels the last run left enabled come back now: their tasks
+            // have been dealt with above, so this only starts workers.
+            await channels.restore(host: self)
             await install.reconcile()
             let reconciled = Date()
             func elapsed(_ from: Date, _ to: Date) -> Int {

@@ -50,11 +50,14 @@ public enum WorkerMain {
     public typealias Handler = @Sendable (ChannelRequest, WorkerContext) async -> (WireReply, [OwnedDescriptor])
 
     /// `onClose` runs when the host closes the channel (it stopped, or was
-    /// killed), right before the worker exits.
+    /// killed), right before the worker exits. `onReady` runs once the
+    /// assignment is accepted and `ready` is on its way — where a worker that
+    /// drives itself (a channel) starts its loop.
     public static func run(
         role: WorkerRole,
         onCancel: (@Sendable (TaskID, WorkerContext) -> Void)? = nil,
         onClose: (@Sendable () -> Void)? = nil,
+        onReady: (@Sendable (WorkerContext) -> Void)? = nil,
         handler: @escaping Handler,
     ) -> Never {
         signal(SIGPIPE, SIG_IGN)
@@ -106,6 +109,7 @@ public enum WorkerMain {
         let context = WorkerContext(assignment: assignment, channel: channel)
         channel.onRequest { request in await handler(request, context) }
         try? channel.sendControl(WorkerControl.ready)
+        onReady?(context)
         dispatchMain()
     }
 

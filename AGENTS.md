@@ -4993,6 +4993,64 @@ packages both flavours and every extension, reads each package back, and keeps
 install`, `make vphone` and `make device-*` need a host reaching the device
 over ssh.
 
+## Chat channels (WeChat ClawBot via iLink, 2026-11-14)
+
+A channel lets a chat platform drive one Apelin conversation from a phone
+that is nowhere near this device. The first one is WeChat's iLink bot API
+(`Packages/ApelinWeChat`), reached from the settings page at
+Settings ▸ Plugins ▸ WeChat ClawBot.
+
+- **The shape.** The app configures a channel; `apelind` (root) keeps it
+  alive and is the only thing that may speak for it to `apelin-agent`; the
+  mobile `apelin-channel` worker (`WorkerRole.channel`) holds the login, the
+  network and the `getupdates` long poll. Neither apelind nor its session
+  host opens a socket for a channel. One channel drives one conversation —
+  the one it was bound to, or the one the host opened for it on the first
+  message, in the project the app configured (`nil` is General Chat) and
+  recorded as `openedBy = "channel:<id>"`. A channel worker cannot open a
+  conversation itself, and cannot name another one.
+- **The wire.** Seven operations for the app — `channelList`,
+  `channelConfigure`, `channelStart`, `channelStop`, `channelLogout`,
+  `channelLoginCode`, `channelAttach` — and three a channel worker may call —
+  `channelBinding`, `channelSay`, `channelRead`
+  (`CallerPolicy.channelOperations`, never `agentOperations`). `agentApprove`
+  is not reachable from a channel: a tool call is approved on the device, in
+  Apelin, and a waiting run tells the chat that it waits. `channelSay` fills
+  only the session, the text and a `queue` delivery, so a channel cannot
+  change a mode, a model, a run mode or the prompt — and the conversation it
+  drives never runs looser than the app's own mode, which `ChannelRules`
+  decides and tests.
+- **The token never reaches the host.** The iLink `bot_token` is obtained by
+  scanning, lives in the worker's own
+  `~/Documents/wiki.qaq.apelin/WeChatChannel/<id>/` file (0600, atomic), and
+  is never written into `channels/<id>/config.json` — that holds the switch,
+  the binding, the allowlist and `loggedIn`, and no secret. `channelLogout`
+  stops the worker, deletes that folder and keeps the conversation and its
+  settings. `channelStart` needs no credential, because scanning is how one
+  is obtained. A session file that does not read fails closed (`paused`,
+  `configurationUnreadable`) rather than looking like "not signed in".
+- **Signing in is a scan.** `channelStart` on a channel with no session shows
+  a QR code, the phone confirms, `confirmed` yields the token, and the host
+  turns the switch on. The number the server sometimes asks for
+  (`need_verifycode`) is a fallback: the page shows the field only when that
+  state arrives, and a normal sign-in never asks for it.
+- **The allowlist is the door.** An empty allowlist means nobody.
+  `channelStart` and `channelConfigure(enabled: true)` are refused rather
+  than saved, and the worker enforces the same list for every message.
+- **Where the tests are, and what they do not reach.**
+  `Scripts/test-channel.sh` compiles the host's channel rules
+  (`Packages/ApelinKit/Sources/ApelinProtocol/ChannelRules.swift`) with the
+  device toolchain and runs them without Xcode; `Scripts/test-wechat.sh
+  --device build/Tool.entitlements` does the same for the protocol package,
+  against a transport that never touches the network. Neither reaches iLink:
+  a real scan, a real `getupdates` and a real send still have to be run on a
+  device, and `make check` is still owed from an environment that has
+  `xcodebuild`.
+- **Where the protocol facts came from.** A device-tested Kotlin
+  implementation of the same channel (the aimini project, GPL-3.0) was read
+  for its endpoints, headers, field names and status values only. The Swift
+  code is written from those facts, never translated from that source.
+
 ## The in-app Git screen (`Apelin/Interface/Git/`)
 
 The screen draws with `GitTheme` and the app's own tokens rather than a palette

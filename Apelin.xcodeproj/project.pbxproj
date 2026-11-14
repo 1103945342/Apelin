@@ -33,6 +33,9 @@
 		AA0000000000000000000404 /* ApelinAgentWorker in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000403 /* ApelinAgentWorker */; };
 		AA0000000000000000000406 /* ApelinDiagnosticsWorker in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000405 /* ApelinDiagnosticsWorker */; };
 		AA0000000000000000000408 /* ApelinLogReaderWorker in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000407 /* ApelinLogReaderWorker */; };
+		A6000000000000000000000A /* ApelinChannel in Frameworks */ = {isa = PBXBuildFile; productRef = A60000000000000000000009 /* ApelinChannel */; };
+		A60000000000000000000010 /* ApelinCore in Frameworks */ = {isa = PBXBuildFile; productRef = A6000000000000000000000E /* ApelinCore */; };
+		A60000000000000000000011 /* ApelinProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = A6000000000000000000000F /* ApelinProtocol */; };
 		A20000000000000000000111 /* DisplayLink in Frameworks */ = {isa = PBXBuildFile; productRef = A20000000000000000000110 /* DisplayLink */; };
 		A20000000000000000000121 /* ListViewKit in Frameworks */ = {isa = PBXBuildFile; productRef = A20000000000000000000120 /* ListViewKit */; };
 		A20000000000000000000131 /* Litext in Frameworks */ = {isa = PBXBuildFile; productRef = A20000000000000000000130 /* Litext */; };
@@ -97,6 +100,13 @@
 			remoteGlobalIDString = AA000000000000000000014E;
 			remoteInfo = WorkerLogReader;
 		};
+		A60000000000000000000013 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A60000000000000000000002;
+			remoteInfo = WorkerChannel;
+		};
 		A50000000000000000000103 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = AA0000000000000000000001 /* Project object */;
@@ -128,6 +138,7 @@
 		AA0000000000000000000131 /* apelin-agent */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "apelin-agent"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000141 /* apelin-diagnostics */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "apelin-diagnostics"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA000000000000000000014F /* apelin-log-reader */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "apelin-log-reader"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A60000000000000000000001 /* apelin-channel */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "apelin-channel"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A50000000000000000000102 /* ApelinWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ApelinWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -229,6 +240,11 @@
 			path = Workers/LogReader;
 			sourceTree = "<group>";
 		};
+		A60000000000000000000005 /* Workers/Channel */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Workers/Channel;
+			sourceTree = "<group>";
+		};
 		A50000000000000000000106 /* Widgets/Extension */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -324,6 +340,14 @@
 				AA0000000000000000000408 /* ApelinLogReaderWorker in Frameworks */,
 			);
 		};
+		A60000000000000000000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				A60000000000000000000010 /* ApelinCore in Frameworks */,
+				A60000000000000000000011 /* ApelinProtocol in Frameworks */,
+				A6000000000000000000000A /* ApelinChannel in Frameworks */,
+			);
+		};
 		A50000000000000000000113 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
@@ -344,6 +368,7 @@
 				AA0000000000000000000132 /* Workers/Agent */,
 				AA0000000000000000000142 /* Workers/Diagnostics */,
 				AA0000000000000000000150 /* Workers/LogReader */,
+				A60000000000000000000005 /* Workers/Channel */,
 				A50000000000000000000106 /* Widgets/Extension */,
 				A50000000000000000000107 /* Widgets/Shared */,
 				AA0000000000000000000015 /* Products */,
@@ -360,6 +385,7 @@
 				AA0000000000000000000131 /* apelin-agent */,
 				AA0000000000000000000141 /* apelin-diagnostics */,
 				AA000000000000000000014F /* apelin-log-reader */,
+				A60000000000000000000001 /* apelin-channel */,
 				A50000000000000000000102 /* ApelinWidgets.appex */,
 			);
 			name = Products;
@@ -387,6 +413,7 @@
 				AA0000000000000000000139 /* PBXTargetDependency */,
 				AA0000000000000000000149 /* PBXTargetDependency */,
 				AA0000000000000000000157 /* PBXTargetDependency */,
+				A60000000000000000000012 /* PBXTargetDependency */,
 				A50000000000000000000108 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
@@ -570,6 +597,30 @@
 			productReference = AA000000000000000000014F /* apelin-log-reader */;
 			productType = "com.apple.product-type.tool";
 		};
+		A60000000000000000000002 /* WorkerChannel */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A60000000000000000000006 /* Build configuration list for PBXNativeTarget "WorkerChannel" */;
+			buildPhases = (
+				A60000000000000000000003 /* Sources */,
+				A60000000000000000000004 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A60000000000000000000005 /* Workers/Channel */,
+			);
+			name = WorkerChannel;
+			packageProductDependencies = (
+				A6000000000000000000000E /* ApelinCore */,
+				A6000000000000000000000F /* ApelinProtocol */,
+				A60000000000000000000009 /* ApelinChannel */,
+			);
+			productName = "apelin-channel";
+			productReference = A60000000000000000000001 /* apelin-channel */;
+			productType = "com.apple.product-type.tool";
+		};
 		A50000000000000000000110 /* ApelinWidgets */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A50000000000000000000111 /* Build configuration list for PBXNativeTarget "ApelinWidgets" */;
@@ -628,6 +679,7 @@
 				AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */,
 				AA0000000000000000000401 /* XCLocalSwiftPackageReference "Packages/ApelinDiagnostics" */,
 				AA0000000000000000000402 /* XCLocalSwiftPackageReference "Packages/ApelinAgent" */,
+				A6000000000000000000000B /* XCLocalSwiftPackageReference "Packages/ApelinWeChat" */,
 				A10000000000000000000001 /* XCLocalSwiftPackageReference "Packages/ApelinToolHost" */,
 				A20000000000000000000007 /* XCLocalSwiftPackageReference "Packages/Runestone" */,
 				A20000000000000000000001 /* XCRemoteSwiftPackageReference "DisplayLink" */,
@@ -655,6 +707,7 @@
 				AA0000000000000000000130 /* WorkerAgent */,
 				AA0000000000000000000140 /* WorkerDiagnostics */,
 				AA000000000000000000014E /* WorkerLogReader */,
+				A60000000000000000000002 /* WorkerChannel */,
 				A50000000000000000000110 /* ApelinWidgets */,
 			);
 		};
@@ -737,6 +790,11 @@
 			files = (
 			);
 		};
+		A60000000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -769,6 +827,11 @@
 			isa = PBXTargetDependency;
 			target = AA000000000000000000014E /* WorkerLogReader */;
 			targetProxy = AA0000000000000000000156 /* PBXContainerItemProxy */;
+		};
+		A60000000000000000000012 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A60000000000000000000002 /* WorkerChannel */;
+			targetProxy = A60000000000000000000013 /* PBXContainerItemProxy */;
 		};
 		A50000000000000000000108 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -982,6 +1045,36 @@
 			};
 			name = Release;
 		};
+		A60000000000000000000007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_BUNDLE_IDENTIFIER = "wiki.qaq.apelin-channel";
+				PRODUCT_NAME = "apelin-channel";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path",
+				);
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A60000000000000000000008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_BUNDLE_IDENTIFIER = "wiki.qaq.apelin-channel";
+				PRODUCT_NAME = "apelin-channel";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path",
+				);
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		AA0000000000000000000146 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1159,6 +1252,14 @@
 			);
 			defaultConfigurationName = Release;
 		};
+		A60000000000000000000006 /* Build configuration list for PBXNativeTarget "WorkerChannel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A60000000000000000000007 /* Debug */,
+				A60000000000000000000008 /* Release */,
+			);
+			defaultConfigurationName = Release;
+		};
 		A50000000000000000000111 /* Build configuration list for PBXNativeTarget "ApelinWidgets" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1185,6 +1286,10 @@
 		A10000000000000000000001 /* XCLocalSwiftPackageReference "Packages/ApelinToolHost" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/ApelinToolHost;
+		};
+		A6000000000000000000000B /* XCLocalSwiftPackageReference "Packages/ApelinWeChat" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/ApelinWeChat;
 		};
 		A20000000000000000000007 /* XCLocalSwiftPackageReference "Packages/Runestone" */ = {
 			isa = XCLocalSwiftPackageReference;
@@ -1511,6 +1616,21 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A40000000000000000000103 /* XCRemoteSwiftPackageReference "ScrubberKit" */;
 			productName = ScrubberKit;
+		};
+		A60000000000000000000009 /* ApelinChannel */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
+			productName = ApelinChannel;
+		};
+		A6000000000000000000000E /* ApelinCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
+			productName = ApelinCore;
+		};
+		A6000000000000000000000F /* ApelinProtocol */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
+			productName = ApelinProtocol;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

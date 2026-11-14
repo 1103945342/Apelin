@@ -20,6 +20,13 @@ enum Caller: Equatable, Sendable {
         }
         return false
     }
+
+    var isChannel: Bool {
+        if case .worker(.channel, _) = self {
+            return true
+        }
+        return false
+    }
 }
 
 /// What each caller may ask the session host for. The app may ask for
@@ -119,6 +126,15 @@ enum CallerPolicy {
         .installPackage, .removePackage, .buildAttach,
     ]
 
+    /// A channel worker reaches its own binding, the conversation it was bound
+    /// to and nothing else. Deliberately not `agentOperations`: a channel
+    /// never opens a conversation, never approves, never changes a mode, and
+    /// never reaches a second conversation. No token passes through the host:
+    /// WeChat gives one to the worker, which keeps it in its own session file.
+    static let channelOperations: Set<AppOperation> = [
+        .channelBinding, .channelSay, .channelRead,
+    ]
+
     static func allows(_ caller: Caller, _ operation: AppOperation) -> Bool {
         switch caller {
         case .app:
@@ -129,6 +145,8 @@ enum CallerPolicy {
             diagnosticsOperations.contains(operation)
         case .worker(.environment, _):
             environmentOperations.contains(operation)
+        case .worker(.channel, _):
+            channelOperations.contains(operation)
         case .worker:
             // Build and log-reader workers report through
             // events and replies; they call nothing.

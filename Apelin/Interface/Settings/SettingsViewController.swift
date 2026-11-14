@@ -9,6 +9,7 @@ final class SettingsViewController: TableController {
     private enum Section: Hashable, CaseIterable {
         case chat
         case agent
+        case plugins
         case environment
         case git
         case about
@@ -23,6 +24,9 @@ final class SettingsViewController: TableController {
         case promptInjection
         case memories
         case skills
+        /// Settings ▸ Plugins: what connects something outside Apelin to an
+        /// agent here — WeChat's ClawBot today.
+        case plugins
         case toolchain
         case sdks
         /// Settings ▸ Apps: the apps under the bootstrap's `Applications`.
@@ -108,6 +112,7 @@ final class SettingsViewController: TableController {
         switch section {
         case .chat: [.preferences]
         case .agent: [.modelProviders, .defaultModels, .permissionMode, .promptInjection, .memories, .skills]
+        case .plugins: [.plugins]
         case .environment: [.toolchain, .sdks, .apps, .templates]
         case .git: [.git]
         case .about: [.version, .licenses, .logs]
@@ -131,6 +136,8 @@ final class SettingsViewController: TableController {
         // heading over a single word.
         case .chat: nil
         case .agent: String(localized: "Agent")
+        // Plugins is one row that names itself, as Preferences is.
+        case .plugins: nil
         case .environment: String(localized: "Environment")
         case .git: nil
         case .about: String(localized: "About")
@@ -141,6 +148,7 @@ final class SettingsViewController: TableController {
         switch section {
         case .chat: nil
         case .agent: nil
+        case .plugins: nil
         case .environment: nil
         case .git:
             String(localized: "The author of your commits, your GitHub account, and the package repository your releases are published to.")
@@ -170,6 +178,8 @@ final class SettingsViewController: TableController {
             content.text = String(localized: "Memories")
         case .skills:
             content.text = String(localized: "Skills")
+        case .plugins:
+            content.text = String(localized: "Plugins")
         case .toolchain:
             content.text = String(localized: "Toolchains")
         case .sdks:
@@ -216,6 +226,7 @@ final class SettingsViewController: TableController {
         case .promptInjection: page = PromptInjectionController()
         case .memories: page = MemoriesController()
         case .skills: page = SkillsController()
+        case .plugins: page = PluginsController()
         case .toolchain: page = ToolchainController()
         case .sdks: page = SDKListController()
         case .apps: page = AppsController()

@@ -10,6 +10,9 @@ public enum WorkerRole: String, Codable, CaseIterable, Sendable {
     case agent
     /// Logs through icli, crashes, screenshots, the UI tree. Mobile.
     case diagnostics
+    /// One WeChat ClawBot channel: the login, the network and the message
+    /// loop, so no root process ever holds a connection. Mobile.
+    case channel
     /// System log reading that needs root. System libraries only.
     case logReader
 
@@ -20,6 +23,7 @@ public enum WorkerRole: String, Codable, CaseIterable, Sendable {
         case .build: "apelin-build"
         case .agent: "apelin-agent"
         case .diagnostics: "apelin-diagnostics"
+        case .channel: "apelin-channel"
         case .logReader: "apelin-log-reader"
         }
     }

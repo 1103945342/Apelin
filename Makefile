@@ -21,7 +21,7 @@ APP_BUNDLE          := $(PRODUCTS_DIR)/Apelin.app
 DAEMON_BINARY       := $(PRODUCTS_DIR)/apelind
 # The workers apelind's session host spawns; each one's entitlements are
 # Packaging/Workers/<name>.entitlements.
-WORKERS             := apelin-environment apelin-build apelin-agent apelin-diagnostics apelin-log-reader
+WORKERS             := apelin-environment apelin-build apelin-agent apelin-diagnostics apelin-log-reader apelin-channel
 WORKER_ENTITLEMENTS := $(addprefix $(ROOT_DIR)/Packaging/Workers/,$(addsuffix .entitlements,$(WORKERS)))
 PACKAGE_ID          := wiki.qaq.apelin
 BUNDLE_ID           := wiki.qaq.apelin

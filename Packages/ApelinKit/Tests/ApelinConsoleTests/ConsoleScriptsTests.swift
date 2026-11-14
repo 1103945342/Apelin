@@ -18,6 +18,16 @@ final class ConsoleScriptsTests: XCTestCase {
         .agentConfigure: "A conversation's model is picked in the composer's row, where the total it must fit is shown beside it; the console leaves that choice to the reader.",
         .gitCredentialSet: "A git credential comes only from Sign In with GitHub in Settings ▸ Git; the console refuses it before sending.",
         .feedbackStar: "A star is given on the reader's GitHub account only by their tap in the app; the console refuses it before sending.",
+        .channelList: "Settings ▸ Plugins reads a channel's state; a console script has no reason to.",
+        .channelConfigure: "Turning a channel on or binding it is a decision in Settings ▸ Plugins.",
+        .channelStart: "A channel is started by the switch in Settings ▸ Plugins.",
+        .channelStop: "A channel is stopped by the switch in Settings ▸ Plugins.",
+        .channelLogout: "Signing a channel out is a decision in Settings ▸ Plugins.",
+        .channelLoginCode: "The number WeChat shows is typed in Settings ▸ Plugins while the sign-in asks for it; the console never carries it.",
+        .channelAttach: "A channel's events are read by Settings ▸ Plugins, never by a console script.",
+        .channelBinding: "Only apelin-channel, spawned by the session host, may read a channel's binding.",
+        .channelSay: "Only apelin-channel brings a platform's message in; the console refuses it before sending.",
+        .channelRead: "Only apelin-channel reads the conversation a channel drives.",
     ]
 
     private static func consoleFolder(_ name: String) -> URL {

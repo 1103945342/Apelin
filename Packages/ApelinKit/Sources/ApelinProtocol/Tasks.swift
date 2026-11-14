@@ -110,6 +110,11 @@ public enum TaskKind: String, Codable, Sendable {
     /// since the probe died with the process that ran it.
     case modelTest
 
+    /// A WeChat ClawBot channel: its login codes, its state and the errors it
+    /// met, read with `channelAttach`. One per enabled channel, kept alive by
+    /// the session host while the channel is enabled.
+    case channel
+
     /// The operation that attaches to this kind of task.
     public var attachOperation: AppOperation {
         switch self {
@@ -119,6 +124,7 @@ public enum TaskKind: String, Codable, Sendable {
         case .terminal: .ptyAttach
         case .logStream: .logStream
         case .confirmLoaded: .confirmLoadedAttach
+        case .channel: .channelAttach
         }
     }
 }

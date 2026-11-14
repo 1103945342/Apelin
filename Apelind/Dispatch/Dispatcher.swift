@@ -97,6 +97,7 @@ enum Dispatcher {
         case .transfer: await TransferHandler.handle(request, host: host)
         case .git: await GitHandler.handle(request, host: host)
         case .distribution: await DistributionHandler.handle(request, host: host)
+        case .channel: await ChannelHandler.handle(request, host: host)
         }
     }
 }

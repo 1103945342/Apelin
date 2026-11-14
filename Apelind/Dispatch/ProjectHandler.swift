@@ -27,6 +27,7 @@ enum ProjectHandler: DomainHandler {
 
     private static func delete(_ request: HostRequest, host: SessionHost) async -> HostReply {
         var bound = request
+        let projectID: String
         do {
             let target = try AgentProjectDeleteRules.target(request.decode(ProjectDeleteRequest.self), home: host.home)
             if case let .worker(.agent, instance) = request.caller,
@@ -36,9 +37,16 @@ enum ProjectHandler: DomainHandler {
             }
             try await AgentHandler.closeSessions(ofProject: target.id, host: host)
             bound.request.payload = try JSONCoding.encode(ProjectDeleteRequest(projectID: target.id, projectName: target.name))
+            projectID = target.id
         } catch {
             return request.fail(error)
         }
-        return await host.forward(bound, to: .build)
+        let reply = await host.forward(bound, to: .build)
+        // A channel bound to the project stands down: its conversation is
+        // gone with it, and it must not open another on its own.
+        if case .success = reply.0.result {
+            await host.channels.projectDeleted(projectID, host: host)
+        }
+        return reply
     }
 }

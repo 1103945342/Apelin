@@ -29,6 +29,7 @@ final class ServiceTableTests: XCTestCase {
         let batch = Self.batch
         let ack = Acknowledged()
         let id = TaskID("task")
+        let channel = ChannelSummary(id: "channel")
         switch operation {
         case .hello:
             return Row(reply: HelloResponse(installRoot: "/var/jb")) { _ = try await $0.hello() }
@@ -252,6 +253,45 @@ final class ServiceTableTests: XCTestCase {
             }, descriptors: 1)
         case .toolHostOpen:
             return Row(reply: ToolHostOpenResponse(sessionID: "s")) { _ = try await $0.toolHostOpen(id: "wiki.qaq.apelin.tools.disassembler") }
+        case .channelList:
+            return Row(reply: ChannelListResponse()) { _ = try await $0.channelList(channelID: "channel") }
+        case .channelConfigure:
+            return Row(reply: channel) { _ = try await $0.channelConfigure(ChannelConfigureRequest(channelID: "channel")) }
+        case .channelLoginCode:
+            return Row(reply: ChannelLoginCodeResponse()) { _ = try await $0.channelLoginCode(channelID: "channel", code: "1234") }
+        case .channelStart:
+            return Row(reply: channel) { _ = try await $0.channelStart(channelID: "channel") }
+        case .channelStop:
+            return Row(reply: channel) { _ = try await $0.channelStop(channelID: "channel") }
+        case .channelLogout:
+            return Row(reply: channel) { _ = try await $0.channelLogout(channelID: "channel") }
+        case .channelAttach:
+            return Row(reply: batch) { _ = try await $0.channelAttach(ChannelAttachRequest(taskID: id)) }
+        case .channelBinding:
+            let binding = ChannelWorkerBinding(
+                channelID: "channel",
+                taskID: id,
+                projectID: nil,
+                sessionID: nil,
+                allowlist: [],
+                approvalMode: .confirm,
+                state: .stopped
+            )
+            return Row(reply: binding) { _ = try await $0.channelBinding() }
+        case .channelSay:
+            return Row(reply: ChannelSayResponse(accepted: true)) {
+                _ = try await $0.channelSay(ChannelSayRequest(
+                    channelID: "channel",
+                    from: "peer",
+                    clientMessageID: "m",
+                    sessionID: nil,
+                    text: "hi"
+                ))
+            }
+        case .channelRead:
+            return Row(reply: ChannelReadResponse()) {
+                _ = try await $0.channelRead(ChannelReadRequest(channelID: "channel", sessionID: "s"))
+            }
         case .toolHostClose:
             return Row(reply: ack) { try await $0.toolHostClose(sessionID: "s") }
         case .toolHostCall:

@@ -149,6 +149,14 @@ enum AgentHandler: DomainHandler {
         }
     }
 
+    /// Opens a conversation as the app would, for a channel. A channel's
+    /// worker may not call `agentOpen` itself (`CallerPolicy`), so this is the
+    /// only way one gets a conversation, and the session records no agent as
+    /// its opener.
+    static func openForChannel(_ request: HostRequest, host: SessionHost) async -> HostReply {
+        await open(request, host: host)
+    }
+
     /// A closed session holds nothing it was granted, and no shell_run of
     /// it goes on.
     private static func forgetClosed(_ sessionID: String, host: SessionHost) async {
@@ -369,6 +377,11 @@ enum AgentHandler: DomainHandler {
         // The host's own Confirm decisions (builds, installs, removals) read
         // the mode from the ledger, keyed by the worker's instance.
         await host.approvals.setMode(open.approvalMode, session: sessionID)
+        if request.caller == .app {
+            // The reader's own mode, remembered for channels: one never
+            // opens a conversation looser than this.
+            host.appApprovalMode = open.approvalMode
+        }
         do {
             var wire = try WireRequest(resolved)
             wire.requestID = request.requestID
@@ -465,6 +478,9 @@ enum AgentHandler: DomainHandler {
                 }
             } else {
                 prompt = AgentConversationRules.appPrompt(asked)
+                if request.caller == .app, let mode = prompt.approvalMode {
+                    host.appApprovalMode = mode
+                }
             }
             wire = try WireRequest(prompt)
             wire.requestID = request.requestID

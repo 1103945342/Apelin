@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+	apelin-channel, started by apelind's session host as mobile.
+	One WeChat ClawBot channel: its login, its network and its message loop.
+
+	The sandbox is off because the worker must reach the network as a
+	jailbroken process; that is the whole list. It never receives a
+	Mach-lookup port, never carries the app's client entitlement and never
+	reads another app's bundle or container — everything it does on the
+	device is a request to the session host over the socketpair it was
+	spawned with.
+
+	Never add `wiki.qaq.apelin.client` or the Mach-lookup of
+	`wiki.qaq.apelin.service` here: the packager refuses either key.
+-->
+<plist version="1.0">
+<dict>
+	<key>com.apple.private.security.no-sandbox</key>
+	<true/>
+	<key>platform-application</key>
+	<true/>
+</dict>
+</plist>

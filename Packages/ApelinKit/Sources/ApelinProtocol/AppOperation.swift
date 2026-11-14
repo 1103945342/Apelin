@@ -167,6 +167,22 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
     case transferInspect
     case transferImport
 
+    // The WeChat ClawBot channel. Settings ▸ Plugins configures it and reads
+    // its state; the first seven are the app's. The last four are the channel
+    // worker's alone (`CallerPolicy.channelOperations`): it reports itself,
+    // takes its credential, and reaches the one conversation it was bound to.
+    case channelList
+    case channelConfigure
+    case channelStart
+    case channelStop
+    case channelLogout
+    /// The number WeChat showed on the phone while signing in.
+    case channelLoginCode
+    case channelAttach
+    case channelBinding
+    case channelSay
+    case channelRead
+
     /// Which `Operations/<Domain>.swift` and `Dispatch/<Domain>Handler.swift`
     /// own the operation.
     public var domain: OperationDomain {
@@ -201,6 +217,10 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
              .gitIgnoreAppend, .gitReset, .gitStashList, .gitStashSave, .gitStashApply, .gitStashDrop,
              .gitStashClear, .gitCheckpointSave, .gitCheckpointRestore:
             .git
+        case .channelList, .channelConfigure, .channelStart, .channelStop,
+             .channelLogout, .channelLoginCode, .channelAttach, .channelBinding,
+             .channelSay, .channelRead:
+            .channel
         case .transferExport, .transferInspect, .transferImport: .transfer
         case .distributionRepositoryList, .distributionRepositoryCreate, .distributionRepositoryLink,
              .distributionRepositoryUnlink, .distributionPublish, .feedbackSend, .feedbackRead, .feedbackEdit,
@@ -347,6 +367,16 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .transferExport: TransferExportRequest.self
         case .transferInspect: TransferInspectRequest.self
         case .transferImport: TransferImportRequest.self
+        case .channelList: ChannelListRequest.self
+        case .channelConfigure: ChannelConfigureRequest.self
+        case .channelStart: ChannelStartRequest.self
+        case .channelStop: ChannelStopRequest.self
+        case .channelLogout: ChannelLogoutRequest.self
+        case .channelLoginCode: ChannelLoginCodeRequest.self
+        case .channelAttach: ChannelAttachRequest.self
+        case .channelBinding: ChannelBindingRequest.self
+        case .channelSay: ChannelSayRequest.self
+        case .channelRead: ChannelReadRequest.self
         }
     }
 }
@@ -369,6 +399,7 @@ public enum OperationDomain: String, Codable, CaseIterable, Sendable {
     case git
     case transfer
     case distribution
+    case channel
 }
 
 /// A request on the wire. Each operation has exactly one request type, and

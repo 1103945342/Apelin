@@ -37,6 +37,7 @@ let package = Package(
         .library(name: "ApelinGit", targets: ["ApelinGit"]),
         .library(name: "ApelinConsole", targets: ["ApelinConsole"]),
         .library(name: "ApelinReplay", targets: ["ApelinReplay"]),
+        .library(name: "ApelinChannel", targets: ["ApelinChannel"]),
     ],
     dependencies: [
         .package(url: "https://github.com/Lakr233/libgit2.xcframework.git", from: "1.0.0"),
@@ -47,6 +48,9 @@ let package = Package(
         // The device-side Command Line Tools download, retarget and
         // self-test (apelin-environment's RetargetToolchainBackend).
         .package(path: "../ApelinToolchain"),
+        // The iLink client the channel worker drives: its login, its update
+        // loop and its send, with no root process and no external gateway.
+        .package(path: "../ApelinWeChat"),
     ],
     targets: [
         // System only: paths, the data folder, project naming, JSON.
@@ -114,6 +118,18 @@ let package = Package(
         // ApelinService, a DataFolder and a log sink; the app binds them.
         .target(name: "ApelinConsole", dependencies: ["ApelinCore", "ApelinProtocol"], swiftSettings: swiftSettings),
 
+        // apelin-channel: the channel worker's glue between the host's four
+        // calls and iLink. The network is here, in a mobile process; the
+        // session host only routes, and no root process holds a connection.
+        .target(
+            name: "ApelinChannel",
+            dependencies: [
+                "ApelinCore", "ApelinProtocol",
+                .product(name: "ApelinWeChat", package: "ApelinWeChat"),
+            ],
+            swiftSettings: swiftSettings,
+        ),
+
         // An ApelinTransport that answers from event streams captured on a
         // device (Fixtures/, written by Documents/Console/demo/
         // make-replay-fixtures.py), for working on the UI where no apelind
@@ -144,6 +160,7 @@ let package = Package(
         .testTarget(name: "ApelinProjectTests", dependencies: ["ApelinProject"]),
         .testTarget(name: "ApelinGitTests", dependencies: ["ApelinGit"]),
         .testTarget(name: "ApelinConsoleTests", dependencies: ["ApelinConsole", "ApelinCore", "ApelinProtocol"]),
+        .testTarget(name: "ApelinChannelTests", dependencies: ["ApelinChannel", "ApelinProtocol"]),
         .testTarget(name: "ApelinReplayTests", dependencies: ["ApelinReplay", "ApelinCore", "ApelinProtocol"]),
     ],
     swiftLanguageVersions: [.v5],

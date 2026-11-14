@@ -68,6 +68,13 @@ public struct DataFolder: Sendable, Equatable {
         folder("skills")
     }
 
+    /// `WeChatChannel/<channelID>/`: the channel worker's own login state.
+    /// The worker runs as mobile and owns it; the host never reads inside,
+    /// and a logout removes a channel's folder whole.
+    public var weChatChannel: URL {
+        folder("WeChatChannel")
+    }
+
     /// `Exports/<kind>-<id>/`: transfer files written for the app to share.
     public var exports: URL {
         folder("Exports")

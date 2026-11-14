@@ -33,7 +33,7 @@ flavor="${12}"
 # <prefix>/usr/libexec/apelin/<name> and signed with
 # Packaging/Workers/<name>.entitlements.
 workers_dir="${13}"
-workers=(apelin-environment apelin-build apelin-agent apelin-diagnostics apelin-log-reader)
+workers=(apelin-environment apelin-build apelin-agent apelin-diagnostics apelin-log-reader apelin-channel)
 # SwiftPM resource bundles a worker reads at run time through Bundle.module.
 # Xcode's accessor for a command-line tool looks beside the executable
 # (Bundle.main.bundleURL) and names no build path, so each is installed next
