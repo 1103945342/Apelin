@@ -737,10 +737,14 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     layout it finds by walking up and runs none of its pagers or hooks —, and
     the development environment of the terminal's project (none: the
     defaults), the one shell_run gets (Agent sessions ▸ `agentRunCode`). A login
-    shell's `/etc/profile` sets `PATH` anew, so the package ships
-    `etc/profile.d/wiki.qaq.apelin.sh` (`Packaging/profile.d/`), which puts
-    `APELIN_TOOLCHAIN_BIN` back in front when it is set and does nothing
-    anywhere else;
+    shell's `/etc/profile` sets `PATH` and the prompt anew, so the package ships
+    `etc/profile.d/wiki.qaq.apelin.sh` (`Packaging/profile.d/`): it puts
+    `APELIN_TOOLCHAIN_BIN` back in front when it is set, and — for bash only,
+    and only when `APELIN_TERMINAL` says the shell is Apelin's own — cuts the
+    prompt to the folder and the shell's own `$`/`#`, since that profile's
+    `\w` puts the whole path on every line. A shell opened anywhere else, and
+    a prompt the user's own `.bash_profile` or `.bashrc` sets after it, are
+    left alone;
     the host then reads the shell's credentials from the kernel
     and kills it unless all six ids are mobile's. Output is numbered into the
     `terminal` task (`started`, `output` {base64, text}, `exit`), so a

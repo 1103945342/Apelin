@@ -210,7 +210,10 @@ console now goes on after a restart only past a successful respring.
       starts no shell. In Browse Files, each crumb opens its folder, the
       strip scrolls sideways, reloading the same folder keeps the breadcrumb
       strip's horizontal position, and neither changes the project the agent
-      works in.
+      works in. In either page's terminal, the prompt is the folder and a
+      `$` (the shell's login profile puts the whole path there), while a
+      shell opened from anywhere else keeps the prompt it had; a user's own
+      `PS1` still wins.
 
 - [ ] Trae, Trae CN and Raccoon with an account (2026-11-11, PR #40,
       AGENTS.md ▸ Agent sign-in; the record below has what ran without
