@@ -1266,12 +1266,12 @@ actor WeChatChannel {
         replies[sessionID] = reply
     }
 
+    /// One reply, whole: WeChat takes a long message as one bubble, and a
+    /// turn's answer is not cut into pieces.
     private func send(reply: Reply) async {
         let text = reply.text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
-        for chunk in IlinkText.chunks(of: text) {
-            await send(chunk, to: reply.userID, contextToken: reply.contextToken)
-        }
+        await send(text, to: reply.userID, contextToken: reply.contextToken)
     }
 
     private func send(_ text: String, to userID: String, contextToken: String?) async {

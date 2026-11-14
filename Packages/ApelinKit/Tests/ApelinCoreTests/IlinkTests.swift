@@ -104,33 +104,4 @@ final class IlinkTests: XCTestCase {
         XCTAssertEqual((items.first?["text_item"] as? [String: Any])?["text"] as? String, "答")
     }
 
-    /// A reply longer than one message is cut at a paragraph, then a line,
-    /// and joins back to the text it was cut from once the pieces are put
-    /// together with the whitespace the cuts ate.
-    func testChunksCutAtParagraphsAndLines() {
-        let short = "one short answer"
-        XCTAssertEqual(IlinkText.chunks(of: short), [short])
-
-        let paragraph = String(repeating: "a", count: 900) + "\n\n" + String(repeating: "b", count: 900)
-        let pieces = IlinkText.chunks(of: paragraph, limit: 1000)
-        XCTAssertEqual(pieces.count, 2)
-        XCTAssertTrue(pieces[0].hasSuffix("a"))
-        XCTAssertTrue(pieces[1].hasPrefix("b"))
-        XCTAssertTrue(pieces.allSatisfy { $0.count <= 1000 })
-
-        let lines = (0 ..< 40).map { "line \($0) " + String(repeating: "x", count: 30) }.joined(separator: "\n")
-        let cut = IlinkText.chunks(of: lines, limit: 300)
-        XCTAssertGreaterThan(cut.count, 1)
-        XCTAssertTrue(cut.allSatisfy { $0.count <= 300 })
-        XCTAssertEqual(cut.joined(separator: "\n"), lines)
-
-        XCTAssertTrue(IlinkText.chunks(of: "   \n  ").isEmpty)
-    }
-
-    func testChunksNeverSplitAPieceThatIsOneLongLine() {
-        let line = String(repeating: "字", count: 2500)
-        let pieces = IlinkText.chunks(of: line, limit: 1200)
-        XCTAssertEqual(pieces.count, 3)
-        XCTAssertEqual(pieces.joined(), line)
-    }
 }
