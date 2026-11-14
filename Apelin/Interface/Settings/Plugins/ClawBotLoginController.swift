@@ -479,8 +479,8 @@ final class ClawBotLoginController: TableController {
         }
         guard !codeField.isFirstResponder else { return }
         DispatchQueue.main.async { [weak self] in
-            guard let self, showsCodeEntry, view.window != nil else { return }
-            codeField.becomeFirstResponder()
+            guard let self, self.showsCodeEntry, self.view.window != nil else { return }
+            self.codeField.becomeFirstResponder()
         }
     }
 

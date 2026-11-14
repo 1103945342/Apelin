@@ -454,9 +454,9 @@ final class ClawBotController: TableController {
         ) { [weak self] text in
             guard let self else { return }
             let id = text.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !id.isEmpty, !allowedUsers.contains(id) else { return }
-            allowedUsers.append(id)
-            saveConfiguration()
+            guard !id.isEmpty, !self.allowedUsers.contains(id) else { return }
+            self.allowedUsers.append(id)
+            self.saveConfiguration()
         }
     }
 
@@ -511,13 +511,13 @@ final class ClawBotController: TableController {
             """),
         ) { [weak self] index in
             guard let self, index < ids.count else { return }
-            projectID = ids[index]
+            self.projectID = ids[index]
             if let id = ids[index] {
-                projectNames[id] = titles[index]
+                self.projectNames[id] = titles[index]
             }
-            projectName = ids[index].flatMap { projectNames[$0] }
-            updateRows()
-            saveConfiguration()
+            self.projectName = ids[index].flatMap { self.projectNames[$0] }
+            self.updateRows()
+            self.saveConfiguration()
         }
         navigationController?.pushViewController(page, animated: true)
     }
@@ -536,9 +536,9 @@ final class ClawBotController: TableController {
             """),
         ) { [weak self] index in
             guard let self, index < modes.count else { return }
-            approvalMode = modes[index]
-            updateRows()
-            saveConfiguration()
+            self.approvalMode = modes[index]
+            self.updateRows()
+            self.saveConfiguration()
         }
         navigationController?.pushViewController(page, animated: true)
     }
