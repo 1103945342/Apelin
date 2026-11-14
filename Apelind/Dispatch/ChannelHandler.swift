@@ -136,9 +136,8 @@ enum ChannelHandler: DomainHandler {
     /// once by its ID, then delivered to the channel's conversation — which
     /// the host opens, as the app, when there is none yet.
     private static func say(_ request: HostRequest, host: SessionHost) async -> HostReply {
-        do {
+        await request.serve(ChannelSayRequest.self) { say in
             let id = try instance(request)
-            let say = try request.decode(ChannelSayRequest.self)
             guard say.channelID == id else {
                 throw ApelinError(.denied, "a channel process reaches only its own channel")
             }
@@ -179,8 +178,6 @@ enum ChannelHandler: DomainHandler {
                 throw error
             }
             return ChannelSayResponse(accepted: true, duplicate: false, taskID: nil, sessionID: sessionID)
-        } catch {
-            return request.fail(error)
         }
     }
 

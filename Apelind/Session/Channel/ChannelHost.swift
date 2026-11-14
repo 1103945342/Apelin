@@ -41,17 +41,20 @@ actor ChannelHost {
     static let maximumFailures = 8
 
     init(stateDirectory: URL, home: String) {
-        registry = ChannelRegistry(directory: stateDirectory.appendingPathComponent("channels", isDirectory: true))
+        let registry = ChannelRegistry(directory: stateDirectory.appendingPathComponent("channels", isDirectory: true))
+        self.registry = registry
         self.home = home
         dataFolder = DataFolder(home: home)
-        load()
+        entries = Self.loaded(from: registry)
     }
 
     // MARK: - Reading
 
-    /// Every channel on disk. A record that does not read is shown paused with
-    /// its reason rather than dropped: the user must see that it is not running.
-    private func load() {
+    /// Every channel on disk, read before the actor serves its first request.
+    /// A record that does not read is shown paused with its reason rather than
+    /// dropped: the user must see that it is not running.
+    private static func loaded(from registry: ChannelRegistry) -> [String: Entry] {
+        var entries: [String: Entry] = [:]
         for id in registry.ids() {
             do {
                 entries[id] = Entry(record: try registry.load(id), state: .stopped)
@@ -79,6 +82,7 @@ actor ChannelHost {
                 continue
             }
         }
+        return entries
     }
 
     func summaries() -> [ChannelSummary] {
@@ -179,7 +183,7 @@ actor ChannelHost {
         if let enabled = request.enabled, enabled {
             try checkStartable(entry)
             entry.record.enabled = true
-        } else if let enabled = request.enabled {
+        } else if request.enabled != nil {
             entry.record.enabled = false
         }
 
@@ -188,7 +192,7 @@ actor ChannelHost {
         entries[request.channelID] = entry
 
         if entry.record.enabled {
-            try await activate(request.channelID, host: host)
+            _ = try await activate(request.channelID, host: host)
         } else if entry.running {
             await stop(request.channelID, reason: "The channel was turned off.", host: host)
         }
@@ -567,7 +571,7 @@ actor ChannelHost {
             appMode = .relaxed
         }
         let channelMode = ChannelApprovalMode(rawValue: configured.rawValue) ?? .confirm
-        let mode = ChannelApprovalMode.effectiveMode(configured: channelMode, app: appMode)
+        let mode = ChannelRules.effectiveMode(configured: channelMode, app: appMode)
         return mode == .confirm ? .confirm : .relaxed
     }
 
