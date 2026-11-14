@@ -451,8 +451,18 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   request gets — `agentOpen` in the project the reader chose (or a temporary
   chat), `agentPrompt` with the message's text — and the reply is that
   turn's own `text`/`message` events, sent when `finished` or the task's
-  final `state` arrives. Approvals are never given from WeChat: a turn that
-  needs one waits for the app, and the page says so. The credential is
+  final `state` arrives. An approval or one of the agent's questions is
+  pushed to the phone that talks in that conversation too (`ChannelReplies`):
+  `approvalRequested` becomes one message — a question with its options
+  numbered, or what the approval is for and how to answer it — and the reply
+  is read back as an answer, so a chat can settle what the app settles. A
+  number picks a question's option (several, comma-separated, when it takes
+  several), "同意" or "approve" approves once, "拒绝" or "deny" refuses, any
+  other sentence is a new turn while the ask waits, and a decision taken in
+  the app clears the ask the phone was given (`approvalResolved`). The one
+  thing WeChat cannot give is a command as root: that takes the device
+  owner's check (`ownerVerified`), so it is announced with a line saying so
+  and approved only in Apelin. The credential is
   `<data>/WeChatChannel/channel.json`, written as mobile's, never in a reply,
   a log or an error; the phones it has talked to are `peers.json` (a
   `PreservedList`, so one unreadable entry costs no other). A channel that is

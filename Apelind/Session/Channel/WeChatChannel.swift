@@ -114,6 +114,12 @@ actor WeChatChannel {
         var turns: Int
     }
 
+    /// An approval or a question pushed to a phone, waiting for the reply.
+    private struct PendingAsk: Sendable {
+        var ask: ChannelAsk
+        var contextToken: String?
+    }
+
     private let folder: URL
     private let route: Route
     private var record: Record
@@ -126,6 +132,12 @@ actor WeChatChannel {
     private var message: String?
     private var listening = false
     private var lastMessageAt: Date?
+    /// The approvals and questions a phone has been asked, by its user id.
+    /// One per phone: a run waits on one decision at a time.
+    private var pendingAsks: [String: PendingAsk] = [:]
+    /// The thread a phone's messages came in on, so an ask that arrives
+    /// later still answers in the same one.
+    private var lastContextTokens: [String: String] = [:]
     private var clientCache: (base: String, token: String, client: IlinkClient)?
 
     init(folder: URL, route: @escaping Route) {
@@ -419,6 +431,35 @@ actor WeChatChannel {
         else { return }
         lastMessageAt = Date()
         message = nil
+        if let token = incoming.contextToken {
+            lastContextTokens[from] = token
+        }
+        if let pending = pendingAsks[from] {
+            switch ChannelReplies.read(text, ask: pending.ask) {
+            case let .answer(answer):
+                pendingAsks[from] = nil
+                let settled = await settle(pending.ask, answer: answer)
+                if settled {
+                    await send(
+                        ChannelReplies.acknowledged(answer, wasQuestion: pending.ask.question != nil),
+                        to: from,
+                        contextToken: pending.contextToken
+                    )
+                } else {
+                    // Refused or out of reach: the ask stays, so it can be
+                    // answered again here or in Apelin.
+                    pendingAsks[from] = pending
+                }
+                return
+            case .needsApp:
+                await send(ChannelReplies.onlyInApp(), to: from, contextToken: pending.contextToken)
+                return
+            case .unclear:
+                // A sentence rather than an answer: a new turn, and the ask
+                // goes on waiting.
+                break
+            }
+        }
         let reply = Reply(userID: from, contextToken: incoming.contextToken, text: "", turns: 0)
         if let peer = peers.items.first(where: { $0.userID == from }) {
             await ask(peer, text: text, reply: reply)
@@ -496,6 +537,68 @@ actor WeChatChannel {
         }
     }
 
+    /// Sends one approval or question to the phone that talks in this
+    /// conversation, and keeps it for the reply.
+    private func announce(_ payload: JSONValue, sessionID: String) async {
+        guard let peer = peers.items.first(where: { $0.sessionID == sessionID }),
+              let approvalID = payload["approvalID"]?.stringValue
+        else { return }
+        let question = payload["detail"]?[AgentQuestionRules.detailKey]
+            .flatMap { try? $0.decode(AgentQuestion.self) }
+        // A command as root takes the device owner's check, which a chat
+        // message cannot give: announced, answered only in Apelin.
+        let needsApp = payload["detail"]?[RunCodeApproval.rootCommandDetail] != nil
+        var ask = ChannelAsk(
+            approvalID: approvalID,
+            sessionID: sessionID,
+            tool: payload["tool"]?.stringValue,
+            question: question,
+            needsAppToApprove: needsApp,
+            text: ""
+        )
+        ask.text = ChannelReplies.text(
+            for: ask,
+            reason: payload["reason"]?.stringValue,
+            arguments: payload["arguments"]?.stringValue
+        )
+        let contextToken = lastContextTokens[peer.userID]
+        pendingAsks[peer.userID] = PendingAsk(ask: ask, contextToken: contextToken)
+        await send(ask.text, to: peer.userID, contextToken: contextToken)
+    }
+
+    /// The reader's answer, given to the session as the app gives one: an
+    /// approval once, or a question answered with the labels it offered.
+    private func settle(_ ask: ChannelAsk, answer: ChannelAnswer) async -> Bool {
+        let request = AgentApproveRequest(
+            sessionID: ask.sessionID,
+            approvalID: ask.approvalID,
+            decision: answer.approved ? .approve : .deny,
+            scope: .once,
+            answer: answer.approved ? answer.answer : nil
+        )
+        guard let wire = try? WireRequest(request) else { return false }
+        let reply = await route(wire)
+        if case let .failure(error) = reply.result {
+            message = error.message
+            return false
+        }
+        return true
+    }
+
+    private func clearAsk(_ approvalID: String?) {
+        guard let approvalID else { return }
+        for (userID, pending) in pendingAsks where pending.ask.approvalID == approvalID {
+            pendingAsks[userID] = nil
+        }
+    }
+
+    /// The run ended: the ask it was waiting on can no longer be answered.
+    private func clearAsks(session: String) {
+        for (userID, pending) in pendingAsks where pending.ask.sessionID == session {
+            pendingAsks[userID] = nil
+        }
+    }
+
     private func failed(_ error: any Error, to reply: Reply) {
         message = (error as? ApelinError)?.message ?? String(describing: error)
         Task { [weak self] in
@@ -524,10 +627,28 @@ actor WeChatChannel {
     /// One event of a conversation, as the host's feed sees it: the text a
     /// turn writes is collected, and the end of the turn sends it.
     func relayed(sessionID: String?, kind: String, payload: JSONValue?) {
-        guard let sessionID, var reply = replies[sessionID] else { return }
+        guard let sessionID else { return }
+        // A call that needs the reader: carried to the phone that talks in
+        // this conversation. A decision taken in the app clears the ask the
+        // phone was given, so a reply to it is not read as one.
+        if kind == "approvalRequested", let payload {
+            Task { [weak self] in
+                await self?.announce(payload, sessionID: sessionID)
+            }
+            return
+        }
+        if kind == "approvalResolved" {
+            clearAsk(payload?["approvalID"]?.stringValue)
+            return
+        }
+        guard var reply = replies[sessionID] else { return }
         // The end of a turn: the agent's `finished`, or the task's own final
         // `state` when the run ended another way (Stop, a crash, an abort).
         if kind == "finished" || kind == TaskEvent.stateKind {
+            // The run ended: whatever it was waiting for is gone with it.
+            if kind == TaskEvent.stateKind {
+                clearAsks(session: sessionID)
+            }
             let final = Reply(userID: reply.userID, contextToken: reply.contextToken, text: reply.text, turns: 1)
             // A message that arrived during the run is answered next: the
             // collector stays, with what it has written from now on.

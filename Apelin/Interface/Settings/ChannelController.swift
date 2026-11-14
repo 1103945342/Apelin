@@ -86,8 +86,8 @@ final class ChannelController: TableController {
             guard section == .conversations else { return nil }
             return String(localized: """
             A message from WeChat runs as a conversation in the project you choose, and what that turn writes is \
-            answered in WeChat. Anything that needs your approval waits for you here in Apelin: a reply in WeChat \
-            is never an approval.
+            answered in WeChat. An approval it needs reaches WeChat too; only a command as root is the exception, \
+            and that one is approved here with your passcode.
             """)
         }
         refresh()

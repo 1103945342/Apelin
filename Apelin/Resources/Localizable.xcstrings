@@ -129254,89 +129254,7 @@
         }
       }
     },
-    "A message from WeChat runs as a conversation in the project you choose, and what that turn writes is answered in WeChat. Anything that needs your approval waits for you here in Apelin: a reply in WeChat is never an approval.": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تُنفَّذ رسالة من WeChat كمحادثة في المشروع الذي تختاره، ويُرسَل ما يكتبه هذا الدور إلى WeChat. كل ما يحتاج إلى موافقتك ينتظرك هنا في Apelin: الرد في WeChat ليس موافقة أبدًا."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Eine Nachricht aus WeChat läuft als Unterhaltung in dem Projekt, das du wählst, und was dieser Durchgang schreibt, wird in WeChat geantwortet. Alles, was deine Zustimmung braucht, wartet hier in Apelin auf dich: eine Antwort in WeChat ist nie eine Zustimmung."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A message from WeChat runs as a conversation in the project you choose, and what that turn writes is answered in WeChat. Anything that needs your approval waits for you here in Apelin: a reply in WeChat is never an approval."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Un mensaje de WeChat se ejecuta como una conversación en el proyecto que elijas, y lo que escribe ese turno se responde en WeChat. Todo lo que necesita tu aprobación te espera aquí, en Apelin: una respuesta en WeChat nunca es una aprobación."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Un message reçu dans WeChat s’exécute comme une conversation dans le projet que vous choisissez, et ce que ce tour écrit est renvoyé dans WeChat. Tout ce qui demande votre autorisation attend ici, dans Apelin : une réponse dans WeChat n’est jamais une autorisation."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Un messaggio da WeChat viene eseguito come una conversazione nel progetto che scegli, e ciò che quel turno scrive viene risposto in WeChat. Tutto ciò che richiede la tua approvazione ti attende qui in Apelin: una risposta in WeChat non è mai un'approvazione."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ウィーチャットのメッセージは、選んだプロジェクトの会話として実行され、そのターンが書いた内容がウィーチャットに返ります。承認が必要な操作は Apelin で待っています。ウィーチャットでの返信は承認になりません。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "위챗 메시지는 선택한 프로젝트의 대화로 실행되고, 그 턴이 쓴 내용이 위챗으로 돌아갑니다. 승인이 필요한 작업은 Apelin에서 기다립니다. 위챗에서의 답장은 승인이 아닙니다."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Uma mensagem do WeChat é executada como uma conversa no projeto que você escolher, e o que esse turno escrever é respondido no WeChat. Tudo o que precisa da sua aprovação espera por você aqui no Apelin: uma resposta no WeChat nunca é uma aprovação."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Сообщение из WeChat выполняется как беседа в выбранном вами проекте, и то, что напишет этот ход, отправляется в WeChat. Всё, что требует вашего одобрения, ждёт вас здесь, в Apelin: ответ в WeChat никогда не является одобрением."
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tin nhắn từ WeChat chạy như một cuộc trò chuyện trong dự án bạn chọn, và những gì lượt đó viết sẽ được trả lời trong WeChat. Mọi việc cần bạn chấp thuận đều chờ bạn ở đây trong Apelin: trả lời trong WeChat không bao giờ là chấp thuận."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "微信里的消息会在你选定的项目中作为一次对话运行，这一轮写下的内容会回到微信。任何需要你批准的操作都在 Apelin 里等你：在微信里的回复不算批准。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "微信裡的訊息會在你選定的專案中作為一次對話執行，這一輪寫下的內容會回到微信。任何需要你批准的動作都在 Apelin 裡等你：在微信裡的回覆不算批准。"
-          }
-        }
-      }
-    },
+
     "Listening for messages": {
       "extractionState": "manual",
       "localizations": {
@@ -130412,6 +130330,89 @@
           "stringUnit": {
             "state": "translated",
             "value": "微信登入二維碼"
+          }
+        }
+      }
+    },
+    "A message from WeChat runs as a conversation in the project you choose, and what that turn writes is answered in WeChat. An approval it needs reaches WeChat too; only a command as root is the exception, and that one is approved here with your passcode.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تُنفَّذ رسالة من WeChat كمحادثة في المشروع الذي تختاره، ويُرسَل ما يكتبه هذا الدور إلى WeChat. تصل الموافقات أيضًا إلى WeChat؛ ويُستثنى أمر يُنفَّذ بصلاحية الجذر، فيُعتمَد هنا برمز جهازك."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine Nachricht aus WeChat läuft als Unterhaltung in dem Projekt, das du wählst, und was dieser Durchgang schreibt, wird in WeChat geantwortet. Was deine Zustimmung braucht, kommt ebenfalls nach WeChat; nur ein Befehl als root nicht — den bestätigst du hier mit deinem Code."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A message from WeChat runs as a conversation in the project you choose, and what that turn writes is answered in WeChat. An approval it needs reaches WeChat too; only a command as root is the exception, and that one is approved here with your passcode."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un mensaje de WeChat se ejecuta como una conversación en el proyecto que elijas, y lo que escribe ese turno se responde en WeChat. Lo que necesita tu aprobación también llega a WeChat; solo un comando como root queda fuera, y se aprueba aquí con tu código."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un message reçu dans WeChat s’exécute comme une conversation dans le projet que vous choisissez, et ce que ce tour écrit est renvoyé dans WeChat. Ce qui demande votre autorisation arrive aussi dans WeChat ; seule une commande en root en est exclue, à confirmer ici avec votre code."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un messaggio da WeChat viene eseguito come una conversazione nel progetto che scegli, e ciò che quel turno scrive viene risposto in WeChat. Anche ciò che richiede la tua approvazione arriva su WeChat; solo un comando come root ne resta fuori, e si approva qui con il tuo codice."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ウィーチャットのメッセージは、選んだプロジェクトの会話として実行され、そのターンが書いた内容がウィーチャットに返ります。承認が必要な手順もウィーチャットに届きます。root で実行するコマンドだけは例外で、Apelin でパスコードを入力して承認します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위챗 메시지는 선택한 프로젝트의 대화로 실행되고, 그 턴이 쓴 내용이 위챗으로 돌아갑니다. 승인이 필요한 단계도 위챗으로 전달됩니다. root로 실행하는 명령만 예외로, Apelin에서 암호를 입력해 승인합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uma mensagem do WeChat é executada como uma conversa no projeto que você escolher, e o que esse turno escrever é respondido no WeChat. O que precisa da sua aprovação também chega ao WeChat; só um comando como root fica de fora, e é aprovado aqui com o seu código."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сообщение из WeChat выполняется как беседа в выбранном вами проекте, и то, что напишет этот ход, отправляется в WeChat. Одобрения тоже приходят в WeChat; исключение — команда от root, её подтверждают здесь, кодом устройства."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tin nhắn từ WeChat chạy như một cuộc trò chuyện trong dự án bạn chọn, và những gì lượt đó viết sẽ được trả lời trong WeChat. Việc cần bạn chấp thuận cũng được gửi tới WeChat; chỉ lệnh chạy bằng root là ngoại lệ, được chấp thuận tại đây bằng mật mã máy."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "微信里的消息会在你选定的项目中作为一次对话运行，这一轮写下的内容会回到微信。需要你批准的步骤也会推到微信；只有以 root 运行的命令例外，它们要在 Apelin 里用你的密码确认。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "微信裡的訊息會在你選定的專案中作為一次對話執行，這一輪寫下的內容會回到微信。需要你核准的步驟也會推到微信；只有以 root 執行的指令例外，它們要在 Apelin 裡用你的密碼確認。"
           }
         }
       }
