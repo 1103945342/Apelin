@@ -277,17 +277,22 @@ print("PASS cxx-header-only")
 
 def check_importer_macros(name, log):
     """Clang keys its module cache on the preprocessor state, so a macro that
-    changes every build rebuilds every imported standard library module. The
-    importer must not see APELIN_BUILD_ID while native compilation still does."""
+    changes rebuilds every imported standard library module. The importer must
+    not see the identity strings (build ID, package, version) while native
+    compilation still does."""
     lines = [line for line in log.splitlines() if line.startswith("$ ")]
     swift = [line for line in lines if "/swiftc " in line]
     native = [line for line in lines if "/clang " in line]
+    identity = ("APELIN_BUILD_ID", "APELIN_PACKAGE_ID", "APELIN_VERSION")
     for line in swift:
-        if "-Xcc -DAPELIN_BUILD_ID" in line:
-            raise AssertionError(name + ": the C++ importer saw the build ID, so its module cache "
-                                 "would be rebuilt by every build\n" + line)
-    if native and not any("-DAPELIN_BUILD_ID=" in line for line in native):
-        raise AssertionError(name + ": native compilation lost the build ID\n" + "\n".join(native[:2]))
+        for macro in identity:
+            if "-Xcc -D" + macro in line:
+                raise AssertionError(name + ": the C++ importer saw " + macro + ", so its module cache "
+                                     "would be rebuilt by every build\n" + line)
+    if native:
+        for macro in identity:
+            if not any("-D" + macro + "=" in line for line in native):
+                raise AssertionError(name + ": native compilation lost " + macro + "\n" + "\n".join(native[:2]))
 
 
 def refusals():

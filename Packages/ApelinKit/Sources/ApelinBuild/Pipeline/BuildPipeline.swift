@@ -230,16 +230,20 @@ public final class BuildPipeline: @unchecked Sendable {
         "\(arch.rawValue)-apple-ios\(project.deploymentTarget)"
     }
 
-    /// The defines Swift's C++ importer may see — every one but the build ID.
-    /// Clang keys its module cache on the preprocessor state it was given, so a
-    /// macro that changes with every build makes every imported header compile
-    /// again, the C++ standard library's included: measured on device, a warm
-    /// import of `<vector>` and `<string>` takes 4 s, and the same import with
-    /// one more `-D` takes 183 s and leaves a fresh copy of every module in the
-    /// cache. `APELIN_BUILD_ID` is the only define here that moves per build,
-    /// and no header's interface is allowed to depend on it.
+    /// The defines Swift's C++ importer may see: the platform and the
+    /// project's own, never the identity strings. Clang keys its module cache
+    /// on the preprocessor state it was given, so a macro that changes makes
+    /// every imported header compile again, the C++ standard library's
+    /// included: measured on device, a warm import of `<vector>` and
+    /// `<string>` takes 4 s, the same import with one more `-D` takes 183 s
+    /// and leaves a fresh copy of every module in the cache. `APELIN_BUILD_ID`
+    /// changes with every build and `APELIN_VERSION` with every release, and
+    /// no header's interface may depend on either; `APELIN_BOOTSTRAP_*` and
+    /// `APELIN_CONFIGURATION_*` stay, since a header may legitimately select
+    /// declarations by them.
     private var importerDefines: [(String, String)] {
-        defines.filter { $0.0 != "APELIN_BUILD_ID" }
+        let identity: Set<String> = ["APELIN_BUILD_ID", "APELIN_PACKAGE_ID", "APELIN_VERSION"]
+        return defines.filter { !identity.contains($0.0) }
     }
 
     /// The C++ importer sees the same declared standard and preprocessor flags

@@ -162,10 +162,13 @@ extension BuiltInSkills {
           Swift's importer compiles every header it reaches as a clang module,
           and `<vector>` with `<string>` took 222 s on device before the
           modules existed, 4 s once cached. The cache is
-          `Builds/.swift-module-cache`, shared by builds, but it is keyed on
-          the preprocessor state, so another project — or a changed define —
-          compiles it again. Keep C++ out of the headers Swift imports (a
-          pimpl or a C facade) where that matters.
+          `Builds/.swift-module-cache`, shared by builds; it is keyed on the
+          preprocessor state, so it is compiled once per bootstrap and
+          configuration (and per project, since the project's defines count
+          too). The importer is never given `APELIN_BUILD_ID`,
+          `APELIN_PACKAGE_ID` or `APELIN_VERSION`, so rebuilding, or bumping
+          the version, costs nothing. Keep C++ out of the headers Swift
+          imports (a pimpl or a C facade) where that matters.
 
         ## swiftModules
         Swift modules built out of the project's own files, such as one target
