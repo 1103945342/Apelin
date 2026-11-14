@@ -56,11 +56,13 @@ model=(
     Apelin/Interface/Terminal/TerminalInputRouter.swift
     Apelin/Interface/Terminal/TerminalWireEvent.swift
     Apelin/Interface/Terminal/TerminalSessionRecord.swift
+    Apelin/Interface/Terminal/TerminalSessionList.swift
 )
 checks=(
     Tests/TerminalUI/TerminalTargetCheck.swift
     Tests/TerminalUI/TerminalWireEventCheck.swift
     Tests/TerminalUI/TerminalSessionStoreCheck.swift
+    Tests/TerminalUI/TerminalSessionListCheck.swift
     Tests/TerminalUI/TerminalAttachmentCheck.swift
     Tests/TerminalUI/TerminalBatchCheck.swift
     Tests/TerminalUI/TerminalFeedCheck.swift

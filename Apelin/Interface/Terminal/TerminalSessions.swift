@@ -17,7 +17,8 @@ import Foundation
 /// Nothing here ends a shell or drops its record to make room. A record is a
 /// shell the host may still be running, and a user cannot reattach to what was
 /// deleted for them; when the bookkeeping is full, a new terminal is refused
-/// and the page says why.
+/// and the page says why. The one way a record goes is the reader deleting a
+/// terminal they can see has ended (`remove`), and only that.
 @MainActor
 enum TerminalSessions {
     /// How many shells the app keeps books for at once. The host caps its own
@@ -49,6 +50,13 @@ enum TerminalSessions {
             return restorable
         }
         return newSession(for: identity)
+    }
+
+    /// The session with this id, when the app still keeps it: what a list row
+    /// names, and what the page switches to after a deletion.
+    static func session(_ id: UUID) -> TerminalSession? {
+        loadRecordsIfNeeded()
+        return models[id]
     }
 
     /// The sessions opened for one place, newest last.
@@ -83,9 +91,54 @@ enum TerminalSessions {
         if !order.contains(session.id) {
             order.append(session.id)
         }
+        // The id, not the session: the session holds this closure, and holding
+        // it back would keep every session alive for as long as the app runs.
+        let id = session.id
         session.onRecordChange = { record in
-            save(record, for: session.id)
+            save(record, for: id)
         }
+    }
+
+    /// Forgets one terminal that ended: its model and its record, and nothing
+    /// else. The folder it ran in and the host's task log for it are left as
+    /// they are, and no other shell is touched.
+    ///
+    /// The state is checked here rather than trusted from the row the reader
+    /// tapped — a session that stopped being one that ended is kept — and the
+    /// record is written before anything is forgotten: when the write fails the
+    /// session and its record stay, and the page shows why.
+    static func remove(_ id: UUID) -> TerminalSessionDeletionOutcome {
+        loadRecordsIfNeeded()
+        guard let session = models[id] else {
+            return .notFound
+        }
+        guard session.isRemovable else {
+            return .stillRunning
+        }
+        let hadRecord = records.items.contains { $0.id == id }
+        if hadRecord {
+            guard maySave else {
+                return .failed(storageProblem ?? String(localized: "The terminal is not available."))
+            }
+            let remaining = TerminalSessionList.records(records, removing: id)
+            do {
+                try store.save(remaining)
+            } catch {
+                storageProblem = error.localizedDescription
+                return .failed(storageProblem ?? error.localizedDescription)
+            }
+            records = remaining
+            storageProblem = nil
+        }
+        models.removeValue(forKey: id)
+        order.removeAll { $0 == id }
+        // Nothing may reach the removed session any more: a late change must
+        // not write its record back, or put it on screen again.
+        session.onChange = nil
+        session.onTruncation = nil
+        session.onRecordChange = nil
+        session.detach()
+        return .removed
     }
 
     private static func save(_ record: TerminalSessionRecord?, for id: UUID) {
@@ -95,12 +148,18 @@ enum TerminalSessions {
             // would make its records unrecoverable.
             return
         }
-        records.items.removeAll { $0.id == id }
+        // The file is written before the list in memory changes: when the
+        // write fails, the record still on disk must still be the one the app
+        // holds, or a later deletion would think there is nothing left to
+        // remove and leave it behind.
+        var candidate = records
+        candidate.items.removeAll { $0.id == id }
         if let record {
-            records.items.append(record)
+            candidate.items.append(record)
         }
         do {
-            try store.save(records)
+            try store.save(candidate)
+            records = candidate
             storageProblem = nil
         } catch {
             storageProblem = error.localizedDescription

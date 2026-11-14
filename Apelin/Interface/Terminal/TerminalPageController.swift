@@ -6,8 +6,9 @@ import SnapKit
 import Then
 import UIKit
 
-/// The full-screen terminal: one shell on screen, and the bar's menu for the
-/// others this page has opened on the same folder.
+/// The full-screen terminal: one shell on screen, and the bar's list of the
+/// others this page has opened — a popover where the width is regular, a sheet
+/// otherwise.
 ///
 /// The page is a thin host: the grid, the keyboard, the selection and the
 /// pointer belong to `UITerminalView`, which ghostty draws; this controller
@@ -32,9 +33,13 @@ final class TerminalPageController: UIViewController {
     private let banner = UILabel()
 
     private var sessionsItem: UIBarButtonItem?
+    private weak var sessionsList: TerminalSessionsListController?
     private var surfaceCancellables: Set<AnyCancellable> = []
     private var focusRequested = false
     private var isShownOnce = false
+    /// The reader deleted the last terminal. Nothing is opened behind their
+    /// back: not on a re-entry, not when the app comes back to the front.
+    private var isShowingEmptyState = false
 
     init(identity: TerminalIdentity) {
         self.identity = identity
@@ -112,6 +117,7 @@ final class TerminalPageController: UIViewController {
         teardownSurface()
         identity = newIdentity
         current = nil
+        isShowingEmptyState = false
         attachCurrentIfNeeded()
     }
 
@@ -175,13 +181,12 @@ final class TerminalPageController: UIViewController {
         let sessions = UIBarButtonItem(
             image: UIImage(systemName: "rectangle.stack"),
             style: .plain,
-            target: nil,
-            action: nil
+            target: self,
+            action: #selector(showSessionsList)
         )
         sessions.accessibilityLabel = String(localized: "Terminal Sessions")
         sessionsItem = sessions
         navigationItem.rightBarButtonItem = sessions
-        refreshMenu()
     }
 
     private func applyBackground() {
@@ -204,6 +209,13 @@ final class TerminalPageController: UIViewController {
 
     private func attachCurrentIfNeeded() {
         if current == nil {
+            // The reader deleted the last terminal: the page says there is
+            // none and offers New Terminal, and nothing opens a shell behind
+            // their back — not a re-entry, not coming back to the front.
+            guard !isShowingEmptyState else {
+                updateStatus()
+                return
+            }
             guard let session = TerminalSessions.session(for: identity) else {
                 // Nothing here is ended to make room, and the page says what
                 // is actually in the way: the books are full of shells that may
@@ -236,17 +248,37 @@ final class TerminalPageController: UIViewController {
     }
 
     private func attachCurrent() {
-        guard let current else { return }
+        guard let current else {
+            teardownSurface()
+            updateStatus()
+            refreshSessions()
+            return
+        }
+        if current.isFinished, current.taskID == nil {
+            // A terminal that ended before its shell ever existed has nothing
+            // to replay. It is shown as it ended; a new shell is only ever
+            // opened from New Terminal, by the reader.
+            teardownSurface()
+            updateStatus()
+            refreshSessions()
+            return
+        }
         makeSurface(for: current)
         updateStatus()
-        refreshMenu()
+        refreshSessions()
     }
 
     private func bind(_ session: TerminalSession?) {
         guard let session else { return }
         session.onChange = { [weak self, weak session] in
-            guard let self, let session, self.current === session else { return }
-            self.sessionDidChange()
+            guard let self, let session else { return }
+            if self.current === session {
+                self.sessionDidChange()
+            } else {
+                // A list may be open on a session that is not the one on
+                // screen: its row's state is worth redrawing too.
+                self.refreshSessions()
+            }
         }
         session.onTruncation = { [weak self, weak session] in
             guard let self, let session, self.current === session else { return }
@@ -257,7 +289,7 @@ final class TerminalPageController: UIViewController {
     private func sessionDidChange() {
         guard let session = current else { return }
         updateStatus()
-        refreshMenu()
+        refreshSessions()
         if session.isLive, !focusRequested {
             focusRequested = true
             terminalState?.requestFocus()
@@ -274,14 +306,13 @@ final class TerminalPageController: UIViewController {
             )
             return
         }
-        current?.detach()
-        current = session
-        bind(session)
-        attachCurrent()
+        isShowingEmptyState = false
+        switchTo(session)
     }
 
     private func switchTo(_ session: TerminalSession) {
         guard session.id != current?.id else { return }
+        isShowingEmptyState = false
         current?.detach()
         current = session
         bind(session)
@@ -292,13 +323,24 @@ final class TerminalPageController: UIViewController {
         guard let current, !current.isFinished else { return }
         current.terminate()
         updateStatus()
-        refreshMenu()
+        refreshSessions()
+    }
+
+    /// Nothing is left to show: the page keeps the place, says it is empty and
+    /// offers New Terminal. No shell is created until the reader taps it.
+    private func showEmptyState() {
+        isShowingEmptyState = true
+        current = nil
+        teardownSurface()
+        updateStatus()
+        refreshSessions()
     }
 
     private func statusButtonTapped() {
         guard let session = current else {
-            // Nothing to attach to yet: try to take a place again.
-            attachCurrentIfNeeded()
+            // The empty state's New Terminal, or a second try at taking a
+            // place: both are the reader asking for a shell.
+            startNewSession()
             return
         }
         switch session.phase {
@@ -308,7 +350,7 @@ final class TerminalPageController: UIViewController {
             session.allowRetry()
             makeSurface(for: session)
             updateStatus()
-            refreshMenu()
+            refreshSessions()
         default:
             break
         }
@@ -366,13 +408,23 @@ final class TerminalPageController: UIViewController {
         guard let current else { return }
         makeSurface(for: current)
         updateStatus()
-        refreshMenu()
+        refreshSessions()
     }
 
     // MARK: - Status
 
     private func updateStatus() {
-        guard let session = current else { return }
+        guard let session = current else {
+            // The empty state: every terminal this page had was deleted, and
+            // New Terminal is the way back.
+            showStatus(
+                title: String(localized: "No Terminal Open"),
+                detail: nil,
+                action: String(localized: "New Terminal")
+            )
+            settleBanner()
+            return
+        }
         switch session.phase {
         case .live:
             statusStack.isHidden = true
@@ -448,57 +500,129 @@ final class TerminalPageController: UIViewController {
         banner.isHidden = text == nil
     }
 
-    // MARK: - Menu
+    // MARK: - The sessions list
 
-    private func refreshMenu() {
-        guard let sessionsItem else { return }
-        let sessions = TerminalSessions.sessions(for: identity)
-        let children: [UIMenuElement] = sessions.map { session in
-            UIAction(
-                title: session.title,
-                subtitle: subtitle(for: session),
-                image: nil,
-                state: session.id == current?.id ? .on : .off
-            ) { [weak self] _ in
-                self?.switchTo(session)
+    /// The bar button opens a list rather than a menu: rows carry the state of
+    /// each terminal, a tap switches, and a terminal that ended can be
+    /// forgotten from it — by long press, or by swipe, which VoiceOver lists
+    /// among its actions.
+    @objc dynamic private func showSessionsList() {
+        guard sessionsList == nil else { return }
+        let controller = TerminalSessionsListController()
+        controller.modelProvider = { [weak self] in
+            self?.sessionsListModel()
+                ?? TerminalSessionsListController.Model(entries: [], currentID: nil, canEndCurrent: false)
+        }
+        controller.onSelect = { [weak self] id in
+            self?.selectSession(id)
+        }
+        controller.deleteHandler = { [weak self] id in
+            self?.deleteSession(id) ?? .notFound
+        }
+        controller.onNewTerminal = { [weak self] in
+            self?.startNewSession()
+        }
+        controller.onEndCurrent = { [weak self] in
+            self?.endCurrent()
+        }
+        controller.onPaste = { [weak self] in
+            self?.pasteFromPasteboard()
+        }
+        controller.reloadModel()
+        sessionsList = controller
+
+        let navigation = UINavigationController(rootViewController: controller)
+        if traitCollection.horizontalSizeClass == .regular {
+            // Wide enough for a popover anchored to its bar button; anything
+            // narrower gets the sheet, whatever the device calls itself.
+            navigation.modalPresentationStyle = .popover
+            navigation.preferredContentSize = controller.preferredContentSize
+            navigation.popoverPresentationController?.barButtonItem = sessionsItem
+            navigation.popoverPresentationController?.permittedArrowDirections = .any
+        } else {
+            navigation.modalPresentationStyle = .pageSheet
+            if let sheet = navigation.sheetPresentationController {
+                sheet.detents = [.medium(), .large()]
+                sheet.prefersGrabberVisible = true
             }
         }
-        var actions: [UIMenuElement] = [
-            UIAction(
-                title: String(localized: "New Terminal"),
-                image: UIImage(systemName: "plus")
-            ) { [weak self] _ in
-                self?.startNewSession()
-            },
-        ]
-        if let current, !current.isFinished {
-            actions.append(UIAction(
-                title: String(localized: "End This Terminal"),
-                image: UIImage(systemName: "xmark.circle")
-            ) { [weak self] _ in
-                self?.endCurrent()
-            })
-        }
-        actions.append(UIAction(
-            title: String(localized: "Paste"),
-            image: UIImage(systemName: "doc.on.clipboard")
-        ) { [weak self] _ in
-            self?.pasteFromPasteboard()
-        })
-        sessionsItem.menu = UIMenu(children: children + [UIMenu(options: .displayInline, children: actions)])
+        present(navigation, animated: true)
     }
 
-    private func subtitle(for session: TerminalSession) -> String? {
-        switch session.phase {
-        case .live:
-            return String(localized: "Running")
-        case .idle, .opening, .reconnecting:
-            return String(localized: "Connecting…")
-        case .ended:
-            return String(localized: "Ended")
-        case .failed:
-            return String(localized: "Unavailable")
+    private func sessionsListModel() -> TerminalSessionsListController.Model {
+        TerminalSessionsListController.Model(
+            entries: listEntries(),
+            currentID: current?.id,
+            canEndCurrent: current.map { !$0.isFinished } ?? false
+        )
+    }
+
+    private func listEntries() -> [TerminalSessionListEntry] {
+        TerminalSessions.sessions(for: identity).map { session in
+            TerminalSessionListEntry(
+                id: session.id,
+                title: session.title,
+                status: session.listStatus
+            )
         }
+    }
+
+    /// Redraws the list when it is up — a session ending while the sheet is
+    /// open changes a row and whether that row may be deleted.
+    @objc dynamic private func refreshSessions() {
+        sessionsList?.reloadModel()
+    }
+
+    private func selectSession(_ id: UUID) {
+        guard let session = TerminalSessions.session(id) else {
+            refreshSessions()
+            return
+        }
+        switchTo(session)
+    }
+
+    /// Deletes one terminal that ended, and only that: its model and its record
+    /// go, the folder and the host's task log stay, and no other shell is
+    /// touched.
+    ///
+    /// The session is checked again here, not trusted from the row the reader
+    /// tapped: it may have started reconnecting while the sheet was open. When
+    /// the record does not write, nothing is forgotten and the error is shown.
+    private func deleteSession(_ id: UUID) -> TerminalSessionDeletionOutcome {
+        let entries = listEntries()
+        let decision = TerminalSessionList.removal(of: id, from: entries, current: current?.id)
+        let outcome = TerminalSessions.remove(id)
+        guard outcome == .removed else { return outcome }
+
+        // The row's neighbour in the list the page just saw: the decision's
+        // when it was one that could go, and recomputed from the same list
+        // otherwise, so a deletion never leaves the page on a session that no
+        // longer exists.
+        var nextCurrent: UUID?
+        if case let .remove(next) = decision {
+            nextCurrent = next
+        } else if let index = entries.firstIndex(where: { $0.id == id }) {
+            let remaining = entries.filter { $0.id != id }
+            nextCurrent = remaining.indices.contains(index) ? remaining[index].id : remaining.last?.id
+        }
+
+        let wasCurrent = current?.id == id
+        if wasCurrent {
+            // The screen moves to the row that took its place, or to the last
+            // one left. `current` is dropped first so the removed session is
+            // never attached again.
+            current = nil
+            teardownSurface()
+            if let nextCurrent, let next = TerminalSessions.session(nextCurrent) {
+                switchTo(next)
+            } else {
+                showEmptyState()
+            }
+        } else if current == nil, let nextCurrent, let next = TerminalSessions.session(nextCurrent) {
+            switchTo(next)
+        }
+        refreshSessions()
+        return outcome
     }
 
     private func pasteFromPasteboard() {

@@ -9,6 +9,7 @@ struct TerminalUIChecks {
         let failures = TerminalTargetCheck.run()
             + TerminalWireEventCheck.run()
             + TerminalSessionStoreCheck.run()
+            + TerminalSessionListCheck.run()
             + TerminalAttachmentCheck.run()
             + TerminalBatchCheck.run()
             + TerminalFeedCheck.run()

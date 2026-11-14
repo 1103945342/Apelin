@@ -1,9 +1,10 @@
 #!/bin/bash
 # The file browser's model, without the app around it: where a place may
-# change and why not, how far Up goes and what a link is judged by, what one
-# folder lists, what each operation is held to, and what a save is refused
-# for after the page that opened it is gone — plus the locations menu, read
-# off the bundle's own path.
+# change and why not, how far Up goes and what a link is judged by, the path
+# trail under the bar and when it moves sideways, what one folder lists, what
+# each operation is held to, and what a save is refused for after the page
+# that opened it is gone — plus the locations menu, read off the bundle's own
+# path.
 #
 # The model imports ApelinCore for CanonicalPath alone, so the module is built
 # from that one file here: two stages, then the model, the tests and
@@ -42,6 +43,7 @@ core=(Packages/ApelinKit/Sources/ApelinCore/CanonicalPath.swift)
     -c -o "$work/ApelinCore.o" "${core[@]}"
 
 model=(
+    Apelin/Interface/Files/FileBrowserBreadcrumb.swift
     Apelin/Interface/Files/FileBrowserFailure.swift
     Apelin/Interface/Files/FileBrowserListing.swift
     Apelin/Interface/Files/FileBrowserLocation.swift
@@ -52,6 +54,7 @@ model=(
 )
 checks=(
     Tests/FileBrowser/FileBrowserLocationCheck.swift
+    Tests/FileBrowser/FileBrowserBreadcrumbCheck.swift
     Tests/FileBrowser/FileBrowserPolicyCheck.swift
     Tests/FileBrowser/FileBrowserListingCheck.swift
     Tests/FileBrowser/FileBrowserOperationsCheck.swift

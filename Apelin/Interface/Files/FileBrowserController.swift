@@ -40,30 +40,53 @@ final class FileBrowserController: UIViewController {
     private var failure: FileBrowserFailure?
     private var isLoading = false
     private var listing: Task<Void, Never>?
+    /// Which read of a folder the page is waiting on: a read that finished
+    /// after another folder was asked for leaves what is on screen alone.
+    @objc dynamic private var listingGeneration = 0
+    /// The folder `rows` were read from. Moving to another one clears them
+    /// before the read starts, so the old folder's rows are never tappable
+    /// under the new path.
+    @objc dynamic private var listedPath: String?
     /// What Copy or Cut put aside: the entry as it sits, and whether Paste
     /// moves it.
     private var clipboard: (url: URL, moving: Bool)?
     private var didShowStartFailure = false
+    /// The trail the path area was last drawn as, so a reload of the same
+    /// folder redraws nothing and keeps the reader's sideways position.
+    private var shownBreadcrumb: FileBrowserBreadcrumb?
+    @objc dynamic private var currentCrumbButton: UIButton?
+    @objc dynamic private var breadcrumbWidthConstraints: [NSLayoutConstraint] = []
+    /// The width the crumb limits were worked out for, 0 before the first
+    /// layout.
+    @objc dynamic private var crumbWidthLimit: CGFloat = 0
+    private var breadcrumbReveal = FileBrowserBreadcrumbReveal()
+    @objc dynamic private var needsBreadcrumbReveal = false
 
     // MARK: - Views
 
-    private lazy var pathButton: UIButton = {
-        var configuration = UIButton.Configuration.plain()
-        configuration.image = UIImage(systemName: "chevron.down")
-        configuration.imagePlacement = .trailing
-        configuration.imagePadding = 4
-        configuration.titleLineBreakMode = .byTruncatingMiddle
-        configuration.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0)
-        let button = UIButton(configuration: configuration)
-        button.contentHorizontalAlignment = .leading
-        button.showsMenuAsPrimaryAction = true
-        button.accessibilityLabel = String(localized: "Path")
-        return button
-    }()
+    /// The path under the bar: one button per folder, from the root down to
+    /// the one on screen, scrolled sideways instead of squeezed. Nothing here
+    /// is remembered between openings; it is drawn from the place the page is
+    /// standing on.
+    private let breadcrumbScroll = UIScrollView().then {
+        $0.showsHorizontalScrollIndicator = false
+        $0.contentInsetAdjustmentBehavior = .never
+        $0.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        $0.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+    }
+
+    private let breadcrumbStack = UIStackView().then {
+        $0.axis = .horizontal
+        $0.alignment = .center
+        $0.spacing = 2
+        $0.translatesAutoresizingMaskIntoConstraints = false
+    }
 
     private lazy var upButton = UIButton(type: .system).then {
         $0.setImage(UIImage(systemName: "arrow.up"), for: .normal)
         $0.accessibilityLabel = String(localized: "Enclosing Folder")
+        $0.setContentHuggingPriority(.required, for: .horizontal)
+        $0.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
 
     /// The line under the path while this folder is not one the app changes:
@@ -77,7 +100,7 @@ final class FileBrowserController: UIViewController {
         $0.isHidden = true
     }
 
-    private lazy var pathRow = UIStackView(arrangedSubviews: [pathButton, upButton]).then {
+    private lazy var pathRow = UIStackView(arrangedSubviews: [breadcrumbScroll, upButton]).then {
         $0.axis = .horizontal
         $0.alignment = .center
         $0.spacing = 8
@@ -151,19 +174,54 @@ final class FileBrowserController: UIViewController {
 
         view.addSubview(header)
         view.addSubview(tableView)
+        breadcrumbScroll.addSubview(breadcrumbStack)
         header.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(4)
             make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(16)
         }
+        // The path area takes the width Up leaves and scrolls sideways rather
+        // than squeezing names out of sight; its height is its tallest crumb's,
+        // so a larger text size grows it instead of being clipped.
+        breadcrumbScroll.snp.makeConstraints { make in
+            make.height.greaterThanOrEqualTo(FileBrowserBreadcrumbLayout.minimumTarget)
+        }
+        NSLayoutConstraint.activate([
+            breadcrumbStack.leadingAnchor.constraint(equalTo: breadcrumbScroll.contentLayoutGuide.leadingAnchor),
+            breadcrumbStack.trailingAnchor.constraint(equalTo: breadcrumbScroll.contentLayoutGuide.trailingAnchor),
+            breadcrumbStack.topAnchor.constraint(equalTo: breadcrumbScroll.contentLayoutGuide.topAnchor),
+            breadcrumbStack.bottomAnchor.constraint(equalTo: breadcrumbScroll.contentLayoutGuide.bottomAnchor),
+            breadcrumbStack.heightAnchor.constraint(equalTo: breadcrumbScroll.frameLayoutGuide.heightAnchor),
+        ])
         tableView.snp.makeConstraints { make in
             make.top.equalTo(header.snp.bottom).offset(4)
             make.leading.trailing.bottom.equalToSuperview()
+        }
+        upButton.snp.makeConstraints { make in
+            make.width.height.greaterThanOrEqualTo(FileBrowserBreadcrumbLayout.minimumTarget)
         }
         tableView.dataSource = self
         tableView.delegate = self
         upButton.addAction(UIAction { [weak self] _ in self?.goUp() }, for: .touchUpInside)
         rebuild()
         load()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // A changed width re-caps the names first; the crumbs are laid out at
+        // the new widths before the trail moves to the folder on screen.
+        guard !updateBreadcrumbWidthLimit() else { return }
+        revealCurrentCrumb()
+    }
+
+    /// A new text size redraws the names at that size, and a new writing
+    /// direction mirrors them; neither is a reason to reload the folder.
+    override func traitCollectionDidChange(_ previous: UITraitCollection?) {
+        super.traitCollectionDidChange(previous)
+        guard traitCollection.preferredContentSizeCategory != previous?.preferredContentSizeCategory
+            || traitCollection.layoutDirection != previous?.layoutDirection
+        else { return }
+        redrawBreadcrumb()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -181,15 +239,24 @@ final class FileBrowserController: UIViewController {
     private func load() {
         guard let current = navigation?.current else { return }
         listing?.cancel()
+        listingGeneration &+= 1
+        let generation = listingGeneration
+        let url = current.url
+        // Another folder: the rows on screen belong to the folder the page
+        // left, and must not be tappable while the new one is read.
+        if listedPath != url.path {
+            rows = []
+            accessByPath = [:]
+        }
         isLoading = true
         failure = nil
         rebuild()
-        let url = current.url
         listing = Task { [weak self] in
             let result = await Task.detached(priority: .userInitiated) {
                 FileBrowserListing.list(url)
             }.value
             guard let self, !Task.isCancelled else { return }
+            guard generation == listingGeneration else { return }
             isLoading = false
             switch result {
             case let .success(entries):
@@ -203,6 +270,7 @@ final class FileBrowserController: UIViewController {
                 accessByPath = [:]
                 failure = reason
             }
+            listedPath = url.path
             rebuild()
         }
     }
@@ -210,10 +278,7 @@ final class FileBrowserController: UIViewController {
     private func rebuild() {
         let current = navigation?.current
         title = current?.title ?? String(localized: "Files")
-        pathButton.configuration?.title = current?.path
-        pathButton.accessibilityValue = current?.path
-        pathButton.isEnabled = navigation != nil
-        pathButton.menu = pathMenu()
+        rebuildBreadcrumb()
         upButton.isEnabled = navigation?.parent != nil
         updateStatus()
         updateMoreMenu()
@@ -248,9 +313,222 @@ final class FileBrowserController: UIViewController {
         }
     }
 
+    // MARK: - The path area
+
+    /// Draws the trail under the bar from the folder the page is standing on.
+    ///
+    /// The trail is only rebuilt when it leads somewhere else: a reload of the
+    /// same folder — after a save, a paste, a refresh — keeps the crumbs the
+    /// reader already has and their sideways position.
+    @objc dynamic private func rebuildBreadcrumb() {
+        guard let current = navigation?.current else {
+            clearBreadcrumb()
+            return
+        }
+        let trail = FileBrowserBreadcrumb(
+            location: current,
+            rootTitle: String(localized: "This Device")
+        )
+        if trail != shownBreadcrumb {
+            populateBreadcrumb(trail)
+        }
+        if breadcrumbReveal.shouldReveal(current.path) {
+            needsBreadcrumbReveal = true
+            view.setNeedsLayout()
+        }
+    }
+
+    @objc dynamic private func clearBreadcrumb() {
+        shownBreadcrumb = nil
+        currentCrumbButton = nil
+        breadcrumbWidthConstraints = []
+        crumbWidthLimit = 0
+        needsBreadcrumbReveal = false
+        for view in breadcrumbStack.arrangedSubviews {
+            breadcrumbStack.removeArrangedSubview(view)
+            view.removeFromSuperview()
+        }
+    }
+
+    /// The trail's own order, root first, drawn in the interface's reading
+    /// direction by the stack itself: an Arabic or Hebrew page reads it from
+    /// the right, and the file system's order is unchanged.
+    private func populateBreadcrumb(_ trail: FileBrowserBreadcrumb) {
+        clearBreadcrumb()
+        shownBreadcrumb = trail
+        crumbWidthLimit = breadcrumbScroll.bounds.width
+        let limit = FileBrowserBreadcrumbLayout.titleWidthLimit(available: crumbWidthLimit)
+        for (index, segment) in trail.segments.enumerated() {
+            if index > 0 {
+                breadcrumbStack.addArrangedSubview(separator())
+            }
+            let button = crumbButton(for: segment)
+            breadcrumbStack.addArrangedSubview(button)
+            let width = button.widthAnchor.constraint(lessThanOrEqualToConstant: limit)
+            width.isActive = true
+            breadcrumbWidthConstraints.append(width)
+            if segment.isCurrent {
+                currentCrumbButton = button
+            }
+        }
+    }
+
+    /// One folder on the way here. A tap goes there, which is why the current
+    /// crumb's tap is no move at all; a long press copies that folder's path,
+    /// and on the current crumb also lists the folders above it.
+    private func crumbButton(for segment: FileBrowserBreadcrumb.Segment) -> UIButton {
+        let style: UIFont.TextStyle = segment.isCurrent ? .headline : .subheadline
+        var configuration = UIButton.Configuration.plain()
+        configuration.title = segment.title
+        configuration.titleLineBreakMode = .byTruncatingMiddle
+        configuration.baseForegroundColor = segment.isCurrent ? .label : .link
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 10)
+        configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.font = UIFont.preferredFont(forTextStyle: style)
+            return outgoing
+        }
+        let button = UIButton(configuration: configuration)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        // The width limit and the touch target are required; the title is what
+        // gives way, so a long name truncates instead of fighting the cap.
+        button.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
+        button.heightAnchor.constraint(
+            greaterThanOrEqualToConstant: FileBrowserBreadcrumbLayout.minimumTarget
+        ).isActive = true
+        button.widthAnchor.constraint(
+            greaterThanOrEqualToConstant: FileBrowserBreadcrumbLayout.minimumTarget
+        ).isActive = true
+        // The title drawn may be shortened to fit; what VoiceOver reads is the
+        // whole name, the path it leads to, and whether this is the folder on
+        // screen.
+        button.accessibilityLabel = segment.title
+        button.accessibilityValue = segment.location.path
+        if segment.isCurrent {
+            button.accessibilityTraits.insert(.selected)
+        }
+        button.addAction(UIAction { [weak self] _ in
+            self?.openCrumb(segment.location)
+        }, for: .touchUpInside)
+        button.menu = crumbMenu(for: segment)
+        button.showsMenuAsPrimaryAction = false
+        return button
+    }
+
+    /// What sits between two crumbs: a chevron that mirrors with the language,
+    /// and nothing for VoiceOver to stop on.
+    @objc dynamic private func separator() -> UIImageView {
+        let view = UIImageView(
+            image: UIImage(systemName: "chevron.forward")?.imageFlippedForRightToLeftLayoutDirection()
+        )
+        view.tintColor = .tertiaryLabel
+        view.contentMode = .scaleAspectFit
+        view.isAccessibilityElement = false
+        view.setContentHuggingPriority(.required, for: .horizontal)
+        view.setContentCompressionResistancePriority(.required, for: .horizontal)
+        return view
+    }
+
+    private func crumbMenu(for segment: FileBrowserBreadcrumb.Segment) -> UIMenu {
+        var children: [UIMenuElement] = [
+            UIAction(
+                title: String(localized: "Copy Path"),
+                image: UIImage(systemName: "doc.on.doc")
+            ) { [weak self] _ in self?.copyPath(segment.location.path) }
+        ]
+        // The list the path used to drop down, kept beside the crumbs that
+        // took its place, for the folder on screen — named as the path area
+        // named it before.
+        if segment.isCurrent, let ancestors = shownBreadcrumb?.ancestors, !ancestors.isEmpty {
+            children.append(UIMenu(
+                title: String(localized: "Path"),
+                options: .displayInline,
+                children: ancestors.reversed().map { ancestor in
+                    UIAction(title: ancestor.title) { [weak self] _ in
+                        self?.openCrumb(ancestor.location)
+                    }
+                }
+            ))
+        }
+        return UIMenu(children: children)
+    }
+
+    /// A crumb is a folder, not a promise: the path is resolved again and
+    /// checked to still be a directory before the page moves, so a name that
+    /// has become a file is not opened as one and a folder that is gone is
+    /// said so. The page stays where it is rather than quietly landing
+    /// somewhere else.
+    private func openCrumb(_ location: FileBrowserLocation) {
+        guard location != navigation?.current else { return }
+        var isDirectory: ObjCBool = false
+        guard let target = FileBrowserLocation(path: location.path),
+              FileManager.default.fileExists(atPath: target.path, isDirectory: &isDirectory),
+              isDirectory.boolValue
+        else {
+            presentNotice(
+                title: "Unable to Open Folder",
+                message: FileBrowserListing.openReason(for: location.url).errorDescription
+                    ?? String(localized: "The folder could not be read.")
+            )
+            load()
+            return
+        }
+        go(to: target)
+    }
+
+    /// The widest a crumb is drawn is a share of the path area, so a deep path
+    /// on a narrow screen still shows the folders around the one on screen.
+    /// Answers whether the width changed, in which case the crumbs are laid
+    /// out again before the trail is moved.
+    @discardableResult
+    @objc dynamic private func updateBreadcrumbWidthLimit() -> Bool {
+        let available = breadcrumbScroll.bounds.width
+        guard available > 0, abs(available - crumbWidthLimit) > 0.5 else { return false }
+        crumbWidthLimit = available
+        let limit = FileBrowserBreadcrumbLayout.titleWidthLimit(available: available)
+        breadcrumbWidthConstraints.forEach { $0.constant = limit }
+        // A resized page is not a reload: what it shows is still worth
+        // bringing into view.
+        needsBreadcrumbReveal = true
+        view.setNeedsLayout()
+        return true
+    }
+
+    /// Moves the trail sideways to the folder on screen, once per folder it
+    /// comes to show. A reload of that folder never moves it.
+    @objc dynamic private func revealCurrentCrumb() {
+        guard needsBreadcrumbReveal else { return }
+        needsBreadcrumbReveal = false
+        guard let crumb = currentCrumbButton,
+              breadcrumbScroll.contentSize.width > breadcrumbScroll.bounds.width
+        else { return }
+        breadcrumbStack.layoutIfNeeded()
+        let rect = crumb.convert(crumb.bounds, to: breadcrumbScroll).insetBy(dx: -8, dy: 0)
+        breadcrumbScroll.scrollRectToVisible(rect, animated: false)
+    }
+
+    /// The path, ready to paste. Named for the copy family in Swift, so its
+    /// selector is given a name of its own rather than read by ARC as one that
+    /// returns a retained object.
+    @objc(apelin_copyPath) private dynamic func copyPath(_ path: String) {
+        UIPasteboard.general.string = path
+        SPIndicator.present(title: String(localized: "Path copied"), preset: .done, haptic: .success)
+    }
+
+    /// The same trail at another text size or in another direction, without
+    /// reading the folder again.
+    @objc dynamic private func redrawBreadcrumb() {
+        guard let trail = shownBreadcrumb else { return }
+        populateBreadcrumb(trail)
+        needsBreadcrumbReveal = true
+        view.setNeedsLayout()
+    }
+
     // MARK: - Moving
 
     private func go(to location: FileBrowserLocation) {
+        // The folder the page is already on is no move, and no reload either.
+        guard location != navigation?.current else { return }
         navigation?.go(to: location)
         load()
     }
@@ -279,17 +557,6 @@ final class FileBrowserController: UIViewController {
     }
 
     // MARK: - Menus
-
-    private func pathMenu() -> UIMenu {
-        guard let current = navigation?.current else { return UIMenu(children: []) }
-        let trail = current.ancestors.reversed()
-        return UIMenu(children: trail.map { location in
-            let name = location.path == "/" ? String(localized: "This Device") : location.title
-            return UIAction(title: name, state: location == current ? .on : .off) { [weak self] _ in
-                self?.go(to: location)
-            }
-        })
-    }
 
     private func placesMenu() -> UIMenu {
         UIMenu(children: places.map { place in
@@ -328,6 +595,12 @@ final class FileBrowserController: UIViewController {
                 ) { [weak self] _ in self?.paste(into: current.url) })
             }
         }
+        // Reading the folder's path is allowed everywhere, so it does not wait
+        // for the place to be writable.
+        actions.append(UIAction(
+            title: String(localized: "Copy Path"),
+            image: UIImage(systemName: "doc.on.doc")
+        ) { [weak self] _ in self?.copyPath(current.path) })
         // Leaving this folder is reading, which every place allows.
         actions.append(UIMenu(options: .displayInline, children: [
             UIAction(

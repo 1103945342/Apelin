@@ -161,6 +161,28 @@ final class TerminalSession {
         return false
     }
 
+    /// Whether the reader may forget this session from the list: only a
+    /// terminal that ended. A session that is running, still connecting or
+    /// failed keeps its place — the host may still have a shell for it.
+    var isRemovable: Bool {
+        isFinished
+    }
+
+    /// The list's one-word state, which `TerminalSessionsListController` draws
+    /// as the row's subtitle.
+    var listStatus: TerminalSessionListEntry.Status {
+        switch phase {
+        case .live:
+            return .running
+        case .idle, .opening, .reconnecting:
+            return .connecting
+        case .ended:
+            return .ended
+        case .failed:
+            return .unavailable
+        }
+    }
+
     // MARK: - Attaching
 
     /// Shows this session on a fresh surface: opens the shell when there is

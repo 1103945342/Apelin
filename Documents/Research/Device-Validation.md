@@ -208,12 +208,9 @@ console now goes on after a restart only past a successful respring.
       output still there; deleting the row on screen selects its neighbour,
       and deleting the last shows "No Terminal Open" with New Terminal and
       starts no shell. In Browse Files, each crumb opens its folder, the
-      strip scrolls sideways, Reload keeps the list's scroll position, and
-      neither changes the project the agent works in. Also worth a look:
-      the file browser's notice titles (Unable to Open Folder, Unable to
-      Create File, Rename and the rest) and the terminal's "Too Many
-      Terminals" are plain literals in the source, so they read English in
-      every language even though the catalog holds translations of them.
+      strip scrolls sideways, reloading the same folder keeps the breadcrumb
+      strip's horizontal position, and neither changes the project the agent
+      works in.
 
 - [ ] Trae, Trae CN and Raccoon with an account (2026-11-11, PR #40,
       AGENTS.md ▸ Agent sign-in; the record below has what ran without
