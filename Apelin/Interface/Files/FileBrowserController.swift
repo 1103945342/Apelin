@@ -510,7 +510,7 @@ final class FileBrowserController: UIViewController {
     /// The path, ready to paste. Named for the copy family in Swift, so its
     /// selector is given a name of its own rather than read by ARC as one that
     /// returns a retained object.
-    @objc(apelin_copyPath) private dynamic func copyPath(_ path: String) {
+    @objc(apelin_copyPath:) private dynamic func copyPath(_ path: String) {
         UIPasteboard.general.string = path
         SPIndicator.present(title: String(localized: "Path copied"), preset: .done, haptic: .success)
     }
