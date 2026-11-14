@@ -4319,6 +4319,21 @@ requires going back and a new run. The table uses stable diffable identities and
 reconfigures progress rows in place. Each release build produces its own package
 and dSYM through the existing complete build pipeline (see `Documents/Distribution.md`).
 
+Terminal and Browse Files are read as a list and a path. A terminal page opens
+its sessions as the system's own session list — a sheet on a narrow screen, a
+popover where there is room — each row naming its project or folder and saying
+that it runs, connects or has ended, with New Terminal among them. A session
+that has ended leaves the list by a long press on its row or a swipe across
+it, and leaving takes only the record: the folder the session ran in and its
+saved output stay. Removing the session on screen selects the one beside it;
+removing the last leaves the empty page and New Terminal, and starts no shell
+on its own. The file browser's path is its breadcrumb: every folder on it is
+a tap that opens that folder, the strip scrolls sideways when the path is
+wider than the screen, and looking at the folder already open keeps the list
+where the reader left it. Neither the breadcrumb nor a deletion changes which
+project or conversation the files belong to. These pages have model and unit
+checks only — none of their screens has run on a device — so this paragraph
+describes intent, not verified behaviour (Device-Validation ▸ Still to run).
 
 The agent's system prompt (`ApelinAgent/Session/SystemPrompt.swift`) is kept
 short, after pi's. Its text is `Packages/ApelinAgent/Prompts/*.md`, one file

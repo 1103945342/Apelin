@@ -198,6 +198,23 @@ console now goes on after a restart only past a successful respring.
 
 ## Still to run on the owner's devices
 
+- [ ] The terminal session list and the file browser's breadcrumb (2026-11-14,
+      AGENTS.md ▸ Open Terminal and Browse Files; only model and unit checks
+      have run — `Tests/TerminalUI` and `Tests/FileBrowser`, and the
+      catalog's format and stale-key checks — no screen of either has been
+      seen). On the iPhone and on an iPad or vphone: Terminal opens its
+      sessions as a sheet or a popover; a long press or a left swipe on an
+      ended row deletes it and removes only the record, its folder and saved
+      output still there; deleting the row on screen selects its neighbour,
+      and deleting the last shows "No Terminal Open" with New Terminal and
+      starts no shell. In Browse Files, each crumb opens its folder, the
+      strip scrolls sideways, Reload keeps the list's scroll position, and
+      neither changes the project the agent works in. Also worth a look:
+      the file browser's notice titles (Unable to Open Folder, Unable to
+      Create File, Rename and the rest) and the terminal's "Too Many
+      Terminals" are plain literals in the source, so they read English in
+      every language even though the catalog holds translations of them.
+
 - [ ] Trae, Trae CN and Raccoon with an account (2026-11-11, PR #40,
       AGENTS.md ▸ Agent sign-in; the record below has what ran without
       one). JanXiao signed in to all three and chatted on a device before
