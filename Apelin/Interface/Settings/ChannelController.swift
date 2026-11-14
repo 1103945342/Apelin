@@ -343,7 +343,7 @@ final class ChannelController: TableController {
             message: (error as? ApelinError)?.message ?? String(describing: error),
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: String(localized: "OK"), style: .default))
+        alert.addAction(UIAlertAction(title: String(localized: "Done"), style: .default))
         present(alert, animated: true)
     }
 }
