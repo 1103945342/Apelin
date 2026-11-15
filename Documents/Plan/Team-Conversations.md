@@ -1,9 +1,10 @@
-# Team conversations: push, fan-in and report
+# Team conversations: push, fan-in, report and guide
 
 Status: **design only** — nothing in this file is implemented. Written
 against `main` at `9861e3f` (0.4.5); every file named below is as it is
-there. The first thing to build is W1, and each work package can ship on its
-own.
+there. The report half is W1–W6 (sections 1–5); the guidance and constraint
+half is W7–W13 (sections 6–7). Each work package can ship on its own; the
+order that works is given with them.
 
 ## What the owner reported
 
@@ -58,7 +59,7 @@ host, not the model, guarantees that each child's result reaches the opener
 and that the user can see what every child did. The model still writes every
 sentence the user reads; the host only makes sure it has the facts.
 
-Three principles:
+Four principles:
 
 1. **Push, never poll.** A child's end of turn is an event the host acts on.
    `apelin_conversation_read` stays as a drill-down, not as the way to wait.
@@ -67,8 +68,13 @@ Three principles:
    the model never writes must not erase the facts from the user's view.
 3. **State to the user, events to the agent.** A child's live progress is
    shown in the app and never pushed into the opener's context; only what the
-   opener must act on (a finished turn, a question, a waiting approval) is
-   delivered as a message.
+   opener must act on (a finished turn, a question, a waiting approval, a
+   drift) is delivered as a message.
+4. **Constraint is a wall, not a sentence.** A plan that lives in the prompt
+   is advice. What holds is the tool layer refusing a call: the repository
+   already does this for plan runs (`ToolRunner.planVerdict`), and a delegated
+   plan goes on the same wall (section 7). Guidance and constraint are two
+   halves of one thing — the brief: the opener edits it, the wall enforces it.
 
 ### 1. Final-answer relay
 
@@ -192,16 +198,185 @@ additions:
 - New strings go into all 13 languages of `Localizable.xcstrings` (see the
   note in `AGENTS.md` about editing it in place).
 
+### 6. Live guidance
+
+The opener does not only hand out work and wait: it watches, and it corrects.
+What it must not do is what `delivery: steer` does today — put another user
+message into the child's stream and hope the child keeps its thread.
+
+**Why today's steer loses the plot.** A steered message arrives as a
+`UserMessage` with `ConversationSender.prefix` in front of it — `[Message from
+conversation “…” (id), another agent working in this project, not from the
+user]` (`Packages/ApelinAgent/Sources/ApelinAgent/Session/
+ConversationSender.swift`) — so it is attributed. But it sits in the same
+stream as the user's instructions, and nothing in the conversation says what
+the task is *now*. After three steers the model has to infer the current
+truth from interleaved messages, and a steer that says "use Y instead of X"
+is the same kind of event as one that says "stop, do Z". The first should
+amend a plan; the second must replace it.
+
+**The brief.** Every delegated conversation carries one record the host
+writes, the worker holds, and the child reads — the task brief. It is the
+authority; messages are commentary.
+
+```
+AgentBrief {
+  objective: String                     // one paragraph, the opener's words
+  acceptance: [String]                  // what counts as done, checkable
+  steps: [BriefStep]                    // the plan, and it is the opener's
+  current: String                       // the step the child may work in
+  gates: .each | .none                  // section 7.4
+}
+BriefStep { id, title, write: [String], commands: [String], check: String? }
+```
+
+`write` is project-relative folders or files; empty means nothing may be
+written, which is the shape of an investigation. `commands` adds to the
+read-only presets and never replaces them; a step without it runs nothing
+else. `check` is a command (section 7.5).
+
+**Where a brief comes from.** Nothing is parsed out of prose:
+`apelin_conversation_create` grows these as optional fields beside `prompt`,
+so a delegation that names none behaves as today — relayed, reported,
+unconstrained — and one that fills them gets the wall. `prompt` stays the
+human sentence the child reads first. `AgentPromptRequest.brief` then carries
+the brief on every message, as `promptInjection` does, and `<system-state>`
+renders it at about 150 tokens at the start of every turn and again after a
+compaction — the one place a summary would otherwise drop it:
+
+```
+<brief revision="3">
+objective  把构建脚本改成读 apelin-project.json 的 buildScript
+acceptance apelin_project_build 成功；Scripts/check-build.sh 退出 0
+current    step 2 of 4 — 改 build.sh
+write      Scripts/**  Makefile
+commands   read-only presets + Scripts/check-build.sh
+changed    step 1 done; write adds Makefile
+</brief>
+```
+
+**Two intensities, two different acts.** `apelin_conversation_amend` carries
+one of them:
+
+- `amend` — the constraints move, the plan does not. "Use Y not X", "do step
+  2 before 3", "`Packages/` is off limits now". The child reads the new brief
+  and carries on in the same run, at its next model request, with its plan
+  and its tool state untouched.
+- `redirect` — the objective changes. The child is told: make no new tool
+  call for the old objective, end the turn with one line on where you stopped,
+  and plan the new objective from there. A redirect is a task boundary, so the
+  partial work is reported like any turn; it is never dressed up as a detail.
+
+Neither acts inside an executing tool: both land at the model request after
+it. That is the honest meaning of "real time" here — seconds to one step,
+never mid-command.
+
+**What lets the opener see.** Three surfaces, none of them a poll:
+
+- **The plan is the todo list.** A delegated conversation's `todo_write` is
+  the brief's steps and nothing else (section 7.2), and `TodoStore` keeps it
+  per session in one file (`Packages/ApelinKit/Sources/ApelinCore/
+  TodoStore.swift`). "Which step, which one blocked" needs no new artifact.
+- **A team line in every message.** When the opener has children,
+  `<system-state>` carries one line per child — state, step, minutes on it,
+  whether it waits for an approval — written as a delta: expanded when
+  something changed, one line when nothing did.
+- **Drift, pushed.** The host reads each child's events and raises one line
+  the opener must act on, never the whole log: the same command failing three
+  times, a step marked `blocked`, a check that failed, a compaction
+  (direction drifts after one), a turn past its budget, a write the wall
+  refused. Delivered by the digest's rule — `steer` while the opener runs,
+  `queue` when it is idle — at most one per child per `driftInterval`
+  (5 min).
+
+**The escape hatch.** `blocked` and "this conflicts with step 3" are
+first-class outcomes, never failures. A child that cannot proceed reports and
+stops; the opener amends. Without that valve a walled-in child will wander to
+look productive, which is worse than the drift the wall was for.
+
+**Guarding the guard.** At most `maximumAmendmentsPerTurn` (3) per child per
+turn, each naming the step it changes and why; a child that cannot reconcile
+an amendment answers with a conflict instead of silent compliance. An opener
+that keeps amending is thrashing, and its team line says so.
+
+### 7. Strong constraint: put the plan on the wall
+
+A plan written in a prompt is advice. The repository already has the pattern
+for turning advice into a wall: `ToolRunner.planVerdict`
+(`Packages/ApelinAgent/Sources/ApelinAgent/Tools/ToolRunner.swift`), whose
+own comment is *"The model is told so in `<system-state>`, and this is the
+wall behind the words"* — a plan run refuses every write and every command
+before the approval gate, whatever the mode says. A delegated plan goes on the
+same wall, in five layers from cheapest to strongest.
+
+**7.1 Plan first.** A delegated conversation opens in `runMode: .plan`.
+`planVerdict` then allows reads and `todo_write` only — exactly what writing a
+plan needs — and refuses every mutation without asking. The opener reads the
+plan, approves or amends it, and its next message flips the child to
+`.build`. Two fields are missing today: `AgentOpenRequest` has no `runMode`,
+and `AgentConversationRules.childPrompt` builds its request with text,
+`fromSessionID` and `delivery` only, dropping `runMode` — while the worker
+already applies it (`AgentWorker` calls `session.setRunMode(prompt.runMode)`).
+Only `.plan` and `.build` may be set by an agent; `.auto` stays the reader's
+own setting.
+
+**7.2 The plan belongs to the opener.** In a delegated conversation
+`todo_write` accepts a status change and nothing else: the ids and titles must
+be the brief's steps, and adding, removing, renaming or reordering is refused
+with *"the plan belongs to the conversation that opened you; report what you
+would change"*. Enforced in the same `.todoWrite` branch the plan wall uses,
+from the brief the worker holds. A child cannot quietly redefine success.
+
+**7.3 The wall moves with the step.** `current` names one step, and only its
+`write` and `commands` are allowed. Every write goes through
+`ScopedRoot.resolveForWrite` (`Tools/ProjectFileTools.swift`), one point where
+the step's paths are checked; `shell_run` is checked where the host already
+authorises it (`AgentApprovals.authorize`) and by the preset match beside
+`planVerdict`. **A refusal is never an approval card** — asking the user would
+mean the plan never constrained anything. It is a tool error that names the
+step and the way out: *"step 2 (`改构建脚本`) does not include `Packages/**`;
+amend the brief, or report it"*.
+
+**7.4 The gate is the pointer.** Because the wall follows `current`, moving to
+the next step is not something the child can do to itself: with `gates: .each`
+the pointer advances only when the opener says so, so a child that finished
+step 2 can read, report and stop, but cannot start step 3. With `gates: .none`
+it advances when the step's `check` passes, or when the child marks it done
+where there is no check. No new run-control machinery is needed: the child
+ends its turn as usual, its report is relayed (section 1), and the opener's
+next message carries the new `current`.
+
+**7.5 Done is decided by a check, not by the child.** A step may carry
+`check`: a command the host runs itself, as the child's identity and only that
+command, recording the exit status. A step with a check cannot be marked
+completed by `todo_write`; the host marks it, and only on exit 0. The cheapest
+useful checks are the ones a project already has — `apelin_project_build`
+succeeding, or its own test script exiting 0.
+
+**What the walls cannot do.** They constrain what the child *may* do, never
+whether it is doing the right thing: inside its scope it can still solve the
+wrong problem. Only the gate, the checks and the opener reading a report catch
+that. And a brief that is wrong enforces the wrong work at full strength,
+which is why `amend` is part of the design and not a courtesy.
+
 ## A turn, after this
 
-1. The user asks. The opener opens three conversations and answers at once:
-   "分了三块：A 查协议、B 改构建、C 写测试；我先动 A 依赖的那部分。"
-2. A finishes while the opener is still working. The relay is steered in, so
-   the opener reads it inside this same turn and adjusts B before B finishes.
-3. B asks a question with `conversation_send`; the opener answers with
-   `steer`; B carries on without losing its run.
-4. The opener ends its turn: "A 完成，B、C 还在跑，完事我汇总。"
-5. C ends. All three settled, 2 s quiet, one digest, a new turn: the team
+1. The user asks. The opener writes three briefs — objective, steps, write
+   scope, a check on the last step — and opens three conversations with them.
+2. Each child's first turn is a plan (7.1). B's plan would edit
+   `Package.swift`, which its brief's `write` does not include; the wall
+   refuses, B reports it, and the opener amends the brief instead of letting
+   it through.
+3. The opener flips the three to `.build` and answers the user: "分了三块：
+   A 查协议、B 改构建、C 写测试；我先动 A 依赖的那部分。"
+4. A finishes step 1; `gates: .each` stops it there with a report, and the
+   relay reaches the opener inside its own turn.
+5. B drifts — the same command fails three times — and the drift line reaches
+   the opener, which sends an `amend` ("use the workspace's swiftc, not
+   xcrun"); B carries on in the same run, plan intact.
+6. The opener ends its turn: "A 完成一步在等我放行，B 改道中，C 还在跑，完事
+   我汇总。"
+7. C ends. All three settled, 2 s quiet, one digest, a new turn: the team
    report card, then a summary naming each one. The user never refreshed
    anything and never saw a spinner waiting for a child.
 
@@ -217,6 +392,13 @@ additions:
 - **A dedicated orchestrator conversation.** Another chat to watch, another
   context to pay for; the bus in phase 2 is the cheaper step in that
   direction.
+- **Keep `steer` and add nothing but the attribution it already has.** That is
+  today: the message is marked as another conversation's, and it still
+  competes with the conversation's own instructions because nothing states
+  what the task is now. Rejected in section 6.
+- **Parse the brief out of the opening prompt.** Rejected: prose is ambiguous,
+  and the wall would then enforce a guess. The brief is filled in as fields,
+  or there is no brief and no wall.
 - **Relay only when the child calls `conversation_send` with
   `delivery: steer`,** plus the prompt contract. Much smaller (no watcher, no
   barrier) and worth doing if W1 fails; it fails exactly where models forget,
@@ -257,11 +439,58 @@ relay and the barrier are in use.
   `Tests/ChatTranscript/` check for the report row, and a real-device pass
   through `Scripts/test-session-host.sh` where it applies.
 
+The guidance half:
+
+- **W7 — the brief.** `AgentBrief` / `BriefStep` / `AgentMessageOrigin` in
+  `ApelinProtocol/Operations/Agent.swift`; `AgentPromptRequest.brief` beside
+  `promptInjection`; the optional fields on `apelin_conversation_create`; the
+  host's `agentAmend` (lineage-checked, the quota, one step named); the worker
+  holds it in `AgentSession` and renders `<brief>` in `<system-state>` at each
+  turn's start and after a compaction; the `prompt` payload carries `origin`.
+  Tests: `amend` keeps the plan, `redirect` ends the turn with a report, the
+  quota refuses the fourth, the brief survives a compaction.
+- **W8 — plan first.** `AgentOpenRequest.runMode`; `childOpen` sets `.plan`;
+  `childPrompt` keeps `runMode` for `.plan` and `.build` and refuses `.auto`
+  from an agent. Tests: a delegated session's first write is refused before
+  any approval card; `.auto` is refused.
+- **W9 — plan ownership and the scope wall.** The `.todoWrite` branch that
+  takes statuses only; `briefVerdict` beside `planVerdict`; the step's paths
+  inside `ScopedRoot`; refusals that name the step and never become an
+  approval. Tests: a structural change is refused; a step-3 path is refused
+  while `current` is 2; a refusal asks the user nothing.
+- **W10 — gates and checks.** Pointer advancement for `.each` and `.none`; the
+  host running a step's `check` and recording the exit code; `todo_write`
+  unable to complete a checked step. Tests: the pointer holds under `.each`;
+  a failing check leaves the step open; a passing one completes it.
+- **W11 — drift and the team line.** The signals, the rate limit, the
+  delivery rule; the `<system-state>` team line as a delta, thrashing
+  included. Tests: three failures → one line; a second inside the interval →
+  none; the line expands only when something changed.
+- **W12 — app.** The child's page shows its brief and its amendments; the team
+  strip shows each child's step and whether a gate holds it; drift lines are
+  rows; strings in 13 languages.
+- **W13 — prompts.** `50-conversations.md`: plan first, the brief is the
+  authority, todos are statuses only, a refusal is reported and never routed
+  around, `blocked` is a way out. Then `sync-prompts.sh`; `make check` must see
+  the regenerated Swift. W4 and W13 edit the same file, so one run of the
+  generator covers both.
+
+Order: W1–W3 first — they end the polling on their own. Then W7 → W8 → W9 →
+W10, in that order, because the brief is what the wall enforces and the
+pointer is what the gate moves. W11 and W12 ride along once W7 exists.
+
 ## Limits this design does not remove
 
 - A `steer` lands at a model request, never inside an executing tool. An
   opener in a ten-minute build hears nothing for ten minutes. The rule stays:
   fan out before long local work.
+- A wall constrains what a child *may* do, not whether it is doing the right
+  thing: inside its scope it can still solve the wrong problem (section 7). A
+  brief that is wrong is enforced at full strength.
+- A child held at a gate looks idle. It must read as "waiting for the opener"
+  on the team line and in the app, or a forgotten gate looks like a hang.
+- The brief is roughly 150 tokens per turn per child — the price of the wall,
+  paid where the context is least tight.
 - Six children per project remain (`maximumOpenChildren`), depth 2 remains
   (`maximumDepth`).
 - Approvals are still the user's alone. The team can report that a child
@@ -277,3 +506,10 @@ relay and the barrier are in use.
    are still running on every message, so it cannot forget the team exists?
 4. Phase 2: is sibling-to-sibling traffic needed, or does hub-and-spoke carry
    the work?
+5. Plan-first for every delegation, or only for work that touches several
+   files? It costs one round trip per child (section 7.1).
+6. `gates: .each` by default, or only for delegations that build, install or
+   touch more than one file?
+7. Who writes the brief's steps — the opener's model, or a form the delegation
+   tool makes it fill in (objective, steps, scope, check) so a delegation
+   cannot be vague by accident?
