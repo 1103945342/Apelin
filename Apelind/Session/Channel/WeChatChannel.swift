@@ -25,6 +25,10 @@ actor WeChatChannel {
     /// through the dispatcher as the app's.
     typealias Route = @Sendable (WireRequest, [OwnedDescriptor]) async -> WireReply
 
+    /// What a conversation this channel opens is marked with, so the app
+    /// lists it too (`AgentOpenRequest.origin`).
+    static let origin = "wechat"
+
     /// How long one status poll waits before asking again.
     static let pollInterval: UInt64 = 1_000_000_000
     /// How long the listener waits after a failed poll.
@@ -502,8 +506,15 @@ actor WeChatChannel {
                     )
                 } else {
                     // Refused or out of reach: the ask stays, so it can be
-                    // answered again here or in Apelin.
+                    // answered again here or in Apelin — and the phone is
+                    // told why, rather than left waiting for nothing.
                     pendingAsks[from] = pending
+                    let reason = message ?? t("未知原因", "unknown reason")
+                    await send(
+                        t("这次答复没能交给 Apelin：\(reason)", "Apelin did not take that answer: \(reason)"),
+                        to: from,
+                        contextToken: pending.contextToken
+                    )
                 }
                 return
             case .needsApp:
@@ -527,22 +538,23 @@ actor WeChatChannel {
     /// while the phone was away: the session host says so (`notFound`), and
     /// the same conversation is opened again and the message sent there.
     private func ask(_ peer: Peer, incoming: Incoming) async {
+        let target = await resolved(peer)
         let reply = Reply(
-            userID: peer.userID,
-            contextToken: lastContextTokens[peer.userID],
+            userID: target.userID,
+            contextToken: lastContextTokens[target.userID],
             text: "",
             turns: 0
         )
-        replies[peer.sessionID] = collect(reply, into: replies[peer.sessionID])
+        replies[target.sessionID] = collect(reply, into: replies[target.sessionID])
         do {
-            var request = Self.prompt(for: peer, text: Self.promptText(incoming))
+            var request = Self.prompt(for: target, text: Self.promptText(incoming))
             request.attachments = incoming.attachments.isEmpty ? nil : incoming.attachments
             try await deliver(WireRequest(request), descriptors: incoming.descriptors)
         } catch let error as ApelinError where error.code == .notFound {
-            replies[peer.sessionID] = nil
-            await openConversation(with: peer.userID, incoming: incoming, reopening: peer)
+            replies[target.sessionID] = nil
+            await openConversation(with: target.userID, incoming: incoming, reopening: target)
         } catch {
-            replies[peer.sessionID] = nil
+            replies[target.sessionID] = nil
             failed(error, to: reply)
         }
     }
@@ -554,15 +566,15 @@ actor WeChatChannel {
         incoming: Incoming,
         reopening peer: Peer? = nil
     ) async {
-        var owner = peer ?? Peer(
+        var owner = await resolved(peer ?? Peer(
             userID: userID,
             sessionID: UUID().uuidString.lowercased(),
             temporaryID: UUID().uuidString.lowercased(),
             projectName: record.projectName,
             title: AgentConversationRules.title(incoming.text)
-        )
+        ))
         owner.title = owner.title ?? AgentConversationRules.title(incoming.text)
-        guard await open(owner, prompt: nil) else {
+        guard await open(owner, prompt: nil, origin: Self.origin) else {
             await send(
                 t("会话打不开：\(message ?? "未知原因")", "The conversation could not be opened: \(message ?? "unknown reason")"),
                 to: userID,
@@ -832,12 +844,17 @@ actor WeChatChannel {
             let project = existing?.projectName ?? record.projectName
             let temporary = UUID().uuidString.lowercased()
             let sessionID = UUID().uuidString.lowercased()
-            var owner = existing ?? Peer(userID: userID, sessionID: sessionID, temporaryID: temporary, title: nil)
+            var owner = await resolved(existing ?? Peer(
+                userID: userID,
+                sessionID: sessionID,
+                temporaryID: temporary,
+                title: nil
+            ))
             owner.sessionID = sessionID
             owner.projectName = project
             owner.temporaryID = project == nil ? temporary : nil
             owner.title = nil
-            guard await open(owner, prompt: nil) else {
+            guard await open(owner, prompt: nil, origin: Self.origin) else {
                 return t("新建会话失败：\(message ?? "未知原因")", "The conversation could not be opened: \(message ?? "unknown reason")")
             }
             var stored = owner
@@ -1024,7 +1041,8 @@ actor WeChatChannel {
     /// Opens a conversation for `peer` — the same id when it has one, a new
     /// one when it does not — with the phone's project and model, and this
     /// message as its first prompt when there is one.
-    private func open(_ peer: Peer, prompt: String?) async -> Bool {
+    private func open(_ peer: Peer, prompt: String?, origin: String? = nil) async -> Bool {
+        prepareWorkspace(peer)
         var request = AgentOpenRequest(
             projectName: peer.projectName ?? record.projectName,
             temporaryID: (peer.projectName ?? record.projectName) == nil ? peer.temporaryID : nil,
@@ -1035,7 +1053,8 @@ actor WeChatChannel {
             reasoningEffort: peer.effort,
             serviceTier: peer.tier,
             prompt: prompt,
-            title: prompt.flatMap(AgentConversationRules.title)
+            title: prompt.flatMap(AgentConversationRules.title),
+            origin: origin
         )
         request.asksBeforeScreen = false
         guard let wire = try? WireRequest(request) else { return false }
@@ -1045,6 +1064,111 @@ actor WeChatChannel {
             return false
         }
         return true
+    }
+
+    /// General Chat's workspace is a folder under `Temporary/`, and the app
+    /// makes it before it opens a chat. A phone's conversation may name one
+    /// that was never made, or was removed with the chat: the host refuses a
+    /// temporary chat whose folder is missing, so it is made here.
+    private func prepareWorkspace(_ peer: Peer) {
+        guard peer.projectName == nil, let temporary = peer.temporaryID else { return }
+        let data = DataFolder(home: home)
+        try? data.makeLevels(to: data.root.appendingPathComponent("Temporary/" + temporary, isDirectory: true))
+    }
+
+    /// The model a conversation is opened with when the phone has not picked
+    /// one: what the project's most recent conversation used, else the first
+    /// model this device is signed in to. Without one, an open falls to a
+    /// provider this device may not be signed in to at all.
+    private func inheritedModel(projectName: String?) async -> (provider: AgentProvider, model: String)? {
+        let recent = ChannelDirectory.storedSessions(home: home)
+            .filter { $0.projectName == projectName }
+            .sorted { $0.updatedAt > $1.updatedAt }
+        for session in recent.prefix(10) {
+            if let pair = Self.model(inSession: session.id, home: home) {
+                return pair
+            }
+        }
+        for model in await models() {
+            return (model.provider, model.model)
+        }
+        return nil
+    }
+
+    /// The provider and model a saved conversation was created with, read
+    /// from its `session.json`: the model half of `ProviderConfiguration`,
+    /// whichever case it was written as.
+    static func model(inSession id: String, home: String) -> (provider: AgentProvider, model: String)? {
+        let file = DataFolder(home: home).sessions
+            .appendingPathComponent(id, isDirectory: true)
+            .appendingPathComponent("session.json")
+        guard let data = try? Data(contentsOf: file),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let providerObject = object["provider"] as? [String: Any],
+              let entry = providerObject.first
+        else { return nil }
+        let body = entry.value as? [String: Any] ?? [:]
+        let model = body["model"] as? String
+        switch entry.key {
+        case "githubCopilot":
+            return model.map { (.githubCopilot, $0) }
+        case "openAICompatible":
+            return model.map { (.openAICompatible, $0) }
+        case "anthropic":
+            guard let model else { return nil }
+            let oauth = body["oauth"] as? Bool ?? false
+            return (oauth ? .anthropicOAuth : .anthropic, model)
+        case "stored":
+            guard let store = body["storeID"] as? String, let model,
+                  let provider = provider(forStore: store)
+            else { return nil }
+            return (provider, model)
+        default:
+            return nil
+        }
+    }
+
+    /// kwwk's store ids, as the app's providers are named on the wire.
+    static func provider(forStore store: String) -> AgentProvider? {
+        switch store {
+        case "github-copilot": .githubCopilot
+        case "anthropic": .anthropicOAuth
+        case "anthropic-api-key": .anthropic
+        case "openai-compatible": .openAICompatible
+        case "openai-codex": .openAICodex
+        case "cursor": .cursor
+        case "devin": .devin
+        case "kiro": .kiro
+        case "antigravity": .antigravity
+        case "qoder": .qoder
+        case "qoder-cn": .qoderCN
+        case "workbuddy": .workBuddy
+        case "workbuddy-ai": .workBuddyAI
+        case "raccoon": .raccoon
+        case "kimi-coding": .kimiCoding
+        case "kimi-coding-ai": .kimiCodingGlobal
+        case "xai": .xai
+        case "zai": .zai
+        case "zai-coding-cn": .zaiCodingCN
+        case "openrouter": .openRouter
+        case "openai-api-key": .openAI
+        case "google-api-key": .google
+        case "deepseek-api-key": .deepSeek
+        case "opencode-go": .openCodeGo
+        case "opencode": .openCodeZen
+        default: nil
+        }
+    }
+
+    /// `peer` with the model a message from it is sent with: what it chose,
+    /// else what the project last used.
+    private func resolved(_ peer: Peer) async -> Peer {
+        guard peer.provider == nil || peer.model == nil else { return peer }
+        guard let inherited = await inheritedModel(projectName: peer.projectName) else { return peer }
+        var updated = peer
+        updated.provider = peer.provider ?? inherited.provider
+        updated.model = peer.model ?? inherited.model
+        return updated
     }
 
     /// Applies the phone's model to a conversation that is already open.
@@ -1121,7 +1245,16 @@ actor WeChatChannel {
     private func announce(_ payload: JSONValue, sessionID: String) async {
         guard let peer = peers.items.first(where: { $0.sessionID == sessionID }),
               let approvalID = payload["approvalID"]?.stringValue
-        else { return }
+        else {
+            // A conversation no phone talks in: the app's own, or one whose
+            // binding moved. Nothing is sent, and the log says which.
+            NSLog(
+                "wechat-channel: approval %@ for session %@ has no phone",
+                payload["approvalID"]?.stringValue ?? "(none)",
+                sessionID
+            )
+            return
+        }
         let question = payload["detail"]?[AgentQuestionRules.detailKey]
             .flatMap { try? $0.decode(AgentQuestion.self) }
         // A command as root takes the device owner's check, which a chat

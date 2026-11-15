@@ -143,7 +143,11 @@ final class ChatRuntime {
         while !remaining.isEmpty {
             let count = records.count
             remaining.removeAll { session in
-                guard let record = ChatAdoption.record(session: session, records: Array(records.values)) else { return false }
+                // A chat an agent opened, or one a phone holds: neither is
+                // the app's, and both are listed here.
+                guard let record = ChatAdoption.record(session: session, records: Array(records.values))
+                    ?? ChatAdoption.record(channel: session, records: Array(records.values))
+                else { return false }
                 adopt(record)
                 return true
             }

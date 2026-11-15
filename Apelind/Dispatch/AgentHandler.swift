@@ -411,7 +411,10 @@ enum AgentHandler: DomainHandler {
                 title: title ?? existing?.title,
                 createdAt: Date(),
                 parentSessionID: opener?.sessionID ?? existing?.parentSessionID ?? saved?.parentSessionID,
-                depth: opener.map { $0.depth + 1 } ?? existing?.depth ?? saved?.depth ?? 0,
+                // An agent's open names no origin: a channel's does, and the
+                // app lists the conversation it made.
+                origin: opener == nil ? resolved.origin : nil,
+                depth: opener.map { $0.depth + 1 } ?? existing?.depth ?? saved?.depth ?? 0
             ),
             releasingReservation: opener != nil,
         )

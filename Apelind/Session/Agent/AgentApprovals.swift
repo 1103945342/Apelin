@@ -360,6 +360,9 @@ actor AgentSessionTable {
         var runCodeGrants: [RunCodeGrant] = []
         /// The session whose agent opened this one; nil for the app's.
         var parentSessionID: String?
+        /// What opened it besides the app: a chat channel's name
+        /// (`AgentOpenRequest.origin`), kept for `agentList`.
+        var origin: String? = nil
         /// 0 for a session the app opened, its opener's plus one otherwise.
         var depth = 0
         /// The tasks this session's agent started (setups, imports, git),
@@ -528,6 +531,7 @@ actor AgentSessionTable {
                 state: record?.state ?? .interrupted,
                 updatedAt: record?.updatedAt ?? entry.createdAt,
                 parentSessionID: entry.parentSessionID,
+                origin: entry.origin,
             ))
         }
         return result

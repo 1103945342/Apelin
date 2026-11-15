@@ -74,6 +74,11 @@ public struct AgentSessionSummary: Codable, Sendable, Equatable {
     /// The session whose agent opened this one (`agentOpen` from an agent);
     /// nil for one the app opened.
     public var parentSessionID: String?
+    /// What opened it besides the app or an agent: `wechat` for a
+    /// conversation a chat channel opened (`AgentOpenRequest.origin`). The
+    /// app takes one of these in even though no chat of its own opened it,
+    /// so a conversation held from a phone can be read here too.
+    public var origin: String?
 
     public init(
         sessionID: String,
@@ -84,6 +89,7 @@ public struct AgentSessionSummary: Codable, Sendable, Equatable {
         state: TaskState,
         updatedAt: Date,
         parentSessionID: String? = nil,
+        origin: String? = nil,
     ) {
         self.sessionID = sessionID
         self.task = task
@@ -93,6 +99,7 @@ public struct AgentSessionSummary: Codable, Sendable, Equatable {
         self.state = state
         self.updatedAt = updatedAt
         self.parentSessionID = parentSessionID
+        self.origin = origin
     }
 }
 
@@ -404,6 +411,10 @@ public struct AgentOpenRequest: OperationRequest {
     /// worker says so in the next message's `<system-state>` when the
     /// conversation has history.
     public var hostRestarted: Bool?
+    /// What opened the conversation besides the app: a chat channel names
+    /// itself (`"wechat"`), and the host records it so the app lists the
+    /// conversation and can read it. An agent's open carries none.
+    public var origin: String?
 
     public init(
         projectID: String? = nil,
@@ -423,6 +434,7 @@ public struct AgentOpenRequest: OperationRequest {
         closeWhenFinished: Bool? = nil,
         title: String? = nil,
         hostRestarted: Bool? = nil,
+        origin: String? = nil,
     ) {
         self.projectID = projectID
         self.projectName = projectName
@@ -441,6 +453,7 @@ public struct AgentOpenRequest: OperationRequest {
         self.closeWhenFinished = closeWhenFinished
         self.title = title
         self.hostRestarted = hostRestarted
+        self.origin = origin
     }
 }
 

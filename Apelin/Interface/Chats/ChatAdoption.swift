@@ -50,6 +50,26 @@ enum ChatAdoption {
         )
     }
 
+    /// The record for a conversation a chat channel opened, which no chat
+    /// of the app's did: it is listed in its own project (General Chat when
+    /// it has none) and followed like any other, so a conversation held from
+    /// a phone can be read here.
+    static func record(channel session: AgentSessionSummary, records: [ChatRecord], now: Date = Date()) -> ChatRecord? {
+        guard session.parentSessionID == nil, session.origin != nil,
+              !records.contains(where: { $0.sessionID == session.sessionID })
+        else { return nil }
+        return ChatRecord(
+            summary: ChatSummary(
+                title: title(session.title, prompt: nil),
+                lastInteraction: now,
+                projectName: session.projectName,
+                isWorking: !session.state.isTerminal,
+            ),
+            sessionID: session.sessionID,
+            task: session.task,
+        )
+    }
+
     /// The record for a session an `apelin://conversation/` link names that
     /// has no opener to take the project from, in `projectName`, the
     /// project the host names for it; nil when a record has it already.
