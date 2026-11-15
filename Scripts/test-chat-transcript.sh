@@ -30,6 +30,7 @@ sources=(
     "$root/Apelin/Interface/Chats/Messages/ToolCallBanner.swift"
     "$root/Apelin/Interface/Chats/Messages/ToolCallDetail.swift"
     "$root/Apelin/Interface/Chats/Messages/TraceStep.swift"
+    "$root/Apelin/Interface/Chats/Messages/ChatStreamPacing.swift"
     "$root/Apelin/Interface/Chats/ChatTranscript.swift"
     "$root/Apelin/Interface/Chats/ChatProcessPresentation.swift"
     "$root/Apelin/Interface/Chats/Messages/ChatHeaderLayout.swift"

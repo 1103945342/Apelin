@@ -41,7 +41,7 @@ final class ChatTraceSteps: UIView {
     /// The summary's steps as they are now: one that has not changed keeps
     /// what is on screen, so a stream grows the last of them in place.
     func show(_ summary: ChatMessage) {
-        let steps = Self.drawn(summary)
+        let steps = Self.drawn(summary).map { Self.paced($0) }
         guard steps.map(\.id) == order else {
             rebuild(with: steps)
             return
@@ -141,7 +141,7 @@ final class ChatTraceSteps: UIView {
     /// slower still.
     static func height(for summary: ChatMessage, width: CGFloat) -> CGFloat {
         guard width > 1 else { return 0 }
-        let steps = drawn(summary)
+        let steps = drawn(summary).map { paced($0) }
         guard !steps.isEmpty else { return 0 }
         let key = Measure(
             shapes: steps.map(ChatMessageShape.init),
@@ -166,6 +166,19 @@ final class ChatTraceSteps: UIView {
     /// between the list's height pass and row configuration.
     static func drawn(_ summary: ChatMessage) -> [ChatMessage] {
         ChatActivityContent.steps(summary)
+    }
+
+    /// One step as it is drawn now: a thought the model is still writing is
+    /// paced (`ChatStreamPacing`), so one long thought costs a redraw and a
+    /// measurement a few times a second rather than one of each per event.
+    /// Both callers of `drawn(_:)` take its answer from here, which is what
+    /// keeps the height the list gives a row and the text the row draws the
+    /// same text.
+    private static func paced(_ step: ChatMessage) -> ChatMessage {
+        guard case .thinking = step.role else { return step }
+        var paced = step
+        paced.text = ChatStreamPacing.text(of: step.id, newest: step.text, streaming: step.role.isThinking)
+        return paced
     }
 
     /// Whether the reader has this step open: a thought by its own flag, a

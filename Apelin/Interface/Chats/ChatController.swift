@@ -340,6 +340,7 @@ final class ChatController: UIViewController {
         messageList.delegate = self
         messageList.rows {
             ListRow(ChatTurnHeaderRow.self)
+                .estimatedHeight(44)
                 .when { message in
                     if case .turn = message.role { return true }
                     return false
@@ -358,6 +359,7 @@ final class ChatController: UIViewController {
                     }
                 }
             ListRow(ChatActivityRow.self)
+                .estimatedHeight(60)
                 .when { $0.role.isActivity }
                 .height { message, context in ChatActivityRow.height(for: message, width: context.width) }
                 .configure { [weak self] row, message, _ in
@@ -381,6 +383,7 @@ final class ChatController: UIViewController {
                     }
                 }
             ListRow(ChatCompactionRow.self)
+                .estimatedHeight(64)
                 .when { $0.role == .compaction }
                 .height { message, context in ChatCompactionRow.height(for: message, width: context.width) }
                 .configure { [weak self] row, message, _ in
@@ -390,6 +393,7 @@ final class ChatController: UIViewController {
                     }
                 }
             ListRow(ChatMessageRow.self)
+                .estimatedHeight(120)
                 .height { [weak self] message, context in
                     ChatMessageRow.height(
                         for: message,
@@ -520,12 +524,16 @@ final class ChatController: UIViewController {
            messageList.bounds.height > 0
         {
             needsInitialScroll = false
-            // The list measures newly visible rows during layout. Settle
-            // those measurements at the end too, before the page is revealed.
-            // Each advancing pass measures another row. A clamp or an
-            // asynchronous attachment must not keep the main thread here;
-            // leave the request pending for its next real layout instead.
-            for _ in 0 ... messageList.content.count {
+            // The list measures newly visible rows during layout. Settle those
+            // measurements at the end too, before the page is revealed. Each
+            // advancing pass measures another screenful, and a long
+            // conversation needs one per screen back to its end: a few passes
+            // here, and the rest while the page holds the latest message
+            // (`holdLatestMessage`), so switching to a long chat does not lay
+            // it out in one go. A clamp or an asynchronous attachment must not
+            // keep the main thread here; leave the request pending for its
+            // next real layout instead.
+            for _ in 0 ..< 4 {
                 let previousOffset = messageList.contentOffset.y
                 let previousEnd = messageList.maximumContentOffset.y
                 messageList.scrollToBottom(animated: false)
@@ -593,10 +601,18 @@ final class ChatController: UIViewController {
         guard previous?.id != chat.id else { return }
         isSwitchingChat = true
         needsInitialScroll = true
-        holdsLatestMessage = false
+        // The conversation opens at its newest message and stays there while
+        // the rows above are measured: the list is fresh, so their heights are
+        // guesses, and the end it jumped to first is not the end it has once a
+        // pass or two has measured them. Held as `holdLatestMessage` holds the
+        // list while the page animates, until the reader drags it away.
+        holdsLatestMessage = true
         readingPlace = nil
         holdsHistoryTop = false
         isLoadingEarlierHistory = false
+        // What a thought the other conversation was writing had drawn is
+        // nothing to this one.
+        ChatStreamPacing.forget()
         defer { isSwitchingChat = false }
         replaceMessageList()
 
