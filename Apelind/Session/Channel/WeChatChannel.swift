@@ -15,8 +15,10 @@ import Foundation
 /// What it asks of a conversation goes through `route`, which the host fills
 /// with the dispatcher and the app's own caller: the reader turned the
 /// channel on and signed in to it in Settings, so its messages are the
-/// reader's messages. Approvals are never given from WeChat — a turn that
-/// needs one waits for the app.
+/// reader's messages. An approval is answered here as it is in the app —
+/// a word for yes and one for no — except one that runs as root, which takes
+/// the device owner's check in Apelin. The asks are kept on disk as well as
+/// in memory, so a reply is still read as one after the host restarts.
 ///
 /// The credential lives in `<data>/WeChatChannel/channel.json`, written
 /// mobile's own; nothing returns it, logs it or puts it in an error.
@@ -200,6 +202,10 @@ actor WeChatChannel {
         self.route = route
         record = Self.loadRecord(folder)
         peers = Self.loadPeers(folder)
+        pendingAsks = Self.loadAsks(folder)
+        if !pendingAsks.isEmpty {
+            NSLog("wechat-channel: %ld ask(s) kept from the last run", pendingAsks.count)
+        }
     }
 
     // MARK: What the app reads
@@ -305,6 +311,10 @@ actor WeChatChannel {
         record.signedInAt = nil
         record.enabled = false
         saveRecord()
+        // A new sign-in talks under other ids, so nothing kept here can be
+        // answered any more.
+        pendingAsks.removeAll()
+        saveAsks()
         phase = .off
         message = nil
         return state()
@@ -503,25 +513,43 @@ actor WeChatChannel {
             await run(command, from: from)
             return
         }
+        var acknowledged = false
         if let pending = pendingAsks[from] {
             switch ChannelReplies.read(text, ask: pending.ask) {
             case let .answer(answer):
                 pendingAsks[from] = nil
-                let settled = await settle(pending.ask, answer: answer)
-                if settled {
+                saveAsks()
+                let failure = await settle(pending.ask, answer: answer)
+                if let failure {
+                    if failure.code == .notFound {
+                        // The run ended, or the decision was taken in Apelin,
+                        // while this ask was kept: nothing waits for it now.
+                        NSLog(
+                            "wechat-channel: reply to approval %@ found nothing waiting",
+                            pending.ask.approvalID
+                        )
+                        await send(
+                            ChannelReplies.noLongerWaiting(),
+                            to: from,
+                            contextToken: lastContextTokens[from]
+                        )
+                    } else {
+                        // Refused or out of reach: the ask stays, so it can be
+                        // answered again here or in Apelin — and the phone is
+                        // told why, rather than left waiting for nothing.
+                        pendingAsks[from] = pending
+                        saveAsks()
+                        let reason = failure.message.isEmpty
+                            ? t("未知原因", "unknown reason") : failure.message
+                        await send(
+                            t("这次答复没能交给 Apelin：\(reason)", "Apelin did not take that answer: \(reason)"),
+                            to: from,
+                            contextToken: pending.contextToken
+                        )
+                    }
+                } else {
                     await send(
                         ChannelReplies.acknowledged(answer, wasQuestion: pending.ask.question != nil),
-                        to: from,
-                        contextToken: pending.contextToken
-                    )
-                } else {
-                    // Refused or out of reach: the ask stays, so it can be
-                    // answered again here or in Apelin — and the phone is
-                    // told why, rather than left waiting for nothing.
-                    pendingAsks[from] = pending
-                    let reason = message ?? t("未知原因", "unknown reason")
-                    await send(
-                        t("这次答复没能交给 Apelin：\(reason)", "Apelin did not take that answer: \(reason)"),
                         to: from,
                         contextToken: pending.contextToken
                     )
@@ -531,10 +559,25 @@ actor WeChatChannel {
                 await send(ChannelReplies.onlyInApp(), to: from, contextToken: pending.contextToken)
                 return
             case .unclear:
-                // A sentence rather than an answer: a new turn, and the ask
-                // goes on waiting.
-                break
+                // A sentence rather than an answer, which becomes a turn of
+                // its own: the ask goes on waiting, and the phone is told, so
+                // a reply the channel did not understand never looks approved.
+                NSLog(
+                    "wechat-channel: message taken as a new turn while approval %@ waits",
+                    pending.ask.approvalID
+                )
+                acknowledged = true
+                await send(
+                    ChannelReplies.received(waitingFor: pending.ask),
+                    to: from,
+                    contextToken: lastContextTokens[from]
+                )
             }
+        }
+        if !acknowledged {
+            // Heard, whatever comes of it: an answer to an ask is answered
+            // above, and a command already by its own reply.
+            await send(ChannelReplies.received(), to: from, contextToken: lastContextTokens[from])
         }
         if let peer = peers.items.first(where: { $0.userID == from }) {
             await ask(peer, incoming: read)
@@ -1341,12 +1384,16 @@ actor WeChatChannel {
         )
         let contextToken = lastContextTokens[peer.userID]
         pendingAsks[peer.userID] = PendingAsk(ask: ask, contextToken: contextToken)
+        saveAsks()
+        NSLog("wechat-channel: approval %@ for session %@ waits for a reply", approvalID, sessionID)
         await send(ask.text, to: peer.userID, contextToken: contextToken)
     }
 
     /// The reader's answer, given to the session as the app gives one: an
     /// approval once, or a question answered with the labels it offered.
-    private func settle(_ ask: ChannelAsk, answer: ChannelAnswer) async -> Bool {
+    /// Nil when taken, the refusal otherwise — `notFound` for an ask whose
+    /// run, or whose approval, is no longer there.
+    private func settle(_ ask: ChannelAsk, answer: ChannelAnswer) async -> ApelinError? {
         let request = AgentApproveRequest(
             sessionID: ask.sessionID,
             approvalID: ask.approvalID,
@@ -1354,27 +1401,35 @@ actor WeChatChannel {
             scope: .once,
             answer: answer.approved ? answer.answer : nil
         )
-        guard let wire = try? WireRequest(request) else { return false }
+        guard let wire = try? WireRequest(request) else {
+            return ApelinError(.badRequest, "the answer could not be encoded")
+        }
         let reply = await route(wire, [])
         if case let .failure(error) = reply.result {
             message = error.message
-            return false
+            return error
         }
-        return true
+        return nil
     }
 
     private func clearAsk(_ approvalID: String?) {
         guard let approvalID else { return }
+        var cleared = false
         for (userID, pending) in pendingAsks where pending.ask.approvalID == approvalID {
             pendingAsks[userID] = nil
+            cleared = true
         }
+        if cleared { saveAsks() }
     }
 
     /// The run ended: the ask it was waiting on can no longer be answered.
     private func clearAsks(session: String) {
+        var cleared = false
         for (userID, pending) in pendingAsks where pending.ask.sessionID == session {
             pendingAsks[userID] = nil
+            cleared = true
         }
+        if cleared { saveAsks() }
     }
 
     private func failed(_ error: any Error, to reply: Reply) {
@@ -1511,6 +1566,10 @@ actor WeChatChannel {
         folder.appendingPathComponent("peers.json")
     }
 
+    private var asksFile: URL {
+        folder.appendingPathComponent("pending-asks.json")
+    }
+
     private func makeFolder() {
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         // Only the account that runs the channel reads it.
@@ -1530,6 +1589,56 @@ actor WeChatChannel {
         makeFolder()
         guard let data = try? JSONCoding.encode(peers) else { return }
         try? data.write(to: peersFile, options: .atomic)
+    }
+
+    /// An ask as the file keeps it: the phone it went to, the ask itself,
+    /// and the thread its answer belongs in.
+    private struct StoredAsk: Codable, Sendable, Equatable {
+        var userID: String
+        var ask: ChannelAsk
+        var contextToken: String?
+        var savedAt: Date
+    }
+
+    /// Writes the asks where the next host run finds them: an approval
+    /// outlives a restart that way, and a reply to it is still read as one.
+    /// No file at all when nothing waits.
+    private func saveAsks() {
+        guard !pendingAsks.isEmpty else {
+            try? FileManager.default.removeItem(at: asksFile)
+            return
+        }
+        makeFolder()
+        let stored = pendingAsks
+            .map {
+                StoredAsk(
+                    userID: $0.key,
+                    ask: $0.value.ask,
+                    contextToken: $0.value.contextToken,
+                    savedAt: Date()
+                )
+            }
+            .sorted { $0.userID < $1.userID }
+        guard let data = try? JSONCoding.encode(stored) else { return }
+        try? data.write(to: asksFile, options: .atomic)
+        try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: asksFile.path)
+    }
+
+    /// The asks an earlier run left. One file that does not read is set
+    /// aside, never replaced by nothing: what it names is still a decision
+    /// the phone may give.
+    private static func loadAsks(_ folder: URL) -> [String: PendingAsk] {
+        let file = folder.appendingPathComponent("pending-asks.json")
+        guard let data = try? Data(contentsOf: file) else { return [:] }
+        guard let stored = try? JSONCoding.decode([StoredAsk].self, from: data) else {
+            UnreadableFile.setAside(file)
+            return [:]
+        }
+        var asks: [String: PendingAsk] = [:]
+        for entry in stored where !entry.userID.isEmpty && asks[entry.userID] == nil {
+            asks[entry.userID] = PendingAsk(ask: entry.ask, contextToken: entry.contextToken)
+        }
+        return asks
     }
 
     /// A record that does not read is set aside, never silently replaced by

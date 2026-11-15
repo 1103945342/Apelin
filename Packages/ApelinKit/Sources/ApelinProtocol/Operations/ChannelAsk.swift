@@ -9,7 +9,7 @@ import Foundation
 /// far side shows a person, so it is not the app's string catalog: the three
 /// languages the ask is written in are the ones a message can reasonably be
 /// read in, and anything else falls back to English.
-public struct ChannelAsk: Sendable, Equatable {
+public struct ChannelAsk: Sendable, Equatable, Codable {
     public var approvalID: String
     public var sessionID: String
     /// The tool the call names (`shell_run`, `gitPush`), when it named one.
@@ -211,6 +211,25 @@ public enum ChannelReplies {
         Wording(language: language).onlyInApp
     }
 
+    /// What a phone hears once its message arrived, before the turn behind
+    /// it answers. `waitingFor` is the ask the message was *not* read as an
+    /// answer to — still there, and said so, that a reply the channel did
+    /// not understand never looks approved, or lost.
+    public static func received(
+        waitingFor ask: ChannelAsk? = nil,
+        language: String = ChannelReplies.language
+    ) -> String {
+        let words = Wording(language: language)
+        guard let ask else { return words.received }
+        return ask.question == nil ? words.receivedWaitingApproval : words.receivedWaitingQuestion
+    }
+
+    /// A reply to an ask whose run, or whose approval, is no longer there:
+    /// one kept on disk past the end of what it was asked for.
+    public static func noLongerWaiting(language: String = ChannelReplies.language) -> String {
+        Wording(language: language).noLongerWaiting
+    }
+
     /// The phone's own language, as the three the asks are written in; the
     /// app and the host are on the same device, so this is the reader's.
     public static var language: String {
@@ -235,6 +254,10 @@ public enum ChannelReplies {
         var approved: String
         var denied: String
         var skipped: String
+        var received: String
+        var receivedWaitingApproval: String
+        var receivedWaitingQuestion: String
+        var noLongerWaiting: String
         var pickOne: String
         var pickSeveral: String
         var isQuestion = false
@@ -248,6 +271,10 @@ public enum ChannelReplies {
                 approved = "已批准。"
                 denied = "已拒绝。"
                 skipped = "已跳过。"
+                received = "已收到你的消息，Apelin 正在处理中。"
+                receivedWaitingApproval = "已收到你的消息，Apelin 正在处理中。刚才那一步还在等你答复：回「同意」或「拒绝」。"
+                receivedWaitingQuestion = "已收到你的消息，Apelin 正在处理中。刚才那个问题还在等你回答：回序号或直接写你的答案。"
+                noLongerWaiting = "这一步已经不在等答复了：它可能已经在 Apelin 里处理，或这一轮已经结束。"
                 pickOne = "回复序号，或直接写你的答案。"
                 pickSeveral = "回复序号（可多选，用逗号分开），或直接写你的答案。"
                 isQuestion = true
@@ -258,6 +285,10 @@ public enum ChannelReplies {
                 approved = "已核准。"
                 denied = "已拒絕。"
                 skipped = "已略過。"
+                received = "已收到你的訊息，Apelin 正在處理中。"
+                receivedWaitingApproval = "已收到你的訊息，Apelin 正在處理中。剛才那一步還等你答覆：回「同意」或「拒絕」。"
+                receivedWaitingQuestion = "已收到你的訊息，Apelin 正在處理中。剛才那個問題還等你回答：回序號或直接寫你的答案。"
+                noLongerWaiting = "這一步已經不在等答覆了：它可能已經在 Apelin 裡處理，或這一輪已經結束。"
                 pickOne = "回覆序號，或直接寫你的答案。"
                 pickSeveral = "回覆序號（可多選，用逗號分開），或直接寫你的答案。"
                 isQuestion = true
@@ -268,6 +299,10 @@ public enum ChannelReplies {
                 approved = "Approved."
                 denied = "Denied."
                 skipped = "Skipped."
+                received = "Got your message — Apelin is working on it."
+                receivedWaitingApproval = "Got your message — Apelin is working on it. The step is still waiting: reply approve to allow it, or deny to refuse it."
+                receivedWaitingQuestion = "Got your message — Apelin is working on it. The question is still waiting: reply with a number, or write your own answer."
+                noLongerWaiting = "That step is no longer waiting for an answer — it may have been settled in Apelin, or the run has ended."
                 pickOne = "Reply with a number, or write your own answer."
                 pickSeveral = "Reply with numbers (comma-separated for several), or write your own answer."
                 isQuestion = true

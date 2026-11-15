@@ -457,9 +457,17 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   numbered, or what the approval is for and how to answer it — and the reply
   is read back as an answer, so a chat can settle what the app settles. A
   number picks a question's option (several, comma-separated, when it takes
-  several), "同意" or "approve" approves once, "拒绝" or "deny" refuses, any
-  other sentence is a new turn while the ask waits, and a decision taken in
-  the app clears the ask the phone was given (`approvalResolved`). The one
+  several), "同意" or "approve" approves once, "拒绝" or "deny" refuses. Any
+  other sentence is a new turn while the ask waits, and the phone is told so
+  in one line that also says the ask is still there — a reply the channel did
+  not understand never looks approved, or lost. Every message is acknowledged
+  as soon as it arrives ("已收到你的消息，Apelin 正在处理中。"), before the
+  turn behind it answers; an answer to an ask and a command are answered with
+  their own line instead. A decision taken in the app clears the ask the phone
+  was given (`approvalResolved`). The asks are kept in `pending-asks.json`
+  beside `peers.json`, so a host restart does not lose one: a reply to an ask
+  kept past the end of its run answers `notFound`, and the phone is told that
+  step is no longer waiting rather than left with nothing. The one
   thing WeChat cannot give is a command as root: that takes the device
   owner's check (`ownerVerified`), so it is announced with a line saying so
   and approved only in Apelin. Settings ▸ Plugins names it WeChat ClawBot, and
