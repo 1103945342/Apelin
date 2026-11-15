@@ -215,6 +215,39 @@ as `-Xcc` after it, and its `defines` as `-Xcc -D<name>=<value>`, so a C++
 header sees the same macros on both sides. `APELIN_PRODUCT_NAME` is a
 product's own and is not given to a module.
 
+#### Compiled code kept between builds
+
+A build's work directory is wiped when the build starts (`BuildService`), so
+nothing in it survives to the next one. What a compile made is kept beside
+the builds instead, content addressed:
+`Builds/.build-cache/<projectID>/` (`BuildCache` in `ApelinBuild`). A unit —
+one Swift module for one architecture, a product's own Swift compile, or one
+C-family file — is compiled again only when its key differs from the one an
+entry was stored with. The key covers the toolchain's and the SDK's digests,
+`-target`, `optimization`, `debugInfo`, the flags and defines that compile is
+given, the SHA-256 of every source file, the SHA-256 of every regular file
+under the declared `headerSearchPaths` and of a `bridgingHeader`, and the
+keys of the Swift modules it imports. It is never a modification time,
+`APELIN_BUILD_ID` (Swift is not given it; a C-family compile is, so a C-family
+object's key carries the whole define list and those objects are compiled on
+every build), the work directory or a path under the project or the install
+root, which the key spells relative — a renamed jbroot keeps what the last
+boot compiled.
+
+Every file read back is checked against the digest it was stored with: an
+entry that does not read, a file that is missing or a digest that differs is
+a miss, and the unit is compiled again with the entry replaced. A cache that
+cannot be written never fails a build; it only makes it slower. Entries are
+written in a temporary directory and renamed into place, so a build killed
+mid-write leaves nothing that reads. Two entries are kept per unit, 1 GiB in
+all, the least recently used going first, and a project's cache is removed
+with the project.
+
+Link, `lipo`, `bundle-resources`, `dsym`, `strip`, `sign` and packaging run
+on every build: the linked image carries a new `LC_UUID` each time, so there
+is nothing to reuse. The log says, per unit, how long it took or that it was
+reused, and ends with `compile cache: N unit(s) reused, M compiled`.
+
 ### Packaging
 
 - `layout` entries are `{path, product, mode?}` (the merged, signed Mach-O,

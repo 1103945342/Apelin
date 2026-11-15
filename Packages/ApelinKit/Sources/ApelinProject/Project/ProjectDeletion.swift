@@ -30,6 +30,12 @@ public enum ProjectDeletion {
         } catch {
             throw ApelinError(.internal, "Projects/\(name) could not be removed whole: \(error.localizedDescription)")
         }
+        // What its builds kept for the next one goes with the project. The
+        // build directories themselves stay: they are the Distribute page's,
+        // and a package published from one may still be referenced.
+        try? FileManager.default.removeItem(
+            at: ProjectStore(dataFolder: folder).buildCache(of: request.projectID)
+        )
         return ProjectDeleteResponse(projectID: request.projectID, projectName: name)
     }
 

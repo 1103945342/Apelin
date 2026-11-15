@@ -21,6 +21,16 @@ public final class BuildPipeline: @unchecked Sendable {
     private var slices: [String: [Architecture: String]] = [:]
     /// The project's own Swift modules, built once per architecture.
     private var moduleCache: [Architecture: [String: BuiltModule]] = [:]
+    /// The cache key each module of an architecture was built with, so a
+    /// product that imports it is invalidated with it.
+    private var moduleKeys: [Architecture: [String: String]] = [:]
+    /// Compiled code kept for the next build of this project (`BuildCache`):
+    /// a unit is compiled again only when what it was given changed.
+    private lazy var cache = BuildCache(
+        root: BuildLayout.buildCache(inBuilds: buildsRoot, projectID: project.projectID),
+        projectRoot: root,
+        installRoot: inputs.installRoot
+    )
     @objc private dynamic var bundles: [String: String] = [:]
     @objc private dynamic var merged: [String: String] = [:]
     private var dsyms: [BuildProducts.DSYM] = []
@@ -48,6 +58,12 @@ public final class BuildPipeline: @unchecked Sendable {
         inputs.workDirectory
     }
 
+    /// `Builds/`: this build's work directory, the SDK module cache and the
+    /// compile cache are siblings there, outside every project.
+    private var buildsRoot: URL {
+        work.deletingLastPathComponent().deletingLastPathComponent()
+    }
+
     @objc private dynamic var root: String {
         inputs.projectRoot.path
     }
@@ -64,6 +80,7 @@ public final class BuildPipeline: @unchecked Sendable {
         FileManager.default.createFile(atPath: logURL.path, contents: nil)
         logHandle = try FileHandle(forWritingTo: logURL)
         defer { try? logHandle?.close() }
+        cache.log = { [weak self] line in self?.log(line) }
         log("apelin-build \(inputs.buildID): \(project.package.id) \(project.package.version), \(inputs.configuration.rawValue), \(inputs.bootstrap.rawValue) [\(architectures.map(\.rawValue).joined(separator: " "))]")
         log("toolchain \(inputs.toolchain.id), SDK \(inputs.sdk.id) at \(inputs.sdk.path)")
         if let line = ManifestFormatting.run(projectRoot: inputs.projectRoot, checkedFiles: inputs.checkedFiles) {
@@ -87,7 +104,10 @@ public final class BuildPipeline: @unchecked Sendable {
                 try script(id: id, interpreter: interpreter, file: file, arguments: arguments)
             }
         }
-        return try collect()
+        let products = try collect()
+        log("compile cache: \(cache.hits) unit(s) reused, \(cache.misses) compiled")
+        cache.prune()
+        return products
     }
 
     private func product(_ id: String) throws -> ProjectDocument.Product {
@@ -217,9 +237,9 @@ public final class BuildPipeline: @unchecked Sendable {
     /// every build. A retargeted toolchain has no libSwiftScan: the driver is
     /// told so rather than warning on every run before it falls back the same.
     @objc private dynamic var swiftToolFlags: [String] {
-        let cache = work.deletingLastPathComponent().deletingLastPathComponent()
+        let modules = buildsRoot
             .appendingPathComponent(".swift-module-cache/\(inputs.toolchain.id)-\(inputs.sdk.id)")
-        var flags = ["-module-cache-path", cache.path]
+        var flags = ["-module-cache-path", modules.path]
         if inputs.toolchain.version.compare("15.0", options: .numeric) != .orderedAscending {
             flags.append("-nonlib-dependency-scanner")
         }
@@ -358,6 +378,7 @@ public final class BuildPipeline: @unchecked Sendable {
             return built
         }
         var built: [String: BuiltModule] = [:]
+        var keys: [String: String] = [:]
         for module in try orderedModules() {
             let directory = work.appendingPathComponent("modules/\(arch.rawValue)/\(module.name)").path
             try makeDirectory(directory)
@@ -366,6 +387,7 @@ public final class BuildPipeline: @unchecked Sendable {
                 throw BuildFailure("swift module \(module.name): the sources match no file")
             }
             let object = directory + "/\(module.name).o"
+            let moduleFile = directory + "/\(module.name).swiftmodule"
             var argv = [
                 "-sdk", inputs.sdk.path, "-target", swiftTarget(arch), "-wmo", "-c", "-parse-as-library",
                 "-module-name", module.name,
@@ -388,15 +410,195 @@ public final class BuildPipeline: @unchecked Sendable {
                 // when imported here and when compiled in a native product.
                 argv += importerDefines.flatMap { ["-Xcc", "-D\($0.0)=\($0.1)"] }
             }
-            argv += ["-emit-module", "-emit-module-path", directory + "/\(module.name).swiftmodule"]
+            argv += ["-emit-module", "-emit-module-path", moduleFile]
             argv += sources.map(\.relative)
             argv += ["-o", object]
-            try execute(tool("swiftc"), argv, label: "swiftc")
-            log("swift module \(module.name): \(sources.count) source(s), \(arch.rawValue)")
+
+            let unit = BuildCache.Unit(kind: .swiftModule, name: module.name, arch: arch.rawValue)
+            let outputs = [
+                BuildCache.Output(name: "\(module.name).o", destination: object),
+                BuildCache.Output(name: "\(module.name).swiftmodule", destination: moduleFile),
+            ]
+            let members = try keyMembers(
+                module,
+                arch: arch,
+                sources: sources,
+                interop: interop,
+                dependencies: keys
+            )
+            let key = cache.key(unit, members)
+            if cache.restore(unit, key: key, outputs: outputs) {
+                log("swift module \(module.name): \(sources.count) source(s), \(arch.rawValue) — reused")
+            } else {
+                let started = Date()
+                try execute(tool("swiftc"), argv, label: "swiftc")
+                log("swift module \(module.name): \(sources.count) source(s), \(arch.rawValue) in \(seconds(started))")
+                cache.store(unit, key: key, outputs: outputs, members: members)
+            }
+            keys[module.name] = key
             built[module.name] = BuiltModule(include: directory, object: object)
         }
+        moduleKeys[arch] = keys
         moduleCache[arch] = built
         return built
+    }
+
+    // MARK: What a compile is a function of
+
+    /// The members every compile's key shares: the tools, the platform and
+    /// the optimisation, all of which change the bytes an object holds.
+    private func commonKeyMembers(arch: Architecture) -> [(String, JSONDocument)] {
+        [
+            ("toolchain", .string(inputs.toolchain.digest)),
+            ("sdk", .string(inputs.sdk.digest)),
+            ("target", .string(swiftTarget(arch))),
+            ("optimization", .string(configuration.optimization)),
+            ("debugInfo", .bool(configuration.debugInfo)),
+        ]
+    }
+
+    /// What Swift's C++ importer is given: the standard, the headers it
+    /// imports (their bytes, which no member of the project names one by
+    /// one) and the flags both sides see.
+    private func interopKeyMembers(_ interop: CXXInteropSettings) throws -> [(String, JSONDocument)] {
+        guard interop.enabled else { return [("interop", .bool(false))] }
+        let directories = try interop.headerSearchPaths.map {
+            try ProjectFiles.resolve($0, in: inputs.projectRoot)
+        }
+        return [
+            ("interop", .bool(true)),
+            ("interop.standard", .string(interop.standard ?? CXXInteropSettings.defaultStandard)),
+            ("interop.headers", try cache.headerDigests(directories)),
+            ("cFlags", .array((configuration.cFlags ?? []).map { .string($0) })),
+            ("cxxFlags", .array((configuration.cxxFlags ?? []).map { .string($0) })),
+        ]
+    }
+
+    /// A Swift module: its own sources, the modules it imports (by the key
+    /// they were built with, so a change to one rebuilds what depends on it)
+    /// and the interop flags the import sees.
+    private func keyMembers(
+        _ module: ProjectDocument.SwiftModule,
+        arch: Architecture,
+        sources: [ProjectGlob.Match],
+        interop: CXXInteropSettings,
+        dependencies: [String: String]
+    ) throws -> [(String, JSONDocument)] {
+        var members = commonKeyMembers(arch: arch)
+        members.append(("module", .string(module.name)))
+        let digests = try cache.sourceDigests(sources)
+        members.append(("sources", digests))
+        members.append((
+            "dependencies",
+            .array((module.dependencies ?? []).map { .string(dependencies[$0] ?? "") })
+        ))
+        if interop.enabled {
+            members += try interopKeyMembers(interop)
+            // The module gets these as -Xcc only; the identity macros are not
+            // among them, which is what keeps a module reusable between builds.
+            members.append(("importerDefines", .array(importerDefines.map { .string("\($0.0)=\($0.1)") })))
+        }
+        return members
+    }
+
+    /// A product's own Swift sources: what `compile` passes swiftc, plus the
+    /// keys of every module it imports and the Swift header its ObjC sources
+    /// will read.
+    private func productKeyMembers(
+        _ product: ProjectDocument.Product,
+        arch: Architecture,
+        plan: ProductSourcePlan,
+        includes: [String],
+        frameworks: [String],
+        interop: CXXInteropSettings,
+        bridge: String?,
+        flags: [String]
+    ) throws -> [(String, JSONDocument)] {
+        var members = commonKeyMembers(arch: arch)
+        let closure = try moduleClosureKeys(of: product, arch: arch)
+        members += [
+            ("product", .string(product.id)),
+            ("name", .string(product.name)),
+            ("type", .string(product.type.rawValue)),
+            ("parseAsLibrary", .bool(plan.parsesSwiftAsLibrary(type: product.type))),
+            ("objc", .bool(plan.usesObjC)),
+            ("bootstrap", .string(bootstrapDefine)),
+            ("configuration", .string(configurationDefine)),
+            ("swiftFlags", .array((configuration.swiftFlags ?? []).map { .string($0) })),
+            ("includes", .array(includes.map { .string(cache.stablePath($0)) })),
+            ("frameworks", .array(frameworks.map { .string(cache.stablePath($0)) })),
+            ("modules", .array(closure.map { .string($0) })),
+            ("flags", .array(flags.map { .string($0) })),
+        ]
+        if let bridge {
+            let digest = try BuildCache.fileDigest(bridge)
+            members.append(("bridge", .string(digest)))
+            // Without interop the importer is handed the whole define list,
+            // the build ID among it, so this product is compiled every build.
+            members.append(("defines", .array(defines.map { .string("\($0.0)=\($0.1)") })))
+        }
+        if interop.enabled {
+            members += try interopKeyMembers(interop)
+            members.append(("importerDefines", .array(importerDefines.map { .string("\($0.0)=\($0.1)") })))
+        }
+        return members
+    }
+
+    /// One C-family source file, compiled on its own: the bytes of the file,
+    /// the language and every flag, define and header clang reads — the build
+    /// ID included, which is a documented define and so makes these objects
+    /// miss on every build.
+    private func clangKeyMembers(
+        _ product: ProjectDocument.Product,
+        source: ProductSourcePlan.Source,
+        arch: Architecture,
+        interop: CXXInteropSettings,
+        includes: [String],
+        frameworks: [String],
+        swiftHeader: String?,
+        flags: [String]
+    ) throws -> [(String, JSONDocument)] {
+        var members = commonKeyMembers(arch: arch)
+        let file = try ProjectFiles.resolve(source.path, in: inputs.projectRoot)
+        let bytes = try BuildCache.fileDigest(file)
+        members += [
+            ("product", .string(product.id)),
+            ("name", .string(product.name)),
+            ("source", .string(source.path)),
+            ("bytes", .string(bytes)),
+            ("language", .string(ProductSourcePlan.clangLanguage(source.language))),
+            ("defines", .array(defines.map { .string("\($0.0)=\($0.1)") })),
+            ("cFlags", .array((configuration.cFlags ?? []).map { .string($0) })),
+            ("arc", .bool(product.objcARC == true && source.language.isObjC)),
+            ("includes", .array(includes.map { .string(cache.stablePath($0)) })),
+            ("frameworks", .array(frameworks.map { .string(cache.stablePath($0)) })),
+            ("flags", .array(flags.map { .string($0) })),
+        ]
+        if source.language.isCXX {
+            members.append(("cxxFlags", .array((configuration.cxxFlags ?? []).map { .string($0) })))
+            if let standard = interop.enabled ? interop.standard : product.cxxStandard {
+                members.append(("standard", .string(standard)))
+            }
+            if interop.enabled {
+                members += try interopKeyMembers(interop)
+            }
+        }
+        if let swiftHeader {
+            let header = try BuildCache.fileDigest(swiftHeader)
+            members.append(("swiftHeader", .string(header)))
+        }
+        return members
+    }
+
+    /// The key of each module a product imports, in the order they are built:
+    /// what makes a product that links them miss when one of them changed.
+    private func moduleClosureKeys(of product: ProjectDocument.Product, arch: Architecture) throws -> [String] {
+        let keys = moduleKeys[arch] ?? [:]
+        return try moduleClosure(of: product).map { keys[$0] ?? "" }
+    }
+
+    private func seconds(_ started: Date) -> String {
+        String(format: "%.1f s", Date().timeIntervalSince(started))
     }
 
     // MARK: Steps
@@ -449,6 +651,7 @@ public final class BuildPipeline: @unchecked Sendable {
             if plan.usesSwift {
                 try makeDirectory(swiftDirectory)
                 let object = swiftDirectory + "/\(product.name).o"
+                let swiftHeader = swiftDirectory + "/\(product.name)-Swift.h"
                 var argv = [
                     "-sdk", inputs.sdk.path, "-target", swiftTarget(arch), "-wmo", "-c", "-module-name", product.name,
                 ] + swiftToolFlags
@@ -473,14 +676,38 @@ public final class BuildPipeline: @unchecked Sendable {
                     argv += ["-Xcc", "-DAPELIN_PRODUCT_NAME=\"\(product.name)\""]
                 }
                 if plan.usesObjC {
-                    argv += ["-emit-objc-header", "-emit-objc-header-path", swiftDirectory + "/\(product.name)-Swift.h"]
+                    argv += ["-emit-objc-header", "-emit-objc-header-path", swiftHeader]
                 }
                 argv += try builtModules(of: product, for: arch).flatMap { ["-I", $0.include] }
                 argv += configuration.swiftFlags ?? []
                 argv += flags
                 argv += plan.swift.map(\.path)
                 argv += ["-o", object]
-                try execute(tool("swiftc"), argv, label: "swiftc")
+
+                let unit = BuildCache.Unit(kind: .swiftProduct, name: product.id, arch: arch.rawValue)
+                var outputs = [BuildCache.Output(name: "\(product.name).o", destination: object)]
+                if plan.usesObjC {
+                    outputs.append(BuildCache.Output(name: "\(product.name)-Swift.h", destination: swiftHeader))
+                }
+                let members = try productKeyMembers(
+                    product,
+                    arch: arch,
+                    plan: plan,
+                    includes: includes,
+                    frameworks: frameworks,
+                    interop: interop,
+                    bridge: bridge,
+                    flags: flags
+                )
+                let key = cache.key(unit, members)
+                if cache.restore(unit, key: key, outputs: outputs) {
+                    log("swift \(product.name): \(plan.swift.count) source(s), \(arch.rawValue) — reused")
+                } else {
+                    let started = Date()
+                    try execute(tool("swiftc"), argv, label: "swiftc")
+                    log("swift \(product.name): \(plan.swift.count) source(s), \(arch.rawValue) in \(seconds(started))")
+                    cache.store(unit, key: key, outputs: outputs, members: members)
+                }
                 list.append(object)
             }
             for source in plan.clang {
@@ -520,7 +747,38 @@ public final class BuildPipeline: @unchecked Sendable {
                 }
                 argv += flags
                 argv += ["-x", ProductSourcePlan.clangLanguage(source.language), "-c", source.path, "-o", object]
-                try execute(tool("clang"), argv, label: "clang")
+
+                let unit = BuildCache.Unit(
+                    kind: .clangObject,
+                    name: "\(product.id):\(source.path)",
+                    arch: arch.rawValue
+                )
+                let outputs = [BuildCache.Output(name: "object.o", destination: object)]
+                let swiftHeader: String?
+                if plan.usesSwift, source.language.isObjC {
+                    swiftHeader = swiftDirectory + "/\(product.name)-Swift.h"
+                } else {
+                    swiftHeader = nil
+                }
+                let members = try clangKeyMembers(
+                    product,
+                    source: source,
+                    arch: arch,
+                    interop: interop,
+                    includes: includes,
+                    frameworks: frameworks,
+                    swiftHeader: swiftHeader,
+                    flags: flags
+                )
+                let key = cache.key(unit, members)
+                if cache.restore(unit, key: key, outputs: outputs) {
+                    log("clang \(source.path): \(arch.rawValue) — reused")
+                } else {
+                    let started = Date()
+                    try execute(tool("clang"), argv, label: "clang")
+                    log("clang \(source.path): \(arch.rawValue) in \(seconds(started))")
+                    cache.store(unit, key: key, outputs: outputs, members: members)
+                }
                 list.append(object)
             }
             produced[arch] = list

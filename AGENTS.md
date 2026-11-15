@@ -3473,6 +3473,31 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   device fixtures there hold too; never a second copy. Script steps
   run with the bootstrap's own interpreter, in the project folder, as
   mobile; Confirm reviews them through the build digest before `buildStart`.
+- **A compile is reused by content, never by time** (owner, 2026-11-15;
+  `BuildCache`): a build wipes its work directory, so what a compile made is
+  kept beside the builds — `Builds/.build-cache/<projectID>/`
+  (`BuildLayout`; beside, and not inside, `.swift-module-cache`, which the
+  compiler writes and this cache never reads). A unit — one Swift module per
+  architecture, a product's own Swift compile, one C-family file — is
+  compiled again only when its key changes: the toolchain and SDK digests,
+  `-target`, `optimization`, `debugInfo`, the flags and defines that compile
+  passes, every source's SHA-256, every regular file under the declared
+  `headerSearchPaths` and the `bridgingHeader`, and the keys of the modules
+  it imports. Never a modification time, never `APELIN_BUILD_ID` for Swift
+  (it is not passed to it; a C-family object's key carries the whole define
+  list, the build ID among it, so those compile every build — a documented
+  macro, not a bug), never the work directory or a path under the project or
+  the install root, which the key spells relative, so a renamed jbroot keeps
+  what the last boot compiled. Every byte restored is checked against its
+  digest; an entry that does not verify is compiled again and replaced, and
+  a cache that cannot be written never fails a build. Entries are written in
+  a temporary directory and renamed into place, two are kept per unit and
+  1 GiB in all, least recently used first, and a project's cache is removed
+  with the project (`ProjectDeletion`). Link, `lipo`, `bundle-resources`,
+  `dsym`, `strip`, `sign` and packaging still run on every build: the linked
+  image carries a new `LC_UUID`. The log gives each unit's time or says it
+  was reused, and ends `compile cache: N unit(s) reused, M compiled`; bump
+  `BuildCache.version` when a key or an entry changes shape.
 - **Its task events**: `stage {stage, product?}`, `log {line}`, `diagnostic`
   (a `ProjectDiagnostic`; clang and ld lines parsed to file, line, column,
   severity), `artifact` (a `BuildArtifact` with `path` — the deb, inside

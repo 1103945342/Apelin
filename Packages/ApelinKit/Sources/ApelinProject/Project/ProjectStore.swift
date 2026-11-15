@@ -25,6 +25,12 @@ public struct ProjectStore: Sendable {
         dataFolder.root.appendingPathComponent("Builds", isDirectory: true)
     }
 
+    /// What this project's builds keep between them:
+    /// `Builds/.build-cache/<projectID>/` (`BuildLayout`, `BuildCache`).
+    public func buildCache(of projectID: String) -> URL {
+        BuildLayout.buildCache(inBuilds: buildsDirectory, projectID: projectID)
+    }
+
     public struct Located: Sendable {
         public var name: String
         public var root: URL

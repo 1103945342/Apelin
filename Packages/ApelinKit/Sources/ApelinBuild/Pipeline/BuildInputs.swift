@@ -121,9 +121,7 @@ public struct BuildInputs: Sendable {
                 "the project does not build for \(target.rawValue), which was requested; add \(target.rawValue) to the project's architectures",
             )
         }
-        let work = store.buildsDirectory
-            .appendingPathComponent(projectID, isDirectory: true)
-            .appendingPathComponent(buildID, isDirectory: true)
+        let work = BuildLayout.work(inBuilds: store.buildsDirectory, projectID: projectID, buildID: buildID)
         return BuildInputs(
             buildID: buildID,
             projectRoot: located.root,
