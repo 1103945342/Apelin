@@ -3498,6 +3498,20 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   image carries a new `LC_UUID`. The log gives each unit's time or says it
   was reused, and ends `compile cache: N unit(s) reused, M compiled`; bump
   `BuildCache.version` when a key or an entry changes shape.
+- **A build keeps its own folder only while it is worth reading** (owner,
+  2026-11-15; `BuildCleanup`): each build leaves
+  `Builds/<projectID>/<buildID>/` — module objects, linked slices, the `.app`,
+  its dSYM, the package, about 94 MB for a Swift app — and sixty-five of them
+  were six gigabytes, the app's largest tenant. Nothing reads an old one (a
+  build wipes its own work directory; the compiled code it reuses lives in
+  `Builds/.build-cache/`), so before a build starts the project's older
+  folders go: the newest two stay — the package most likely installed and the
+  dSYM a crash of that installed build is read with — and a folder written in
+  the last hour stays too, since another worker's build may still be writing
+  it. One log line says how many went and how much they held. A release is
+  published when it is made: after two more builds its package is gone.
+  Artifact records are left alone, and the Distribute page lists only the
+  packages whose file still exists.
 - **Its task events**: `stage {stage, product?}`, `log {line}`, `diagnostic`
   (a `ProjectDiagnostic`; clang and ld lines parsed to file, line, column,
   severity), `artifact` (a `BuildArtifact` with `path` — the deb, inside

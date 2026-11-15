@@ -248,6 +248,21 @@ on every build: the linked image carries a new `LC_UUID` each time, so there
 is nothing to reuse. The log says, per unit, how long it took or that it was
 reused, and ends with `compile cache: N unit(s) reused, M compiled`.
 
+#### Build folders are kept to the newest few
+
+Every build leaves its own folder, `Builds/<projectID>/<buildID>/`: the
+module objects, the linked slices, the `.app` and its dSYM, the package —
+about 94 MB for a Swift app, and sixty-five builds of one project had come to
+six gigabytes. Nothing reads an old folder, and it is not the compile cache
+(that is `Builds/.build-cache/`), so before a build starts `BuildCleanup`
+removes the project's older ones. The newest two stay — the package most
+likely installed, and the dSYM a crash of that installed build is read with —
+and a folder written in the last hour stays too, since a build in another
+worker may still be writing it. The removal is one line of the build's log.
+Publish a release when it is made: after two more builds its package is gone.
+Artifact records stay where they are; the Distribute page lists only the
+packages whose file still exists.
+
 ### Packaging
 
 - `layout` entries are `{path, product, mode?}` (the merged, signed Mach-O,

@@ -51,6 +51,18 @@ public enum BuildService {
         // matches nothing.
         inputs.checkedFiles = digests.build.files.merging(digests.packaging.files) { $0 == $1 ? $0 : "" }
 
+        // This project's older build folders go before this one starts: each
+        // holds about 94 MB of objects, products, dSYM and package, nothing
+        // reads it again, and sixty-five of them came to six gigabytes. The
+        // newest few stay for the package they hold and the dSYM a crash of
+        // that installed build is read with.
+        BuildCleanup.prune(
+            projectID: inputs.project.projectID,
+            keeping: inputs.buildID,
+            in: store.buildsDirectory,
+            log: { reporter.log($0) },
+        )
+
         try? FileManager.default.removeItem(at: inputs.workDirectory)
         try FileManager.default.createDirectory(at: inputs.workDirectory, withIntermediateDirectories: true)
         let pipeline = BuildPipeline(inputs: inputs, reporter: reporter, cancellation: cancellation)
