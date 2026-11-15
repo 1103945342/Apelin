@@ -763,25 +763,50 @@ actor WeChatChannel {
 
     /// Uploads and sends one file, answering what went wrong — nil when it
     /// went.
+    ///
+    /// The image and video channels take only what WeChat's own client writes
+    /// and answer 500 to anything else (a heic screenshot, a bmp): the same
+    /// bytes then go down the file channel, which the phone receives and can
+    /// open, rather than the phone being told the file could not be sent.
     private func deliverFile(_ data: Data, name: String, to peer: Peer) async -> String? {
         guard let client = signedClient() else {
             return t("通道没有登录，发不了文件。", "The channel is not signed in, so nothing can be sent.")
         }
+        let first = IlinkMediaType.of(name: name)
         do {
-            let type = IlinkMediaType.of(name: name)
-            let upload = try await client.upload(data, name: name, to: peer.userID, mediaType: type)
-            try await client.sendMedia(
-                upload,
-                name: name,
-                mediaType: type,
-                to: peer.userID,
-                contextToken: lastContextTokens[peer.userID]
-            )
+            try await uploadAndSend(data, name: name, type: first, client: client, to: peer)
             return nil
         } catch {
-            let reason = (error as? IlinkFailure)?.message ?? String(describing: error)
-            return t("没发出去 \(name)：\(reason)", "\(name) was not sent: \(reason)")
+            guard first != .file else { return failure(error, name: name) }
+            do {
+                try await uploadAndSend(data, name: name, type: .file, client: client, to: peer)
+                return nil
+            } catch let second {
+                return failure(second, name: name)
+            }
         }
+    }
+
+    private func uploadAndSend(
+        _ data: Data,
+        name: String,
+        type: IlinkMediaType,
+        client: IlinkClient,
+        to peer: Peer
+    ) async throws {
+        let upload = try await client.upload(data, name: name, to: peer.userID, mediaType: type)
+        try await client.sendMedia(
+            upload,
+            name: name,
+            mediaType: type,
+            to: peer.userID,
+            contextToken: lastContextTokens[peer.userID]
+        )
+    }
+
+    private func failure(_ error: any Error, name: String) -> String {
+        let reason = (error as? IlinkFailure)?.message ?? String(describing: error)
+        return t("没发出去 \(name)：\(reason)", "\(name) was not sent: \(reason)")
     }
 
     // MARK: Commands

@@ -21,13 +21,26 @@ final class IlinkMediaTests: XCTestCase {
     func testKeysAreReadInBothSpellings() {
         let raw = Data((0 ..< 16).map { UInt8($0 * 7 + 1) })
         let hex = raw.map { String(format: "%02x", $0) }.joined()
-        // Images carry base64 of the raw bytes; files carry base64 of the
-        // 32 hex characters.
+        // A message we send carries base64 over the 32 hex characters; what
+        // the phone sends may carry base64 over the raw bytes instead, and
+        // both are read.
         XCTAssertEqual(IlinkMedia.key(fromBase64: raw.base64EncodedString()), raw)
         XCTAssertEqual(IlinkMedia.key(fromBase64: Data(hex.utf8).base64EncodedString()), raw)
         XCTAssertEqual(IlinkMedia.key(fromHex: hex), raw)
         XCTAssertNil(IlinkMedia.key(fromHex: "zz"))
-        XCTAssertEqual(IlinkMedia.aesKeyField(for: raw), raw.base64EncodedString())
+        XCTAssertEqual(IlinkMedia.aesKeyField(forHex: hex), Data(hex.utf8).base64EncodedString())
+        // base64 of the hex characters, never of the bytes they spell: the
+        // phone decodes it to the hex and reads the key from that.
+        XCTAssertNotEqual(IlinkMedia.aesKeyField(forHex: hex), raw.base64EncodedString())
+        XCTAssertEqual(IlinkMedia.key(fromBase64: IlinkMedia.aesKeyField(forHex: hex)), raw)
+    }
+
+    func testOnlyWhatWeChatWritesGoesDownTheImageChannel() {
+        // WeChat's CDN answers 500 to an image it did not make; those bytes go
+        // as a file instead.
+        XCTAssertEqual(IlinkMediaType.of(name: "shot.heic"), .file)
+        XCTAssertEqual(IlinkMediaType.of(name: "scan.bmp"), .file)
+        XCTAssertEqual(IlinkMediaType.of(name: "notes.pdf"), .file)
     }
 
     func testACipherRoundTrips() throws {

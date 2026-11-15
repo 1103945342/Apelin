@@ -89,8 +89,15 @@ public enum IlinkMedia {
         return bytes
     }
 
-    /// The `aes_key` a sent message carries: base64 of the raw key.
-    public static func aesKeyField(for key: Data) -> String {
-        key.base64EncodedString()
+    /// The `aes_key` a sent message carries: base64 over the key's 32 hex
+    /// characters, not over its 16 bytes.
+    ///
+    /// The official plugin keeps the key as a hex string and base64s that
+    /// string, and the phone decodes it back the same way. A message carrying
+    /// base64 of the raw bytes is accepted (ret 0) and then cannot be
+    /// decrypted on the phone, which shows as a file that arrives as a
+    /// notification and nothing in the chat.
+    public static func aesKeyField(forHex hex: String) -> String {
+        Data(hex.utf8).base64EncodedString()
     }
 }

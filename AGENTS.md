@@ -479,7 +479,19 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   with attachments, which is what `file_show` hands over — is uploaded and
   sent, as is `/send`. Uploads take a
   ticket from `getuploadurl`, POST the ciphertext, and read
-  `x-encrypted-param` back (`IlinkMedia`, `IlinkMediaClient`). Every prompt it
+  `x-encrypted-param` back (`IlinkMedia`, `IlinkMediaClient`). Two things
+  about that path are decided by what WeChat's own client does and cost a
+  message that arrives and cannot be opened when they differ (`WeixinMedia`
+  in aimini's channel, and the official plugin's `cdn/upload.ts`, measured
+  against the phone 2026-11-15): the message's `media.aes_key` is base64 over
+  the upload ticket's 32 **hex characters**, never over the 16 bytes they
+  spell — the official plugin writes `Buffer.from(uploaded.aeskey).toString("base64")`
+  with `aeskey` the hex **string**, and a message carrying the bytes instead
+  is accepted (ret 0) and cannot be decrypted on the phone, which shows as a
+  file the phone is notified about and does not find in the chat; and only jpeg, png, gif and webp go down the image channel
+  (mp4, mov, m4v down the video one), because the CDN answers 500 to anything
+  else, so a heic or a bmp is uploaded again as a file. A `sendmessage` that
+  answers `ret` other than 0 is a failure, not a sent file. Every prompt it
   sends carries `source: ChatChannel.weChat`: the worker names it in that
   message's `<system-state>`, so the model knows the reader is in WeChat and
   gets no file it does not show with `file_show` (the relay above sends it),

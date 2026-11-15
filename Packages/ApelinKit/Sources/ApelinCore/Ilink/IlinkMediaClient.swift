@@ -8,9 +8,14 @@ public enum IlinkMediaType: Int, Sendable {
     case voice = 4
 
     /// The type a file's name makes it, for a reply that sends one.
+    ///
+    /// Only what WeChat's own client produces goes down the image and video
+    /// channels: its CDN answers 500 to anything else (a bmp measured, and
+    /// heic among them), so those bytes are sent as a file, which the phone
+    /// still receives and can open.
     public static func of(name: String) -> IlinkMediaType {
         switch (name as NSString).pathExtension.lowercased() {
-        case "jpg", "jpeg", "png", "gif", "webp", "heic", "bmp":
+        case "jpg", "jpeg", "png", "gif", "webp":
             .image
         case "mp4", "mov", "m4v":
             .video
@@ -24,8 +29,10 @@ public enum IlinkMediaType: Int, Sendable {
 public struct IlinkUpload: Sendable {
     /// The `encrypted_query_param` the CDN answered with.
     public var downloadParam: String
-    /// The raw 16-byte key the ciphertext was encrypted with.
-    public var aesKey: Data
+    /// The key the ciphertext was encrypted with, as the 32 hex characters
+    /// the upload ticket named: the message's `aes_key` is base64 of these,
+    /// never of the 16 bytes they spell.
+    public var aesKeyHex: String
     public var rawSize: Int
     public var cipherSize: Int
     public var fileKey: String
@@ -120,7 +127,7 @@ public extension IlinkClient {
         }
         return IlinkUpload(
             downloadParam: param,
-            aesKey: key,
+            aesKeyHex: aesKeyHex,
             rawSize: rawSize,
             cipherSize: cipherSize,
             fileKey: fileKey
@@ -175,7 +182,7 @@ public extension IlinkClient {
     ) async throws -> String? {
         let media = IlinkCDNMedia(
             encryptQueryParam: upload.downloadParam,
-            aesKey: IlinkMedia.aesKeyField(for: upload.aesKey),
+            aesKey: IlinkMedia.aesKeyField(forHex: upload.aesKeyHex),
             encryptType: 1
         )
         let item: IlinkMessageItem
@@ -209,6 +216,14 @@ public extension IlinkClient {
         request.httpMethod = "POST"
         request.httpBody = try JSONCoding.encode(Body(msg: message, base_info: baseInfo()))
         let reply = try await perform(request, as: SentMessageReply.self, label: "media reply")
+        // A refusal answers 200 with a ret: saying the file went when WeChat
+        // said no would leave the phone waiting for a message it never sends.
+        if let ret = reply.ret, ret != 0 {
+            throw IlinkFailure.http(
+                status: nil,
+                message: "WeChat refused the \(name) message (ret \(ret)\(reply.errmsg.map { ": \($0)" } ?? ""))"
+            )
+        }
         return reply.messageID
     }
 }
