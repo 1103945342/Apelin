@@ -130334,6 +130334,172 @@
           }
         }
       }
+    },
+    "WeChat ClawBot": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WeChat ClawBot"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WeChat ClawBot"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WeChat ClawBot"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WeChat ClawBot"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WeChat ClawBot"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WeChat ClawBot"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WeChat ClawBot"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WeChat ClawBot"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WeChat ClawBot"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WeChat ClawBot"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WeChat ClawBot"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "微信 ClawBot"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "微信 ClawBot"
+          }
+        }
+      }
+    },
+    "Commands\n/sessions — every conversation, numbered\n/use <number> — switch to one; /use new starts one\n/current — which conversation this phone is in\n/workspace — the projects; /workspace <number> sets the default\n/model — the models this device has enabled; /model <number> picks one\n/effort <lo|mid|hi> — how hard it thinks\n/send <path> — a file of the project, sent to WeChat\n/help — this list, in WeChat": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأوامر\n/sessions — كل المحادثات، مرقّمة\n/use <رقم> — الانتقال إلى محادثة؛ /use new يبدأ محادثة جديدة\n/current — المحادثة التي يوجد فيها هذا الهاتف\n/workspace — المشاريع؛ /workspace <رقم> يحدد المشروع الافتراضي\n/model — النماذج المفعّلة على هذا الجهاز؛ /model <رقم> يختار واحدًا\n/effort <lo|mid|hi> — مدى عمق التفكير\n/send <مسار> — إرسال ملف من المشروع إلى WeChat\n/help — هذه القائمة، داخل WeChat"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Befehle\n/sessions — alle Unterhaltungen, nummeriert\n/use <Nummer> — zu einer wechseln; /use new startet eine\n/current — in welcher Unterhaltung dieses Telefon ist\n/workspace — die Projekte; /workspace <Nummer> legt das Standardprojekt fest\n/model — die auf diesem Gerät aktivierten Modelle; /model <Nummer> wählt eines\n/effort <lo|mid|hi> — wie stark es nachdenkt\n/send <Pfad> — eine Datei des Projekts, an WeChat gesendet\n/help — diese Liste, in WeChat"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Commands\n/sessions — every conversation, numbered\n/use <number> — switch to one; /use new starts one\n/current — which conversation this phone is in\n/workspace — the projects; /workspace <number> sets the default\n/model — the models this device has enabled; /model <number> picks one\n/effort <lo|mid|hi> — how hard it thinks\n/send <path> — a file of the project, sent to WeChat\n/help — this list, in WeChat"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comandos\n/sessions — todas las conversaciones, numeradas\n/use <número> — cambiar a una; /use new inicia otra\n/current — en qué conversación está este teléfono\n/workspace — los proyectos; /workspace <número> fija el predeterminado\n/model — los modelos activados en este dispositivo; /model <número> elige uno\n/effort <lo|mid|hi> — cuánto piensa\n/send <ruta> — un archivo del proyecto, enviado a WeChat\n/help — esta lista, en WeChat"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Commandes\n/sessions — toutes les conversations, numérotées\n/use <numéro> — passer à une conversation ; /use new en ouvre une\n/current — la conversation de ce téléphone\n/workspace — les projets ; /workspace <numéro> définit celui par défaut\n/model — les modèles activés sur cet appareil ; /model <numéro> en choisit un\n/effort <lo|mid|hi> — l’intensité de réflexion\n/send <chemin> — un fichier du projet, envoyé à WeChat\n/help — cette liste, dans WeChat"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comandi\n/sessions — tutte le conversazioni, numerate\n/use <numero> — passa a una; /use new ne apre una\n/current — in quale conversazione è questo telefono\n/workspace — i progetti; /workspace <numero> imposta quello predefinito\n/model — i modelli attivi su questo dispositivo; /model <numero> ne sceglie uno\n/effort <lo|mid|hi> — quanto pensa a fondo\n/send <percorso> — un file del progetto, inviato a WeChat\n/help — questo elenco, in WeChat"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コマンド\n/sessions — すべての会話を番号付きで表示\n/use <番号> — その会話に切り替え；/use new で新規作成\n/current — この電話がいる会話\n/workspace — プロジェクト一覧；/workspace <番号> で既定を設定\n/model — この端末で有効なモデル；/model <番号> で選択\n/effort <lo|mid|hi> — 思考の強さ\n/send <パス> — プロジェクトのファイルを WeChat へ送信\n/help — この一覧を WeChat で表示"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "명령\n/sessions — 모든 대화를 번호와 함께 표시\n/use <번호> — 해당 대화로 전환; /use new 로 새로 만들기\n/current — 이 번호가 있는 대화\n/workspace — 프로젝트 목록; /workspace <번호> 로 기본 설정\n/model — 이 기기에서 켜 둔 모델; /model <번호> 로 선택\n/effort <lo|mid|hi> — 생각 강도\n/send <경로> — 프로젝트의 파일을 위챗으로 보내기\n/help — 이 목록을 위챗에서 보기"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comandos\n/sessions — todas as conversas, numeradas\n/use <número> — mudar para uma; /use new inicia outra\n/current — em qual conversa este telefone está\n/workspace — os projetos; /workspace <número> define o padrão\n/model — os modelos ativados neste aparelho; /model <número> escolhe um\n/effort <lo|mid|hi> — o quanto ele pensa\n/send <caminho> — um arquivo do projeto, enviado ao WeChat\n/help — esta lista, no WeChat"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Команды\n/sessions — все беседы, с номерами\n/use <номер> — перейти к беседе; /use new — начать новую\n/current — в какой беседе этот телефон\n/workspace — проекты; /workspace <номер> задаёт проект по умолчанию\n/model — модели, включённые на этом устройстве; /model <номер> — выбрать\n/effort <lo|mid|hi> — насколько глубоко думать\n/send <путь> — файл проекта, отправленный в WeChat\n/help — этот список, в WeChat"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lệnh\n/sessions — mọi cuộc trò chuyện, có số\n/use <số> — chuyển sang một cuộc; /use new mở cuộc mới\n/current — điện thoại này đang ở cuộc nào\n/workspace — các dự án; /workspace <số> đặt dự án mặc định\n/model — các mô hình đã bật trên máy này; /model <số> để chọn\n/effort <lo|mid|hi> — mức suy nghĩ\n/send <đường dẫn> — gửi một tệp của dự án sang WeChat\n/help — danh sách này, trong WeChat"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "命令\n/sessions — 列出所有会话并编号\n/use <序号> — 切换到某个会话；/use new 新建一个\n/current — 当前这个号码在哪个会话\n/workspace — 列出项目；/workspace <序号> 设定默认项目\n/model — 列出本机已启用的模型；/model <序号> 选择\n/effort <lo|mid|hi> — 思考强度\n/send <路径> — 把这个项目里的文件发到微信\n/help — 在微信里显示这份列表"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指令\n/sessions — 列出所有對話並編號\n/use <編號> — 切換到某個對話；/use new 新建一個\n/current — 目前這個號碼在哪個對話\n/workspace — 列出專案；/workspace <編號> 設定預設專案\n/model — 列出本機已啟用的模型；/model <編號> 選擇\n/effort <lo|mid|hi> — 思考強度\n/send <路徑> — 把這個專案裡的檔案傳到微信\n/help — 在微信裡顯示這份列表"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

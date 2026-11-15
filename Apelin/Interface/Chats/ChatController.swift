@@ -1018,6 +1018,9 @@ final class ChatController: UIViewController {
     /// A model disabled in Settings stops being the one the next message uses.
     @objc private func enabledModelsChanged() {
         ensureModelSelection()
+        // The WeChat channel offers a phone the models this device offers, so
+        // it hears the change as the page does.
+        Task { await ChannelModelList.pushIfChanged() }
         if let id = chat?.id, let sheet = modelSheet,
            presentedViewController === sheet, !sheet.isBeingDismissed {
             refreshModelSheet(sheet, for: id)

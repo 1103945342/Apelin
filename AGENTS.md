@@ -462,7 +462,9 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   the app clears the ask the phone was given (`approvalResolved`). The one
   thing WeChat cannot give is a command as root: that takes the device
   owner's check (`ownerVerified`), so it is announced with a line saying so
-  and approved only in Apelin. The credential is
+  and approved only in Apelin. Settings ▸ Plugins names it WeChat ClawBot, and
+  its page lists the commands a phone can type, in the footer under the
+  sign-in rows — the same list `/help` answers with.
   A phone asks for the rest with commands, answered by the channel and never
   by the agent (`ChannelCommand`): `/sessions` lists the conversations the
   host runs and the ones on disk (`ChannelDirectory`), `/use <n>` binds one
@@ -471,7 +473,14 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   project new ones go in, `/model [n] [lo|mid|hi]` and `/effort` choose the
   model and its effort from the agent's own account list, applied to the
   open conversation with `agentConfigure` and carried by every prompt, and
-  `/send <path>` sends a file of the workspace. Files travel both ways: what
+  `/send <path>` sends a file of the workspace. `/model` offers what Settings
+  ▸ Models has enabled and nothing a provider merely lists: the app hands
+  that list over (`channelConfigure.enabledModels`, kept in the channel's
+  record, pushed by `ChannelModelList` when it changes and whenever the
+  channel's page opens), and the host asks the account list for it with
+  `onlyExtraModels`, the same narrowing the composer's own sheet uses. A host
+  that was never told answers with everything, as it did before. Files travel
+  both ways: what
   a phone sends is downloaded from the CDN, decrypted (AES-128-ECB, the
   `aes_key` in either spelling), saved under the channel's `attachments/`
   and given to the conversation as descriptors beside the prompt, the way

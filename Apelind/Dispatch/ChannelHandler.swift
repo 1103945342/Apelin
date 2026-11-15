@@ -31,6 +31,7 @@ enum ChannelHandler: DomainHandler {
                     enabled: change.enabled,
                     projectName: project,
                     approvalMode: change.approvalMode,
+                    enabledModels: change.enabledModels,
                     clearsProject: change.clearsProject == true
                 )
             }

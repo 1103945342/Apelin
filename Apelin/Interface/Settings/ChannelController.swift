@@ -86,18 +86,35 @@ final class ChannelController: TableController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = String(localized: "WeChat")
+        title = String(localized: "WeChat ClawBot")
         navigationItem.backButtonDisplayMode = .minimal
         dataSource.headerTitle = { section in
             section == .conversations ? String(localized: "Conversations") : nil
         }
         dataSource.footerTitle = { section in
-            guard section == .conversations else { return nil }
-            return String(localized: """
-            A message from WeChat runs as a conversation in the project you choose, and what that turn writes is \
-            answered in WeChat. An approval it needs reaches WeChat too; only a command as root is the exception, \
-            and that one is approved here with your passcode.
-            """)
+            switch section {
+            case .weChat:
+                // What a phone can type, where the reader is looking when they
+                // wonder: the same list `/help` answers with, so the page and
+                // WeChat never tell them different things.
+                return String(localized: """
+                Commands
+                /sessions — every conversation, numbered
+                /use <number> — switch to one; /use new starts one
+                /current — which conversation this phone is in
+                /workspace — the projects; /workspace <number> sets the default
+                /model — the models this device has enabled; /model <number> picks one
+                /effort <lo|mid|hi> — how hard it thinks
+                /send <path> — a file of the project, sent to WeChat
+                /help — this list, in WeChat
+                """)
+            case .conversations:
+                return String(localized: """
+                A message from WeChat runs as a conversation in the project you choose, and what that turn writes is \
+                answered in WeChat. An approval it needs reaches WeChat too; only a command as root is the exception, \
+                and that one is approved here with your passcode.
+                """)
+            }
         }
         refresh()
     }
@@ -107,6 +124,9 @@ final class ChannelController: TableController {
         dataSource.beginLoad()
         refresh()
         startPolling()
+        // The page is where the channel is configured: what Settings ▸ Models
+        // holds goes with it, so `/model` in WeChat lists the app's models.
+        Task { await ChannelModelList.pushIfChanged() }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -437,5 +457,32 @@ final class QRCodeController: UIViewController, UIScrollViewDelegate {
 
     @objc dynamic func viewForZooming(in _: UIScrollView) -> UIView? {
         imageView
+    }
+}
+
+/// The app's models, as the WeChat channel hears them.
+///
+/// Settings ▸ Models is the app's own preference (`EnabledModels`), and the
+/// channel lives in the session host, which cannot read it: the list is handed
+/// over instead (`channelConfigure.enabledModels`), so `/model` in WeChat
+/// offers a phone the models this device offers and nothing a provider merely
+/// lists. Handed over when it changes and whenever the channel's own page is
+/// opened; the host keeps it, so a launch does not have to.
+@MainActor
+enum ChannelModelList {
+    /// What was last accepted by the host, so a page opening again sends
+    /// nothing new.
+    private static var pushed: [String: [String]]?
+
+    static func pushIfChanged() async {
+        let models = EnabledModels.selectedModelIDs()
+        guard models != pushed else { return }
+        do {
+            _ = try await ApelinService.app.channelConfigure(enabledModels: models)
+            pushed = models
+        } catch {
+            // The background service is not there yet: the next change or
+            // page tries again.
+        }
     }
 }

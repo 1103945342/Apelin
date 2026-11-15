@@ -43,6 +43,9 @@ actor WeChatChannel {
         var userID: String?
         var projectName: String?
         var approvalMode: ApprovalMode = .confirm
+        /// What Settings ▸ Models has enabled, by provider id, as the app last
+        /// told the host: `/model` offers these and nothing else.
+        var enabledModels: [String: [String]]?
         var syncBuffer: String?
         var signedInAt: Date?
 
@@ -57,6 +60,7 @@ actor WeChatChannel {
             userID = try container.decodeIfPresent(String.self, forKey: .userID)
             projectName = try container.decodeIfPresent(String.self, forKey: .projectName)
             approvalMode = try container.decodeIfPresent(ApprovalMode.self, forKey: .approvalMode) ?? .confirm
+            enabledModels = try container.decodeIfPresent([String: [String]].self, forKey: .enabledModels)
             syncBuffer = try container.decodeIfPresent(String.self, forKey: .syncBuffer)
             signedInAt = try container.decodeIfPresent(Date.self, forKey: .signedInAt)
         }
@@ -252,6 +256,7 @@ actor WeChatChannel {
         enabled: Bool?,
         projectName: String?,
         approvalMode: ApprovalMode?,
+        enabledModels: [String: [String]]? = nil,
         clearsProject: Bool,
     ) async -> ChannelState {
         if let enabled {
@@ -259,6 +264,11 @@ actor WeChatChannel {
         }
         if let approvalMode {
             record.approvalMode = approvalMode
+        }
+        if let enabledModels {
+            record.enabledModels = enabledModels
+            // What `/model` last listed was asked under the previous list.
+            modelList = nil
         }
         if clearsProject {
             record.projectName = nil
@@ -992,7 +1002,10 @@ actor WeChatChannel {
     private func model(argument: String?, effort: String?, from userID: String) async -> String {
         let models = await models()
         guard !models.isEmpty else {
-            return t("还没有可用的模型。先在 Apelin 的「模型供应商」里登录一个。", "No models yet. Sign in a provider in Apelin first.")
+            return t(
+                "还没有可用的模型。先在 Apelin 的「模型供应商」里登录，再到「模型」里启用要用的。",
+                "No models yet. Sign in a provider in Apelin, then enable the ones you want under Models."
+            )
         }
         guard let argument else {
             return modelListText(models, for: userID)
@@ -1056,13 +1069,21 @@ actor WeChatChannel {
         return t("已把思考强度设为 \(ChannelCommands.effortName(parsed))。", "Effort is now \(ChannelCommands.effortName(parsed)).")
     }
 
-    /// The models this device is signed in to, read from the agent's own
-    /// account list and kept for a minute.
+    /// The models this device offers, read from the agent's own account list
+    /// and kept for a minute. Only what Settings ▸ Models has enabled is
+    /// asked for — a phone choosing a conversation's model is offered the
+    /// models the app offers, not every model a provider lists. A host that
+    /// was never told (a channel saved before the app sent the list) still
+    /// answers with everything, as it did then.
     private func models() async -> [ChannelModel] {
         if let modelList, Date().timeIntervalSince(modelList.taken) < 60 {
             return modelList.models
         }
-        guard let wire = try? WireRequest(AgentAccountListRequest()) else { return [] }
+        let enabled = record.enabledModels
+        guard let wire = try? WireRequest(AgentAccountListRequest(
+            extraModels: enabled.flatMap { $0.isEmpty ? nil : $0 },
+            onlyExtraModels: enabled == nil ? nil : true
+        )) else { return [] }
         let reply = await route(wire, [])
         guard case let .success(data) = reply.result,
               let answer = try? JSONCoding.decode(AgentAccountListResponse.self, from: data)
@@ -1268,7 +1289,7 @@ actor WeChatChannel {
     /use <序号>  切换会话；/use 新 新建
     /current  查看当前会话
     /workspace  列出项目；/workspace <序号> 设定默认项目
-    /model  列出模型；/model <序号> [lo|mid|hi] 切换
+    /model  列出已启用的模型；/model <序号> [lo|mid|hi] 切换
     /effort <lo|mid|hi>  修改思考强度
     /send <路径>  把设备上的文件发到微信
     /help  显示本帮助
@@ -1279,7 +1300,7 @@ actor WeChatChannel {
     /use <number>  switch; /use new  start one
     /current  which conversation this phone is in
     /workspace  the projects; /workspace <number>  the default one
-    /model  the models; /model <number> [lo|mid|hi]  pick one
+    /model  the models you have enabled; /model <number> [lo|mid|hi]  pick one
     /effort <lo|mid|hi>  only the effort
     /send <path>  send a file of this device to WeChat
     /help  this page

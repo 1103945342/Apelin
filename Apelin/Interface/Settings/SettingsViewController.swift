@@ -201,7 +201,7 @@ final class SettingsViewController: TableController {
         case .templates:
             content.text = String(localized: "Templates")
         case .weChat:
-            content.text = String(localized: "WeChat")
+            content.text = String(localized: "WeChat ClawBot")
         case .git:
             content.text = String(localized: "Git")
         case .version:
