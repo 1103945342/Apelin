@@ -35,7 +35,7 @@ struct PendingRewindTests {
         await session.waitForIdle()
         let events = try await session.log.records(afterSeq: 0).map(\.event)
         let sent = events.compactMap { event -> UUID? in
-            if case let .userMessage(id, _, _) = event { return id }; return nil
+            if case let .userMessage(id, _, _, _) = event { return id }; return nil
         }
         #expect(sent == [first, second, third])
         #expect(events.filter { $0 == .finished(reason: .completed) }.count == 2)
@@ -76,7 +76,7 @@ struct PendingRewindTests {
         let events = try await session.log.records(afterSeq: 0).map(\.event)
         #expect(events.contains(.historyRewound(id: first)))
         #expect(events.contains(.pendingQueue(messages: [], paused: true)))
-        #expect(!events.contains { if case .userMessage(held, _, _) = $0 { return true }; return false })
+        #expect(!events.contains { if case .userMessage(held, _, _, _) = $0 { return true }; return false })
         #expect(try await session.log.readTranscript().isEmpty)
         await session.close()
         let reopened = try await AgentSession(configuration: configuration, backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())
@@ -84,14 +84,14 @@ struct PendingRewindTests {
         try await reopened.manageQueue(.init(sessionID: reopened.id, action: .resume))
         await reopened.waitForIdle()
         let before = try await reopened.log.records(afterSeq: 0).map(\.event)
-        #expect(!before.contains { if case .userMessage(held, _, _) = $0 { return true }; return false })
+        #expect(!before.contains { if case .userMessage(held, _, _, _) = $0 { return true }; return false })
         // refillComposer creates a fresh ID; only sending that new draft
         // starts another run, never any of the cleared waiting messages.
         let fresh = UUID()
         try await reopened.prompt("original", messageID: fresh)
         await reopened.waitForIdle()
         let after = try await reopened.log.records(afterSeq: 0).map(\.event)
-        #expect(after.filter { if case .userMessage(fresh, "original", _) = $0 { return true }; return false }.count == 1)
+        #expect(after.filter { if case .userMessage(fresh, "original", _, _) = $0 { return true }; return false }.count == 1)
         await reopened.close()
     }
 

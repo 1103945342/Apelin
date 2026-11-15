@@ -117,7 +117,7 @@ extension SessionEventLog {
         for (position, record) in records.enumerated() {
             let candidate: (id: UUID, text: String, attachments: [AgentAttachment])? = {
                 switch record.event {
-                case let .userMessage(id, text, attachments): return (id, text, attachments)
+                case let .userMessage(id, text, attachments, _): return (id, text, attachments)
                 case let .conversationMessageTaken(id, text, _): return (id, text, [])
                 default: return nil
                 }
@@ -142,7 +142,7 @@ extension SessionEventLog {
             // its first occurrence alone.
             let later = records[(position + 1)...].count {
                 switch $0.event {
-                case let .userMessage(_, value, files): return value == text && files == attachments
+                case let .userMessage(_, value, files, _): return value == text && files == attachments
                 case let .conversationMessageTaken(_, value, _): return value == text && attachments.isEmpty
                 default: return false
                 }
@@ -181,7 +181,7 @@ extension SessionEventLog {
             let end = ConversationHistory.nextReaderMessage(after: item.index, in: messages)
             if existing == nil, let position = records.firstIndex(where: {
                 switch $0.event {
-                case let .userMessage(id, _, _), let .conversationMessageTaken(id, _, _):
+                case let .userMessage(id, _, _, _), let .conversationMessageTaken(id, _, _):
                     return id == item.id
                 default:
                     return false
@@ -246,7 +246,7 @@ extension SessionEventLog {
         for record in records {
             let messageID: UUID? = {
                 switch record.event {
-                case let .userMessage(id, _, _), let .conversationMessageTaken(id, _, _): return id
+                case let .userMessage(id, _, _, _), let .conversationMessageTaken(id, _, _): return id
                 default: return nil
                 }
             }()
@@ -431,7 +431,7 @@ extension Array where Element == SessionEventRecord {
     func forkRecords(through id: UUID) -> [SessionEventRecord]? {
         guard let start = firstIndex(where: {
             switch $0.event {
-            case let .userMessage(messageID, _, _), let .conversationMessageTaken(messageID, _, _):
+            case let .userMessage(messageID, _, _, _), let .conversationMessageTaken(messageID, _, _):
                 return messageID == id
             default:
                 return false
@@ -456,7 +456,7 @@ extension Array where Element == SessionEventRecord {
         var taken: Set<UUID> = []
         for record in self[..<end] {
             switch record.event {
-            case let .userMessage(messageID, _, _), let .conversationMessageTaken(messageID, _, _):
+            case let .userMessage(messageID, _, _, _), let .conversationMessageTaken(messageID, _, _):
                 taken.insert(messageID)
             default:
                 break
@@ -464,7 +464,7 @@ extension Array where Element == SessionEventRecord {
         }
         var kept = self[..<end].filter {
             switch $0.event {
-            case let .userMessageQueued(messageID, _, _), let .conversationMessageQueued(messageID, _, _):
+            case let .userMessageQueued(messageID, _, _, _), let .conversationMessageQueued(messageID, _, _):
                 return taken.contains(messageID)
             case .conversationMessagesDropped:
                 return false // their untaken queue entries are excluded too

@@ -476,16 +476,21 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `aes_key` in either spelling), saved under the channel's `attachments/`
   and given to the conversation as descriptors beside the prompt, the way
   the app hands over an attachment; what a turn writes — a `toolResult`
-  with attachments — is uploaded and sent, as is `/send`. Uploads take a
+  with attachments, which is what `file_show` hands over — is uploaded and
+  sent, as is `/send`. Uploads take a
   ticket from `getuploadurl`, POST the ciphertext, and read
-  `x-encrypted-param` back (`IlinkMedia`, `IlinkMediaClient`).
-  The credential is
- the phones it has talked to are `peers.json` (a
+  `x-encrypted-param` back (`IlinkMedia`, `IlinkMediaClient`). Every prompt it
+  sends carries `source: ChatChannel.weChat`: the worker names it in that
+  message's `<system-state>`, so the model knows the reader is in WeChat and
+  gets no file it does not show with `file_show` (the relay above sends it),
+  and the app shows "From WeChat" over that message's bubble.
+  The credential stays in the channel's own `channel.json`, and
+  the phones it has talked to are `peers.json` (a
   `PreservedList`, so one unreadable entry costs no other). A channel that is
   on and signed in counts as work in `reportWork`, so apelind stays up and
   answers the phone while the app is closed, and `resume()` puts it back to
-  reading when the host starts again. Text only in this version: an image, a
-  file or a voice note reads as no message unless WeChat transcribed it.
+  reading when the host starts again. Text, images, files and videos in this
+  version; a voice note reads as no message unless WeChat transcribed it.
 - **The authenticator** (`Apelind/PeerAuthenticator.swift`) decides before a
   request field is decoded, in this order: the kernel audit token; pid > 1;
   euid 0 or 501; the entitlements `wiki.qaq.apelin.client`,
@@ -1597,14 +1602,17 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `projectNameSuggested` {name} (only a concrete project intent),
   `steer`, `queued` {id, text, attachments} (only an explicit insertion
   into the active run; its `prompt` uses the same id when the model takes
-  it). Idle reader Send with no backlog reserves a durable handoff
+  it). A message a chat channel sent says so in `source` (`ChatChannel.weChat`)
+  — on the `prompt` or `queued` payload, kept with the waiting message
+  (`PendingMessage.source`) while it waits — and the app writes it over the
+  bubble where a message from another conversation writes `from`. Idle reader Send with no backlog reserves a durable handoff
   directly, never a waiting message; preparation and the subsequent run
   own the slot before suspending. New, idle and stopped-empty chats take
   this path. Later arrivals wait in FIFO order. Stop or preparation
   failure recovers an untaken direct handoff into the paused queue.
   Other ordinary Send goes to the session-owned `PendingQueue`, persisted
   before acceptance in `pending.json`, not kwwk's steering queue. A
-  `pendingQueue` {messages: [{id, text, attachments, editing, sender?, delivery?, modelChoice?}], paused}
+  `pendingQueue` {messages: [{id, text, attachments, editing, sender?, source?, delivery?, modelChoice?}], paused}
   snapshot replaces the app's waiting list; it is not conversation history.
   One message starts a new run after the previous run succeeds. The app's
   Stop cancels the current run, waits for the host to stop its shell calls,

@@ -99,7 +99,7 @@ struct HostRestartNoteTests {
         #expect(!blocks[2].contains(Self.note), "the note was told twice")
         // What the app shows is the text alone.
         for event in events {
-            if case let .userMessage(_, text, _) = event {
+            if case let .userMessage(_, text, _, _) = event {
                 #expect(!text.contains(Self.note) && !text.contains(SystemState.openingTag), "the app was shown \(text)")
             }
         }

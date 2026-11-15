@@ -49,7 +49,7 @@ extension SessionEventLog {
         mutating func add(_ record: SessionEventRecord) {
             lastSeq = record.seq
             switch record.event {
-            case let .userMessage(id, text, _), let .conversationMessageTaken(id, text, _):
+            case let .userMessage(id, text, _, _), let .conversationMessageTaken(id, text, _):
                 if titleSource == nil {
                     let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
                     if !text.isEmpty { titleSource = String(text.prefix(3000)) }

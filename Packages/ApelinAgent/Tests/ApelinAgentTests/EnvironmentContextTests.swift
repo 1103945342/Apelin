@@ -222,7 +222,7 @@ struct EnvironmentContextTests {
         #expect(texts[1].last?.hasSuffix(typed + "next") == true && texts[2].last?.hasSuffix(typed + "after reopening") == true, "later messages are as typed, after their own moment")
         #expect(texts[2].count == 3 && texts[2][1] == texts[1].last, "a reopened session reads every earlier run back as it went, not just the last")
         let shown = events.compactMap { event -> String? in
-            if case let .userMessage(_, text, _) = event {
+            if case let .userMessage(_, text, _, _) = event {
                 return text
             }
             return nil

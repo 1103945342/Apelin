@@ -538,6 +538,12 @@ public struct AgentPromptRequest: OperationRequest {
     /// agent's prompt and cleared for the app's; the worker records it on
     /// the `prompt` event as `from`.
     public var fromSessionID: String?
+    /// What sent this prompt besides the app: a chat channel names itself
+    /// (`ChatChannel.weChat`). The worker tells the model in this message's
+    /// `<system-state>`, so it knows the reader is in another app, and
+    /// records it on the `prompt` event as `source`, which the app shows over
+    /// the bubble. A prompt from a conversation's agent carries none.
+    public var source: String?
     /// Absent on older callers means queue. Only an explicit steer guides a live run.
     public var delivery: AgentMessageDelivery?
 
@@ -556,6 +562,7 @@ public struct AgentPromptRequest: OperationRequest {
         runMode: AgentRunMode? = nil,
         promptInjection: String? = nil,
         fromSessionID: String? = nil,
+        source: String? = nil,
         delivery: AgentMessageDelivery? = nil,
         modelParameters: AgentModelParameters? = nil,
     ) {
@@ -574,6 +581,7 @@ public struct AgentPromptRequest: OperationRequest {
         self.runMode = runMode
         self.promptInjection = promptInjection
         self.fromSessionID = fromSessionID
+        self.source = source
         self.delivery = delivery
     }
 }

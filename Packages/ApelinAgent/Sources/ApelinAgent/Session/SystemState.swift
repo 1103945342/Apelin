@@ -106,6 +106,10 @@ enum SystemState {
         var runMode: ApelinProtocol.AgentRunMode?
         /// Ask Before Using the Screen, the app's setting beside the mode.
         var asksBeforeScreen = true
+        /// What sent this message besides the app (`AgentPromptRequest.source`);
+        /// nil for the app's own. Names the channel, so the model knows the
+        /// reader is not looking at Apelin.
+        var source: String?
         /// What changed since the model was last told (`PromptState`).
         var changes: [String] = []
         /// The session host restarted since the conversation last ran.
@@ -160,6 +164,12 @@ enum SystemState {
             "- Approval mode: \(modeName(facts.mode)).",
             "- Ask Before Using the Screen: \(facts.asksBeforeScreen ? "on" : "off").",
         ]
+        if let source = facts.source, let line = channelLine(source) {
+            // Also here, and not in the system prompt: a conversation opened
+            // in Apelin is reached from a phone with /use, and its prompt has
+            // no channel in it.
+            lines.append(line)
+        }
         if let runMode = facts.runMode {
             // Beside the approval mode rather than in the system prompt: the
             // pill can change between messages, and the prompt is the
@@ -176,6 +186,17 @@ enum SystemState {
         }
         lines.append(closingTag)
         return lines.joined(separator: "\n") + "\n\n"
+    }
+
+    /// What a message sent from a chat channel means for the reply: the
+    /// reader is in another app, where only text and the files `file_show`
+    /// hands over arrive. Nil for the app's own messages and for a channel
+    /// this build does not know.
+    static func channelLine(_ source: String) -> String? {
+        if source == ChatChannel.weChat {
+            return "- This message came from WeChat: the reader reads your reply there, not in Apelin, and gets no file you do not hand them with file_show, which the channel sends to their WeChat."
+        }
+        return nil
     }
 
     /// That Apelin's session host restarted since the conversation last

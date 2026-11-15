@@ -743,11 +743,14 @@ public actor AgentSession {
 
     /// All input is durable before acceptance. Only explicit steering may
     /// enter the active run; ordinary and source follow-ups start separate runs.
+    /// `source` names what sent it besides the app (`AgentPromptRequest.source`),
+    /// kept with the message until its run and told to the model then.
     public func prompt(
         _ text: String,
         messageID: UUID? = nil,
         files: [(name: String, mimeType: String, data: Data)] = [],
         from sender: ConversationSender? = nil,
+        source: String? = nil,
         delivery: AgentMessageDelivery = .queue,
         modelChoice: PendingModelChoice? = nil,
     ) async throws {
@@ -764,7 +767,8 @@ public actor AgentSession {
             && (pendingBlocked || pending.state.paused || aborted || runFailed)
             ? stopGeneration : nil
         let attachments = try files.map { try saveAttachment(name: $0.name, mimeType: $0.mimeType, data: $0.data) }
-        let item = PendingMessage(id: id, text: text, attachments: attachments, sender: sender, delivery: delivery, modelChoice: modelChoice)
+        let item = PendingMessage(id: id, text: text, attachments: attachments, sender: sender,
+                                  source: source, delivery: delivery, modelChoice: modelChoice)
         if sender == nil, canMutateHistory, !runEnding,
            pending.state.messages.isEmpty, pending.state.handoffs.isEmpty {
             // Claim the idle slot synchronously. This is a handoff, not a
@@ -997,6 +1001,9 @@ public actor AgentSession {
                 runMode: runner.currentRunMode, asksBeforeScreen: runner.asksBeforeScreen,
                 installRoot: configuration.installRoot
             )
+            // A message the reader sent from a chat channel: the model is told
+            // so in this message's `<system-state>`, as it is told the mode.
+            facts.source = item.source
             // A queued item may be edited while preparing. Direct input is
             // already reserved and immutable; later arrivals only change the
             // waiting list and must not invalidate its dispatch.
@@ -1050,8 +1057,8 @@ public actor AgentSession {
                 event = .conversationMessageQueued(id: item.id, text: item.text, from: sender.sessionID)
             } else {
                 event = steering
-                    ? .userMessageQueued(id: item.id, text: item.text, attachments: item.attachments)
-                    : .userMessage(id: item.id, text: item.text, attachments: item.attachments)
+                    ? .userMessageQueued(id: item.id, text: item.text, attachments: item.attachments, source: item.source)
+                    : .userMessage(id: item.id, text: item.text, attachments: item.attachments, source: item.source)
             }
             let publication = publishPendingEvents([
                 .pendingQueue(messages: pending.state.messages, paused: pending.state.paused), event,

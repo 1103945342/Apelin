@@ -32,15 +32,20 @@ public struct PendingMessage: Sendable, Hashable, Codable {
     public var editing: Bool = false
     public var modelChoice: PendingModelChoice?
     public var sender: ConversationSender?
+    /// What sent it besides the app, kept until the run takes it: a chat
+    /// channel's name (`ChatChannel.weChat`).
+    public var source: String?
     public var delivery: AgentMessageDelivery?
 
     public init(id: UUID, text: String, attachments: [AgentAttachment], editing: Bool = false,
-                sender: ConversationSender? = nil, delivery: AgentMessageDelivery? = nil, modelChoice: PendingModelChoice? = nil) {
+                sender: ConversationSender? = nil, source: String? = nil,
+                delivery: AgentMessageDelivery? = nil, modelChoice: PendingModelChoice? = nil) {
         self.id = id
         self.text = text
         self.attachments = attachments
         self.editing = editing
         self.sender = sender
+        self.source = source
         self.delivery = delivery
         self.modelChoice = modelChoice
     }

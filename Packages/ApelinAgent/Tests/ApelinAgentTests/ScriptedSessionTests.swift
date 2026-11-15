@@ -225,7 +225,7 @@ struct ScriptedSessionTests {
 
         let events = records.map(\.event)
         #expect(records.map(\.seq) == Array(1 ... UInt64(records.count)))
-        #expect(events.contains { if case .userMessage(_, "Turn the hook on, build, install and check it loaded.", _) = $0 { return true }; return false })
+        #expect(events.contains { if case .userMessage(_, "Turn the hook on, build, install and check it loaded.", _, _) = $0 { return true }; return false })
         let toolOrder = events.compactMap { event -> String? in
             switch event {
             case let .toolCallStarted(call): "start:\(call.name)"
@@ -350,14 +350,14 @@ struct ScriptedSessionTests {
             }
         }
         let queuedAt = events.firstIndex {
-            if case .userMessageQueued(later, "and keep the logs", _) = $0 {
+            if case .userMessageQueued(later, "and keep the logs", _, _) = $0 {
                 true
             } else {
                 false
             }
         }
         let takenAt = events.firstIndex {
-            if case .userMessage(later, "and keep the logs", _) = $0 {
+            if case .userMessage(later, "and keep the logs", _, _) = $0 {
                 true
             } else {
                 false
@@ -420,7 +420,7 @@ struct ScriptedSessionTests {
         let recorded = try await session.log.records(afterSeq: 0).map(\.event)
         #expect(recorded.filter { $0 == .finished(reason: .aborted) }.count == 1, "\(recorded)")
         #expect(!recorded.contains {
-            if case .userMessage(later, _, _) = $0 {
+            if case .userMessage(later, _, _, _) = $0 {
                 true
             } else {
                 false
@@ -486,7 +486,7 @@ struct ScriptedSessionTests {
                 if reason == .failed {
                     await session.waitForIdle()
                     let waiting = try await session.log.records(afterSeq: 0).map(\.event)
-                    #expect(!waiting.contains { if case .userMessage(later, _, _) = $0 { return true }; return false })
+                    #expect(!waiting.contains { if case .userMessage(later, _, _, _) = $0 { return true }; return false })
                     try await session.manageQueue(.init(sessionID: session.id, action: .resume))
                 }
                 if finished.count == 2 {
@@ -504,7 +504,7 @@ struct ScriptedSessionTests {
         }, "\(events)")
         let failedAt = events.firstIndex { $0 == .finished(reason: .failed) }
         let takenAt = events.firstIndex {
-            if case .userMessage(later, "and keep the logs", _) = $0 {
+            if case .userMessage(later, "and keep the logs", _, _) = $0 {
                 true
             } else {
                 false

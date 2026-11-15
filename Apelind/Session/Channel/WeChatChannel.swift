@@ -27,7 +27,7 @@ actor WeChatChannel {
 
     /// What a conversation this channel opens is marked with, so the app
     /// lists it too (`AgentOpenRequest.origin`).
-    static let origin = "wechat"
+    static let origin = ChatChannel.weChat
 
     /// How long one status poll waits before asking again.
     static let pollInterval: UInt64 = 1_000_000_000
@@ -726,23 +726,44 @@ actor WeChatChannel {
         guard data.count <= 25 * 1024 * 1024 else {
             return t("文件太大（上限 25MB）。", "That file is over 25 MB.")
         }
-        return await deliverFile(data, name: url.lastPathComponent, to: peer)
+        if let failure = await deliverFile(data, name: url.lastPathComponent, to: peer) {
+            return failure
+        }
+        return t("已发送 \(url.lastPathComponent)（\(data.count) 字节）。", "Sent \(url.lastPathComponent) (\(data.count) bytes).")
     }
 
     /// The files a turn produced (`toolResult` attachments): each is taken
-    /// from the conversation's workspace and sent to the phone.
+    /// from the conversation's workspace and sent to the phone. A file that
+    /// cannot go is said so, in one message: the reader asked for it and is
+    /// otherwise left with a reply that speaks of a file they never got.
     private func relay(_ files: [AgentAttachment], peer: Peer) async {
         guard let root = workspace(of: peer) else { return }
+        var failures: [String] = []
         for file in files.prefix(8) {
             let url = root.appendingPathComponent(file.path)
-            guard CanonicalPath.isCanonical(url.path, inside: root.path),
-                  let data = try? Data(contentsOf: url), data.count <= 25 * 1024 * 1024
-            else { continue }
-            _ = await deliverFile(data, name: file.name, to: peer)
+            guard CanonicalPath.isCanonical(url.path, inside: root.path) else {
+                failures.append(t("\(file.name) 不在会话项目里，没有发出。", "\(file.name) is outside the conversation's project, so it was not sent."))
+                continue
+            }
+            guard let data = try? Data(contentsOf: url) else {
+                failures.append(t("读不到 \(file.name)。", "\(file.name) could not be read."))
+                continue
+            }
+            guard data.count <= 25 * 1024 * 1024 else {
+                failures.append(t("\(file.name) 超过 25MB，没有发出。", "\(file.name) is over 25 MB, so it was not sent."))
+                continue
+            }
+            if let failure = await deliverFile(data, name: file.name, to: peer) {
+                failures.append(failure)
+            }
         }
+        guard !failures.isEmpty else { return }
+        await send(failures.joined(separator: "\n"), to: peer.userID, contextToken: lastContextTokens[peer.userID])
     }
 
-    private func deliverFile(_ data: Data, name: String, to peer: Peer) async -> String {
+    /// Uploads and sends one file, answering what went wrong — nil when it
+    /// went.
+    private func deliverFile(_ data: Data, name: String, to peer: Peer) async -> String? {
         guard let client = signedClient() else {
             return t("通道没有登录，发不了文件。", "The channel is not signed in, so nothing can be sent.")
         }
@@ -756,12 +777,10 @@ actor WeChatChannel {
                 to: peer.userID,
                 contextToken: lastContextTokens[peer.userID]
             )
-            return t("已发送 \(name)（\(data.count) 字节）。", "Sent \(name) (\(data.count) bytes).")
+            return nil
         } catch {
-            return t(
-                "没发出去：\((error as? IlinkFailure)?.message ?? String(describing: error))",
-                "Not sent: \((error as? IlinkFailure)?.message ?? String(describing: error))"
-            )
+            let reason = (error as? IlinkFailure)?.message ?? String(describing: error)
+            return t("没发出去 \(name)：\(reason)", "\(name) was not sent: \(reason)")
         }
     }
 
@@ -1203,7 +1222,8 @@ actor WeChatChannel {
             provider: peer.provider,
             model: peer.model,
             reasoningEffort: peer.effort,
-            serviceTier: peer.tier
+            serviceTier: peer.tier,
+            source: ChatChannel.weChat
         )
     }
 

@@ -250,7 +250,7 @@ struct PromptCacheTests {
         // the run never reaches the model: the messages and kwwk's one tool
         // declaration.
         let shown = log.compactMap { record -> String? in
-            if case let .userMessage(_, text, _) = record.event {
+            if case let .userMessage(_, text, _, _) = record.event {
                 return text
             }
             return nil
@@ -499,7 +499,7 @@ struct PromptCacheTests {
         }
         for event in events {
             switch event {
-            case let .promptSubmitted(text, _), let .userMessage(_, text, _), let .userMessageQueued(_, text, _), let .steered(text),
+            case let .promptSubmitted(text, _), let .userMessage(_, text, _, _), let .userMessageQueued(_, text, _, _), let .steered(text),
                  let .conversationMessageQueued(_, text, _), let .conversationMessageTaken(_, text, _):
                 #expect(!text.contains(SystemState.openingTag), "the app was shown the block")
             default:

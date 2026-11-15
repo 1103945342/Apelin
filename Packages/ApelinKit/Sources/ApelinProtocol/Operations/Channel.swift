@@ -20,6 +20,14 @@ public enum ChannelKind: String, Codable, Sendable, CaseIterable {
     case weChatClawBot
 }
 
+/// The names a channel writes into the protocol: `AgentOpenRequest.origin`
+/// for the conversation it opens, and `AgentPromptRequest.source` for each
+/// message it sends there. One spelling, read by the host, the worker and the
+/// app alike.
+public enum ChatChannel: Sendable {
+    public static let weChat = "wechat"
+}
+
 /// Where a channel is in its life.
 public enum ChannelPhase: String, Codable, Sendable {
     /// Turned off, or signed out: nothing is read and nothing is sent.

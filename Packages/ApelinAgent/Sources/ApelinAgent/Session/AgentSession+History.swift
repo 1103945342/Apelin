@@ -249,7 +249,7 @@ extension AgentSession {
         var found: (text: String, attachments: [AgentAttachment], position: Int)?
         for (position, record) in records.enumerated() {
             switch record.event {
-            case let .userMessage(messageID, text, attachments) where messageID == id:
+            case let .userMessage(messageID, text, attachments, _) where messageID == id:
                 found = (text, attachments, position)
             case let .conversationMessageTaken(messageID, text, _) where messageID == id:
                 found = (text, [], position)
@@ -260,7 +260,7 @@ extension AgentSession {
         guard let found else { return nil }
         let later = records[(found.position + 1)...].count {
             switch $0.event {
-            case let .userMessage(_, text, attachments):
+            case let .userMessage(_, text, attachments, _):
                 return text == found.text && attachments == found.attachments
             case let .conversationMessageTaken(_, text, _):
                 return text == found.text && found.attachments.isEmpty

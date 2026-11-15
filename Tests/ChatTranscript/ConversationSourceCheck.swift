@@ -3,6 +3,7 @@ import Foundation
 
 func checkConversationSource() {
     let reader = UUID(), first = UUID(), second = UUID()
+    let fromPhone = UUID(), stranger = UUID()
     let events = [
         event(1, "prompt", ["id": .string(reader.uuidString), "text": .string("My task")]),
         event(2, "messageStarted"),
@@ -17,6 +18,21 @@ func checkConversationSource() {
         event(11, "messageStarted"),
         event(12, "finished"),
         event(13, "prompt", ["id": .string(UUID().uuidString), "text": .string("Reader again")]),
+        // A message the reader sent from WeChat: marked over its bubble as any
+        // other conversation's is, with the channel's name.
+        event(14, "queued", [
+            "id": .string(fromPhone.uuidString), "text": .string("From the phone"),
+            "source": .string(ChatChannel.weChat),
+        ]),
+        event(15, "prompt", [
+            "id": .string(fromPhone.uuidString), "text": .string("From the phone"),
+            "source": .string(ChatChannel.weChat),
+        ]),
+        // A channel this build does not know names nothing over the bubble.
+        event(16, "prompt", [
+            "id": .string(stranger.uuidString), "text": .string("Elsewhere"),
+            "source": .string("matrix"),
+        ]),
     ]
     let title: (String) -> String? = { $0 == "a" ? "Review chat" : nil }
     func build(_ end: Int) -> ChatTranscript {
@@ -46,5 +62,12 @@ func checkConversationSource() {
         event(4, "queueDropped", ["ids": .array([.string(first.uuidString)])]), event(5, "finished"),
     ], conversationTitle: title) { _ in nil }
     precondition(!dropped.messages.contains { $0.id == first }, "unconsumed follow-ups disappear on stop")
-    print("ok: queued and active conversation sources, unknown sender, tool loop, completion and incremental replay")
+    let weChat = ChatTranscript.sourceLine(ChatChannel.weChat)
+    precondition(weChat == ChatTranscript.senderLine(String(localized: "WeChat")), "the channel is named as Settings names it")
+    let waitingPhone = build(14).messages.first { $0.id == fromPhone }
+    precondition(waitingPhone?.sender == weChat && waitingPhone?.isQueued == true, "a queued message from the phone is marked")
+    let answeredPhone = build(15).messages.first { $0.id == fromPhone }
+    precondition(answeredPhone?.sender == weChat && answeredPhone?.isQueued == false, "and keeps the mark once its turn runs")
+    precondition(build(16).messages.first { $0.id == stranger }?.sender == nil, "an unknown channel names nothing")
+    print("ok: queued and active conversation sources, a chat channel's messages, unknown sender, tool loop, completion and incremental replay")
 }

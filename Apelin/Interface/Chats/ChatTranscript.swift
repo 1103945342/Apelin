@@ -176,7 +176,8 @@ struct ChatTranscript {
                         text: text,
                         attachments: files.compactMap(attachment),
                     )
-                    message.sender = payload?["from"]?.stringValue.map { Self.senderLine(conversationTitle($0)) }
+                    message.sender = Self.sourceLine(payload?["source"]?.stringValue)
+                        ?? payload?["from"]?.stringValue.map { Self.senderLine(conversationTitle($0)) }
                     message.sentAt = event.time
                     if event.kind == "prompt" {
                         receivedTokens = nil
@@ -203,7 +204,8 @@ struct ChatTranscript {
                     attachments: files.compactMap(attachment),
                 )
                 message.isQueued = true
-                message.sender = payload?["from"]?.stringValue.map { Self.senderLine(conversationTitle($0)) }
+                message.sender = Self.sourceLine(payload?["source"]?.stringValue)
+                    ?? payload?["from"]?.stringValue.map { Self.senderLine(conversationTitle($0)) }
                 queued.append(message)
             case "queueDropped":
                 let ids = Self.identifiers(in: payload?["ids"])
@@ -882,6 +884,17 @@ struct ChatTranscript {
     static func senderLine(_ title: String?) -> String {
         guard let title, !title.isEmpty else { return String(localized: "From another chat") }
         return String(localized: "From \(title)")
+    }
+
+    /// What a message sent from a chat channel says over its bubble: the
+    /// channel's name, as the reader knows it. Nil for the app's own
+    /// messages and for a channel this build does not know.
+    static func sourceLine(_ source: String?) -> String? {
+        guard let source else { return nil }
+        switch source {
+        case ChatChannel.weChat: return senderLine(String(localized: "WeChat"))
+        default: return nil
+        }
     }
 
     /// Above the active summary, distinct from the bubble's attribution.

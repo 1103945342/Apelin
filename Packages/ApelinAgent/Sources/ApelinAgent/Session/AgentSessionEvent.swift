@@ -16,10 +16,10 @@ public enum AgentSessionEvent: Sendable, Hashable, Codable {
     /// Never restore these messages to the reader's composer.
     case conversationMessagesDropped(ids: [UUID])
     case pendingQueue(messages: [PendingMessage], paused: Bool)
-    case userMessage(id: UUID, text: String, attachments: [AgentAttachment])
+    case userMessage(id: UUID, text: String, attachments: [AgentAttachment], source: String? = nil)
     /// A message sent while a run was going: queued for the run's next
     /// step, and a `userMessage` of the same id once the run takes it.
-    case userMessageQueued(id: UUID, text: String, attachments: [AgentAttachment])
+    case userMessageQueued(id: UUID, text: String, attachments: [AgentAttachment], source: String? = nil)
     /// Queued messages the run never took, because it was stopped first.
     case queuedMessagesDropped(ids: [UUID])
     case titleUpdated(String)

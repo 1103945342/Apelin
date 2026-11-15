@@ -114,7 +114,7 @@ public enum AgentWorker {
                 if let from = prompt.fromSessionID {
                     sender = await AgentWorker.sender(from, context: context)
                 }
-                try await session.prompt(prompt.text, messageID: prompt.messageID, files: files, from: sender, delivery: prompt.delivery ?? .queue, modelChoice: choice)
+                try await session.prompt(prompt.text, messageID: prompt.messageID, files: files, from: sender, source: prompt.source, delivery: prompt.delivery ?? .queue, modelChoice: choice)
                 await session.generateTitle(for: prompt.text)
                 return Acknowledged()
             }
@@ -691,18 +691,26 @@ actor EventRelay {
                 "messages": (try? ApelinCore.JSONValue(encoding: messages)) ?? .array([]),
                 "paused": .bool(paused),
             ]))]
-        case let .userMessage(id, text, attachments):
-            return [("prompt", .object([
+        case let .userMessage(id, text, attachments, source):
+            var payload: [String: ApelinCore.JSONValue] = [
                 "id": .string(id.uuidString),
                 "text": .string(text),
                 "attachments": (try? ApelinCore.JSONValue(encoding: attachments)) ?? .array([]),
-            ]))]
-        case let .userMessageQueued(id, text, attachments):
-            return [("queued", .object([
+            ]
+            if let source {
+                payload["source"] = .string(source)
+            }
+            return [("prompt", .object(payload))]
+        case let .userMessageQueued(id, text, attachments, source):
+            var payload: [String: ApelinCore.JSONValue] = [
                 "id": .string(id.uuidString),
                 "text": .string(text),
                 "attachments": (try? ApelinCore.JSONValue(encoding: attachments)) ?? .array([]),
-            ]))]
+            ]
+            if let source {
+                payload["source"] = .string(source)
+            }
+            return [("queued", .object(payload))]
         case let .conversationMessageQueued(id, text, from):
             return [("queued", .object([
                 "id": .string(id.uuidString), "text": .string(text), "from": .string(from),

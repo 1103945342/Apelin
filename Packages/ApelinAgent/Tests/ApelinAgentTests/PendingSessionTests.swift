@@ -33,10 +33,10 @@ struct PendingSessionTests {
             if case let .pendingQueue(messages, _) = $0 { return messages.contains { $0.id == next || $0.id == idle } }
             return false
         })
-        #expect(events.filter { if case .userMessage(next, "start now", _) = $0 { return true }; return false }.count == 1)
-        #expect(events.filter { if case .userMessage(idle, "idle next", _) = $0 { return true }; return false }.count == 1)
+        #expect(events.filter { if case .userMessage(next, "start now", _, _) = $0 { return true }; return false }.count == 1)
+        #expect(events.filter { if case .userMessage(idle, "idle next", _, _) = $0 { return true }; return false }.count == 1)
         let attachment = try #require(events.compactMap { event -> AgentAttachment? in
-            if case .userMessage(next, _, let attachments) = event { return attachments.first }
+            if case .userMessage(next, _, let attachments, _) = event { return attachments.first }
             return nil
         }.first)
         #expect(try Data(contentsOf: home.projectURL.appendingPathComponent(attachment.path)) == Data("kept".utf8))
@@ -79,7 +79,7 @@ struct PendingSessionTests {
         #expect(state.messages.isEmpty && state.handoffs.isEmpty && !state.paused)
         #expect(events.filter { $0 == .finished(reason: .completed) }.count == (send ? 2 : 1))
         if send {
-            #expect(events.filter { if case .userMessage(second, "second", _) = $0 { return true }; return false }.count == 1)
+            #expect(events.filter { if case .userMessage(second, "second", _, _) = $0 { return true }; return false }.count == 1)
         }
         await session.close()
     }
@@ -105,7 +105,7 @@ struct PendingSessionTests {
         await session.waitForIdle()
         let events = try await session.log.records(afterSeq: 0).map(\.event)
         let sourceAt = try #require(events.firstIndex(of: .conversationMessageTaken(id: source, text: "source", from: "reviewer")))
-        let readerAt = try #require(events.firstIndex { if case .userMessage(reader, "reader", _) = $0 { return true }; return false })
+        let readerAt = try #require(events.firstIndex { if case .userMessage(reader, "reader", _, _) = $0 { return true }; return false })
         #expect(sourceAt < readerAt)
         #expect(events.filter { $0 == .finished(reason: .completed) }.count == 2)
         await session.close()
@@ -177,18 +177,18 @@ struct PendingSessionTests {
         await session.waitForIdle()
         events = try await session.log.records(afterSeq: 0).map(\.event)
         let ids = events.compactMap { event -> UUID? in
-            if case let .userMessage(id, _, _) = event { return id }; return nil
+            if case let .userMessage(id, _, _, _) = event { return id }; return nil
         }
         #expect(ids == [first, second, third])
         var finished = 0
         for event in events {
             if case .finished(reason: .completed) = event { finished += 1 }
-            if case .userMessage(second, "edited", let attachments) = event {
+            if case .userMessage(second, "edited", let attachments, _) = event {
                 #expect(finished == 1)
                 let file = try #require(attachments.first)
                 #expect(try Data(contentsOf: home.projectURL.appendingPathComponent(file.path)) == Data("kept".utf8))
             }
-            if case .userMessage(third, _, _) = event { #expect(finished == 2) }
+            if case .userMessage(third, _, _, _) = event { #expect(finished == 2) }
         }
         #expect(finished == 3)
         await session.close()
@@ -356,11 +356,11 @@ struct PendingSessionTests {
         await reopened.waitForIdle()
         let before = try await reopened.log.records(afterSeq: 0).map(\.event)
         #expect(before.contains { if case .pendingQueue(let messages, true) = $0 { return messages.map(\.id) == [later] }; return false })
-        #expect(!before.contains { if case .userMessage(later, _, _) = $0 { return true }; return false })
+        #expect(!before.contains { if case .userMessage(later, _, _, _) = $0 { return true }; return false })
         try await reopened.manageQueue(.init(sessionID: reopened.id, action: .resume))
         await reopened.waitForIdle()
         let after = try await reopened.log.records(afterSeq: 0).map(\.event)
-        #expect(after.filter { if case .userMessage(later, "later", _) = $0 { return true }; return false }.count == 1)
+        #expect(after.filter { if case .userMessage(later, "later", _, _) = $0 { return true }; return false }.count == 1)
         await reopened.close()
     }
 }
