@@ -251,16 +251,25 @@ public enum ChannelReplies {
     }
 
     /// The phone's own language, as the three the asks are written in; the
-    /// app and the host are on the same device, so this is the reader's.
+    /// app and the host are on the same device, so this is the reader's —
+    /// unless the app reported its own (`ChannelConfigureRequest.language`),
+    /// which is the one a reply follows when the two differ.
     public static var language: String {
-        let preferred = Locale.preferredLanguages.first ?? "en"
-        if preferred.hasPrefix("zh-Hant") || preferred.hasPrefix("zh-TW") || preferred.hasPrefix("zh-HK") {
+        canonical(Locale.preferredLanguages.first)
+    }
+
+    /// The one of the three a tag names: `zh-Hant` for a Traditional
+    /// Chinese tag, `zh-Hans` for any other Chinese, English for everything
+    /// else — the app ships thirteen languages, and the channel writes the
+    /// three a phone is most likely to read.
+    public static func canonical(_ tag: String?) -> String {
+        guard let tag, !tag.isEmpty else { return "en" }
+        let lowered = tag.lowercased()
+        if lowered.hasPrefix("zh-hant") || lowered.hasPrefix("zh-tw")
+            || lowered.hasPrefix("zh-hk") || lowered.hasPrefix("zh-mo") {
             return "zh-Hant"
         }
-        if preferred.hasPrefix("zh") {
-            return "zh-Hans"
-        }
-        return "en"
+        return lowered.hasPrefix("zh") ? "zh-Hans" : "en"
     }
 
     private static func cut(_ text: String, at limit: Int) -> String {

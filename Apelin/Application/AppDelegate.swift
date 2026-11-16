@@ -37,6 +37,11 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         // models.dev's catalog: the shipped copy in place, then a newer one if
         // the copy on this device is old (ModelDataRefresh).
         ModelDataRefresh.start()
+        // The WeChat channel writes its replies in the app's own language,
+        // which the host cannot read for itself: told at launch, and again
+        // when the channel's page opens. The host may still be starting,
+        // hence the retries.
+        Task { await ChannelLanguage.pushIfChanged(retries: 5) }
         return true
     }
 

@@ -166,6 +166,15 @@ final class ChannelRepliesTests: XCTestCase {
         XCTAssertTrue(ChannelReplies.nothingWaiting(language: "en").contains("No approval is waiting"))
     }
 
+    /// The three languages the channel writes, from any tag an app reports.
+    func testTheAppLanguageFoldsToTheThree() {
+        XCTAssertEqual(ChannelReplies.canonical("zh-Hans-CN"), "zh-Hans")
+        XCTAssertEqual(ChannelReplies.canonical("zh-Hant-TW"), "zh-Hant")
+        XCTAssertEqual(ChannelReplies.canonical("zh-TW"), "zh-Hant")
+        XCTAssertEqual(ChannelReplies.canonical("de-DE"), "en")
+        XCTAssertEqual(ChannelReplies.canonical(nil), "en")
+    }
+
     /// The ask is kept as a file between host runs, so it survives one.
     func testAnAskSurvivesTheFile() throws {
         let ask = question()

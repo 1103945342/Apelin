@@ -48,6 +48,9 @@ actor WeChatChannel {
         /// What Settings ▸ Models has enabled, by provider id, as the app last
         /// told the host: `/model` offers these and nothing else.
         var enabledModels: [String: [String]]?
+        /// The language the app's interface is in, as the app reported it:
+        /// what every reply is written in. Nil until the app says.
+        var language: String?
         var syncBuffer: String?
         var signedInAt: Date?
 
@@ -63,6 +66,7 @@ actor WeChatChannel {
             projectName = try container.decodeIfPresent(String.self, forKey: .projectName)
             approvalMode = try container.decodeIfPresent(ApprovalMode.self, forKey: .approvalMode) ?? .confirm
             enabledModels = try container.decodeIfPresent([String: [String]].self, forKey: .enabledModels)
+            language = try container.decodeIfPresent(String.self, forKey: .language)
             syncBuffer = try container.decodeIfPresent(String.self, forKey: .syncBuffer)
             signedInAt = try container.decodeIfPresent(Date.self, forKey: .signedInAt)
         }
@@ -212,6 +216,13 @@ actor WeChatChannel {
         }
     }
 
+    /// What every reply is written in: the language the app's own interface
+    /// is in, as the app reported it, else the phone's own. The host's
+    /// locale is never it — a daemon reads the system's, not the app's.
+    private var replyLanguage: String {
+        record.language.map(ChannelReplies.canonical) ?? ChannelReplies.language
+    }
+
     // MARK: What the app reads
 
     func state() -> ChannelState {
@@ -267,6 +278,7 @@ actor WeChatChannel {
         projectName: String?,
         approvalMode: ApprovalMode?,
         enabledModels: [String: [String]]? = nil,
+        language: String? = nil,
         clearsProject: Bool,
     ) async -> ChannelState {
         if let enabled {
@@ -279,6 +291,12 @@ actor WeChatChannel {
             record.enabledModels = enabledModels
             // What `/model` last listed was asked under the previous list.
             modelList = nil
+        }
+        if let language, !language.isEmpty {
+            // Every reply changes with it, so nothing is kept.
+            record.language = language
+            modelList = nil
+            sessionList = nil
         }
         if clearsProject {
             record.projectName = nil
@@ -539,7 +557,7 @@ actor WeChatChannel {
                         // while this ask was kept: nothing waits for it now.
                         trace("answer to \(pending.ask.approvalID) found nothing waiting")
                         await send(
-                            ChannelReplies.noLongerWaiting(),
+                            ChannelReplies.noLongerWaiting(language: replyLanguage),
                             to: from,
                             contextToken: lastContextTokens[from]
                         )
@@ -550,9 +568,9 @@ actor WeChatChannel {
                         pendingAsks[pending.ask.sessionID] = pending
                         saveAsks()
                         let reason = failure.message.isEmpty
-                            ? t("未知原因", "unknown reason") : failure.message
+                            ? t("未知原因", "未知原因", "unknown reason") : failure.message
                         await send(
-                            t("这次答复没能交给 Apelin：\(reason)", "Apelin did not take that answer: \(reason)"),
+                            t("这次答复没能交给 Apelin：\(reason)", "這次答覆沒能交給 Apelin：\(reason)", "Apelin did not take that answer: \(reason)"),
                             to: from,
                             contextToken: pending.contextToken
                         )
@@ -560,14 +578,22 @@ actor WeChatChannel {
                 } else {
                     trace("answer to \(pending.ask.approvalID) taken")
                     await send(
-                        ChannelReplies.acknowledged(answer, wasQuestion: pending.ask.question != nil),
+                        ChannelReplies.acknowledged(
+                            answer,
+                            wasQuestion: pending.ask.question != nil,
+                            language: replyLanguage
+                        ),
                         to: from,
                         contextToken: pending.contextToken
                     )
                 }
                 return
             case .needsApp:
-                await send(ChannelReplies.onlyInApp(), to: from, contextToken: pending.contextToken)
+                await send(
+                    ChannelReplies.onlyInApp(language: replyLanguage),
+                    to: from,
+                    contextToken: pending.contextToken
+                )
                 return
             case .unclear:
                 // A sentence rather than an answer, which becomes a turn of
@@ -576,7 +602,7 @@ actor WeChatChannel {
                 trace("message taken as a new turn while \(pending.ask.approvalID) waits")
                 acknowledged = true
                 await send(
-                    ChannelReplies.received(waitingFor: pending.ask),
+                    ChannelReplies.received(waitingFor: pending.ask, language: replyLanguage),
                     to: from,
                     contextToken: lastContextTokens[from]
                 )
@@ -588,12 +614,16 @@ actor WeChatChannel {
             // to settle, and answer nothing.
             if ChannelReplies.isApprovalWord(text) {
                 trace("approval word with no ask waiting")
-                await send(ChannelReplies.nothingWaiting(), to: from, contextToken: lastContextTokens[from])
+                await send(ChannelReplies.nothingWaiting(language: replyLanguage), to: from, contextToken: lastContextTokens[from])
                 return
             }
             // Heard, whatever comes of it: an answer to an ask is answered
             // above, and a command already by its own reply.
-            await send(ChannelReplies.received(), to: from, contextToken: lastContextTokens[from])
+            await send(
+                ChannelReplies.received(language: replyLanguage),
+                to: from,
+                contextToken: lastContextTokens[from]
+            )
         }
         if let peer {
             await ask(peer, incoming: read)
@@ -645,7 +675,7 @@ actor WeChatChannel {
         owner.title = owner.title ?? AgentConversationRules.title(incoming.text)
         guard await open(owner, prompt: nil, origin: Self.origin) else {
             await send(
-                t("会话打不开：\(message ?? "未知原因")", "The conversation could not be opened: \(message ?? "unknown reason")"),
+                t("会话打不开：\(message ?? "未知原因")", "會話打不開：\(message ?? "未知原因")", "The conversation could not be opened: \(message ?? "unknown reason")"),
                 to: userID,
                 contextToken: lastContextTokens[userID]
             )
@@ -775,30 +805,30 @@ actor WeChatChannel {
     private func sendFile(_ path: String, from userID: String) async -> String {
         let trimmed = path.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else {
-            return t("用法：/send <路径>（会话项目里的文件，或项目内的完整路径）。", "Usage: /send <path> — a file inside the conversation's project.")
+            return t("用法：/send <路径>（会话项目里的文件，或项目内的完整路径）。", "用法：/send <路徑>（會話專案裡的檔案，或專案內的完整路徑）。", "Usage: /send <path> — a file inside the conversation's project.")
         }
         guard let peer = peers.items.first(where: { $0.userID == userID }) else {
-            return t("还没有绑定会话。先发一条消息或用 /use 选一个。", "This phone has no conversation yet. Send a message or /use one.")
+            return t("还没有绑定会话。先发一条消息或用 /use 选一个。", "還沒有綁定會話。先發一則訊息或用 /use 選一個。", "This phone has no conversation yet. Send a message or /use one.")
         }
         guard let root = workspace(of: peer) else {
-            return t("这个会话没有可读的工作目录。", "This conversation has no workspace to read.")
+            return t("这个会话没有可读的工作目录。", "這個會話沒有可讀的工作目錄。", "This conversation has no workspace to read.")
         }
         let url = trimmed.hasPrefix("/")
             ? URL(fileURLWithPath: trimmed)
             : root.appendingPathComponent(trimmed)
         guard CanonicalPath.isCanonical(url.path, inside: root.path) else {
-            return t("只能发会话项目里的文件：\(root.lastPathComponent)。", "Only files inside \(root.lastPathComponent) can be sent.")
+            return t("只能发会话项目里的文件：\(root.lastPathComponent)。", "只能發會話專案裡的檔案：\(root.lastPathComponent)。", "Only files inside \(root.lastPathComponent) can be sent.")
         }
         guard let data = try? Data(contentsOf: url) else {
-            return t("读不到这个文件：\(trimmed)", "That file could not be read: \(trimmed)")
+            return t("读不到这个文件：\(trimmed)", "讀不到這個檔案：\(trimmed)", "That file could not be read: \(trimmed)")
         }
         guard data.count <= 25 * 1024 * 1024 else {
-            return t("文件太大（上限 25MB）。", "That file is over 25 MB.")
+            return t("文件太大（上限 25MB）。", "檔案太大（上限 25MB）。", "That file is over 25 MB.")
         }
         if let failure = await deliverFile(data, name: url.lastPathComponent, to: peer) {
             return failure
         }
-        return t("已发送 \(url.lastPathComponent)（\(data.count) 字节）。", "Sent \(url.lastPathComponent) (\(data.count) bytes).")
+        return t("已发送 \(url.lastPathComponent)（\(data.count) 字节）。", "已傳送 \(url.lastPathComponent)（\(data.count) 位元組）。", "Sent \(url.lastPathComponent) (\(data.count) bytes).")
     }
 
     /// The files a turn produced (`toolResult` attachments): each is taken
@@ -811,15 +841,15 @@ actor WeChatChannel {
         for file in files.prefix(8) {
             let url = root.appendingPathComponent(file.path)
             guard CanonicalPath.isCanonical(url.path, inside: root.path) else {
-                failures.append(t("\(file.name) 不在会话项目里，没有发出。", "\(file.name) is outside the conversation's project, so it was not sent."))
+                failures.append(t("\(file.name) 不在会话项目里，没有发出。", "\(file.name) 不在會話專案裡，沒有發出。", "\(file.name) is outside the conversation's project, so it was not sent."))
                 continue
             }
             guard let data = try? Data(contentsOf: url) else {
-                failures.append(t("读不到 \(file.name)。", "\(file.name) could not be read."))
+                failures.append(t("读不到 \(file.name)。", "讀不到 \(file.name)。", "\(file.name) could not be read."))
                 continue
             }
             guard data.count <= 25 * 1024 * 1024 else {
-                failures.append(t("\(file.name) 超过 25MB，没有发出。", "\(file.name) is over 25 MB, so it was not sent."))
+                failures.append(t("\(file.name) 超过 25MB，没有发出。", "\(file.name) 超過 25MB，沒有發出。", "\(file.name) is over 25 MB, so it was not sent."))
                 continue
             }
             if let failure = await deliverFile(data, name: file.name, to: peer) {
@@ -839,7 +869,7 @@ actor WeChatChannel {
     /// open, rather than the phone being told the file could not be sent.
     private func deliverFile(_ data: Data, name: String, to peer: Peer) async -> String? {
         guard let client = signedClient() else {
-            return t("通道没有登录，发不了文件。", "The channel is not signed in, so nothing can be sent.")
+            return t("通道没有登录，发不了文件。", "通道沒有登入，發不了檔案。", "The channel is not signed in, so nothing can be sent.")
         }
         let first = IlinkMediaType.of(name: name)
         do {
@@ -875,7 +905,7 @@ actor WeChatChannel {
 
     private func failure(_ error: any Error, name: String) -> String {
         let reason = (error as? IlinkFailure)?.message ?? String(describing: error)
-        return t("没发出去 \(name)：\(reason)", "\(name) was not sent: \(reason)")
+        return t("没发出去 \(name)：\(reason)", "沒發出去 \(name)：\(reason)", "\(name) was not sent: \(reason)")
     }
 
     // MARK: Commands
@@ -888,7 +918,7 @@ actor WeChatChannel {
         }
         switch command {
         case .help:
-            await reply(Self.helpText)
+            await reply(Self.helpText(replyLanguage))
         case .sessions:
             let briefs = await ChannelDirectory.sessions(home: home, registry: registry)
             sessionList = (Date(), briefs)
@@ -915,33 +945,34 @@ actor WeChatChannel {
     /// The conversations, numbered, with the one this phone talks in marked.
     private func sessionsText(_ briefs: [ChannelDirectory.SessionBrief], for userID: String) -> String {
         guard !briefs.isEmpty else {
-            return t("还没有任何会话。直接发消息会自动新建一个。", "No conversations yet. Send a message and one opens.")
+            return t("还没有任何会话。直接发消息会自动新建一个。", "還沒有任何會話。直接發訊息會自動新建一個。", "No conversations yet. Send a message and one opens.")
         }
         let mine = peers.items.first(where: { $0.userID == userID })?.sessionID
-        var lines = [t("全部会话（共 \(briefs.count) 个，按最近活动排序）：", "Conversations (\(briefs.count), most recent first):"), ""]
+        var lines = [t("全部会话（共 \(briefs.count) 个，按最近活动排序）：", "全部會話（共 \(briefs.count) 個，依最近活動排序）：", "Conversations (\(briefs.count), most recent first):"), ""]
         for (index, brief) in briefs.enumerated() {
-            var line = "\(index + 1). \(brief.title) · \(brief.projectName ?? t("通用", "General")) · \(Self.stamp(brief.updatedAt))"
+            var line = "\(index + 1). \(brief.title) · \(brief.projectName ?? t("通用", "通用", "General")) · \(Self.stamp(brief.updatedAt))"
             if brief.id == mine {
-                line += t("（当前）", " (current)")
+                line += t("（目前）", "（目前）", " (current)")
             } else if brief.running {
-                line += t("（进行中）", " (running)")
+                line += t("（進行中）", "（進行中）", " (running)")
             }
             lines.append(line)
         }
         lines.append("")
-        lines.append(t("发 /use <序号> 切换，/use 新 新建。", "Send /use <number> to switch, /use new to start one."))
+        lines.append(t("发 /use <序号> 切换，/use 新 新建。", "發 /use <序號> 切換，/use 新 新建。", "Send /use <number> to switch, /use new to start one."))
         return lines.joined(separator: "\n")
     }
 
     private func currentText(_ userID: String) -> String {
         guard let peer = peers.items.first(where: { $0.userID == userID }) else {
-            return t("还没有绑定会话。直接发消息会自动新建一个；或发 /sessions 选。", "This phone has no conversation yet. Send a message, or /sessions.")
+            return t("还没有绑定会话。直接发消息会自动新建一个；或发 /sessions 选。", "還沒有綁定會話。直接發訊息會自動新建一個；或發 /sessions 選。", "This phone has no conversation yet. Send a message, or /sessions.")
         }
-        let project = peer.projectName ?? t("通用", "General")
-        let model = peer.model.map { "\(peer.provider?.rawValue ?? "")·\($0)" } ?? t("会话自己的", "the conversation’s own")
-        let effort = peer.effort.map(ChannelCommands.effortName) ?? t("默认", "default")
+        let project = peer.projectName ?? t("通用", "通用", "General")
+        let model = peer.model.map { "\(peer.provider?.rawValue ?? "")·\($0)" } ?? t("会话自己的", "會話自己的", "the conversation’s own")
+        let effort = peer.effort.map(ChannelCommands.effortName) ?? t("默认", "預設", "default")
         return t(
             "当前会话：\(peer.title ?? String(peer.sessionID.prefix(8))) · \(project)\n模型：\(model) · 强度：\(effort)",
+            "目前會話：\(peer.title ?? String(peer.sessionID.prefix(8))) · \(project)\n模型：\(model) · 強度：\(effort)",
             "Conversation: \(peer.title ?? String(peer.sessionID.prefix(8))) · \(project)\nModel: \(model) · effort: \(effort)"
         )
     }
@@ -950,7 +981,7 @@ actor WeChatChannel {
     private func use(_ argument: String, from userID: String) async -> String {
         let trimmed = argument.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else {
-            return t("用法：/use <序号>，或 /use 新 新建。先发 /sessions 看序号。", "Usage: /use <number>, or /use new. Send /sessions for the numbers.")
+            return t("用法：/use <序号>，或 /use 新 新建。先发 /sessions 看序号。", "用法：/use <序號>，或 /use 新 新建。先發 /sessions 看序號。", "Usage: /use <number>, or /use new. Send /sessions for the numbers.")
         }
         let existing = peers.items.first(where: { $0.userID == userID })
         if trimmed == "新" || trimmed.lowercased() == "new" {
@@ -968,13 +999,14 @@ actor WeChatChannel {
             owner.temporaryID = project == nil ? temporary : nil
             owner.title = nil
             guard await open(owner, prompt: nil, origin: Self.origin) else {
-                return t("新建会话失败：\(message ?? "未知原因")", "The conversation could not be opened: \(message ?? "unknown reason")")
+                return t("新建会话失败：\(message ?? "未知原因")", "新建會話失敗：\(message ?? "未知原因")", "The conversation could not be opened: \(message ?? "unknown reason")")
             }
             var stored = owner
             stored.updatedAt = Date()
             bind(stored)
             return t(
                 "已新建会话 \(String(sessionID.prefix(8))) · \(project ?? "通用")。之后的消息都进这个会话。",
+                "已新建會話 \(String(sessionID.prefix(8))) · \(project ?? "通用")。之後的訊息都進這個會話。",
                 "Started conversation \(String(sessionID.prefix(8))) · \(project ?? "General")."
             )
         }
@@ -990,7 +1022,7 @@ actor WeChatChannel {
             target = briefs.first { $0.id == trimmed || (trimmed.count >= 6 && $0.id.hasPrefix(trimmed)) }
         }
         guard let target else {
-            return t("没找到会话「\(trimmed)」。发 /sessions 看序号，或 /use 新 新建。", "No conversation “\(trimmed)”. Send /sessions, or /use new.")
+            return t("没找到会话「\(trimmed)」。发 /sessions 看序号，或 /use 新 新建。", "沒找到會話「\(trimmed)」。發 /sessions 看序號，或 /use 新 新建。", "No conversation “\(trimmed)”. Send /sessions, or /use new.")
         }
         var peer = existing ?? Peer(
             userID: userID,
@@ -1012,6 +1044,7 @@ actor WeChatChannel {
         bind(peer)
         return t(
             "已切换到「\(target.title)」· \(target.projectName ?? "通用")。之后的消息都进这个会话。",
+            "已切換到「\(target.title)」· \(target.projectName ?? "通用")。之後的訊息都進這個會話。",
             "Switched to “\(target.title)” · \(target.projectName ?? "General")."
         )
     }
@@ -1020,15 +1053,15 @@ actor WeChatChannel {
     private func workspaceListText(for userID: String) -> String {
         let projects = ChannelDirectory.projects(home: home)
         guard !projects.isEmpty else {
-            return t("这台设备还没有任何项目。先在 Apelin 里建一个。", "No projects on this device yet. Make one in Apelin first.")
+            return t("这台设备还没有任何项目。先在 Apelin 里建一个。", "這台裝置還沒有任何專案。先在 Apelin 裡建一個。", "No projects on this device yet. Make one in Apelin first.")
         }
         let current = peers.items.first(where: { $0.userID == userID })?.projectName ?? record.projectName
-        var lines = [t("项目（共 \(projects.count) 个）：", "Projects (\(projects.count)):"), ""]
+        var lines = [t("项目（共 \(projects.count) 个）：", "專案（共 \(projects.count) 個）：", "Projects (\(projects.count)):"), ""]
         for (index, name) in projects.enumerated() {
-            lines.append("\(index + 1). \(name)\(name == current ? t("（当前）", " (current)") : "")")
+            lines.append("\(index + 1). \(name)\(name == current ? t("（目前）", "（目前）", " (current)") : "")")
         }
         lines.append("")
-        lines.append(t("发 /workspace <序号> 设定默认项目，之后 /use 新 会在那里新建。", "Send /workspace <number> to set it; /use new opens there."))
+        lines.append(t("发 /workspace <序号> 设定默认项目，之后 /use 新 会在那里新建。", "發 /workspace <序號> 設定預設專案，之後 /use 新 會在那裡新建。", "Send /workspace <number> to set it; /use new opens there."))
         return lines.joined(separator: "\n")
     }
 
@@ -1044,7 +1077,7 @@ actor WeChatChannel {
             target = projects.first { $0.caseInsensitiveCompare(trimmed) == .orderedSame }
         }
         guard let target else {
-            return t("没找到项目「\(trimmed)」。发 /workspace 看序号。", "No project “\(trimmed)”. Send /workspace.")
+            return t("没找到项目「\(trimmed)」。发 /workspace 看序号。", "沒找到專案「\(trimmed)」。發 /workspace 看序號。", "No project “\(trimmed)”. Send /workspace.")
         }
         var peer = peers.items.first(where: { $0.userID == userID })
             ?? Peer(userID: userID, sessionID: UUID().uuidString.lowercased(), temporaryID: nil, title: nil)
@@ -1053,6 +1086,7 @@ actor WeChatChannel {
         bind(peer)
         return t(
             "已把默认项目设为「\(target)」。新建会话会在那里；已绑定的会话不变。发 /use 新 立即开一个。",
+            "已把預設專案設為「\(target)」。新建會話會在那裡；已綁定的會話不變。發 /use 新 立即開一個。",
             "Default project is now “\(target)”. New conversations open there; the current one stays. Send /use new."
         )
     }
@@ -1063,6 +1097,7 @@ actor WeChatChannel {
         guard !models.isEmpty else {
             return t(
                 "还没有可用的模型。先在 Apelin 的「模型供应商」里登录，再到「模型」里启用要用的。",
+                "還沒有可用的模型。先在 Apelin 的「模型供應商」裡登入，再到「模型」裡啟用要用的。",
                 "No models yet. Sign in a provider in Apelin, then enable the ones you want under Models."
             )
         }
@@ -1070,7 +1105,7 @@ actor WeChatChannel {
             return modelListText(models, for: userID)
         }
         guard let index = ChannelCommands.index(argument), models.indices.contains(index - 1) else {
-            return t("用法：/model <序号> [lo|mid|hi]。发 /model 看序号。", "Usage: /model <number> [lo|mid|hi]. Send /model for the numbers.")
+            return t("用法：/model <序号> [lo|mid|hi]。发 /model 看序号。", "用法：/model <序號> [lo|mid|hi]。發 /model 看序號。", "Usage: /model <number> [lo|mid|hi]. Send /model for the numbers.")
         }
         let chosen = models[index - 1]
         var peer = peers.items.first(where: { $0.userID == userID })
@@ -1080,44 +1115,45 @@ actor WeChatChannel {
         if let effort, let parsed = ChannelCommands.effort(effort) {
             peer.effort = parsed
         } else if let effort {
-            return t("强度「\(effort)」不认识。用 lo、mid 或 hi。", "Unknown effort “\(effort)”. Use lo, mid or hi.")
+            return t("强度「\(effort)」不认识。用 lo、mid 或 hi。", "強度「\(effort)」不認識。用 lo、mid 或 hi。", "Unknown effort “\(effort)”. Use lo, mid or hi.")
         }
         peer.updatedAt = Date()
         bind(peer)
         await configure(peer)
-        let effortName = peer.effort.map(ChannelCommands.effortName) ?? t("会话默认", "the conversation’s")
+        let effortName = peer.effort.map(ChannelCommands.effortName) ?? t("会话默认", "會話預設", "the conversation’s")
         return t(
             "已切到 \(chosen.label) · 强度 \(effortName)。下一条消息就用它。",
+            "已切到 \(chosen.label) · 強度 \(effortName)。下一則訊息就用它。",
             "Now \(chosen.label) · effort \(effortName). The next message uses it."
         )
     }
 
     private func modelListText(_ models: [ChannelModel], for userID: String) -> String {
         let peer = peers.items.first(where: { $0.userID == userID })
-        var lines = [t("模型（共 \(models.count) 个）：", "Models (\(models.count)):"), ""]
+        var lines = [t("模型（共 \(models.count) 个）：", "模型（共 \(models.count) 個）：", "Models (\(models.count)):"), ""]
         for (index, model) in models.prefix(40).enumerated() {
-            let mark = model.model == peer?.model && model.provider == peer?.provider ? t("（当前）", " (current)") : ""
+            let mark = model.model == peer?.model && model.provider == peer?.provider ? t("（目前）", "（目前）", " (current)") : ""
             lines.append("\(index + 1). \(model.label)\(mark)")
         }
         if models.count > 40 {
-            lines.append(t("… 还有 \(models.count - 40) 个未列出。", "… \(models.count - 40) more not listed."))
+            lines.append(t("… 还有 \(models.count - 40) 个未列出。", "… 還有 \(models.count - 40) 個未列出。", "… \(models.count - 40) more not listed."))
         }
         lines.append("")
-        lines.append(t("发 /model <序号> [lo|mid|hi] 切换；/effort <lo|mid|hi> 只改强度。", "Send /model <number> [lo|mid|hi]; /effort <lo|mid|hi> changes only the effort."))
+        lines.append(t("发 /model <序号> [lo|mid|hi] 切换；/effort <lo|mid|hi> 只改强度。", "發 /model <序號> [lo|mid|hi] 切換；/effort <lo|mid|hi> 只改強度。", "Send /model <number> [lo|mid|hi]; /effort <lo|mid|hi> changes only the effort."))
         return lines.joined(separator: "\n")
     }
 
     /// `/effort`: what it is now, or what it becomes.
     private func effortArgument(_ argument: String?, from userID: String) -> String {
         guard let peer = peers.items.first(where: { $0.userID == userID }) else {
-            return t("还没有绑定会话。直接发消息会自动新建一个。", "This phone has no conversation yet. Send a message.")
+            return t("还没有绑定会话。直接发消息会自动新建一个。", "還沒有綁定會話。直接發訊息會自動新建一個。", "This phone has no conversation yet. Send a message.")
         }
         guard let argument else {
-            let name = peer.effort.map(ChannelCommands.effortName) ?? t("会话默认", "the conversation’s")
-            return t("当前思考强度：\(name)。发 /effort lo|mid|hi 修改。", "Effort now: \(name). Send /effort lo|mid|hi.")
+            let name = peer.effort.map(ChannelCommands.effortName) ?? t("会话默认", "會話預設", "the conversation’s")
+            return t("当前思考强度：\(name)。发 /effort lo|mid|hi 修改。", "目前思考強度：\(name)。發 /effort lo|mid|hi 修改。", "Effort now: \(name). Send /effort lo|mid|hi.")
         }
         guard let parsed = ChannelCommands.effort(argument) else {
-            return t("强度「\(argument)」不认识。用 lo、mid 或 hi。", "Unknown effort “\(argument)”. Use lo, mid or hi.")
+            return t("强度「\(argument)」不认识。用 lo、mid 或 hi。", "強度「\(argument)」不認識。用 lo、mid 或 hi。", "Unknown effort “\(argument)”. Use lo, mid or hi.")
         }
         var updated = peer
         updated.effort = parsed
@@ -1125,7 +1161,7 @@ actor WeChatChannel {
         bind(updated)
         let chosen = updated
         Task { [weak self] in await self?.configure(chosen) }
-        return t("已把思考强度设为 \(ChannelCommands.effortName(parsed))。", "Effort is now \(ChannelCommands.effortName(parsed)).")
+        return t("已把思考强度设为 \(ChannelCommands.effortName(parsed))。", "已把思考強度設為 \(ChannelCommands.effortName(parsed))。", "Effort is now \(ChannelCommands.effortName(parsed)).")
     }
 
     /// The models this device offers, read from the agent's own account list
@@ -1339,31 +1375,62 @@ actor WeChatChannel {
         return formatter.string(from: date)
     }
 
-    private func t(_ chinese: String, _ english: String) -> String {
-        ChannelReplies.language == "en" ? english : chinese
+    /// One line in the app's own language: the three the channel writes.
+    private func t(_ hans: String, _ hant: String, _ english: String) -> String {
+        switch replyLanguage {
+        case "zh-Hans": hans
+        case "zh-Hant": hant
+        default: english
+        }
     }
 
-    static let helpText = """
-    /sessions  列出全部会话
-    /use <序号>  切换会话；/use 新 新建
-    /current  查看当前会话
-    /workspace  列出项目；/workspace <序号> 设定默认项目
-    /model  列出已启用的模型；/model <序号> [lo|mid|hi] 切换
-    /effort <lo|mid|hi>  修改思考强度
-    /send <路径>  把设备上的文件发到微信
-    /help  显示本帮助
+    /// A line whose two Chinese spellings are the same words.
+    private func t(_ chinese: String, _ english: String) -> String {
+        t(chinese, chinese, english)
+    }
 
-    直接发普通文字则交给会话里的 AI。需要授权或回答问题时，回数字即可。
+    /// `/help` in the app's own language, never two at once.
+    static func helpText(_ language: String) -> String {
+        switch language {
+        case "zh-Hans":
+            """
+            /sessions  列出全部会话
+            /use <序号>  切换会话；/use 新 新建
+            /current  查看当前会话
+            /workspace  列出项目；/workspace <序号> 设定默认项目
+            /model  列出已启用的模型；/model <序号> [lo|mid|hi] 切换
+            /effort <lo|mid|hi>  修改思考强度
+            /send <路径>  把设备上的文件发到微信
+            /help  显示本帮助
 
-    /sessions  every conversation
-    /use <number>  switch; /use new  start one
-    /current  which conversation this phone is in
-    /workspace  the projects; /workspace <number>  the default one
-    /model  the models you have enabled; /model <number> [lo|mid|hi]  pick one
-    /effort <lo|mid|hi>  only the effort
-    /send <path>  send a file of this device to WeChat
-    /help  this page
-    """
+            直接发普通文字则交给会话里的 AI。需要授权或回答问题时，回数字即可。
+            """
+        case "zh-Hant":
+            """
+            /sessions  列出全部會話
+            /use <序號>  切換會話；/use 新 新建
+            /current  查看目前會話
+            /workspace  列出專案；/workspace <序號> 設定預設專案
+            /model  列出已啟用的模型；/model <序號> [lo|mid|hi] 切換
+            /effort <lo|mid|hi>  修改思考強度
+            /send <路徑>  把裝置上的檔案發到微信
+            /help  顯示本說明
+
+            直接發普通文字則交給會話裡的 AI。需要授權或回答問題時，回數字即可。
+            """
+        default:
+            """
+            /sessions  every conversation
+            /use <number>  switch; /use new  start one
+            /current  which conversation this phone is in
+            /workspace  the projects; /workspace <number>  the default one
+            /model  the models you have enabled; /model <number> [lo|mid|hi]  pick one
+            /effort <lo|mid|hi>  only the effort
+            /send <path>  send a file of this device to WeChat
+            /help  this page
+            """
+        }
+    }
 
     /// Sends one approval or question to the phone that talks in this
     /// conversation, and keeps it for the reply.
@@ -1394,7 +1461,8 @@ actor WeChatChannel {
         ask.text = ChannelReplies.text(
             for: ask,
             reason: payload["reason"]?.stringValue,
-            arguments: payload["arguments"]?.stringValue
+            arguments: payload["arguments"]?.stringValue,
+            language: replyLanguage
         )
         let contextToken = lastContextTokens[peer.userID]
         pendingAsks[sessionID] = PendingAsk(ask: ask, contextToken: contextToken, userID: peer.userID)

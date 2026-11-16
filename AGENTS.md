@@ -493,7 +493,15 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   record, pushed by `ChannelModelList` when it changes and whenever the
   channel's page opens), and the host asks the account list for it with
   `onlyExtraModels`, the same narrowing the composer's own sheet uses. A host
-  that was never told answers with everything, as it did before. Files travel
+  that was never told answers with everything, as it did before. The language
+  goes the same way (`channelConfigure.language`, pushed by `ChannelLanguage`
+  at launch, when the channel's page opens and when Settings ▸ Models
+  changes): every reply the channel writes — the ask, the acknowledgement,
+  `/help` and each command's answer — is in the app's own language, because
+  the host's own locale is the system's, which is not the app's. The app ships
+  thirteen and the channel writes three: `ChannelReplies.canonical` folds a
+  tag into `zh-Hans`, `zh-Hant` or English, and `t(_:_:_:)` picks a command's
+  line in the same three. Files travel
   both ways: what
   a phone sends is downloaded from the CDN, decrypted (AES-128-ECB, the
   `aes_key` in either spelling), saved under the channel's `attachments/`

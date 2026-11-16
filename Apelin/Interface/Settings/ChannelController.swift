@@ -125,8 +125,13 @@ final class ChannelController: TableController {
         refresh()
         startPolling()
         // The page is where the channel is configured: what Settings ▸ Models
-        // holds goes with it, so `/model` in WeChat lists the app's models.
-        Task { await ChannelModelList.pushIfChanged() }
+        // holds goes with it, so `/model` in WeChat lists the app's models,
+        // and the app's own language goes with it too, so a reply reads the
+        // way this page does.
+        Task {
+            await ChannelModelList.pushIfChanged()
+            await ChannelLanguage.pushIfChanged()
+        }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -483,6 +488,41 @@ enum ChannelModelList {
         } catch {
             // The background service is not there yet: the next change or
             // page tries again.
+        }
+    }
+}
+
+/// The language Apelin's own interface is in (`Bundle.main`'s, which follows
+/// the per-app language set in Settings ▸ Apelin). The channel lives in the
+/// session host, and a daemon reads the *system's* locale — usually English —
+/// so a WeChat reply would otherwise come back in a language the app never
+/// shows. Handed over the same way the model list is: at launch, when the
+/// channel's page opens, and when Settings ▸ Models changes.
+@MainActor
+enum ChannelLanguage {
+    private static var pushed: String?
+
+    /// The localization the app itself is running in: `zh-Hans`, `zh-Hant`,
+    /// `en`, and the ten others the app ships.
+    static var current: String {
+        Bundle.main.preferredLocalizations.first ?? "en"
+    }
+
+    /// `retries` waits for the host to come up: at launch it may still be
+    /// starting, and the phone's own language is the wrong fallback for an
+    /// app the reader set to another one.
+    static func pushIfChanged(retries: Int = 1) async {
+        let language = current
+        guard language != pushed else { return }
+        for attempt in 0 ..< max(1, retries) {
+            do {
+                _ = try await ApelinService.app.channelConfigure(language: language)
+                pushed = language
+                return
+            } catch {
+                guard attempt + 1 < retries else { return }
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+            }
         }
     }
 }

@@ -1020,7 +1020,10 @@ final class ChatController: UIViewController {
         ensureModelSelection()
         // The WeChat channel offers a phone the models this device offers, so
         // it hears the change as the page does.
-        Task { await ChannelModelList.pushIfChanged() }
+        Task {
+            await ChannelModelList.pushIfChanged()
+            await ChannelLanguage.pushIfChanged()
+        }
         if let id = chat?.id, let sheet = modelSheet,
            presentedViewController === sheet, !sheet.isBeingDismissed {
             refreshModelSheet(sheet, for: id)
