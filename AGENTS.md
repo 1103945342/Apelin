@@ -465,9 +465,15 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   turn behind it answers; an answer to an ask and a command are answered with
   their own line instead. A decision taken in the app clears the ask the phone
   was given (`approvalResolved`). The asks are kept in `pending-asks.json`
-  beside `peers.json`, so a host restart does not lose one: a reply to an ask
-  kept past the end of its run answers `notFound`, and the phone is told that
-  step is no longer waiting rather than left with nothing. The one
+  beside `peers.json`, keyed by the conversation each belongs to rather than
+  the phone's id, so a reply is read against the run that asked even if the
+  id its messages arrive under changed; kept past the end of its run, an ask
+  answers `notFound` and the phone is told that step is no longer waiting
+  rather than left with nothing. `approve` or `同意` with no ask waiting is
+  said back, not queued: a reply to an old message must never wait behind a
+  run it cannot settle. `channel-log.txt` keeps one line per ask, message and
+  answer — ids and lengths, never what the message said — because NSLog keeps
+  no history to read after the fact. The one
   thing WeChat cannot give is a command as root: that takes the device
   owner's check (`ownerVerified`), so it is announced with a line saying so
   and approved only in Apelin. Settings ▸ Plugins names it WeChat ClawBot, and

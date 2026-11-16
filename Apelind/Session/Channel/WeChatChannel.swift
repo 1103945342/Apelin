@@ -156,6 +156,8 @@ actor WeChatChannel {
     private struct PendingAsk: Sendable {
         var ask: ChannelAsk
         var contextToken: String?
+        /// The phone it was sent to, which the file keeps too.
+        var userID: String
     }
 
     /// A message as the conversation takes it: what was written, the notes
@@ -182,8 +184,10 @@ actor WeChatChannel {
     private var message: String?
     private var listening = false
     private var lastMessageAt: Date?
-    /// The approvals and questions a phone has been asked, by its user id.
-    /// One per phone: a run waits on one decision at a time.
+    /// The approvals and questions a phone has been asked, by the
+    /// conversation each belongs to: what waits is the run's, and the phone
+    /// that talks in that conversation is the one answering — whatever id
+    /// its messages arrive under.
     private var pendingAsks: [String: PendingAsk] = [:]
     /// The thread a phone's messages came in on, so an ask that arrives
     /// later still answers in the same one.
@@ -204,7 +208,7 @@ actor WeChatChannel {
         peers = Self.loadPeers(folder)
         pendingAsks = Self.loadAsks(folder)
         if !pendingAsks.isEmpty {
-            NSLog("wechat-channel: %ld ask(s) kept from the last run", pendingAsks.count)
+            Self.trace("\(pendingAsks.count) ask(s) kept from the last run", folder: folder)
         }
     }
 
@@ -513,21 +517,27 @@ actor WeChatChannel {
             await run(command, from: from)
             return
         }
+        let peer = peers.items.first(where: { $0.userID == from })
+        // The ask belongs to the conversation the phone talks in, so the
+        // reply is read against that — whatever id its messages arrive
+        // under. The phone id is only a fallback, for an ask kept before the
+        // conversation was bound again.
+        var waiting = peer.flatMap { pendingAsks[$0.sessionID] }
+        if waiting == nil {
+            waiting = pendingAsks.values.first { $0.userID == from }
+        }
         var acknowledged = false
-        if let pending = pendingAsks[from] {
+        if let pending = waiting {
             switch ChannelReplies.read(text, ask: pending.ask) {
             case let .answer(answer):
-                pendingAsks[from] = nil
+                pendingAsks.removeValue(forKey: pending.ask.sessionID)
                 saveAsks()
                 let failure = await settle(pending.ask, answer: answer)
                 if let failure {
                     if failure.code == .notFound {
                         // The run ended, or the decision was taken in Apelin,
                         // while this ask was kept: nothing waits for it now.
-                        NSLog(
-                            "wechat-channel: reply to approval %@ found nothing waiting",
-                            pending.ask.approvalID
-                        )
+                        trace("answer to \(pending.ask.approvalID) found nothing waiting")
                         await send(
                             ChannelReplies.noLongerWaiting(),
                             to: from,
@@ -537,7 +547,7 @@ actor WeChatChannel {
                         // Refused or out of reach: the ask stays, so it can be
                         // answered again here or in Apelin — and the phone is
                         // told why, rather than left waiting for nothing.
-                        pendingAsks[from] = pending
+                        pendingAsks[pending.ask.sessionID] = pending
                         saveAsks()
                         let reason = failure.message.isEmpty
                             ? t("未知原因", "unknown reason") : failure.message
@@ -548,6 +558,7 @@ actor WeChatChannel {
                         )
                     }
                 } else {
+                    trace("answer to \(pending.ask.approvalID) taken")
                     await send(
                         ChannelReplies.acknowledged(answer, wasQuestion: pending.ask.question != nil),
                         to: from,
@@ -562,10 +573,7 @@ actor WeChatChannel {
                 // A sentence rather than an answer, which becomes a turn of
                 // its own: the ask goes on waiting, and the phone is told, so
                 // a reply the channel did not understand never looks approved.
-                NSLog(
-                    "wechat-channel: message taken as a new turn while approval %@ waits",
-                    pending.ask.approvalID
-                )
+                trace("message taken as a new turn while \(pending.ask.approvalID) waits")
                 acknowledged = true
                 await send(
                     ChannelReplies.received(waitingFor: pending.ask),
@@ -575,11 +583,19 @@ actor WeChatChannel {
             }
         }
         if !acknowledged {
+            // A word that only answers an approval, with none waiting, is
+            // said back: queued it would wait behind the very run it means
+            // to settle, and answer nothing.
+            if ChannelReplies.isApprovalWord(text) {
+                trace("approval word with no ask waiting")
+                await send(ChannelReplies.nothingWaiting(), to: from, contextToken: lastContextTokens[from])
+                return
+            }
             // Heard, whatever comes of it: an answer to an ask is answered
             // above, and a command already by its own reply.
             await send(ChannelReplies.received(), to: from, contextToken: lastContextTokens[from])
         }
-        if let peer = peers.items.first(where: { $0.userID == from }) {
+        if let peer {
             await ask(peer, incoming: read)
         } else {
             await openConversation(with: from, incoming: read)
@@ -1357,10 +1373,8 @@ actor WeChatChannel {
         else {
             // A conversation no phone talks in: the app's own, or one whose
             // binding moved. Nothing is sent, and the log says which.
-            NSLog(
-                "wechat-channel: approval %@ for session %@ has no phone",
-                payload["approvalID"]?.stringValue ?? "(none)",
-                sessionID
+            trace(
+                "ask \(payload["approvalID"]?.stringValue ?? "(none)") for session \(sessionID) has no phone"
             )
             return
         }
@@ -1383,9 +1397,9 @@ actor WeChatChannel {
             arguments: payload["arguments"]?.stringValue
         )
         let contextToken = lastContextTokens[peer.userID]
-        pendingAsks[peer.userID] = PendingAsk(ask: ask, contextToken: contextToken)
+        pendingAsks[sessionID] = PendingAsk(ask: ask, contextToken: contextToken, userID: peer.userID)
         saveAsks()
-        NSLog("wechat-channel: approval %@ for session %@ waits for a reply", approvalID, sessionID)
+        trace("ask \(approvalID) for session \(sessionID) waits for a reply")
         await send(ask.text, to: peer.userID, contextToken: contextToken)
     }
 
@@ -1415,8 +1429,8 @@ actor WeChatChannel {
     private func clearAsk(_ approvalID: String?) {
         guard let approvalID else { return }
         var cleared = false
-        for (userID, pending) in pendingAsks where pending.ask.approvalID == approvalID {
-            pendingAsks[userID] = nil
+        for (session, pending) in pendingAsks where pending.ask.approvalID == approvalID {
+            pendingAsks[session] = nil
             cleared = true
         }
         if cleared { saveAsks() }
@@ -1424,12 +1438,7 @@ actor WeChatChannel {
 
     /// The run ended: the ask it was waiting on can no longer be answered.
     private func clearAsks(session: String) {
-        var cleared = false
-        for (userID, pending) in pendingAsks where pending.ask.sessionID == session {
-            pendingAsks[userID] = nil
-            cleared = true
-        }
-        if cleared { saveAsks() }
+        if pendingAsks.removeValue(forKey: session) != nil { saveAsks() }
     }
 
     private func failed(_ error: any Error, to reply: Reply) {
@@ -1570,6 +1579,32 @@ actor WeChatChannel {
         folder.appendingPathComponent("pending-asks.json")
     }
 
+    /// The log's own cap: past it, the older half goes.
+    private static let logLimit = 64 * 1024
+
+    /// What the channel did that a phone cannot see: one line per ask, per
+    /// message and per answer. NSLog keeps no history, so the same line goes
+    /// to `channel-log.txt` beside the asks — ids and lengths, never what the
+    /// message said.
+    private func trace(_ line: String) {
+        Self.trace(line, folder: folder)
+    }
+
+    private static func trace(_ line: String, folder: URL) {
+        NSLog("wechat-channel: %@", line)
+        let stamped = ISO8601DateFormatter().string(from: Date()) + " " + line + "\n"
+        guard let data = stamped.data(using: .utf8) else { return }
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let file = folder.appendingPathComponent("channel-log.txt")
+        var written = (try? Data(contentsOf: file)) ?? Data()
+        written.append(data)
+        if written.count > logLimit {
+            written = Data(written.suffix(logLimit / 2))
+        }
+        try? written.write(to: file, options: .atomic)
+        try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: file.path)
+    }
+
     private func makeFolder() {
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         // Only the account that runs the channel reads it.
@@ -1609,16 +1644,16 @@ actor WeChatChannel {
             return
         }
         makeFolder()
-        let stored = pendingAsks
+        let stored = pendingAsks.values
             .map {
                 StoredAsk(
-                    userID: $0.key,
-                    ask: $0.value.ask,
-                    contextToken: $0.value.contextToken,
+                    userID: $0.userID,
+                    ask: $0.ask,
+                    contextToken: $0.contextToken,
                     savedAt: Date()
                 )
             }
-            .sorted { $0.userID < $1.userID }
+            .sorted { $0.ask.sessionID < $1.ask.sessionID }
         guard let data = try? JSONCoding.encode(stored) else { return }
         try? data.write(to: asksFile, options: .atomic)
         try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: asksFile.path)
@@ -1635,8 +1670,12 @@ actor WeChatChannel {
             return [:]
         }
         var asks: [String: PendingAsk] = [:]
-        for entry in stored where !entry.userID.isEmpty && asks[entry.userID] == nil {
-            asks[entry.userID] = PendingAsk(ask: entry.ask, contextToken: entry.contextToken)
+        for entry in stored where !entry.ask.sessionID.isEmpty && asks[entry.ask.sessionID] == nil {
+            asks[entry.ask.sessionID] = PendingAsk(
+                ask: entry.ask,
+                contextToken: entry.contextToken,
+                userID: entry.userID
+            )
         }
         return asks
     }

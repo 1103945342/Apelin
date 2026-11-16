@@ -150,6 +150,22 @@ final class ChannelRepliesTests: XCTestCase {
         XCTAssertTrue(ChannelReplies.noLongerWaiting(language: "en").contains("no longer waiting"))
     }
 
+    /// A word that only answers an approval, with none waiting, is said back
+    /// rather than queued.
+    func testAnApprovalWordWithNothingWaitingIsRecognised() {
+        XCTAssertTrue(ChannelReplies.isApprovalWord("同意"))
+        XCTAssertTrue(ChannelReplies.isApprovalWord(" approve "))
+        XCTAssertTrue(ChannelReplies.isApprovalWord("Approve!"))
+        XCTAssertTrue(ChannelReplies.isApprovalWord("拒绝"))
+        // Short everyday replies are left to be messages.
+        XCTAssertFalse(ChannelReplies.isApprovalWord("好"))
+        XCTAssertFalse(ChannelReplies.isApprovalWord("ok"))
+        XCTAssertFalse(ChannelReplies.isApprovalWord("我同意这个方案"))
+        XCTAssertFalse(ChannelReplies.isApprovalWord("继续"))
+        XCTAssertTrue(ChannelReplies.nothingWaiting(language: "zh-Hans").contains("没有在等"))
+        XCTAssertTrue(ChannelReplies.nothingWaiting(language: "en").contains("No approval is waiting"))
+    }
+
     /// The ask is kept as a file between host runs, so it survives one.
     func testAnAskSurvivesTheFile() throws {
         let ask = question()

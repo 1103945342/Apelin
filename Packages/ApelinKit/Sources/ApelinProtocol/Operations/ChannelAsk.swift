@@ -230,6 +230,26 @@ public enum ChannelReplies {
         Wording(language: language).noLongerWaiting
     }
 
+    /// What a phone hears when it sends a word that answers an approval
+    /// itself, and none is waiting: said rather than passed on as a message,
+    /// which would queue behind the very run it means to settle.
+    public static func nothingWaiting(language: String = ChannelReplies.language) -> String {
+        Wording(language: language).nothingWaiting
+    }
+
+    /// The words that answer an approval as itself, rather than a reply that
+    /// merely happens to be short ("好", "ok", "yes"), which is left to be a
+    /// message like any other.
+    static let approvalWords: Set<String> = [
+        "同意", "批准", "允許", "允许", "核准", "不同意", "不批准", "拒絕", "拒绝",
+        "approve", "approved", "allow", "accept", "deny", "reject",
+    ]
+
+    /// Whether `text` is nothing but one of `approvalWords`.
+    public static func isApprovalWord(_ text: String) -> Bool {
+        approvalWords.contains(folded(text))
+    }
+
     /// The phone's own language, as the three the asks are written in; the
     /// app and the host are on the same device, so this is the reader's.
     public static var language: String {
@@ -258,6 +278,7 @@ public enum ChannelReplies {
         var receivedWaitingApproval: String
         var receivedWaitingQuestion: String
         var noLongerWaiting: String
+        var nothingWaiting: String
         var pickOne: String
         var pickSeveral: String
         var isQuestion = false
@@ -275,6 +296,7 @@ public enum ChannelReplies {
                 receivedWaitingApproval = "已收到你的消息，Apelin 正在处理中。刚才那一步还在等你答复：回「同意」或「拒绝」。"
                 receivedWaitingQuestion = "已收到你的消息，Apelin 正在处理中。刚才那个问题还在等你回答：回序号或直接写你的答案。"
                 noLongerWaiting = "这一步已经不在等答复了：它可能已经在 Apelin 里处理，或这一轮已经结束。"
+                nothingWaiting = "现在没有在等答复的审批，这句没有转给 Apelin。要接着说，直接写你要做什么。"
                 pickOne = "回复序号，或直接写你的答案。"
                 pickSeveral = "回复序号（可多选，用逗号分开），或直接写你的答案。"
                 isQuestion = true
@@ -289,6 +311,7 @@ public enum ChannelReplies {
                 receivedWaitingApproval = "已收到你的訊息，Apelin 正在處理中。剛才那一步還等你答覆：回「同意」或「拒絕」。"
                 receivedWaitingQuestion = "已收到你的訊息，Apelin 正在處理中。剛才那個問題還等你回答：回序號或直接寫你的答案。"
                 noLongerWaiting = "這一步已經不在等答覆了：它可能已經在 Apelin 裡處理，或這一輪已經結束。"
+                nothingWaiting = "現在沒有在等答覆的審批，這句沒有轉給 Apelin。要接著說，直接寫你要做什麼。"
                 pickOne = "回覆序號，或直接寫你的答案。"
                 pickSeveral = "回覆序號（可多選，用逗號分開），或直接寫你的答案。"
                 isQuestion = true
@@ -303,6 +326,7 @@ public enum ChannelReplies {
                 receivedWaitingApproval = "Got your message — Apelin is working on it. The step is still waiting: reply approve to allow it, or deny to refuse it."
                 receivedWaitingQuestion = "Got your message — Apelin is working on it. The question is still waiting: reply with a number, or write your own answer."
                 noLongerWaiting = "That step is no longer waiting for an answer — it may have been settled in Apelin, or the run has ended."
+                nothingWaiting = "No approval is waiting for an answer right now, so this was not passed on. To carry on, just say what you want."
                 pickOne = "Reply with a number, or write your own answer."
                 pickSeveral = "Reply with numbers (comma-separated for several), or write your own answer."
                 isQuestion = true
