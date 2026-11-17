@@ -122,3 +122,31 @@ called by the harness — is wired into `Tests/SessionHost/main.swift` and passe
 on the device. Two of its checks failed before this work and are fixed with it: a log
 that cannot be read is no longer taken for a log missing its closing `state`, so
 neither its record nor its numbering is rewritten.
+
+## 6. Phase D: the small one, done
+
+`ChatRuntime`'s attachment cache was a dictionary that only ever grew, holding up to
+32 MB per attachment for the life of the app. It is now a 48 MB LRU, oldest let go
+first; an attachment is re-readable from its file, so nothing the reader sees changes.
+
+`TraceBody`'s key was left alone: its cache holds the blocks' own text anyway, so
+keying by a digest would save one copy of at most a few megabytes — not worth
+touching a page that draws every trace step.
+
+## 7. What this branch does not do yet, and why
+
+**C (the app's 190 MB) needs the storage split, and the split needs a compiler.**
+A fact found while writing it: the app deletes a conversation it judges untouched,
+and "untouched" is `record.events.isEmpty` (`ChatRuntime.swift:243`). A record whose
+events are only *not read yet* looks exactly like one with no history at all, so
+reading them lazily without splitting the file would delete conversations. The safe
+shape is the one in §3: a head that carries how many events the chat has, and an
+append-only `Chats/<id>.events.jsonl` beside it, migrated once. That changes the
+on-disk format and touches the transcript, the rail, forks and edits, so it has to be
+done where the app can be built and the UI exercised — there is no `xcodebuild` on
+this device.
+
+**B (agent task budgets) no longer buys memory.** A stopped the host from reading
+finished logs at all, so a budget would now bound disk, not memory: 237 MB of agent
+task logs that duplicate `sessions/`. Worth doing for disk, later, together with the
+app's reading of the trim marker.
