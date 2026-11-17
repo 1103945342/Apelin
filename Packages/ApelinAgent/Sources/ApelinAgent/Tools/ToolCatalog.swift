@@ -261,7 +261,7 @@ public extension AgentToolName {
                 "prompt": Schema.string("The first message, which the other agent reads as the user's: the task, the files involved, what to deliver, and what to leave alone."),
                 "title": Schema.string("A short name for the sidebar, in the user's language."),
                 "project": Self.projectParameter,
-                "brief": .object([
+                "brief": Schema.object([
                     "objective": Schema.string("What the conversation must reach, in one bounded statement."),
                     "acceptance": Schema.array(of: Schema.string("One acceptance criterion."), description: "What makes the work acceptable: 1 to 32 of them."),
                     "gates": .object([
@@ -787,7 +787,7 @@ public extension AgentToolName {
     /// The conversation tools' other project.
     /// A step of a delegation brief, as the tools take it
     /// (`AgentDelegationBrief.Step`).
-    internal static let delegationStepSchema: JSONValue = .object([
+    internal static let delegationStepSchema: JSONValue = Schema.object([
         "id": Schema.string("The step's identifier: letters, digits, - _ . at most 80."),
         "title": Schema.string("The step's title, at most 160 characters."),
         "write_roots": Schema.array(
