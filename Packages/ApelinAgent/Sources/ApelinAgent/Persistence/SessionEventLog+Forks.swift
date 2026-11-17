@@ -289,7 +289,15 @@ extension SessionEventLog {
         guard case .finished(reason: .aborted)? = ending?.event else {
             throw SessionStoreError.corrupt("unfinished tool calls without a recorded stop")
         }
-        return try recoverInterruptedHistory(messages)
+        let repaired = try recoverInterruptedHistory(messages)
+        // The repair writes `transcript.json`, but `messages.jsonl` is what the
+        // chat goes on from: left alone, the next checkpoint appends the rest
+        // of the conversation after the call the repair dropped, and the file
+        // keeps a hole — an unfinished batch in the middle, which the next
+        // open refuses as damage. A snapshot starts a segment, and what it
+        // replaces stays in the file for a fork.
+        try snapshotConversation(repaired)
+        return repaired
     }
 
     func readForkContext(_ id: UUID) throws -> ForkContext? {

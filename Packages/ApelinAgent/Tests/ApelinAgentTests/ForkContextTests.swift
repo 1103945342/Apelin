@@ -443,6 +443,10 @@ struct ForkContextTests {
         let reopened = try SessionEventLog(sessionsRoot: home.dataRoot.sessions, sessionID: sessionID)
         #expect(try await reopened.readResumableTranscript() == complete)
         #expect(try await reopened.readTranscript() == complete)
+        // The repaired history is what the chat goes on from, so
+        // `messages.jsonl` holds it too; otherwise the next checkpoint would
+        // append after the call the repair dropped and leave a hole.
+        #expect(try await reopened.readConversation() == complete)
         // A later seal or edit must not replace the stopped turn's boundary
         // with partial UI events or with the later run's content.
         try await reopened.writeHistorySnapshot(complete + [.assistant(fauxAssistantMessage("Later"))], anchors: anchors, seal: true)
