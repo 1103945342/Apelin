@@ -1,3 +1,4 @@
+import ApelinProtocol
 import Foundation
 
 /// Reading `events.jsonl`: the opening scan, which decodes almost nothing,

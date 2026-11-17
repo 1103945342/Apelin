@@ -76,7 +76,7 @@ extension SessionEventLog {
             if snapshot {
                 let ids = Set(records.compactMap { record -> UUID? in
                     switch record.event {
-                    case let .userMessage(id, _, _, _), let .conversationMessageTaken(id, _, _): return id
+                    case let .userMessage(id, _, _, _), let .conversationMessageTaken(id, _, _, _): return id
                     default: return nil
                     }
                 }).subtracting([messageID])

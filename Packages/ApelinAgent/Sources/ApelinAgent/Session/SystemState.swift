@@ -144,10 +144,10 @@ enum SystemState {
             mode: mode,
             runMode: runMode,
             asksBeforeScreen: asksBeforeScreen,
+            parentSessionID: parentSessionID,
             changes: changes,
             hostRestarted: hostRestarted,
             installRoot: installRoot,
-            parentSessionID: parentSessionID,
         )
     }
 

@@ -66,7 +66,7 @@ struct DelegationStepArguments: Decodable {
     }
 
     /// One step out of a tool argument, decoded from its JSON.
-    static func read(_ value: JSONValue) throws -> DelegationStepArguments {
+    static func read(_ value: KWWKAI.JSONValue) throws -> DelegationStepArguments {
         do {
             return try JSONDecoder().decode(DelegationStepArguments.self, from: Data(value.canonicalJSON.utf8))
         } catch {
@@ -105,7 +105,7 @@ struct DelegationBriefArguments: Decodable {
         return brief
     }
 
-    static func read(_ value: JSONValue) throws -> AgentDelegationBrief {
+    static func read(_ value: KWWKAI.JSONValue) throws -> AgentDelegationBrief {
         do {
             return try JSONDecoder()
                 .decode(DelegationBriefArguments.self, from: Data(value.canonicalJSON.utf8))
@@ -143,7 +143,7 @@ struct DelegationPlanCall {
         .acceptAssignment, .cancelAssignment, .failAssignment, .seal,
     ]
 
-    static func read(_ arguments: JSONValue, sessionID: String) throws -> DelegationPlanCall {
+    static func read(_ arguments: KWWKAI.JSONValue, sessionID: String) throws -> DelegationPlanCall {
         let name = try arguments.requireString("action")
         guard let action = AgentDelegationRequest.Action(rawValue: name), action != .admit else {
             let allowed = actions.map(\.rawValue).joined(separator: ", ")
@@ -192,7 +192,7 @@ struct DelegationPlanCall {
 
 extension ToolRunner {
     /// The `brief` argument of a create, if it carried one.
-    nonisolated static func delegationBriefArgument(_ arguments: JSONValue) throws -> AgentDelegationBrief? {
+    nonisolated static func delegationBriefArgument(_ arguments: KWWKAI.JSONValue) throws -> AgentDelegationBrief? {
         guard case let .object(object) = arguments, let value = object["brief"] else { return nil }
         return try DelegationBriefArguments.read(value)
     }
@@ -298,7 +298,7 @@ extension ToolRunner {
     /// absolute path after that check, so a parent directory swapped for a
     /// link in between still redirects it (`delegationAdmission` refuses every
     /// such write until a `*at`-descriptor writer exists).
-    func delegationWritePath(_ tool: InvocationFacts.Tool, arguments: JSONValue) throws -> String? {
+    func delegationWritePath(_ tool: InvocationFacts.Tool, arguments: KWWKAI.JSONValue) throws -> String? {
         guard case let .local(name) = tool,
               AgentDelegationToolPolicy.effect(of: name.rawValue) == .fileWrite
         else { return nil }
