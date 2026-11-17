@@ -232,7 +232,7 @@ extension TeamLedgerController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_: UITableView, titleForHeaderInSection section: Int) -> String? {
         guard let group = model?.groups[section] else { return nil }
-        var title = String(localized: "Revision \(group.revision), \(group.members.count) members")
+        var title = String(localized: "Revision \(Int(group.revision)), \(group.members.count) members")
         if group.isSealed {
             title += ", " + String(localized: "Sealed")
         }
