@@ -577,6 +577,40 @@ struct AssignmentStoreChecks {
             _ = try await broken.read(opener: brokenOpener)
         }
 
+        // What a child reports it produced: its claim, recorded while the
+        // assignment is working, bounded, and never turned into a check.
+        let outputOpener = UUID().uuidString
+        let outputChild = UUID().uuidString
+        _ = try await store.register(child: outputChild, opener: outputOpener, brief: brief())
+        let outputOne = AgentAssignment.Output(id: "out-1", summary: "Wrote Sources/File.swift",
+                                               path: "Sources/File.swift")
+        let outputTwo = AgentAssignment.Output(id: "out-2", summary: "Read the change back")
+        let recorded = try await store.report([outputOne, outputTwo], child: outputChild, opener: outputOpener)
+        check(recorded.outputs.map(\.id) == ["out-1", "out-2"], "a child's outputs are recorded in order")
+        check(recorded.state == .working, "recording output leaves the assignment working")
+        check(recorded.outputs.first?.path == "Sources/File.swift", "an output keeps its path")
+        check(recorded.verification == .unverified, "a claim is never a check")
+        let replayed = try await store.report([outputOne], child: outputChild, opener: outputOpener)
+        check(replayed.outputs.count == 2, "the same output is not recorded twice")
+        await refuses("an output says what it is") {
+            _ = try await store.report([AgentAssignment.Output(id: "out-3", summary: "   ")],
+                                       child: outputChild, opener: outputOpener)
+        }
+        let reread = try await store.read(opener: outputOpener)
+        check(reread?.groups.first?.assignment(outputChild)?.outputs.count == 2,
+              "the recorded claims are on disk")
+        var reviewPlan = try AgentDelegationPlan(brief: brief())
+        reviewPlan = try reviewPlan.requestReview(expectedRevision: reviewPlan.revision)
+        _ = try await store.sync(child: outputChild, opener: outputOpener, plan: reviewPlan)
+        let awaiting = try await store.assignment(child: outputChild, opener: outputOpener)
+        check(awaiting?.state == .working,
+              "a step waiting for its opener's review leaves the member working")
+        reviewPlan = try reviewPlan.accepted(expectedRevision: reviewPlan.revision)
+        _ = try await store.sync(child: outputChild, opener: outputOpener, plan: reviewPlan)
+        let afterReview = try await store.report([AgentAssignment.Output(id: "out-9", summary: "later")],
+                                                 child: outputChild, opener: outputOpener)
+        check(afterReview.outputs.count == 2, "a reviewed assignment records no further claim")
+
         print("\(count) assignment store checks passed")
     }
 }

@@ -328,6 +328,13 @@ public extension AgentToolName {
                 "expected_revision": Schema.integer("The revision this action is based on: the plan's for a step action, the ledger member's for acceptAssignment, cancelAssignment and failAssignment, the group's for seal. The host refuses a stale one."),
                 "note": Schema.string("Why the assignment is cancelled or failed, in the user's words. Required for cancelAssignment and failAssignment; left out otherwise."),
                 "step": Self.delegationStepSchema,
+                "outputs": Schema.array(
+                    of: Schema.object([
+                        "summary": Schema.string("What it produced, in your own words: the file, the change, the result. A claim, not a check."),
+                        "path": Schema.string("The project-relative path it is at, when it is a file or folder. Optional."),
+                    ], required: ["summary"]),
+                    description: "What you say you produced, on review and blocked: your claim, recorded in the opener's ledger. It is not a check receipt — only the host's check is evidence. Omit or leave empty when there is nothing to report.",
+                ),
             ], required: ["action"])
         case .gitSetAuthor:
             Schema.object([

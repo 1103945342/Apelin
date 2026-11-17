@@ -135,6 +135,8 @@ struct DelegationPlanCall {
     var revision: UInt64?
     var note: String?
     var step: AgentDelegationBrief.Step?
+    /// What the child says it produced, on `review` and `blocked` only.
+    var outputs: [AgentAssignment.Output]?
 
     /// The actions a tool call may name. `admit` is the host's own, and the
     /// tool never asks for it.
@@ -176,7 +178,28 @@ struct DelegationPlanCall {
         } else {
             step = nil
         }
-        return DelegationPlanCall(action: action, sessionID: target, revision: revision, note: note, step: step)
+        // Claims belong to the moves that end a step's work. Any other action
+        // drops them rather than recording them under a different verb.
+        var outputs: [AgentAssignment.Output]?
+        if action == .review || action == .blocked,
+           case let .object(object) = arguments,
+           case let .array(values)? = object["outputs"] {
+            outputs = try values.map { value -> AgentAssignment.Output in
+                guard case let .object(fields) = value,
+                      case let .string(summary)? = fields["summary"],
+                      !summary.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                    throw ToolArgumentError("each output says what it is in summary")
+                }
+                var path: String?
+                if case let .string(candidate)? = fields["path"], !candidate.isEmpty {
+                    path = candidate
+                }
+                return AgentAssignment.Output(id: UUID().uuidString, summary: summary, path: path)
+            }
+            if outputs?.isEmpty == true { outputs = nil }
+        }
+        return DelegationPlanCall(action: action, sessionID: target, revision: revision, note: note,
+                                  step: step, outputs: outputs)
     }
 
     var request: AgentDelegationRequest {
@@ -186,6 +209,7 @@ struct DelegationPlanCall {
             expectedRevision: revision,
             step: step,
             note: note,
+            outputs: outputs,
         )
     }
 }

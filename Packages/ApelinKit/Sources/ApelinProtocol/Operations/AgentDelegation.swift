@@ -15,10 +15,13 @@ public struct AgentDelegationRequest: OperationRequest {
     public var path: String?
     public var step: AgentDelegationBrief.Step?
     public var note: String?
+    /// What the child says it produced, on `review` and `blocked`: its own
+    /// claim, never a check receipt. Nil leaves the ledger's claims alone.
+    public var outputs: [AgentAssignment.Output]?
 
     public init(sessionID: String, action: Action, expectedRevision: UInt64? = nil,
                 tool: String? = nil, path: String? = nil, step: AgentDelegationBrief.Step? = nil,
-                note: String? = nil) {
+                note: String? = nil, outputs: [AgentAssignment.Output]? = nil) {
         self.sessionID = sessionID
         self.action = action
         self.expectedRevision = expectedRevision
@@ -26,6 +29,7 @@ public struct AgentDelegationRequest: OperationRequest {
         self.path = path
         self.step = step
         self.note = note
+        self.outputs = outputs
     }
 }
 

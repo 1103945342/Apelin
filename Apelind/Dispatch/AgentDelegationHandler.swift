@@ -82,8 +82,17 @@ enum AgentDelegationHandler {
                 }
             }
             var result = try await host.delegations.apply(action, caller: caller)
-            if let saved = try await host.delegations.record(action.sessionID), let plan = result.plan {
-                _ = try await host.assignments.sync(child: saved.child, opener: saved.opener, plan: plan)
+            if let saved = try await host.delegations.record(action.sessionID) {
+                // What the child says it produced is recorded while the
+                // assignment is still working — before the plan transition
+                // below moves it. It stays a claim: only a check is evidence.
+                if let outputs = action.outputs, !outputs.isEmpty,
+                   action.action == .review || action.action == .blocked {
+                    _ = try await host.assignments.report(outputs, child: saved.child, opener: saved.opener)
+                }
+                if let plan = result.plan {
+                    _ = try await host.assignments.sync(child: saved.child, opener: saved.opener, plan: plan)
+                }
                 if action.action != .read && action.action != .admit {
                     await AgentReportRelay.shared.accountChanged(saved.opener)
                 }

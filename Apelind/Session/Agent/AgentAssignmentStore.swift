@@ -43,6 +43,10 @@ import Foundation
 /// it are delivery bookkeeping here; sending it through the outbox is the host's
 /// job.
 actor AgentAssignmentStore {
+    /// How many artifacts one assignment may report. Bounded so a child cannot
+    /// grow the opener's record without limit.
+    static let maximumOutputs = 64
+
     /// The whole file for one opener. Versioned so a later layout can refuse to
     /// interpret these bytes instead of guessing. Fields added after the first
     /// layout are optional so an existing version-1 file still reads.
@@ -295,6 +299,40 @@ actor AgentAssignmentStore {
                                       expectedRevision: member.revision)
         record.group = try record.group.replacing(member, expectedRevision: record.group.revision)
         record.derivedBlockers = derivedBlocks.isEmpty ? nil : derivedBlocks
+        try persist(record)
+        return member
+    }
+
+    /// What the child says it produced, recorded while the assignment is still
+    /// working — before the plan transition that ends the step moves it. It is
+    /// a claim: only a host check receipt is evidence. A member that has
+    /// already left `working` keeps what it had, and an output the ledger
+    /// already holds (same `id`) is not recorded twice.
+    @discardableResult
+    func report(_ outputs: [AgentAssignment.Output], child: String, opener: String) throws -> AgentAssignment {
+        guard var record = try loadRecord(opener) else {
+            throw refusal("No assignments are registered for this opener.", child)
+        }
+        guard let current = record.group.assignment(child) else {
+            throw refusal("This child has no assignment.", child)
+        }
+        guard current.state == .working else { return current }
+        var member = current
+        for output in outputs {
+            guard Self.nonempty(output.summary) else {
+                throw refusal("An output says what it is in summary.", child)
+            }
+            guard output.summary.utf8.count <= 1024, (output.path?.utf8.count ?? 0) <= 4096 else {
+                throw refusal("An output is at most 1 KiB of summary and 4 KiB of path.", child)
+            }
+            guard !member.outputs.contains(where: { $0.id == output.id }) else { continue }
+            guard member.outputs.count < Self.maximumOutputs else {
+                throw refusal("An assignment records at most \(Self.maximumOutputs) outputs.", child)
+            }
+            member = try member.recording(output, expectedRevision: member.revision)
+        }
+        guard member != current else { return current }
+        record.group = try record.group.replacing(member, expectedRevision: record.group.revision)
         try persist(record)
         return member
     }
