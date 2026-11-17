@@ -46,6 +46,21 @@ struct BriefChecks {
         let amended = try blocked.amendingCurrent(first, expectedRevision: blocked.revision)
         try amended.authorize(.fileWrite, canonicalRelativePath: "Sources/file", expectedRevision: amended.revision)
         check(amended.revision > blocked.revision, "amendment reopens with fresh revision")
+        // A step that changes what "done" means restates the acceptance in the
+        // same amendment; an empty one is refused like any other brief.
+        let restated = try amended.amendingCurrent(
+            first,
+            acceptance: ["The new evidence is checked"],
+            expectedRevision: amended.revision
+        )
+        check(restated.brief.acceptance == ["The new evidence is checked"],
+              "an amendment can restate the acceptance")
+        check(restated.revision == amended.revision + 1, "restating acceptance is a new revision")
+        check(restated.brief.objective == amended.brief.objective,
+              "an amendment keeps the objective")
+        denies("an amendment keeps acceptance nonempty") {
+            _ = try restated.amendingCurrent(first, acceptance: [], expectedRevision: restated.revision)
+        }
         denies("late receipt cannot certify amended step") { _ = try amended.checked(adapterID: "syntax", exitCode: 0, expectedRevision: 1) }
         var automaticBrief = brief
         automaticBrief.gates = .end

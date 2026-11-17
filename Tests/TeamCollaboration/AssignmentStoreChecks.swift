@@ -611,6 +611,30 @@ struct AssignmentStoreChecks {
                                                  child: outputChild, opener: outputOpener)
         check(afterReview.outputs.count == 2, "a reviewed assignment records no further claim")
 
+        // A plan that restates the acceptance re-baselines the member instead of
+        // reading as another brief; the same change without a newer revision is
+        // refused.
+        let restateOpener = UUID().uuidString
+        let restateChild = UUID().uuidString
+        _ = try await store.register(child: restateChild, opener: restateOpener, brief: brief())
+        var restated = try AgentDelegationPlan(brief: brief())
+        restated = try restated.amendingCurrent(
+            AgentDelegationBrief.Step(id: "edit", title: "Edit", writeRoots: ["Sources"],
+                                      capabilities: [.fileWrite]),
+            acceptance: ["The new evidence is checked"],
+            expectedRevision: restated.revision
+        )
+        let rebased = try await store.sync(child: restateChild, opener: restateOpener, plan: restated)
+        check(rebased.acceptance == ["The new evidence is checked"],
+              "an amendment restates what the member is measured against")
+        check(rebased.briefRevision == restated.revision,
+              "the member keeps the plan revision it is measured at")
+        check(rebased.state == .working, "a restated acceptance keeps the member working")
+        await refuses("an acceptance change without a newer revision is refused") {
+            _ = try await store.sync(child: restateChild, opener: restateOpener,
+                                     plan: try AgentDelegationPlan(brief: brief(acceptance: ["Something else"])))
+        }
+
         print("\(count) assignment store checks passed")
     }
 }

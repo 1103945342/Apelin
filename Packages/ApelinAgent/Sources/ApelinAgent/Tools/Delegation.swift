@@ -137,6 +137,8 @@ struct DelegationPlanCall {
     var step: AgentDelegationBrief.Step?
     /// What the child says it produced, on `review` and `blocked` only.
     var outputs: [AgentAssignment.Output]?
+    /// On `amend`: what the assignment is now measured against.
+    var acceptance: [String]?
 
     /// The actions a tool call may name. `admit` is the host's own, and the
     /// tool never asks for it.
@@ -198,8 +200,11 @@ struct DelegationPlanCall {
             }
             if outputs?.isEmpty == true { outputs = nil }
         }
+        // A new step may change what "done" means, so an amendment may restate
+        // the acceptance in the same move; no other action does.
+        let acceptance = action == .amend ? arguments.argStrings("acceptance") : nil
         return DelegationPlanCall(action: action, sessionID: target, revision: revision, note: note,
-                                  step: step, outputs: outputs)
+                                  step: step, outputs: outputs, acceptance: acceptance)
     }
 
     var request: AgentDelegationRequest {
@@ -210,6 +215,7 @@ struct DelegationPlanCall {
             step: step,
             note: note,
             outputs: outputs,
+            acceptance: acceptance,
         )
     }
 }

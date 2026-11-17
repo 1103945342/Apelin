@@ -328,6 +328,10 @@ public extension AgentToolName {
                 "expected_revision": Schema.integer("The revision this action is based on: the plan's for a step action, the ledger member's for acceptAssignment, cancelAssignment and failAssignment, the group's for seal. The host refuses a stale one."),
                 "note": Schema.string("Why the assignment is cancelled or failed, in the user's words. Required for cancelAssignment and failAssignment; left out otherwise."),
                 "step": Self.delegationStepSchema,
+                "acceptance": Schema.array(
+                    of: Schema.string("One criterion the work is measured against, in the user's words."),
+                    description: "On amend: what the assignment is now measured against, when the new step changes what done means. It replaces the list, and the member's earlier check receipts stop counting. Omit to keep the acceptance as it is.",
+                ),
                 "outputs": Schema.array(
                     of: Schema.object([
                         "summary": Schema.string("What it produced, in your own words: the file, the change, the result. A claim, not a check."),

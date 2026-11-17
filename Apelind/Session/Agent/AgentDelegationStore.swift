@@ -111,7 +111,8 @@ actor AgentDelegationStore {
                 saved.plan = try saved.plan.accepted(expectedRevision: revision)
             } else {
                 guard let step = request.step else { throw refusal("Supply the revised current step.", saved.plan) }
-                saved.plan = try saved.plan.amendingCurrent(step, expectedRevision: revision)
+                saved.plan = try saved.plan.amendingCurrent(step, acceptance: request.acceptance,
+                                                            expectedRevision: revision)
             }
         }
         try persist(saved)

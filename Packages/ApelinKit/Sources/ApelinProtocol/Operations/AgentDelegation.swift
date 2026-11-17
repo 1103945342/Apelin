@@ -18,10 +18,15 @@ public struct AgentDelegationRequest: OperationRequest {
     /// What the child says it produced, on `review` and `blocked`: its own
     /// claim, never a check receipt. Nil leaves the ledger's claims alone.
     public var outputs: [AgentAssignment.Output]?
+    /// On `amend`: what the assignment is now measured against. A step that
+    /// changes what "done" means restates it here, and the member's old
+    /// receipts stop counting. Nil keeps the acceptance as it was.
+    public var acceptance: [String]?
 
     public init(sessionID: String, action: Action, expectedRevision: UInt64? = nil,
                 tool: String? = nil, path: String? = nil, step: AgentDelegationBrief.Step? = nil,
-                note: String? = nil, outputs: [AgentAssignment.Output]? = nil) {
+                note: String? = nil, outputs: [AgentAssignment.Output]? = nil,
+                acceptance: [String]? = nil) {
         self.sessionID = sessionID
         self.action = action
         self.expectedRevision = expectedRevision
@@ -30,6 +35,7 @@ public struct AgentDelegationRequest: OperationRequest {
         self.step = step
         self.note = note
         self.outputs = outputs
+        self.acceptance = acceptance
     }
 }
 

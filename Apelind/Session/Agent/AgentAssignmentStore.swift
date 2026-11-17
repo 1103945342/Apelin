@@ -185,10 +185,25 @@ actor AgentAssignmentStore {
         guard var record = try loadRecord(opener) else {
             throw refusal("No assignments are registered for this opener.", child)
         }
-        guard let member = record.group.assignment(child) else {
+        guard let stored = record.group.assignment(child) else {
             throw refusal("This child has no assignment; register it before syncing a plan.", child)
         }
-        try requireSameBrief(plan, as: member)
+        // An amendment may restate what the assignment is measured against: the
+        // objective stays, the plan revision is newer, and the acceptance it
+        // carries replaces the old one. The member re-baselines; receipts from
+        // the old revision keep their number and stop counting.
+        var member = stored
+        if plan.brief.objective != stored.objective {
+            throw refusal("The plan belongs to another brief; it cannot speak for this assignment.", child)
+        }
+        if plan.brief.acceptance != stored.acceptance {
+            guard plan.revision > stored.briefRevision else {
+                throw refusal("The plan's acceptance differs from this assignment without a newer revision; register it anew instead.", child)
+            }
+            member = try stored.rebased(briefRevision: plan.revision,
+                                        acceptance: plan.brief.acceptance,
+                                        expectedRevision: stored.revision)
+        }
         let note = record.plans[child] ?? 0
         guard plan.revision >= note else {
             throw refusal("Stale plan revision \(plan.revision); this assignment already saw \(note).", child)
@@ -197,7 +212,7 @@ actor AgentAssignmentStore {
         var derived = derivedBlocks[child]
         let reconciled = try reconcile(member, with: plan, derived: &derived)
         derivedBlocks[child] = derived
-        let stateChanged = reconciled != member
+        let stateChanged = reconciled != stored
         let noteChanged = plan.revision != note
         let derivedChanged = derivedBlocks[child] != (record.derivedBlockers ?? [:])[child]
         guard stateChanged || noteChanged || derivedChanged else { return member }

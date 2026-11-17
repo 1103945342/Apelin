@@ -234,13 +234,21 @@ public struct AgentDelegationPlan: Codable, Sendable, Equatable, Hashable {
 
     /// Minimal revision: completed prefix and current ID stay stable. A new
     /// objective/plan is a new assignment, not an amendment hiding old evidence.
-    public func amendingCurrent(_ step: AgentDelegationBrief.Step, expectedRevision: UInt64) throws -> Self {
+    /// `acceptance` restates what the assignment is measured against, so a step
+    /// that changes what "done" means can say so in the same move; the ledger
+    /// re-baselines the member and its old receipts stop counting.
+    public func amendingCurrent(_ step: AgentDelegationBrief.Step,
+                                acceptance: [String]? = nil,
+                                expectedRevision: UInt64) throws -> Self {
         try requireRevision(expectedRevision)
         guard let current = currentStep, current.id == step.id, revision < UInt64.max else {
             throw refusal("An amendment keeps the current step identity and must have a new revision.")
         }
         var next = self
         next.brief.steps[currentIndex] = step
+        if let acceptance {
+            next.brief.acceptance = acceptance
+        }
         next.revision += 1
         next.statuses[currentIndex] = .working
         try next.validate()
