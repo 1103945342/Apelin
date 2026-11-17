@@ -56,10 +56,27 @@ struct BriefChecks {
         let advanced = try automatic.checked(adapterID: "syntax", exitCode: 0, expectedRevision: 1)
         check(advanced.currentIndex == 1 && advanced.revision == 2, "end gate advances with new revision")
         denies("same adapter old receipt cannot finish next step") { _ = try advanced.checked(adapterID: "syntax", exitCode: 0, expectedRevision: 1) }
-        for path in ["", "/", ".", "../x", "a//b", "a/", "a/*", "a/./b", "a\0b", "a\\b"] {
+        for path in ["", "/", ".", "../x", "a//b", "a/*", "a/./b", "a\0b", "a\\b"] {
             check(!AgentDelegationBrief.validRelativePath(path), "reject \(path)")
         }
         check(AgentDelegationBrief.validRelativePath("目录/文件.swift"), "unicode relative path")
+        // A subtree spelled with its slash names the same root, not another one.
+        check(AgentDelegationBrief.validRelativePath("Notes/"), "a trailing slash is the same root")
+        check(AgentDelegationBrief.Step(id: "s", title: "S", writeRoots: ["Notes/"]).writeRoots == ["Notes"],
+              "a write root is kept in one form")
+        let slashed = try AgentDelegationPlan(brief: AgentDelegationBrief(
+            objective: "Write notes", acceptance: ["A note exists"],
+            steps: [AgentDelegationBrief.Step(id: "notes", title: "Notes", writeRoots: ["Notes/"],
+                                              capabilities: [.fileWrite])]
+        ))
+        try slashed.authorize(.fileWrite, canonicalRelativePath: "Notes/a.md", expectedRevision: 1)
+        denies("a slashed root still bounds its subtree") {
+            try slashed.authorize(.fileWrite, canonicalRelativePath: "Notes2/a.md", expectedRevision: 1)
+        }
+        var spelledTwice = brief
+        spelledTwice.steps = [AgentDelegationBrief.Step(id: "dup", title: "Dup",
+                                                       writeRoots: ["Sources", "Sources/"])]
+        denies("one root in two spellings") { try spelledTwice.validate() }
         var duplicate = brief
         duplicate.steps = [first, first]
         denies("duplicate step IDs") { try duplicate.validate() }

@@ -21,7 +21,9 @@ public struct AgentDelegationBrief: Codable, Sendable, Equatable, Hashable {
                     capabilities: [Capability] = [], checkID: String? = nil) {
             self.id = id
             self.title = title
-            self.writeRoots = writeRoots
+            // "Notes/" is how a subtree is written in prose; it names the same
+            // root as "Notes", so it is kept in the one form the rest reads.
+            self.writeRoots = writeRoots.map(AgentDelegationBrief.normalisedPath)
             self.capabilities = capabilities
             self.checkID = checkID
         }
@@ -57,7 +59,7 @@ public struct AgentDelegationBrief: Codable, Sendable, Equatable, Hashable {
             }
             guard step.writeRoots.count <= 64,
                   step.writeRoots.allSatisfy(Self.validRelativePath),
-                  Set(step.writeRoots).count == step.writeRoots.count else {
+                  Set(step.writeRoots.map(Self.normalisedPath)).count == step.writeRoots.count else {
                 throw reject("Write roots must be distinct normalised project-relative paths, not globs or links.")
             }
             guard Set(step.capabilities).count == step.capabilities.count else {
@@ -69,9 +71,20 @@ public struct AgentDelegationBrief: Codable, Sendable, Equatable, Hashable {
         }
     }
 
+    /// A path as a write root means it: one trailing slash names the same
+    /// subtree (`Notes/` is `Notes`), and nothing else is rewritten.
+    public static func normalisedPath(_ path: String) -> String {
+        var value = path
+        while value.count > 1, value.hasSuffix("/") {
+            value.removeLast()
+        }
+        return value
+    }
+
     /// Lexical validation only. The admission layer must first resolve symlinks
     /// and prove that the canonical target remains inside the project.
     public static func validRelativePath(_ path: String) -> Bool {
+        let path = normalisedPath(path)
         guard !path.isEmpty, path.utf8.count <= 4096,
               !path.contains(where: { $0.isNewline || $0 == "\0" || $0 == "\\" || "*?[]".contains($0) }) else { return false }
         return path.split(separator: "/", omittingEmptySubsequences: false)
@@ -159,8 +172,12 @@ public struct AgentDelegationPlan: Codable, Sendable, Equatable, Hashable {
             throw refusal("This step does not allow \(capability.rawValue).")
         }
         if capability == .fileWrite {
+            let target = AgentDelegationBrief.normalisedPath(canonicalRelativePath ?? "")
             guard let path = canonicalRelativePath, AgentDelegationBrief.validRelativePath(path),
-                  step.writeRoots.contains(where: { path == $0 || path.hasPrefix($0 + "/") }) else {
+                  step.writeRoots.contains(where: {
+                      let root = AgentDelegationBrief.normalisedPath($0)
+                      return target == root || target.hasPrefix(root + "/")
+                  }) else {
                 throw refusal("The canonical target is outside this step's write roots.")
             }
         }
