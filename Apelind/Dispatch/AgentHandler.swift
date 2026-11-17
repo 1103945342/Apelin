@@ -681,16 +681,21 @@ enum AgentHandler: DomainHandler {
 
     /// Sends to a live worker. Stop attribution is confirmed by its reply, not
     /// by the request being authorized or by an event arriving first.
+    /// `prepare` runs once the session is known to be live and before the
+    /// worker is handed the request: the worker can start a tool before its
+    /// reply arrives, so what that tool reads has to be set first.
     private static func deliver(
         _ request: HostRequest,
         _ wire: WireRequest,
         to id: String,
         host: SessionHost,
-        stopping: AgentTurnStoppedBy? = nil
+        stopping: AgentTurnStoppedBy? = nil,
+        prepare: (() async -> Void)? = nil
     ) async -> HostReply {
         guard await AgentSessionTable.shared.entry(id) != nil, let worker = await host.workers.existing(.agent, instance: id), !worker.channel.isClosed else {
             return request.fail(ApelinError(.notFound, "This chat is no longer running."))
         }
+        await prepare?()
         let token: UUID?
         if let stopping {
             token = await AgentReportRelay.shared.stopped(session: id, by: stopping)

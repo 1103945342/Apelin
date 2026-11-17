@@ -118,7 +118,7 @@ actor AgentReportRelay {
         notOpened.remove(child)
         guard openedByOpener else { return }
         commit(opener) { draft in
-            draft.seed(child: child, task: task.rawValue)
+            _ = draft.seed(child: child, task: task.rawValue)
         }
     }
 
