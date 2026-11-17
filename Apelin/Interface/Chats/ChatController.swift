@@ -405,6 +405,18 @@ final class ChatController: UIViewController {
                         self?.presentPageAsFormSheet(ChatCompactionController(summary: message.text))
                     }
                 }
+            ListRow(ChatCooperationRow.self)
+                .estimatedHeight(44)
+                .when { $0.isCooperating }
+                .height { message, context in ChatCooperationRow.height(for: message, width: context.width) }
+                .configure { [weak self] row, message, _ in
+                    row.show(message)
+                    row.onOpen = { [weak self] in
+                        self?.presentPageAsFormSheet(
+                            ChatCooperationController(sender: message.sender, text: message.text)
+                        )
+                    }
+                }
             ListRow(ChatMessageRow.self)
                 .estimatedHeight(120)
                 .height { [weak self] message, context in

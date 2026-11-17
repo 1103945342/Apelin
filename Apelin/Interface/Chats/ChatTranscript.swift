@@ -178,6 +178,7 @@ struct ChatTranscript {
                     )
                     message.sender = Self.sourceLine(payload?["source"]?.stringValue)
                         ?? payload?["from"]?.stringValue.map { Self.senderLine(conversationTitle($0)) }
+                    message.isCooperating = payload?["from"]?.stringValue != nil
                     message.sentAt = event.time
                     if event.kind == "prompt" {
                         receivedTokens = nil
@@ -206,6 +207,7 @@ struct ChatTranscript {
                 message.isQueued = true
                 message.sender = Self.sourceLine(payload?["source"]?.stringValue)
                     ?? payload?["from"]?.stringValue.map { Self.senderLine(conversationTitle($0)) }
+                message.isCooperating = payload?["from"]?.stringValue != nil
                 queued.append(message)
             case "queueDropped":
                 let ids = Self.identifiers(in: payload?["ids"])

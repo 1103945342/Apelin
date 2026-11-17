@@ -63,6 +63,10 @@ struct ChatMessage: Identifiable, Hashable {
     /// A user message another conversation's agent sent: the line shown
     /// over the bubble naming that conversation.
     var sender: String?
+    /// The message came from another conversation's agent, or is the host's
+    /// report about one. It is shown as one quiet row that opens its text,
+    /// not as a bubble of the reader's own.
+    var isCooperating = false
     /// Only the currently running summary names the message it is processing.
     /// A queued message must not replace this until the model takes it.
     var processingSource: String?
