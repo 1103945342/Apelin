@@ -1000,6 +1000,7 @@ struct ChatTranscript {
         case .conversationSend: return String(localized: "Send to a chat")
         case .conversationList: return String(localized: "List chats")
         case .conversationRead: return String(localized: "Read a chat")
+        case .conversationPlan: return String(localized: "Plan")
         case .conversationStop: return String(localized: "Stop a chat")
         case .notificationSend: return String(localized: "Send a notification")
         case .questionAsk: return String(localized: "Ask a question")

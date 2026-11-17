@@ -138,7 +138,20 @@ final class ChatController: UIViewController {
                 anchor: more,
                 onPrepareDistribution: { [weak self] prompt in self?.sendPrompt(prompt) },
                 onDelete: { [weak self] id in self?.onDelete?(id) },
-                completion: completion,
+                // The conversation's team is read here and nowhere else, so
+                // its item rides beside the others rather than replacing them.
+                completion: { [weak self] items in
+                    var items = items
+                    if let self {
+                        items.append(UIAction(
+                            title: String(localized: "Team"),
+                            image: UIImage(systemName: "person.3"),
+                        ) { [weak self] _ in
+                            self?.showTeam()
+                        })
+                    }
+                    completion(items)
+                },
             )
         }])
         more.accessibilityLabel = String(localized: "More")
@@ -1369,6 +1382,44 @@ extension ChatController: ComposerCommandContext {
             title: "Context Usage",
             message: "\(usage.tokens.formatted()) of \(usage.window.formatted()) tokens used (\(percent)).",
         )
+    }
+
+    /// The conversation's team, read from the host's assignment ledger: which
+    /// conversations it opened, what each was asked for, what the host
+    /// verified and what is still missing. Read-only — no accept, amend or
+    /// stop — and a member is opened through the root's own open, never by
+    /// moving the sidebar from here.
+    func showTeam() {
+        guard let chat else { return }
+        guard let sessionID = runtime.records[chat.id]?.sessionID else {
+            presentNotice(
+                title: "No Team Yet",
+                message: "This conversation has not delegated work to other conversations.",
+            )
+            return
+        }
+        let page = TeamLedgerController(sessionID: sessionID)
+        page.onOpenChild = { [weak self] child in
+            guard let self else { return }
+            dismiss(animated: true) { [weak self] in
+                self?.openTeamMember(child)
+            }
+        }
+        let sheet = UINavigationController(rootViewController: page)
+        sheet.modalPresentationStyle = .formSheet
+        present(sheet, animated: true)
+    }
+
+    /// A member conversation, by its session ID: taken in by the runtime when
+    /// the app has no row for it yet, then handed to the root's open
+    /// (`onOpenChat`), which moves the sidebar's highlight with the page.
+    private func openTeamMember(_ sessionID: String) {
+        Task { @MainActor in
+            guard let destination = await ChatLinkTarget.resolve(.conversation(sessionID), in: runtime),
+                  case let .chat(summary) = destination
+            else { return }
+            onOpenChat?(summary)
+        }
     }
 
     func send(prompt: String) {

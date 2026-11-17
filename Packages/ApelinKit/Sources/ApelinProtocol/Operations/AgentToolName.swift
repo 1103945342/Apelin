@@ -100,6 +100,9 @@ public enum AgentToolName: String, Sendable, Hashable, Codable, CaseIterable {
     case conversationList = "apelin_conversation_list"
     case conversationRead = "apelin_conversation_read"
     case conversationStop = "apelin_conversation_stop"
+    /// The host-kept delegation plan of a conversation an agent opened
+    /// (`AgentDelegation`): read, and the moves its owner may ask for.
+    case conversationPlan = "apelin_conversation_plan"
     case toolchainList = "apelin_toolchain_list"
     case sdkList = "apelin_sdk_list"
     case toolchainSetup = "apelin_toolchain_setup"
@@ -152,6 +155,7 @@ public extension AgentToolName {
         "conversation_list": .conversationList,
         "conversation_read": .conversationRead,
         "conversation_stop": .conversationStop,
+        "conversation_plan": .conversationPlan,
         "toolchain_list": .toolchainList,
         "sdk_list": .sdkList,
         "toolchain_setup": .toolchainSetup,

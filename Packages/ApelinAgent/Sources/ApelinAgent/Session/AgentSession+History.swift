@@ -251,7 +251,7 @@ extension AgentSession {
             switch record.event {
             case let .userMessage(messageID, text, attachments, _) where messageID == id:
                 found = (text, attachments, position)
-            case let .conversationMessageTaken(messageID, text, _) where messageID == id:
+            case let .conversationMessageTaken(messageID, text, _, _) where messageID == id:
                 found = (text, [], position)
             default:
                 break
@@ -262,7 +262,7 @@ extension AgentSession {
             switch $0.event {
             case let .userMessage(_, text, attachments, _):
                 return text == found.text && attachments == found.attachments
-            case let .conversationMessageTaken(_, text, _):
+            case let .conversationMessageTaken(_, text, _, _):
                 return text == found.text && found.attachments.isEmpty
             default:
                 return false

@@ -9,7 +9,10 @@ struct ProjectFileTools: Sendable {
     /// For a read-only root outside the project, the folder its paths are
     /// shown under, as the system prompt names it, so a result can be read
     /// again; nil for the project, whose paths are shown relative to it.
-    var shownRoot: String?
+    var shownRoot: String? = nil
+    /// Set for a conversation working to a delegation brief: writes go
+    /// through the descriptor-relative writer, never the shared one.
+    var confinedWriter: ConfinedWriter? = nil
 
     static let maxReadBytes = 512 * 1024
     /// As large as a message's attachment may be, so one sent can be looked
@@ -20,14 +23,26 @@ struct ProjectFileTools: Sendable {
 
     // MARK: - Writes
 
+    /// Writes the file: through the confined writer when this conversation
+    /// works to a delegation brief, and through the project's own writer
+    /// otherwise. `relative` is the canonical project-relative path.
+    private func commit(_ data: Data, to target: WriteTarget, relative: String, exclusive: Bool) throws {
+        if let confinedWriter {
+            try confinedWriter.write(data, to: relative, exclusive: exclusive)
+            return
+        }
+        try target.commit(data, exclusive: exclusive)
+    }
+
     func writeFile(_ arguments: JSONValue) throws -> String {
         let path = try arguments.requireString("path")
         let content = try arguments.requireString("content")
         let target = try root.resolveForWrite(path)
+        let relative = root.relative(target.finalPath)
         let original = target.exists ? (try? readText(target.finalPath)) ?? "" : ""
-        try target.commit(Data(content.utf8), exclusive: false)
+        try commit(Data(content.utf8), to: target, relative: relative, exclusive: false)
         let change = LineDiff.counts(old: original, new: content)
-        return "\(target.exists ? "Replaced" : "Created") \(root.relative(target.finalPath)) (\(content.utf8.count) bytes, \(change))"
+        return "\(target.exists ? "Replaced" : "Created") \(relative) (\(content.utf8.count) bytes, \(change))"
     }
 
     func createFile(_ arguments: JSONValue) throws -> String {
@@ -37,8 +52,9 @@ struct ProjectFileTools: Sendable {
         if target.exists {
             throw PathPolicyError.alreadyExists(path)
         }
-        try target.commit(Data(content.utf8), exclusive: true)
-        return "Created \(root.relative(target.finalPath)) (\(content.utf8.count) bytes, \(LineDiff.counts(old: "", new: content)))"
+        let relative = root.relative(target.finalPath)
+        try commit(Data(content.utf8), to: target, relative: relative, exclusive: true)
+        return "Created \(relative) (\(content.utf8.count) bytes, \(LineDiff.counts(old: "", new: content)))"
     }
 
     func patchFile(_ arguments: JSONValue) throws -> String {
@@ -49,6 +65,7 @@ struct ProjectFileTools: Sendable {
         guard !oldText.isEmpty else { throw ToolArgumentError("old_text is empty") }
 
         let target = try root.resolveForWrite(path)
+        let relative = root.relative(target.finalPath)
         guard target.exists else { throw PathPolicyError.notFound(path) }
         let original = try readText(target.finalPath)
         let occurrences = original.components(separatedBy: oldText).count - 1
@@ -65,10 +82,10 @@ struct ProjectFileTools: Sendable {
             let range = original.range(of: oldText)!
             updated = original.replacingCharacters(in: range, with: newText)
         }
-        try target.commit(Data(updated.utf8), exclusive: false)
-        let diff = LineDiff.unified(old: original, new: updated, path: root.relative(target.finalPath))
+        try commit(Data(updated.utf8), to: target, relative: relative, exclusive: false)
+        let diff = LineDiff.unified(old: original, new: updated, path: relative)
         let change = LineDiff.counts(old: original, new: updated)
-        return "Patched \(root.relative(target.finalPath)) (\(replaceAll ? occurrences : 1) replacement\(replaceAll && occurrences > 1 ? "s" : ""), \(change))\n\(diff)"
+        return "Patched \(relative) (\(replaceAll ? occurrences : 1) replacement\(replaceAll && occurrences > 1 ? "s" : ""), \(change))\n\(diff)"
     }
 
     // MARK: - Reads

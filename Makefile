@@ -447,6 +447,13 @@ check:
 # module maps; passing those too redefines every C module, so they are left
 # out.
 harness:
+	@bash "$(ROOT_DIR)/Scripts/test-team-brief.sh"
+	@bash "$(ROOT_DIR)/Scripts/test-team-ledger.sh"
+	@bash "$(ROOT_DIR)/Scripts/test-team-delegation-store.sh"
+	@bash "$(ROOT_DIR)/Scripts/test-team-assignment-store.sh"
+	@bash "$(ROOT_DIR)/Scripts/test-team-confined-writer.sh"
+	@bash "$(ROOT_DIR)/Scripts/test-team-delegation-handler.sh"
+	@bash "$(ROOT_DIR)/Scripts/test-team-report-relay.sh"
 	@bash "$(ROOT_DIR)/Scripts/test-application-install.sh"
 	@bash "$(ROOT_DIR)/Scripts/test-file-browser.sh"
 	@bash "$(ROOT_DIR)/Tests/TerminalUI/run.sh"

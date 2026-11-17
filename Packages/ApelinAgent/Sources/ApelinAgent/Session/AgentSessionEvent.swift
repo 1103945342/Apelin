@@ -11,8 +11,11 @@ public enum AgentSessionEvent: Sendable, Hashable, Codable {
     case promptSubmitted(text: String, from: String? = nil)
     /// Another conversation's message, not a reader's editable steering
     /// message. The same id is taken only when the model loop accepts it.
-    case conversationMessageQueued(id: UUID, text: String, from: String)
-    case conversationMessageTaken(id: UUID, text: String, from: String)
+    /// `reports`: the turns of conversations this session opened that the
+    /// host reported with it, kept on the record so a replayed log still
+    /// says what the message carried.
+    case conversationMessageQueued(id: UUID, text: String, from: String, reports: [AgentTurnReport]? = nil)
+    case conversationMessageTaken(id: UUID, text: String, from: String, reports: [AgentTurnReport]? = nil)
     /// Never restore these messages to the reader's composer.
     case conversationMessagesDropped(ids: [UUID])
     case pendingQueue(messages: [PendingMessage], paused: Bool)

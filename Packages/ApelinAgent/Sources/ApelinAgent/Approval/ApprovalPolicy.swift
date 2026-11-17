@@ -476,7 +476,7 @@ public struct ApprovalPolicy: Sendable, Hashable {
             return .ask(reason: Self.otherProjectReason(reach), detail: .otherProject(reach))
         }
         switch tool {
-        case .fileWrite, .fileEdit, .fileCreate, .memorySave, .memoryDelete, .todoWrite:
+        case .fileWrite, .fileEdit, .fileCreate, .memorySave, .memoryDelete, .todoWrite, .conversationPlan:
             return .allow(.notRequired)
 
         // A banner from Apelin to the user, never a preset to edit away:

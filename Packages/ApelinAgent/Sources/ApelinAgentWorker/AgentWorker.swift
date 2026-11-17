@@ -114,8 +114,18 @@ public enum AgentWorker {
                 if let from = prompt.fromSessionID {
                     sender = await AgentWorker.sender(from, context: context)
                 }
-                try await session.prompt(prompt.text, messageID: prompt.messageID, files: files, from: sender, source: prompt.source, delivery: prompt.delivery ?? .queue, modelChoice: choice)
-                await session.generateTitle(for: prompt.text)
+                // The turns of conversations this one opened, as the host
+                // reported them, and its own account message when the list is
+                // empty: facts about other conversations, which the message
+                // keeps (the sender the host named stays). A report never
+                // names this chat and never wakes a stopped queue — both are
+                // the session's to decide (`AgentSession.prompt`).
+                try await session.prompt(prompt.text, messageID: prompt.messageID, files: files, from: sender, source: prompt.source, delivery: prompt.delivery ?? .queue, modelChoice: choice, reports: prompt.reports)
+                // Only the app's own message names the chat: a host account
+                // message, even one carrying no turn, never does.
+                if prompt.reports == nil {
+                    await session.generateTitle(for: prompt.text)
+                }
                 return Acknowledged()
             }
         case .agentGenerateImage:
@@ -392,6 +402,16 @@ actor WorkerState {
         let home = URL(fileURLWithPath: context.assignment.home, isDirectory: true)
         let dataRoot = ApelinDataRoot(home: home)
         let projectURL = dataRoot.workspace(for: identity.name, temporaryID: open.temporaryID)
+        // A brief that does not hold is refused before a session exists: no
+        // conversation runs against an assignment nothing can enforce. The
+        // host validates it too; this is the worker's own fail-closed gate.
+        if let brief = open.delegationBrief {
+            do {
+                try brief.validate()
+            } catch {
+                throw ApelinError(.badRequest, error.localizedDescription)
+            }
+        }
 
         opening = true
         let openedAt = Date()
@@ -422,6 +442,8 @@ actor WorkerState {
                     promptInjection: (open.promptInjection ?? "").trimmingCharacters(in: .whitespacesAndNewlines),
                     installRoot: context.assignment.installRoot,
                     hostRestarted: open.hostRestarted == true,
+                    openerSessionID: open.openerSessionID,
+                    delegationBrief: open.delegationBrief,
                 ),
                 backend: ChannelHostBackend(
                     service: context.host,
@@ -711,14 +733,22 @@ actor EventRelay {
                 payload["source"] = .string(source)
             }
             return [("queued", .object(payload))]
-        case let .conversationMessageQueued(id, text, from):
-            return [("queued", .object([
+        case let .conversationMessageQueued(id, text, from, reports):
+            var payload: [String: ApelinCore.JSONValue] = [
                 "id": .string(id.uuidString), "text": .string(text), "from": .string(from),
-            ]))]
-        case let .conversationMessageTaken(id, text, from):
-            return [("prompt", .object([
+            ]
+            if let reports {
+                payload["reports"] = (try? ApelinCore.JSONValue(encoding: reports)) ?? .array([])
+            }
+            return [("queued", .object(payload))]
+        case let .conversationMessageTaken(id, text, from, reports):
+            var payload: [String: ApelinCore.JSONValue] = [
                 "id": .string(id.uuidString), "text": .string(text), "from": .string(from),
-            ]))]
+            ]
+            if let reports {
+                payload["reports"] = (try? ApelinCore.JSONValue(encoding: reports)) ?? .array([])
+            }
+            return [("prompt", .object(payload))]
         case let .conversationMessagesDropped(ids):
             return [("queueDropped", .object(["ids": .array(ids.map { .string($0.uuidString) })]))]
         case let .queuedMessagesDropped(ids):

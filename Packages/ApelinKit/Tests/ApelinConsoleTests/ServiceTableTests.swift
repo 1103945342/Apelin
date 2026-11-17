@@ -131,6 +131,10 @@ final class ServiceTableTests: XCTestCase {
             return Row(reply: ReadUITreeResponse(tree: .object([:]))) { _ = try await $0.readUITree() }
         case .uiAction:
             return Row(reply: UIActionResponse()) { _ = try await $0.uiAction(.tap(x: 1, y: 2)) }
+        case .agentDelegation:
+            return Row(reply: AgentDelegationResponse(plan: nil)) {
+                _ = try await $0.send(AgentDelegationRequest(sessionID: "s", action: .read))
+            }
         case .agentOpen:
             return Row(reply: AgentOpenResponse(sessionID: "s", task: TaskHandle(taskID: id, kind: .agent))) {
                 _ = try await $0.agentOpen(AgentOpenRequest(projectName: "Hello"))

@@ -1,5 +1,6 @@
 import enum ApelinProtocol.ApelinLink
 import enum ApelinProtocol.AgentMessageDelivery
+import struct ApelinProtocol.AgentDelegationBrief
 import Foundation
 
 // MARK: - conversations
@@ -15,11 +16,22 @@ public struct ConversationCreateToolRequest: Sendable, Hashable, Codable {
     public var title: String?
     /// Another project to open it in; nil for the session's own.
     public var target: ProjectIdentity?
-    public init(context: HostCallContext, prompt: String, title: String? = nil, target: ProjectIdentity? = nil) {
+    /// The delegation contract the host commits for the conversation it
+    /// opens: the objective, the acceptance criteria and the steps that bound
+    /// its work. Nil opens it with no brief; the host validates it again.
+    public var brief: AgentDelegationBrief?
+    public init(
+        context: HostCallContext,
+        prompt: String,
+        title: String? = nil,
+        target: ProjectIdentity? = nil,
+        brief: AgentDelegationBrief? = nil,
+    ) {
         self.context = context
         self.prompt = prompt
         self.title = title
         self.target = target
+        self.brief = brief
     }
 }
 
