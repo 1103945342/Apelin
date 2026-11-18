@@ -25,7 +25,7 @@ entitlements="${1:-build/Tool.entitlements}"
 
 mkdir -p build
 work="$(mktemp -d build/store-checks.XXXXXX)"
-trap 'rm -rf "$work"' EXIT
+trap 'rm -rf "${work:?}"' EXIT
 
 python3 - "$work" <<'PY'
 import glob
