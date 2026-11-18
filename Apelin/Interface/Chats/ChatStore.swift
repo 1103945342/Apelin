@@ -312,6 +312,10 @@ actor ChatStore {
     /// than overwritten.
     struct Loaded {
         var records: [ChatRecord] = []
+        /// How many events each conversation's file holds. A launch takes
+        /// this and reads no events, so the sidebar and the pruning rules
+        /// know a chat has a history without its megabytes.
+        var eventCounts: [UUID: Int] = [:]
         var unreadable: [(name: String, error: any Error)] = []
     }
 
@@ -363,7 +367,11 @@ actor ChatStore {
     /// How many events of each conversation are on disk, as `save` left them.
     private var written: [UUID: Int] = [:]
 
-    func load() throws -> Loaded {
+    /// `readingEvents` false is what launching does: it reads each record's
+    /// head and how many events sit beside it, and no event at all. The
+    /// conversation's events are read later, when it is opened or followed,
+    /// with `events(_:in:)`.
+    func load(readingEvents: Bool = true) throws -> Loaded {
         let directory = folder.root.appendingPathComponent("Chats")
         try folder.makeLevels(to: directory)
         guard let directoryPath = CanonicalPath.resolve(directory.path) else { throw CocoaError(.fileReadNoSuchFile) }
@@ -380,7 +388,9 @@ actor ChatStore {
             // is only skipped: it is read again next launch, never moved.
             guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)) else { continue }
             do {
-                loaded.records.append(try read(id: id, data: data, in: directory))
+                let (record, count) = try read(id: id, data: data, in: directory, readingEvents: readingEvents)
+                loaded.records.append(record)
+                loaded.eventCounts[id] = count
             } catch {
                 loaded.unreadable.append((url.lastPathComponent, error))
                 setAside(url, in: directory)
@@ -389,11 +399,22 @@ actor ChatStore {
         return loaded
     }
 
-    /// One conversation: its head and the events beside it. A record written
-    /// before the split still carries them inline, and is moved out here, once.
-    private func read(id: UUID, data: Data, in directory: URL) throws -> ChatRecord {
+    /// One conversation: its head and the events beside it, and how many
+    /// there are. A record written before the split still carries them
+    /// inline, and is moved out here, once. With `readingEvents` false the
+    /// events stay on disk and only the count comes back.
+    private func read(
+        id: UUID,
+        data: Data,
+        in directory: URL,
+        readingEvents: Bool,
+    ) throws -> (record: ChatRecord, count: Int) {
         let decoder = JSONDecoder()
         if let head = try? decoder.decode(Head.self, from: data) {
+            if !readingEvents {
+                written[id] = head.eventCount
+                return (head.record(events: []), head.eventCount)
+            }
             // The event file is the truth about how many there are: a save that
             // appended them and was cut off before it wrote the head leaves
             // more than the head says, and none of them is lost.
@@ -402,13 +423,16 @@ actor ChatStore {
             if events.count != head.eventCount {
                 try write(head.counting(events.count), into: directory)
             }
-            return head.record(events: events)
+            return (head.record(events: events), events.count)
         }
         // No `version`: a record from before the split, events included.
         let record = try decoder.decode(ChatRecord.self, from: data)
         try migrate(record, into: directory)
         written[id] = record.events.count
-        return record
+        guard readingEvents else {
+            return (Head(record).record(events: []), record.events.count)
+        }
+        return (record, record.events.count)
     }
 
     /// Writes a legacy record's events to their own file and then the record
@@ -462,7 +486,16 @@ actor ChatStore {
         rename(url.path, destination.path)
     }
 
-    func save(_ record: ChatRecord, revision: Int) throws {
+    /// `writesEvents` false is a conversation whose events were not read: only
+    /// its head is written, and `eventCount` — how many its file holds — keeps
+    /// the count the next launch prunes and pages by, so a chat whose events
+    /// are merely unread is never mistaken for an empty one.
+    func save(
+        _ record: ChatRecord,
+        revision: Int,
+        writesEvents: Bool = true,
+        eventCount: Int? = nil,
+    ) throws {
         let id = record.summary.id
         guard revision > (revisions[id] ?? -1) else { return }
         let directory = folder.root.appendingPathComponent("Chats")
@@ -472,15 +505,24 @@ actor ChatStore {
         // A conversation that went backwards — a compaction, a rewind, an edit
         // — is written out whole; anything else only appends what it gained,
         // which is what a streamed turn costs now.
-        let onDisk = written[id] ?? 0
-        if record.events.count < onDisk {
-            try ChatEventsFile.write(record.events, for: id, in: directory)
-        } else if record.events.count > onDisk {
-            try ChatEventsFile.append(Array(record.events[onDisk...]), for: id, in: directory)
+        if writesEvents {
+            let onDisk = written[id] ?? 0
+            if record.events.count < onDisk {
+                try ChatEventsFile.write(record.events, for: id, in: directory)
+            } else if record.events.count > onDisk {
+                try ChatEventsFile.append(Array(record.events[onDisk...]), for: id, in: directory)
+            }
         }
-        try write(Head(record), into: directory)
-        written[id] = record.events.count
+        let head = Head(record)
+        try write(eventCount.map(head.counting) ?? head, into: directory)
+        if writesEvents { written[id] = record.events.count }
         revisions[id] = revision
+    }
+
+    /// What a read of a conversation's events found on disk, after a launch
+    /// that only counted them.
+    func note(eventsOnDisk id: UUID, count: Int) {
+        written[id] = count
     }
 
     /// The conversation's record without its events, replaced atomically.

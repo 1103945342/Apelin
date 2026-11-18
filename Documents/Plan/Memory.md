@@ -172,3 +172,30 @@ conversation's events when it is opened or followed, takes its count from the he
 which is what `isUntouched` needs, so a chat whose events are merely unread is never
 mistaken for an empty one — and lets them go when nothing follows it. That is in the
 app target, which has no build here.
+
+## 9. C, second half: the runtime reads a conversation when it needs one
+
+`ChatRuntime.load` now asks the store for heads (`load(readingEvents: false)`),
+keeps `eventCounts` from each head and marks the conversation `unloadedEvents`; no
+event is decoded at launch. `loadEvents(id)` reads that conversation's events the
+first time something needs them — the transcript, the rail, the history fold, the
+composer's dropped-message return, following a run — and drops it from the unloaded
+set. Three rules make that safe:
+
+- `isUntouched` counts with `eventCounts` (the head's number), never with an empty
+  event list, so a chat that merely has not been read is not taken for an empty one
+  and deleted.
+- A save of an unread conversation writes its head alone, with the count it was
+  given (`writesEvents: false, eventCount:`): writing the empty list it holds would
+  write the history away.
+- Following a run loads first (it appends what it takes), and the count follows every
+  append and every write.
+
+`Tests/ChatStore/Check.swift` grew six checks for this: a head-only launch reads no
+events and knows how many there are, a head-only save leaves the events file
+byte-for-byte as it was and keeps its count, and the history is still there after.
+`Scripts/test-chat-store.sh --device` passes 22/22 on the device.
+
+Still outside this branch: nothing reads a conversation's events back out of memory
+when the reader leaves it, so each chat opened in a session stays read. That is the
+next economy, and it needs the page to say which chat it is showing.

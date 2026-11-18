@@ -84,6 +84,34 @@ func checkChatStore(_ scratch: URL, check: (Bool, String) -> Void) async throws 
     check(loaded.unreadable.contains { $0.name.hasPrefix(brokenID.uuidString) }, "a broken event line sets the record aside")
     check(FileManager.default.fileExists(atPath: eventsURL(brokenID).path), "the events file is kept as it was")
 
+    // A launch reads the head and how many events sit beside it, and no event
+    // at all; a save of such a conversation writes the head alone.
+    let readID = UUID()
+    var whole = ChatRecord(summary: .untitled(lastInteraction: Date(), projectName: nil))
+    whole.summary.id = readID
+    whole.events = [event(1), event(2), event(3, "text")]
+    try JSONEncoder().encode(whole).write(to: recordURL(readID))
+    _ = try await ChatStore(folder: folder).load()
+    store = ChatStore(folder: folder)
+    let heads = try await store.load(readingEvents: false)
+    let headOnly = heads.records.first { $0.summary.id == readID }
+    check(headOnly?.events.isEmpty == true, "a launch reads no events")
+    check(heads.eventCounts[readID] == 3, "a launch knows how many there are")
+    let before = try Data(contentsOf: eventsURL(readID))
+    if var renamed = headOnly {
+        renamed.summary.title = "renamed"
+        try await store.save(renamed, revision: 3, writesEvents: false, eventCount: 3)
+    }
+    check(try Data(contentsOf: eventsURL(readID)) == before, "a head-only save leaves the events alone")
+    check(
+        String(decoding: try Data(contentsOf: recordURL(readID)), as: UTF8.self).contains("\"eventCount\":3"),
+        "the count it was told is kept",
+    )
+    store = ChatStore(folder: folder)
+    let reread = try await store.load()
+    check(reread.records.first { $0.summary.id == readID }?.events.count == 3, "the history is still there")
+    check(reread.records.first { $0.summary.id == readID }?.summary.title == "renamed", "the head's change was written")
+
     // Deleting a conversation deletes both files.
     store = ChatStore(folder: folder)
     try await store.remove(legacyID)
