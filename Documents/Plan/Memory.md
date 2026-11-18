@@ -150,3 +150,25 @@ this device.
 finished logs at all, so a budget would now bound disk, not memory: 237 MB of agent
 task logs that duplicate `sessions/`. Worth doing for disk, later, together with the
 app's reading of the trim marker.
+
+## 8. C, first half: the split (done, verified on the device)
+
+`Chats/<id>.json` is now a head — summary, draft, pending sends, and `eventCount` —
+and `Chats/<id>.events.jsonl` holds the events, appended. A record written before
+this is moved out once, at launch: the events file first, then the record, so a
+launch cut off between the two finds the old record whole and migrates again. A save
+appends what the conversation gained and writes the head; a history that went
+backwards — a compaction, a rewind, an edit — is written out whole. A record found
+without its events stays where it is rather than opening with no history.
+
+`Scripts/test-chat-store.sh --device` compiles the store with the packages it reads
+and runs 16 checks on the device: the migration, an appended save, a rewritten
+shorter history, an empty chat writing no events file, a broken line setting the
+record aside with its events kept, and a delete removing both files. All 16 pass.
+
+What has **not** changed yet: `ChatRuntime.load` still reads every conversation's
+events at launch, so the app's 190 MB is where it was. The second half reads one
+conversation's events when it is opened or followed, takes its count from the head —
+which is what `isUntouched` needs, so a chat whose events are merely unread is never
+mistaken for an empty one — and lets them go when nothing follows it. That is in the
+app target, which has no build here.
