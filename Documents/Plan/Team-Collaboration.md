@@ -58,6 +58,13 @@ record per child holds the revision, cursor, step states and check receipts.
 All writes are atomic, failures retain the previous in-memory state, and an
 unreadable record fails closed while preserving the original bytes.
 
+Beside its brief record a child gets a marker (`agent-delegations/<id>.governed`,
+an empty file), written once when the brief is registered. A conversation with
+the marker and no record had its authority retired: it cannot reopen
+(`AgentHandler.open`) and its worker may not mutate (`AgentDelegationAdmission`).
+A conversation without the marker was never governed — an agent-opened chat from
+before briefs existed — and reopens unconstrained, as it did then.
+
 ## 4. Reports: capture once, retry the same message
 
 Use the existing ordered host event feed after `TaskRegistry.append`. Capture
