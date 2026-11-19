@@ -64,9 +64,11 @@ the same executable in session mode; the workers are its children.
   signs its one `Payload/*.app` where staging holds it, reads the signed
   copy back (`uicache -p` answers zero for a folder holding no app, so the
   listing from `uicache -l` is the receipt), ends whatever still runs from
-  the bundle it replaces, and only then renames it into
-  `<install root>/Applications` — what was there renamed aside first and
-  put back when anything after it fails. An app of the **same bundle ID is
+  the bundle it replaces, and only then puts it at
+  `<install root>/Applications` — a bundle staged on another volume is copied
+  beside it first, so every move that changes what the device holds is a
+  rename on one volume; what was there is renamed aside first and put back
+  when anything after it fails. An app of the **same bundle ID is
   replaced in place**, from another project too: the identifier, not the
   project, is what the device knows, its container and preferences stay,
   and a rebuild never has to be removed first. An app a dpkg package lists,

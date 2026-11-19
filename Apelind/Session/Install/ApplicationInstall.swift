@@ -118,18 +118,62 @@ enum ApplicationInstall {
 
         var destination: URL
         var displaced: [Displaced]
+        /// True when the bundle was copied beside the destination first,
+        /// because staging is on another volume.
+        var copied: Bool?
+    }
+
+    /// Whether two paths live on one volume: a rename between them is one
+    /// step on the same volume, and `EXDEV` across two.
+    static func sameVolume(_ one: String, _ two: String) -> Bool {
+        var a = stat()
+        var b = stat()
+        guard stat(one, &a) == 0, stat(two, &b) == 0 else { return false }
+        return a.st_dev == b.st_dev
+    }
+
+    /// A path the bundle can be renamed into `destination` from: itself when
+    /// it is on the destination's volume, a copy beside the destination when
+    /// it is not. roothide has put `Applications` on a volume of its own, so
+    /// the staging folder a bundle is signed in need not share one, and a
+    /// rename across that boundary is `EXDEV` — a placement the device
+    /// refuses, never something to retry later.
+    ///
+    /// `copying` forces the decision: nil reads the two devices, and the tests
+    /// take each side without depending on how the device is mounted today.
+    static func importBeside(
+        _ incoming: URL,
+        at destination: URL,
+        copying: Bool? = nil
+    ) throws -> (bundle: URL, copied: Bool) {
+        let parent = destination.deletingLastPathComponent()
+        guard copying ?? !sameVolume(incoming.path, parent.path) else { return (incoming, false) }
+        let staging = URL(fileURLWithPath: destination.path + ".apelin-incoming-" + UUID().uuidString.lowercased())
+        do {
+            try FileManager.default.copyItem(at: incoming, to: staging)
+        } catch {
+            try? FileManager.default.removeItem(at: staging)
+            throw Failure.io("\(destination.lastPathComponent) could not be copied beside the app folder")
+        }
+        return (staging, true)
     }
 
     /// The bundle `incoming`, in root's staging, at `destination` — with
-    /// `others` and whatever is at the destination renamed aside first. Every
-    /// step is a rename on one volume, so what the device holds is the old
-    /// bundle or the new one, never half of each, and `withdraw` puts the old
-    /// one back.
+    /// `others` and whatever is at the destination renamed aside first. A
+    /// bundle on another volume is copied beside the destination first, so
+    /// every step that moves something is a rename on one volume: what the
+    /// device holds is the old bundle or the new one, never half of each, and
+    /// `withdraw` puts the old one back.
     ///
     /// An app of the same identifier may already be at another path, its
     /// record written when the display name was different: `others` names it
     /// so the device does not end up with two bundles of one ID.
-    static func place(_ incoming: URL, at destination: URL, displacing others: [URL] = []) throws -> Placed {
+    static func place(
+        _ incoming: URL,
+        at destination: URL,
+        displacing others: [URL] = [],
+        copying: Bool? = nil
+    ) throws -> Placed {
         let parent = destination.deletingLastPathComponent()
         do {
             try FileManager.default.createDirectory(
@@ -140,9 +184,11 @@ enum ApplicationInstall {
         } catch {
             throw Failure.io("\(parent.lastPathComponent) could not be made")
         }
+        let imported = try importBeside(incoming, at: destination, copying: copying)
         var displaced: [Placed.Displaced] = []
         func putBack() {
             for entry in displaced { _ = rename(entry.aside.path, entry.original.path) }
+            if imported.copied { try? FileManager.default.removeItem(at: imported.bundle) }
         }
         for original in [destination] + others
             where isPresent(original) && !displaced.contains(where: { $0.original.path == original.path })
@@ -155,12 +201,12 @@ enum ApplicationInstall {
             }
             displaced.append(Placed.Displaced(original: original, aside: aside))
         }
-        guard rename(incoming.path, destination.path) == 0 else {
+        guard rename(imported.bundle.path, destination.path) == 0 else {
             let reason = String(cString: strerror(errno))
             putBack()
             throw Failure.io("\(destination.lastPathComponent) could not be put in place: \(reason)")
         }
-        return Placed(destination: destination, displaced: displaced)
+        return Placed(destination: destination, displaced: displaced, copied: imported.copied)
     }
 
     /// The install that put `placed` there did not finish: the new bundle

@@ -166,6 +166,37 @@ func check() throws {
         print("ok: placement replaces in place and rolls back")
     }
 
+    // Staging on another volume: the bundle is copied beside the destination
+    // and renamed from there, and a failure still puts the old one back.
+    do {
+        let apps = base.appendingPathComponent("Copy/Applications")
+        let staging = base.appendingPathComponent("Copy/staging")
+        try fm.createDirectory(at: apps, withIntermediateDirectories: true)
+        try fm.createDirectory(at: staging, withIntermediateDirectories: true)
+        let destination = apps.appendingPathComponent("Copy.app")
+        try writeApp(at: destination, bundleID: "local.apelin.copy", version: "1.0", executable: "Copy")
+        let incoming = staging.appendingPathComponent("Copy.app")
+        try writeApp(at: incoming, bundleID: "local.apelin.copy", version: "2.0", executable: "Copy")
+        try require(ApplicationInstall.sameVolume(destination.path, apps.path), "one folder is one volume")
+
+        let placed = try ApplicationInstall.place(incoming, at: destination, copying: true)
+        try require(placed.copied == true, "the placement says it copied")
+        try require(fm.fileExists(atPath: incoming.path), "the staged copy stays where it was signed")
+        try require(AppBundle.describe(bundleAt: destination.path)?.version == "2.0", "the copied bundle is in place")
+        try require(placed.displaced.count == 1, "the old bundle waits aside until the install finishes")
+
+        // Withdrawing puts the old one back and takes both the copy it made
+        // and the failed bundle away.
+        try require(ApplicationInstall.withdraw(placed, layout: rootless).isEmpty, "withdraw after a copy reports no problems")
+        try require(
+            AppBundle.describe(bundleAt: destination.path)?.version == "1.0",
+            "the old bundle is back after a copied placement"
+        )
+        let beside = try fm.contentsOfDirectory(atPath: apps.path).sorted()
+        try require(beside == ["Copy.app"], "nothing is left beside it (\(beside))")
+        print("ok: placement across volumes copies, places and rolls back")
+    }
+
     // What runs from a bundle is ended before the bundle is replaced: a copy of
     // the system's sleep is started from inside a bundle and ended by the
     // installer's own scan.

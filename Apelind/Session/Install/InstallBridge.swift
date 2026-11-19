@@ -523,6 +523,11 @@ actor InstallBridge {
                 displacing: Array(displaced.dropFirst())
             )
             placed = inPlace
+            if inPlace.copied == true {
+                await registry.append(taskID, kind: "log", payload: .object([
+                    "line": .string("Copied the app beside Applications: staging is on another volume"),
+                ]))
+            }
             try ApplicationInstall.register(destination, layout: layout, installRoot: paths.installRoot)
             guard registeredBundle(bundle.bundleID, at: destination.path, layout: layout) else {
                 throw ApelinError(
