@@ -235,7 +235,7 @@ final class SessionHost: @unchecked Sendable {
                     // answering the phone that asked for it. Cheap when no
                     // reply is being collected for that session.
                     if worker.role == .agent {
-                        await channels.relayed(sessionID: worker.key, kind: kind, payload: payload)
+                        await channels.relayed(sessionID: worker.key, taskID: taskID, kind: kind, payload: payload)
                     }
                 case let .exit(worker):
                     await registry.ownerExited(role: worker.role, key: worker.key)
