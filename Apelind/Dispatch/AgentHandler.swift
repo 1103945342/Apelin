@@ -111,9 +111,12 @@ enum AgentHandler: DomainHandler {
             let reply = await forward(request, AgentCloseRequest.self, host: host) { $0.sessionID }
             if case .success = reply.0.result, let close = try? request.decode(AgentCloseRequest.self) {
                 await forgetClosed(close.sessionID, host: host)
-                // The app closes a conversation to delete it: what the host
-                // still owed it is retired in the same step, never recreated.
-                await retireDeleted(close.sessionID, host: host)
+                // Only a deletion retires what the host still owed it. An agent
+                // closing a conversation it opened ends its turn; the user may
+                // reopen that conversation, so its assignment stays.
+                if close.deleted == true {
+                    await retireDeleted(close.sessionID, host: host)
+                }
             }
             return reply
         case .agentRunCode:
@@ -222,7 +225,9 @@ enum AgentHandler: DomainHandler {
                 continue
             }
             do {
-                let (reply, _) = try await worker.call(WireRequest(AgentCloseRequest(sessionID: entry.sessionID)), descriptors: [])
+                let (reply, _) = try await worker.call(WireRequest(AgentCloseRequest(sessionID: entry.sessionID,
+                                                                                     deleted: true)),
+                                                       descriptors: [])
                 // one that ended meanwhile is closed already
                 if case let .failure(error) = reply.result, error.code != .notFound {
                     throw error

@@ -319,7 +319,7 @@ final class ChatRuntime {
             let session = records[id]?.sessionID
             ConversationNotices.shared.withdraw(session: session)
             if let session {
-                Task { try? await ApelinService.app.agentClose(sessionID: session) }
+                Task { try? await ApelinService.app.agentClose(sessionID: session, deleted: true) }
             }
             try? await removeRecord(id)
         }
@@ -333,7 +333,7 @@ final class ChatRuntime {
             sessionID = opened.sessionID
         }
         guard let sessionID else { return }
-        do { try await ApelinService.app.agentClose(sessionID: sessionID) }
+        do { try await ApelinService.app.agentClose(sessionID: sessionID, deleted: true) }
         catch let error as ApelinError where error.code == .notFound {
             // A finished session or one lost with the host is already closed.
         }
@@ -852,7 +852,7 @@ final class ChatRuntime {
         defer { opening[id] = nil }
         let result = try await pending.value
         guard records[id] != nil else {
-            try? await ApelinService.app.agentClose(sessionID: result.sessionID)
+            try? await ApelinService.app.agentClose(sessionID: result.sessionID, deleted: true)
             throw CancellationError()
         }
         records[id]?.sessionID = result.sessionID
