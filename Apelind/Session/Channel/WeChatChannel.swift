@@ -1547,6 +1547,11 @@ actor WeChatChannel {
     /// turn writes is collected, and the end of the turn sends it.
     func relayed(sessionID: String?, taskID: TaskID, kind: String, payload: JSONValue?) {
         guard let sessionID else { return }
+        // A task replaying a conversation's history re-sends what it settled
+        // long ago, marked as such: none of it is happening now. Taking it
+        // for asks mailed stale cards to the phone, and taking its states for
+        // ends cleared the ask the phone was about to answer.
+        guard payload?["historical"]?.boolValue != true else { return }
         // A call that needs the reader: carried to the phone that talks in
         // this conversation. A decision taken in the app clears the ask the
         // phone was given, so a reply to it is not read as one.
@@ -1575,13 +1580,16 @@ actor WeChatChannel {
         guard var reply = replies[sessionID] else { return }
         // The end of a turn: the agent's `finished`, or the task's own final
         // `state` when the run ended another way (Stop, a crash, an abort).
-        if kind == "finished" || kind == TaskEvent.stateKind {
+        // A task reports every move through `state`, and `waitingForApproval`
+        // arrives right after the ask the phone is about to answer: taking
+        // that for an end cleared the ask and dropped the turn's reply.
+        let endsTask = kind == TaskEvent.stateKind
+            && payload?["state"]?.stringValue.flatMap(TaskState.init(rawValue:))?.isTerminal == true
+        if kind == "finished" || endsTask {
             // The run ended: whatever it was waiting for is gone with it. A
             // conversation has more than one task in its life, so only the
-            // task that asked takes its ask: another one's end is not this
-            // run's, and clearing on it lost the reply the phone was about to
-            // give.
-            if kind == TaskEvent.stateKind {
+            // task that asked takes its ask.
+            if endsTask {
                 clearAsks(session: sessionID, taskID: taskID)
             }
             let final = Reply(userID: reply.userID, contextToken: reply.contextToken, text: reply.text, turns: 1)
