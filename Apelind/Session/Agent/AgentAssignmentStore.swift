@@ -188,10 +188,13 @@ actor AgentAssignmentStore {
         guard let stored = record.group.assignment(child) else {
             throw refusal("This child has no assignment; register it before syncing a plan.", child)
         }
+        var derivedBlocks = record.derivedBlockers ?? [:]
+        var derived = derivedBlocks[child]
         // An amendment may restate what the assignment is measured against: the
         // objective stays, the plan revision is newer, and the acceptance it
         // carries replaces the old one. The member re-baselines; receipts from
-        // the old revision keep their number and stop counting.
+        // the old revision keep their number and stop counting, and a blocker
+        // derived from the step being replaced goes with it.
         var member = stored
         if plan.brief.objective != stored.objective {
             throw refusal("The plan belongs to another brief; it cannot speak for this assignment.", child)
@@ -203,13 +206,15 @@ actor AgentAssignmentStore {
             member = try stored.rebased(briefRevision: plan.revision,
                                         acceptance: plan.brief.acceptance,
                                         expectedRevision: stored.revision)
+            if let note = derived {
+                member = try removing(note.blocker, from: member)
+                derived = nil
+            }
         }
         let note = record.plans[child] ?? 0
         guard plan.revision >= note else {
             throw refusal("Stale plan revision \(plan.revision); this assignment already saw \(note).", child)
         }
-        var derivedBlocks = record.derivedBlockers ?? [:]
-        var derived = derivedBlocks[child]
         let reconciled = try reconcile(member, with: plan, derived: &derived)
         derivedBlocks[child] = derived
         let stateChanged = reconciled != stored

@@ -635,6 +635,27 @@ struct AssignmentStoreChecks {
                                      plan: try AgentDelegationPlan(brief: brief(acceptance: ["Something else"])))
         }
 
+        // A blocker derived from the step being replaced goes with the step: a
+        // restated acceptance returns the member to working with no residue.
+        let blockerOpener = UUID().uuidString
+        let blockerChild = UUID().uuidString
+        _ = try await store.register(child: blockerChild, opener: blockerOpener, brief: brief())
+        var haltedPlan = try AgentDelegationPlan(brief: brief())
+        haltedPlan = try haltedPlan.blocked(expectedRevision: haltedPlan.revision)
+        let haltedMember = try await store.sync(child: blockerChild, opener: blockerOpener, plan: haltedPlan)
+        check(haltedMember.state == .blocked && haltedMember.blockers.count == 1,
+              "a blocked step shows as a blocker")
+        let restatedPlan = try haltedPlan.amendingCurrent(
+            AgentDelegationBrief.Step(id: "edit", title: "Edit again", writeRoots: ["Sources"],
+                                      capabilities: [.fileWrite]),
+            acceptance: ["The revised evidence is checked"],
+            expectedRevision: haltedPlan.revision
+        )
+        let clearedMember = try await store.sync(child: blockerChild, opener: blockerOpener, plan: restatedPlan)
+        check(clearedMember.state == .working, "a restated acceptance returns the member to working")
+        check(clearedMember.blockers.isEmpty,
+              "a restated acceptance drops the blocker derived from the old step")
+
         print("\(count) assignment store checks passed")
     }
 }

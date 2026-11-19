@@ -870,8 +870,14 @@ public struct AgentCloseRequest: OperationRequest {
     public typealias Response = Acknowledged
     public static let operation = AppOperation.agentClose
     public var sessionID: String
-    public init(sessionID: String) {
+    /// The app is closing this conversation to delete it. The agent's own
+    /// `apelin_conversation_stop(close:)` closes one the user may reopen, and
+    /// leaves this nil: what the host still owed a closed conversation stays
+    /// until the conversation itself goes.
+    public var deleted: Bool?
+    public init(sessionID: String, deleted: Bool? = nil) {
         self.sessionID = sessionID
+        self.deleted = deleted
     }
 }
 
@@ -936,7 +942,8 @@ public extension ApelinService {
         try await send(AgentListRequest(projectID: projectID, projectName: projectName))
     }
 
-    func agentClose(sessionID: String) async throws {
-        _ = try await send(AgentCloseRequest(sessionID: sessionID))
+    /// `deleted`: the app is deleting this conversation, not just closing it.
+    func agentClose(sessionID: String, deleted: Bool? = nil) async throws {
+        _ = try await send(AgentCloseRequest(sessionID: sessionID, deleted: deleted))
     }
 }
