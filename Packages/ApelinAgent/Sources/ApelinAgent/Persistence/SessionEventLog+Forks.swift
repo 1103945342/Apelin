@@ -54,6 +54,63 @@ struct ForkContext: Sendable {
         return Array(messages.prefix(boundary))
     }
 
+    /// Drops the tool calls nothing answered, wherever they are. A process
+    /// killed between a call and its result leaves one behind, and a
+    /// conversation that carried on afterwards kept the hole in the middle
+    /// where `completePrefix` can only refuse it. Only the call goes: the
+    /// turn's text and every answered call stay, and an assistant message
+    /// left with nothing is removed, because an empty one is a message
+    /// no provider accepts. A result with no call and a call id used twice
+    /// are still damage, and still thrown.
+    static func droppingUnansweredCalls(_ messages: [Message]) throws -> [Message] {
+        var outstanding: Set<String> = []
+        for message in messages {
+            switch message {
+            case let .assistant(assistant):
+                for block in assistant.content {
+                    guard case let .toolCall(call) = block else { continue }
+                    guard outstanding.insert(call.id).inserted else {
+                        throw SessionStoreError.corrupt("duplicate tool call in a message")
+                    }
+                }
+            case let .toolResult(result):
+                guard outstanding.remove(result.toolCallId) != nil else {
+                    throw SessionStoreError.corrupt("tool result has no pending call")
+                }
+            default:
+                break
+            }
+        }
+        guard !outstanding.isEmpty else { return messages }
+        var kept: [Message] = []
+        kept.reserveCapacity(messages.count)
+        for message in messages {
+            guard case var .assistant(assistant) = message else {
+                kept.append(message)
+                continue
+            }
+            let blocks = assistant.content.filter { block in
+                guard case let .toolCall(call) = block else { return true }
+                return !outstanding.contains(call.id)
+            }
+            guard blocks.count != assistant.content.count else {
+                kept.append(message)
+                continue
+            }
+            guard !blocks.isEmpty else { continue }
+            assistant.content = blocks
+            let answered = blocks.contains {
+                if case .toolCall = $0 { return true }
+                return false
+            }
+            if !answered { assistant.stopReason = .stop }
+            // The provider's own copy of this reply no longer matches it.
+            assistant.responseId = nil
+            kept.append(.assistant(assistant))
+        }
+        return kept
+    }
+
     static func hasCompleteToolResults(_ messages: [Message]) -> Bool {
         var outstanding: Set<String> = []
         for message in messages {
@@ -270,9 +327,8 @@ extension SessionEventLog {
         return prefix
     }
 
-    /// Older builds wrote the stopped run's unfinished tail to the live
-    /// transcript. Repair only a recorded stop, not a successful run or an
-    /// arbitrary malformed history. Decoding and filesystem failures throw.
+    /// Repair what a stopped run, or a call nothing answered, left behind.
+    /// Decoding and filesystem failures throw.
     func readResumableTranscript() throws -> [Message] {
         // `messages.jsonl` is what a chat goes on from; `transcript.json` is
         // how a session that predates it is read, and is still written at
@@ -286,16 +342,31 @@ extension SessionEventLog {
             default: false
             }
         }
-        guard case .finished(reason: .aborted)? = ending?.event else {
-            throw SessionStoreError.corrupt("unfinished tool calls without a recorded stop")
+        if case .finished(reason: .aborted)? = ending?.event {
+            let repaired = try recoverInterruptedHistory(messages)
+            // The repair writes `transcript.json`, but `messages.jsonl` is what the
+            // chat goes on from: left alone, the next checkpoint appends the rest
+            // of the conversation after the call the repair dropped, and the file
+            // keeps a hole — an unfinished batch in the middle, which the next
+            // open refuses as damage. A snapshot starts a segment, and what it
+            // replaces stays in the file for a fork.
+            try snapshotConversation(repaired)
+            return repaired
         }
-        let repaired = try recoverInterruptedHistory(messages)
-        // The repair writes `transcript.json`, but `messages.jsonl` is what the
-        // chat goes on from: left alone, the next checkpoint appends the rest
-        // of the conversation after the call the repair dropped, and the file
-        // keeps a hole — an unfinished batch in the middle, which the next
-        // open refuses as damage. A snapshot starts a segment, and what it
-        // replaces stays in the file for a fork.
+        // No stop was recorded: the process died between a call and its
+        // result, and the run went on after it was reopened, so the call sits
+        // in the middle with turns after it. A chat that cannot be opened is
+        // worse than the call it loses: drop what nothing answered and cut a
+        // half-finished batch at the end. Damage that is not a missing result
+        // (an orphan result, a repeated call) still throws above. The result
+        // is a new segment, for the same reason as the stopped run's.
+        let repaired = try ForkContext.completePrefix(of: ForkContext.droppingUnansweredCalls(messages))
+        guard !repaired.isEmpty else {
+            throw SessionStoreError.corrupt("no complete conversation boundary before interrupted calls")
+        }
+        // Both copies say the same thing: a build that reads only
+        // `transcript.json` must not open the conversation this one refused.
+        try writeTranscript(repaired)
         try snapshotConversation(repaired)
         return repaired
     }
