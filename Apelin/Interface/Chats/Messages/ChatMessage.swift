@@ -99,10 +99,17 @@ struct ChatMessage: Identifiable, Hashable {
     /// Text the model wrote (`text`, `message`), not an error or a tool's
     /// images: the rows a reply's menu acts on.
     var isReply = false
-    /// The message whose turn this row is in, by its own id: a user
-    /// message's, and a reply's. Nil for a message without one (another
-    /// conversation's), which the history's changes cannot name.
+    /// The turn this row belongs to, by the id of the message that began it:
+    /// a user message's own, and a reply's. Every turn has one, a turn
+    /// another conversation began included — its header and the rows under
+    /// it hang on it, so a turn without one drew no header at all.
     var turnMessageID: UUID?
+    /// The reader's message Edit, Delete and Rewind name. Nil for a turn
+    /// another conversation began: those changes act on a message carrying
+    /// the text the reader typed, and a delivered report has none, so the
+    /// history operation refuses it. What needs no message — Copy Text, and
+    /// the turn to fork through — is offered there instead.
+    var historyMessageID: UUID?
     /// A user message whose run saved the code first: Checkpoint & Rewind
     /// can put it back.
     var hasCheckpoint = false
@@ -176,7 +183,7 @@ struct ChatMessage: Identifiable, Hashable {
     }
 
     /// The calls this summary's trace is still waiting on.
-    private var runningTools: Int {
+    var runningTools: Int {
         trace.count(where: { $0.role == .tool && $0.awaitsResult })
     }
 

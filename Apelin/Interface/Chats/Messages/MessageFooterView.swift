@@ -153,9 +153,13 @@ final class MessageFooterView: UIView {
         durationLabel.isHidden = stats?.seconds == nil
         durationIcon.isHidden = durationLabel.isHidden
 
-        let acts = user ? message.turnMessageID != nil : message.offersActions
+        // More is shown only where it has something to offer: a message the
+        // history's changes name, or a turn to fork through. A row with
+        // neither took the tap and did nothing.
+        let nameable = message.historyMessageID != nil || message.turnMessageID != nil
+        let acts = user ? message.historyMessageID != nil : message.offersActions && nameable
         copyButton.isHidden = !(hasText && (user || message.offersActions))
-        rewindButton.isHidden = !(user && message.turnMessageID != nil)
+        rewindButton.isHidden = !(user && message.historyMessageID != nil)
         moreButton.isHidden = !acts
         showCopyState(copiedMessage == message.id)
         setNeedsLayout()

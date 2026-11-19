@@ -1137,6 +1137,7 @@ checkModelSwitchFit()
 
 checkChatForkHistory()
 checkConversationSource()
+checkCooperationTurn()
 checkStreamPacing()
 
 try checkSidebarTree()

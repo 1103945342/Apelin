@@ -1828,7 +1828,7 @@ extension ChatController {
     // MARK: Checkpoint & Rewind
 
     fileprivate func presentRewind(for id: UUID) {
-        guard let chat, let message = shownMessage(id), let messageID = message.turnMessageID else { return }
+        guard let chat, let message = shownMessage(id), let messageID = message.historyMessageID else { return }
         let saved = message.hasCheckpoint && chat.projectName != nil
         let noCode = String(localized: "No code was saved before this message.")
         let sheet = MessageActionSheet(title: String(localized: "Checkpoint & Rewind"), preview: preview(of: message), actions: [
@@ -1940,11 +1940,16 @@ extension ChatController {
     }
 
     fileprivate func presentMessageMenu(for id: UUID) {
-        guard let chat, let message = shownMessage(id), let messageID = message.turnMessageID else { return }
+        guard let chat, let message = shownMessage(id) else { return }
         let reply = message.role != .user
         let busy = chat.isWorking
+        // Edit, Delete and Rewind name the reader's message. A turn another
+        // conversation began has none, and those changes act on a message
+        // carrying what the reader typed, so they are not offered there: the
+        // two choices that need no message are.
+        let messageID = message.historyMessageID
         var actions: [MessageActionSheet.Action] = []
-        if !busy {
+        if let messageID, !busy {
             actions.append(MessageActionSheet.Action(
                 title: String(localized: "Edit Message"),
                 symbol: "pencil",
@@ -1956,13 +1961,13 @@ extension ChatController {
                 symbol: "doc.on.doc",
             ) { [weak self] in self?.copyText(of: message) })
         }
-        if runtime.canFork(chat.id) {
+        if let through = message.historyMessageID ?? message.turnMessageID, runtime.canFork(chat.id) {
             actions.append(MessageActionSheet.Action(
                 title: String(localized: "Fork from Here"),
                 symbol: "arrow.triangle.branch",
-            ) { [weak self] in self?.fork(through: messageID) })
+            ) { [weak self] in self?.fork(through: through) })
         }
-        if !busy {
+        if let messageID, !busy {
             actions.append(MessageActionSheet.Action(
                 title: String(localized: "Delete Message"),
                 symbol: "trash",

@@ -76,8 +76,13 @@ struct ChatTranscript {
     private struct Turn {
         /// Where its message is among `rows`.
         var start: Int
-        /// The message's own id, when it has one.
+        /// The turn's key: the id of the message that began it. A message
+        /// another conversation sent is the turn's key too, though the
+        /// history's changes cannot name it.
         var messageID: UUID?
+        /// The reader's message the history's changes name, when the turn is
+        /// theirs.
+        var historyID: UUID?
         var began: Date
         var ended: Date?
         var stats = ChatTurnStats()
@@ -182,10 +187,21 @@ struct ChatTranscript {
                     message.sentAt = event.time
                     if event.kind == "prompt" {
                         receivedTokens = nil
-                        let named = payload?["from"]?.stringValue == nil ? Self.userMessageID(of: event) : nil
-                        message.turnMessageID = named
+                        // Every turn is keyed by the message that began it,
+                        // another conversation's included: a turn with no key
+                        // drew no header at all, so the turn before it went
+                        // on saying "Completed" over a run that was working.
+                        let historyID = payload?["from"]?.stringValue == nil
+                            ? Self.userMessageID(of: event) : nil
+                        message.turnMessageID = messageID
+                        message.historyMessageID = historyID
                         endTurn(at: event.time)
-                        turns.append(Turn(start: rows.count, messageID: named, began: event.time))
+                        turns.append(Turn(
+                            start: rows.count,
+                            messageID: messageID,
+                            historyID: historyID,
+                            began: event.time,
+                        ))
                     }
                     add(message)
                 }
@@ -255,6 +271,7 @@ struct ChatTranscript {
                     var reply = ChatMessage(id: id, role: .assistant, text: "")
                     reply.isReply = true
                     reply.turnMessageID = turns.last?.messageID
+                    reply.historyMessageID = turns.last?.historyID
                     add(reply)
                 }
                 if let assistant {
@@ -457,6 +474,7 @@ struct ChatTranscript {
         messages = Self.withTurnHeaders(
             messages,
             running: isWorking ? turns.last?.messageID : nil,
+            historyIDs: turnHistoryIDs,
             durations: turnDurations,
             began: turnBegan,
             now: lastEventTime ?? Date(),
@@ -512,6 +530,17 @@ struct ChatTranscript {
         rows.append(row)
     }
 
+    /// The reader's message each turn's history changes name, by the turn's
+    /// key: turns another conversation began have none.
+    private var turnHistoryIDs: [UUID: UUID] {
+        var map: [UUID: UUID] = [:]
+        for turn in turns {
+            guard let id = turn.messageID, let history = turn.historyID else { continue }
+            map[id] = history
+        }
+        return map
+    }
+
     /// How long each turn took, and when each began, by the message that
     /// began it.
     private var turnDurations: [UUID: Int] {
@@ -540,6 +569,7 @@ struct ChatTranscript {
     private static func withTurnHeaders(
         _ rows: [ChatMessage],
         running: UUID?,
+        historyIDs: [UUID: UUID],
         durations: [UUID: Int],
         began: [UUID: Date],
         now: Date,
@@ -570,11 +600,13 @@ struct ChatTranscript {
                     text: "",
                 )
                 header.turnMessageID = turnID
+                header.historyMessageID = historyIDs[turnID]
                 result.append(header)
             }
             for offset in range {
                 var member = rows[offset]
                 member.turnMessageID = turnID
+                member.historyMessageID = historyIDs[turnID]
                 result.append(member)
             }
             index = end
