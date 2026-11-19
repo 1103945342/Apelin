@@ -133,11 +133,16 @@ final class ExtensionAndProjectTests: XCTestCase {
     }
 
     /// The template's files, both ways; the repository a project starts
-    /// with is left out.
+    /// with is left out, and so is the Xcode project `XcodeProject` writes
+    /// beside them — the reference implementation makes no Mac project, and
+    /// what the generator writes is `XcodeProjectTests`' subject.
     private func assertSameTree(_ a: URL, _ b: URL, _ label: String) throws {
         func files(_ root: URL) -> [String] {
             (FileManager.default.enumerator(atPath: root.path)?.allObjects as? [String] ?? []).filter { path in
                 guard path != ".git", !path.hasPrefix(".git/") else { return false }
+                let components = path.split(separator: "/")
+                if components.first == "Xcode" { return false }
+                if components.contains(where: { $0.hasSuffix(".xcodeproj") }) { return false }
                 var isDirectory: ObjCBool = false
                 FileManager.default.fileExists(atPath: root.appendingPathComponent(path).path, isDirectory: &isDirectory)
                 return !isDirectory.boolValue

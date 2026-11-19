@@ -79,6 +79,17 @@ the same executable in session mode; the workers are its children.
   and irisind never see an `.ipa`, no package repository takes one, and the
   Distribute… page offers Share `.ipa` alone. The two formats are never one
   renamed into the other, and a deb keeps every check it had.
+- **A project made from a template also carries an Xcode project.**
+  `ProjectStore.create` writes `<name>.xcodeproj` and `Xcode/` beside
+  `apelin-project.json` (`XcodeProject`, `ApelinProject/Project/XcodeProject.swift`),
+  from that same description: one native target per product, the
+  configurations' settings, the sources and resources its globs matched when
+  it was written, a shared scheme each, and the extension support's headers
+  and link stubs copied into `Xcode/Support/`. Nothing in Apelin reads it, a
+  failure to write it never refuses a project, and it is written once — Xcode
+  owns the file afterwards, so a second run would throw away what Xcode added.
+  Signing with ldid, the package and `swiftModules` stay with Apelin;
+  `Documents/Xcode.md` is what a user reads.
 - **A Swift module is the project's own sources, never a resolution.** A
   package a project vendors is a folder of the project: `swiftModules` names
   each module's `.swift` files and the modules it imports, the build compiles
