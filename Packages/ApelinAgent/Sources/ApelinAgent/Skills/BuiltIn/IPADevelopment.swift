@@ -71,9 +71,11 @@ extension BuiltInSkills {
           host checks the digest against the record, unpacks the `.ipa` in private
           staging, refuses a `com.apple.` bundle id, signs every Mach-O with `ldid`
           where staging holds it, reads the signed copy back, ends whatever still
-          runs from the app it replaces, and renames the bundle into
-          `<install root>/Applications` — the bundle that was there is renamed
-          aside first and put back if anything after it fails. It then registers
+          runs from the app it replaces, and puts the bundle at
+          `<install root>/Applications` — copied beside it first when staging is
+          on another volume, so only renames change what the device holds; the
+          bundle that was there is renamed aside first and put back if anything
+          after it fails. It then registers
           with `uicache -p`, reads `uicache -l` back as the receipt, and appears
           in `apelin_package_list` with an `installationID`.
         - `apelin_package_remove` takes it off: `uicache -u`, then the bundle goes.
