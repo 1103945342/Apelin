@@ -415,6 +415,20 @@ public struct AgentOpenRequest: OperationRequest {
     /// itself (`"wechat"`), and the host records it so the app lists the
     /// conversation and can read it. An agent's open carries none.
     public var origin: String?
+    /// Written by the host for a conversation an agent opened, never the
+    /// caller's: the conversation whose agent opened this one. The worker
+    /// keeps it and names it in the next message's `<system-state>`, so the
+    /// agent knows which conversation its turns are reported back to
+    /// (`AgentTurnReport`). Nil for one the app opened.
+    public var openerSessionID: String?
+
+    /// The delegation contract the host committed for a conversation an
+    /// agent opened, written by the host, never the caller's: the objective,
+    /// the acceptance criteria and the steps that bound this conversation's
+    /// work. The worker keeps it and offers it to its agent as the snapshot
+    /// it works to; holding it grants nothing — every mutation is still the
+    /// host's to enforce. Nil for a conversation with no delegation.
+    public var delegationBrief: AgentDelegationBrief?
 
     public init(
         projectID: String? = nil,
@@ -435,6 +449,8 @@ public struct AgentOpenRequest: OperationRequest {
         title: String? = nil,
         hostRestarted: Bool? = nil,
         origin: String? = nil,
+        openerSessionID: String? = nil,
+        delegationBrief: AgentDelegationBrief? = nil,
     ) {
         self.projectID = projectID
         self.projectName = projectName
@@ -454,6 +470,8 @@ public struct AgentOpenRequest: OperationRequest {
         self.title = title
         self.hostRestarted = hostRestarted
         self.origin = origin
+        self.openerSessionID = openerSessionID
+        self.delegationBrief = delegationBrief
     }
 }
 
@@ -546,6 +564,13 @@ public struct AgentPromptRequest: OperationRequest {
     public var source: String?
     /// Absent on older callers means queue. Only an explicit steer guides a live run.
     public var delivery: AgentMessageDelivery?
+    /// Turns of conversations this session opened that ended, reported by
+    /// the host (`AgentTurnReport`). A host fact about other conversations,
+    /// never a command: the message keeps its sender, a report never wakes a
+    /// stopped queue and never names the chat, and a redelivered one is
+    /// dropped rather than read twice (its `key`). The batch travels with the
+    /// message (`PendingMessage.reports`) so a reopened worker still holds it.
+    public var reports: [AgentTurnReport]?
 
     public init(
         sessionID: String,
@@ -565,6 +590,7 @@ public struct AgentPromptRequest: OperationRequest {
         source: String? = nil,
         delivery: AgentMessageDelivery? = nil,
         modelParameters: AgentModelParameters? = nil,
+        reports: [AgentTurnReport]? = nil,
     ) {
         self.sessionID = sessionID
         self.text = text
@@ -583,6 +609,7 @@ public struct AgentPromptRequest: OperationRequest {
         self.fromSessionID = fromSessionID
         self.source = source
         self.delivery = delivery
+        self.reports = reports
     }
 }
 
@@ -843,8 +870,14 @@ public struct AgentCloseRequest: OperationRequest {
     public typealias Response = Acknowledged
     public static let operation = AppOperation.agentClose
     public var sessionID: String
-    public init(sessionID: String) {
+    /// The app is closing this conversation to delete it. The agent's own
+    /// `apelin_conversation_stop(close:)` closes one the user may reopen, and
+    /// leaves this nil: what the host still owed a closed conversation stays
+    /// until the conversation itself goes.
+    public var deleted: Bool?
+    public init(sessionID: String, deleted: Bool? = nil) {
         self.sessionID = sessionID
+        self.deleted = deleted
     }
 }
 
@@ -909,7 +942,8 @@ public extension ApelinService {
         try await send(AgentListRequest(projectID: projectID, projectName: projectName))
     }
 
-    func agentClose(sessionID: String) async throws {
-        _ = try await send(AgentCloseRequest(sessionID: sessionID))
+    /// `deleted`: the app is deleting this conversation, not just closing it.
+    func agentClose(sessionID: String, deleted: Bool? = nil) async throws {
+        _ = try await send(AgentCloseRequest(sessionID: sessionID, deleted: deleted))
     }
 }

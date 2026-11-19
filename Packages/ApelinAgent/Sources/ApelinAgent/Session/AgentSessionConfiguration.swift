@@ -46,6 +46,19 @@ public struct AgentSessionConfiguration: Sendable {
     /// host decides (`AgentOpenRequest.hostRestarted`): when it has history,
     /// the next message's `<system-state>` says its paths may be stale.
     public var hostRestarted: Bool
+    /// The conversation whose agent opened this one
+    /// (`AgentOpenRequest.openerSessionID`); nil for one the app opened. The
+    /// next message's `<system-state>` names it, so the agent knows where
+    /// its turns are reported back to.
+    public var openerSessionID: String?
+    /// The delegation contract the host committed for this conversation
+    /// (`AgentOpenRequest.delegationBrief`); nil for one opened without one.
+    /// The assignment the agent works to — it grants nothing by itself.
+    public var delegationBrief: AgentDelegationBrief?
+    /// The host's authoritative plan for that contract, when it sends the
+    /// snapshot. Never minted in the worker: decoding a plan is not a licence
+    /// to install host state (`AgentDelegationPlan`).
+    public var delegationPlan: AgentDelegationPlan?
     /// Whom the agent tool extensions under the install root must belong
     /// to for their tools to be offered: root, as the package manager
     /// installs them and the host requires; the tests' own user.
@@ -70,6 +83,9 @@ public struct AgentSessionConfiguration: Sendable {
         network: NetworkPath = .system,
         hostRestarted: Bool = false,
         toolExtensionPolicy: ToolManifestPolicy = ToolManifestPolicy(),
+        openerSessionID: String? = nil,
+        delegationBrief: AgentDelegationBrief? = nil,
+        delegationPlan: AgentDelegationPlan? = nil,
     ) {
         self.id = id
         self.project = project
@@ -89,5 +105,8 @@ public struct AgentSessionConfiguration: Sendable {
         self.network = network
         self.hostRestarted = hostRestarted
         self.toolExtensionPolicy = toolExtensionPolicy
+        self.openerSessionID = openerSessionID
+        self.delegationBrief = delegationBrief
+        self.delegationPlan = delegationPlan
     }
 }

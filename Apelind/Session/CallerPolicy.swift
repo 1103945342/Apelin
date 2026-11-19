@@ -101,7 +101,7 @@ enum CallerPolicy {
         // The project's other conversations (AgentConversations): AgentHandler
         // keeps an agent to its own project, and to the sessions it opened
         // for abort and close. Approving, steering, agentQueue and compacting stay the app's.
-        .agentOpen, .agentPrompt, .agentList, .agentAttach, .agentAbort, .agentClose,
+        .agentOpen, .agentDelegation, .agentPrompt, .agentList, .agentAttach, .agentAbort, .agentClose,
         // Its own project's work tree saved before a run, for the reader's
         // Checkpoint & Rewind; putting one back, and every change to a
         // conversation's history, stay the app's.

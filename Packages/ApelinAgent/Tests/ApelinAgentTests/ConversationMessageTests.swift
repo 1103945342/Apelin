@@ -80,7 +80,7 @@ struct ConversationMessageTests {
         #expect(sourceAt < repeatedAt && repeatedAt < endedAt)
         #expect(all.filter { if case .conversationMessageTaken = $0 { return true }; return false }.count == 2)
         let takenIDs = all.compactMap { event -> UUID? in
-            if case let .conversationMessageTaken(id, _, _) = event { return id }; return nil
+            if case let .conversationMessageTaken(id, _, _, _) = event { return id }; return nil
         }
         #expect(takenIDs == [source, repeated])
         await session.close()

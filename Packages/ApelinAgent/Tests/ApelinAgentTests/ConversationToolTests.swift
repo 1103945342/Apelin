@@ -343,7 +343,7 @@ struct ConversationToolTests {
         await session.waitForIdle()
         let events = try await session.log.records(afterSeq: 0).map(\.event)
         let queuedID = try #require(events.compactMap { event -> UUID? in
-            if case let .conversationMessageQueued(id, "Review Tweak.x", "opener-session") = event { return id }
+            if case let .conversationMessageQueued(id, "Review Tweak.x", "opener-session", _) = event { return id }
             return nil
         }.first)
         #expect(events.contains(.conversationMessageTaken(id: queuedID, text: "Review Tweak.x", from: "opener-session")), "only the loop's acceptance marks it as active")

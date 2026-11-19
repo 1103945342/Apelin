@@ -178,6 +178,7 @@ struct ChatTranscript {
                     )
                     message.sender = Self.sourceLine(payload?["source"]?.stringValue)
                         ?? payload?["from"]?.stringValue.map { Self.senderLine(conversationTitle($0)) }
+                    message.isCooperating = payload?["from"]?.stringValue != nil
                     message.sentAt = event.time
                     if event.kind == "prompt" {
                         receivedTokens = nil
@@ -206,6 +207,7 @@ struct ChatTranscript {
                 message.isQueued = true
                 message.sender = Self.sourceLine(payload?["source"]?.stringValue)
                     ?? payload?["from"]?.stringValue.map { Self.senderLine(conversationTitle($0)) }
+                message.isCooperating = payload?["from"]?.stringValue != nil
                 queued.append(message)
             case "queueDropped":
                 let ids = Self.identifiers(in: payload?["ids"])
@@ -629,10 +631,10 @@ struct ChatTranscript {
             let range = turn.start ..< min(end, shown.count)
             guard let reply = range.last(where: { shown[$0].isReply && !shown[$0].isRemoved }) else { continue }
             // The reply the history's changes act on: the turn's last with
-            // text, as the agent finds it.
-            if let target = range.last(where: { shown[$0].isReply && !shown[$0].isRemoved && !shown[$0].text.isEmpty }),
-               shown[target].turnMessageID != nil
-            {
+            // text, as the agent finds it. A turn started by another
+            // conversation has no reader message to name, and its reply still
+            // offers Copy and More: the turn ended all the same.
+            if let target = range.last(where: { shown[$0].isReply && !shown[$0].isRemoved && !shown[$0].text.isEmpty }) {
                 shown[target].offersActions = true
             }
             var stats = turn.stats
@@ -644,7 +646,7 @@ struct ChatTranscript {
         // A reply before the first turn (another conversation's, or one
         // made before turns were kept) offers them as the newest reply.
         if !isWorking, let newest = shown.lastIndex(where: { $0.isReply && !$0.isRemoved }),
-           shown[newest].turnMessageID != nil, !shown[newest].text.isEmpty
+           !shown[newest].text.isEmpty
         {
             shown[newest].offersActions = true
         }
@@ -1000,6 +1002,7 @@ struct ChatTranscript {
         case .conversationSend: return String(localized: "Send to a chat")
         case .conversationList: return String(localized: "List chats")
         case .conversationRead: return String(localized: "Read a chat")
+        case .conversationPlan: return String(localized: "Plan")
         case .conversationStop: return String(localized: "Stop a chat")
         case .notificationSend: return String(localized: "Send a notification")
         case .questionAsk: return String(localized: "Ask a question")

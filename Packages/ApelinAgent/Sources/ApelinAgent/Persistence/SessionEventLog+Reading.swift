@@ -1,3 +1,4 @@
+import ApelinProtocol
 import Foundation
 
 /// Reading `events.jsonl`: the opening scan, which decodes almost nothing,
@@ -18,6 +19,11 @@ extension SessionEventLog {
         var titleSource: String?
         /// Approvals asked and never resolved, in the order asked.
         var openApprovals: [String] = []
+        /// The turns of conversations this one opened that its log already
+        /// received (`AgentTurnReport.key`), so a report the host delivers
+        /// again is not read twice. A report still queued when the worker
+        /// stopped is in `pending.json` instead, which the session adds.
+        var reportKeys: Set<AgentTurnReportKey> = []
         /// A previous process left these operations without their terminal
         /// event. Reopening restores history, never a running model task.
         var unfinishedTurn = false
@@ -49,10 +55,18 @@ extension SessionEventLog {
         mutating func add(_ record: SessionEventRecord) {
             lastSeq = record.seq
             switch record.event {
-            case let .userMessage(id, text, _, _), let .conversationMessageTaken(id, text, _):
-                if titleSource == nil {
-                    let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
-                    if !text.isEmpty { titleSource = String(text.prefix(3000)) }
+            case let .userMessage(id, text, _, _):
+                noteTitleSource(text)
+                userMessageIDs.insert(id)
+                lastUserMessageID = id
+                unfinishedTurn = true
+            case let .conversationMessageTaken(id, text, _, reports):
+                // A report is the host's account of another conversation, not
+                // input the reader wrote: it never names this chat.
+                if let reports {
+                    reportKeys.formUnion(reports.map(\.key))
+                } else {
+                    noteTitleSource(text)
                 }
                 userMessageIDs.insert(id)
                 lastUserMessageID = id
@@ -66,6 +80,12 @@ extension SessionEventLog {
             case let .approvalResolved(id, _): openApprovals.removeAll { $0 == id }
             default: break
             }
+        }
+
+        private mutating func noteTitleSource(_ text: String) {
+            guard titleSource == nil else { return }
+            let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !text.isEmpty { titleSource = String(text.prefix(3000)) }
         }
     }
 

@@ -411,7 +411,13 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         mode: .confirm,
         createdAt: Date(),
     )
-    let wantsFull = AgentOpenRequest(approvalMode: .full, prompt: "install the dependency")
+    let rootBrief = AgentDelegationBrief(
+        objective: "Install the dependency",
+        acceptance: ["It is installed"],
+        gates: .end,
+        steps: [.init(id: "step-1", title: "Install", capabilities: [.install])],
+    )
+    let wantsFull = AgentOpenRequest(approvalMode: .full, prompt: "install the dependency", delegationBrief: rootBrief)
     let strictChild = try? AgentConversationRules.childOpen(wantsFull, opener: strictOpener, target: other)
     check(strictChild?.approvalMode == .confirm, "an agent's open takes the opener's mode, never the request's Full")
     let fullOpener = await AgentSessionTable.Entry(
@@ -422,7 +428,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
         createdAt: Date(),
     )
     let fullChild = try? AgentConversationRules.childOpen(
-        AgentOpenRequest(approvalMode: .confirm, prompt: "x"),
+        AgentOpenRequest(approvalMode: .confirm, prompt: "x", delegationBrief: rootBrief),
         opener: fullOpener,
         target: other,
     )

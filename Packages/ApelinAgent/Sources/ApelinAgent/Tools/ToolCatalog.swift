@@ -4,6 +4,7 @@ import enum ApelinProtocol.AgentNoticeRules
 import enum ApelinProtocol.AgentQuestionRules
 import enum ApelinProtocol.AgentRunModeRules
 import enum ApelinProtocol.AgentToolName
+import struct ApelinProtocol.AgentDelegationBrief
 import enum ApelinProtocol.BuildBootstrap
 import struct ApelinProtocol.DistributionPublishRequest
 import enum ApelinProtocol.FeedbackRules
@@ -76,7 +77,8 @@ public extension AgentToolName {
              .gitRemoteSet, .gitRemoteRemove,
              .gitBranchCreate, .gitBranchCheckout, .gitBranchRename, .gitMerge, .gitMergeAbort,
              .gitTag, .gitStash,
-             .conversationCreate, .conversationSend, .conversationStop, .projectSetEnvironment, .notificationSend,
+             .conversationCreate, .conversationSend, .conversationStop, .conversationPlan,
+             .projectSetEnvironment, .notificationSend,
              .todoWrite:
             .writeProject
         // file_show copies a project file into the workspace's Attachments
@@ -214,6 +216,7 @@ public extension AgentToolName {
         case .conversationList: "List the conversations of this project, or of the one project names; in General Chat, without project, of every project you may reach. Each with its session id, link, title, its project when not this one, state (open, waitingForApproval or ended), the conversation that opened it, and when it was last active. An ended one can still be read, but takes no message until the user reopens it."
         case .conversationRead: "Read a conversation of this project, or of the one project names: its state (running, waitingForApproval, idle or ended), the assistant's messages after after_seq, the approvals it is waiting on, and last_seq to pass as after_seq next time. With wait_seconds, wait until it finishes a turn after after_seq, asks for approval, or ends."
         case .conversationStop: "Stop the turn a conversation you opened is running. With close: true, also end the conversation and free its place; the user can still reopen it from the sidebar."
+        case .conversationPlan: "The plan and ledger the host keeps for a conversation opened with a delegation brief: read the step open now, its revision and what it may write (your own read also gives the whole assignment ledger); report the open step blocked; ask its opener to review it; and, from the conversation that opened it, accept or amend a step, accept the whole assignment, cancel or fail it with a reason, or seal the member set of your own assignment. Every action carries the revision it is based on — the plan's for a step, the member's for an assignment, the group's for seal — and the host decides what each may do and admits every call: one it does not admit is refused."
         case .toolchainList: "List the toolchains set up on this device (id, Command Line Tools version, components, the newest SDK each reads, self-test results) and the releases Apelin can set up from Apple's catalog, each with its download size, requirements and why this device cannot take it, if so; and which toolchain this project binds."
         case .sdkList: "List the iPhoneOS SDKs registered on this device and the ones the enabled SDK sources offer, each with the registered toolchains that read it; and which SDK this project binds."
         case .toolchainSetup: "Set up a Command Line Tools release from apelin_toolchain_list on this device: Apple's package is downloaded, adapted, installed as a package and self-tested, importing a compatible SDK first if none is registered. Long; asks the user in Strict mode. Then bind it with apelin_project_set_environment."
@@ -258,6 +261,16 @@ public extension AgentToolName {
                 "prompt": Schema.string("The first message, which the other agent reads as the user's: the task, the files involved, what to deliver, and what to leave alone."),
                 "title": Schema.string("A short name for the sidebar, in the user's language."),
                 "project": Self.projectParameter,
+                "brief": Schema.object([
+                    "objective": Schema.string("What the conversation must reach, in one bounded statement."),
+                    "acceptance": Schema.array(of: Schema.string("One acceptance criterion."), description: "What makes the work acceptable: 1 to 32 of them."),
+                    "gates": .object([
+                        "type": "string",
+                        "enum": ["each", "end"],
+                        "description": "each: the opener reviews every step. end: one gate at the end. Default each.",
+                    ]),
+                    "steps": Schema.array(of: Self.delegationStepSchema, description: "The steps, in order: 1 to 32."),
+                ], required: ["objective", "acceptance", "steps"]),
             ], required: ["prompt"])
         case .conversationSend:
             Schema.object([
@@ -301,6 +314,32 @@ public extension AgentToolName {
                 "session_id": Schema.string("Session id of a conversation you opened."),
                 "close": Schema.boolean("Also end the conversation, freeing its place."),
             ], required: ["session_id"])
+        case .conversationPlan:
+            Schema.object([
+                "session_id": Schema.string("The conversation whose plan or ledger this is: one you opened, or this one. Omit for this conversation."),
+                "action": .object([
+                    "type": "string",
+                    "enum": [
+                        "read", "blocked", "review", "accept", "amend", "check",
+                        "acceptAssignment", "cancelAssignment", "failAssignment", "seal",
+                    ],
+                    "description": "read: the plan as the host has it; your own session's read also gives the global ledger. blocked: the open step cannot go on; say why in your reply. review: the step is done and asks its opener to accept it. accept: the opener releases the open step. amend: the opener amends the open step. check: asks for the registered adapter's receipt, which is refused until one exists. acceptAssignment: the opener accepts the whole assignment. cancelAssignment, failAssignment: the assignment ends, with note saying why. seal: locks this assignment's member set.",
+                ]),
+                "expected_revision": Schema.integer("The revision this action is based on: the plan's for a step action, the ledger member's for acceptAssignment, cancelAssignment and failAssignment, the group's for seal. The host refuses a stale one."),
+                "note": Schema.string("Why the assignment is cancelled or failed, in the user's words. Required for cancelAssignment and failAssignment; left out otherwise."),
+                "step": Self.delegationStepSchema,
+                "acceptance": Schema.array(
+                    of: Schema.string("One criterion the work is measured against, in the user's words."),
+                    description: "On amend: what the assignment is now measured against, when the new step changes what done means. It replaces the list, and the member's earlier check receipts stop counting. Omit to keep the acceptance as it is.",
+                ),
+                "outputs": Schema.array(
+                    of: Schema.object([
+                        "summary": Schema.string("What it produced, in your own words: the file, the change, the result. A claim, not a check."),
+                        "path": Schema.string("The project-relative path it is at, when it is a file or folder. Optional."),
+                    ], required: ["summary"]),
+                    description: "What you say you produced, on review and blocked: your claim, recorded in the opener's ledger. It is not a check receipt — only the host's check is evidence. Omit or leave empty when there is nothing to report.",
+                ),
+            ], required: ["action"])
         case .gitSetAuthor:
             Schema.object([
                 "name": Schema.string("Author name; empty clears it."),
@@ -757,6 +796,25 @@ public extension AgentToolName {
     internal static let privateFrameworkParameter = Schema.boolean("Optional: omit to look in Frameworks, then PrivateFrameworks; true looks in PrivateFrameworks first.")
 
     /// The conversation tools' other project.
+    /// A step of a delegation brief, as the tools take it
+    /// (`AgentDelegationBrief.Step`).
+    internal static let delegationStepSchema: JSONValue = Schema.object([
+        "id": Schema.string("The step's identifier: letters, digits, - _ . at most 80."),
+        "title": Schema.string("The step's title, at most 160 characters."),
+        "write_roots": Schema.array(
+            of: Schema.string("A project-relative path the step may write, without globs and without .."),
+            description: "What the step may write; omit for nothing.",
+        ),
+        "capabilities": Schema.array(
+            of: .object([
+                "type": "string",
+                "enum": .array(AgentDelegationBrief.Capability.allCases.map { .string($0.rawValue) }),
+            ]),
+            description: "What the step may do. A capability in the brief is not a licence to run commands: the host admits each call.",
+        ),
+        "check_id": Schema.string("A registered host adapter id; omit when the step has no check."),
+    ], required: ["id", "title"])
+
     internal static let projectParameter = Schema.string("Another project, by its projectID or folder name (apelin_project_list and apelin_project_create answer both): required in General Chat, omit for this project. A call that reaches another project asks the user in Strict mode.")
     /// Memory is data and asks in no mode, wherever it is kept.
     internal static let memoryProjectParameter = Schema.string("Another project, by its projectID or folder name from apelin_project_list (or a projectID apelin_memory_list marks missing), whose records this call sees beside every chat's; omit for this project. General Chat has none: name one for a project's records.")

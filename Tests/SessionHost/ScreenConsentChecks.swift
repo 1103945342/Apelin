@@ -290,15 +290,21 @@ func screenConsentChecks(scratch: URL, scratchPath: String) async {
     // MARK: Conversations agents open and send to
 
     let opener = await session("screen-opener", mode: .relaxed)
+    let screenBrief = AgentDelegationBrief(
+        objective: "Use the screen",
+        acceptance: ["It ran"],
+        gates: .end,
+        steps: [.init(id: "step-1", title: "Run it", capabilities: [.build])],
+    )
     let child = try? AgentConversationRules.childOpen(
-        AgentOpenRequest(approvalMode: .relaxed, asksBeforeScreen: false, prompt: "go"),
+        AgentOpenRequest(approvalMode: .relaxed, asksBeforeScreen: false, prompt: "go", delegationBrief: screenBrief),
         opener: opener,
         target: project,
     )
     check(child?.asksBeforeScreen == true, "an agent's open takes its opener's setting, never the one it sent")
     let lax = await session("screen-lax-opener", mode: .relaxed, asks: false)
     let laxChild = try? AgentConversationRules.childOpen(
-        AgentOpenRequest(approvalMode: .relaxed, asksBeforeScreen: true, prompt: "go"),
+        AgentOpenRequest(approvalMode: .relaxed, asksBeforeScreen: true, prompt: "go", delegationBrief: screenBrief),
         opener: lax,
         target: project,
     )

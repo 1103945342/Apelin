@@ -4,6 +4,8 @@ import enum ApelinCore.MemoryStoreError
 import struct ApelinCore.TodoStore
 import enum ApelinProtocol.AgentMessageDelivery
 import enum ApelinProtocol.AgentToolName
+import struct ApelinProtocol.AgentDelegationBrief
+import struct ApelinProtocol.AgentDelegationRequest
 import struct ApelinProtocol.ApelinError
 import enum ApelinProtocol.BuildBootstrap
 import struct ApelinProtocol.GitPushLease
@@ -47,6 +49,11 @@ actor ToolRunner {
     let journal: SessionJournal?
     private var notices = UserNotices()
 
+    /// The delegation contract this conversation was opened with, or nil.
+    /// It names the assignment; the host's plan is the authority, read for
+    /// every call (`Delegation.swift`).
+    let delegationBrief: AgentDelegationBrief?
+
     init(
         sessionID: String,
         project: ProjectIdentity,
@@ -62,6 +69,7 @@ actor ToolRunner {
         record: (@Sendable (AgentSessionEvent) async throws -> Void)? = nil,
         webFetch: WebFetch = .shared,
         journal: SessionJournal? = nil,
+        delegationBrief: AgentDelegationBrief? = nil,
     ) {
         self.sessionID = sessionID
         self.project = project
@@ -77,6 +85,7 @@ actor ToolRunner {
         self.record = record
         self.webFetch = webFetch
         self.journal = journal
+        self.delegationBrief = delegationBrief
         toolExtensions = ToolExtensionSessions(backend: backend)
     }
 
@@ -134,6 +143,14 @@ actor ToolRunner {
                 return nil
             case .shellRun:
                 return readOnlyCommandVerdict(arguments)
+            case .conversationPlan:
+                // The agent's own report of its step: a plan may read it,
+                // report it blocked and ask for its review. Moving the plan
+                // is not a plan run's to do.
+                let action = arguments.argString("action") ?? ""
+                return ["read", "blocked", "review"].contains(action)
+                    ? nil
+                    : "\(name.rawValue) with action \(action.isEmpty ? "(none)" : action) moves the plan; a plan run reads it"
             default:
                 break
             }
@@ -303,6 +320,18 @@ actor ToolRunner {
         case let .mcp(name): name
         case let .toolExtension(tool): tool.name
         }
+        // A conversation opened with a delegation brief answers to the host's
+        // plan before anything else happens: the snapshot now, the closed tool
+        // policy, then the host's own admission at that revision. The plan
+        // tool is how the agent reads and reports its step, so it carries its
+        // own action and is not admitted here.
+        var admission: (ticket: DelegationTicket, tool: String, path: String?)?
+        if delegationBrief != nil, !Self.isDelegationPlan(tool) {
+            let path = try delegationWritePath(tool, arguments: arguments)
+            if let ticket = try await delegationAdmission(tool: toolName, path: path) {
+                admission = (ticket, toolName, path)
+            }
+        }
         // A grant for an extension's tool holds for the version it was
         // given for: an upgrade mid-session asks again.
         let bound: String? = if case let .toolExtension(tool) = tool {
@@ -333,6 +362,7 @@ actor ToolRunner {
         }
         let hostRefusal = "Apelin could not confirm that this command is one of your approved presets. Review it before running."
         let evidence: ApprovalEvidence
+        var asked = false
         switch policy.evaluate(facts, root: root) {
         case let .allow(allowed):
             evidence = allowed
@@ -340,9 +370,16 @@ actor ToolRunner {
             journal?.note(ToolCallOutcome(.denied, "the approval policy refused it: \(reason)"), for: toolCallID)
             throw ToolDeniedError(message: "refused: \(reason)\(readOnlyNote(tool))")
         case let .ask(reason, detail):
+            asked = true
             evidence = try await ask(reason, detail)
         }
         try cancellation?.throwIfCancelled()
+        // The user was asked, and the plan may have moved meanwhile: the
+        // approval belongs to the revision the call was admitted at, and the
+        // host refuses a stale one.
+        if asked, let admission {
+            try await readmit(admission.ticket, tool: admission.tool, path: admission.path)
+        }
 
         if let mcp {
             return try await mcp(arguments)
@@ -375,6 +412,9 @@ actor ToolRunner {
             guard case .preset = evidence, let command = facts.command else { throw refusal }
             context.approval = try await ask(hostRefusal, .command(command))
             try cancellation?.throwIfCancelled()
+            if let admission {
+                try await readmit(admission.ticket, tool: admission.tool, path: admission.path)
+            }
             return try await execute(
                 name,
                 arguments: arguments,
@@ -473,7 +513,10 @@ actor ToolRunner {
         context: HostCallContext,
         cancellation: CancellationHandle?,
     ) async throws -> AgentToolResult {
-        let files = ProjectFileTools(root: root)
+        let files = ProjectFileTools(
+            root: root,
+            confinedWriter: delegationBrief == nil ? nil : ConfinedWriter(rootPath: root.path),
+        )
         switch name {
         case .todoList, .todoWrite:
             guard let todos else { throw ToolDeniedError(message: "Todo storage is unavailable.") }
@@ -1032,12 +1075,17 @@ actor ToolRunner {
             guard !prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                 throw ToolArgumentError("the prompt is empty: say what the other conversation should do and deliver")
             }
+            let brief = try Self.delegationBriefArgument(arguments)
             return try await json(backend.conversationCreate(ConversationCreateToolRequest(
                 context: context,
                 prompt: prompt,
                 title: arguments.argNonEmptyString("title"),
                 target: facts.targetProject,
+                brief: brief,
             )))
+
+        case .conversationPlan:
+            return try await conversationPlanCall(arguments)
 
         case .conversationSend:
             let target = try Self.conversation(arguments)
@@ -1151,6 +1199,16 @@ actor ToolRunner {
                 expectedBody: edit.currentBody,
             )))
         }
+    }
+
+    /// `apelin_conversation_plan`: the host's plan for this conversation, or
+    /// for one it opened — read, and the few moves the assignment allows. The
+    /// host decides who may do what and whether the revision is current; this
+    /// only names the action and, for an amendment, the step.
+    private func conversationPlanCall(_ arguments: JSONValue) async throws -> AgentToolResult {
+        let call = try DelegationPlanCall.read(arguments, sessionID: sessionID)
+        let response = try await backend.delegation(call.request)
+        return try json(response)
     }
 
     /// Switches the project's toolchain and/or SDK: checked by the host as

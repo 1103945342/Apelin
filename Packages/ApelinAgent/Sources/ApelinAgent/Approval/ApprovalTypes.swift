@@ -1,4 +1,5 @@
 import struct ApelinProtocol.AgentQuestion
+import struct ApelinProtocol.AgentDelegationBrief
 import struct ApelinProtocol.AgentRunModeRequest
 import enum ApelinProtocol.GitRepositoryVisibility
 import Foundation
@@ -404,7 +405,11 @@ public struct OtherProjectApproval: Sendable, Hashable, Codable {
     /// The prompt or message, as the other agent will read it.
     public var text: String?
     public var delivery: String?
-    public init(action: String, projectID: String, projectName: String, sessionID: String? = nil, text: String? = nil, delivery: String? = nil) {
+    /// The delegation brief a create carries into that project, compared as
+    /// it is against the open's own (`AgentConversationRules.coversOpen`):
+    /// an approval for one brief is not an approval for another.
+    public var brief: AgentDelegationBrief?
+    public init(action: String, projectID: String, projectName: String, sessionID: String? = nil, text: String? = nil, delivery: String? = nil, brief: AgentDelegationBrief? = nil) {
         self.action = action
         self.projectID = projectID
         self.projectName = projectName

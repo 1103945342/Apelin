@@ -110,6 +110,14 @@ enum SystemState {
         /// nil for the app's own. Names the channel, so the model knows the
         /// reader is not looking at Apelin.
         var source: String?
+        /// The conversation whose agent opened this one
+        /// (`AgentSessionConfiguration.openerSessionID`); nil for one the app
+        /// opened.
+        var parentSessionID: String? = nil
+        /// The delegation plan as it is at this input boundary
+        /// (`ToolRunner.delegationLine`): the step open now and the revision.
+        /// Read per message, never cached into the system prompt.
+        var delegation: String? = nil
         /// What changed since the model was last told (`PromptState`).
         var changes: [String] = []
         /// The session host restarted since the conversation last ran.
@@ -126,6 +134,7 @@ enum SystemState {
         changes: [String] = [],
         hostRestarted: Bool = false,
         installRoot: String? = nil,
+        parentSessionID: String? = nil,
     ) -> Facts {
         Facts(
             languages: source.languages(),
@@ -135,6 +144,7 @@ enum SystemState {
             mode: mode,
             runMode: runMode,
             asksBeforeScreen: asksBeforeScreen,
+            parentSessionID: parentSessionID,
             changes: changes,
             hostRestarted: hostRestarted,
             installRoot: installRoot,
@@ -169,6 +179,17 @@ enum SystemState {
             // in Apelin is reached from a phone with /use, and its prompt has
             // no channel in it.
             lines.append(line)
+        }
+        if let parent = facts.parentSessionID, isSessionID(parent) {
+            // The child knows where its turns go back to: the host reports
+            // each one that ends to that conversation, and the reader is not
+            // its agent.
+            lines.append("- This conversation was opened by the agent in conversation \(parent). When a turn of this conversation ends, a report of it goes back there automatically; that agent is not the reader you answer.")
+        }
+        if let delegation = facts.delegation {
+            // Read at this input boundary, so the step the model speaks from
+            // is the one the host admits; the system prompt keeps its bytes.
+            lines.append(delegation)
         }
         if let runMode = facts.runMode {
             // Beside the approval mode rather than in the system prompt: the
@@ -247,6 +268,12 @@ enum SystemState {
         let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")
         guard !value.isEmpty, value.count <= 35, value.unicodeScalars.allSatisfy(allowed.contains) else { return nil }
         return value.replacingOccurrences(of: "_", with: "-")
+    }
+
+    /// A session id, which is what may be named in the block: a value from
+    /// anywhere else is left out rather than spelled into it.
+    static func isSessionID(_ value: String) -> Bool {
+        UUID(uuidString: value) != nil
     }
 
     private static func regionCode(_ value: String) -> String? {

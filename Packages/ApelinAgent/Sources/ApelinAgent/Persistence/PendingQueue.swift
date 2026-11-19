@@ -36,10 +36,18 @@ public struct PendingMessage: Sendable, Hashable, Codable {
     /// channel's name (`ChatChannel.weChat`).
     public var source: String?
     public var delivery: AgentMessageDelivery?
+    /// The turns of conversations this session opened that the host reported
+    /// with this message (`AgentPromptRequest.reports`), kept until its run
+    /// takes it: a fact about other conversations, not what sent this one,
+    /// which is why it is no `source`. Nil for an ordinary message; an empty
+    /// list is the host's own account message, which carries no turn and is
+    /// still kept as one. Absent in records written before it existed.
+    public var reports: [AgentTurnReport]?
 
     public init(id: UUID, text: String, attachments: [AgentAttachment], editing: Bool = false,
                 sender: ConversationSender? = nil, source: String? = nil,
-                delivery: AgentMessageDelivery? = nil, modelChoice: PendingModelChoice? = nil) {
+                delivery: AgentMessageDelivery? = nil, modelChoice: PendingModelChoice? = nil,
+                reports: [AgentTurnReport]? = nil) {
         self.id = id
         self.text = text
         self.attachments = attachments
@@ -48,6 +56,7 @@ public struct PendingMessage: Sendable, Hashable, Codable {
         self.source = source
         self.delivery = delivery
         self.modelChoice = modelChoice
+        self.reports = reports
     }
 }
 

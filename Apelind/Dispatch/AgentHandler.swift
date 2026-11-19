@@ -22,6 +22,8 @@ enum AgentHandler: DomainHandler {
 
     static func handle(_ request: HostRequest, host: SessionHost) async -> HostReply {
         switch request.operation {
+        case .agentDelegation:
+            return await AgentDelegationHandler.handle(request, host: host)
         case .agentOpen:
             return await open(request, host: host)
         case .agentPrompt:
@@ -29,14 +31,17 @@ enum AgentHandler: DomainHandler {
         case .agentSteer:
             return await forward(request, AgentSteerRequest.self, host: host) { $0.sessionID }
         case .agentAbort:
+            // The stop is bound to the turn this session's task is in before
+            // the request is forwarded, so the report that turn closes says
+            // who stopped it without guessing from a clock.
             let reply = await forward(request, AgentAbortRequest.self, host: host) { $0.sessionID }
-            // No worker serves it: the run ended with the process that had it,
-            // and the task it was recorded under is the only thing still
-            // saying otherwise. The reply says so, so the row stops.
-            if case let .failure(error) = reply.0.result, error.code == .notFound,
-               let abort = try? request.decode(AgentAbortRequest.self)
-            {
-                await endDetachedSession(abort.sessionID, host: host)
+            if case let .failure(error) = reply.0.result, let abort = try? request.decode(AgentAbortRequest.self) {
+                // No worker serves it: the run ended with the process that had
+                // it, and the task it was recorded under is the only thing
+                // still saying otherwise. The reply says so, so the row stops.
+                if error.code == .notFound {
+                    await endDetachedSession(abort.sessionID, host: host)
+                }
             }
             // The shell_run calls the stopped run was waiting on stop with it.
             if case .success = reply.0.result, let abort = try? request.decode(AgentAbortRequest.self) {
@@ -83,7 +88,7 @@ enum AgentHandler: DomainHandler {
                         table: .shared,
                         registry: host.registry,
                         home: host.home,
-                        state: host.stateDirectory,
+                        state: host.stateDirectory
                     )
                 }
                 // The app's: the sessions it may follow, every project's or one's.
@@ -92,18 +97,26 @@ enum AgentHandler: DomainHandler {
                     projectID = try AgentProjects.resolve(
                         home: host.home,
                         projectID: list.projectID,
-                        projectName: list.projectName,
+                        projectName: list.projectName
                     ).id
                 }
                 return await AgentListResponse(sessions: AgentSessionTable.shared.summaries(
                     registry: host.registry,
-                    projectID: projectID,
+                    projectID: projectID
                 ))
             }
         case .agentClose:
+            // Closing a conversation ends a run it has: the turn that ends
+            // says who closed it.
             let reply = await forward(request, AgentCloseRequest.self, host: host) { $0.sessionID }
             if case .success = reply.0.result, let close = try? request.decode(AgentCloseRequest.self) {
                 await forgetClosed(close.sessionID, host: host)
+                // Only a deletion retires what the host still owed it. An agent
+                // closing a conversation it opened ends its turn; the user may
+                // reopen that conversation, so its assignment stays.
+                if close.deleted == true {
+                    await retireDeleted(close.sessionID, host: host)
+                }
             }
             return reply
         case .agentRunCode:
@@ -157,6 +170,29 @@ enum AgentHandler: DomainHandler {
         AgentRunCode.stop(session: sessionID)
     }
 
+    /// The conversation was deleted, not merely idle: its assignment is
+    /// cancelled — a member left working would keep its group from ever
+    /// closing — and what the report relay still owed it is retired. A
+    /// cancellation states a reason and is reported, never painted as success.
+    private static func retireDeleted(_ sessionID: String, host: SessionHost) async {
+        let opener = AgentSessionLineage.load(session: sessionID, state: host.stateDirectory)?.parentSessionID
+        if let opener, let member = try? await host.assignments.assignment(child: sessionID, opener: opener),
+           !member.state.isTerminal {
+            do {
+                _ = try await host.assignments.cancel(child: sessionID, opener: opener,
+                                                      reason: "The conversation was deleted.",
+                                                      expectedRevision: member.revision)
+            } catch {
+                NSLog("apelind-session: a deleted conversation's assignment could not be cancelled: %@",
+                      error.localizedDescription)
+            }
+        }
+        await AgentReportRelay.shared.retired(session: sessionID)
+        if let opener {
+            await AgentReportRelay.shared.accountChanged(opener)
+        }
+    }
+
     /// A session nothing serves any more: a chat whose worker went with the
     /// process that ran it (the app was quit, the host restarted). Its open
     /// task is left `running` on disk, so every launch finds a row that says
@@ -166,6 +202,15 @@ enum AgentHandler: DomainHandler {
         guard let entry = await AgentSessionTable.shared.entry(sessionID) else { return }
         if let record = await host.registry.record(entry.task.taskID), !record.state.isTerminal {
             await host.registry.finish(entry.task.taskID, .interrupted, message: "the process that ran it ended")
+        }
+        // The turn it was in ended with that process, and the conversation
+        // that opened it is told so.
+        if let ended = await host.registry.record(entry.task.taskID) {
+            await AgentReportRelay.shared.interrupted(
+                session: sessionID,
+                task: entry.task.taskID,
+                closing: ended.lastSeq.rawValue
+            )
         }
         await forgetClosed(sessionID, host: host)
     }
@@ -180,7 +225,9 @@ enum AgentHandler: DomainHandler {
                 continue
             }
             do {
-                let (reply, _) = try await worker.call(WireRequest(AgentCloseRequest(sessionID: entry.sessionID)), descriptors: [])
+                let (reply, _) = try await worker.call(WireRequest(AgentCloseRequest(sessionID: entry.sessionID,
+                                                                                     deleted: true)),
+                                                       descriptors: [])
                 // one that ended meanwhile is closed already
                 if case let .failure(error) = reply.result, error.code != .notFound {
                     throw error
@@ -189,10 +236,12 @@ enum AgentHandler: DomainHandler {
                 let reason = (error as? ApelinError)?.message ?? String(describing: error)
                 throw ApelinError(
                     .conflict,
-                    "the project's conversation “\(entry.title ?? entry.sessionID)” could not be closed (\(reason)), so the project was not deleted",
+                    "the project's conversation “\(entry.title ?? entry.sessionID)” could not be closed (\(reason)), so the project was not deleted"
                 )
             }
             await forgetClosed(entry.sessionID, host: host)
+            // The project's folder goes, and its conversations with it.
+            await retireDeleted(entry.sessionID, host: host)
         }
     }
 
@@ -228,7 +277,7 @@ enum AgentHandler: DomainHandler {
     /// nil for the app. Any other caller is refused.
     private static func callerSession(
         _ request: HostRequest,
-        host: SessionHost,
+        host: SessionHost
     ) async throws -> AgentSessionTable.Entry? {
         switch request.caller {
         case .app:
@@ -281,7 +330,7 @@ enum AgentHandler: DomainHandler {
         _ request: HostRequest,
         _ asked: AgentOpenRequest,
         sessionID: String,
-        host: SessionHost,
+        host: SessionHost
     ) async -> HostReply {
         let opener: AgentSessionTable.Entry?
         let open: AgentOpenRequest
@@ -300,7 +349,7 @@ enum AgentHandler: DomainHandler {
                     guard approved else {
                         throw ApelinError(
                             .denied,
-                            "approval required: opening a conversation in \(target.name) needs the user's approval of this call",
+                            "approval required: opening a conversation in \(target.name) needs the user's approval of this call"
                         )
                     }
                 }
@@ -309,12 +358,15 @@ enum AgentHandler: DomainHandler {
                     throw ApelinError(.conflict, "the project moved while the conversation was being opened")
                 }
             } else {
+                guard asked.delegationBrief == nil else {
+                    throw ApelinError(.denied, "Only a verified opener may supply a delegation brief.")
+                }
                 open = asked
                 project = try AgentProjects.resolve(
                     home: host.home,
                     projectID: open.projectID,
                     projectName: open.projectName,
-                    temporaryID: open.temporaryID,
+                    temporaryID: open.temporaryID
                 )
             }
         } catch {
@@ -329,11 +381,24 @@ enum AgentHandler: DomainHandler {
         let saved = existing == nil && opener == nil && open.sessionID != nil
             ? AgentSessionLineage.load(session: sessionID, state: host.stateDirectory)
             : nil
+        let authority: AgentDelegationStore.Record?
+        do {
+            authority = try await host.delegations.record(sessionID)
+            if let authority, authority.projectID != project.id {
+                throw ApelinError(.conflict, "The saved assignment belongs to another project.")
+            }
+            if opener == nil, (existing?.parentSessionID ?? saved?.parentSessionID) != nil, authority == nil {
+                throw ApelinError(.denied, "This delegated chat has no saved brief. Start a new structured assignment; it cannot reopen unrestricted.")
+            }
+        } catch { return request.fail(error) }
         if let existing {
             guard existing.project == project else {
                 return request.fail(ApelinError(.conflict, "This chat belongs to another project. Start a new chat."))
             }
             if let record = await host.registry.record(existing.task.taskID), !record.state.isTerminal {
+                // Nothing to open: the conversation runs already, and what its
+                // children reported meanwhile is offered to it now.
+                await AgentReportRelay.shared.reopened(sessionID)
                 return (.success(request.requestID, AgentOpenResponse(sessionID: sessionID, task: existing.task)), [])
             }
         }
@@ -352,8 +417,22 @@ enum AgentHandler: DomainHandler {
             guard await AgentSessionTable.shared.reserveChild(project: project.id, registry: host.registry) else {
                 return request.fail(ApelinError(
                     .conflict,
-                    "\(AgentConversations.maximumOpenChildren) conversations agents opened are already running in this project; stop one first",
+                    "\(AgentConversations.maximumOpenChildren) conversations agents opened are already running in this project; stop one first"
                 ))
+            }
+        }
+        if let opener {
+            do {
+                guard let brief = open.delegationBrief else {
+                    throw ApelinError(.badRequest, "A delegated conversation requires a brief.")
+                }
+                _ = try await host.delegations.register(child: sessionID, opener: opener.sessionID,
+                                                        projectID: project.id, brief: brief)
+                _ = try await host.assignments.register(child: sessionID, opener: opener.sessionID,
+                                                       brief: brief, request: request.requestID)
+            } catch {
+                await AgentSessionTable.shared.releaseChild(project: project.id)
+                return request.fail(ApelinError(.denied, error.localizedDescription))
             }
         }
         // Whether the worker is told the host restarted is the host's
@@ -361,14 +440,57 @@ enum AgentHandler: DomainHandler {
         var resolved = await AgentHostRun.shared.forwarded(open, sessionID: sessionID, byApp: opener == nil)
         resolved.projectID = project.id
         resolved.projectName = project.name
+        // The opener the worker and the report relay read is the host's, never
+        // the caller's: one the app or the child wrote itself is dropped.
+        resolved.openerSessionID = opener?.sessionID ?? authority?.opener ?? existing?.parentSessionID ?? saved?.parentSessionID
+        resolved.delegationBrief = opener == nil ? authority?.plan.brief : open.delegationBrief
         // Spelled out, so the worker and the host read it the same way.
         let asksBeforeScreen = ScreenConsent.asks(open.asksBeforeScreen)
         resolved.asksBeforeScreen = asksBeforeScreen
+        let title = open.title ?? open.prompt.map { String($0.prefix(AgentConversationRules.maximumTitleLength)) }
+        // Who opened this conversation is on disk before its worker starts:
+        // its first turn is read from its first event, and the report that
+        // turn makes goes back along a line that already exists.
+        if let opener {
+            AgentSessionLineage.save(
+                AgentSessionLineage.Record(parentSessionID: opener.sessionID, depth: opener.depth + 1),
+                session: sessionID,
+                state: host.stateDirectory
+            )
+        }
         let handle = await host.registry.create(kind: .agent, owner: .agent, ownerKey: sessionID)
         await host.notices.opened(session: sessionID, task: handle.taskID, headless: open.closeWhenFinished == true)
         // The host's own Confirm decisions (builds, installs, removals) read
         // the mode from the ledger, keyed by the worker's instance.
         await host.approvals.setMode(open.approvalMode, session: sessionID)
+        // Registered before the worker is handed the open: the child's events
+        // arrive while that call is under way, and the turn its opening prompt
+        // starts has to be read from its first one.
+        await AgentReportRelay.shared.registered(
+            child: sessionID,
+            opener: resolved.openerSessionID,
+            task: handle.taskID,
+            title: title ?? existing?.title,
+            openedByOpener: opener != nil && open.prompt?.isEmpty == false
+        )
+        // Authenticate early callbacks against the task before its worker starts.
+        // A failed open leaves a terminal task, which cannot mutate authority.
+        await AgentSessionTable.shared.add(
+            AgentSessionTable.Entry(
+                sessionID: sessionID,
+                task: handle,
+                project: project,
+                mode: open.approvalMode,
+                asksBeforeScreen: asksBeforeScreen,
+                promptInjection: resolved.promptInjection,
+                title: title ?? existing?.title,
+                createdAt: Date(),
+                parentSessionID: resolved.openerSessionID,
+                origin: opener == nil ? resolved.origin : nil,
+                depth: opener.map { $0.depth + 1 } ?? existing?.depth ?? saved?.depth ?? (authority == nil ? 0 : 1)
+            ),
+            releasingReservation: opener != nil
+        )
         do {
             var wire = try WireRequest(resolved)
             wire.requestID = request.requestID
@@ -381,8 +503,30 @@ enum AgentHandler: DomainHandler {
             let failure = (error as? ApelinError)
                 ?? ApelinError(.unavailable, "The chat could not be started. Try again.")
             await host.registry.finish(handle.taskID, .failed, message: failure.description)
-            if opener != nil {
-                await AgentSessionTable.shared.releaseChild(project: project.id)
+            // This is safe even if accounting fails: only an untouched opening
+            // seed is removed, never an observed turn or a pending report.
+            await AgentReportRelay.shared.abandoned(child: sessionID, task: handle.taskID)
+            let failureReason = failure.message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? "The delegated worker could not be started (\(failure.code.rawValue))." : failure.message
+            if let opener {
+                // Registration is already durable. Keep its lineage and record
+                // the failed start in the global account; otherwise it remains
+                // working forever and can prevent the sealed group closing.
+                // The worker may also have emitted events before a lost reply,
+                // so removing its lineage would strand genuine pending reports.
+                do {
+                    if let member = try await host.assignments.assignment(child: sessionID, opener: opener.sessionID),
+                       !member.state.isTerminal {
+                        _ = try await host.assignments.fail(child: sessionID, opener: opener.sessionID,
+                                                            reason: failureReason,
+                                                            expectedRevision: member.revision)
+                    }
+                } catch {
+                    NSLog("apelind-session: failed start could not be recorded in the assignment ledger: %@", error.localizedDescription)
+                    return request.fail(ApelinError(.unavailable,
+                        "\(failureReason) Its assignment could not be marked failed: \(error.localizedDescription). Inspect the team account before retrying."))
+                }
+                await AgentReportRelay.shared.accountChanged(opener.sessionID)
             }
             return request.fail(failure)
         }
@@ -390,34 +534,6 @@ enum AgentHandler: DomainHandler {
         if open.prompt?.isEmpty == false {
             await AgentHostRun.shared.messageReached(sessionID)
         }
-        let title = open.title ?? open.prompt.map { String($0.prefix(AgentConversationRules.maximumTitleLength)) }
-        if let opener {
-            AgentSessionLineage.save(
-                AgentSessionLineage.Record(parentSessionID: opener.sessionID, depth: opener.depth + 1),
-                session: sessionID,
-                state: host.stateDirectory,
-            )
-        }
-        // A session the app opens again keeps the opener it had, after a
-        // restart too.
-        await AgentSessionTable.shared.add(
-            AgentSessionTable.Entry(
-                sessionID: sessionID,
-                task: handle,
-                project: project,
-                mode: open.approvalMode,
-                asksBeforeScreen: asksBeforeScreen,
-                promptInjection: resolved.promptInjection,
-                title: title ?? existing?.title,
-                createdAt: Date(),
-                parentSessionID: opener?.sessionID ?? existing?.parentSessionID ?? saved?.parentSessionID,
-                // An agent's open names no origin: a channel's does, and the
-                // app lists the conversation it made.
-                origin: opener == nil ? resolved.origin : nil,
-                depth: opener.map { $0.depth + 1 } ?? existing?.depth ?? saved?.depth ?? 0
-            ),
-            releasingReservation: opener != nil,
-        )
         if let opener, let prompt = open.prompt {
             await host.registry.append(
                 opener.task.taskID,
@@ -427,10 +543,13 @@ enum AgentHandler: DomainHandler {
                     task: handle,
                     title: open.title,
                     prompt: prompt,
-                    project: project,
-                ),
+                    project: project
+                )
             )
         }
+        // The conversation runs again: what its own children reported while it
+        // was away is offered now.
+        await AgentReportRelay.shared.reopened(sessionID)
         return (.success(request.requestID, AgentOpenResponse(sessionID: sessionID, task: handle)), [])
     }
 
@@ -443,15 +562,17 @@ enum AgentHandler: DomainHandler {
     private static func prompt(_ request: HostRequest, host: SessionHost) async -> HostReply {
         let prompt: AgentPromptRequest
         var wire: WireRequest
+        var fromAgent = false
         do {
             let asked = try request.decode(AgentPromptRequest.self)
             if let sender = try await callerSession(request, host: host) {
+                fromAgent = true
                 let target = await AgentSessionTable.shared.entry(asked.sessionID)
                 prompt = try AgentConversationRules.childPrompt(
                     asked,
                     sender: sender,
                     target: target,
-                    descriptorCount: request.descriptors.count,
+                    descriptorCount: request.descriptors.count
                 )
                 // Another project's conversation: under Confirm, the user's
                 // approval of exactly this message, spent here.
@@ -462,7 +583,7 @@ enum AgentHandler: DomainHandler {
                     guard approved else {
                         throw ApelinError(
                             .denied,
-                            "approval required: a message to a conversation of \(target.project.name) needs the user's approval of this call",
+                            "approval required: a message to a conversation of \(target.project.name) needs the user's approval of this call"
                         )
                     }
                 }
@@ -491,6 +612,11 @@ enum AgentHandler: DomainHandler {
         }
         if case .success = reply.0.result {
             await AgentHostRun.shared.messageReached(prompt.sessionID)
+            // The reader is here: what their children reported while they were
+            // away goes out behind their own message.
+            if !fromAgent {
+                await AgentReportRelay.shared.readerInput(prompt.sessionID)
+            }
         }
         return reply
     }
@@ -506,7 +632,7 @@ enum AgentHandler: DomainHandler {
                     caller: caller,
                     table: .shared,
                     registry: host.registry,
-                    home: host.home,
+                    home: host.home
                 )
             }
         } catch {
@@ -538,7 +664,7 @@ enum AgentHandler: DomainHandler {
         _ request: HostRequest,
         _: R.Type,
         host: SessionHost,
-        sessionID: (R) -> String,
+        sessionID: (R) -> String
     ) async -> HostReply {
         let id: String
         do {
@@ -547,32 +673,48 @@ enum AgentHandler: DomainHandler {
                 try await AgentConversationRules.mayStop(
                     AgentSessionTable.shared.entry(id),
                     caller: caller,
-                    sessionID: id,
+                    sessionID: id
                 )
             }
         } catch {
             return request.fail(error)
         }
-        return await deliver(request, request.request, to: id, host: host)
+        let stopping = request.operation == .agentAbort || request.operation == .agentClose
+        return await deliver(request, request.request, to: id, host: host,
+                             stopping: stopping ? (request.caller == .app ? .user : .opener) : nil)
     }
 
-    /// Sends `wire` to session `id`'s running worker, after `prepare`.
+    /// Sends to a live worker. Stop attribution is confirmed by its reply, not
+    /// by the request being authorized or by an event arriving first.
+    /// `prepare` runs once the session is known to be live and before the
+    /// worker is handed the request: the worker can start a tool before its
+    /// reply arrives, so what that tool reads has to be set first.
     private static func deliver(
         _ request: HostRequest,
         _ wire: WireRequest,
         to id: String,
         host: SessionHost,
-        prepare: () async -> Void = {},
+        stopping: AgentTurnStoppedBy? = nil,
+        prepare: (() async -> Void)? = nil
     ) async -> HostReply {
         guard await AgentSessionTable.shared.entry(id) != nil, let worker = await host.workers.existing(.agent, instance: id), !worker.channel.isClosed else {
             return request.fail(ApelinError(.notFound, "This chat is no longer running."))
         }
-        await prepare()
+        await prepare?()
+        let token: UUID?
+        if let stopping {
+            token = await AgentReportRelay.shared.stopped(session: id, by: stopping)
+        } else {
+            token = nil
+        }
         do {
-            return try await worker.call(wire, descriptors: request.descriptors)
+            let reply = try await worker.call(wire, descriptors: request.descriptors)
+            await AgentReportRelay.shared.resolveStop(token, accepted: (try? reply.0.result.get()) != nil)
+            return reply
         } catch {
+            await AgentReportRelay.shared.resolveStop(token, accepted: false)
             return request.fail(
-                (error as? ApelinError) ?? ApelinError(.unavailable, "This chat could not be reached. Try again."),
+                (error as? ApelinError) ?? ApelinError(.unavailable, "This chat could not be reached. Try again.")
             )
         }
     }
@@ -594,7 +736,7 @@ enum AgentHandler: DomainHandler {
                 registry: host.registry,
                 ledger: host.approvals,
                 forward: relay,
-                accepted: { reply in (try? reply.0.result.get()) != nil },
+                accepted: { reply in (try? reply.0.result.get()) != nil }
             )
         } catch {
             return request.fail(error)
@@ -621,7 +763,7 @@ enum AgentHandler: DomainHandler {
                 entry: entry,
                 registry: host.registry,
                 ledger: host.approvals,
-                installRoot: host.installRoot,
+                installRoot: host.installRoot
             )
             return try await AgentRunCode.run(
                 run,
@@ -629,7 +771,7 @@ enum AgentHandler: DomainHandler {
                 project: entry.project,
                 installRoot: host.installRoot,
                 home: host.home,
-                stopsSeen: stopsSeen,
+                stopsSeen: stopsSeen
             )
         }
     }

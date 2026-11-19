@@ -633,8 +633,15 @@ do {
     }
     let opener = await session("c-opener", mode: .confirm)
 
-    // Open: always the opener's project and current mode, with a prompt;
-    // nothing of its own beyond prompt, title, provider, model, effort and tier.
+    // Open: always the opener's project and current mode, with a prompt and
+    // the structured brief it was given; nothing of its own beyond those,
+    // title, provider, model, effort and tier.
+    let brief = AgentDelegationBrief(
+        objective: "Write the README",
+        acceptance: ["The README says what the project does"],
+        gates: .end,
+        steps: [.init(id: "step-1", title: "Write it", writeRoots: ["README.md"], capabilities: [.fileWrite])],
+    )
     let asked = AgentOpenRequest(
         projectID: "p-other",
         projectName: "Other",
@@ -648,6 +655,7 @@ do {
         prompt: "Write the README",
         closeWhenFinished: true,
         title: "  Docs\nsecond line",
+        delegationBrief: brief,
     )
     let child = try AgentConversationRules.childOpen(asked, opener: opener, target: project)
     check(child.projectID == project.id && child.projectName == project.name, "an opened conversation is in the project the host resolved, not the one the request spelled")
@@ -660,10 +668,11 @@ do {
     )
     check(child.prompt == "Write the README" && child.title == "Docs", "the prompt goes as sent, the title on one trimmed line")
     check(child.promptInjection == nil, "an opener with no injected instructions passes none on")
+    check(child.delegationBrief == brief, "and the brief it works under is the one it was opened with")
     var injectedOpener = opener
     injectedOpener.promptInjection = "Always answer in Chinese."
     let inherited = try AgentConversationRules.childOpen(
-        AgentOpenRequest(prompt: "go"),
+        AgentOpenRequest(prompt: "go", delegationBrief: brief),
         opener: injectedOpener,
         target: project,
     )
@@ -673,40 +682,98 @@ do {
     )
     let relaxed = await session("c-relaxed", mode: .relaxed)
     let relaxedChild = try AgentConversationRules.childOpen(
-        AgentOpenRequest(approvalMode: .confirm, prompt: "go"),
+        AgentOpenRequest(approvalMode: .confirm, prompt: "go", delegationBrief: brief),
         opener: relaxed,
         target: project,
     )
     check(relaxedChild.approvalMode == .relaxed, "a Relaxed opener's conversation is Relaxed")
     expectError("an opened conversation needs a prompt", code: .badRequest) {
-        _ = try AgentConversationRules.childOpen(AgentOpenRequest(prompt: "  \n "), opener: opener, target: project)
+        _ = try AgentConversationRules.childOpen(
+            AgentOpenRequest(prompt: "  \n ", delegationBrief: brief),
+            opener: opener,
+            target: project,
+        )
+    }
+    // The brief is what bounds the work: prose alone grants nothing, and a
+    // brief the host would not accept is refused here, not at the first write.
+    expectError("an opened conversation with no brief is refused", code: .badRequest) {
+        _ = try AgentConversationRules.childOpen(AgentOpenRequest(prompt: "go"), opener: opener, target: project)
+    }
+    expectError("and one whose brief lists no steps", code: .badRequest) {
+        _ = try AgentConversationRules.childOpen(
+            AgentOpenRequest(
+                prompt: "go",
+                delegationBrief: AgentDelegationBrief(objective: "go", acceptance: ["it is done"], steps: []),
+            ),
+            opener: opener,
+            target: project,
+        )
     }
     // Another project: General Chat included, never a temporary one.
-    let crossChild = try AgentConversationRules.childOpen(AgentOpenRequest(prompt: "Import the repository"), opener: opener, target: other)
+    let crossChild = try AgentConversationRules.childOpen(
+        AgentOpenRequest(prompt: "Import the repository", delegationBrief: brief),
+        opener: opener,
+        target: other,
+    )
     check(crossChild.projectID == other.id && crossChild.projectName == other.name && crossChild.approvalMode == .confirm, "a conversation opens in another project under the opener's mode")
     let temporaryProject = ResolvedProject(id: "temporary:\(UUID().uuidString)", name: "t", path: scratchPath)
     let general = await session("c-general", in: temporaryProject)
-    let fromGeneral = try AgentConversationRules.childOpen(AgentOpenRequest(prompt: "Import the repository"), opener: general, target: project)
+    let fromGeneral = try AgentConversationRules.childOpen(
+        AgentOpenRequest(prompt: "Import the repository", delegationBrief: brief),
+        opener: general,
+        target: project,
+    )
     check(fromGeneral.projectID == project.id, "General Chat opens a conversation in a project")
     expectError("but never in a temporary chat", code: .denied) {
-        _ = try AgentConversationRules.childOpen(AgentOpenRequest(prompt: "go"), opener: general, target: temporaryProject)
+        _ = try AgentConversationRules.childOpen(
+            AgentOpenRequest(prompt: "go", delegationBrief: brief),
+            opener: general,
+            target: temporaryProject,
+        )
     }
     expectError("nor in another temporary chat from a project", code: .denied) {
-        _ = try AgentConversationRules.childOpen(AgentOpenRequest(prompt: "go"), opener: opener, target: temporaryProject)
+        _ = try AgentConversationRules.childOpen(
+            AgentOpenRequest(prompt: "go", delegationBrief: brief),
+            opener: opener,
+            target: temporaryProject,
+        )
     }
     let deep = await session("c-deep", parent: "c-opener", depth: AgentConversations.maximumDepth)
     expectError("a chain of openings stops at the maximum depth", code: .denied) {
-        _ = try AgentConversationRules.childOpen(AgentOpenRequest(prompt: "go"), opener: deep, target: project)
+        _ = try AgentConversationRules.childOpen(
+            AgentOpenRequest(prompt: "go", delegationBrief: brief),
+            opener: deep,
+            target: project,
+        )
     }
     expectError("in another project too", code: .denied) {
-        _ = try AgentConversationRules.childOpen(AgentOpenRequest(prompt: "go"), opener: deep, target: other)
+        _ = try AgentConversationRules.childOpen(
+            AgentOpenRequest(prompt: "go", delegationBrief: brief),
+            opener: deep,
+            target: other,
+        )
     }
     let middle = await session("c-middle", parent: "c-opener", depth: AgentConversations.maximumDepth - 1)
-    check((try? AgentConversationRules.childOpen(AgentOpenRequest(prompt: "go"), opener: middle, target: project)) != nil, "one short of the depth still opens")
+    check(
+        (try? AgentConversationRules.childOpen(
+            AgentOpenRequest(prompt: "go", delegationBrief: brief),
+            opener: middle,
+            target: project,
+        )) != nil,
+        "one short of the depth still opens",
+    )
 
     // The approval an open or a message in another project spends: the
-    // user's of exactly that call.
-    func otherProjectAsk(_ tool: String, action: String, projectID: String, sessionID: String? = nil, text: String, delivery: String? = nil) -> JSONValue {
+    // user's of exactly that call, its brief included.
+    func otherProjectAsk(
+        _ tool: String,
+        action: String,
+        projectID: String,
+        sessionID: String? = nil,
+        text: String,
+        delivery: String? = nil,
+        brief: AgentDelegationBrief? = nil,
+    ) -> JSONValue {
         var detail: [String: JSONValue] = [
             "action": .string(action), "projectID": .string(projectID), "projectName": .string("Other"), "text": .string(text),
         ]
@@ -714,20 +781,73 @@ do {
             detail["sessionID"] = .string(sessionID)
         }
         if let delivery { detail["delivery"] = .string(delivery) }
+        if let brief, let encoded = try? JSONValue(encoding: brief) {
+            detail["brief"] = encoded
+        }
         return .object(["tool": .string(tool), "detail": .object([AgentConversationRules.otherProjectDetail: .object(detail)])])
     }
-    let openAsk = otherProjectAsk("apelin_conversation_create", action: "create", projectID: other.id, text: "Import the repository")
-    check(AgentConversationRules.coversOpen(crossChild, target: other, asked: openAsk), "an approval of this open in this project covers it")
+    let openAsk = otherProjectAsk(
+        "apelin_conversation_create",
+        action: "create",
+        projectID: other.id,
+        text: "Import the repository",
+        brief: crossChild.delegationBrief,
+    )
+    check(AgentConversationRules.coversOpen(crossChild, target: other, asked: openAsk), "an approval of this open, in this project, with this brief, covers it")
+    var otherBrief = brief
+    otherBrief.objective = "Do something else entirely"
+    check(
+        !AgentConversationRules.coversOpen(
+            crossChild,
+            target: other,
+            asked: otherProjectAsk(
+                "apelin_conversation_create",
+                action: "create",
+                projectID: other.id,
+                text: "Import the repository",
+                brief: otherBrief,
+            ),
+        ),
+        "not one that approved another brief",
+    )
+    check(
+        !AgentConversationRules.coversOpen(
+            crossChild,
+            target: other,
+            asked: otherProjectAsk(
+                "apelin_conversation_create",
+                action: "create",
+                projectID: other.id,
+                text: "Import the repository",
+            ),
+        ),
+        "nor one that approved no brief at all",
+    )
     let third = ResolvedProject(id: "p-third", name: "Third", path: scratchPath + "/Third")
     check(!AgentConversationRules.coversOpen(crossChild, target: third, asked: openAsk), "not one in another project")
     check(
-        !AgentConversationRules.coversOpen(AgentOpenRequest(prompt: "Delete everything"), target: other, asked: openAsk),
+        !AgentConversationRules.coversOpen(
+            AgentOpenRequest(prompt: "Delete everything", delegationBrief: brief),
+            target: other,
+            asked: openAsk,
+        ),
         "nor another prompt",
     )
     check(
-        !AgentConversationRules.coversOpen(crossChild, target: other, asked: otherProjectAsk("apelin_conversation_send", action: "send", projectID: other.id, text: "Import the repository")),
+        !AgentConversationRules.coversOpen(
+            crossChild,
+            target: other,
+            asked: otherProjectAsk(
+                "apelin_conversation_send",
+                action: "send",
+                projectID: other.id,
+                text: "Import the repository",
+                brief: crossChild.delegationBrief,
+            ),
+        ),
         "nor an approval of another tool",
     )
+
 
     // The cap counts running agent-opened sessions and held places.
     let capped = ResolvedProject(id: "p-capped", name: "Capped", path: scratchPath + "/Capped")
@@ -1518,6 +1638,10 @@ await agentOpenChecks()
 // MARK: - The note that the host restarted (AgentHostRunChecks.swift)
 
 await agentHostRunChecks()
+
+// MARK: - Reports of a conversation an agent opened (AgentReportChecks.swift)
+
+await agentReportChecks(scratch: scratch)
 
 // MARK: - shell_run as root (RootRunChecks.swift)
 
@@ -3751,9 +3875,19 @@ do {
         createdAt: Date(),
     )
     await sessions.add(entry)
-    let detail: JSONValue = .object([AgentConversationRules.otherProjectDetail: .object([
+    let farBrief = AgentDelegationBrief(
+        objective: "Build it",
+        acceptance: ["It builds"],
+        gates: .end,
+        steps: [.init(id: "step-1", title: "Build")],
+    )
+    var reachDetail: [String: JSONValue] = [
         "action": .string("create"), "projectID": .string("p-far"), "projectName": .string("Far"), "text": .string("Build it"),
-    ])])
+    ]
+    if let encoded = try? JSONValue(encoding: farBrief) {
+        reachDetail["brief"] = encoded
+    }
+    let detail: JSONValue = .object([AgentConversationRules.otherProjectDetail: .object(reachDetail)])
     await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object([
         "approvalID": .string("reach-1"), "tool": .string("apelin_conversation_create"), "detail": detail,
     ]))
@@ -3778,7 +3912,7 @@ do {
     )
     let afterRelay = await sessions.mayReach("p-far", session: entry.sessionID)
     check(afterRelay, "once approved, the session may list and read that project's conversations")
-    let open = AgentOpenRequest(projectID: "p-far", projectName: "Far", prompt: "Build it")
+    let open = AgentOpenRequest(projectID: "p-far", projectName: "Far", prompt: "Build it", delegationBrief: farBrief)
     let far = ResolvedProject(id: "p-far", name: "Far", path: scratchPath + "/Far")
     let spent = await AgentApprovals.spend(entry: entry, registry: registry) {
         AgentConversationRules.coversOpen(open, target: far, asked: $0)

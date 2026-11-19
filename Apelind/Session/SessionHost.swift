@@ -19,6 +19,9 @@ final class SessionHost: @unchecked Sendable {
     let dataFolder: DataFolder
     /// Confirm-mode digests and agent session modes (host-private).
     let approvals: ApprovalLedger
+    /// Persisted delegation authority, separate from worker-owned session files.
+    let delegations: AgentDelegationStore
+    let assignments: AgentAssignmentStore
     /// Artifacts as build workers reported them.
     let artifacts: ArtifactRegistry
     let installations: InstallationStore
@@ -62,21 +65,23 @@ final class SessionHost: @unchecked Sendable {
         home = RoothideRoot.mobileHome(for: ownPath)
         stateDirectory = URL(
             fileURLWithPath: installRoot == "/" ? "/var/lib/apelin" : installRoot + "/var/lib/apelin",
-            isDirectory: true,
+            isDirectory: true
         )
         registry = TaskRegistry(directory: stateDirectory.appendingPathComponent("tasks", isDirectory: true))
         workers = WorkerSupervisor(installRoot: installRoot, home: home)
         dataFolder = DataFolder(home: home)
         approvals = ApprovalLedger(directory: stateDirectory.appendingPathComponent("approvals", isDirectory: true))
+        delegations = AgentDelegationStore(directory: stateDirectory.appendingPathComponent("agent-delegations", isDirectory: true))
+        assignments = AgentAssignmentStore(directory: stateDirectory.appendingPathComponent("agent-assignments", isDirectory: true))
         artifacts = ArtifactRegistry(file: stateDirectory.appendingPathComponent("artifacts.json"))
         installations = InstallationStore(
-            directory: stateDirectory.appendingPathComponent("installations", isDirectory: true),
+            directory: stateDirectory.appendingPathComponent("installations", isDirectory: true)
         )
         install = InstallBridge(
             paths: InstallBridge.Paths(
                 installRoot: installRoot,
                 dataFolder: dataFolder.root.path,
-                staging: stateDirectory.appendingPathComponent("staging", isDirectory: true),
+                staging: stateDirectory.appendingPathComponent("staging", isDirectory: true)
             ),
             service: IrisinInstallService(),
             registry: registry,
@@ -84,7 +89,7 @@ final class SessionHost: @unchecked Sendable {
             installations: installations,
             packages: DpkgStatusDatabase(installRoot: installRoot),
             fileLists: DpkgFileLists(installRoot: installRoot),
-            approvals: approvals,
+            approvals: approvals
         )
         scopes = FileScopes(installRoot: installRoot, dataFolder: dataFolder)
         editor = ProtectedEditor(installRoot: installRoot, backups: BackupStore(home: home))
@@ -92,7 +97,7 @@ final class SessionHost: @unchecked Sendable {
         toolHosts = ToolHostSessions(
             installRoot: installRoot,
             home: home,
-            attachments: stateDirectory.appendingPathComponent("attachments", isDirectory: true),
+            attachments: stateDirectory.appendingPathComponent("attachments", isDirectory: true)
         )
         notices = AgentNotices(stateDirectory: stateDirectory, sessions: dataFolder.sessions)
         proxy = WorkerChannel(adopting: WorkerMain.channelDescriptor)
@@ -121,7 +126,7 @@ final class SessionHost: @unchecked Sendable {
                     return error
                 }
                 return ApelinError(.denied, "\(request.operation.rawValue) was refused")
-            },
+            }
         )
         resumers[.build] = { record in await restart.resume(record) }
         resumers[.environment] = { record in await restart.resume(record) }
@@ -137,7 +142,7 @@ final class SessionHost: @unchecked Sendable {
         try? FileManager.default.createDirectory(
             at: stateDirectory,
             withIntermediateDirectories: true,
-            attributes: [.posixPermissions: 0o700],
+            attributes: [.posixPermissions: 0o700]
         )
         // The host's process name is apelind's, as the kernel takes it from
         // the executable, so `killall` cannot tell the two apart; this file
@@ -154,7 +159,7 @@ final class SessionHost: @unchecked Sendable {
             await gate.wait()
             return await Dispatcher.handle(
                 HostRequest(request: request.request, descriptors: request.descriptors, caller: .app),
-                host: self,
+                host: self
             )
         }
         proxy.onControl { [self] frame in
@@ -167,6 +172,32 @@ final class SessionHost: @unchecked Sendable {
 
         Task {
             let started = Date()
+            // Reports of the conversations an agent opened go back to the
+            // conversation that opened them: the relay reads the children's
+            // events from the feed below and hands each message to the opener
+            // on this host's own path, never through the app's.
+            await AgentReportRelay.shared.configure(state: stateDirectory, account: { [self] opener, reports in
+                // Reports remain claims. Persist them before freezing the account
+                // text; neither a turn nor its prose certifies acceptance.
+                let ledger = try await assignments.read(opener: opener)
+                for report in reports where ledger?.groups.contains(where: {
+                    $0.assignment(report.childSessionID) != nil
+                }) == true {
+                    _ = try await assignments.recordReport(report, opener: opener)
+                }
+                return (try await assignments.read(opener: opener))?.groups.map {
+                    AgentReportRelay.snapshotText($0.snapshot())
+                }.joined(separator: "\n") ?? "\nNo structured assignment ledger exists for this legacy conversation. Its turn is not acceptance.\n"
+            }, nextFinal: { [self] opener in
+                try await assignments.pendingFinalAccount(opener: opener)
+            }, nextStatus: { [self] opener in
+                try await assignments.read(opener: opener)?.groups.first?.snapshot()
+            }, acknowledgeFinal: { [self] opener, event in
+                _ = try await assignments.acknowledgeFinalAccount(opener: opener, eventID: event)
+            }) { [weak self] prompt in
+                guard let self else { return false }
+                return await self.deliverReportPrompt(prompt)
+            }
             // A worker's events and its exit, applied in the order they came:
             // a task per event lets a final `state` overtake the `artifact`
             // before it, and an exit overtake the `state` it followed.
@@ -186,8 +217,19 @@ final class SessionHost: @unchecked Sendable {
                        let title = AgentConversationRules.title(payload?["text"]?.stringValue)
                     {
                         await AgentSessionTable.shared.setTitle(title, session: key)
+                        await AgentReportRelay.shared.retitled(session: key, title: title)
                     }
-                    await registry.append(taskID, kind: kind, payload: payload)
+                    let appended = await registry.append(taskID, kind: kind, payload: payload)
+                    // The turn a conversation an agent opened just ended is
+                    // written down before anything waits on a worker: the feed
+                    // goes on with the next event.
+                    if let appended, worker.role == .agent, let session = worker.key {
+                        await AgentReportRelay.shared.observed(
+                            sessionID: session,
+                            taskID: taskID,
+                            event: appended
+                        )
+                    }
                     await notices.relayed(record, kind: kind, payload: payload)
                     // What a conversation wrote, for the WeChat channel
                     // answering the phone that asked for it. Cheap when no
@@ -199,6 +241,12 @@ final class SessionHost: @unchecked Sendable {
                     await registry.ownerExited(role: worker.role, key: worker.key)
                     if worker.role == .agent {
                         await toolHosts.closeAll(ownedBy: .worker(.agent, instance: worker.key))
+                        // A turn its worker never ended is interrupted, and
+                        // what that conversation owed its opener is delivered
+                        // when that conversation can take it.
+                        if let session = worker.key {
+                            await AgentReportRelay.shared.workerExited(session: session)
+                        }
                     }
                 }
             }
@@ -208,9 +256,9 @@ final class SessionHost: @unchecked Sendable {
                         HostRequest(
                             request: request.request,
                             descriptors: request.descriptors,
-                            caller: .worker(worker.role, instance: worker.key),
+                            caller: .worker(worker.role, instance: worker.key)
                         ),
-                        host: self,
+                        host: self
                     )
                 },
                 onEvent: { worker, frame in
@@ -223,7 +271,7 @@ final class SessionHost: @unchecked Sendable {
                 },
                 isBusy: { [self] role, key in
                     await registry.hasActiveTask(owner: role, key: key)
-                },
+                }
             )
             // Resume what the previous host left running, before anything
             // new can start (the workers are configured first: a resumed
@@ -239,7 +287,21 @@ final class SessionHost: @unchecked Sendable {
                 }
                 await registry.interrupt(record.id)
                 interrupted += 1
+                // A conversation's task the last host left running is where a
+                // turn it never reported ended: the report says interrupted.
+                if record.kind == .agent, let session = record.ownerKey,
+                   let ended = await registry.record(record.id)
+                {
+                    await AgentReportRelay.shared.interrupted(
+                        session: session,
+                        task: record.id,
+                        closing: ended.lastSeq.rawValue
+                    )
+                }
             }
+            // What the last host left undelivered is offered once, to the
+            // conversations that can take it now.
+            await AgentReportRelay.shared.resume()
             let resumed = Date()
             await install.reconcile()
             // A channel that was on when the host last stopped goes back to
@@ -252,7 +314,7 @@ final class SessionHost: @unchecked Sendable {
             NSLog(
                 "apelind-session: start took %d ms (prune %d, tasks %d with %d interrupted, reconcile %d)",
                 elapsed(started, reconciled), elapsed(started, pruned), elapsed(pruned, resumed),
-                interrupted, elapsed(resumed, reconciled),
+                interrupted, elapsed(resumed, reconciled)
             )
             gate.open()
         }
@@ -279,7 +341,7 @@ final class SessionHost: @unchecked Sendable {
             activeTasks: registry.activeCount + (holding ? 1 : 0),
             workers: workers.count,
             toolHosts: toolHosts.count,
-            tasksByKind: registry.activeByKind,
+            tasksByKind: registry.activeByKind
         )
         guard report != lastReport else { return }
         lastReport = report
@@ -304,6 +366,68 @@ final class SessionHost: @unchecked Sendable {
 
     // MARK: Helpers for the domain handlers
 
+    /// Delivers a report wave to the conversation that opened its children,
+    /// on the host's own path: the target is the session the child's lineage
+    /// names, `fromSessionID` is always the child's, and nothing of the
+    /// reader's — mode, model, standing instructions, files — travels with it.
+    /// No approval is spent and no conversation but that one is reached: the
+    /// line back to a parent is the lineage the creation itself allowed.
+    func deliverReportPrompt(_ prompt: AgentPromptRequest) async -> Bool {
+        guard let reports = prompt.reports,
+              UUID(uuidString: prompt.sessionID) != nil
+        else { return false }
+        let opener = prompt.sessionID
+        if reports.isEmpty {
+            // Only the host relay makes this marker. App and worker request
+            // entry points strip reports; a final account cannot be forged by
+            // supplying an empty array on their prompt path.
+            guard prompt.fromSessionID == opener else { return false }
+            do {
+                guard try await assignments.read(opener: opener) != nil else { return false }
+            } catch { return false }
+        }
+        // Only back to the opener: every report must be a turn of a
+        // conversation this one opened.
+        for report in reports {
+            let parent = AgentSessionLineage.load(session: report.childSessionID, state: stateDirectory)?
+                .parentSessionID
+            guard parent == opener else {
+                NSLog(
+                    "apelind-session: the report of %@ is not a child of %@, so it is not delivered",
+                    report.childSessionID,
+                    opener
+                )
+                return false
+            }
+        }
+        guard await AgentSessionTable.shared.entry(opener) != nil,
+              let worker = await workers.existing(.agent, instance: opener), !worker.channel.isClosed
+        else { return false }
+        var wire = prompt
+        wire.attachments = nil
+        wire.approvalMode = nil
+        wire.asksBeforeScreen = nil
+        wire.runMode = nil
+        wire.promptInjection = nil
+        wire.provider = nil
+        wire.model = nil
+        wire.modelDefaults = nil
+        wire.reasoningEffort = nil
+        wire.serviceTier = nil
+        wire.modelParameters = nil
+        wire.source = nil
+        guard wire.fromSessionID != nil else { return false }
+        do {
+            let (reply, _) = try await worker.call(try WireRequest(wire), descriptors: [])
+            if case .failure = reply.result {
+                return false
+            }
+            return true
+        } catch {
+            return false
+        }
+    }
+
     /// Forwards the request to the role's worker and returns its answer.
     func forward(_ request: HostRequest, to role: WorkerRole, instance: String? = nil) async -> HostReply {
         do {
@@ -326,7 +450,7 @@ final class SessionHost: @unchecked Sendable {
         kind: TaskKind,
         role: WorkerRole,
         instance: String? = nil,
-        resumable: Bool = false,
+        resumable: Bool = false
     ) async -> HostReply {
         let handle = await registry.create(kind: kind, owner: role, ownerKey: instance)
         // An agent reads back only the tasks its session started.
@@ -336,7 +460,7 @@ final class SessionHost: @unchecked Sendable {
         if resumable {
             await registry.setResume(
                 handle.taskID,
-                TaskResume.plan(request.request, descriptorCount: request.descriptors.count, caller: request.caller),
+                TaskResume.plan(request.request, descriptorCount: request.descriptors.count, caller: request.caller)
             )
         }
         do {
@@ -344,7 +468,7 @@ final class SessionHost: @unchecked Sendable {
             let (reply, descriptors) = try await worker.call(
                 request.request,
                 descriptors: request.descriptors,
-                taskID: handle.taskID,
+                taskID: handle.taskID
             )
             if case let .failure(error) = reply.result {
                 await registry.finish(handle.taskID, .failed, message: error.description)
@@ -365,7 +489,7 @@ final class SessionHost: @unchecked Sendable {
                 attach.taskID,
                 as: R.operation,
                 afterSeq: attach.afterSeq,
-                waitMilliseconds: attach.waitMilliseconds,
+                waitMilliseconds: attach.waitMilliseconds
             )
         }
     }

@@ -700,6 +700,27 @@ actor MockBackend: AgentHostBackend {
         return ConversationActionToolResponse(sessionID: request.sessionID, done: request.close ? "closed" : "stopped")
     }
 
+    /// What `delegation(_:)` answers when a test sets it, and every request
+    /// it saw, so a test can check the revision a call was admitted at.
+    var delegationHandler: (@Sendable (AgentDelegationRequest) async throws -> AgentDelegationResponse)?
+    var delegationRequests: [AgentDelegationRequest] = []
+
+    func setDelegation(_ handler: @escaping @Sendable (AgentDelegationRequest) async throws -> AgentDelegationResponse) {
+        delegationHandler = handler
+    }
+
+    func delegationSeen() -> [AgentDelegationRequest] {
+        delegationRequests
+    }
+
+    func delegation(_ request: AgentDelegationRequest) async throws -> AgentDelegationResponse {
+        delegationRequests.append(request)
+        guard let delegationHandler else {
+            throw ApelinError(.unavailable, "no delegation plan here")
+        }
+        return try await delegationHandler(request)
+    }
+
     // MARK: Agent tool extensions
 
     /// The extension of each tool session the host opened, in order; the

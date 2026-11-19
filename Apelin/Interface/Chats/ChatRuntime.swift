@@ -170,7 +170,12 @@ final class ChatRuntime {
     private func reconcile(with live: [AgentSessionSummary]) {
         for record in records.values {
             if let session = live.first(where: { $0.sessionID == record.sessionID }) {
-                records[record.summary.id]?.reopen(as: session.task)
+                // Only a task the host names that this row is not on is a
+                // reopened session; asking again about the same task settles
+                // nothing and must not redraw the page.
+                if record.task != session.task {
+                    records[record.summary.id]?.reopen(as: session.task)
+                }
                 // A task the host reports ended is read to its end too: the
                 // reply, and the run's own end, are in the events after this
                 // row's cursor when the app was killed in the middle of the
@@ -178,11 +183,22 @@ final class ChatRuntime {
                 // nothing left to stop — is what not reading them leaves.
                 follow(record.summary.id, task: session.task)
                 if session.state.isTerminal {
-                    if records[record.summary.id]?.run != .ended {
+                    if records[record.summary.id]?.run != .ended
+                        || records[record.summary.id]?.summary.isWorking == true
+                    {
                         records[record.summary.id]?.summary.isWorking = false
                         records[record.summary.id]?.run = .ended
                         changed(record.summary.id)
                     }
+                } else if records[record.summary.id]?.run != .running
+                            || records[record.summary.id]?.summary.isWorking == false
+                {
+                    // The host says this session is running again — a report it
+                    // delivered started another task — so the row stops saying
+                    // it finished, and its events are read from that task.
+                    records[record.summary.id]?.run = .running
+                    records[record.summary.id]?.summary.isWorking = true
+                    changed(record.summary.id)
                 }
             } else if record.summary.isWorking || record.run == .running || record.run == .stopping {
                 // The host has no such session: whatever turn this row shows
@@ -319,7 +335,7 @@ final class ChatRuntime {
             let session = records[id]?.sessionID
             ConversationNotices.shared.withdraw(session: session)
             if let session {
-                Task { try? await ApelinService.app.agentClose(sessionID: session) }
+                Task { try? await ApelinService.app.agentClose(sessionID: session, deleted: true) }
             }
             try? await removeRecord(id)
         }
@@ -333,7 +349,7 @@ final class ChatRuntime {
             sessionID = opened.sessionID
         }
         guard let sessionID else { return }
-        do { try await ApelinService.app.agentClose(sessionID: sessionID) }
+        do { try await ApelinService.app.agentClose(sessionID: sessionID, deleted: true) }
         catch let error as ApelinError where error.code == .notFound {
             // A finished session or one lost with the host is already closed.
         }
@@ -852,7 +868,7 @@ final class ChatRuntime {
         defer { opening[id] = nil }
         let result = try await pending.value
         guard records[id] != nil else {
-            try? await ApelinService.app.agentClose(sessionID: result.sessionID)
+            try? await ApelinService.app.agentClose(sessionID: result.sessionID, deleted: true)
             throw CancellationError()
         }
         records[id]?.sessionID = result.sessionID

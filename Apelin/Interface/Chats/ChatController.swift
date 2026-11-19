@@ -48,6 +48,11 @@ final class ChatController: UIViewController {
     private weak var tracePage: TraceController?
     /// Builds the rows again once a running turn has gone quiet.
     private let quietWatch = ChatQuietWatch()
+    /// While the page is up, asks the host whether this conversation is running
+    /// again: a report delivered after the last run ended starts a new task the
+    /// app never attached to, so the row said finished while the agent worked
+    /// and the reply only arrived on the next open. Only while visible.
+    private var runReconcile: Task<Void, Never>?
 
     /// The shown conversation's rows as last applied.
     private var messages: [ChatMessage] = []
@@ -138,7 +143,20 @@ final class ChatController: UIViewController {
                 anchor: more,
                 onPrepareDistribution: { [weak self] prompt in self?.sendPrompt(prompt) },
                 onDelete: { [weak self] id in self?.onDelete?(id) },
-                completion: completion,
+                // The conversation's team is read here and nowhere else, so
+                // its item rides beside the others rather than replacing them.
+                completion: { [weak self] items in
+                    var items = items
+                    if let self {
+                        items.append(UIAction(
+                            title: String(localized: "Team"),
+                            image: UIImage(systemName: "person.3"),
+                        ) { [weak self] _ in
+                            self?.showTeam()
+                        })
+                    }
+                    completion(items)
+                },
             )
         }])
         more.accessibilityLabel = String(localized: "More")
@@ -392,6 +410,18 @@ final class ChatController: UIViewController {
                         self?.presentPageAsFormSheet(ChatCompactionController(summary: message.text))
                     }
                 }
+            ListRow(ChatCooperationRow.self)
+                .estimatedHeight(44)
+                .when { $0.isCooperating }
+                .height { message, context in ChatCooperationRow.height(for: message, width: context.width) }
+                .configure { [weak self] row, message, _ in
+                    row.show(message)
+                    row.onOpen = { [weak self] in
+                        self?.presentPageAsFormSheet(
+                            ChatCooperationController(sender: message.sender, text: message.text)
+                        )
+                    }
+                }
             ListRow(ChatMessageRow.self)
                 .estimatedHeight(120)
                 .height { [weak self] message, context in
@@ -462,6 +492,27 @@ final class ChatController: UIViewController {
             composer.beginEditing()
         }
         sayUnsent()
+        watchRuns()
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        runReconcile?.cancel()
+        runReconcile = nil
+    }
+
+    /// One host question every few seconds while the page is up, so a run a
+    /// delivered report started becomes visible: the chat row stops saying it
+    /// finished and its events are read from the task the host names now.
+    private func watchRuns() {
+        guard runReconcile == nil else { return }
+        runReconcile = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 5_000_000_000)
+                guard !Task.isCancelled, let self else { return }
+                await runtime.reconcileRuns()
+            }
+        }
     }
 
     override func viewWillLayoutSubviews() {
@@ -1369,6 +1420,44 @@ extension ChatController: ComposerCommandContext {
             title: "Context Usage",
             message: "\(usage.tokens.formatted()) of \(usage.window.formatted()) tokens used (\(percent)).",
         )
+    }
+
+    /// The conversation's team, read from the host's assignment ledger: which
+    /// conversations it opened, what each was asked for, what the host
+    /// verified and what is still missing. Read-only — no accept, amend or
+    /// stop — and a member is opened through the root's own open, never by
+    /// moving the sidebar from here.
+    func showTeam() {
+        guard let chat else { return }
+        guard let sessionID = runtime.records[chat.id]?.sessionID else {
+            presentNotice(
+                title: "No Team Yet",
+                message: "This conversation has not delegated work to other conversations.",
+            )
+            return
+        }
+        let page = TeamLedgerController(sessionID: sessionID)
+        page.onOpenChild = { [weak self] child in
+            guard let self else { return }
+            dismiss(animated: true) { [weak self] in
+                self?.openTeamMember(child)
+            }
+        }
+        let sheet = UINavigationController(rootViewController: page)
+        sheet.modalPresentationStyle = .formSheet
+        present(sheet, animated: true)
+    }
+
+    /// A member conversation, by its session ID: taken in by the runtime when
+    /// the app has no row for it yet, then handed to the root's open
+    /// (`onOpenChat`), which moves the sidebar's highlight with the page.
+    private func openTeamMember(_ sessionID: String) {
+        Task { @MainActor in
+            guard let destination = await ChatLinkTarget.resolve(.conversation(sessionID), in: runtime),
+                  case let .chat(summary) = destination
+            else { return }
+            onOpenChat?(summary)
+        }
     }
 
     func send(prompt: String) {

@@ -130,6 +130,10 @@ public protocol AgentHostBackend: Sendable {
     func conversationRead(_ request: ConversationReadToolRequest) async throws -> ConversationReadToolResponse
     /// Aborts, and optionally closes, a conversation this session opened.
     func conversationStop(_ request: ConversationStopToolRequest) async throws -> ConversationActionToolResponse
+    /// The delegation plan the host keeps for a conversation an agent opened
+    /// (`AgentDelegation`): read it, and the moves the host admits. The plan
+    /// is the host's, never the worker's.
+    func delegation(_ request: AgentDelegationRequest) async throws -> AgentDelegationResponse
     /// A project under `Projects/` by its projectID or folder name, for a
     /// conversation call that names another project; the host resolves it
     /// again and decides.
@@ -188,6 +192,14 @@ public protocol AgentHostBackend: Sendable {
 public extension AgentHostBackend {
     func gitCheckpointSave(messageID _: UUID) async throws -> Bool {
         false
+    }
+}
+
+/// A backend with no delegation behind it (a test double, a live test) says
+/// so, which fails a constrained conversation closed rather than open.
+public extension AgentHostBackend {
+    func delegation(_: AgentDelegationRequest) async throws -> AgentDelegationResponse {
+        throw ApelinError(.unavailable, "this host keeps no delegation plan")
     }
 }
 
