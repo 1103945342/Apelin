@@ -45,7 +45,8 @@ public enum ProviderConfiguration: Sendable, Hashable, Codable {
         case .anthropic: .anthropic(model: model, oauth: false)
         case .anthropicOAuth: .anthropic(model: model, oauth: true)
         case .openAICompatible: .openAICompatible(model: model)
-        case .openAICompatibleEndpoint: .stored(storeID: provider.storeID, model: model)
+        case let .openAICompatibleEndpoint(number):
+            .stored(storeID: CredentialProviderID.openAICompatibleEndpoint(number), model: model)
         case .openAICodex: .stored(storeID: "openai-codex", model: model)
         case .cursor: .stored(storeID: "cursor", model: model)
         case .devin: .stored(storeID: "devin", model: model)
