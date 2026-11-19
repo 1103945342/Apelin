@@ -16,6 +16,22 @@ func checkChatStore(_ scratch: URL, check: (Bool, String) -> Void) async throws 
         TaskEvent(seq: EventSeq(number), kind: kind, payload: .object(["text": .string("e\(number)")]))
     }
 
+    // A conversation's page opens its session only when there is no history
+    // to show: any other chat would start a worker that waits for a prompt,
+    // and a task the host calls running with no turn going.
+    var fork = ChatRecord(
+        summary: .untitled(lastInteraction: Date(), projectName: nil),
+        sessionID: UUID().uuidString
+    )
+    check(ChatFork.needsHistoryLoad(fork, isFollowed: false, eventCount: 0), "an empty fork opens its session")
+    check(!ChatFork.needsHistoryLoad(fork, isFollowed: true, eventCount: 0), "a followed fork is not opened again")
+    check(
+        !ChatFork.needsHistoryLoad(fork, isFollowed: false, eventCount: 3),
+        "a chat with history opens no session for being looked at"
+    )
+    fork.sessionID = nil
+    check(!ChatFork.needsHistoryLoad(fork, isFollowed: false, eventCount: 0), "a draft opens no session")
+
     // A record from before the split is moved out once, and reads back whole.
     let legacyID = UUID()
     var legacy = ChatRecord(summary: .untitled(lastInteraction: Date(), projectName: nil))

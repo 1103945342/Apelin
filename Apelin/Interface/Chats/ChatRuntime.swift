@@ -203,15 +203,19 @@ final class ChatRuntime {
             await self.scanLineage()
             self.restoreLineage()
         }
-        // A host that does not answer yet is not an error, and runs
-        // nothing this app could follow: every saved row stops working.
+        // A host that does not answer yet is not an error, and runs nothing
+        // this app could follow: every saved row stops working.
         //
-        // A saved row's `isWorking` is what the last launch saw, not what is
-        // running now: the app was quit, so the run it showed ended with the
-        // process. The row waits here rather than claiming a turn is going —
-        // a chat shown working with no way to stop it is worse than one that
-        // takes a moment to come back, and the host's answer is what puts a
-        // live one back (`reopen`).
+        // A saved row's `isWorking` and `run` are what the last launch saw, not
+        // what is running now: the app was quit, so a turn it showed went with
+        // the process. They wait here, cleared, rather than claiming a turn is
+        // going — a chat shown working with no way to stop it is worse than one
+        // that takes a moment to come back. The host's answer puts a live one
+        // back (`reconcile`), and the row's own events supply the rest.
+        for id in records.keys {
+            if records[id]?.run != nil { records[id]?.run = nil }
+            if records[id]?.summary.isWorking == true { records[id]?.summary.isWorking = false }
+        }
         let live = await (try? ApelinService.app.agentList().sessions) ?? []
         reconcile(with: live)
         // What agents opened while the app was not following their openers.
@@ -267,12 +271,16 @@ final class ChatRuntime {
                         records[record.summary.id]?.run = .ended
                         changed(record.summary.id)
                     }
-                } else if records[record.summary.id]?.run != .running
-                            || records[record.summary.id]?.summary.isWorking == false
-                {
-                    // The host says this session is running again — a report it
-                    // delivered started another task — so the row stops saying
-                    // it finished, and its events are read from that task.
+                } else if record.task != session.task {
+                    // A task the host names that this row is not on: a report
+                    // it delivered while the app was away started another run,
+                    // so the row stops saying it finished.
+                    //
+                    // The same task the row already knows is not a run: a
+                    // session a page once opened keeps its worker waiting for a
+                    // prompt, and the host calls that task running without a
+                    // turn going. Taking its existence for a run is what made
+                    // every visited chat look busy, with nothing to stop.
                     records[record.summary.id]?.run = .running
                     records[record.summary.id]?.summary.isWorking = true
                     changed(record.summary.id)
@@ -961,7 +969,12 @@ final class ChatRuntime {
     /// a prompt. In particular an empty fork must retry a failed first open.
     func loadHistory(_ id: UUID) async throws {
         guard let record = records[id],
-              ChatFork.needsHistoryLoad(record, isFollowed: readers[id] != nil) else { return }
+              ChatFork.needsHistoryLoad(
+                  record,
+                  isFollowed: readers[id] != nil,
+                  eventCount: eventCounts[id] ?? record.events.count
+              )
+        else { return }
         _ = try await open(id)
     }
 
