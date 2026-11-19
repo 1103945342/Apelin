@@ -312,10 +312,66 @@ actor ChatStore {
     /// than overwritten.
     struct Loaded {
         var records: [ChatRecord] = []
+        /// How many events each conversation's file holds. A launch takes
+        /// this and reads no events, so the sidebar and the pruning rules
+        /// know a chat has a history without its megabytes.
+        var eventCounts: [UUID: Int] = [:]
         var unreadable: [(name: String, error: any Error)] = []
     }
 
-    func load() throws -> Loaded {
+    /// A conversation as it is kept on disk now: everything but its events,
+    /// which live beside it in `ChatEventsFile` — how many there are, so the
+    /// count the app prunes and pages by costs no read of them.
+    private struct Head: Codable {
+        var version = 2
+        var summary: ChatSummary
+        var draft = ComposerDraft()
+        var sessionID: String?
+        var task: TaskHandle?
+        var run: ChatRunState?
+        var sending: [ComposerDraft]?
+        var replay: SessionReplay?
+        var eventCount = 0
+
+        init(_ record: ChatRecord) {
+            summary = record.summary
+            draft = record.draft
+            sessionID = record.sessionID
+            task = record.task
+            run = record.run
+            sending = record.sending
+            replay = record.replay
+            eventCount = record.events.count
+        }
+
+        func record(events: [TaskEvent]) -> ChatRecord {
+            ChatRecord(
+                summary: summary,
+                draft: draft,
+                sessionID: sessionID,
+                task: task,
+                run: run,
+                events: events,
+                sending: sending,
+                replay: replay,
+            )
+        }
+
+        func counting(_ count: Int) -> Head {
+            var head = self
+            head.eventCount = count
+            return head
+        }
+    }
+
+    /// How many events of each conversation are on disk, as `save` left them.
+    private var written: [UUID: Int] = [:]
+
+    /// `readingEvents` false is what launching does: it reads each record's
+    /// head and how many events sit beside it, and no event at all. The
+    /// conversation's events are read later, when it is opened or followed,
+    /// with `events(_:in:)`.
+    func load(readingEvents: Bool = true) throws -> Loaded {
         let directory = folder.root.appendingPathComponent("Chats")
         try folder.makeLevels(to: directory)
         guard let directoryPath = CanonicalPath.resolve(directory.path) else { throw CocoaError(.fileReadNoSuchFile) }
@@ -324,7 +380,7 @@ actor ChatStore {
         for url in try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
             where url.pathExtension == "json"
         {
-            guard UUID(uuidString: url.deletingPathExtension().lastPathComponent) != nil,
+            guard let id = UUID(uuidString: url.deletingPathExtension().lastPathComponent),
                   let path = CanonicalPath.resolve(url.path),
                   CanonicalPath.isCanonical(path, inside: directoryPath)
             else { continue }
@@ -332,13 +388,59 @@ actor ChatStore {
             // is only skipped: it is read again next launch, never moved.
             guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)) else { continue }
             do {
-                try loaded.records.append(JSONDecoder().decode(ChatRecord.self, from: data))
+                let (record, count) = try read(id: id, data: data, in: directory, readingEvents: readingEvents)
+                loaded.records.append(record)
+                loaded.eventCounts[id] = count
             } catch {
                 loaded.unreadable.append((url.lastPathComponent, error))
                 setAside(url, in: directory)
             }
         }
         return loaded
+    }
+
+    /// One conversation: its head and the events beside it, and how many
+    /// there are. A record written before the split still carries them
+    /// inline, and is moved out here, once. With `readingEvents` false the
+    /// events stay on disk and only the count comes back.
+    private func read(
+        id: UUID,
+        data: Data,
+        in directory: URL,
+        readingEvents: Bool,
+    ) throws -> (record: ChatRecord, count: Int) {
+        let decoder = JSONDecoder()
+        if let head = try? decoder.decode(Head.self, from: data) {
+            if !readingEvents {
+                written[id] = head.eventCount
+                return (head.record(events: []), head.eventCount)
+            }
+            // The event file is the truth about how many there are: a save that
+            // appended them and was cut off before it wrote the head leaves
+            // more than the head says, and none of them is lost.
+            let events = try ChatEventsFile.read(id, in: directory)
+            written[id] = events.count
+            if events.count != head.eventCount {
+                try write(head.counting(events.count), into: directory)
+            }
+            return (head.record(events: events), events.count)
+        }
+        // No `version`: a record from before the split, events included.
+        let record = try decoder.decode(ChatRecord.self, from: data)
+        try migrate(record, into: directory)
+        written[id] = record.events.count
+        guard readingEvents else {
+            return (Head(record).record(events: []), record.events.count)
+        }
+        return (record, record.events.count)
+    }
+
+    /// Writes a legacy record's events to their own file and then the record
+    /// without them. The order is what makes it safe: a launch cut off between
+    /// the two finds the old record still whole and migrates again.
+    private func migrate(_ record: ChatRecord, into directory: URL) throws {
+        try ChatEventsFile.write(record.events, for: record.summary.id, in: directory)
+        try write(Head(record), into: directory)
     }
 
     /// Puts back a conversation set aside earlier that decodes now — one a
@@ -352,9 +454,18 @@ actor ChatStore {
             let source = aside.appendingPathComponent(name)
             let destination = directory.appendingPathComponent(id.uuidString + ".json")
             guard !FileManager.default.fileExists(atPath: destination.path),
-                  let data = try? Data(contentsOf: source),
-                  (try? JSONDecoder().decode(ChatRecord.self, from: data)) != nil
+                  let data = try? Data(contentsOf: source)
             else { continue }
+            // A record without its events would open the conversation with no
+            // history: that one stays where it is.
+            let readable: Bool
+            if let head = try? JSONDecoder().decode(Head.self, from: data) {
+                readable = head.eventCount == 0
+                    || FileManager.default.fileExists(atPath: ChatEventsFile.url(for: id, in: directory).path)
+            } else {
+                readable = (try? JSONDecoder().decode(ChatRecord.self, from: data)) != nil
+            }
+            guard readable else { continue }
             rename(source.path, destination.path)
         }
     }
@@ -375,26 +486,62 @@ actor ChatStore {
         rename(url.path, destination.path)
     }
 
-    func save(_ record: ChatRecord, revision: Int) throws {
+    /// `writesEvents` false is a conversation whose events were not read: only
+    /// its head is written, and `eventCount` — how many its file holds — keeps
+    /// the count the next launch prunes and pages by, so a chat whose events
+    /// are merely unread is never mistaken for an empty one.
+    func save(
+        _ record: ChatRecord,
+        revision: Int,
+        writesEvents: Bool = true,
+        eventCount: Int? = nil,
+    ) throws {
         let id = record.summary.id
         guard revision > (revisions[id] ?? -1) else { return }
         let directory = folder.root.appendingPathComponent("Chats")
         try folder.makeLevels(to: directory)
-        try JSONEncoder().encode(record).write(
-            to: directory.appendingPathComponent(id.uuidString + ".json"),
-            options: .atomic,
-        )
+        // The events first and the head after, so a launch cut off between the
+        // two reads more events than the head names and keeps them (`read`).
+        // A conversation that went backwards — a compaction, a rewind, an edit
+        // — is written out whole; anything else only appends what it gained,
+        // which is what a streamed turn costs now.
+        if writesEvents {
+            let onDisk = written[id] ?? 0
+            if record.events.count < onDisk {
+                try ChatEventsFile.write(record.events, for: id, in: directory)
+            } else if record.events.count > onDisk {
+                try ChatEventsFile.append(Array(record.events[onDisk...]), for: id, in: directory)
+            }
+        }
+        let head = Head(record)
+        try write(eventCount.map(head.counting) ?? head, into: directory)
+        if writesEvents { written[id] = record.events.count }
         revisions[id] = revision
     }
 
+    /// What a read of a conversation's events found on disk, after a launch
+    /// that only counted them.
+    func note(eventsOnDisk id: UUID, count: Int) {
+        written[id] = count
+    }
+
+    /// The conversation's record without its events, replaced atomically.
+    private func write(_ head: Head, into directory: URL) throws {
+        try JSONEncoder().encode(head).write(
+            to: directory.appendingPathComponent(head.summary.id.uuidString + ".json"),
+            options: .atomic,
+        )
+    }
+
     func remove(_ id: UUID) throws {
+        let directory = folder.root.appendingPathComponent("Chats")
         do {
-            try FileManager.default.removeItem(
-                at: folder.root.appendingPathComponent("Chats/" + id.uuidString + ".json"),
-            )
+            try FileManager.default.removeItem(at: directory.appendingPathComponent(id.uuidString + ".json"))
         } catch let error as CocoaError where error.code == .fileNoSuchFile {
             // Deleting before the first queued save is also a successful delete.
         }
+        ChatEventsFile.remove(id, in: directory)
+        written[id] = 0
         revisions[id] = Int.max
     }
 }

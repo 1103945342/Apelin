@@ -459,16 +459,102 @@ struct ForkContextTests {
     }
 
     @Test(arguments: [FinishReason.completed, .failed])
-    func `incomplete history without a recorded stop is not silently repaired`(_ reason: FinishReason) async throws {
+    func `a call nothing answered is dropped rather than the chat refused`(_ reason: FinishReason) async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let log = try SessionEventLog(sessionsRoot: home.dataRoot.sessions, sessionID: UUID().uuidString)
         let messages: [Message] = [.user(UserMessage(text: "Read"))] + pendingBatch()
         try await log.writeTranscript(messages)
         try await log.append(.finished(reason: reason))
-        await #expect(throws: (any Error).self) { try await log.readResumableTranscript() }
-        #expect(try await log.readTranscript() == messages)
+        let resumed = try await log.readResumableTranscript()
+        #expect(try ForkContext.hasCompleteToolResults(resumed))
+        // The call that has its result stays; only the one nothing answered
+        // goes, so the turn keeps what did happen.
+        #expect(resumed.count == 3)
+        #expect(try await log.readConversation() == resumed)
+        #expect(try await log.readTranscript() == resumed)
         await log.close()
+    }
+
+    @Test
+    func `an unanswered call in the middle is dropped and the rest of the turn stays`() throws {
+        let answered = ToolResultMessage(
+            toolCallId: "one", toolName: "file_read",
+            content: [.text(TextContent(text: "A real result"))],
+        )
+        let hole: [Message] = [
+            .user(UserMessage(text: "Read")),
+            .assistant(fauxAssistantMessage(blocks: [
+                .text(TextContent(text: "Reading both")),
+                fauxToolCall(name: "file_read", arguments: ["path": "one"], id: "one"),
+                fauxToolCall(name: "file_read", arguments: ["path": "two"], id: "two"),
+            ], stopReason: .toolUse)),
+            .toolResult(answered),
+            .user(UserMessage(text: "Never mind")),
+        ]
+        let repaired = try ForkContext.droppingUnansweredCalls(hole)
+        #expect(repaired.count == 4)
+        guard case let .assistant(assistant) = repaired[1] else {
+            Issue.record("the turn with the answered call should stay")
+            return
+        }
+        let calls = assistant.content.compactMap { block -> String? in
+            if case let .toolCall(call) = block { return call.id }
+            return nil
+        }
+        #expect(calls == ["one"])
+        let keepsText = assistant.content.contains {
+            if case let .text(value) = $0 { return value.text == "Reading both" }
+            return false
+        }
+        #expect(keepsText)
+        #expect(try ForkContext.completePrefix(of: repaired) == repaired)
+        #expect(throws: (any Error).self) {
+            try ForkContext.droppingUnansweredCalls([.toolResult(answered)])
+        }
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func `a fork that holds an unanswered call still opens`() async throws {
+        let home = try TemporaryHome()
+        defer { home.remove() }
+        let faux = await registerFauxProvider()
+        defer { faux.unregister() }
+        let log = try SessionEventLog(sessionsRoot: home.dataRoot.sessions, sessionID: UUID().uuidString.lowercased())
+        let first = UUID()
+        let second = UUID()
+        let user = UserMessage(text: "First")
+        let later = UserMessage(text: "Second")
+        let anchors = [first.uuidString.lowercased(): anchor(user), second.uuidString.lowercased(): anchor(later)]
+        // A segment written before the repair: a call started, no result for
+        // it, and the conversation went on anyway.
+        let hole: [Message] = [.user(user)] + pendingBatch() + [
+            .assistant(fauxAssistantMessage("Read one of them")),
+            .user(later),
+        ]
+        try await log.append(.userMessage(id: first, text: "First", attachments: []))
+        try await log.append(.toolCallStarted(ToolCallRecord(id: "two", name: "file_read", arguments: "{}")))
+        try await log.append(.userMessage(id: second, text: "Second", attachments: []))
+        try await log.append(.finished(reason: .completed))
+        try await log.snapshotConversation(hole)
+        let cut = try #require(try await log.conversation(through: second, anchors: anchors))
+        #expect(cut == hole)
+        let history = try await log.records(afterSeq: 0)
+        let forkID = UUID().uuidString.lowercased()
+        let metadata = SessionMetadata(id: forkID, project: home.project, provider: .registered(faux.getModel()), mode: .confirm, created: Date())
+        try SessionEventLog.writeFork(
+            sessionsRoot: home.dataRoot.sessions, metadata: metadata,
+            records: history, transcript: cut, anchors: anchors,
+            historySource: log.directory, history: history, through: second,
+        )
+        await log.close()
+        let fork = try SessionEventLog(sessionsRoot: home.dataRoot.sessions, sessionID: forkID)
+        let saved = try #require(try await fork.readConversation())
+        #expect(saved.count == 5)
+        #expect(try ForkContext.hasCompleteToolResults(saved))
+        #expect(try await fork.readTranscript() == saved)
+        #expect(try await fork.readResumableTranscript() == saved)
+        await fork.close()
     }
 
     @Test(arguments: ["manifest", "object", "transcript-write"])

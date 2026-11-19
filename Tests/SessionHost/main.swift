@@ -228,6 +228,14 @@ do {
     check(afterLoad.0 == nil && !onDisk(staleTask) && afterLoad.1 != nil, "load drops a session's finished tasks but the newest")
 }
 
+// MARK: - A finished task's log is read by its first reader, not at startup
+
+do {
+    try await checkTaskRegistryStartup(scratch) { condition, what in
+        check(condition, what)
+    }
+}
+
 // MARK: - Builds and environment tasks start again after a restart
 
 /// apelin-build in miniature, over a real channel: it answers a task's

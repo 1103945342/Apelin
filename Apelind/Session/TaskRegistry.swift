@@ -74,6 +74,13 @@ actor TaskRegistry {
         var stored = 0
     }
 
+    /// What a finished task's log says without decoding all of it: its last
+    /// event, when that event is the closing `state`.
+    private struct Tail {
+        var lastSeq: EventSeq
+        var time: Date
+    }
+
     static let maximumWaitMilliseconds = 60000
     /// The most events one attach answers with; a longer log takes the next
     /// poll, which the cursor it answered with reaches.
@@ -85,6 +92,16 @@ actor TaskRegistry {
     private let directory: URL
     private var records: [TaskID: Record] = [:]
     private var events: [TaskID: [TaskEvent]] = [:]
+    /// Finished tasks whose log was not read at startup: it is read the first
+    /// time something asks for its events (`log(of:)`), so a host that starts
+    /// with fourteen hundred finished tasks holds their records, not the
+    /// hundreds of megabytes of events behind them.
+    private var cold: Set<TaskID> = []
+    /// The finished logs read since, oldest first; one leaves when another is
+    /// read, so walking a thousand tasks does not keep them all.
+    private var resident: [TaskID] = []
+    /// How many finished logs stay in memory once read.
+    static let residentLogs = 4
     private var histories: [TaskID: HistoryState] = [:]
     private var budgets: [TaskID: HistoryBudget] = [:]
     /// Events left before a log that could not be rewritten is tried again.
@@ -117,6 +134,21 @@ actor TaskRegistry {
             else {
                 continue
             }
+            // A finished task's log stays on disk. Its record already says how
+            // it ended, and reading every log back at startup is where most of
+            // the host's memory went (237 MB of agent tasks alone). Only the
+            // tail is read, to keep the log's numbering and its end; anything a
+            // whole read would repair — a torn last line, a log whose end is
+            // not its closing `state`, one that must be trimmed — takes the
+            // whole read below, and a terminal always does.
+            if record.state.isTerminal, record.kind != .terminal, let tail = finishedTail(record) {
+                record.lastSeq = tail.lastSeq
+                if tail.time > record.updatedAt { record.updatedAt = tail.time }
+                records[record.id] = record
+                cold.insert(record.id)
+                histories[record.id] = HistoryState(base: record.historyFloor?.rawValue ?? 0)
+                continue
+            }
             let read = readEvents(
                 record.id,
                 allowFloor: record.kind == .terminal,
@@ -136,15 +168,20 @@ actor TaskRegistry {
             // with no `state` to take the result from. The lines past the
             // last that read keep their numbers as `unreadable` events, and
             // a closing `state` with the record's state is written after
-            // them, so the log is whole again, and the record follows it.
-            let closed = record.state.isTerminal && !replay.contains(where: Self.isFinalState)
+            // them, so the log is whole again, and the record follows it. A
+            // log that could not be read at all is not one missing its end:
+            // it is left alone, record included, until it can be read.
+            let closed = read.readable && record.state.isTerminal && !replay.contains(where: Self.isFinalState)
             if closed {
                 replay += closingEvents(record, after: replay, skipped: trailing, floor: floor)
             }
             // The event log is the truth: a record written before the events
             // after it takes the last one's number, and one written ahead of
-            // a lost line is pulled back to the last event that survived.
-            record.lastSeq = replay.last?.seq ?? .start
+            // a lost line is pulled back to the last event that survived. A
+            // log that could not be read says nothing about either.
+            if read.readable {
+                record.lastSeq = replay.last?.seq ?? .start
+            }
             // So is its state: `append` writes the line before the record,
             // and a host that died between the two left a record still
             // running behind a final `state`. Resuming that task would start
@@ -399,12 +436,12 @@ actor TaskRegistry {
     /// The newest event of `kind` whose payload has `field` equal to `value`,
     /// searched over the whole log rather than one attach batch.
     func lastEvent(_ id: TaskID, kind: String, field: String, equals value: String) -> TaskEvent? {
-        events[id]?.last { $0.kind == kind && $0.payload?[field]?.stringValue == value }
+        log(of: id).last { $0.kind == kind && $0.payload?[field]?.stringValue == value }
     }
 
     /// The newest event of `kind`, searched over the whole log.
     func lastEvent(_ id: TaskID, kind: String) -> TaskEvent? {
-        events[id]?.last { $0.kind == kind }
+        log(of: id).last { $0.kind == kind }
     }
 
     /// Every task of `kind`, finished or not, in no order.
@@ -465,6 +502,8 @@ actor TaskRegistry {
             for record in tasks where record.id != newest?.id && record.state.isTerminal {
                 records.removeValue(forKey: record.id)
                 events.removeValue(forKey: record.id)
+                cold.remove(record.id)
+                resident.removeAll { $0 == record.id }
                 histories.removeValue(forKey: record.id)
                 budgets.removeValue(forKey: record.id)
                 trimWaits.removeValue(forKey: record.id)
@@ -475,8 +514,70 @@ actor TaskRegistry {
         }
     }
 
+    /// The log of `id`: what is in memory, or — for a finished task whose log
+    /// was not read at startup — the file as it is. Reading one lets the oldest
+    /// of the finished logs go, so a reader that walks many tasks keeps a few.
+    private func log(of id: TaskID) -> [TaskEvent] {
+        if let held = events[id] { return held }
+        guard let record = records[id] else { return [] }
+        let read = readEvents(
+            id,
+            allowFloor: record.kind == .terminal,
+            floorHint: record.historyFloor?.rawValue ?? 0,
+        )
+        events[id] = read.events
+        var state = histories[id] ?? HistoryState(base: read.floor)
+        state.base = max(state.base, read.floor)
+        histories[id] = state
+        cold.remove(id)
+        resident.removeAll { $0 == id }
+        resident.append(id)
+        // A running task is never let go of: only a finished log is.
+        while resident.count > Self.residentLogs {
+            let oldest = resident.removeFirst()
+            guard oldest != id, records[oldest]?.state.isTerminal == true else { continue }
+            events.removeValue(forKey: oldest)
+            cold.insert(oldest)
+        }
+        return read.events
+    }
+
+    /// What a finished task's log says without decoding all of it: the number
+    /// of its last event and when it was, when that event is the closing
+    /// `state`. Nil when the log has to be read whole — one whose last whole
+    /// line does not decode, or one that ends on something other than its
+    /// `state` (the whole read writes that closing line back).
+    private func finishedTail(_ record: Record) -> Tail? {
+        let url = eventsURL(record.id)
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
+        defer { try? handle.close() }
+        guard let size = try? handle.seekToEnd(), size > 1 else { return nil }
+        let window = 64 * 1024
+        let start = size > UInt64(window) ? size - UInt64(window) : 0
+        do { try handle.seek(toOffset: start) } catch { return nil }
+        guard let tail = try? handle.readToEnd(), !tail.isEmpty else { return nil }
+        var lines = tail.split(separator: 0x0A, omittingEmptySubsequences: false)
+        // A window that starts inside an event leaves its rest as the first
+        // piece; only what follows a newline is a whole line.
+        if start > 0, !lines.isEmpty { lines.removeFirst() }
+        // A fragment after the last newline is a torn line, which the whole
+        // read drops. It is not part of the log until then, and reading it as
+        // if it were would report an end that never happened.
+        if lines.last?.isEmpty == false {
+            lines.removeLast()
+        }
+        if lines.last?.isEmpty == true {
+            lines.removeLast()
+        }
+        guard let line = lines.last, !line.isEmpty else { return nil }
+        let decoder = JSONCoding.decoder()
+        guard let event = try? decoder.decode(TaskEvent.self, from: Data(line)), Self.isFinalState(event)
+        else { return nil }
+        return Tail(lastSeq: event.seq, time: event.time)
+    }
+
     private func pending(_ id: TaskID, _ afterSeq: EventSeq) -> [TaskEvent] {
-        let all = events[id] ?? []
+        let all = log(of: id)
         let base = histories[id]?.base ?? 0
         // The events kept are numbered base+1 … base+count with no gaps, so
         // index = seq - base - 1. A cursor below the first is read from it.
@@ -758,9 +859,12 @@ actor TaskRegistry {
         _ id: TaskID,
         allowFloor: Bool,
         floorHint: UInt64,
-    ) -> (events: [TaskEvent], skipped: UInt64, floor: UInt64) {
+    ) -> (events: [TaskEvent], skipped: UInt64, floor: UInt64, readable: Bool) {
         let url = eventsURL(id)
-        guard let data = try? Data(contentsOf: url) else { return ([], floorHint, floorHint) }
+        // A log that is there and cannot be read is not an empty log: what it
+        // holds is unknown, so nothing is decided about its numbering or its
+        // end.
+        guard let data = try? Data(contentsOf: url) else { return ([], floorHint, floorHint, false) }
         let decoder = JSONCoding.decoder()
         var result: [TaskEvent] = []
         var skipped: UInt64 = 0
@@ -802,7 +906,7 @@ actor TaskRegistry {
             guard let newline else { break }
             start = data.index(after: newline)
         }
-        return (result, skipped, floor)
+        return (result, skipped, floor, true)
     }
 }
 

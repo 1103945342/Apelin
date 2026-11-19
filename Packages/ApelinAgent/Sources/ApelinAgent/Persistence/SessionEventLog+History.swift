@@ -62,6 +62,11 @@ extension SessionEventLog {
         snapshot: Bool = true,
     ) throws {
         guard isValidSessionID(metadata.id) else { throw SessionStoreError.invalidSessionID(metadata.id) }
+        // A turn forked from a segment written before a repair can hold a call
+        // nothing answered. The new chat must open, so it starts from the
+        // conversation without that call rather than from a record that
+        // refuses to load; what else is wrong with the cut still throws.
+        let forked = try ForkContext.droppingUnansweredCalls(transcript)
         let encoder = historyEncoder()
         let folder = sessionsRoot.appendingPathComponent(metadata.id, isDirectory: true)
         guard !FileManager.default.fileExists(atPath: folder.path) else {
@@ -85,7 +90,7 @@ extension SessionEventLog {
                     history: history, savedObjects: savedObjects,
                 )
                 try writeForkContext(
-                    ForkContext(messages: transcript, records: records, anchors: anchors),
+                    ForkContext(messages: forked, records: records, anchors: anchors),
                     id: messageID, directory: folder,
                 )
             }
@@ -97,14 +102,14 @@ extension SessionEventLog {
             }
             var conversation = Data()
             conversation.append(try Self.conversationEncoder.encode(
-                SessionEventLog.ConversationRecord(kind: .snapshot, messages: transcript),
+                SessionEventLog.ConversationRecord(kind: .snapshot, messages: forked),
             ))
             conversation.append(0x0A)
             let files: [(String, Data)] = try [
                 ("session.json", encoder.encode(metadata)),
                 ("events.jsonl", events),
                 ("messages.jsonl", conversation),
-                ("transcript.json", encoder.encode(transcript)),
+                ("transcript.json", encoder.encode(forked)),
                 ("anchors.json", encoder.encode(anchors)),
             ]
             for (name, data) in files {

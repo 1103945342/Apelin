@@ -387,7 +387,14 @@ enum AgentHandler: DomainHandler {
             if let authority, authority.projectID != project.id {
                 throw ApelinError(.conflict, "The saved assignment belongs to another project.")
             }
-            if opener == nil, (existing?.parentSessionID ?? saved?.parentSessionID) != nil, authority == nil {
+            if authority != nil {
+                // A record written before the marker existed is marked here,
+                // so retiring it later still closes the conversation.
+                try? AgentDelegatedMarker.mark(session: sessionID, state: host.stateDirectory)
+            } else if opener == nil, AgentDelegatedMarker.exists(session: sessionID, state: host.stateDirectory) {
+                // It was opened from a brief whose record is gone. A chat an
+                // agent opened before briefs existed has no marker: it never
+                // had an authority to lose, and reopens as it always did.
                 throw ApelinError(.denied, "This delegated chat has no saved brief. Start a new structured assignment; it cannot reopen unrestricted.")
             }
         } catch { return request.fail(error) }
@@ -428,6 +435,7 @@ enum AgentHandler: DomainHandler {
                 }
                 _ = try await host.delegations.register(child: sessionID, opener: opener.sessionID,
                                                         projectID: project.id, brief: brief)
+                try AgentDelegatedMarker.mark(session: sessionID, state: host.stateDirectory)
                 _ = try await host.assignments.register(child: sessionID, opener: opener.sessionID,
                                                        brief: brief, request: request.requestID)
             } catch {

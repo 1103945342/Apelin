@@ -29,11 +29,13 @@ final class SessionHost: @unchecked Sendable {
     let delegations: AgentDelegationStore
     let assignments: AgentAssignmentStore
     let home: String
+    let stateDirectory: URL
     let registry = TaskRegistryStub()
-    init(delegations: AgentDelegationStore, assignments: AgentAssignmentStore, home: String) {
+    init(delegations: AgentDelegationStore, assignments: AgentAssignmentStore, home: String, stateDirectory: URL) {
         self.delegations = delegations
         self.assignments = assignments
         self.home = home
+        self.stateDirectory = stateDirectory
     }
 }
 final class TaskRegistryStub: @unchecked Sendable {
@@ -101,6 +103,7 @@ struct DelegationHandlerChecks {
             delegations: store,
             assignments: assignments,
             home: base.appendingPathComponent("home", isDirectory: true).path,
+            stateDirectory: base.appendingPathComponent("state", isDirectory: true),
         )
 
         let opener = UUID().uuidString
@@ -289,6 +292,23 @@ struct DelegationHandlerChecks {
             HostRequest(caller: .worker(.agent, instance: child), operation: .fileRead, payload: Data(), requestID: "admission"),
             host: host,
         ) == nil, "the child's read passes the admission")
+
+        // A conversation opened from a brief whose record is gone is inert; one
+        // an agent opened before briefs existed never had an authority to lose
+        // and keeps working, as it did before there were briefs.
+        let legacy = UUID().uuidString.lowercased()
+        check(await AgentDelegationAdmission.refusal(
+            HostRequest(caller: .worker(.agent, instance: legacy), operation: .respring, payload: Data(), requestID: "admission"),
+            host: host,
+        ) == nil, "a chat with no brief and no marker is not treated as constrained")
+        let orphan = UUID().uuidString.lowercased()
+        try AgentDelegatedMarker.mark(session: orphan, state: host.stateDirectory)
+        check(AgentDelegatedMarker.exists(session: orphan, state: host.stateDirectory), "the marker is written")
+        check(!AgentDelegatedMarker.exists(session: legacy, state: host.stateDirectory), "an unmarked chat stays unmarked")
+        check(await AgentDelegationAdmission.refusal(
+            HostRequest(caller: .worker(.agent, instance: orphan), operation: .respring, payload: Data(), requestID: "admission"),
+            host: host,
+        ) != nil, "a chat governed by a brief that lost its record is refused")
 
         // Corrupt authority is refused, never read as an empty plan.
         let file = authority.appendingPathComponent(child + ".json")

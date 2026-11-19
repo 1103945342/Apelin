@@ -8,7 +8,10 @@ enum AgentDelegationAdmission {
         guard case let .worker(.agent, instance?) = request.caller else { return nil }
         do {
             guard let saved = try await host.delegations.record(instance) else {
-                if let entry = await AgentSessionTable.shared.entry(instance), entry.parentSessionID != nil {
+                // Only a conversation that was opened from a brief and lost
+                // its record is inert; one an agent opened before briefs
+                // existed never had an authority and keeps working as it did.
+                if AgentDelegatedMarker.exists(session: instance, state: host.stateDirectory) {
                     throw AgentDelegationViolation(stepID: "brief", title: "Assignment", rule: "This child has no saved authority. Start a new structured assignment; no mutation is authorised.")
                 }
                 return nil

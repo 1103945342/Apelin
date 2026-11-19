@@ -187,6 +187,15 @@ func checkChatLineage() {
     precondition(loaded[childSummary.id]?.summary == settled[childSummary.id]?.summary, "and nothing about it is rewritten")
     precondition(loaded[opener.id]?.summary == settled[opener.id]?.summary, "the opener is untouched too")
 
+    // A launch leaves every history on disk and supplies what it scanned of
+    // them, so the same edge restores without the opener's events in memory.
+    var unscanned = [opener.id: record(opener, session: openerSession), childSummary.id: childRecord]
+    precondition(ChatAdoption.restoreLineage(in: &unscanned).isEmpty, "no events in memory, no edge")
+    var scanned = [opener.id: record(opener, session: openerSession), childSummary.id: childRecord]
+    let fromScan = ChatAdoption.restoreLineage(in: &scanned, opened: [opener.id: openedEvent(childSession)])
+    precondition(fromScan == [childSummary.id], "an edge restores from the scan alone: \(fromScan)")
+    precondition(scanned[childSummary.id]?.summary.parentChatID == opener.id)
+
     // A historical replay is the fork's copy of an old open, not the fork's own.
     var historicalRecords = records([
         record(opener, session: openerSession, events: openedEvent(childSession, historical: true)),
