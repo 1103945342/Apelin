@@ -214,6 +214,17 @@ console now goes on after a restart only past a successful respring.
       `$` (the shell's login profile puts the whole path there), while a
       shell opened from anywhere else keeps the prompt it had; a user's own
       `PS1` still wins.
+- [ ] A message that cannot be sent, and errors by their reason, with real
+      accounts (2026-11-14, 0.4.6; the record below has what ran). With a
+      provider whose sign-in is exchanged when a chat opens (GitHub
+      Copilot, or any browser sign-in past its token's life) and the
+      device offline: Send shows "Thinking…" at once, then the message is
+      back in the field under a passing "Message Not Sent — No Internet
+      Connection". In a chat: a revoked key or sign-in ends the turn on
+      "Sign-In Not Accepted", a spent plan on "Usage Limit Reached" with
+      the provider's words under it. The new row in the dark, at the
+      largest text size, right to left and read by VoiceOver. All of it on
+      an iPad, where nothing of this round ran.
 
 - [ ] Trae, Trae CN and Raccoon with an account (2026-11-11, PR #40,
       AGENTS.md ▸ Agent sign-in; the record below has what ran without
@@ -3114,3 +3125,112 @@ redirect kept.
 
 Not run: what Still to run lists for these providers, and anything on the
 iPad vphone.
+
+## The model row back under the field (2026-11-12, 0.4.5)
+
+The composer change of PR #40 is reverted: `ComposerView` and
+`ComposerModelBar` are byte for byte what 0.4.3 shipped. Not run on a
+device; the layout is the one every release through 0.4.3 was checked with.
+
+## At work from Send, waiting for the network, errors by reason (2026-11-14, 0.4.6)
+
+On the Mac: `make harness` and `make check`, with the new transcript
+checks (a message on its way has its turn's summary under it, under the
+id its echo takes; `waitingForNetwork`; an error's two lines by reason),
+`NetworkRecoveryTests`, `FailureReasonTests`, `EventRelayTests` and
+`SignInErrorTests`, on kwwk 0.1.121.
+
+On the iPhone vphone (iOS 26.4, roothide), the roothide package of this
+branch built on the Mac, over 0.4.5, a chat on deepseek-v4-pro through an
+OpenAI-compatible key:
+
+- Send in a new chat: the message, "Thinking…" under it and Stop came in
+  together; the reply followed.
+- The session host stopped with SIGSTOP (by its `session.pid`), so no open
+  is answered: Send showed the message, "Thinking…" and Stop at once and
+  kept them. Stop put the message back in the field at once, and the next
+  Send was taken straight away, with the host still stopped. Left alone,
+  the send ended after 30 s on the alert it always had ("did not answer
+  within 30 seconds") with the message back in the field. After SIGCONT
+  the same message was sent and answered.
+- `en0` down for 75 s: "Waiting for Network…" 3 s after Send, with Stop;
+  "Reconnecting…" 7 s after the interface was back, the reply 7 s later.
+- `en0` down for 430 s: the summary went between "Waiting for Network…",
+  about 30 s each time, and "Reconnecting…", and after 5 min 43 s the turn
+  ended on the row "No Internet Connection" over "Connect to the
+  internet, then send your message again."
+- The app set to Simplified Chinese (its own `AppleLanguages`, put back
+  after): that recorded failure read 无互联网连接 over 请连接互联网，然后
+  重新发送消息。, a message sent offline read 正在等待网络…, then
+  正在重新连接…, then its reply.
+- `device.py suite smoke`: 7 pass. `suite regression`: 24 pass, 3 skip
+  (they need a guest without a toolchain, or a project an earlier run
+  left), and `t2-toolchain-remove` refused as on every round here: this
+  guest's one toolchain is bound by older projects.
+
+Not run: the iPad vphone (its host was running another session's VM), and
+what Still to run lists.
+
+## Stop that always ends a turn, several endpoints, web addresses, CLT 27.0 (2026-11-14, 0.4.7)
+
+On the Mac: `make harness`, `make check` and `make deb-all`, with the new
+tests: a stopped call that never answers is left and one that ends by
+itself keeps its answer (`ConversationToolTests`), a clone from a server
+that says nothing fails "timed out" (`GitTimeoutTests`), the host's
+bounded wait (`PatienceChecks`), a further endpoint's identity on the wire
+(`ApelinProtocolTests`), its sign-in, list and registration
+(`AccountDeskTests`), the web address as typed (`WebAddressCheck`), and a
+withdrawn package left out of the catalog (`SupportTests`).
+
+On the iPhone vphone (iOS 26.4, roothide), the roothide package of this
+branch built on the Mac, over 0.4.6, chats on deepseek-v4-pro through an
+OpenAI-compatible key:
+
+- #59 before, on 0.4.6: a project's chat told to `git_fetch` from a remote
+  whose server accepts the connection and never answers (a listener on
+  the host) read "Executing tool…" from then on, and still did, with Stop
+  showing, 62 s after Stop was tapped.
+- #59 on this build: the same fetch read "Executing tool…" for 26 s; the
+  turn ended within a second of Stop, and the next message was answered.
+  Left alone, the fetch failed after 123 s and the model reported "could
+  not read from socket: timed out".
+- #59, the host's bound: with the session's worker frozen (SIGSTOP) while
+  a turn streamed, Stop left "Thinking…" for 10 s, then the turn ended;
+  the next message opened the conversation again and was answered.
+- #60: Model Providers listed the device's endpoint under its host and
+  "OpenAI-Compatible API" once more under API Keys. That row took a second
+  endpoint (a stand-in server on the host, with its own key): Fetch Models
+  listed its two models under its host, one was enabled with its probe
+  answered, and the list then showed both endpoints signed in and the row
+  to add a third. The composer's model menu had a heading for each host; a
+  turn on the second endpoint's model was answered by the stand-in, which
+  saw that endpoint's key, and the next turn, on deepseek-v4-pro, by the
+  first. Sign Out asked "Sign Out of" the second one's host and left the
+  first as it was.
+- #61: Web's field showed `example.com`; `example.com` typed as is was
+  fetched as `https://example.com` and attached; "not an address" brought
+  "Invalid Web Address" over "Enter a web address, such as example.com.",
+  and Dismiss brought the field back with what was typed. On 0.4.6 before:
+  `example.com` was refused, and with `https://` example.com, GitHub,
+  apple.com, Wikipedia, a search page and a chat page were each attached
+  in 5 to 7 s and a message with them was answered.
+- #58: `toolchainCatalog` offered 27.2, 16.4, 15.3, 15.0 and 14.2; the
+  device's 27.0 toolchain stayed registered, the default, its six
+  self-tests passed.
+- `device.py suite smoke`: 7 pass. `suite regression`: 25 pass, 3 skip
+  (the device has a toolchain, and no `I3 Chain Tweak` to export), 1 fail,
+  `t2-toolchain-remove`, as before this change: the device's one toolchain
+  is bound by its projects. `a3-endpoint-beside` and `t6-toolchain-beside`
+  (the catalog without 27.0) are among those that passed.
+
+- The kwwk in use, on the build with that change (its `Licenses.json`
+  gives kwwk 0.1.121, read from the checkout): Model Providers' footer read
+  "Credentials stay in this device’s keychain. Currently using kwwk
+  0.1.121.", and with the app set to Simplified Chinese
+  凭据只保存在这台设备的钥匙串中。当前使用 kwwk 0.1.121。 `suite smoke` on
+  that build: 7 pass.
+
+Not run: the iPad vphone, whose host was running another session's VM for
+the whole round; the rootless package on a device; the worker's own 20 s
+bound on a stopped run, which needs a model request that ignores its
+cancellation.

@@ -85,6 +85,10 @@ final class ChatRuntime {
     private static let saveInterval: Duration = .seconds(3)
     /// Who waits for a conversation's compaction to end, by conversation.
     private var compactions: [UUID: CheckedContinuation<AgentCompactionResult, Error>] = [:]
+    /// Messages whose send has not answered yet. One the reader stops
+    /// (`stop`) is withdrawn: the host is not handed one it has not got,
+    /// and the run of one it had taken is stopped once the send answers.
+    private var pendingSends: [PendingSend] = []
 
     var summaries: [ChatSummary] {
         ChatLineage.projected(records.values.map(\.summary))
@@ -637,38 +641,79 @@ final class ChatRuntime {
 
     /// Shows `draft` at once as `id`'s next message, under the draft's id,
     /// which the host's `prompt` or `queued` event echoes; that event's row
-    /// takes its place. The returned task sends it: when the send fails, the
-    /// message is taken out again and the draft put back in an empty
-    /// composer before the task throws.
+    /// takes its place. The conversation works from here on: a message on
+    /// its way and a turn running are one state, with the turn's summary
+    /// under the message already (`ChatTranscript`) and Stop to take it
+    /// back (`stop`), however long the host takes to open the session. The
+    /// returned task waits for the send: when it fails, the message is
+    /// taken out again and the draft put back in an empty composer before
+    /// the task throws; stopped, it throws `CancellationError` at once.
     func submit(_ draft: ComposerDraft, to id: UUID) -> Task<Void, Error> {
         guard records[id] != nil else { return Task {} }
-        let selection = ComposerModelSelection.selection(for: id)
         records[id]?.submit(draft)
+        records[id]?.summary.isWorking = true
+        let pending = PendingSend(chat: id, draft: draft.id)
+        pendingSends.append(pending)
         changed(id)
-        return Task {
+        // The send runs to its own end, whoever still waits for it.
+        Task {
             do {
-                try await send(draft, to: id, selection: selection)
+                try await send(draft, to: id, as: pending)
+                pending.end(.success(()))
             } catch {
-                takeBack(draft, from: id)
-                throw error
+                // one the reader stopped was taken back then
+                if !pending.isWithdrawn {
+                    takeBack(draft, from: id)
+                }
+                pending.end(.failure(error))
             }
+            pendingSends.removeAll { $0 === pending }
         }
+        return Task { try await pending.value() }
     }
 
-    /// A send that failed: its row goes, and its draft returns to an empty
-    /// composer (`ChatRecord.takeBack`).
+    /// A send that failed or was stopped: its row goes, and its draft
+    /// returns to an empty composer (`ChatRecord.takeBack`). The
+    /// conversation works on only if something else keeps it working.
     private func takeBack(_ draft: ComposerDraft, from id: UUID) {
         guard let restored = records[id]?.takeBack(draft) else { return }
+        let stillWorks = works(id)
+        records[id]?.summary.isWorking = stillWorks
         changed(id)
         if restored {
             onDraftRestored?(id)
         }
     }
 
-    private func send(_ draft: ComposerDraft, to id: UUID, selection: ComposerModelSelection?) async throws {
+    /// Whether `id` works: a message is on its way to the host, or the
+    /// session being followed runs a turn or a compaction.
+    @objc dynamic private func works(_ id: UUID) -> Bool {
+        guard let record = records[id] else { return false }
+        if record.isSending {
+            return true
+        }
+        guard readers[id] != nil else { return false }
+        let current = transcript(id)
+        return current.isWorking || current.isCompacting
+    }
+
+    /// Whether the session of `id` runs a turn or a compaction now, which
+    /// an approval waits in: a message still on its way makes the
+    /// conversation work before any turn does, and a request a stopped
+    /// session left can no longer be answered.
+    @objc dynamic func runsTurn(_ id: UUID) -> Bool {
+        guard records[id]?.summary.isWorking == true else { return false }
+        let current = transcript(id)
+        return current.isWorking || current.isCompacting
+    }
+
+    private func send(_ draft: ComposerDraft, to id: UUID, as pending: PendingSend) async throws {
         guard records[id] != nil else { return }
+        let selection = ComposerModelSelection.selection(for: id)
         let opened = try await open(id, selection: selection)
         guard records[id] != nil else { return }
+        // stopped while the session opened: the host never hears of it
+        guard !pending.isWithdrawn else { throw CancellationError() }
         var descriptors: [OwnedDescriptor] = []
         var inputs: [AgentInputAttachment] = []
         // only attachments need the disk: text still goes out when it is full
@@ -715,6 +760,13 @@ final class ChatRuntime {
             ),
             descriptors: descriptors,
         )
+        if pending.isWithdrawn {
+            // Stopped while the host was taking it. The host has it now,
+            // and its run has started by the time the send answers: an
+            // earlier stop found no run to stop.
+            try? await ApelinService.app.agentAbort(sessionID: opened.sessionID)
+            throw CancellationError()
+        }
         records[id]?.summary.nameAfterFirstMessage(text: draft.text, attachmentName: draft.attachments.first?.name)
         changed(id)
     }
@@ -749,7 +801,18 @@ final class ChatRuntime {
         )
     }
 
+    /// Stops what `id` is doing. A message whose send has not answered is
+    /// withdrawn, back to the composer as a failed send's is, and whoever
+    /// waits for the send stops waiting: the host is not handed one it has
+    /// not got, and the run of one it has is stopped when the send answers
+    /// (`send`). Then the session's run, if it has one.
     func stop(_ id: UUID, continueQueue: Bool = true) async throws {
+        for pending in pendingSends where pending.chat == id && !pending.isWithdrawn {
+            if let draft = records[id]?.sending?.first(where: { $0.id == pending.draft }) {
+                takeBack(draft, from: id)
+            }
+            pending.withdraw()
+        }
         guard let sessionID = records[id]?.sessionID else { return }
         let continuation = UUID()
         stopContinuations[id] = continuation
@@ -775,7 +838,7 @@ final class ChatRuntime {
             // quit, or the host restarted): there is no run left to stop, and
             // the row must not keep saying it is. Waiting on a host that has
             // nothing to stop is what made Stop look broken.
-            records[id]?.summary.isWorking = false
+            records[id]?.summary.isWorking = works(id)
             records[id]?.run = .ended
             changed(id, urgent: true)
             return
@@ -898,7 +961,7 @@ final class ChatRuntime {
     /// for an approval or on its way to the host.
     @objc dynamic func canCompact(_ id: UUID) -> Bool {
         guard let record = records[id] else { return false }
-        return record.sessionID != nil && !record.summary.isWorking && (record.sending ?? []).isEmpty
+        return record.sessionID != nil && !record.summary.isWorking && !record.isSending
             && opening[id] == nil && compactions[id] == nil
     }
 
@@ -1047,7 +1110,7 @@ final class ChatRuntime {
                     // but must not replay reader-visible side effects.
                     records[id]?.summary.noteReplies(in: realtime, isViewed: id == viewedChat)
                     ConversationJournal.note(realtime, session: records[id]?.sessionID)
-                    settleSending(in: id, against: realtime)
+                    let echoed = settleSending(in: id, against: realtime)
                     let builds = CompletedBuilds.count(in: realtime)
                     if builds > 0 {
                         onBuildsCompleted?(builds)
@@ -1093,7 +1156,9 @@ final class ChatRuntime {
                     }
                     let wasWorking = records[id]?.summary.isWorking
                     let current = transcript(id)
-                    let isWorking = current.isWorking || current.isCompacting
+                    let runsTurn = current.isWorking || current.isCompacting
+                    // A message still on its way works too (`submit`).
+                    let isWorking = runsTurn || records[id]?.isSending == true
                     // The row's state, never its place in the sidebar: only
                     // the reader's New Chat and messages move that
                     // (`lastInteraction`), however much the agent writes.
@@ -1101,13 +1166,15 @@ final class ChatRuntime {
                     // A wait that ran out with nothing, as an idle session's
                     // does every 20 s, has nothing to write or show. A turn's
                     // start and end are written at once, what streams between
-                    // them at most every `saveInterval`.
-                    let turnMoved = isWorking != wasWorking
+                    // them at most every `saveInterval`. The start is the
+                    // host's echo of the message: the conversation has
+                    // worked since the reader's Send.
+                    let turnMoved = isWorking != wasWorking || echoed
                     if !batch.events.isEmpty || turnMoved {
                         changed(id, urgent: turnMoved || batch.finished)
                     }
                     if batch.finished {
-                        if let end = records[id]?.missedEnd(of: batch, isWorking: isWorking) {
+                        if let end = records[id]?.missedEnd(of: batch, isWorking: runsTurn) {
                             await takeMissedEnd(at: end, of: task, from: batch, in: id)
                         }
                         // The task is over: nothing more comes for this turn,
@@ -1119,7 +1186,9 @@ final class ChatRuntime {
                         return
                     }
                 } catch let error as ApelinError where error.code == .notFound {
-                    records[id]?.summary.isWorking = false
+                    // only a message on its way to a new session still works
+                    let isSending = records[id]?.isSending == true
+                    records[id]?.summary.isWorking = isSending
                     records[id]?.run = .ended
                     changed(id)
                     return
@@ -1142,16 +1211,22 @@ final class ChatRuntime {
         }
         guard records[id]?.task == task else { return }
         records[id]?.takeMissedEnd(event, at: end)
+        if records[id]?.isSending == true {
+            // the task has ended; a message on its way opens the next
+            records[id]?.summary.isWorking = true
+        }
         changed(id)
     }
 
     /// Sent messages whose echo arrived leave `sending`, in the same
     /// update that adds the event, so the row never blinks out or doubles.
     /// Each echoed attachment is cached as the very one the local row
-    /// showed, so its preview does not fade in again.
-    private func settleSending(in id: UUID, against events: [TaskEvent]) {
+    /// showed, so its preview does not fade in again. Answers whether any
+    /// was echoed.
+    @discardableResult
+    private func settleSending(in id: UUID, against events: [TaskEvent]) -> Bool {
         guard let draftID = records[id]?.draft.id,
-              let echoed = records[id]?.takeEchoed(by: events) else { return }
+              let echoed = records[id]?.takeEchoed(by: events) else { return false }
         for (draft, event) in echoed {
             // persisted-read: one event's field, nothing written back from it
             let saved = (try? event.payload?["attachments"]?.decode([AgentAttachment].self)) ?? []
@@ -1165,6 +1240,7 @@ final class ChatRuntime {
         if records[id]?.draft.id != draftID {
             onDraftRestored?(id)
         }
+        return !echoed.isEmpty
     }
 
     /// What a stopped run never took goes back to the composer, ahead of

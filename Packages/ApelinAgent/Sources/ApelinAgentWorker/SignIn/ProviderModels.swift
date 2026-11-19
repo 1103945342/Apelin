@@ -35,6 +35,36 @@ final class WorkBuddyEffortCache: @unchecked Sendable {
     }
 }
 
+/// The reasoning levels each WorkBuddy model was last seen offering, per
+/// store id, for ten minutes.
+///
+/// `fetch` reads the account's config, which names the models and their
+/// levels together, while the account list needs the same levels without a
+/// request of its own: what a fetch kept answers the list, and a model no
+/// fetch has covered yet falls back to the bundled rows. Ten minutes is
+/// what kwwk keeps a gate's own listing for: the config does not change
+/// often, and an account list is drawn every time Settings opens.
+final class WorkBuddyEffortCache: @unchecked Sendable {
+    static let shared = WorkBuddyEffortCache()
+
+    private let lock = NSLock()
+    private var entries: [String: (efforts: [String: [AgentReasoningEffort]], at: Date)] = [:]
+    private let lifetime: TimeInterval = 10 * 60
+
+    /// Objective-C cannot carry these dictionaries, so the accessors stay
+    /// plain (AGENTS.md ▸ Hard rules).
+    func efforts(for storeID: String) -> [String: [AgentReasoningEffort]]? {
+        lock.withLock {
+            guard let entry = entries[storeID], Date().timeIntervalSince(entry.at) < lifetime else { return nil }
+            return entry.efforts
+        }
+    }
+
+    func store(_ efforts: [String: [AgentReasoningEffort]], for storeID: String) {
+        lock.withLock { entries[storeID] = (efforts, Date()) }
+    }
+}
+
 /// The endpoint's model family is distinct from its wire format. DeepSeek's
 /// Anthropic endpoint accepts Claude aliases but still runs DeepSeek models.
 enum ProviderModels {
@@ -54,7 +84,9 @@ enum ProviderModels {
 
     /// The kwwk model catalog the account's models come from.
     private static func catalogKey(_ provider: AgentProvider, credentials: OAuthCredentials) -> String? {
-        provider == .deepSeek || isDeepSeek(credentials) ? "deepseek" : providerDescriptor(forStoreId: provider.storeID)?.catalogKey
+        provider == .deepSeek || isDeepSeek(credentials)
+            ? "deepseek"
+            : providerDescriptor(forStoreId: provider.kind.storeID)?.catalogKey
     }
 
     static func list(_ provider: AgentProvider, credentials: OAuthCredentials) -> [String] {
@@ -124,6 +156,13 @@ enum ProviderModels {
     }
 
     /// The reasoning levels each model takes, keyed by its id.
+    ///
+    /// WorkBuddy's own config is the authority: `fetch` reads it and keeps
+    /// what each model offers, and a model it named answers from there. A
+    /// model the config has not been read for — the account list is drawn
+    /// before any fetch, and again after a restart — falls back to the
+    /// bundled row, which is what the picker showed before this was
+    /// live; `catalogFacts` answers for what neither named.
     static func reasoningEfforts(
         _ provider: AgentProvider,
         credentials: OAuthCredentials,
@@ -236,7 +275,7 @@ enum ProviderModels {
             let path = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
             url.path = "/" + path + (path.hasSuffix("v1") ? "/models" : "/v1/models")
             url.path = url.path.replacingOccurrences(of: "//", with: "/")
-        } else if provider == .openAI || provider == .openAICompatible || provider == .openRouter || provider == .deepSeek {
+        } else if [.openAI, .openAICompatible, .openRouter, .deepSeek].contains(provider.kind) {
             let path = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
             url.path = "/" + (path.isEmpty ? "v1" : path) + "/models"
         } else if provider == .google {

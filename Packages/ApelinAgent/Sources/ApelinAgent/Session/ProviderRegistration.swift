@@ -27,9 +27,22 @@ public enum ProviderRegistration {
                 ResolvedProviderAuth(token: credentials.access, scheme: .bearer)
             })
         }
-        guard let resolved = try await registerStored(storeId: storeID, manager: manager, modelOverride: modelOverride) else {
-            return nil
+        let registered: ResolvedAuth? = if CredentialProviderID.endpointNumber(storeID) != nil {
+            // kwwk knows one OpenAI-compatible login, by its store id. A
+            // further endpoint is registered as that login, from its own
+            // credentials: the model carries its base URL, and the key is
+            // bound to this resolution below.
+            try await registerStored(
+                storeId: CredentialProviderID.openAICompatible,
+                manager: OAuthManager(
+                    source: DeliveredCredentialSource([CredentialProviderID.openAICompatible: credentials]),
+                ),
+                modelOverride: modelOverride,
+            )
+        } else {
+            try await registerStored(storeId: storeID, manager: manager, modelOverride: modelOverride)
         }
+        guard let resolved = registered else { return nil }
         // A model the endpoint's own record does not describe is read against
         // the catalogs: a relay's `cn:deepseek-v4.1-flash` is DeepSeek's model,
         // with its window, its ceiling and its images. An endpoint whose
@@ -39,7 +52,7 @@ public enum ProviderRegistration {
             catalogKey: catalogKey(storeID: storeID),
             parameters: parameters,
         )
-        guard storeID != CredentialProviderID.openAICompatible else {
+        guard !CredentialProviderID.isOpenAICompatible(storeID) else {
             return ResolvedAuth(
                 model: model,
                 modelLabel: resolved.modelLabel,

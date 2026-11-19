@@ -292,7 +292,15 @@ the same executable in session mode; the workers are its children.
   GPL-family text fails the build. Vendored code keeps its upstream `LICENSE`
   beside it and its header on each file; MIT / BSD / Apache only. `make check`
   requires the phase, the packager requires the file. Read the generated list
-  after adding a dependency.
+  after adding a dependency. A package pinned by revision has no version in
+  its pin, so one whose checkout states its own is read there
+  (`statedVersions` in `Licenses/review.json`: kwwk's, from
+  `Sources/KWWKCli/Theme.swift`; a checkout that no longer states exactly
+  one where the rule says fails the build). The app shows a linked
+  package's version only from this list (`LinkedPackage`): Model
+  Providers' footer ends "Currently using kwwk 0.1.121." (owner,
+  2026-11-14), which is the kwwk the workers of the same build link, with
+  no number kept by hand.
 - **No absolute build path in a shipped binary.** `#file` is concise
   (`SWIFT_UPCOMING_FEATURE_CONCISE_MAGIC_FILE`, prefix maps in `Base.xcconfig`);
   the packager greps every binary for the repository root and fails on a hit.
@@ -1004,6 +1012,14 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   writer's and the file tools' temporary files); a repository made
   without it is given it by its next git call once the project has an
   `Attachments` folder. SSH would exec `ssh`; HTTPS is the only transport.
+  libgit2 waits on a silent server for ever unless told otherwise, so
+  `GitLibrary` gives a remote 30 s to accept a connection and 120 s of
+  silence during a transfer (#59; `GIT_OPT_SET_SERVER_CONNECT_TIMEOUT`,
+  `GIT_OPT_SET_SERVER_TIMEOUT`, set through the two C functions of
+  `ApelinGitOptions`, since Swift cannot call the variadic
+  `git_libgit2_opts`): a stalled clone, fetch or push fails "timed out"
+  instead of holding its task, and whoever reads that task, for good.
+  `GitTimeoutTests` clones from a server that says nothing.
   Remotes (2026-10-22): `gitFetch`, `gitPull` (fetch, then a fast-forward
   only: a diverged branch or a worktree change it would overwrite is
   `conflict` and nothing changes) and `gitPush` (one branch to the branch
@@ -1237,10 +1253,18 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   of its table of contents) and is offered from there when Apple's catalog
   no longer names it (2026-11-06: Apple replaced 27.0 with 27.2 and went on
   serving 27.0's file, and it left every device's list). The catalog's own
-  entry wins, and the bytes are checked the same either way.
+  entry wins, and the bytes are checked the same either way. A package
+  Apple stops serving too is marked `withdrawn` and offered only while the
+  catalog lists it, since no device could download it (#58: 27.0's address
+  answers 403 from 2026-11-12, so the catalog now offers 27.2, 16.4, 15.3,
+  15.0 and 14.2). Its review stands: 27.0 stays in `releases`, so a
+  toolchain of it set up earlier, and a transfer file of one, still read.
+  A download Apple refuses (403 or 404) says that the server refused the
+  package and to pick another release if it keeps refusing.
   `.github/workflows/apple-catalog.yml` reads the catalog every day
   (`Scripts/check-apple-catalog.py`) and files one issue when a reviewed
-  package can no longer be downloaded or a new release waits for a review.
+  package can no longer be downloaded or a new release waits for a review;
+  a withdrawn package's address is not asked again.
   roothide Bootstrap, the TrollStore one, runs none of them (issue #35;
   `HostSigning` in ApelinCore): it trust-caches nothing it installs and
   runs only a Mach-O carrying the CoreTrust-bypass signature its dpkg
@@ -1543,7 +1567,31 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   again here at most twice, 1 s apart. A failure after text, thinking or a
   call has streamed is kwwk's alone to take back and retry, a certificate
   error is never retried, and no tool runs twice: kwwk runs a call only once
-  its message has settled. Stop also cancels the wrapper's stream creation,
+  its message has settled. The wait for a route is said at once
+  (`waitingForNetwork`), so the reader is told the device is offline the
+  moment the first request fails, not after the retries run out.
+  A failure says why where the agent can tell (owner, 2026-11-14;
+  `FailureReason`, the reasons of ApelinProtocol's `AgentFailure.swift`): kwwk's own
+  reading of it (`ProviderFailure.category`) and whether there is a route
+  come to `offline`, `network` (a route, and a provider out of reach: a name
+  that does not resolve, a connection refused, dropped or not made
+  securely), `timeout`, `authentication`, `quota`, `rateLimit`, `server` or
+  `contextOverflow`, which the `error` event carries as `reason` beside the
+  provider's words; a refusal, a request the provider would not take and
+  anything that is not a model request carry none. It is an
+  `ApelinError.Reason`, as an error reply's is, open-ended on the wire and
+  in the log, so one a peer does not know still reads.
+  A sign-in is exchanged or renewed when a session opens and when a message
+  changes its provider, with the app's send waiting behind it, and kwwk's
+  own request gives a connection that answers nothing five minutes:
+  `ProviderResolver.resolve` gives it 20 s (`exchangeWait`, `Deadline`,
+  which stops waiting whether or not the request answers its
+  cancellation). One that fails is `ProviderResolutionError.unresolved`
+  with the same reasons, answered `unavailable` with that `reason`
+  (`AgentWorker.signInError`; `internal` in the provider's words when it
+  has none), and a sign-in that is not saved stays `denied`, from
+  `agentPrompt` too, which used to answer the error's Swift description.
+  Stop also cancels the wrapper's stream creation,
   forwarding and retry waits, not only its wait for a network route. Those
   waits use a one-result `AsyncThrowingStream`, never a task group whose
   scope would wait for a provider that ignores cancellation. Cancelling
@@ -1568,7 +1616,30 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   title and reopen cases) and full `make check` still need a capable build
   host. An installed-device Stop/close/reopen check is still owed.
   Prompt, steer, abort, compact, approve and close go
-  to that session's running worker and to no other. The worker refuses a
+  to that session's running worker and to no other. A stop always ends
+  the turn (#59: a conversation whose tool call waited on something that
+  never answered could be neither stopped nor continued, since the run
+  went on until the call returned and every later message queued behind
+  it). Three bounds, each for what the one before cannot reach.
+  `ToolRunner.run` no longer waits on a call once the run is stopped: the
+  call is cancelled, given `stopGrace` (2 s) to end in its own words (an
+  approval denied, a command's output up to where the host killed it) and
+  then left, its answer unread, with `ToolStoppedError` as the result the
+  model reads, which says the work it started on the device may still
+  finish; a build the call was reading is cancelled with it
+  (`ChannelHostBackend.read`, `buildCancel`), while an install, a
+  toolchain setup, an SDK import and a git transfer go on by themselves.
+  The worker then gives the stopped run 20 s to end (`WorkerState.abort`,
+  `AgentSession.StoppedWork`): one that has not, a model request or a
+  compaction that does not answer its cancellation, has its task ended
+  `cancelled` with an `error` saying so, and the process exits. And the
+  host gives the worker 10 s to take the stop at all
+  (`AgentHandler.abort`, `Patience`): one that does not is ended
+  (`WorkerSupervisor.end`: its channel closed, which ends its task, and
+  the process killed unless it was reaped already). Either way the app
+  reads the task's end as the turn's, and the conversation opens again on
+  its next message with the transcript its last finished run left; a run
+  that ends by itself in time loses nothing. The worker refuses a
   second `agentOpen` with `conflict` from its first suspension, and frees
   the place if the open fails. Its log, `sessions/<id>/events.jsonl`
   (`SessionEventLog`), joins streamed `textDelta`/`thinkingDelta` into one
@@ -1721,7 +1792,9 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `messageDiscarded` (kwwk gave up the message streaming since the last
   `messageStarted` and asks for it again: its text and thinking are not the
   reply), `reconnecting` (a failed model request is being made again:
-  kwwk's retry, or `NetworkRecovery`'s wait), `toolCallPreparing` (the model began writing a
+  kwwk's retry, or a failed handshake `NetworkRecovery` asks again),
+  `waitingForNetwork` (a request failed with no route to the network and
+  waits for one, `NetworkRecovery`'s wait), `toolCallPreparing` (the model began writing a
   call, which `toolCall` follows once its arguments are whole), `text` and `thinking` (streamed text coalesced
   to ≥ 512 bytes or 250 ms), `received` {tokens} (the output tokens the
   run has received so far: what streams of a message — text, thinking and
@@ -1740,7 +1813,8 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `runModeChanged` {mode, why} (`apelin_run_mode`, 2026-11-11: the
   conversation's own run mode, which the app writes where the pill reads
   it), `error`
-  {message}, `finished` {reason}, `compactionStarted` and
+  {message, reason?} (`reason` one of `AgentFailure.swift`'s, absent when
+  the agent names none), `finished` {reason}, `compactionStarted` and
   `compactionFinished` {outcome: compacted, tooShort, cancelled or failed,
   messagesCompacted?, message?, summary?} (`AgentCompactionResult`; only
   `agentCompact` records them — kwwk's own compaction as the context fills
@@ -2721,7 +2795,29 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   kwwk's registration order;
   `AccountDeskTests` fails when kwwk gains a subscription or a stored
   provider (`providerDirectory`) the table lacks, or when a provider here is
-  one neither kwwk nor Apelin can register for a session. OpenRouter signs in both ways
+  one neither kwwk nor Apelin can register for a session.
+  Several OpenAI-compatible endpoints (#60: there was one, and adding
+  another replaced it): the first is `openAICompatible` as before, and
+  each further one is a provider of its own, `openAICompatibleEndpoint(n)`,
+  `openAICompatible.<n>` on the wire in that one spelling, n from 2 to 99,
+  kept under `openai-compatible.<n>` (`CredentialProviderID`). So
+  `AgentProvider` is no longer a raw-value enum: it is `RawRepresentable`
+  and `Codable` by hand, one string as before, `allCases` lists the
+  providers there are to sign in to (never an endpoint), and `kind` names
+  the provider whose form, transport, name and mark an endpoint has.
+  Whatever is kept by provider is then kept for each endpoint by itself,
+  with nothing to migrate: the keychain item, the enabled, custom and
+  hidden model IDs, the composer's model. `agentAccountList` lists the
+  login once for each endpoint signed in to, in number order, each under
+  its host, then once more not signed in, which is the one to add: the
+  first while that is free, else the lowest number no endpoint has
+  (`AccountDesk.listed`). kwwk knows one OpenAI-compatible login, so
+  `ProviderRegistration` registers a further endpoint as that login from
+  its own credentials; the model carries its base URL and the key is
+  bound to the resolution, so two endpoints never share one. In Model
+  Providers they are told apart by host, in the list, in the model menu's
+  headings and in Sign Out's question, and Search finds one by its host.
+  OpenRouter signs in both ways
   under one store id: `AgentAccount.alternativeMethods` names the key form
   beside its browser sign-in, and `agentSignIn{provider, method}` picks one
   (any other method is refused `badRequest` before the task is accepted).
@@ -3181,19 +3277,28 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   page's foot, and the list's bottom
   inset follows it. Its actions reach `ChatController` through
   `ComposerView.Delegate`; Send shows the message at once, a local row
-  under the draft's UUID, and empties the composer; the host's `prompt`,
-  `queued` or `pendingQueue` receipt with that id takes the row's place.
-  Pending messages live in one compact, scrollable, height-capped panel
-  below the todo list and above the input, never in the transcript until
-  taken. Its rows show text and attachment names, reorder handles and
-  Send Now, Edit and Delete actions. An editor holds its message before
-  opening and keeps the sheet open on a failed save. Snapshot receipts
-  retain attachment metadata for the same file cache as normal prompts.
-  `SessionReplay` counts old snapshots so the first new one ends replay
-  even when recovery, editing or deleting produces no new prompt.
-  Until acceptance the message is kept on disk (`ChatRecord.sending`),
-  and a launch puts one never echoed back in the draft. A failed send
-  removes the row and puts the draft back in an empty composer. Only one submission is accepted
+  under the draft's UUID, and empties the composer; the host's `prompt` or
+  `queued` event with that id takes the row's place. Pending messages live
+  in one compact, scrollable, height-capped panel below the todo list and
+  above the input, never in the transcript until taken. Its rows show text
+  and attachment names, reorder handles and Send Now, Edit and Delete
+  actions. An editor holds its message before opening and keeps the sheet
+  open on a failed save. Snapshot receipts retain attachment metadata for
+  the same file cache as normal prompts. `SessionReplay` counts old
+  snapshots so the first new one ends replay even when recovery, editing or
+  deleting produces no new prompt. Until acceptance the message is kept on
+  disk (`ChatRecord.sending`), and a launch puts one never echoed back in
+  the draft. A failed send removes the row and puts the draft back in an
+  empty composer. A message on its way and a turn running are one state
+  (owner, 2026-11-14: sent offline, a message sat alone until the host
+  answered or gave up): the first message sent to a conversation at rest
+  has its turn's running summary, "Thinking…", under it from the tap,
+  under the id the echo's takes, and the conversation works from then —
+  its spinner in the sidebar, the widgets, and Stop, which takes a message
+  whose send has not answered back into the composer (Live chat and
+  project UI). A send that fails for a reason the agent named is a passing
+  line, "Message Not Sent" over the reason (`SPIndicator`, spoken too);
+  any other keeps its words in the alert. Only one submission is accepted
   at a time; switching conversations invalidates its completion so a late
   reply cannot touch the incoming draft. More uses FlowDown's inline
   ControlPanel and GiantButton layout, with its camera, photo, file and web
@@ -3205,13 +3310,11 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   (`ComposerDropPolicy`). Attachments use its
   horizontal preview layout, removal and Quick Look; camera, Photos and
   Files use system pickers, and web text uses FlowDown's ScrubberKit at its
-  pinned revision. Live assistant text uses `MarkdownStreamView` with a stable message identity and immediate first fill, so only streaming additions fade in. Each turn is followed while a reader can keep up (`TurnFollowing`): from its user message (a local row just sent, a message a run took, or one another conversation sent) the list follows new output to the end of the turn while the reply streams at no more than 50 tokens a second. The pace is the reply's estimated tokens (`TokenEstimate`: about four ASCII characters to a token, a token to each other character, so Chinese and English both count sensibly) over the time since its first text, judged once a second of it has passed; the first update marks the start and does not count, so neither the first coalesced chunk nor a backlog reads as speed. Faster than that, the turn is followed only until its message reaches the top of the visible area, under the bar's blur, at most a page; the list then holds still while the reply grows below and the downward chevron above the composer shows (Liquid Glass on iOS 26, the system material's blur before it). The chevron scrolls to the latest content once and does not follow again; a drag ends following for the turn, and reaching the bottom does not bring it back: only the next turn does. A message a running turn will take later is shown once on Send and starts no turn until it is taken. The chat header uses a 1 pt private `variableBlur` CAFilter with an alpha-gradient mask on an owned `CABackdropLayer`, following VariableBlur; the old transcript opacity mask and the system top scroll-edge effect are removed. Drafts persist their attachment bytes; submitted and received files are stored in the chat workspace. User attachments sit above the bubble with the same trailing edge. Image previews, PDF first pages and supported Quick Look thumbnails use the same album layout as assistant images; text and other files use document cards with a filename and up to three lines of text, preserving single line breaks and collapsing consecutive blank lines in at most eight passes over the 220-character preview. Each card is capped at the smallest of its natural content width, its user bubble’s width and 350 pt; size labels are omitted. All user attachment previews stay within the maximum user-bubble width. Each image album and document card is at most 30% of the window height; album fitting preserves tile proportions. An album is also no larger than its images (owner, 2026-10-30, issue #20; `MessageImageLayout.frames(aspectRatios:naturalSizes:…)`): shrunk until the image it enlarges least is drawn at its own size, one of its pixels (the original's, read by ImageIO, not the thumbnail's) to each of the screen's (`displayScale`), but no tile under 32 pt on its shorter side, and never larger than those limits, so an icon stays small and sharp while a photo or a screenshot fills the limits as before; an image of unknown size (a PDF page, a Quick Look thumbnail) keeps its album as large as the limits, and a small album's corners round as an icon's. Card borders use the user bubble’s background tint. Attachment changes cross-fade, while ordinary reconfiguration does not. Presentation thumbnails are bounded and cached separately from the original attachment, which remains unchanged for sending, persistence and Quick Look. Ordinary blocks share a 16 pt gap. Unordered, ordered and task-list items use MarkdownView’s independent list spacing with no extra item gap, retaining the renderer’s 4 pt wrapped-line spacing; the transcript normalizer preserves this instead of replacing it with 16 pt. An empty body adds neither height nor spacing. Imports are bound to a chat and draft ID, so a late result cannot
-  land in a newly cleared draft. The model control is above the input
-  (JanXiao, PR #40, 2026-11-11; it was below it through 0.4.3), so the
-  model a chat runs with is the first thing read: the model row, then the
-  import panel it gives way to, then the attachments and the text band on
-  their one ground, where the composer ends; an approval card covers the
-  text band's place. The row keeps
+  pinned revision. The address is read as it is typed (`WebAddress`, tested in `Tests/ChatTranscript`): without a scheme it is https, since the field's placeholder was `https://`, which read as if the scheme were there already, and every address typed without one was refused as invalid (#61; the placeholder is `example.com` now); another scheme, a name and password, white space, or a single word with no scheme is no address, and the notice that says so asks again with what was typed. Live assistant text uses `MarkdownStreamView` with a stable message identity and immediate first fill, so only streaming additions fade in. Each turn is followed while a reader can keep up (`TurnFollowing`): from its user message (a local row just sent, a message a run took, or one another conversation sent) the list follows new output to the end of the turn while the reply streams at no more than 50 tokens a second. The pace is the reply's estimated tokens (`TokenEstimate`: about four ASCII characters to a token, a token to each other character, so Chinese and English both count sensibly) over the time since its first text, judged once a second of it has passed; the first update marks the start and does not count, so neither the first coalesced chunk nor a backlog reads as speed. Faster than that, the turn is followed only until its message reaches the top of the visible area, under the bar's blur, at most a page; the list then holds still while the reply grows below and the downward chevron above the composer shows (Liquid Glass on iOS 26, the system material's blur before it). The chevron scrolls to the latest content once and does not follow again; a drag ends following for the turn, and reaching the bottom does not bring it back: only the next turn does. A message a running turn will take later is shown once on Send and starts no turn until it is taken. The chat header uses a 1 pt private `variableBlur` CAFilter with an alpha-gradient mask on an owned `CABackdropLayer`, following VariableBlur; the old transcript opacity mask and the system top scroll-edge effect are removed. Drafts persist their attachment bytes; submitted and received files are stored in the chat workspace. User attachments sit above the bubble with the same trailing edge. Image previews, PDF first pages and supported Quick Look thumbnails use the same album layout as assistant images; text and other files use document cards with a filename and up to three lines of text, preserving single line breaks and collapsing consecutive blank lines in at most eight passes over the 220-character preview. Each card is capped at the smallest of its natural content width, its user bubble’s width and 350 pt; size labels are omitted. All user attachment previews stay within the maximum user-bubble width. Each image album and document card is at most 30% of the window height; album fitting preserves tile proportions. An album is also no larger than its images (owner, 2026-10-30, issue #20; `MessageImageLayout.frames(aspectRatios:naturalSizes:…)`): shrunk until the image it enlarges least is drawn at its own size, one of its pixels (the original's, read by ImageIO, not the thumbnail's) to each of the screen's (`displayScale`), but no tile under 32 pt on its shorter side, and never larger than those limits, so an icon stays small and sharp while a photo or a screenshot fills the limits as before; an image of unknown size (a PDF page, a Quick Look thumbnail) keeps its album as large as the limits, and a small album's corners round as an icon's. Card borders use the user bubble’s background tint. Attachment changes cross-fade, while ordinary reconfiguration does not. Presentation thumbnails are bounded and cached separately from the original attachment, which remains unchanged for sending, persistence and Quick Look. Ordinary blocks share a 16 pt gap. Unordered, ordered and task-list items use MarkdownView’s independent list spacing with no extra item gap, retaining the renderer’s 4 pt wrapped-line spacing; the transcript normalizer preserves this instead of replacing it with 16 pt. An empty body adds neither height nor spacing. Imports are bound to a chat and draft ID, so a late result cannot
+  land in a newly cleared draft. The model row sits on the input's own
+  ground, under what is typed — 0.4.4 alone had it above the field, from
+  PR #40, and both the owner and 0.4.5 have it back under it — the import
+  panel taking its place while it is open, with
   the exact FlowDown BlockButton geometry and original editor SVGs, with
   reasoning choices from kwwk's supported-thinking-level metadata; High is
   selected by default when supported. The UI offers only supported Low,
@@ -4326,9 +4429,9 @@ adding a dated record beside it.
 - `agentPrompt` accepts an optional message UUID and descriptor-indexed attachments (at most eight, at most 32 MiB each). The worker saves them under random workspace-relative `Attachments/` paths; filenames remain display metadata. The session log records the message UUID and relative attachments, deduplicates a retried send, and supplies image content to the provider. Tool-returned images are saved the same way and replay into the image album UI. So are the files `file_show` puts in front of the reader (2026-10-29, `Tools/FileShow.swift`), the agent's one way to show a project file, since a path or a `file:` link in a reply opens nothing: one to eight regular files inside the project, each at most 32 MiB, every one checked before any is copied into `Attachments/` as it is then, listed in the result's `details` (which no provider reads) and handed by the session to the call's `toolResult` attachments, where the album, the document cards and Quick Look show them. A read preset with no host request; the model hears what was shown, never the contents.
 - Every app prompt also carries the current approval mode and Ask Before Using the Screen, which the message's `<system-state>` names beside the mode (owner, 2026-10-30). The host updates its ledger and session table before forwarding; the session updates its tool policy and metadata, records the message (its `prompt` or `queued` event, the text alone), then builds the message's `<system-state>`: the mode reaches the model there, with whatever the session's system prompt shows that changed since (Prompt caching). A prompt naming the provider and model the session already resolved, with the same stored sign-in, keeps that resolution: no token exchange before the message is recorded, and a signed-out provider is still refused. An existing pending approval is not silently accepted. A bounded, tool-free completion on the current model summarizes the first user message into a `title` event; title failure leaves the local fallback and does not fail the turn; a later message asks again, until three completions have named nothing (`maximumTitleMisses`) or, while the project keeps its generated name, on every message. A JSON answer in one Markdown fence is read as the JSON.
 - `ChatRuntime.transcript` brings a conversation's rows up to date only when they would differ (`ChatTranscriptCache`, kept for the followed conversations and the page's). `ChatTranscript` is a fold: new events (`ChatRecord.events` are only appended to) are read onto the rows the earlier ones made (`append`), and the rows shown are made afresh from those, as a build from every event at once at the same `now` makes them (`Tests/ChatTranscript/TranscriptFold.swift` compares the two over random logs). A change to the messages it is sending, or a `quietDeadline` passed since it was shown, shows the rows again, so the refresh `ChatQuietWatch` asks for at the deadline adds the stand-in; only a sender's new title builds it again from every event. A row equal to one shown before is that very value, so the page's comparison stops at its storage. The composer is told of its approval request and its Stop only when either changes, a long-poll that ran out with nothing writes nothing, and a conversation is written once at a time, then once more with what changed meanwhile.
-- Working state comes from session events, never a late send acknowledgement. Completed zero-second, zero-tool thought rows are omitted. A positive duration without tools shows only the duration; tools without a positive duration show only their count; “and” joins the clauses only when both values are positive. Thought headers use Litext numeric transitions, with reduced motion respected. User messages and reply text are selectable.
+- Working state comes from the reader's Send and from session events, never a late send acknowledgement: `ChatRuntime.submit` makes the conversation work while its message is on its way (`summary.isWorking`), a turn or compaction of the followed session keeps it working, and a send that fails or is stopped leaves it working only if one of those still does (`works`). `stop` withdraws every message whose send has not answered (`PendingSend`): its row goes and its draft returns as a failed send's does, and whoever waits for the send hears it cancelled at once, so the composer takes the next Send without waiting for the host; the send itself runs to its own end, where the host is not handed a message it has not got, and the run of one it had taken is stopped once the send answers, since a stop before the run starts finds nothing to stop; a session that ended with the host answers `notFound`, which is no failure to stop. An approval card needs a turn of the session actually running (`runsTurn`), so a message on its way never brings back a request a stopped session left. Completed zero-second, zero-tool thought rows are omitted. A positive duration without tools shows only the duration; tools without a positive duration show only their count; “and” joins the clauses only when both values are positive. Thought headers use Litext numeric transitions, with reduced motion respected. User messages and reply text are selectable.
 - The conversation alternates a single thinking summary with response content. Consecutive thinking steps merge across tools and approvals. Tool calls and completed approvals stay out of the main transcript; tapping the summary opens their ordered trace in a form sheet, a list of the steps, provider-supplied thinking included, each opening its own plain text. Headers use body-size 50% primary text aligned to the body margin, with a sentence for duration and tool count. Pending approval still replaces the composer.
-- Every agent tool, MCP tools included, requires a short `reason` (`ToolReason`), stripped from the arguments before the approval gate, the fingerprint, the tool or the host sees them; the `toolCall` event keeps it. The file tools end their result's first line with `+a -b` lines added and removed. While a turn runs, its trailing summary stays unfinished across calls and approvals, the run's received tokens climbing at the trailing end of its title line (and of the summary above the reply while the reply streams). Once the summary has a call, `ToolCallBannerView` shows one line under it, at the reading width, between hairlines on a 5% grey ground drawn out to the row's edges: the newest call in its trace (`ToolCallBanner`), by its reason, or its title for a call made without one, and for a file tool (`ToolCallBanner.fileTools`) the file's name first, then the lines added in green and removed in red once its result is in, read from the result's first line (a failed call has none), so truncation takes the end of the reason, never the numbers. Thinking after a call leaves that call there; nothing of the thinking shows (owner, 2026-10-24: no thinking tail, typing or character fade). On the same summary, a new call, or its counts coming in, fades in over 0.2 s; the line's first call, a row taken over by another summary and everything under Reduce Motion show at once. VoiceOver reads the line after the title: the reason, then the file and its counts in words as its value. Only the running summary in the transcript has it; the trace sheet lists every call and opens each whole. The running summary reads “Reconnecting…” after a `reconnecting`, until the request made again streams or the run moves on, else “Executing N tools…” only while N calls await a result, “Thinking…” otherwise, and its title changes at most once a second: the first change at once, the latest of the rest when the second is up. A running summary stands in under a prompt, or under images a tool returned, until the turn shows something, with the id its next thought takes, and `toolCallPreparing` starts one while the model writes a call's arguments, so a turn never shows a gap. One stands in under the turn's last reply (or error) too once the running turn has gone `ChatTranscript.quietInterval` (1.5 s) without an event — the model may be writing a call it has not announced, or the provider has stalled —, never under a running summary or a waiting approval. The transcript is given the time (`now`) and answers `quietDeadline`; the page builds its rows again once, then (`ChatQuietWatch`), and nothing polls. The reply's next thought, call or message start takes the stand-in's id, so it becomes that row with no flash, and more of the reply ends it. A `messageDiscarded` takes back the rows its message made, while it was still streaming, and leaves unanswered again what it answered, so the stand-in comes back under the same id and the retried reply is drawn once, never under the partial one. Transcript content is centred in at most 730 pt, the composer card's widest, so the two edges line up; the list itself spans the page's safe area side to side, so its margins scroll, and stops at a vertical bar's strip, which is the bar's (iPhone Duo at the 27.1 SDK tier: a trailing safe-area inset on one side only).
+- Every agent tool, MCP tools included, requires a short `reason` (`ToolReason`), stripped from the arguments before the approval gate, the fingerprint, the tool or the host sees them; the `toolCall` event keeps it. The file tools end their result's first line with `+a -b` lines added and removed. While a turn runs, its trailing summary stays unfinished across calls and approvals, the run's received tokens climbing at the trailing end of its title line (and of the summary above the reply while the reply streams). Once the summary has a call, `ToolCallBannerView` shows one line under it, at the reading width, between hairlines on a 5% grey ground drawn out to the row's edges: the newest call in its trace (`ToolCallBanner`), by its reason, or its title for a call made without one, and for a file tool (`ToolCallBanner.fileTools`) the file's name first, then the lines added in green and removed in red once its result is in, read from the result's first line (a failed call has none), so truncation takes the end of the reason, never the numbers. Thinking after a call leaves that call there; nothing of the thinking shows (owner, 2026-10-24: no thinking tail, typing or character fade). On the same summary, a new call, or its counts coming in, fades in over 0.2 s; the line's first call, a row taken over by another summary and everything under Reduce Motion show at once. VoiceOver reads the line after the title: the reason, then the file and its counts in words as its value. Only the running summary in the transcript has it; the trace sheet lists every call and opens each whole. The running summary reads “Waiting for Network…” after a `waitingForNetwork`, until the request is asked again, and “Reconnecting…” after a `reconnecting`, each until the request made again streams or the run moves on, else “Executing N tools…” only while N calls await a result, “Thinking…” otherwise, and its title changes at most once a second: the first change at once, the latest of the rest when the second is up. A running summary stands in under a prompt, or under images a tool returned, until the turn shows something, with the id its next thought takes, and `toolCallPreparing` starts one while the model writes a call's arguments, so a turn never shows a gap. One stands in under a message on its way too (owner, 2026-11-14): the first of `sending` when no turn runs starts the next one, and `ChatTranscript.show` puts the summary its echo will have under it, under the same id, so opening the session, a reopened session's replay and the host recording the message all pass with the turn already shown at work, and the echo and the first thought change nothing on screen; any other message on its way waits, faded, for that turn. One stands in under the turn's last reply (or error) too once the running turn has gone `ChatTranscript.quietInterval` (1.5 s) without an event — the model may be writing a call it has not announced, or the provider has stalled —, never under a running summary or a waiting approval. The transcript is given the time (`now`) and answers `quietDeadline`; the page builds its rows again once, then (`ChatQuietWatch`), and nothing polls. The reply's next thought, call or message start takes the stand-in's id, so it becomes that row with no flash, and more of the reply ends it. A `messageDiscarded` takes back the rows its message made, while it was still streaming, and leaves unanswered again what it answered, so the stand-in comes back under the same id and the retried reply is drawn once, never under the partial one. An `error` is a row of its own kind (owner, 2026-11-14; `ChatFailure`, `ChatFailureRow`), never drawn as a reply: one line in red naming what went wrong by the event's `reason` (“No Internet Connection”, “Unable to Reach Model Provider”, “Request Timed Out”, “Sign-In Not Accepted”, “Usage Limit Reached”, “Too Many Requests”, “Model Provider Error”, “Chat Too Long”, and “Something Went Wrong” for an error with no reason or one this version does not know), and under it, in the secondary colour, what to do where the reason says it (connect, check the network or proxy, send again, check the sign-in in Settings ▸ Model Providers, compact the context) and otherwise the provider's own words; plain selectable text, one VoiceOver element reading both lines. The row's `text` stays the recorded message, so following, unread and the journal read it as before. Transcript content is centred in at most 730 pt, the composer card's widest, so the two edges line up; the list itself spans the page's safe area side to side, so its margins scroll, and stops at a vertical bar's strip, which is the bar's (iPhone Duo at the 27.1 SDK tier: a trailing safe-area inset on one side only).
 - **An opened thought the model is still writing** (`ChatStreamPacing`, tested in `Tests/ChatTranscript/StreamPacingCheck.swift`; owner, 2026-11-15: "展开还在流式输出的长思考，界面很卡"). An opened thought is one label holding all of it, and the model writes it a token at a time: drawing and measuring the whole of a long run on every event is what made the transcript stutter, and it grew with the run. The row now takes its text from a clock keyed by the step — advanced at most every 0.3 s while the thought runs — and, while it runs, draws only its newest 6,000 characters behind an ellipsis; the whole of it is drawn the moment it has stopped. `ChatTraceSteps` takes the same paced steps for what it draws and for what it measures, so the height the list gives a row is the height of the text the row shows: measured ahead of the row, it would clip it. A step that is not a thought, and every thought that has stopped, is untouched.
 - `ProjectPickerController` lists real projects; `NewProjectController` chooses a catalog template, using its default parameters and calls `projectCreate`. Settings includes a read-only Templates catalog with single-line names with source-file byte counts at the trailing edge, no subtitles and no disclosure navigation. The built-in `wiki.qaq.apelin.workspace/empty` template creates only a workspace identity manifest, atomically and without SDK/toolchain requirements. It supplies no build or install baseline; a build requires a real build description.
 

@@ -58,7 +58,7 @@ struct NetworkCancellationTests {
     }
 
     private static func wrapped(_ inner: @escaping StreamFn) -> StreamFn {
-        NetworkRecovery.stream(path: NetworkPath { true }, inner: inner, onWait: {})
+        NetworkRecovery.stream(path: NetworkPath { true }, inner: inner, onWait: { _ in })
     }
 
     @Test(.timeLimit(.minutes(1)), arguments: [false, true])
@@ -196,7 +196,7 @@ struct NetworkCancellationTests {
                 if calls.count == 1 { return first }
                 return await creation.wait()
             },
-            onWait: {},
+            onWait: { _ in },
         )
         let response = try await stream(Self.model, Context(), StreamOptions(cancellation: cancellation))
         let entered = creation.entered
