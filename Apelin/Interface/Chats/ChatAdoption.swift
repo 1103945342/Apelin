@@ -114,6 +114,7 @@ enum ChatAdoption {
     @discardableResult
     static func restoreLineage(
         in records: inout [UUID: ChatRecord], sessions: [AgentSessionSummary] = [],
+        opened: [UUID: [TaskEvent]] = [:],
     ) -> Set<UUID> {
         var sessionChats: [UUID: Set<UUID>] = [:]
         for record in records.values {
@@ -128,7 +129,10 @@ enum ChatAdoption {
         }
         var candidates: [UUID: Set<UUID>] = [:]
         for parent in records.values {
-            for event in parent.events where event.kind == AgentConversations.openedEventKind && !ChatFork.isHistorical(event) {
+            // A chat whose history is not in memory supplies the events that
+            // opened another from its file's scan (`opened`).
+            let events = parent.events.isEmpty ? opened[parent.summary.id] ?? [] : parent.events
+            for event in events where event.kind == AgentConversations.openedEventKind && !ChatFork.isHistorical(event) {
                 guard let childID = chatID(event.payload?["sessionID"]?.stringValue),
                       let child = records[childID],
                       event.payload?["projectName"]?.stringValue.map({ $0 == child.summary.projectName }) ?? true

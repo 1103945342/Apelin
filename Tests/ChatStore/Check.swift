@@ -117,4 +117,33 @@ func checkChatStore(_ scratch: URL, check: (Bool, String) -> Void) async throws 
     try await store.remove(legacyID)
     check(!FileManager.default.fileExists(atPath: recordURL(legacyID).path), "a delete removes the record")
     check(!FileManager.default.fileExists(atPath: eventsURL(legacyID).path), "a delete removes the events")
+
+    // A launch restores the lineage between chats from the events that opened
+    // another, so it scans a history for those alone (ChatEventsFile.scan)
+    // rather than holding it (ChatRuntime.scanLineage).
+    let scanID = UUID()
+    var scanned = ChatRecord(summary: .untitled(lastInteraction: Date(), projectName: nil))
+    scanned.summary.id = scanID
+    scanned.events = [
+        event(1),
+        TaskEvent(
+            seq: EventSeq(2),
+            kind: AgentConversations.openedEventKind,
+            payload: .object(["sessionID": .string("opened-one")]),
+        ),
+        event(3),
+        event(4),
+    ]
+    try JSONEncoder().encode(scanned).write(to: recordURL(scanID))
+    _ = try await ChatStore(folder: folder).load()
+    let found = try ChatEventsFile.scan(AgentConversations.openedEventKind, for: scanID, in: chats)
+    check(found.map(\.seq.rawValue) == [2], "a scan finds only the events that opened another")
+    check(found.first?.payload?["sessionID"]?.stringValue == "opened-one", "a scan keeps the event whole")
+    var torn = try Data(contentsOf: eventsURL(scanID))
+    torn.append(contentsOf: Data("{\"seq\":9,\"kind\":\"\(AgentConversations.openedEventKind)\",\"payload\":".utf8))
+    try torn.write(to: eventsURL(scanID))
+    check(
+        (try? ChatEventsFile.scan(AgentConversations.openedEventKind, for: scanID, in: chats))?.count == 1,
+        "a scan drops the last line a write cut short",
+    )
 }

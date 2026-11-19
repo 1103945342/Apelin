@@ -41,6 +41,34 @@ enum ChatEventsFile {
         return events
     }
 
+    /// The events of one kind a saved conversation holds, read for a scan that
+    /// must not keep the history: restoring the lineage between chats needs the
+    /// events that opened another, and nothing else (`ChatRuntime.scanLineage`).
+    /// Only a line that mentions the kind is decoded, so a history costs a
+    /// pass over its bytes rather than an event in memory each.
+    static func scan(_ kind: String, for id: UUID, in folder: URL) throws -> [TaskEvent] {
+        let url = url(for: id, in: folder)
+        guard FileManager.default.fileExists(atPath: url.path) else { return [] }
+        let data = try Data(contentsOf: url)
+        let needle = Data(kind.utf8)
+        let decoder = JSONCoding.decoder()
+        let lines = data.split(separator: 0x0A, omittingEmptySubsequences: false)
+        var events: [TaskEvent] = []
+        for (index, line) in lines.enumerated() {
+            guard !line.isEmpty, line.range(of: needle) != nil else { continue }
+            // The file ends with a newline, so a full last line is followed by
+            // an empty one; anything else is the write that was cut short.
+            let last = lines.last?.isEmpty == false ? index == lines.count - 1 : index >= lines.count - 2
+            do {
+                let event = try decoder.decode(TaskEvent.self, from: Data(line))
+                if event.kind == kind { events.append(event) }
+            } catch {
+                guard last else { throw error }
+            }
+        }
+        return events
+    }
+
     /// Replaces the file with `events`, atomically: a compaction, a rewind or an
     /// edit rewrites the history, and a reader never sees it half written. No
     /// events leaves no file, rather than an empty one per conversation.

@@ -199,3 +199,47 @@ byte-for-byte as it was and keeps its count, and the history is still there afte
 Still outside this branch: nothing reads a conversation's events back out of memory
 when the reader leaves it, so each chat opened in a session stays read. That is the
 next economy, and it needs the page to say which chat it is showing.
+
+## 10. Why the launch still cost 350 MB: restoring lineage read every history
+
+Measured on the device on 2026-11-19 with the head-only launch already in place:
+Apelin was 428.9 MB footprint / 241.4 MB resident running, and 420.2 / 349.2 MB six
+seconds after a cold start. The heads are a few hundred bytes each, so the events
+were coming back some other way. They were: `ChatRuntime.load` ends with
+`restoreLineage()`, which passed no sessions, and with no sessions the host's list
+cannot narrow the search for a conversation that opened another — so it called
+`loadEvents` for **every** chat and scanned their events for `conversationOpened`.
+That ran on every launch, before `isLoaded`.
+
+A bare process reading the same folder (`ChatEventsFile.read` over the 166 files,
+194 MB, 596 435 events) holds **244.7 MB** footprint: that is the 350 MB, and the
+events were never the problem the split did not fix.
+
+What changed:
+
+- `ChatEventsFile.scan(_:for:in:)` reads one file line by line and decodes only the
+  lines that mention the kind asked for, so restoring lineage costs a pass over the
+  bytes instead of an event in memory each. On this folder it finds 54 opened events
+  in 18 chats in **2.3 s** (`-O`; 17.2 s with `-Onone`, which is why the numbers
+  here are only worth comparing to each other).
+- `ChatRuntime.scanLineage()` runs that pass in `Task.detached(priority: .utility)`
+  over the chats whose history is not in memory and keeps the few events it finds
+  (`lineageOpened`). It is started **after** `isLoaded`, so the list comes up from
+  the heads and an edge restored from a file appears a moment later.
+- `restoreLineage` no longer calls `loadEvents`; it hands `ChatAdoption.restoreLineage`
+  the scanned events for chats that are still unloaded. A chat whose history is in
+  memory keeps supplying its own events, as before.
+
+Saves got cheaper with it: an edge restored at launch used to leave that chat loaded,
+so its next save wrote the whole history back; now it stays unloaded and the save is
+the head alone.
+
+The edge itself still persists in the head (`parentChatID`), so a chat that was ever
+restored keeps its parent without any scan; the scan only finds edges a record lost.
+
+Verified on the device: `Scripts/test-chat-store.sh --device` **25/25** (the scan
+finds only the opened events, keeps them whole, drops a line a write cut short), and
+a one-off harness of the real `ChatAdoption.restoreLineage` + `ChatEventsFile.scan`
+**8/8** (an edge restores from the scan alone, none from an empty scan). The app
+target is not built here, so the drop in Apelin's own footprint is still to be
+measured on a CI build.

@@ -57,6 +57,11 @@ final class ChatRuntime {
     /// history is known by while its events are unread, so a chat that has
     /// one is never taken for an empty one (`isUntouched`).
     private var eventCounts: [UUID: Int] = [:]
+    /// The events that opened another conversation, as read from the file of a
+    /// chat whose history is not in memory. Restoring lineage needs them and
+    /// nothing else, so a launch scans the files instead of keeping every
+    /// history resident (`scanLineage`).
+    private var lineageOpened: [UUID: [TaskEvent]] = [:]
     /// Conversations whose latest state is in memory only.
     @objc dynamic private var unsaved: Set<UUID> = []
     /// Conversations being written, and those changed again meanwhile. A
@@ -95,20 +100,44 @@ final class ChatRuntime {
         // The scan looks through a conversation's events for the ones that
         // opened another, so it needs the events of the chats that could be a
         // parent — not every chat the app has. With no session from the host
-        // to narrow that by, every chat is read, as it always was.
+        // to narrow that by, every chat is scanned, from what `scanLineage`
+        // read of its file while the chat's history stayed on disk.
         let parents = Set(sessions.compactMap(\.parentSessionID))
         let named = Set(records.values.compactMap(\.summary.parentChatID))
+        var opened: [UUID: [TaskEvent]] = [:]
         for record in records.values {
-            if sessions.isEmpty
+            guard sessions.isEmpty
                 || record.sessionID.map(parents.contains) == true
                 || named.contains(record.summary.id)
-            {
-                loadEvents(record.summary.id)
+            else { continue }
+            if unloadedEvents.contains(record.summary.id) {
+                opened[record.summary.id] = lineageOpened[record.summary.id] ?? []
             }
         }
-        for id in ChatAdoption.restoreLineage(in: &records, sessions: sessions) {
+        for id in ChatAdoption.restoreLineage(in: &records, sessions: sessions, opened: opened) {
             persist(id, urgent: true)
         }
+    }
+
+    /// Reads from disk, off the main queue, the events that opened another
+    /// conversation in every chat whose history is not in memory. A launch
+    /// restores the edges between chats from these few events; the histories
+    /// themselves stay on disk until a chat is opened (`loadEvents`).
+    private func scanLineage() async {
+        let ids = unloadedEvents
+        guard !ids.isEmpty else { return }
+        let folder = DataFolder.app.root.appendingPathComponent("Chats")
+        let found = await Task.detached(priority: .utility) { () -> [UUID: [TaskEvent]] in
+            var opened: [UUID: [TaskEvent]] = [:]
+            for id in ids {
+                guard let events = try? ChatEventsFile.scan(AgentConversations.openedEventKind, for: id, in: folder),
+                      !events.isEmpty
+                else { continue }
+                opened[id] = events
+            }
+            return opened
+        }.value
+        lineageOpened.merge(found) { _, new in new }
     }
 
     /// The conversation the reader is looking at, nil while they look at
@@ -166,6 +195,14 @@ final class ChatRuntime {
         restoreLineage()
         isLoaded = true
         onChange?()
+        // The events that opened another conversation are read from the files
+        // on a background pass, not here: the list comes up from the heads
+        // alone, and an edge a record lost is restored a moment later.
+        Task { [weak self] in
+            guard let self else { return }
+            await self.scanLineage()
+            self.restoreLineage()
+        }
         // A host that does not answer yet is not an error, and runs
         // nothing this app could follow: every saved row stops working.
         //
