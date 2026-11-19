@@ -1943,11 +1943,10 @@ extension ChatController {
         guard let chat, let message = shownMessage(id) else { return }
         let reply = message.role != .user
         let busy = chat.isWorking
-        // Edit, Delete and Rewind name the reader's message. A turn another
-        // conversation began has none, and those changes act on a message
-        // carrying what the reader typed, so they are not offered there: the
-        // two choices that need no message are.
-        let messageID = message.historyMessageID
+        // The reader's message, or for a turn another conversation began the
+        // message that began it: the host finds that one in the conversation
+        // its own log recorded, which is all Edit and Delete need.
+        let messageID = message.historyMessageID ?? message.turnMessageID
         var actions: [MessageActionSheet.Action] = []
         if let messageID, !busy {
             actions.append(MessageActionSheet.Action(

@@ -191,14 +191,17 @@ struct ChatTranscript {
                         // another conversation's included: a turn with no key
                         // drew no header at all, so the turn before it went
                         // on saying "Completed" over a run that was working.
-                        let historyID = payload?["from"]?.stringValue == nil
-                            ? Self.userMessageID(of: event) : nil
-                        message.turnMessageID = messageID
+                        // A report's is keyed by its own row; the reader's
+                        // message stays the one the history's changes name.
+                        let fromAnother = payload?["from"]?.stringValue != nil
+                        let historyID = fromAnother ? nil : Self.userMessageID(of: event)
+                        let key = historyID ?? (fromAnother ? messageID : nil)
+                        message.turnMessageID = key
                         message.historyMessageID = historyID
                         endTurn(at: event.time)
                         turns.append(Turn(
                             start: rows.count,
-                            messageID: messageID,
+                            messageID: key,
                             historyID: historyID,
                             began: event.time,
                         ))
@@ -588,7 +591,23 @@ struct ChatTranscript {
             let range = (index + 1) ..< end
             let isRunning = running == turnID
             result.append(row)
-            if isRunning || range.contains(where: { rows[$0].role.isActivity }) {
+            // A header over a turn with nothing to open is a line saying
+            // "Completed" and nothing else, and every report the reader's own
+            // agent answered added one. It stays while the turn runs, and
+            // once it ends only with something to show: a call, a summary
+            // still saying what it did. A report's turn opens only where the
+            // agent worked on something — reasoning alone is not worth a
+            // line, and what it said is in the reply.
+            let fromAnother = historyIDs[turnID] == nil
+            let showsWork = range.contains { offset in
+                let member = rows[offset]
+                if fromAnother {
+                    guard case let .thinking(_, tools) = member.role else { return false }
+                    return tools > 0
+                }
+                return member.role.isActivity && ChatActivityContent.hasContent(member)
+            }
+            if isRunning || showsWork {
                 let seconds = isRunning
                     ? began[turnID].map { max(0, Int(now.timeIntervalSince($0).rounded())) }
                     : durations[turnID]
@@ -605,6 +624,9 @@ struct ChatTranscript {
             }
             for offset in range {
                 var member = rows[offset]
+                // A report's turn that only thought and answered shows the
+                // reply alone: no header over it, and no line for the thought.
+                if fromAnother, !isRunning, !showsWork, member.role.isActivity { continue }
                 member.turnMessageID = turnID
                 member.historyMessageID = historyIDs[turnID]
                 result.append(member)
