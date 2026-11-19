@@ -1,4 +1,3 @@
-import ApelinProtocol
 import Darwin
 import Foundation
 
@@ -85,6 +84,25 @@ struct AppBundle: Sendable, Equatable {
             version: version.trimmingCharacters(in: .whitespaces),
             root: root
         )
+    }
+
+    /// A bundle's `Info.plist`, read where it sits: the identifier it claims,
+    /// the name to show and its version. nil for a folder that holds no
+    /// readable one.
+    static func describe(bundleAt path: String) -> (bundleID: String, name: String, version: String)? {
+        guard let data = FileManager.default.contents(atPath: path + "/Info.plist"),
+              let plist = (try? PropertyListSerialization.propertyList(from: data, format: nil)) as? [String: Any],
+              let identifier = (plist["CFBundleIdentifier"] as? String)?.trimmingCharacters(in: .whitespaces),
+              !identifier.isEmpty
+        else { return nil }
+        let folder = (path as NSString).lastPathComponent
+        let name = [(plist["CFBundleDisplayName"] as? String), (plist["CFBundleName"] as? String)]
+            .compactMap { $0?.trimmingCharacters(in: .whitespaces) }
+            .first { !$0.isEmpty }
+            ?? String(folder.dropLast(".app".count))
+        let version = ((plist["CFBundleShortVersionString"] as? String) ?? (plist["CFBundleVersion"] as? String) ?? "")
+            .trimmingCharacters(in: .whitespaces)
+        return (identifier, name, version)
     }
 
     /// What an app of this bundle is called on disk: its display name when

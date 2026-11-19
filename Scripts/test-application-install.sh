@@ -21,12 +21,17 @@ if [[ "${1:-}" == --device ]]; then
     clang -arch arm64 "$work/fixture.c" -o "$work/fixture"
     printf '%s\n' '<?xml version="1.0"?><plist version="1.0"><dict><key>get-task-allow</key><true/></dict></plist>' > "$work/app.plist"
     ldid "-S$work/app.plist" "$work/fixture"
-    live=("$install_root" "$install_root/usr/bin/ldid" "$APELIN_PROJECT_ROOT/$work/fixture")
+    # A program that stays up, for the test that ends what runs from a bundle.
+    printf '#include <unistd.h>\nint main(void) { for (;;) sleep(60); }\n' > "$work/sleeper.c"
+    clang -arch arm64 "$work/sleeper.c" -o "$work/sleeper"
+    ldid -S "$work/sleeper"
+    live=("$install_root" "$install_root/usr/bin/ldid" "$APELIN_PROJECT_ROOT/$work/fixture" "$APELIN_PROJECT_ROOT/$work/sleeper")
 fi
 "${compiler[@]}" -swift-version 5 -parse-as-library -whole-module-optimization \
     -module-name ApelinCore -emit-module -emit-module-path "$work/ApelinCore.swiftmodule" \
     -emit-object "$core/CanonicalPath.swift" "$core/BootstrapRootPath.swift" -o "$work/ApelinCore.o"
 "${compiler[@]}" -swift-version 5 -I "$work" "$work/ApelinCore.o" \
+    Apelind/ProcessList.swift Apelind/Session/Install/AppBundle.swift \
     Apelind/Session/Install/ApplicationInstall.swift Tests/ApplicationInstall/main.swift \
     -o "$work/check"
 if [[ "${1:-}" == --device ]]; then

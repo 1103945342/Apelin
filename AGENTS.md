@@ -61,12 +61,22 @@ the same executable in session mode; the workers are its children.
   `NSExtensionPointIdentifier`, or an identifier not under the app's. An
   `.ipa` installs as an app, never as a
   package: `installPackage` on an ipa artifact unpacks it inside the host,
-  copies its one `Payload/*.app` under `<install root>/Applications`, signs
-  every Mach-O with the bootstrap's `ldid`, registers it with `uicache`, and
-  keeps the bundle in the installation record so a removal unregisters and
-  deletes it. dpkg and irisind never see one, no package repository takes
-  one, and the Distribute… page offers Share `.ipa` alone. The two formats
-  are never one renamed into the other, and a deb keeps every check it had.
+  signs its one `Payload/*.app` where staging holds it, reads the signed
+  copy back (`uicache -p` answers zero for a folder holding no app, so the
+  listing from `uicache -l` is the receipt), ends whatever still runs from
+  the bundle it replaces, and only then renames it into
+  `<install root>/Applications` — what was there renamed aside first and
+  put back when anything after it fails. An app of the **same bundle ID is
+  replaced in place**, from another project too: the identifier, not the
+  project, is what the device knows, its container and preferences stay,
+  and a rebuild never has to be removed first. An app a dpkg package lists,
+  or another bundle ID already at that path, is refused with the reason.
+  The record keeps the bundle so a removal unregisters and deletes it, and
+  an earlier record of the same bundle is `superseded` rather than left
+  claiming the app — it may not be removed in the newer one's place. dpkg
+  and irisind never see an `.ipa`, no package repository takes one, and the
+  Distribute… page offers Share `.ipa` alone. The two formats are never one
+  renamed into the other, and a deb keeps every check it had.
 - **A Swift module is the project's own sources, never a resolution.** A
   package a project vendors is a folder of the project: `swiftModules` names
   each module's `.swift` files and the modules it imports, the build compiles
@@ -4008,15 +4018,17 @@ manifest.json            the owngoal-packages entry
   scripts), the system-only check, and apelind and
   every worker typechecked for macOS. Run this first. `SWIFTPM_SCRATCH`
   moves the package's build directory (default `Packages/ApelinKit/.build`).
-- `bash Scripts/test-application-install.sh` — standalone IPA signing regression
+- `bash Scripts/test-application-install.sh` — standalone installer regression
   on the Mac, also run by `make harness`. It compiles the production installer
-  with its two core path utilities, checks roothide/rootless argument spelling
-  and keeps the entitlements file alive through signing, cleaning it on success,
-  a refused signature and a thrown runner error. On a prepared device use
+  with its two core path utilities, checks roothide/rootless argument spelling,
+  keeps the entitlements file alive through signing (cleaning it on success, a
+  refused signature and a thrown runner error), replaces a bundle in place by
+  renames, rolls a failed install back, removes what a stopped host left and
+  ends a process still running from the bundle. On a prepared device use
   `bash Scripts/test-application-install.sh --device build/Tool.entitlements`
   after placing the device-executables skill's tool entitlements there. The
-  script signs the test runner and tests real `ldid` on a project-local fixture;
-  it installs nothing. This does not replace a full app build or an IPA install
+  script signs the test runner, builds a sleeper inside it, and tests real
+  `ldid` on a project-local fixture; it installs nothing on the device. This does not replace a full app build or an IPA install
   on each bootstrap. The full app still needs the Xcode/SDK tier above; the
   standalone check can run with Swift 5.10 and the registered iPhoneOS SDK.
 - `make check` — project and packaging validation, including the floor greps.

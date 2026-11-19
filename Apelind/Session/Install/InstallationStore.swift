@@ -23,6 +23,10 @@ struct InstallationRecord: Codable, Equatable, Sendable {
         case submitted
         case installed
         case failed
+        /// A later install of the same bundle ID took this one's place: the
+        /// app on the device is that later install's, and this record no
+        /// longer answers for it or may remove it.
+        case superseded
         /// Handed to irisind for removal under `removalTransactionID`.
         case removing
         case removed
@@ -55,6 +59,10 @@ struct InstallationRecord: Codable, Equatable, Sendable {
         var name: String
         /// `<install root>/Applications/<name>.app`, as it was copied.
         var bundlePath: String
+        /// True when the app that was at this path before Apelin got there was
+        /// not one of its own: the record says so rather than claiming it
+        /// installed the app the device had.
+        var foreign: Bool?
 
         /// Where the bundle is now. roothide names its bootstrap folder
         /// `.jbroot-<id>`, and a jailbreak again can give that folder another

@@ -1663,6 +1663,7 @@ await screenConsentChecks(scratch: scratch, scratchPath: scratchPath)
 
 await resetToRemoteChecks(scratch: scratch, scratchPath: scratchPath)
 try await gitBranchChecks(scratch: scratch, scratchPath: scratchPath)
+appPlacementChecks()
 try await terminalChecks(scratch: scratch, scratchPath: scratchPath)
 
 // MARK: - Install bridge against a fake irisind

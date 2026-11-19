@@ -69,10 +69,13 @@ extension BuiltInSkills {
         ## Installing it on this device
         - `apelin_package_install` takes the ipa artifact's `id` and `digest`. The
           host checks the digest against the record, unpacks the `.ipa` in private
-          staging, refuses a `com.apple.` bundle id, copies the bundle to
-          `<install root>/Applications`, signs every Mach-O with `ldid` using the
-          entitlements it carries and registers it with `uicache -p`. It then
-          appears in `apelin_package_list` with an `installationID`.
+          staging, refuses a `com.apple.` bundle id, signs every Mach-O with `ldid`
+          where staging holds it, reads the signed copy back, ends whatever still
+          runs from the app it replaces, and renames the bundle into
+          `<install root>/Applications` — the bundle that was there is renamed
+          aside first and put back if anything after it fails. It then registers
+          with `uicache -p`, reads `uicache -l` back as the receipt, and appears
+          in `apelin_package_list` with an `installationID`.
         - `apelin_package_remove` takes it off: `uicache -u`, then the bundle goes.
         - Never install, uninstall or register it another way: not `icli app
           install`, not `icli pkg install`, not `dpkg`, not `apt`, and no
@@ -80,10 +83,11 @@ extension BuiltInSkills {
         - A bundle id is permanent once the app is installed (the
           apelin-packaging-and-install skill's Package identity): a new one is
           another app beside it, and the old one stays until it is removed. Settle
-          it with the user before the first install. A second install of the same
-          project replaces that installation; the same bundle id installed from
-          another project is refused, and so is a bundle already sitting where
-          this one asks to go — remove it first, never delete it by hand.
+          it with the user before the first install. Installing the same bundle id
+          again replaces the app in place — from this project or another — so a
+          rebuild goes in without a removal first, and its container and
+          preferences stay. An app a dpkg package lists, or another bundle id
+          already at that path, is refused; the message says which.
         - Installing needs no package dependency and no maintainer script: an
           app's data folders are made by the system on first launch, in its own
           container.

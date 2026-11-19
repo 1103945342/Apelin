@@ -431,7 +431,7 @@ actor InstallBridge {
         }
         let layout = ApplicationInstall.Layout(installRoot: paths.installRoot)
         let workspace = paths.staging.appendingPathComponent(installationID)
-        var placed: URL?
+        var placed: ApplicationInstall.Placed?
         do {
             try FileManager.default.createDirectory(
                 at: workspace,
@@ -456,9 +456,6 @@ actor InstallBridge {
             let bundle = try AppBundle.find(in: workspace)
             let destination = URL(fileURLWithPath: layout.applications)
                 .appendingPathComponent(bundle.name + ".app")
-            try await checkPlacement(
-                of: bundle, at: destination, applications: layout.applications, installationID: installationID
-            )
             do {
                 try FileManager.default.createDirectory(
                     atPath: layout.applications,
@@ -468,16 +465,73 @@ actor InstallBridge {
             } catch {
                 throw ApelinError(.internal, "\(layout.applications) could not be made")
             }
-            await registry.append(taskID, kind: "log", payload: .object([
-                "line": .string("Installing \(bundle.bundleID) \(bundle.version)"),
-            ]))
-            try ApplicationInstall.copy(bundle.root, to: destination)
-            placed = destination
-            let signed = try ApplicationInstall.sign(destination, layout: layout, scratch: workspace)
+
+            // What holds the path decides whether this goes in, takes the
+            // place of an app of its own identifier, or stops.
+            let (existing, previous) = await existingAtDestination(
+                destination,
+                bundleID: bundle.bundleID,
+                applications: layout.applications
+            )
+            let adopting: Bool
+            switch AppPlacement.plan(
+                destinationName: bundle.name,
+                bundleID: bundle.bundleID,
+                existing: existing,
+                ours: previous != nil
+            ) {
+            case .install:
+                adopting = false
+            case let .replace(adopt):
+                adopting = adopt
+            case let .refuse(why):
+                throw ApelinError(.conflict, why)
+            }
+
+            // Signed where it lies in staging, then read back: the bundle that
+            // takes the place of a working one is the one checked here.
+            ApplicationInstall.stripSignatures(bundle.root)
+            let signed = try ApplicationInstall.sign(bundle.root, layout: layout, scratch: workspace)
+            try ApplicationInstall.validate(bundle.root, expecting: bundle.bundleID)
             await registry.append(taskID, kind: "log", payload: .object([
                 "line": .string("Signed \(signed.count) files with ldid"),
             ]))
+
+            // The app this replaces stops first: iOS ends one whose bundle is
+            // renamed away, but not always before the rename lands.
+            var displaced = [destination]
+            if let old = previous?.application.map({ $0.path(under: layout.applications) }) {
+                displaced.append(URL(fileURLWithPath: old))
+            }
+            ApplicationInstall.removeLeftovers(beside: destination)
+            let ended = displaced.flatMap { ApplicationInstall.terminate($0) }
+            if !ended.isEmpty {
+                await registry.append(taskID, kind: "log", payload: .object([
+                    "line": .string("Ended \(ended.count) process(es) still running from the app this replaces"),
+                ]))
+            }
+            await registry.append(taskID, kind: "log", payload: .object([
+                "line": .string(
+                    previous == nil
+                        ? "Installing \(bundle.bundleID) \(bundle.version)"
+                        : "Replacing \(bundle.bundleID) \(previous?.version ?? "an earlier build") with \(bundle.version)"
+                ),
+            ]))
+            let inPlace = try ApplicationInstall.place(
+                bundle.root,
+                at: destination,
+                displacing: Array(displaced.dropFirst())
+            )
+            placed = inPlace
             try ApplicationInstall.register(destination, layout: layout, installRoot: paths.installRoot)
+            guard registeredBundle(bundle.bundleID, at: destination.path, layout: layout) else {
+                throw ApelinError(
+                    .internal,
+                    "LaunchServices did not list \(bundle.bundleID) at \(destination.path) after registering it"
+                )
+            }
+            // The bundles this one took the place of are gone for good now.
+            for entry in inPlace.displaced { try? FileManager.default.removeItem(at: entry.aside) }
             let receipt = InstallationRecord.Receipt(
                 state: "succeeded",
                 exitStatus: 0,
@@ -495,8 +549,18 @@ actor InstallBridge {
                 $0.application = InstallationRecord.Application(
                     bundleID: bundle.bundleID,
                     name: bundle.name,
-                    bundlePath: destination.path
+                    bundlePath: destination.path,
+                    foreign: adopting ? true : nil
                 )
+            }
+            // Older records of this bundle no longer answer for the app the
+            // device holds, and cannot be removed in its place.
+            for other in await installations.all()
+                where other.installationID != installationID
+                && other.application?.bundleID == bundle.bundleID
+                && other.status == .installed
+            {
+                _ = try? await installations.update(other.installationID) { $0.status = .superseded }
             }
             let result = InstallResult(
                 installationID: installationID,
@@ -513,41 +577,58 @@ actor InstallBridge {
                 "state": .string(TaskState.succeeded.rawValue), "result": value ?? .null,
             ]))
         } catch {
-            if let placed { Self.removeTree(placed, inside: layout.applications) }
+            var message = Self.message(error)
+            if let placed {
+                let problems = ApplicationInstall.withdraw(placed, layout: layout)
+                if !problems.isEmpty {
+                    message += " The app it replaced could not be put back: \(problems.joined(separator: "; "))."
+                }
+            }
             _ = try? await installations.update(installationID) { $0.status = .failed }
-            await registry.finish(taskID, .failed, message: Self.message(error))
+            await registry.finish(taskID, .failed, message: message)
         }
         Self.removeTree(workspace, inside: paths.staging.path)
     }
 
-    /// Whether the app can go where its bundle asks: nothing else at that
-    /// path, and no installation of ours already holding this bundle ID.
-    /// A record whose own copy of the app is gone no longer holds it — that
-    /// app went away with the root it was installed under, or outside Apelin.
-    private func checkPlacement(
-        of bundle: AppBundle, at destination: URL, applications: String, installationID: String
-    ) async throws {
-        guard !bundle.bundleID.hasPrefix("com.apple.") else {
-            throw ApelinError(.denied, "an .ipa cannot claim \(bundle.bundleID), a system bundle ID")
+    /// Whether `uicache -l` lists `bundleID` at `path`. `uicache -p` answers
+    /// zero for a path that holds no app and prints nothing, so its exit
+    /// status is not the receipt — the listing is.
+    private func registeredBundle(_ bundleID: String, at path: String, layout: ApplicationInstall.Layout) -> Bool {
+        guard let listed = try? ApplicationInstall.run(layout.uicache, ["-l"]) else { return false }
+        return ApplicationCensus.parseRegistered(listed.output).contains {
+            $0.bundleID == bundleID && $0.path == path
         }
-        let records = await installations.all()
-        if let other = records.first(where: {
-            $0.installationID != installationID && $0.status == .installed
-                && $0.application?.bundleID == bundle.bundleID
-                && $0.application.map { FileManager.default.fileExists(atPath: $0.path(under: applications)) } == true
-        }) {
-            throw ApelinError(
-                .conflict,
-                "\(bundle.bundleID) is already installed from \(other.installationID). Remove that installation first."
-            )
+    }
+
+    /// What holds the path the app asks for, for `AppPlacement`: the bundle
+    /// there, the package database's word on it, and the newest record of ours
+    /// that still has that bundle on the device. A record whose own copy is
+    /// gone holds nothing — that app went away with the root it was installed
+    /// under, or outside Apelin.
+    private func existingAtDestination(
+        _ destination: URL,
+        bundleID: String,
+        applications: String
+    ) async -> (existing: AppPlacement.Existing, previous: InstallationRecord?) {
+        let previous = await installations.all().last { record in
+            record.status == .installed && record.application?.bundleID == bundleID
+                && record.application.map { FileManager.default.fileExists(atPath: $0.path(under: applications)) } == true
+        }
+        let owners = ApplicationCensus.packageOwners(
+            infoDirectory: (paths.installRoot == "/" ? "" : paths.installRoot) + "/var/lib/dpkg/info"
+        )
+        if let below = BootstrapRootPath.belowRoot(destination.path), let package = owners["/" + below] {
+            return (.ownedByPackage(package), previous)
         }
         var metadata = stat()
-        if stat(destination.path, &metadata) == 0 {
-            throw ApelinError(
-                .conflict,
-                "\(destination.lastPathComponent) is already on the device. Remove it first, then try again."
-            )
+        guard lstat(destination.path, &metadata) == 0 else { return (.free, previous) }
+        guard metadata.st_mode & S_IFMT == S_IFDIR,
+              let info = AppBundle.describe(bundleAt: destination.path)
+        else {
+            return (.unreadable, previous)
         }
+        guard info.bundleID == bundleID else { return (.otherBundle(info.bundleID), previous) }
+        return (.sameBundle, previous)
     }
 
     /// An app this bridge installed, off the device: out of LaunchServices
@@ -705,6 +786,11 @@ actor InstallBridge {
                 existing,
                 installed: packages.installedPackages(),
                 records: installations.all(),
+            )
+        } else if existing.status == .superseded {
+            throw ApelinError(
+                .denied,
+                "A later install of \(existing.packageID) took this app's place. Remove that installation instead.",
             )
         } else {
             guard existing.status == .installed else {

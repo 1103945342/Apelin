@@ -52,43 +52,184 @@ enum ApplicationInstall {
         return "/" + below
     }
 
-    // MARK: Copying
+    // MARK: Preparing
 
-    /// The whole bundle at `source` into `destination`, which must not exist.
-    /// A signature and a provisioning profile are left behind: the copy is
-    /// signed again, and both would describe bytes that are no longer there.
-    static func copy(_ source: URL, to destination: URL) throws {
+    /// A signature and a provisioning profile that arrived with the `.ipa`
+    /// describe bytes the host is about to change: every Mach-O is signed
+    /// again, and both would vouch for what is no longer there. They go before
+    /// the first `ldid` run, at every level a framework may carry one.
+    static func stripSignatures(_ bundle: URL) {
+        let children = (try? FileManager.default.contentsOfDirectory(
+            at: bundle,
+            includingPropertiesForKeys: nil
+        )) ?? []
+        for child in children {
+            if ignoredNames.contains(child.lastPathComponent) {
+                try? FileManager.default.removeItem(at: child)
+            } else if (try? child.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true {
+                stripSignatures(child)
+            }
+        }
+    }
+
+    // MARK: Checking
+
+    /// A bundle read back from where it is going in from: the identifier its
+    /// `Info.plist` claims, an executable that is there, and Mach-O code.
+    /// `AppBundle.find` checked the `.ipa`'s own copy before anything ran;
+    /// this checks the copy staging signed, so a copy that did not survive
+    /// cannot take the place of an app that worked. `uicache` is no check:
+    /// it answers zero for a folder that holds no app at all.
+    static func validate(_ bundle: URL, expecting bundleID: String) throws {
+        guard let info = AppBundle.describe(bundleAt: bundle.path) else {
+            throw Failure.io("\(bundle.lastPathComponent) holds no readable Info.plist")
+        }
+        guard info.bundleID == bundleID else {
+            throw Failure.io("\(bundle.lastPathComponent) claims \(info.bundleID), not \(bundleID)")
+        }
+        guard let data = try? Data(contentsOf: bundle.appendingPathComponent("Info.plist")),
+              let plist = (try? PropertyListSerialization.propertyList(from: data, format: nil)) as? [String: Any],
+              let executable = (plist["CFBundleExecutable"] as? String)?.trimmingCharacters(in: .whitespaces),
+              !executable.isEmpty, !executable.contains("/")
+        else {
+            throw Failure.io("\(bundle.lastPathComponent) names no executable")
+        }
         var metadata = stat()
-        guard lstat(source.path, &metadata) == 0 else {
-            throw Failure.io("\(source.lastPathComponent) could not be read")
+        guard lstat(bundle.appendingPathComponent(executable).path, &metadata) == 0,
+              metadata.st_mode & S_IFMT == S_IFREG, metadata.st_size > 0
+        else {
+            throw Failure.io("\(bundle.lastPathComponent) has no executable \(executable)")
         }
-        let type = metadata.st_mode & S_IFMT
-        switch type {
-        case S_IFDIR:
-            do {
-                try FileManager.default.createDirectory(
-                    at: destination,
-                    withIntermediateDirectories: false,
-                    attributes: [.posixPermissions: 0o755]
+        guard try !MachO.files(in: bundle).isEmpty else {
+            throw Failure.io("\(bundle.lastPathComponent) holds no Mach-O")
+        }
+    }
+
+    // MARK: Placing
+
+    /// A bundle put in place, and the bundles it took the place of.
+    struct Placed: Sendable, Equatable {
+        struct Displaced: Sendable, Equatable {
+            /// Where the bundle was.
+            var original: URL
+            /// Where it waits while the new one settles.
+            var aside: URL
+        }
+
+        var destination: URL
+        var displaced: [Displaced]
+    }
+
+    /// The bundle `incoming`, in root's staging, at `destination` — with
+    /// `others` and whatever is at the destination renamed aside first. Every
+    /// step is a rename on one volume, so what the device holds is the old
+    /// bundle or the new one, never half of each, and `withdraw` puts the old
+    /// one back.
+    ///
+    /// An app of the same identifier may already be at another path, its
+    /// record written when the display name was different: `others` names it
+    /// so the device does not end up with two bundles of one ID.
+    static func place(_ incoming: URL, at destination: URL, displacing others: [URL] = []) throws -> Placed {
+        let parent = destination.deletingLastPathComponent()
+        do {
+            try FileManager.default.createDirectory(
+                at: parent,
+                withIntermediateDirectories: true,
+                attributes: [.posixPermissions: 0o755]
+            )
+        } catch {
+            throw Failure.io("\(parent.lastPathComponent) could not be made")
+        }
+        var displaced: [Placed.Displaced] = []
+        func putBack() {
+            for entry in displaced { _ = rename(entry.aside.path, entry.original.path) }
+        }
+        for original in [destination] + others
+            where isPresent(original) && !displaced.contains(where: { $0.original.path == original.path })
+        {
+            let aside = URL(fileURLWithPath: original.path + ".apelin-outgoing-" + UUID().uuidString.lowercased())
+            guard rename(original.path, aside.path) == 0 else {
+                let reason = String(cString: strerror(errno))
+                putBack()
+                throw Failure.io("\(original.lastPathComponent) could not be moved aside: \(reason)")
+            }
+            displaced.append(Placed.Displaced(original: original, aside: aside))
+        }
+        guard rename(incoming.path, destination.path) == 0 else {
+            let reason = String(cString: strerror(errno))
+            putBack()
+            throw Failure.io("\(destination.lastPathComponent) could not be put in place: \(reason)")
+        }
+        return Placed(destination: destination, displaced: displaced)
+    }
+
+    /// The install that put `placed` there did not finish: the new bundle
+    /// goes, what it displaced comes back, and LaunchServices is told about
+    /// each bundle that came back. Answers what could not be undone, for the
+    /// task's last words.
+    static func withdraw(_ placed: Placed, layout: Layout) -> [String] {
+        var problems: [String] = []
+        let failed = URL(fileURLWithPath: placed.destination.path + ".apelin-failed-" + UUID().uuidString.lowercased())
+        if rename(placed.destination.path, failed.path) != 0 {
+            problems.append(
+                "\(placed.destination.lastPathComponent) could not be moved away (\(String(cString: strerror(errno))))"
+            )
+        }
+        for entry in placed.displaced {
+            guard rename(entry.aside.path, entry.original.path) == 0 else {
+                problems.append(
+                    "\(entry.original.lastPathComponent) could not be put back (\(String(cString: strerror(errno))))"
                 )
-            } catch {
-                throw Failure.io("\(destination.lastPathComponent) could not be made")
+                continue
             }
-            _ = chown(destination.path, 0, 0)
-            for child in (try? FileManager.default.contentsOfDirectory(at: source, includingPropertiesForKeys: nil)) ?? []
-                where !ignoredNames.contains(child.lastPathComponent)
-            {
-                try copy(child, to: destination.appendingPathComponent(child.lastPathComponent))
+            // The app that was here is registered by the path the system
+            // names — with the root it went in under.
+            if AppBundle.describe(bundleAt: entry.original.path) != nil {
+                try? register(entry.original, layout: layout, installRoot: layout.installRoot)
             }
-        case S_IFREG:
-            guard (try? FileManager.default.copyItem(at: source, to: destination)) != nil else {
-                throw Failure.io("\(source.lastPathComponent) could not be copied")
-            }
-            _ = chown(destination.path, 0, 0)
-            _ = chmod(destination.path, metadata.st_mode & 0o777)
-        default:
-            throw Failure.unsupported("\(source.lastPathComponent) is not a file or a folder")
         }
+        try? FileManager.default.removeItem(at: failed)
+        return problems
+    }
+
+    /// `<name>.app.apelin-outgoing-…` and `…-failed-…` folders a host that
+    /// stopped mid-install left beside the bundle: the next install of this
+    /// app takes them away first.
+    static func removeLeftovers(beside destination: URL) {
+        let parent = destination.deletingLastPathComponent()
+        let stem = destination.lastPathComponent + ".apelin-"
+        let children = (try? FileManager.default.contentsOfDirectory(
+            at: parent,
+            includingPropertiesForKeys: nil
+        )) ?? []
+        for child in children where child.lastPathComponent.hasPrefix(stem) {
+            try? FileManager.default.removeItem(at: child)
+        }
+    }
+
+    private static func isPresent(_ url: URL) -> Bool {
+        var metadata = stat()
+        return lstat(url.path, &metadata) == 0
+    }
+
+    // MARK: Ending what runs
+
+    /// Ends every process running a program from under `bundle` — the app and
+    /// the extensions it loaded from `PlugIns` — and answers their IDs, waiting
+    /// up to a moment for each to go. iOS ends an app whose bundle is renamed
+    /// away, but not always before the rename lands, and a process still
+    /// holding the old binary is what a replacement must not leave behind.
+    static func terminate(_ bundle: URL) -> [Int32] {
+        let pids = processIDs(runningFrom: bundle.path)
+        guard !pids.isEmpty else { return [] }
+        for pid in pids { kill(pid, SIGKILL) }
+        let deadline = Date().addingTimeInterval(2)
+        while true {
+            let alive = pids.filter { kill($0, 0) == 0 }
+            if alive.isEmpty || Date() > deadline { break }
+            usleep(5000)
+        }
+        return pids
     }
 
     // MARK: Signing
