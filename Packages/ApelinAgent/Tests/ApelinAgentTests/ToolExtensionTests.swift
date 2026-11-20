@@ -27,7 +27,7 @@ struct InstalledToolExtensions {
     }
 
     private var folder: URL {
-        root.appendingPathComponent("usr/share/apelin/agent-tools", isDirectory: true)
+        root.appendingPathComponent("usr/share/luros/agent-tools", isDirectory: true)
     }
 
     /// The repository's own manifest of the Disassembler or the Assembler.
@@ -61,7 +61,7 @@ struct InstalledToolExtensions {
             "name": name,
             "version": "1.0.0",
             "license": "MIT",
-            "executable": "usr/libexec/apelin/agent-tools/\(id)",
+            "executable": "usr/libexec/luros/agent-tools/\(id)",
             "protocolVersions": [1],
             "tools": declared,
         ]

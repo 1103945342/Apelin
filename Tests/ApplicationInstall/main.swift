@@ -51,7 +51,7 @@ func check() throws {
     for flavor in ["roothide", "rootless"] {
         let root = base.appendingPathComponent(flavor == "roothide" ? ".jbroot-0102030405060700" : "var/jb")
         let bundle = root.appendingPathComponent("Applications/Hello World.app")
-        let scratch = root.appendingPathComponent("var/lib/apelin/staging/test")
+        let scratch = root.appendingPathComponent("var/lib/luros/staging/test")
         try fm.createDirectory(at: bundle, withIntermediateDirectories: true)
         try fm.createDirectory(at: scratch, withIntermediateDirectories: true)
         for name in ["Hello World", "Helper"] {

@@ -788,7 +788,7 @@ enum EmbeddedSchemas {
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": {
-      "description": "Equal to the Debian package id and to the directory name under usr/share/apelin/development/.",
+      "description": "Equal to the Debian package id and to the directory name under usr/share/luros/development/.",
       "$ref": "#/$defs/reverseDNS"
     },
     "version": {

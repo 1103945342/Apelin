@@ -11,7 +11,7 @@
     "licenses/Capstone/LICENSE_LLVM.TXT",
     "licenses/libcapstone-spm/LICENSE"
   ],
-  "executable": "usr/libexec/apelin/agent-tools/apelin-disassembler",
+  "executable": "usr/libexec/luros/agent-tools/apelin-disassembler",
   "protocolVersions": [
     1
   ],

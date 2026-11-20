@@ -881,13 +881,13 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     reattach replays it; `ptyAttach{wantsDescriptor}` hands the app a socket
     to the live terminal. `ptyOpen{initialInput}` types once, for the console.
   - *Agent tools* (`Session/ToolHost/`): `toolHostOpen{id}` validates the
-    manifest under `usr/share/apelin/agent-tools/<id>/` and starts the
+    manifest under `usr/share/luros/agent-tools/<id>/` and starts the
     extension through `ToolHostClient` as mobile (`runAs`, checked in the
     kernel after spawn); `toolHostCall{sessionID, tool, arguments,
     attachments}` calls a tool the manifest declares; a session is its
     opener's, and an agent's close with it. Files go both ways as
     descriptors beside the envelope (`DescriptorSlot`), never paths: the
-    host copies each into an unlinked file in `var/lib/apelin/attachments`
+    host copies each into an unlinked file in `var/lib/luros/attachments`
     (≤ 8 per call, ≤ 32 MB each) and passes a read-only descriptor, to the
     extension over its SCM_RIGHTS socket and back to the caller in the
     reply, with `byteCount` and `sha256` (`AttachmentCopies`). The
@@ -4321,7 +4321,7 @@ adding a dated record beside it.
   catalogue through `Bundle.module`. Xcode's accessor for a command-line
   tool looks beside the executable and names no build path (SwiftPM's own,
   which kk patches out, bakes in the build directory), so the packager
-  installs `kwwk_KWWKAI.bundle` in `usr/libexec/apelin/` next to
+  installs `kwwk_KWWKAI.bundle` in `usr/libexec/luros/` next to
   apelin-agent; without it the first session is a `fatalError`.
 - **A back-deployed Swift library beside a tool.** apelin-agent links
   `@rpath/libswiftCompatibilitySpan.dylib` (Swift 6.2's `Span`
@@ -4332,7 +4332,7 @@ adding a dated record beside it.
   `/usr/lib/swift`, then `@executable_path`, so the OS copy wins where it
   exists. The packager installs the toolchain's copy
   (`swift-*/iphoneos/`, install name `/usr/lib/swift/…`) in
-  `usr/libexec/apelin/`, re-signed with ldid like the rest
+  `usr/libexec/luros/`, re-signed with ldid like the rest
   (`worker_runtime_libraries` in `Scripts/package-deb.sh`).
   `Scripts/check-rpath-dependencies.py` then fails the package on any shipped
   Mach-O with a strong `@rpath/` dependency that resolves to neither a file in

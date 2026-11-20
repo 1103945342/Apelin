@@ -119,7 +119,7 @@ public struct ToolManifestError: Error, Hashable, CustomStringConvertible {
 
 public enum ToolManifestValidator {
     /// Where manifests live, relative to the install root.
-    public static let relativeDirectory = "usr/share/apelin/agent-tools"
+    public static let relativeDirectory = "usr/share/luros/agent-tools"
 
     /// Where the app carries a tool of its own beside itself, relative to the
     /// install root. Read for the ids the installed folder has none of: an

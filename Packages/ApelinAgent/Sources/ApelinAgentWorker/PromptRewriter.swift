@@ -20,11 +20,11 @@ enum PromptRewriter {
 
     /// The instructions as they stand now: the reader's copy in
     /// `~/Documents/com.fluoxetine.luros/` first, then the one the package puts in
-    /// `usr/share/apelin/`. A missing or emptied file is passed over, so a copy
+    /// `usr/share/luros/`. A missing or emptied file is passed over, so a copy
     /// cleared by accident falls back to the shipped words instead of failing.
     static func instructions(home: URL, installRoot: String) throws -> String {
         let shipped = URL(fileURLWithPath: installRoot, isDirectory: true)
-            .appendingPathComponent("usr/share/apelin", isDirectory: true)
+            .appendingPathComponent("usr/share/luros", isDirectory: true)
             .appendingPathComponent(instructionsFileName)
         let mine = ApelinDataRoot(home: home).url.appendingPathComponent(instructionsFileName)
         for url in [mine, shipped] {

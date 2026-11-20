@@ -857,7 +857,7 @@ console now goes on after a restart only past a successful respring.
 - [ ] On iOS 16, 17 or 18: an agent session starts (`agentList`, then
       `agentOpen`). apelin-agent links `@rpath/libswiftCompatibilitySpan.dylib`.
       The OS has that library only from iOS 26, so on older systems it loads
-      the copy the package installs in `usr/libexec/apelin/`, through the
+      the copy the package installs in `usr/libexec/luros/`, through the
       worker's second rpath, `@executable_path`. Only the iOS 26.4 vphone, where
       the OS copy wins, has run it so far.
 - [ ] An iPad: the sidebar split view, which no console run exercises.

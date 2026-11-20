@@ -12,7 +12,7 @@
     "licenses/libkeystone-spm/LICENSE",
     "licenses/SOURCE.md"
   ],
-  "executable": "usr/libexec/apelin/agent-tools/apelin-assembler",
+  "executable": "usr/libexec/luros/agent-tools/apelin-assembler",
   "protocolVersions": [
     1
   ],

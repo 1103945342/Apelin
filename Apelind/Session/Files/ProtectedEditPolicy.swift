@@ -13,14 +13,14 @@ import Foundation
 /// components), a symlink at the picked path, a hard-linked file, a file with
 /// any execute bit, a Mach-O, anything over `maximumBytes`, and the package
 /// managers' and Apelin's own records (`var/lib/dpkg`, `var/lib/apt`,
-/// `var/lib/irisin`, `var/lib/apelin`). A LaunchDaemons plist is allowed but
+/// `var/lib/irisin`, `var/lib/luros`). A LaunchDaemons plist is allowed but
 /// needs the save's explicit confirmation.
 enum ProtectedEditPolicy {
     static let maximumBytes = 8 << 20
 
     /// Relative to the install root; every file below each is refused.
     static let refusedTrees = [
-        "var/lib/dpkg", "var/lib/apt", "var/cache/apt", "var/lib/irisin", "var/lib/apelin",
+        "var/lib/dpkg", "var/lib/apt", "var/cache/apt", "var/lib/irisin", "var/lib/luros",
         "Library/dpkg", "etc/apt/trusted.gpg.d",
     ]
 

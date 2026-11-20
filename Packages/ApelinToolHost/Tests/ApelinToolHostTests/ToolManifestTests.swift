@@ -26,7 +26,7 @@ final class ToolManifestTests: XCTestCase {
         try? FileManager.default.removeItem(atPath: root)
     }
 
-    private func manifest(executable: String = "usr/libexec/apelin/agent-tools/sample") -> ToolManifest {
+    private func manifest(executable: String = "usr/libexec/luros/agent-tools/sample") -> ToolManifest {
         ToolManifest(id: id, name: "Sample", version: "1.0.0", license: "MIT", licenseFiles: ["licenses/LICENSE"],
                      executable: executable,
                      tools: [ToolDescriptor(name: "echo", description: "Echo.", parameters: ["type": "object"], risk: .readOnly)])
@@ -59,7 +59,7 @@ final class ToolManifestTests: XCTestCase {
         XCTAssertThrowsError(try ToolManifestValidator.validate(installRoot: root, id: id, policy: policy))
 
         symlink("/bin/ls", root + "/usr/libexec/luros/agent-tools/escape")
-        try writeManifest(manifest(executable: "usr/libexec/apelin/agent-tools/escape"))
+        try writeManifest(manifest(executable: "usr/libexec/luros/agent-tools/escape"))
         XCTAssertThrowsError(try ToolManifestValidator.validate(installRoot: root, id: id, policy: policy)) { error in
             XCTAssertTrue("\(error)".contains("resolves outside"), "\(error)")
         }

@@ -11,9 +11,9 @@
 # corresponding-source archive is built from there.
 #
 # Layout, under the install prefix (empty for roothide, /var/jb rootless):
-#   usr/libexec/apelin/agent-tools/<executable>
-#   usr/share/apelin/agent-tools/<id>/manifest.json
-#   usr/share/apelin/agent-tools/<id>/licenses/...
+#   usr/libexec/luros/agent-tools/<executable>
+#   usr/share/luros/agent-tools/<id>/manifest.json
+#   usr/share/luros/agent-tools/<id>/licenses/...
 
 set -Eeuo pipefail
 
@@ -64,9 +64,9 @@ print(len(value) if isinstance(value, list) else value)' "$@"
 package_id="$(json "$manifest" id)"
 version="$(json "$manifest" version)"
 executable_path="$(json "$manifest" executable)"
-[[ "$package_id" =~ ^wiki\.qaq\.apelin\.agent-tools\.[a-z0-9-]+$ ]] || { echo "error: unexpected package id $package_id" >&2; exit 65; }
+[[ "$package_id" =~ ^com\.fluoxetine\.luros\.agent-tools\.[a-z0-9-]+$ ]] || { echo "error: unexpected package id $package_id" >&2; exit 65; }
 [[ "$version" =~ ^[0-9A-Za-z.+~-]+$ ]] || { echo "error: invalid version $version" >&2; exit 65; }
-[[ "$executable_path" == "usr/libexec/apelin/agent-tools/$(basename "$executable")" ]] || {
+[[ "$executable_path" == "usr/libexec/luros/agent-tools/$(basename "$executable")" ]] || {
     echo "error: the manifest launches $executable_path, not $(basename "$executable")" >&2
     exit 65
 }

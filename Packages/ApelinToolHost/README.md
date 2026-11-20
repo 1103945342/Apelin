@@ -25,7 +25,7 @@ misbehaves on request.
   "version": "1.0.0",
   "license": "MIT",
   "licenseFiles": ["licenses/LICENSE"],
-  "executable": "usr/libexec/apelin/agent-tools/apelin-example",
+  "executable": "usr/libexec/luros/agent-tools/apelin-example",
   "protocolVersions": [1],
   "tools": [
     {

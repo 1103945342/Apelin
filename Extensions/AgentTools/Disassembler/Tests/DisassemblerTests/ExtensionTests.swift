@@ -43,7 +43,7 @@ final class ExtensionTests: XCTestCase {
             XCTAssertEqual(described["version"]?.stringValue, shipped.version)
             let tools = try JSONDecoder().decode([ToolDescriptor].self, from: JSONEncoder().encode(described["tools"]))
             XCTAssertEqual(tools, shipped.tools, "\(name): Packaging/\(name)/manifest.json has drifted from the code")
-            XCTAssertEqual(shipped.executable, "usr/libexec/apelin/agent-tools/\(executable)")
+            XCTAssertEqual(shipped.executable, "usr/libexec/luros/agent-tools/\(executable)")
         }
     }
 

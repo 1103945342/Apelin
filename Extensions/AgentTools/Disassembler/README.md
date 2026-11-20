@@ -31,9 +31,9 @@ Each package installs, under its prefix (none for roothide, `/var/jb` for
 rootless):
 
 ```
-usr/libexec/apelin/agent-tools/apelin-<tool>
-usr/share/apelin/agent-tools/<id>/manifest.json
-usr/share/apelin/agent-tools/<id>/licenses/…
+usr/libexec/luros/agent-tools/apelin-<tool>
+usr/share/luros/agent-tools/<id>/manifest.json
+usr/share/luros/agent-tools/<id>/licenses/…
 ```
 
 ## Build, test, package

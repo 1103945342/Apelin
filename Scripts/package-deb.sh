@@ -250,8 +250,8 @@ for tool in bin/icli libexec/irisind; do
     chmod 0755 "$installed_vendor/$tool"
 done
 # The two agent tool extensions ride inside the app too. Their packages put an
-# executable under usr/libexec/apelin/agent-tools and a manifest with its
-# notices under usr/share/apelin/agent-tools/<id>; here both go under
+# executable under usr/libexec/luros/agent-tools and a manifest with its
+# notices under usr/share/luros/agent-tools/<id>; here both go under
 # Luros.app/AgentTools, and each manifest's `executable` — a path relative to
 # the install root — is rewritten to the copy that is there. The host reads an
 # installed folder first, so a tool package installed on its own still wins.
