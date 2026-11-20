@@ -163,6 +163,40 @@ struct ResolutionChecks {
         }
         ok(newest.install.first?.version == "1.10", "1.10 is newer than 1.0, not older: \(newest.install.first?.version ?? "-")")
 
+        // The repositories the device has, and where their files are.
+        let list = """
+        # a comment
+        deb [arch=iphoneos-arm64] https://apt.procurs.us/ 1900 main
+        deb http://another.example/repo ./ .
+        deb [arch=iphoneos-arm] https://other.example/ stable main
+
+        """
+        let repositories = PackageSources.parse(list: list, architecture: "iphoneos-arm64")
+        ok(repositories.count == 2, "one deb822-eligible line each: \(repositories.count)")
+        ok(repositories[0].uri == "https://apt.procurs.us", "a trailing slash is dropped")
+        ok(repositories[0].indexName == "apt.procurs.us_dists_1900_main_binary-iphoneos-arm64_Packages",
+           "the index name is the one APT writes: \(repositories[0].indexName)")
+        ok(repositories[0].packagesURL == "https://apt.procurs.us/dists/1900/main/binary-iphoneos-arm64/Packages",
+           "the index URL is built from the source")
+        ok(repositories[0].url(for: "./Pool/x.deb") == "https://apt.procurs.us/Pool/x.deb",
+           "a package URL drops the leading ./")
+        ok(repositories[1].url(for: "/Pool/y.deb") == "http://another.example/repo/Pool/y.deb",
+           "a package URL drops a leading slash")
+
+        let deb822 = """
+        Types: deb
+        URIs: https://apt.procurs.us/
+        Suites: 1900
+        Components: main
+        Architectures: iphoneos-arm64
+
+        """
+        let paragraphs = PackageSources.parse(deb822: deb822, architecture: "iphoneos-arm64")
+        ok(paragraphs.count == 1, "one repository from one paragraph: \(paragraphs.count)")
+        ok(paragraphs[0].indexName == repositories[0].indexName, "both spellings name the same index")
+        ok(PackageSources.parse(deb822: deb822, architecture: "iphoneos-arm64e").isEmpty,
+           "a repository for another architecture is left out")
+
         print("\(count) package resolution checks passed")
     }
 }

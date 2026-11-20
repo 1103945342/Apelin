@@ -21,6 +21,7 @@ if [[ "${1:-}" == --device ]]; then
 fi
 "${compiler[@]}" -swift-version 5 \
     Packages/ApelinKit/Sources/ApelinCore/Packages/PackageResolution.swift \
+    Packages/ApelinKit/Sources/ApelinCore/Packages/PackageSources.swift \
     Tests/PackageResolution/ResolutionChecks.swift -o "$work/resolution-checks"
 if [[ -n "$device" ]]; then
     ldid -S "$work/resolution-checks"
