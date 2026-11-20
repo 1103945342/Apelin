@@ -51,7 +51,7 @@ final class ReplacementRecord {
         var metadata = stat()
         var moved: URL?
         if lstat(original.path, &metadata) == 0 {
-            let name = "." + original.lastPathComponent + ".apelin-replaced-" + UUID().uuidString
+            let name = "." + original.lastPathComponent + ".luros-replaced-" + UUID().uuidString
             let aside = original.deletingLastPathComponent().appendingPathComponent(name)
             guard rename(original.path, aside.path) == 0 else {
                 throw GitError(.failed, "set \(path) aside: \(String(cString: strerror(errno)))")

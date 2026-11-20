@@ -62,7 +62,7 @@ final class WorkerChannelTests: XCTestCase {
         host.start()
         worker.start()
 
-        let path = NSTemporaryDirectory() + "apelin-channel-\(UUID().uuidString)"
+        let path = NSTemporaryDirectory() + "luros-channel-\(UUID().uuidString)"
         FileManager.default.createFile(atPath: path, contents: Data([41]))
         defer { unlink(path) }
         let file = OwnedDescriptor(adopting: open(path, O_RDONLY))

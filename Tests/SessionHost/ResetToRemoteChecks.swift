@@ -2,7 +2,7 @@ import ApelinCore
 import ApelinProtocol
 import Foundation
 
-// A reset to a remote (Apelind/Session/Agent/AgentResetToRemoteRules.swift,
+// A reset to a remote (Lurosd/Session/Agent/AgentResetToRemoteRules.swift,
 // issue #32): an agent's discards local work only on one approval the app
 // gave that session for exactly that reset — the project, the remote and
 // its address, the branch, the remote's commit and HEAD the card showed —
@@ -43,7 +43,7 @@ func resetToRemoteChecks(scratch: URL, scratchPath: String) async {
         expectedHead: head,
         expectedURL: url,
     )
-    // What apelin-agent writes into git_reset_to_remote's approvalRequested
+    // What luros-agent writes into git_reset_to_remote's approvalRequested
     // (ApelinAgentWorker's tests hold that shape).
     func ask(
         _ entry: AgentSessionTable.Entry,

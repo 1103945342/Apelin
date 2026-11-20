@@ -65,7 +65,7 @@ struct PlaceholderIdentifierBackendTests {
     func `a folder that leads out of Projects is not read`() async throws {
         let fixture = try Fixture()
         defer { try? FileManager.default.removeItem(at: fixture.dataFolder) }
-        let outside = FileManager.default.temporaryDirectory.appendingPathComponent("apelin-outside-\(UUID().uuidString)", isDirectory: true)
+        let outside = FileManager.default.temporaryDirectory.appendingPathComponent("luros-outside-\(UUID().uuidString)", isDirectory: true)
         defer { try? FileManager.default.removeItem(at: outside) }
         try FileManager.default.createDirectory(at: outside, withIntermediateDirectories: true)
         try Self.manifest(packageID: "local.apelin.banana").write(to: outside.appendingPathComponent("luros-project.json"), atomically: true, encoding: .utf8)

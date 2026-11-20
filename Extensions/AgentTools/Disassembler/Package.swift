@@ -2,9 +2,9 @@
 //
 // Two agent-tool extensions from one source tree, shipped as two packages:
 //
-// - apelin-disassembler (com.fluoxetine.luros.agent-tools.disassembler):
+// - luros-disassembler (com.fluoxetine.luros.agent-tools.disassembler):
 //   Capstone (BSD-3-Clause) and MachOReader (MIT). `disassemble`, `symbols`.
-// - apelin-assembler (com.fluoxetine.luros.agent-tools.assembler): Keystone
+// - luros-assembler (com.fluoxetine.luros.agent-tools.assembler): Keystone
 //   (GPL-2.0). `assemble`. Nothing else links Keystone, so the disassembler
 //   package carries no GPL code.
 //
@@ -19,8 +19,8 @@ let package = Package(
         .macOS(.v13),
     ],
     products: [
-        .executable(name: "apelin-disassembler", targets: ["apelin-disassembler"]),
-        .executable(name: "apelin-assembler", targets: ["apelin-assembler"]),
+        .executable(name: "luros-disassembler", targets: ["luros-disassembler"]),
+        .executable(name: "luros-assembler", targets: ["luros-assembler"]),
     ],
     dependencies: [
         .package(path: "../../../Packages/ApelinToolHost"),
@@ -39,7 +39,7 @@ let package = Package(
                 .product(name: "ApelinToolExtension", package: "ApelinToolHost"),
             ],
         ),
-        .executableTarget(name: "apelin-disassembler", dependencies: ["DisassemblerTools"]),
+        .executableTarget(name: "luros-disassembler", dependencies: ["DisassemblerTools"]),
         .target(
             name: "AssemblerTools",
             dependencies: [
@@ -47,13 +47,13 @@ let package = Package(
                 .product(name: "ApelinToolExtension", package: "ApelinToolHost"),
             ],
         ),
-        .executableTarget(name: "apelin-assembler", dependencies: ["AssemblerTools"]),
+        .executableTarget(name: "luros-assembler", dependencies: ["AssemblerTools"]),
         .testTarget(
             name: "DisassemblerTests",
             dependencies: [
                 "MachOReader",
-                "apelin-disassembler",
-                "apelin-assembler",
+                "luros-disassembler",
+                "luros-assembler",
                 .product(name: "ApelinToolHost", package: "ApelinToolHost"),
             ],
         ),

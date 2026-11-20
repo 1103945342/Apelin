@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Build apelin-disassembler and apelin-assembler for iPhoneOS arm64 and
+# Build luros-disassembler and luros-assembler for iPhoneOS arm64 and
 # package each as a roothide and a rootless .deb, verified.
 #
 #   Scripts/build-agent-tools.sh [output-directory]
 #
 # Output defaults to build/Packages under this folder. SCRATCH_PATH (default
-# /private/tmp/apelin-agent-tools-spm) holds SwiftPM's build; spelled
+# /private/tmp/luros-agent-tools-spm) holds SwiftPM's build; spelled
 # /private/tmp, never /tmp, so prefix maps match what the compiler sees.
 # CONFIGURATION=Debug keeps symbols and source paths for a device test.
 
@@ -14,7 +14,7 @@ set -Eeuo pipefail
 extension_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 repository_root="$(cd -- "$extension_root/../../.." && pwd -P)"
 output_directory="${1:-$extension_root/build/Packages}"
-scratch_path="${SCRATCH_PATH:-/private/tmp/apelin-agent-tools-spm}"
+scratch_path="${SCRATCH_PATH:-/private/tmp/luros-agent-tools-spm}"
 configuration="${CONFIGURATION:-Release}"
 deployment_target=16.0
 
@@ -49,7 +49,7 @@ swift_args=(
     --sdk "$sdk"
     --triple "arm64-apple-ios$deployment_target"
 )
-for product in apelin-disassembler apelin-assembler; do
+for product in luros-disassembler luros-assembler; do
     swift build "${swift_args[@]}" --product "$product" "${prefix_maps[@]}"
 done
 
@@ -63,6 +63,6 @@ rm -f "$output_directory"/com.fluoxetine.luros.agent-tools.*_source.tar.xz
 for flavor in roothide rootless; do
     for tool in disassembler assembler; do
         CONFIGURATION="$configuration" CHECKOUTS="$scratch_path/checkouts" \
-            "$extension_root/Scripts/package-agent-tool.sh" "$tool" "$binaries/apelin-$tool" "$flavor" "$output_directory"
+            "$extension_root/Scripts/package-agent-tool.sh" "$tool" "$binaries/luros-$tool" "$flavor" "$output_directory"
     done
 done

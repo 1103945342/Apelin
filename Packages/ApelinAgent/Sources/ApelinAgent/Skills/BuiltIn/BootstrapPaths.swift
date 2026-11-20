@@ -1,6 +1,6 @@
 extension BuiltInSkills {
     static let bootstrapPaths = SkillDocument(
-        name: "apelin-bootstrap-paths",
+        name: "luros-bootstrap-paths",
         description: "How roothide and rootless spell paths, so a tweak, a script or a plist names a file the way the thing that opens it expects: jbroot vs /var/jb, /rootfs, @PREFIX@ and @ROOTFS@, @loader_path/.jbroot, which paths never change, and why a resolved jbroot path is never written down. Read before writing any path in code, a build script, a maintainer script or a note.",
         body: """
         # Bootstrap paths
@@ -129,7 +129,7 @@ extension BuiltInSkills {
         files: ["ApelinBootstrap.h": bootstrapHeader],
     )
 
-    /// A C/Objective-C helper the tweak and apelin-bootstrap-paths skills point at.
+    /// A C/Objective-C helper the tweak and luros-bootstrap-paths skills point at.
     /// Compiled by hand for roothide arm64e and rootless arm64 with the
     /// template's flags (clang -fobjc-arc -Werror=unguarded-availability-new
     /// -fvisibility=hidden) before shipping; a test holds that the skill still

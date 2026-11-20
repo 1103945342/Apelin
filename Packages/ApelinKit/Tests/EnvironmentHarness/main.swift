@@ -6,18 +6,18 @@ import CryptoKit
 import Darwin
 import Foundation
 
-// apelin-environment-harness: the real EnvironmentWorker with a fake
+// luros-environment-harness: the real EnvironmentWorker with a fake
 // toolchain backend, for the session host's end-to-end toolchain test
 // (Tests/SessionHost/main.swift ▸ Toolchain setup end to end, run by
 // `make harness`). Never shipped.
 //
-//   apelin-environment-harness worker
+//   luros-environment-harness worker
 //       Serves the environment role over descriptor 3, the way
 //       Workers/Environment does through WorkerMain — assignment, ready,
 //       requests, cancels — minus the drop to mobile, which a Mac user
 //       cannot make. Toolchain setup installs through the host's bridge
 //       (HostPackageInstaller over ChannelTransport), like the device.
-//   apelin-environment-harness unpack <deb> <root> [<prefix>]
+//   luros-environment-harness unpack <deb> <root> [<prefix>]
 //       What the fake irisind does with a package: every data member
 //       written under <root>, <prefix> (rootless's /var/jb) taken off;
 //       prints the paths it wrote, one per line.
@@ -35,7 +35,7 @@ case "unpack" where arguments.count >= 4:
         exit(1)
     }
 default:
-    fputs("usage: apelin-environment-harness worker | unpack <deb> <root> [<prefix>]\n", stderr)
+    fputs("usage: luros-environment-harness worker | unpack <deb> <root> [<prefix>]\n", stderr)
     exit(EX_USAGE)
 }
 
@@ -111,7 +111,7 @@ struct HarnessBackend: ToolchainBackend {
                 try manager.createDirectory(at: output.appendingPathComponent(folder), withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
             }
             let clang = output.appendingPathComponent("usr/bin/clang")
-            try Data("#!/bin/sh\necho apelin-ok\n".utf8).write(to: clang)
+            try Data("#!/bin/sh\necho luros-ok\n".utf8).write(to: clang)
             chmod(clang.path, 0o700)
             let header = output.appendingPathComponent("usr/lib/clang/27/include/stddef.h")
             try Data("typedef unsigned long size_t;\n".utf8).write(to: header)
@@ -145,7 +145,7 @@ struct HarnessBackend: ToolchainBackend {
         progress(ToolchainBackendProgress(stage: "validating"))
         let failing = FileManager.default.fileExists(atPath: (ProcessInfo.processInfo.environment["HOME"] ?? "") + "/Documents/com.fluoxetine.luros/Environment/harness-fail-self-test")
         let output = try run(destination.appendingPathComponent("usr/bin/clang"))
-        let passed = output.contains("apelin-ok")
+        let passed = output.contains("luros-ok")
         return ["C", "C++", "ObjC"].map { language in
             ToolchainSelfTestResult(language: language, architecture: "arm64", passed: passed && !(failing && language == "C"), detail: "ran \(destination.path)/usr/bin/clang against \(sdk.path)")
         }

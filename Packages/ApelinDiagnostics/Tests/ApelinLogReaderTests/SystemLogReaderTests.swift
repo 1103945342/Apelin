@@ -42,7 +42,7 @@ final class SystemLogReaderTests: XCTestCase {
     /// listens. diagnosticd may refuse an unentitled reader — then it answers
     /// nothing, and the test says so rather than failing.
     func testAReadIsBoundedAndSeesOwnLine() throws {
-        let marker = "apelin-log-reader-test-\(UUID().uuidString)"
+        let marker = "luros-log-reader-test-\(UUID().uuidString)"
         let logger = Logger(subsystem: "com.fluoxetine.luros.tests", category: "reader")
         let started = Date()
         let emitter = DispatchWorkItem {
@@ -77,7 +77,7 @@ final class SystemLogReaderTests: XCTestCase {
     /// it all arrive, in order, with no seam where a chunked read would have
     /// dropped some. Skipped when diagnosticd delivers nothing here.
     func testAListenIsOneStreamForItsWholeWindow() throws {
-        let marker = "apelin-log-listen-test-\(UUID().uuidString)"
+        let marker = "luros-log-listen-test-\(UUID().uuidString)"
         let logger = Logger(subsystem: "com.fluoxetine.luros.tests", category: "listen")
         let received = Received()
         let listener = try SystemLogReader().listen(

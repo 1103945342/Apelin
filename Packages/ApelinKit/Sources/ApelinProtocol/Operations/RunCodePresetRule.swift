@@ -4,7 +4,7 @@ import Foundation
 /// The words-only half of the rule that decides which `shell_run` calls
 /// Confirm runs as presets, shared by both sides: the agent (ApelinAgent's
 /// `CommandPreset`) reads it to decide whether to send a call as a preset,
-/// and the session host (Apelind's `AgentRunCode.preset`) to decide whether
+/// and the session host (Lurosd's `AgentRunCode.preset`) to decide whether
 /// to run one. What only the host can do stays there: resolving each path
 /// argument with realpath against the project, and reading a repository's
 /// config with git.

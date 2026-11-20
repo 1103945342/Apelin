@@ -297,7 +297,7 @@ struct ScreenUseConsentTests {
         #expect(AgentToolName.screenReadTree.summary.contains(consent + " read and why, and call this only after they reply with explicit consent; a request to do a task is not consent. Luros's approval card then asks as well."))
         #expect(AgentToolName.screenInteract.summary.contains(consent + " do on the screen and why, and call this only after they reply with explicit consent; a request to do a task is not consent. Luros's approval card then asks as well."))
 
-        let icli = try Self.words(#require(BuiltInSkills.all.first { $0.name == "apelin-icli" }).body)
+        let icli = try Self.words(#require(BuiltInSkills.all.first { $0.name == "luros-icli" }).body)
         #expect(icli.contains("## Asking before using the screen While `<system-state>` says Ask Before Using the Screen is on, every icli command asks the user on Luros's card, in every mode, whatever it does, and the session host runs none without that approval."))
         #expect(icli.contains("say in the conversation what it will open, read or do and why, and wait for the user's explicit consent in their reply. A request to do a task, such as filing an issue or testing on the device, is not consent."))
 

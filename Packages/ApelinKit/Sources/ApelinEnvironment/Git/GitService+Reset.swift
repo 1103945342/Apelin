@@ -176,7 +176,7 @@ public extension GitService {
         return (settled, excluded, file)
     }
 
-    private static let iconFileName = "apelin-icon.png"
+    private static let iconFileName = "luros-icon.png"
 
     /// A full commit ID, SHA-1 or SHA-256, in lowercase hex.
     private static func isCommitID(_ id: String) -> Bool {

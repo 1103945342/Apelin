@@ -36,7 +36,7 @@ enum TerminalSessionStoreCheck {
     static func run() -> Int {
         failures = 0
         let base = FileManager.default.temporaryDirectory
-            .appendingPathComponent("apelin-terminal-store-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("luros-terminal-store-\(UUID().uuidString)", isDirectory: true)
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: base) }
 

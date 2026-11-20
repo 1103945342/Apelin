@@ -5,23 +5,23 @@ standalone Swift package. iOS 16 and macOS 13; everything but the IcliKit
 link builds and tests on a Mac:
 
 ```sh
-swift test --scratch-path /private/tmp/apelin-spm-w7
+swift test --scratch-path /private/tmp/luros-spm-w7
 ```
 
 ## Products
 
 | Product | Runs in | Links | What it does |
 | --- | --- | --- | --- |
-| `ApelinDiagnostics` | `apelin-diagnostics` (mobile) | `IcliKit` 1.0.0, iOS only | Logs, crash report list and read, screenshot, UI tree, UI actions, foreground app, running apps, respring fallback — every one through icli |
-| `ApelinLogReader` | `apelin-log-reader` (root) | system libraries only | The live unified log through a fixed `LogFilter`: one bounded read, or one stream kept open for a whole window (`listen`) |
+| `ApelinDiagnostics` | `luros-diagnostics` (mobile) | `IcliKit` 1.0.0, iOS only | Logs, crash report list and read, screenshot, UI tree, UI actions, foreground app, running apps, respring fallback — every one through icli |
+| `ApelinLogReader` | `luros-log-reader` (root) | system libraries only | The live unified log through a fixed `LogFilter`: one bounded read, or one stream kept open for a whole window (`listen`) |
 | `ApelinCrash` | mobile | Foundation | Xrash's report decoder, symbolicator and blame; dSYM matched by image UUID; package owners through a protocol |
 | `ConfirmLoaded` | mobile or host | system calls only | Marker log line and static filter match, each answered apart; never the image list |
 
 Two more products are the workers themselves, so `make harness` tests what
-runs: `ApelinDiagnosticsWorker` (apelin-diagnostics: `crashList`,
+runs: `ApelinDiagnosticsWorker` (luros-diagnostics: `crashList`,
 `crashSymbolicate`, `confirmLoaded` as a task, `captureScreen`,
 `readUITree`, `uiAction` and, through the shared pump, `logStream`) and
-`ApelinLogReaderWorker` (apelin-log-reader: `logStream` over
+`ApelinLogReaderWorker` (luros-log-reader: `logStream` over
 `SystemLogReader`; system code only, checked by
 `Scripts/check-system-only.py`). Both depend on `../ApelinKit` for the wire.
 
@@ -78,12 +78,12 @@ header on each file). Changes:
 
 Nothing here reads another process's image list. On the iOS 27.0.1 vphone
 (roothide, 2026-10-17), reading SpringBoard's image list from
-apelin-diagnostics panicked the kernel ("VM entry … lock is invalid",
-`vm_entry_lock.c:168`, panicked task apelin-diagnostics): twice while
+luros-diagnostics panicked the kernel ("VM entry … lock is invalid",
+`vm_entry_lock.c:168`, panicked task luros-diagnostics): twice while
 Inspector's dyld `all_image_infos` read through `task_read_for_pid` and
 `mach_vm_read_overwrite` was still in place, then once more through the
 kernel's region paths (`proc_pidinfo PROC_PIDREGIONPATHINFO`) alone. Both
-readers, ported from Inspector, are removed, and apelin-diagnostics no
+readers, ported from Inspector, are removed, and luros-diagnostics no
 longer carries `com.apple.system-task-ports.read`. A `confirmLoaded` that
 still sends `imageCheck` is refused with `badRequest` before a task exists.
 
@@ -99,7 +99,7 @@ MobileLoader's reading: `Bundles`, `Executables`, `Classes`, `Mode = Any`,
 `CoreFoundationVersion` as `[min, max)`; a framework bundle id or a class
 is `undetermined` statically.
 
-In apelin-diagnostics, `confirmLoaded` is a task the session host owns: the
+In luros-diagnostics, `confirmLoaded` is a task the session host owns: the
 worker checks the request (a bad one is the reply), accepts, runs the check
 on its own thread, emits each `stage`, asks the host for the respring when
 the request says `trigger: respring`, and ends the task with `state`
@@ -140,7 +140,7 @@ as stated.
 | Foreground app | `frontmostApp` | mobile or root | `com.apple.private.security.no-sandbox` | Verified by icli on the iOS 26.4 roothide vphone (mobile and root); without it `source` is `unavailable` |
 | Lock state | `lockState` | any | none | Verified by icli on iOS 26.4 |
 | Running apps | `runningApps` | mobile | `no-sandbox` (RunningBoard); `com.apple.private.coreservices.canmaplsdatabase`, `.lsaw` for app metadata | Unverified separately |
-| Respring fallback | `respring` | root for the launchd half | FrontBoard relaunch: `com.apple.frontboard.shutdown` (with the `launchapplications` keys); launchd stop: `com.apple.private.xpc.service-configure`, and launchd's own caller checks | Unverified in Luros; icli acceptance `springboard_restart` passes. The normal respring is apelind's closed operation |
+| Respring fallback | `respring` | root for the launchd half | FrontBoard relaunch: `com.apple.frontboard.shutdown` (with the `launchapplications` keys); launchd stop: `com.apple.private.xpc.service-configure`, and launchd's own caller checks | Unverified in Luros; icli acceptance `springboard_restart` passes. The normal respring is lurosd's closed operation |
 | Root log read | `SystemLogReader` | root | diagnosticd may still want `com.apple.private.logging.stream` / `com.apple.diagnosticd.stream` from root | Unverified on iOS. On macOS 27 an unentitled user process receives its own lines (test passes) |
 | Filter match, symbolication, blame | pure | any | none — reads the project's own dSYMs | Verified by tests |
 

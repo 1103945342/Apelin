@@ -3,9 +3,9 @@ import Foundation
 
 /// Everything the agent asks of the session host.
 ///
-/// `apelin-agent` runs as mobile and holds no privilege of its own: every
+/// `luros-agent` runs as mobile and holds no privilege of its own: every
 /// system capability in §7's table is one method here, with a typed request
-/// and a typed response, carried to `apelind-session` over the inherited
+/// and a typed response, carried to `lurosd-session` over the inherited
 /// internal channel. Nothing here is `exec(path, argv)` — `runCode` carries a
 /// classified invocation the host re-checks, not a command line it trusts.
 ///

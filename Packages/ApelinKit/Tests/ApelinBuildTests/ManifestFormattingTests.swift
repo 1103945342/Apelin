@@ -8,7 +8,7 @@ import XCTest
 /// formatting them would fail the package's check and move its digest.
 final class ManifestFormattingTests: XCTestCase {
     func testAManifestThePackageCarriesIsLeftAsItIs() throws {
-        let root = FileManager.default.temporaryDirectory.appendingPathComponent("apelin-manifest-\(UUID().uuidString)")
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("luros-manifest-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
         let manifest = root.appendingPathComponent(ProjectStore.projectFileName)

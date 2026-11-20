@@ -36,7 +36,7 @@ import Foundation
         // while the catalogue has it as a key, word for word.
         let catalogue = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("Apelin/Resources/Localizable.xcstrings")
+            .appendingPathComponent("Luros/Resources/Localizable.xcstrings")
         let strings = (try? JSONSerialization.jsonObject(with: Data(contentsOf: catalogue)) as? [String: Any])?["strings"] as? [String: Any]
         precondition(strings?[HostSigning.bootstrapRefusal] != nil, "The catalogue keys roothide Bootstrap's refusal")
         precondition(WelcomeEnvironmentRecommendation.resolve(catalog: [swift], status: .init(), sdks: .init(sources: [.init(name: "Old", url: "https://example.com", enabled: true, branches: ["sdk/iPhoneOS18.5"])])) == nil, "Swift requires matching SDK major")
@@ -72,7 +72,7 @@ import Foundation
         print("ok: onboarding pairing and project naming behavior")
 
         // Distribute… and the distribution page's targets need a build
-        // description apelin-build can package, or a workspace's own script.
+        // description luros-build can package, or a workspace's own script.
         let build: JSONValue = .object(["steps": .array([.object(["type": .string("compile")])])])
         let tweak: JSONValue = .object(["projectID": .string("p"), "kind": .string("tweak"), "build": build])
         precondition(ProjectBuildMethod(manifest: tweak) == .description, "A template project has one")
@@ -96,7 +96,7 @@ import Foundation
         ])) == .missingScript, "A workspace is built by its own tools, whatever it holds")
         precondition(ProjectBuildMethod(manifest: .object([
             "kind": .string("tweak"), "buildSystem": .string("external"), "build": build,
-        ])) == .missingScript, "An external build system is not apelin-build's")
+        ])) == .missingScript, "An external build system is not luros-build's")
         precondition(ProjectBuildMethod(manifest: .object([
             "kind": .string("workspace"), "external": .object(["script": .string("")]),
         ])) == .missingScript, "An empty script names nothing")

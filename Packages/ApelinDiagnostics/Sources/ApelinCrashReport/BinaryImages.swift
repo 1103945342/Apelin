@@ -2,7 +2,7 @@
 // Copyright (c) 2026 OwnGoal Studio. MIT License: see LICENSE beside this folder's sources.
 
 /// The one lookup every decoder and renderer needs, written once so the bounds
-/// check cannot be forgotten in the next one. Public because apelin-diagnostics
+/// check cannot be forgotten in the next one. Public because luros-diagnostics
 /// names a crashed frame's image with `image(for:)`.
 public extension [BinaryImage] {
     /// The image a frame names — nil when it names none, or names one the

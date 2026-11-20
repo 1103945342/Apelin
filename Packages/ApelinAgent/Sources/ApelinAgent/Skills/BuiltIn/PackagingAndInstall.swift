@@ -1,6 +1,6 @@
 extension BuiltInSkills {
     static let packagingAndInstall = SkillDocument(
-        name: "apelin-packaging-and-install",
+        name: "luros-packaging-and-install",
         description: "From a successful build to a confirmed load: the package artifact, the package and bundle identifiers to settle before the first install and how to change one after it, install through the system installer and what to do when another package is in its way, maintainer scripts, respring, apelin_package_confirm_loaded, and removal.",
         body: """
         # Packaging and install
@@ -10,7 +10,7 @@ extension BuiltInSkills {
         result lists artifacts with an `id`, a `kind` and a `digest`.
         An `ipa` project writes an `.ipa` in the same place instead, and
         installs and removes as an app rather than through the package
-        manager: the apelin-ipa-development skill has that loop.
+        manager: the luros-ipa-development skill has that loop.
 
         ## Where the package goes
         - The `.deb` stays in Luros's folder for that build, outside the
@@ -18,13 +18,13 @@ extension BuiltInSkills {
           package: never repack, rename or copy it into the project, and
           never make one yourself with `dpkg-deb -b`, `ar` or `tar`, to test
           or to hand over. A workspace's declared build script is the one
-          place a package is put together (apelin-external-build).
+          place a package is put together (luros-external-build).
         - A user who wants the package file takes it from Distribute… in the
           project chat's More (…) menu: it runs a release build for the
           bootstrap they choose, then exports that package. Release builds
           you already made go to the user's package repository with
           `apelin_package_publish`, as they are, when the user asks for it
-          (apelin-package-repository).
+          (luros-package-repository).
 
         ## Package identity
         - A new project's `package.id` in luros-project.json, and an app's
@@ -74,7 +74,7 @@ extension BuiltInSkills {
           `apelin_package_list` finds it again later.
         - Installation goes through Irisin's installer. There is no `dpkg` or
           `apt` for you to call, and `shell_run` must not try; the
-          apelin-package-dependencies skill covers what installs a dependency.
+          luros-package-dependencies skill covers what installs a dependency.
 
         ## When another package is in the way
         The installer resolves nothing: it never removes a package to make
@@ -102,7 +102,7 @@ extension BuiltInSkills {
         file named in `package.maintainerScripts`. They run as **root**, in
         the bootstrap, and the install card shows each in full:
         - Spell paths `@PREFIX@/…` (bootstrap) and `@ROOTFS@/…` (system), the
-          only tokens substituted, as the apelin-bootstrap-paths skill says; `sh -n`
+          only tokens substituted, as the luros-bootstrap-paths skill says; `sh -n`
           must pass.
         - Start with `set -e`. A path a script removes, moves or overwrites
           is written out in full (`@PREFIX@/Library/…`); one that has a
@@ -120,7 +120,7 @@ extension BuiltInSkills {
           the parents root-owned): make each level with `mkdir -m 0755` and
           `chown -h 501:501`, skipping a level that exists and never following
           a symlink.
-        - A link you ship or create is relative (apelin-bootstrap-paths).
+        - A link you ship or create is relative (luros-bootstrap-paths).
 
         ## Respring and confirm
         - A tweak loaded into SpringBoard needs `apelin_device_respring`; one

@@ -6,9 +6,9 @@ enum EmbeddedSchemas {
     static let project = #"""
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://1103945342.github.io/Apelin/schemas/apelin-project-1.json",
+  "$id": "https://1103945342.github.io/Luros/schemas/luros-project-1.json",
   "title": "Luros project description, version 1",
-  "description": "luros-project.json at the root of ~/Documents/com.fluoxetine.luros/Projects/<name>/. The one build entry the UI, the agent and apelin-build all read. Documents/Schemas/README.md is the prose specification; it also fixes which members form the build and packaging descriptions whose digests drive Confirm-mode approval.",
+  "description": "luros-project.json at the root of ~/Documents/com.fluoxetine.luros/Projects/<name>/. The one build entry the UI, the agent and luros-build all read. Documents/Schemas/README.md is the prose specification; it also fixes which members form the build and packaging descriptions whose digests drive Confirm-mode approval.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -767,7 +767,7 @@ enum EmbeddedSchemas {
     static let manifest = #"""
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://1103945342.github.io/Apelin/schemas/extension-manifest-1.json",
+  "$id": "https://1103945342.github.io/Luros/schemas/extension-manifest-1.json",
   "title": "Luros development extension manifest, version 1",
   "description": "<install-root>/usr/share/luros/development/<id>/manifest.json. Read, never executed: nothing here names a program the app or host runs. Each manifest is validated on its own; a bad one isolates that extension only. Documents/Schemas/README.md is the prose specification.",
   "type": "object",

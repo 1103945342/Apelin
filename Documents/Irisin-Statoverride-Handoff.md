@@ -102,7 +102,7 @@ Luros installation ID：`80cc46ea-15a6-454d-982d-f15f7473939b`
 原始文件备份保存在设备：
 
 ```text
-/Library/dpkg/statoverride.apelin-backup-20261028-212633
+/Library/dpkg/statoverride.luros-backup-20261028-212633
 ```
 
 执行前核对了账号 ID 和两个文件的实际权限，并取得 dpkg 的 `lock-frontend`、`lock` 文件锁；替换前再次核对原始内容。备份及替换保留原文件所有权和权限。

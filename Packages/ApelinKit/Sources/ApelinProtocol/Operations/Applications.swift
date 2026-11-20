@@ -3,7 +3,7 @@ import Foundation
 
 // Apps: what the bootstrap's `Applications` folder holds and what
 // LaunchServices registers, listed for Settings ▸ Apps and removed from
-// there. Served by the session host (Apelind/Dispatch/InstallHandler.swift,
+// there. Served by the session host (Lurosd/Dispatch/InstallHandler.swift,
 // Session/Install/ApplicationCensus.swift).
 //
 // Only apps under `<install root>/Applications` are the subject: an app the

@@ -126,7 +126,7 @@ struct ProjectTree {
         }
         // What the project metadata writer and the file tools write beside a
         // file they replace, for a moment.
-        if name.hasPrefix(".apelin-metadata-") || (name.hasPrefix(".") && name.contains(".apelin-")) {
+        if name.hasPrefix(".luros-metadata-") || (name.hasPrefix(".") && name.contains(".luros-")) {
             return true
         }
         return atTop && name == "Builds"

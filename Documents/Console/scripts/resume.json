@@ -3,7 +3,7 @@
   "steps": [
     {"op": "hello", "label": "hello"},
     {"op": "ptyOpen", "label": "pty", "follow": true, "timeoutSeconds": 120,
-     "request": {"initialInput": "sleep 20; echo apelin-resume-$((6*7)); exit 0\n"}},
+     "request": {"initialInput": "sleep 20; echo luros-resume-$((6*7)); exit 0\n"}},
     {"op": "expect", "request": {"step": "pty", "state": "succeeded"}},
     {"op": "expect", "request": {"step": "pty", "path": "events.0.kind", "equals": "started"}},
     {"op": "respring", "label": "respring"},

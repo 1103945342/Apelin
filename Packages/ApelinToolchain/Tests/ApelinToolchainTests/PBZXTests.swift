@@ -38,7 +38,7 @@ struct PBZXTests {
     }
 
     private func decode(_ pbzx: Data, window: Int, count: Int) throws -> Data {
-        let file = URL(fileURLWithPath: "/private/tmp/apelin-pbzx-" + UUID().uuidString)
+        let file = URL(fileURLWithPath: "/private/tmp/luros-pbzx-" + UUID().uuidString)
         try pbzx.write(to: file); defer { try? FileManager.default.removeItem(at: file) }
         let reader = try BinaryReader(file)
         let stream = try PBZXReader(reader: reader, end: UInt64(pbzx.count), window: window)

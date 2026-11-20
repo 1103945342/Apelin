@@ -1,6 +1,6 @@
 import Foundation
 
-// A stop the session's worker does not take (Apelind/Session/Patience.swift,
+// A stop the session's worker does not take (Lurosd/Session/Patience.swift,
 // used by AgentHandler.abort): the host waits so long for the worker's
 // answer and no longer, whether or not one ever comes. A conversation whose
 // worker never answered could be neither stopped nor continued (#59).

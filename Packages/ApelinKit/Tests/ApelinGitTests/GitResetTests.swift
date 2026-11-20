@@ -12,7 +12,7 @@ final class GitResetTests: XCTestCase {
 
     private func scratch() -> URL {
         let base = URL(fileURLWithPath: CanonicalPath.resolve(NSTemporaryDirectory())!, isDirectory: true)
-        let url = base.appendingPathComponent("apelin-reset-\(UUID().uuidString)", isDirectory: true)
+        let url = base.appendingPathComponent("luros-reset-\(UUID().uuidString)", isDirectory: true)
         addTeardownBlock { try? FileManager.default.removeItem(at: url) }
         return url
     }
@@ -93,7 +93,7 @@ final class GitResetTests: XCTestCase {
         XCTAssertEqual(result.commit, theirs)
         XCTAssertEqual(result.previousHead, mine)
         let backup = try XCTUnwrap(result.backupBranch)
-        XCTAssertTrue(backup.hasPrefix("apelin-backup/"), backup)
+        XCTAssertTrue(backup.hasPrefix("luros-backup/"), backup)
 
         // The project is exactly the remote's.
         XCTAssertEqual(project.head(), GitHead(branch: "main", commit: theirs))
@@ -140,7 +140,7 @@ final class GitResetTests: XCTestCase {
             toRemote: "origin", branch: "main", expectedRemoteCommit: plan.remoteCommit, expectedHead: mine,
             backupAuthor: author, now: stamp,
         )
-        XCTAssertEqual(result.backupBranch, "apelin-backup/" + Self.formatted(stamp))
+        XCTAssertEqual(result.backupBranch, "luros-backup/" + Self.formatted(stamp))
         let saved = try branches(of: project, in: base).1[XCTUnwrap(result.backupBranch)]
         XCTAssertEqual(saved, mine, "nothing uncommitted: the backup is the old HEAD itself")
         XCTAssertEqual(read("README", in: project.workdir), "theirs, later\n")
@@ -152,7 +152,7 @@ final class GitResetTests: XCTestCase {
             toRemote: "origin", branch: "main", expectedRemoteCommit: plan.remoteCommit, expectedHead: plan.remoteCommit,
             backupAuthor: author, now: stamp,
         )
-        XCTAssertEqual(again.backupBranch, "apelin-backup/" + Self.formatted(stamp) + "-2")
+        XCTAssertEqual(again.backupBranch, "luros-backup/" + Self.formatted(stamp) + "-2")
     }
 
     func testAMovedRemoteOrHEADChangesNothing() throws {
@@ -179,7 +179,7 @@ final class GitResetTests: XCTestCase {
         )) { XCTAssertEqual(($0 as? GitError)?.kind, .conflict) }
         XCTAssertEqual(project.head().commit, mine)
         XCTAssertEqual(read("Mine.m", in: project.workdir), "// unsaved\n", "nothing changed")
-        XCTAssertEqual(try branches(of: project, in: base).1.keys.filter { $0.hasPrefix("apelin-backup/") }, [], "and nothing was saved")
+        XCTAssertEqual(try branches(of: project, in: base).1.keys.filter { $0.hasPrefix("luros-backup/") }, [], "and nothing was saved")
     }
 
     func testAnotherBranchCheckedOutStaysAndAnUntouchedRepositoryNeedsNoBackup() throws {

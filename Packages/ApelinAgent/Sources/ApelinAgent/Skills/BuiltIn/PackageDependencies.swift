@@ -1,6 +1,6 @@
 extension BuiltInSkills {
     static let packageDependencies = SkillDocument(
-        name: "apelin-package-dependencies",
+        name: "luros-package-dependencies",
         description: "Getting a package installed: your project's own build goes through apelin_package_install; a dependency from the user's repositories goes through shell_run as root with irisin-cli, with the user's approval. Diagnosing a refused install or upgrade with irisin-cli's questions and dry runs, as root. Why apt and dpkg are never the way.",
         body: """
         # Installing packages
@@ -13,14 +13,14 @@ extension BuiltInSkills {
         ## Your project's build → apelin_package_install
         A package you built installs with `apelin_package_install` (the package artifact's id
         and digest), then `apelin_package_confirm_loaded` and `apelin_package_remove`, as the
-        apelin-packaging-and-install skill says. That path keeps the approval, the
+        luros-packaging-and-install skill says. That path keeps the approval, the
         load check and the removal handle working; nothing else does. Never
         build or place a `.deb` yourself, and never install it with irisin-cli.
 
         ## A dependency from a repository → irisin-cli as root
         A project may depend on a package from a repository the user has (an
         injection framework, a library, a tool). Declare it in
-        `package.depends` (apelin-project-description), then install it with
+        `package.depends` (luros-project-description), then install it with
         shell_run and `root: true`:
         `{"argv": ["irisin-cli", "install", "--yes", "<package id>"], "root": true}`.
         `irisin-cli` installs only as root (as mobile it exits 77), and

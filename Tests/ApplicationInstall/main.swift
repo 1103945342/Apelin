@@ -147,7 +147,7 @@ func check() throws {
         // What a host that stopped mid-install left: the next install of the
         // same app takes it away.
         try fm.createDirectory(
-            at: apps.appendingPathComponent("Swap.app.apelin-outgoing-1234"),
+            at: apps.appendingPathComponent("Swap.app.luros-outgoing-1234"),
             withIntermediateDirectories: true
         )
         ApplicationInstall.removeLeftovers(beside: destination)

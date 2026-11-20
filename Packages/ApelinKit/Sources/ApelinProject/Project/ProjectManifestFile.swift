@@ -71,7 +71,7 @@ final class ProjectManifestFile {
     /// replaced or edited since it was read.
     func replace(with data: Data, ownerRequired: Bool) throws -> Bool {
         let mode = identity.st_mode & 0o777
-        let temporary = ".apelin-metadata-" + UUID().uuidString
+        let temporary = ".luros-metadata-" + UUID().uuidString
         let output = openat(directory, temporary, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, mode)
         guard output >= 0 else { throw Self.lastError() }
         defer { close(output); unlinkat(directory, temporary, 0) }

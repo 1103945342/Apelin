@@ -51,7 +51,7 @@ public extension GitRepository {
     /// holds written back, each file it does not hold removed, folders that
     /// are left empty removed with them. Ignored files stay. What the work
     /// tree held first is committed on a new branch
-    /// `apelin-backup/checkpoint-<time>`, before anything changes.
+    /// `luros-backup/checkpoint-<time>`, before anything changes.
     func restoreCheckpoint(at reference: String, author: GitSignature, now: Date = Date()) throws -> GitCheckpointRestore {
         var targetID = git_oid()
         let found = git_reference_name_to_id(&targetID, pointer, reference)
@@ -292,7 +292,7 @@ public extension GitRepository {
             }
             return
         }
-        let temporary = url.deletingLastPathComponent().appendingPathComponent(".apelin-checkpoint-" + UUID().uuidString)
+        let temporary = url.deletingLastPathComponent().appendingPathComponent(".luros-checkpoint-" + UUID().uuidString)
         let permissions = file.mode == 0o100755 ? 0o755 : 0o644
         guard FileManager.default.createFile(atPath: temporary.path, contents: data, attributes: [.posixPermissions: permissions]) else {
             throw GitError(.failed, "could not write \(path)")
@@ -330,13 +330,13 @@ public extension GitRepository {
         !path.split(separator: "/").contains { $0.lowercased() == ".git" }
     }
 
-    /// `refs/heads/apelin-backup/checkpoint-<yyyyMMdd-HHmmss>` at `commit`,
+    /// `refs/heads/luros-backup/checkpoint-<yyyyMMdd-HHmmss>` at `commit`,
     /// a number after it when that is taken.
     private func makeCheckpointBackupBranch(_ commit: String, now: Date) throws -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyyMMdd-HHmmss"
-        let stamp = "apelin-backup/checkpoint-" + formatter.string(from: now)
+        let stamp = "luros-backup/checkpoint-" + formatter.string(from: now)
         var oid = git_oid()
         try GitError.check(git_oid_fromstr(&oid, commit), "read the backup")
         for attempt in 1 ... 100 {

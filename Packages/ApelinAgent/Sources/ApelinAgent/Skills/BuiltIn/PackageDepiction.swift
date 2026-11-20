@@ -1,6 +1,6 @@
 extension BuiltInSkills {
     static let packageDepiction = SkillDocument(
-        name: "apelin-package-depiction",
+        name: "luros-package-depiction",
         description: "Giving a package its page in a package manager, changelog tab included: the Depiction and SileoDepiction control fields from package.depiction and package.sileoDepiction, how to write the native depiction JSON Sileo and Irisin draw, and where to host it.",
         body: """
         # A package's depiction
@@ -38,7 +38,7 @@ extension BuiltInSkills {
 
         ## Where the files live
         Any https host does. The user's package repository (the
-        apelin-package-repository skill) is made for it: `depictions/<package
+        luros-package-repository skill) is made for it: `depictions/<package
         id>/` holds `index.html` (for `Depiction`), `depiction.json` (for
         `SileoDepiction`), `icon.png` and `banner.png`, and Pages serves them
         at `<source>/depictions/<package id>/…`.
@@ -51,7 +51,7 @@ extension BuiltInSkills {
         ## The native depiction
         This skill's file `depiction.json` is a page to start from, with a
         Details tab and a Changelog tab: read it with apelin_skill_read
-        `{"name": "apelin-package-depiction", "file": "depiction.json"}`.
+        `{"name": "luros-package-depiction", "file": "depiction.json"}`.
         Its shape:
 
         - The root: `{"class": "DepictionTabView", "minVersion": "0.4",

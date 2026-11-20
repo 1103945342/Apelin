@@ -44,7 +44,7 @@
         { "path": "Sources/main.c", "format": "c" },
         { "path": "Packaging/Tool.entitlements", "format": "plist-xml" }
       ],
-      "digest": "sha256:936d0d3712c2a4d27a6f870cca0c6a3c222a2e425d9574bc1eb40ad4fe7edd52"
+      "digest": "sha256:e3fd3fddc2e76ac98f3c86d96dfc10071a47201e976f006106085f5bbb161d5b"
     },
     {
       "id": "objc",
@@ -65,7 +65,7 @@
         { "path": "Sources/main.m", "format": "objc" },
         { "path": "Packaging/Tool.entitlements", "format": "plist-xml" }
       ],
-      "digest": "sha256:c2352e9be058ae15afefd0f2267b54a26d7e9ef133e6f2f82930b7ba9681f9cd"
+      "digest": "sha256:26ce57765a64e4b3d587aa7fc0768be3224180df7627adc9944512f60f0d2f90"
     }
   ],
   "provenance": [

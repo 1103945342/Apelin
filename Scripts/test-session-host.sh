@@ -1,18 +1,18 @@
 #!/bin/bash
 # The session host's macOS-runnable tests (Tests/SessionHost/main.swift),
-# compiled with the Apelind sources they exercise against the ApelinCore and
+# compiled with the Lurosd sources they exercise against the ApelinCore and
 # ApelinProtocol that `swift build` left in <modules>. Run by `make harness`.
 #
-# usage: test-session-host.sh <modules-dir> [<apelin-environment-harness>]
+# usage: test-session-host.sh <modules-dir> [<luros-environment-harness>]
 #        test-session-host.sh --device [<tool.entitlements>]
 #
 # With the second argument (built by `swift build --product
-# apelin-environment-harness` in the same scratch path), the toolchain setup
+# luros-environment-harness` in the same scratch path), the toolchain setup
 # runs end to end: the real environment worker in its own process against
 # this host's install bridge and a fake irisind.
 #
 # `--device` runs the half that needs no xcrun and no macOS: the report outbox
-# (Apelind/Session/Agent/AgentReportOutbox.swift) against the two protocol
+# (Lurosd/Session/Agent/AgentReportOutbox.swift) against the two protocol
 # files it reads, on the device's own toolchain.
 set -euo pipefail
 
@@ -74,7 +74,7 @@ func check(_ condition: @autoclosure () -> Bool, _ what: String, line: UInt = #l
 }
 
 let scratch = FileManager.default.temporaryDirectory
-    .appendingPathComponent("apelin-report-\(UUID().uuidString)")
+    .appendingPathComponent("luros-report-\(UUID().uuidString)")
 try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
 await agentReportChecks(scratch: scratch)
 try? FileManager.default.removeItem(at: scratch)
@@ -83,7 +83,7 @@ exit(failures == 0 ? 0 : 1)
 SWIFT
 
     swiftc -swift-version 5 -target arm64-apple-ios16.0 -I "$work" \
-        Apelind/Session/Agent/AgentReportOutbox.swift \
+        Lurosd/Session/Agent/AgentReportOutbox.swift \
         Tests/SessionHost/AgentReportChecks.swift \
         "$work/main.swift" \
         "$work/ApelinCore.o" "$work/ApelinProtocol.o" \
@@ -95,61 +95,61 @@ fi
 
 modules="$1"
 harness="${2:-}"
-work="$(mktemp -d /private/tmp/apelin-session-host.XXXXXX)"
+work="$(mktemp -d /private/tmp/luros-session-host.XXXXXX)"
 trap 'rm -rf -- "${work:?}"' EXIT
 
 sources=(
-    "$root/Apelind/System.swift"
-    "$root/Apelind/Spawn.swift"
-    "$root/Apelind/Session/CallerPolicy.swift"
-    "$root/Apelind/Session/TaskRegistry.swift"
-    "$root/Apelind/Session/TaskResume.swift"
-    "$root/Apelind/Session/Approval/ApprovalLedger.swift"
-    "$root/Apelind/Session/Install/ArtifactRegistry.swift"
-    "$root/Apelind/Session/Install/DebControlPeek.swift"
-    "$root/Apelind/Session/Install/InstallBridge.swift"
-    "$root/Apelind/Session/Install/InstallConflicts.swift"
-    "$root/Apelind/Session/Install/AppBundle.swift"
-    "$root/Apelind/Session/Install/AppPlacement.swift"
-    "$root/Apelind/Session/Install/ApplicationInstall.swift"
-    "$root/Apelind/Session/Install/ApplicationCensus.swift"
-    "$root/Apelind/Session/Install/ZipExtractor.swift"
-    "$root/Apelind/Session/Install/InstallService.swift"
-    "$root/Apelind/Session/Install/InstallationStore.swift"
-    "$root/Apelind/Session/Install/ManagedPackagePolicy.swift"
-    "$root/Apelind/Session/Install/ToolchainTreePruner.swift"
-    "$root/Apelind/Session/Files/AtomicReplace.swift"
-    "$root/Apelind/Session/Files/FileScopes.swift"
-    "$root/Apelind/Session/Files/ProtectedEditPolicy.swift"
-    "$root/Apelind/Session/Files/ProtectedEditor.swift"
-    "$root/Apelind/Session/Terminal/TerminalSession.swift"
-    "$root/Apelind/Session/Terminal/TerminalHost.swift"
-    "$root/Apelind/Session/ToolHost/AttachmentCopies.swift"
-    "$root/Apelind/Session/Agent/AgentProjects.swift"
-    "$root/Apelind/Session/Agent/AgentRunCode.swift"
-    "$root/Apelind/Session/Agent/AgentRunCodePresets.swift"
-    "$root/Apelind/Session/Agent/AgentApprovals.swift"
-    "$root/Apelind/Session/Agent/AgentOpenTurns.swift"
-    "$root/Apelind/Session/Agent/AgentHostRun.swift"
-    "$root/Apelind/Session/Agent/AgentConversationRules.swift"
-    "$root/Apelind/Session/Agent/AgentReportOutbox.swift"
-    "$root/Apelind/Session/Agent/AgentConversationList.swift"
-    "$root/Apelind/Session/Agent/AgentEnvironmentRules.swift"
-    "$root/Apelind/Session/Agent/AgentExternalBuildRules.swift"
-    "$root/Apelind/Session/Agent/AgentProjectRenameRules.swift"
-    "$root/Apelind/Session/Agent/AgentProjectDeleteRules.swift"
-    "$root/Apelind/Session/Agent/AgentUIActionRules.swift"
-    "$root/Apelind/Session/Agent/AgentScreenRules.swift"
-    "$root/Apelind/Session/Agent/AgentFeedbackRules.swift"
-    "$root/Apelind/Session/Agent/AgentRepositoryCreateRules.swift"
-    "$root/Apelind/Session/Agent/AgentIssueCreateRules.swift"
-    "$root/Apelind/Session/Agent/AgentForcePushRules.swift"
-    "$root/Apelind/Session/Agent/AgentSquashRules.swift"
-    "$root/Apelind/Session/Agent/AgentGitBranchRules.swift"
-    "$root/Apelind/Session/Agent/AgentResetToRemoteRules.swift"
-    "$root/Apelind/Session/Agent/AgentPublishRules.swift"
-    "$root/Apelind/Session/Notice/AgentNotices.swift"
-    "$root/Apelind/Session/Patience.swift"
+    "$root/Lurosd/System.swift"
+    "$root/Lurosd/Spawn.swift"
+    "$root/Lurosd/Session/CallerPolicy.swift"
+    "$root/Lurosd/Session/TaskRegistry.swift"
+    "$root/Lurosd/Session/TaskResume.swift"
+    "$root/Lurosd/Session/Approval/ApprovalLedger.swift"
+    "$root/Lurosd/Session/Install/ArtifactRegistry.swift"
+    "$root/Lurosd/Session/Install/DebControlPeek.swift"
+    "$root/Lurosd/Session/Install/InstallBridge.swift"
+    "$root/Lurosd/Session/Install/InstallConflicts.swift"
+    "$root/Lurosd/Session/Install/AppBundle.swift"
+    "$root/Lurosd/Session/Install/AppPlacement.swift"
+    "$root/Lurosd/Session/Install/ApplicationInstall.swift"
+    "$root/Lurosd/Session/Install/ApplicationCensus.swift"
+    "$root/Lurosd/Session/Install/ZipExtractor.swift"
+    "$root/Lurosd/Session/Install/InstallService.swift"
+    "$root/Lurosd/Session/Install/InstallationStore.swift"
+    "$root/Lurosd/Session/Install/ManagedPackagePolicy.swift"
+    "$root/Lurosd/Session/Install/ToolchainTreePruner.swift"
+    "$root/Lurosd/Session/Files/AtomicReplace.swift"
+    "$root/Lurosd/Session/Files/FileScopes.swift"
+    "$root/Lurosd/Session/Files/ProtectedEditPolicy.swift"
+    "$root/Lurosd/Session/Files/ProtectedEditor.swift"
+    "$root/Lurosd/Session/Terminal/TerminalSession.swift"
+    "$root/Lurosd/Session/Terminal/TerminalHost.swift"
+    "$root/Lurosd/Session/ToolHost/AttachmentCopies.swift"
+    "$root/Lurosd/Session/Agent/AgentProjects.swift"
+    "$root/Lurosd/Session/Agent/AgentRunCode.swift"
+    "$root/Lurosd/Session/Agent/AgentRunCodePresets.swift"
+    "$root/Lurosd/Session/Agent/AgentApprovals.swift"
+    "$root/Lurosd/Session/Agent/AgentOpenTurns.swift"
+    "$root/Lurosd/Session/Agent/AgentHostRun.swift"
+    "$root/Lurosd/Session/Agent/AgentConversationRules.swift"
+    "$root/Lurosd/Session/Agent/AgentReportOutbox.swift"
+    "$root/Lurosd/Session/Agent/AgentConversationList.swift"
+    "$root/Lurosd/Session/Agent/AgentEnvironmentRules.swift"
+    "$root/Lurosd/Session/Agent/AgentExternalBuildRules.swift"
+    "$root/Lurosd/Session/Agent/AgentProjectRenameRules.swift"
+    "$root/Lurosd/Session/Agent/AgentProjectDeleteRules.swift"
+    "$root/Lurosd/Session/Agent/AgentUIActionRules.swift"
+    "$root/Lurosd/Session/Agent/AgentScreenRules.swift"
+    "$root/Lurosd/Session/Agent/AgentFeedbackRules.swift"
+    "$root/Lurosd/Session/Agent/AgentRepositoryCreateRules.swift"
+    "$root/Lurosd/Session/Agent/AgentIssueCreateRules.swift"
+    "$root/Lurosd/Session/Agent/AgentForcePushRules.swift"
+    "$root/Lurosd/Session/Agent/AgentSquashRules.swift"
+    "$root/Lurosd/Session/Agent/AgentGitBranchRules.swift"
+    "$root/Lurosd/Session/Agent/AgentResetToRemoteRules.swift"
+    "$root/Lurosd/Session/Agent/AgentPublishRules.swift"
+    "$root/Lurosd/Session/Notice/AgentNotices.swift"
+    "$root/Lurosd/Session/Patience.swift"
     "$root/Tests/SessionHost/AgentNoticeChecks.swift"
     "$root/Tests/SessionHost/AgentOpenChecks.swift"
     "$root/Tests/SessionHost/AgentHostRunChecks.swift"

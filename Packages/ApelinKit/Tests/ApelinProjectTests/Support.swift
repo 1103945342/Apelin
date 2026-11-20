@@ -18,7 +18,7 @@ enum Repository {
     static let referenceTool = schemas.appendingPathComponent("Tools")
 }
 
-func scratchDirectory(_ label: String = "apelin-i3-test") throws -> URL {
+func scratchDirectory(_ label: String = "luros-i3-test") throws -> URL {
     let url = URL(fileURLWithPath: "/private/tmp", isDirectory: true)
         .appendingPathComponent("\(label).\(UUID().uuidString.prefix(8))", isDirectory: true)
     try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)

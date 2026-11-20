@@ -2,7 +2,7 @@
 """Fail when a shipped Mach-O needs an @rpath library nothing provides.
 
 Run by Scripts/package-deb.sh on the staged package root. For every Mach-O
-in it (the app, its embedded libraries, apelind, the workers, anything
+in it (the app, its embedded libraries, lurosd, the workers, anything
 installed beside them), every strong `@rpath/<name>` dependency has to resolve:
 
 - through an `@executable_path`, `@loader_path` or absolute rpath to a file
@@ -11,7 +11,7 @@ installed beside them), every strong `@rpath/<name>` dependency has to resolve:
   every iOS from the floor up (FLOOR_LIBRARIES below).
 
 dyld tries the rpaths in order and kills the process before `main` when none
-holds the file, and only on the device that lacks it: apelin-agent once
+holds the file, and only on the device that lacks it: luros-agent once
 linked `@rpath/libswiftCompatibilitySpan.dylib` with `/usr/lib/swift` as its
 only rpath, which iOS 26 satisfies and iOS 16–18 do not. A weak dependency
 is allowed to be missing. `@executable_path/…` and `@loader_path/…`

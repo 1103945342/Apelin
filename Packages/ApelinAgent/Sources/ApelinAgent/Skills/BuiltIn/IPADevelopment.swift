@@ -1,6 +1,6 @@
 extension BuiltInSkills {
     static let ipaDevelopment = SkillDocument(
-        name: "apelin-ipa-development",
+        name: "luros-ipa-development",
         description: "A project whose build hands back an .ipa instead of a deb: creating it from an app template with output_format ipa, what the description and entitlements carry, the build, sharing it from Distribute… for another certificate, installing it on this device and removing it again, and testing the app it made.",
         body: """
         # IPA projects
@@ -9,7 +9,7 @@ extension BuiltInSkills {
         the bytes the `sign` step left, signed again for a certificate when someone
         installs it elsewhere. It installs nothing as a package, and a package
         manager never sees it. Everything else about the project — products,
-        configurations, steps — is an app project's (apelin-project-description).
+        configurations, steps — is an app project's (luros-project-description).
 
         ## Creating one
         - `apelin_project_create` with an app template (`com.fluoxetine.luros.dev.app/…`)
@@ -21,7 +21,7 @@ extension BuiltInSkills {
           app template is ticked, so the agent and the screen make the same
           project.
         - `output_format` is an app template's alone. A workspace builds what its
-          script writes (apelin-external-build); a tweak, a command line tool and
+          script writes (luros-external-build); a tweak, a command line tool and
           a preference bundle are deb projects.
 
         ## What the create path writes
@@ -83,7 +83,7 @@ extension BuiltInSkills {
           install`, not `icli pkg install`, not `dpkg`, not `apt`, and no
           `uicache` of your own.
         - A bundle id is permanent once the app is installed (the
-          apelin-packaging-and-install skill's Package identity): a new one is
+          luros-packaging-and-install skill's Package identity): a new one is
           another app beside it, and the old one stays until it is removed. Settle
           it with the user before the first install. Installing the same bundle id
           again replaces the app in place — from this project or another — so a
@@ -99,7 +99,7 @@ extension BuiltInSkills {
           template page is enough to prove it installed and runs. A log line the
           app writes with `os_log` comes back from `apelin_log_read` with the
           app's process name.
-        - A crash is read before anything is changed (apelin-crash-triage). Keep
+        - A crash is read before anything is changed (luros-crash-triage). Keep
           the build's dSYM.
         - The whole loop — build, install, launch, remove — is run with
           `apelin_project_build`, `apelin_package_install`,

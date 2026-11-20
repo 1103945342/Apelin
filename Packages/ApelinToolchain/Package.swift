@@ -23,9 +23,9 @@ let package = Package(
     ],
     products: [
         .library(name: "ApelinToolchain", targets: ["ApelinToolchain"]),
-        .executable(name: "apelin-toolchain-probe", targets: ["ToolchainProbe"]),
+        .executable(name: "luros-toolchain-probe", targets: ["ToolchainProbe"]),
     ],
-    // The one signer, apelin-build's too (Irisin's, MIT). Only the
+    // The one signer, luros-build's too (Irisin's, MIT). Only the
     // CryptoKit-only ApelinCodeSign links; ApelinFormats' libarchive pin
     // resolves but is not linked into anything here.
     dependencies: [.package(path: "../ApelinFormats")],

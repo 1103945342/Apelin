@@ -5,7 +5,7 @@ import Foundation
 // checks its digest and hands it to irisind by descriptor; removal only of
 // packages this bridge installed, which `installationList` lists; respring
 // through irisind.
-// Served by the session host (Apelind/Dispatch/InstallHandler.swift).
+// Served by the session host (Lurosd/Dispatch/InstallHandler.swift).
 //
 // An install is a task of kind `install`, read with `buildAttach`. Its events:
 // `stage` {stage: staging|submitted|following|recorded}, `irisin` (one per

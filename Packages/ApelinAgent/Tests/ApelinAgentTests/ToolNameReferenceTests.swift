@@ -71,7 +71,7 @@ struct ToolNameReferenceTests {
     func `every built-in skill names only today's tools`() {
         for skill in BuiltInSkills.all {
             var text = ([skill.description, skill.body] + skill.files.values).joined(separator: "\n")
-            if skill.name == "apelin-project-description" {
+            if skill.name == "luros-project-description" {
                 // `build` there is the member of luros-project.json.
                 text = text.replacingOccurrences(of: "`build`", with: "")
             }

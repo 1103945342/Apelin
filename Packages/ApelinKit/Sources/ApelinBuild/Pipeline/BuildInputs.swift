@@ -138,7 +138,7 @@ public struct BuildInputs: Sendable {
     }
 }
 
-/// Where a build reports as it goes. apelin-build turns these into task
+/// Where a build reports as it goes. luros-build turns these into task
 /// events; a test collects them.
 public protocol BuildReporter: Sendable {
     func stage(_ name: String, product: String?)

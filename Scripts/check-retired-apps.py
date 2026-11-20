@@ -38,7 +38,7 @@ import re
 import sys
 
 # Roots whose sources the app, the daemon and the extensions are built from.
-SOURCE_ROOTS = ["Apelin", "Apelind", "Shared", "Widgets", "Extensions", "Workers", "Packages"]
+SOURCE_ROOTS = ["Luros", "Lurosd", "Shared", "Widgets", "Extensions", "Workers", "Packages"]
 SOURCE_SUFFIXES = (".swift", ".m", ".mm", ".h", ".c", ".cpp")
 PLIST_SUFFIX = ".plist"
 SKIP_DIRS = {".git", ".build", ".swiftpm", "build", "DerivedFiles", "DerivedData", "node_modules"}

@@ -5,7 +5,7 @@
 # `@objc dynamic` (AGENTS.md ▸ Hard rules), so a tweak can hook it. Run this
 # after adding classes or members, on the iPhoneOS products a build left
 # (`$(DERIVED_DATA)/Build/Products/Release-iphoneos`): it reads the Objective-C
-# metadata of Luros.app, its extensions, apelind and the workers, and reports
+# metadata of Luros.app, its extensions, lurosd and the workers, and reports
 # each selector of ours that an Apple superclass already answers (an override
 # the source never declared), the selectors the runtime, ARC or UIKit's edit
 # menu call by name, the optional delegate or data source selectors answered
@@ -14,7 +14,7 @@
 # says how each is decided). With `--baseline`, the products of an earlier
 # build, a finding the class did not have there is marked NEW.
 #
-# A packaged binary is stripped: put its dSYM beside it (`apelind.dSYM`,
+# A packaged binary is stripped: put its dSYM beside it (`lurosd.dSYM`,
 # `Luros.app.dSYM`, as the products folder and CI's `*_dSYMs.zip` hold them),
 # which is used only when its UUID is the binary's. Without one the audit
 # stops, since an override cannot be told from a collision by name alone.
@@ -48,7 +48,7 @@ for app in $products/*.app(N/); do
     binaries+=($appex/$executable)
   done
 done
-for candidate in $products/apelind(N.) $products/apelin-*(N.); do
+for candidate in $products/lurosd(N.) $products/luros-*(N.); do
   [[ $candidate == *.* ]] && continue
   [[ $(file -b $candidate) == *Mach-O*executable* ]] && binaries+=($candidate)
 done
@@ -62,7 +62,7 @@ ios_sdk=$(DEVELOPER_DIR=${developer:-$(xcode-select -p)} xcrun --sdk iphoneos --
 responder_header=$ios_sdk/System/Library/Frameworks/UIKit.framework/Headers/UIResponder.h
 [[ -f $responder_header ]] || { print -u2 "error: no UIResponder.h in $ios_sdk"; exit 2; }
 
-work=$(mktemp -d /private/tmp/apelin-objc-audit.XXXXXX)
+work=$(mktemp -d /private/tmp/luros-objc-audit.XXXXXX)
 trap 'rm -rf -- "${work:?}"' EXIT
 
 mac_sdk=$(xcrun --sdk macosx --show-sdk-path)

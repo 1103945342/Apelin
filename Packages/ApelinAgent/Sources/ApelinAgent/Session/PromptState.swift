@@ -100,7 +100,7 @@ struct PromptState: Equatable {
         var changes: [(source: Source, text: String)] = []
         if buildSystem != old.buildSystem {
             changes.append((.buildSystem, buildSystem == .external
-                    ? "build system: this project is now a workspace with its own build script (the apelin-external-build skill)."
+                    ? "build system: this project is now a workspace with its own build script (the luros-external-build skill)."
                     : "build system: this project now builds from its luros-project.json description."))
         }
         changes += instructionChanges(since: old.instructions).map { (.instructions, $0) }

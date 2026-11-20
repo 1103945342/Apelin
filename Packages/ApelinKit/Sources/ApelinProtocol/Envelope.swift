@@ -2,9 +2,9 @@ import ApelinCore
 import Foundation
 
 /// The versioned envelope every request and reply travels in, whatever the
-/// transport: an XPC dictionary between the app and apelind
+/// transport: an XPC dictionary between the app and lurosd
 /// (`Shared/Protocol/XPCEnvelope.swift`), a `WorkerChannel` frame between
-/// apelind, its session host and the workers.
+/// lurosd, its session host and the workers.
 public enum Wire {
     /// Raised when the envelope or any request/response changes
     /// incompatibly. v1 was the scaffold's bare `hello`.

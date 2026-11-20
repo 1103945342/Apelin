@@ -9,7 +9,7 @@ import Testing
 struct ToolArgumentTests {
     @Test
     func `an empty optional argument is dropped, a required or meaningful one kept`() {
-        #expect(ToolArguments.normalized(["name": "apelin-tweak-development", "file": ""], for: .skillRead) == ["name": "apelin-tweak-development"])
+        #expect(ToolArguments.normalized(["name": "luros-tweak-development", "file": ""], for: .skillRead) == ["name": "luros-tweak-development"])
         #expect(ToolArguments.normalized(
             ["argv": [], "command": "ls", "cwd": "", "timeout_seconds": .null],
             for: .shellRun,

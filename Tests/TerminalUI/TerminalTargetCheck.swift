@@ -18,7 +18,7 @@ enum TerminalTargetCheck {
     static func run() -> Int {
         failures = 0
         let base = FileManager.default.temporaryDirectory
-            .appendingPathComponent("apelin-terminal-target-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("luros-terminal-target-\(UUID().uuidString)", isDirectory: true)
         let dataRoot = base.appendingPathComponent("com.fluoxetine.luros", isDirectory: true)
         let project = dataRoot.appendingPathComponent("Projects/Project", isDirectory: true)
         let nested = project.appendingPathComponent("Sources/App", isDirectory: true)

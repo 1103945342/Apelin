@@ -66,7 +66,7 @@ struct PlaceholderIdentifierTests {
         let hint = try #require(renamed["identifierHint"] as? String)
         #expect(hint.hasPrefix("This project's package ID local.apelin.banana and app bundle ID local.apelin.banana are placeholders Luros made up: ask the user for permanent ones before the first install and keep them the same for debug and release builds"))
         #expect(hint.contains("file_grep for local.apelin."))
-        #expect(hint.contains("a new identifier makes another package: agree a migration with the user first, as the apelin-packaging-and-install skill says."))
+        #expect(hint.contains("a new identifier makes another package: agree a migration with the user first, as the luros-packaging-and-install skill says."))
 
         try harness.home.write("luros-project.json", Self.manifest())
         let tweak = try await run(harness, .projectRename, ["display_name": "Clock", "automatic": true])
@@ -102,7 +102,7 @@ struct PlaceholderIdentifierTests {
         let built = try await run(harness, .projectBuild)
         #expect(built["succeeded"] as? Bool == true)
         let hint = try #require(built["identifierHint"] as? String)
-        #expect(hint == "This project's package ID local.apelin.banana is a placeholder Luros made up, and nothing it built is installed now. Before installing, ask the user for a permanent one or whether to keep it, the same for debug and release builds: changed after an install, an identifier makes another package (apelin-packaging-and-install skill).")
+        #expect(hint == "This project's package ID local.apelin.banana is a placeholder Luros made up, and nothing it built is installed now. Before installing, ask the user for a permanent one or whether to keep it, the same for debug and release builds: changed after an install, an identifier makes another package (luros-packaging-and-install skill).")
         #expect(await harness.backend.installationQueries == [InstallationListToolRequest(projectID: harness.home.project.id)])
 
         let release = try await run(harness, .projectBuild, ["configuration": "release"])

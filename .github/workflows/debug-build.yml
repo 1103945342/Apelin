@@ -67,15 +67,15 @@ jobs:
           # and `collect-licenses` reads them from there: the cache follows
           # that path rather than moving the clones somewhere the build's
           # license step cannot find them.
-          path: ${{ runner.temp }}/apelin-${{ github.run_id }}-${{ github.run_attempt }}/SourcePackages
-          key: spm-${{ runner.os }}-${{ hashFiles('Apelin.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+          path: ${{ runner.temp }}/luros-${{ github.run_id }}-${{ github.run_attempt }}/SourcePackages
+          key: spm-${{ runner.os }}-${{ hashFiles('Luros.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
           restore-keys: |
             spm-${{ runner.os }}-
 
       - name: Resolve package dependencies
         shell: bash
         env:
-          DERIVED_DATA: ${{ runner.temp }}/apelin-${{ github.run_id }}-${{ github.run_attempt }}
+          DERIVED_DATA: ${{ runner.temp }}/luros-${{ github.run_id }}-${{ github.run_attempt }}
         run: |
           set -uo pipefail
           # Resolving on its own first, so a dependency failure names its
@@ -87,7 +87,7 @@ jobs:
           status=0
           xcodebuild -resolvePackageDependencies \
               -derivedDataPath "$DERIVED_DATA" \
-              -project Apelin.xcodeproj -scheme Luros >resolve.log 2>&1 || status=$?
+              -project Luros.xcodeproj -scheme Luros >resolve.log 2>&1 || status=$?
           if [[ "$status" -eq 0 ]]; then
             tail -n 20 resolve.log
             exit 0
@@ -113,7 +113,7 @@ jobs:
         run: |
           set -euo pipefail
           make deb FLAVOR="${{ github.event.inputs.bootstrap || 'roothide' }}" CONFIGURATION=Release SKIP_HARNESS=1 \
-            DERIVED_DATA="$RUNNER_TEMP/apelin-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
+            DERIVED_DATA="$RUNNER_TEMP/luros-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
             BUILD_NUMBER="$GITHUB_RUN_NUMBER" 2>&1 | tee "$RUNNER_TEMP/build.log"
 
       - name: Keep the build log
@@ -161,7 +161,7 @@ jobs:
           fi
           (cd build/Packages && shasum -a 256 ./*.deb > SHA256SUMS)
 
-          notes="$RUNNER_TEMP/apelin-release.md"
+          notes="$RUNNER_TEMP/luros-release.md"
           if [[ -f "Documents/Releases/$version.md" ]]; then
             cp "Documents/Releases/$version.md" "$notes"
           else
@@ -252,7 +252,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: apelin-${{ github.event.inputs.bootstrap || 'roothide' }}-${{ github.sha }}
+          name: luros-${{ github.event.inputs.bootstrap || 'roothide' }}-${{ github.sha }}
           path: |
             build/Packages/*.deb
             build/Packages/SHA256SUMS

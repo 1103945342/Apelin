@@ -9,7 +9,7 @@ func checkFileBrowserLocation() throws {
     precondition(FileBrowserLocation(path: "/private/../private/var")?.path == "/private/var", "a path is resolved")
     precondition(FileBrowserLocation(path: "relative/path") == nil, "a relative path is not a location")
     precondition(FileBrowserLocation(path: "/private/var/mo\0bile") == nil, "a NUL is refused before anything else")
-    let missing = "/private/var/apelin-none-\(UUID().uuidString)"
+    let missing = "/private/var/luros-none-\(UUID().uuidString)"
     precondition(FileBrowserLocation(path: missing) == nil, "a name nothing is at is not a location")
     precondition(FileBrowserListing.openReason(for: URL(fileURLWithPath: missing)) == .missing)
 

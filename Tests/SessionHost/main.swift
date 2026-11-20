@@ -3,7 +3,7 @@ import ApelinProtocol
 import Darwin
 import Foundation
 
-// The session host's macOS-runnable half, compiled with the Apelind sources
+// The session host's macOS-runnable half, compiled with the Lurosd sources
 // it exercises (Scripts/test-session-host.sh): task records surviving a
 // restart, builds and environment tasks started again after one, the
 // caller policy, the protected-edit rules on a temporary
@@ -75,7 +75,7 @@ func expectErrorAsync(
 }
 
 let scratch = URL(fileURLWithPath: NSTemporaryDirectory())
-    .appendingPathComponent("apelin-session-host-\(UUID().uuidString)")
+    .appendingPathComponent("luros-session-host-\(UUID().uuidString)")
 try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
 defer { try? FileManager.default.removeItem(at: scratch) }
 let scratchPath = CanonicalPath.resolve(scratch.path)!
@@ -238,7 +238,7 @@ do {
 
 // MARK: - Builds and environment tasks start again after a restart
 
-/// apelin-build in miniature, over a real channel: it answers a task's
+/// luros-build in miniature, over a real channel: it answers a task's
 /// request at once, then emits a log line and the final `state`, unless told
 /// to hang (a host that dies before the task ends).
 final class FakeTaskWorker: @unchecked Sendable {
@@ -1585,10 +1585,10 @@ do {
     check(refused, "a file that is not ar is not a deb")
     // dpkg-deb's own output (GNU tar, gzip): the console smoke fixture.
     if let repository = ProcessInfo.processInfo.environment["APELIN_REPOSITORY"] {
-        let fixture = open(repository + "/Documents/Console/fixtures/apelin-smoke_1.0_all.deb", O_RDONLY)
+        let fixture = open(repository + "/Documents/Console/fixtures/luros-smoke_1.0_all.deb", O_RDONLY)
         defer { close(fixture) }
         let smoke = try? DebControlPeek.read(descriptor: fixture)
-        check(smoke == .init(packageID: "com.example.apelin-smoke", version: "1.0", architecture: "all"), "dpkg-deb's archive reads too")
+        check(smoke == .init(packageID: "com.example.luros-smoke", version: "1.0", architecture: "all"), "dpkg-deb's archive reads too")
     }
 
     // The relations that explain a refused install, each alternative alone.
@@ -2093,7 +2093,7 @@ do {
             caller: .worker(.agent, instance: "s"),
         )
     }
-    // The session asks the way apelin-agent does (its EventRelay test holds
+    // The session asks the way luros-agent does (its EventRelay test holds
     // the same payload), the app approves, and the host grants it once.
     let removalSession = await AgentSessionTable.Entry(
         sessionID: "s",
@@ -2554,10 +2554,10 @@ do {
     var exitStatus: Int32 = -1
     session.start(onOutput: { output.append($0) }, onExit: { exitStatus = $0; ended.signal() })
     let peer = try session.attachPeer()
-    _ = "echo apelin-$((40+2)); pwd; exit 3\n".withCString { Darwin.write(peer, $0, strlen($0)) }
+    _ = "echo luros-$((40+2)); pwd; exit 3\n".withCString { Darwin.write(peer, $0, strlen($0)) }
     check(ended.wait(timeout: .now() + 10) == .success, "the shell exits")
     let text = queue.sync { String(decoding: output as Data, as: UTF8.self) }
-    check(text.contains("apelin-42"), "input through the attached socket reaches the shell, output comes back")
+    check(text.contains("luros-42"), "input through the attached socket reaches the shell, output comes back")
     check(text.contains(scratchPath) || text.contains(scratch.path), "the shell starts in the working directory")
     check((exitStatus >> 8) & 0xFF == 3, "the exit status is reported")
     close(peer)
@@ -2722,9 +2722,9 @@ let lookupHome = scratchPath + "/lookup-home"
 let lookupToolchain = scratchPath + "/lookup-jb/toolchains/clt-27.0"
 let lookupBin = lookupToolchain + "/usr/bin"
 let lookupProject = lookupHome + "/Documents/com.fluoxetine.luros/Projects/Lookup"
-write(lookupBin + "/apelin-cc", "#!/bin/sh\necho compiled\n", mode: 0o755)
+write(lookupBin + "/luros-cc", "#!/bin/sh\necho compiled\n", mode: 0o755)
 write(lookupBin + "/git", "#!/bin/sh\necho the toolchain's git\n", mode: 0o755)
-try FileManager.default.createSymbolicLink(atPath: lookupBin + "/apelin-c++", withDestinationPath: "/bin/bash")
+try FileManager.default.createSymbolicLink(atPath: lookupBin + "/luros-c++", withDestinationPath: "/bin/bash")
 write(lookupProject + "/build.sh", "#!/bin/sh\necho built\n", mode: 0o755)
 write(lookupProject + "/notes.txt", "not a program\n")
 write(
@@ -2750,15 +2750,15 @@ do {
 
     // An ordinary run looks on the PATH it gets, the toolchain's tools
     // first, as `bash -c` does.
-    let compiler = try? invocation(["apelin-cc", "-c", "main.c"])
-    check(compiler?.executable == lookupBin + "/apelin-cc" && compiler?.argv == ["apelin-cc", "-c", "main.c"],
+    let compiler = try? invocation(["luros-cc", "-c", "main.c"])
+    check(compiler?.executable == lookupBin + "/luros-cc" && compiler?.argv == ["luros-cc", "-c", "main.c"],
           "an argv finds the toolchain's tools by name: \(String(describing: compiler))")
     let toolchainGit = try? invocation(["git", "status"])
     check(toolchainGit?.executable == lookupBin + "/git", "in PATH's order, as a shell finds them: \(String(describing: toolchainGit))")
 
     // The canonical file runs, under the name the request called it by.
-    let linked = try? invocation(["apelin-c++", "-c", "echo $0"])
-    check(linked?.executable == "/bin/bash" && linked?.argv.first == "apelin-c++",
+    let linked = try? invocation(["luros-c++", "-c", "echo $0"])
+    check(linked?.executable == "/bin/bash" && linked?.argv.first == "luros-c++",
           "a link runs its canonical file with the request's own words as argv: \(String(describing: linked))")
 
     // A preset and a run as root look in the bootstrap's directories alone,
@@ -2771,12 +2771,12 @@ do {
     let rootGit = try? invocation(["git", "status"], as: .root)
     check(rootGit?.executable == bootstrapGit && rootGit?.executable != lookupBin + "/git",
           "so does a run as root: \(String(describing: rootGit))")
-    let rootCompiler = refusal(["apelin-cc"], as: .root)
+    let rootCompiler = refusal(["luros-cc"], as: .root)
     check(rootCompiler?.code == .notFound && rootCompiler?.message.contains("as root") == true,
           "a run as root takes no command from the toolchain's place: \(String(describing: rootCompiler))")
 
     // A name on no directory of the PATH says where it looked and what to do.
-    let missing = refusal(["apelin-no-such-tool"])
+    let missing = refusal(["luros-no-such-tool"])
     check(missing?.code == .notFound && missing?.message.contains("PATH") == true && missing?.message.contains("bash -c") == true,
           "a name on no directory says where it looked and what to do instead: \(String(describing: missing))")
 
@@ -2785,8 +2785,8 @@ do {
     let script = try? invocation(["./build.sh", "--fast"])
     check(script?.executable == lookupProject + "/build.sh" && script?.argv == ["./build.sh", "--fast"],
           "a relative path is read from the working directory: \(String(describing: script))")
-    let absolute = try? invocation([lookupBin + "/apelin-cc"])
-    check(absolute?.executable == lookupBin + "/apelin-cc", "an absolute path is taken as it is: \(String(describing: absolute))")
+    let absolute = try? invocation([lookupBin + "/luros-cc"])
+    check(absolute?.executable == lookupBin + "/luros-cc", "an absolute path is taken as it is: \(String(describing: absolute))")
     check(refusal(["./notes.txt"])?.code == .notFound, "a file without an execute bit is no executable")
     check(refusal(["./missing.sh"])?.code == .notFound, "nor is a path that leads nowhere")
     check(refusal([""])?.code == .badRequest, "an empty executable is refused")
@@ -2817,8 +2817,8 @@ do {
     check(echoed?.exitCode == 0 && echoed?.stdout == "ok\n", "an absolute argv[0] runs: \(String(describing: echoed))")
     let built = await run(["./build.sh"], session: "lookup-relative")
     check(built?.exitCode == 0 && built?.stdout == "built\n", "a script in the project runs by its path: \(String(describing: built))")
-    let named = await run([lookupBin + "/apelin-c++", "-c", "echo $0"], session: "lookup-name")
-    check(named?.exitCode == 0 && named?.stdout == lookupBin + "/apelin-c++\n",
+    let named = await run([lookupBin + "/luros-c++", "-c", "echo $0"], session: "lookup-name")
+    check(named?.exitCode == 0 && named?.stdout == lookupBin + "/luros-c++\n",
           "the process sees the name it was called by, not its link's target: \(String(describing: named))")
 }
 
@@ -2857,7 +2857,7 @@ do {
         }
         await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object(payload))
     }
-    // What apelin-agent puts in a shell_run request's `detail`: the command,
+    // What luros-agent puts in a shell_run request's `detail`: the command,
     // as ApelinAgent's RunCodeInvocation encodes it (ApelinAgentWorker's
     // tests hold that shape).
     func command(_ invocation: String, _ value: JSONValue) -> JSONValue {
@@ -3001,7 +3001,7 @@ do {
         await sessions.add(entry)
         return entry
     }
-    // What apelin-agent writes into apelin_toolchain_setup's and apelin_sdk_import's
+    // What luros-agent writes into apelin_toolchain_setup's and apelin_sdk_import's
     // approvalRequested `detail` (ApelinAgentWorker's tests hold that shape).
     func ask(_ entry: AgentSessionTable.Entry, _ approvalID: String, tool: String, detail: JSONValue) async {
         await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object([
@@ -3103,7 +3103,7 @@ do {
         createdAt: Date(),
     )
     await sessions.add(entry)
-    // What apelin-agent writes into a workspace build's approvalRequested
+    // What luros-agent writes into a workspace build's approvalRequested
     // `detail` (ApelinAgentWorker's tests hold that shape): no bootstrap
     // when the build names none.
     func ask(_ approvalID: String, configuration: String, bootstrap: String? = nil) async {
@@ -3268,7 +3268,7 @@ do {
     func authorized(_ entry: AgentSessionTable.Entry?, _ project: ResolvedProject = target) async -> ApelinError? {
         await AgentProjectDeleteRules.authorize(project, session: entry?.sessionID, registry: registry)
     }
-    // What apelin-agent writes into apelin_project_delete's approvalRequested
+    // What luros-agent writes into apelin_project_delete's approvalRequested
     // (ApelinAgentWorker's tests hold that shape).
     func ask(_ approvalID: String, tool: String = "apelin_project_delete", projectID: String = "p-delete-theirs", folder: String = "Theirs") async {
         await registry.append(strict.task.taskID, kind: "approvalRequested", payload: .object([
@@ -3351,7 +3351,7 @@ do {
     }
     let strict = await session("feedback-strict", mode: .confirm)
     let feedback = FeedbackSendRequest(title: "The build log stops early", body: "It ends before the link step.")
-    // What apelin-agent writes into apelin_feedback_send's approvalRequested
+    // What luros-agent writes into apelin_feedback_send's approvalRequested
     // (ApelinAgentWorker's tests hold that shape).
     func ask(_ approvalID: String, body: String, repository: String = FeedbackRules.repository) async {
         await registry.append(strict.task.taskID, kind: "approvalRequested", payload: .object([
@@ -3420,7 +3420,7 @@ do {
         expectedTitle: "The build log stops early",
         expectedBody: "It ends before the link step.",
     )
-    // What apelin-agent writes into apelin_feedback_edit's approvalRequested
+    // What luros-agent writes into apelin_feedback_edit's approvalRequested
     // (ApelinAgentWorker's tests hold that shape): no title, since it stays.
     func ask(
         _ approvalID: String,
@@ -3432,7 +3432,7 @@ do {
     ) async {
         var detail: [String: JSONValue] = [
             "repository": .string(FeedbackRules.repository), "number": .number(number),
-            "url": .string("https://github.com/1103945342/Apelin/issues/12"),
+            "url": .string("https://github.com/1103945342/Luros/issues/12"),
             "body": .string(body), "currentTitle": .string("The build log stops early"), "currentBody": .string(currentBody),
         ]
         if let title {
@@ -3500,7 +3500,7 @@ do {
     }
     let strict = await session("repository-strict", mode: .confirm)
     let create = GitRepositoryCreateRequest(name: "clock-tweak", visibility: .private, description: "A clock in the status bar")
-    // What apelin-agent writes into apelin_git_create_repository's
+    // What luros-agent writes into apelin_git_create_repository's
     // approvalRequested (ApelinAgentWorker's tests hold that shape).
     func ask(_ approvalID: String, owner: String? = nil, visibility: String = "private") async {
         var detail: [String: JSONValue] = [
@@ -3569,7 +3569,7 @@ do {
         title: "The installer stops at 90%",
         body: "Installing a package from the inbox stops at 90%.",
     )
-    // What apelin-agent writes into apelin_git_create_issue's
+    // What luros-agent writes into apelin_git_create_issue's
     // approvalRequested (ApelinAgentWorker's tests hold that shape).
     func ask(
         _ approvalID: String,
@@ -3590,7 +3590,7 @@ do {
     }
     let unasked = await authorized(strict)
     check(unasked?.code == .denied, "Strict opens an issue only as the user approved it")
-    await ask("issue-elsewhere", repository: "1103945342/Apelin")
+    await ask("issue-elsewhere", repository: "1103945342/Luros")
     await ask("issue-body", body: "Another body.")
     await ask("issue-tool", tool: "apelin_feedback_send")
     let near = await authorized(strict)
@@ -3638,7 +3638,7 @@ do {
     let mine = String(repeating: "b", count: 40)
     let lease = GitPushLease(expectedCommit: theirs, localCommit: mine)
     let push = GitPushRequest(projectID: "p-force", branch: "main", forceWithLease: lease)
-    // What apelin-agent writes into a forced git_push's approvalRequested
+    // What luros-agent writes into a forced git_push's approvalRequested
     // (ApelinAgentWorker's tests hold that shape).
     func ask(
         _ entry: AgentSessionTable.Entry,
@@ -3726,7 +3726,7 @@ do {
     let head = String(repeating: "b", count: 40)
     let squash = GitSquashRequest(projectID: "p-squash", base: base, message: "Add the clock", expectedHead: head)
     let strict = await session("squash-strict", mode: .confirm)
-    // What apelin-agent writes into git_squash's approvalRequested
+    // What luros-agent writes into git_squash's approvalRequested
     // (ApelinAgentWorker's tests hold that shape).
     func ask(
         _ approvalID: String,
@@ -3794,7 +3794,7 @@ do {
         await sessions.add(entry)
         return entry
     }
-    // Two release builds of one version, as apelin-build reports them.
+    // Two release builds of one version, as luros-build reports them.
     let builds = [("b-hide", "iphoneos-arm64e", "a"), ("b-less", "iphoneos-arm64", "b")]
     let files = builds.map { build, architecture, _ in "/data/Builds/p-publish/\(build)/com.example.clock_1.0_\(architecture).deb" }
     let digests = builds.map { _, _, digit in "sha256:" + String(repeating: digit, count: 64) }
@@ -3806,7 +3806,7 @@ do {
     }
     let publish = DistributionPublishRequest(files: files, digests: digests, repository: "someone/packages")
     let strict = await session("publish-strict", mode: .confirm)
-    // What apelin-agent writes into apelin_package_publish's
+    // What luros-agent writes into apelin_package_publish's
     // approvalRequested (ApelinAgentWorker's tests hold that shape).
     func ask(_ approvalID: String, _ asked: DistributionPublishRequest) async {
         let packages: [JSONValue] = zip(asked.files, asked.digests ?? []).map { file, digest in
@@ -4283,7 +4283,7 @@ do {
         (["stat", "-f", "%z", "/etc/hosts"], "."),
         (["file", "-C", "-m", "magic"], "."),
         (["plutil", "-p", "Info.plist", "-o", "copy.plist"], "."),
-        (["git", "diff", "--output=/tmp/apelin-preset-escape"], "."),
+        (["git", "diff", "--output=/tmp/luros-preset-escape"], "."),
         (["git", "log", "--output", "log.txt"], "."),
         (["git", "diff", "-o", "diff.txt"], "."),
         (["git", "diff", "--ext-diff"], "."),
@@ -4329,16 +4329,16 @@ do {
     let gitConfig = project + "/.git/config"
     let plainConfig = try String(contentsOfFile: gitConfig, encoding: .utf8)
     for extra in [
-        "[filter \"evil\"]\n\tclean = touch /tmp/apelin-preset-escape\n",
-        "[core]\n\tfsmonitor = /tmp/apelin-preset-escape\n",
-        "[core]\n\tpager = sh -c 'touch /tmp/apelin-preset-escape'\n",
-        "[include]\n\tpath = /tmp/apelin-preset-escape\n",
+        "[filter \"evil\"]\n\tclean = touch /tmp/luros-preset-escape\n",
+        "[core]\n\tfsmonitor = /tmp/luros-preset-escape\n",
+        "[core]\n\tpager = sh -c 'touch /tmp/luros-preset-escape'\n",
+        "[include]\n\tpath = /tmp/luros-preset-escape\n",
         "[diff \"evil\"]\n\ttextconv = touch\n",
         // git reads a section header and a key on one line, and a second
         // header behind the first.
-        "[user \"a\"][filter \"x\"]clean = touch /tmp/apelin-preset-escape #]\n",
-        "[user]name = a\n[filter \"x\"] clean = touch /tmp/apelin-preset-escape\n",
-        "[includeIf \"gitdir:/\"]\n\tpath = /tmp/apelin-preset-escape\n",
+        "[user \"a\"][filter \"x\"]clean = touch /tmp/luros-preset-escape #]\n",
+        "[user]name = a\n[filter \"x\"] clean = touch /tmp/luros-preset-escape\n",
+        "[includeIf \"gitdir:/\"]\n\tpath = /tmp/luros-preset-escape\n",
         "[core \"x\"]\n\tbare = false\n",
         "[core]\n\tbare = \"unterminated\n",
     ] {
@@ -4383,7 +4383,7 @@ do {
     write(bare + "/HEAD", "ref: refs/heads/main\n")
     mkdir(bare + "/objects", 0o755)
     mkdir(bare + "/refs", 0o755)
-    write(bare + "/config", "[core]\n\tbare = true\n[filter \"x\"]\n\tclean = touch /tmp/apelin-preset-escape\n")
+    write(bare + "/config", "[core]\n\tbare = true\n[filter \"x\"]\n\tclean = touch /tmp/luros-preset-escape\n")
     for argv in [["git", "status"], ["git", "diff"], ["git", "log"]] {
         let inBare = await preset(argv, in: "Sources/bare")
         check(!inBare, "\(argv.joined(separator: " ")) in a bare layout inside the project is not a preset")
@@ -4399,7 +4399,7 @@ do {
     let skipped = project + "/Sources/skipped"
     mkdir(skipped, 0o755)
     mkdir(skipped + "/.git", 0o755)
-    try (plainConfig + "[filter \"x\"]\n\tclean = touch /tmp/apelin-preset-escape\n")
+    try (plainConfig + "[filter \"x\"]\n\tclean = touch /tmp/luros-preset-escape\n")
         .write(toFile: gitConfig, atomically: true, encoding: .utf8)
     let throughEmpty = await preset(["git", "status"], in: "Sources/skipped")
     check(!throughEmpty, "git status below an empty .git, in a repository with a filter, is not a preset")

@@ -1,10 +1,10 @@
-/// The wire between the app and apelind: a closed list of operations, every
+/// The wire between the app and lurosd: a closed list of operations, every
 /// one of them data, and none of them `exec(path, argv)`.
 ///
 /// Adding an operation touches, together: a case here (and in `domain` and
 /// `requestType`), its request/response types and `ApelinService` method in
-/// `Operations/<Domain>.swift`, its case in apelind's
-/// `Apelind/Dispatch/<Domain>Handler.swift`, and the list in `AGENTS.md` ▸
+/// `Operations/<Domain>.swift`, its case in lurosd's
+/// `Lurosd/Dispatch/<Domain>Handler.swift`, and the list in `AGENTS.md` ▸
 /// Decisions. `CallerPolicy` in the session host says whether a worker may
 /// call it too.
 public enum AppOperation: String, Codable, CaseIterable, Sendable {
@@ -372,7 +372,7 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
     }
 }
 
-/// One per `Operations/<Domain>.swift` and `Apelind/Dispatch/<Domain>Handler.swift`.
+/// One per `Operations/<Domain>.swift` and `Lurosd/Dispatch/<Domain>Handler.swift`.
 public enum OperationDomain: String, Codable, CaseIterable, Sendable {
     case hello
     case toolchain

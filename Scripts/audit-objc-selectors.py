@@ -378,7 +378,7 @@ def module_of(name):
 
 
 def is_ours(record):
-    """Luros's modules (Luros, apelind, apelin_<worker>, Luros<Package>), not a dependency's."""
+    """Luros's modules (Luros, lurosd, apelin_<worker>, Luros<Package>), not a dependency's."""
     return module_of(record["name"]).lower().startswith("apelin")
 
 

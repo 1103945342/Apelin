@@ -240,7 +240,7 @@ final class DiagnosticsWorkerTests: XCTestCase {
     /// A project folder with the tweak template's manifest and an installed
     /// dylib under a fake install root.
     private func makeProject() throws -> (home: URL, root: URL, dylib: URL) {
-        let home = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("apelin-diag-\(UUID().uuidString)")
+        let home = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("luros-diag-\(UUID().uuidString)")
         let project = home.appendingPathComponent("Documents/com.fluoxetine.luros/Projects/Hello")
         try FileManager.default.createDirectory(at: project, withIntermediateDirectories: true)
         let root = home.appendingPathComponent("jb")

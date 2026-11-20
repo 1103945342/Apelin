@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://1103945342.github.io/Apelin/schemas/extension-manifest-1.json",
+  "$id": "https://1103945342.github.io/Luros/schemas/extension-manifest-1.json",
   "title": "Luros development extension manifest, version 1",
   "description": "<install-root>/usr/share/luros/development/<id>/manifest.json. Read, never executed: nothing here names a program the app or host runs. Each manifest is validated on its own; a bad one isolates that extension only. Documents/Schemas/README.md is the prose specification.",
   "type": "object",

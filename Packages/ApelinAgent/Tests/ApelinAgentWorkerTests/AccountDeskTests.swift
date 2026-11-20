@@ -104,7 +104,7 @@ final class SilentListener: OAuthLoopbackListener, @unchecked Sendable {
     }
 }
 
-@Suite("Sign-in: kwwk's flows in apelin-agent, nothing secret on the wire", .timeLimit(.minutes(1)))
+@Suite("Sign-in: kwwk's flows in luros-agent, nothing secret on the wire", .timeLimit(.minutes(1)))
 struct AccountDeskTests {
     static let silent: OAuthLoopbackFactory = { SilentListener(host: $0, port: $1, path: $2) }
 

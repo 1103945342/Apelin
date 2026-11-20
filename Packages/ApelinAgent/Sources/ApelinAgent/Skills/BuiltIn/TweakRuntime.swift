@@ -1,6 +1,6 @@
 extension BuiltInSkills {
     static let tweakRuntime = SkillDocument(
-        name: "apelin-tweak-runtime",
+        name: "luros-tweak-runtime",
         description: "How a tweak behaves at run time inside another process: logging with os_log so apelin_log_read can see it, what the host's sandbox lets it read and write, reading settings, and telling another process something changed with a Darwin notification. Read when a tweak logs, stores a setting, reads files, or talks to another process.",
         body: """
         # A tweak at run time
@@ -8,7 +8,7 @@ extension BuiltInSkills {
         Your dylib runs inside the host process (an app, SpringBoard, a
         daemon), under that process's user, sandbox and entitlements. You
         cannot grant yourself more; design within what the host already has.
-        Paths in anything below are spelled as the apelin-bootstrap-paths skill says.
+        Paths in anything below are spelled as the luros-bootstrap-paths skill says.
 
         ## Logging — the only record you can read back
         - Log with `os_log` to a logger whose subsystem is the package ID, as
@@ -51,7 +51,7 @@ extension BuiltInSkills {
           you are not root inside an app anyway.
         - Files a jailbroken process can read live under the bootstrap root.
           Of those, a tweak can reliably **write** only under the bootstrap's
-          `/var` (apelin-bootstrap-paths). Do not try to write elsewhere from the
+          `/var` (luros-bootstrap-paths). Do not try to write elsewhere from the
           injected code; if the task needs a privileged or shared write, a
           daemon your package ships does it.
         - Probe access by trying the operation (open the file, `opendir` the
@@ -62,10 +62,10 @@ extension BuiltInSkills {
         Two ways, both fine; pick one and be consistent.
         - **A plist you own**, read directly: a dictionary at
           `<bootstrap>/var/mobile/Library/Preferences/<package id>.plist`
-          (make the path with apelin-bootstrap-paths). This avoids cfprefsd, which a
+          (make the path with luros-bootstrap-paths). This avoids cfprefsd, which a
           sandboxed app calling it in a constructor has been seen to deadlock
           with, and whose cross-domain reads some jailbreaks refuse from a
-          sandbox. The apelin-preference-bundle skill's Settings pane writes this
+          sandbox. The luros-preference-bundle skill's Settings pane writes this
           file and posts a notification.
         - **CFPreferences** in your own domain
           (`CFPreferencesCopyAppValue(key, CFSTR(APELIN_PACKAGE_ID))`), read

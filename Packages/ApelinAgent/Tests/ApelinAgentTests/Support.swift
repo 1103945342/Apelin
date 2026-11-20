@@ -15,7 +15,7 @@ struct TemporaryHome {
 
     init(projectName: String = "Hello") throws {
         home = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-            .appendingPathComponent("apelin-agent-tests-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("luros-agent-tests-\(UUID().uuidString)", isDirectory: true)
         dataRoot = ApelinDataRoot(home: home)
         project = try ProjectIdentity(id: "project-\(UUID().uuidString.prefix(8))", name: ProjectName(projectName))
         projectURL = dataRoot.project(named: project.name)
@@ -60,7 +60,7 @@ actor MockDigestLedger: ApprovalDigestStore {
     }
 
     /// A workspace's packages by artifact ID, with the packaging digest
-    /// apelin-build recorded for each.
+    /// luros-build recorded for each.
     var artifacts: [String: String] = [:]
 
     func addArtifact(_ artifactID: String, packaging digest: String) {
@@ -628,15 +628,15 @@ actor MockBackend: AgentHostBackend {
     /// The registry's digest of each id is `sha256:<id>`.
     func sendFeedback(_ request: FeedbackToolRequest) -> FeedbackToolResponse {
         calls.append(.feedback(title: request.title, body: request.body, evidence: request.context.approval))
-        return FeedbackToolResponse(repository: "1103945342/Apelin", issue: 7, url: "https://github.com/1103945342/Apelin/issues/7")
+        return FeedbackToolResponse(repository: "1103945342/Luros", issue: 7, url: "https://github.com/1103945342/Luros/issues/7")
     }
 
     /// What apelin_feedback_read answers, by number: #12, the user's own,
     /// unless a test sets others.
     var feedbackIssues: [Int: FeedbackReadToolResponse] = [12: FeedbackReadToolResponse(
-        repository: "1103945342/Apelin",
+        repository: "1103945342/Luros",
         issue: 12,
-        url: "https://github.com/1103945342/Apelin/issues/12",
+        url: "https://github.com/1103945342/Luros/issues/12",
         title: "The build log stops early",
         state: "open",
         author: "someone",
@@ -652,7 +652,7 @@ actor MockBackend: AgentHostBackend {
     func readFeedback(_ request: FeedbackReadToolRequest) throws -> FeedbackReadToolResponse {
         calls.append(.feedbackRead(request.number))
         guard let issue = feedbackIssues[request.number] else {
-            throw ToolDeniedError(message: "1103945342/Apelin has no issue #\(request.number)")
+            throw ToolDeniedError(message: "1103945342/Luros has no issue #\(request.number)")
         }
         return issue
     }
@@ -675,9 +675,9 @@ actor MockBackend: AgentHostBackend {
         }
         let changed: [String] = [request.title.map { _ in "title" }, request.body.map { _ in "body" }].compactMap(\.self)
         return FeedbackEditToolResponse(
-            repository: "1103945342/Apelin",
+            repository: "1103945342/Luros",
             issue: request.number,
-            url: "https://github.com/1103945342/Apelin/issues/\(request.number)",
+            url: "https://github.com/1103945342/Luros/issues/\(request.number)",
             changed: changed,
             title: request.title ?? request.expectedTitle,
             body: request.body ?? request.expectedBody,

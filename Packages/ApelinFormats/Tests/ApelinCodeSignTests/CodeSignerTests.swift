@@ -105,7 +105,7 @@ final class CodeSignerTests: XCTestCase {
         let ldid = ["/opt/homebrew/bin/ldid", "/usr/local/bin/ldid"].first { FileManager.default.isExecutableFile(atPath: $0) }
         let entitlements = try Data(contentsOf: fixture("entitlements.plist"))
         let signed = try CodeSigner.sign(Data(contentsOf: fixture("input/fixture-tool")), options: .init(identifier: "fixture-tool", entitlements: entitlements))
-        let url = URL(fileURLWithPath: "/private/tmp").appendingPathComponent("apelin-codesign-\(UUID().uuidString.prefix(8))")
+        let url = URL(fileURLWithPath: "/private/tmp").appendingPathComponent("luros-codesign-\(UUID().uuidString.prefix(8))")
         try signed.write(to: url)
         defer { try? FileManager.default.removeItem(at: url) }
         let codesign = try run("/usr/bin/codesign", ["-dv", "--verbose=4", url.path])

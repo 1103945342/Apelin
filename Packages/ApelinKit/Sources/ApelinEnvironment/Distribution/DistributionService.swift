@@ -371,7 +371,7 @@ public struct DistributionService: Sendable {
                 if FileManager.default.contents(atPath: path) == file.contents {
                     continue
                 }
-                let temporary = folder.appendingPathComponent(".\(parts.last ?? "file").apelin-\(UUID().uuidString)").path
+                let temporary = folder.appendingPathComponent(".\(parts.last ?? "file").luros-\(UUID().uuidString)").path
                 try writeNewFile(file.contents, to: temporary, mode: mode, name: file.path)
                 guard rename(temporary, path) == 0 else {
                     let reason = String(cString: strerror(errno))

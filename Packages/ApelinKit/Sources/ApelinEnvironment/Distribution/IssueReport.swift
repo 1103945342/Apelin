@@ -50,7 +50,7 @@ struct IssueReport: Sendable {
         hostName.map { [$0] } ?? []
     }
 
-    /// The marketing version and build of the app apelind authenticates,
+    /// The marketing version and build of the app lurosd authenticates,
     /// `<install root>/Applications/Luros.app`, read only from inside the
     /// install root; nil for one that does not read.
     func appVersion() -> (short: String?, build: String?) {

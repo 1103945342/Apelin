@@ -25,9 +25,9 @@ import sys
 
 SKIP_DIRS = {".git", ".build", ".swiftpm", "build", "DerivedData", "node_modules", ".claude", "Vendor", "__pycache__"}
 SKIP_PATHS = ("Packages/Runestone/",)
-SOURCE_ROOTS = ("Apelin", "Apelind", "Workers", "Shared", "Widgets", "Extensions", "Packages")
+SOURCE_ROOTS = ("Luros", "Lurosd", "Workers", "Shared", "Widgets", "Extensions", "Packages")
 
-ROOT_FILE = "Apelin/Interface/Root/RootInterfaceController.swift"
+ROOT_FILE = "Luros/Interface/Root/RootInterfaceController.swift"
 PAIRED = ("sidebar.highlight(", "chatController.use(")
 # The sidebar's own picking, which the root must never do by itself.
 UNPAIRED = "sidebar.select("

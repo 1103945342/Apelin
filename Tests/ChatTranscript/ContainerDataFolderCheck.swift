@@ -10,7 +10,7 @@ import Foundation
 func checkContainerDataFolder() {
     let manager = FileManager.default
     let base = URL(fileURLWithPath: "/private/tmp", isDirectory: true)
-        .appendingPathComponent("apelin-container-data-\(UUID().uuidString.prefix(8))", isDirectory: true)
+        .appendingPathComponent("luros-container-data-\(UUID().uuidString.prefix(8))", isDirectory: true)
     defer { try? manager.removeItem(at: base) }
     let mobile = base.appendingPathComponent("var/mobile", isDirectory: true)
     let folder = DataFolder(home: mobile.path)

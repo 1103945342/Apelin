@@ -236,7 +236,7 @@ public enum DisassemblerTools {
         }
         for directory in [NSTemporaryDirectory(), "/var/tmp", "/tmp"] {
             let prefix = directory.hasSuffix("/") ? directory : directory + "/"
-            var template = Array((prefix + "apelin-disassembler.XXXXXX").utf8CString)
+            var template = Array((prefix + "luros-disassembler.XXXXXX").utf8CString)
             let descriptor = template.withUnsafeMutableBufferPointer { mkstemp($0.baseAddress!) }
             guard descriptor >= 0 else { continue }
             unlink(String(cString: template))

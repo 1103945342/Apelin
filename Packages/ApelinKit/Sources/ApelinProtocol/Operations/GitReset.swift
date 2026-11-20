@@ -3,7 +3,7 @@
 // first and shown (`gitResetPreview`); the reset itself
 // (`gitResetToRemote`) runs only against exactly the state that was shown,
 // and saves everything it would lose on a branch of its own before it
-// touches anything. Served by apelin-environment (ApelinGit), on one
+// touches anything. Served by luros-environment (ApelinGit), on one
 // project; an agent's names its own session's, and spends, in every mode,
 // one approval the user gave for exactly that reset
 // (AgentResetToRemoteRules).
@@ -117,7 +117,7 @@ public struct GitResetPreview: Codable, Sendable, Equatable {
 /// that name moved to it and checked out, the work tree's tracked files and
 /// the index made the remote's, untracked and ignored files it does not
 /// have left alone. First it saves what would be lost on a new branch
-/// `apelin-backup/<yyyyMMdd-HHmmss>`: the commit HEAD was at and, with
+/// `luros-backup/<yyyyMMdd-HHmmss>`: the commit HEAD was at and, with
 /// anything uncommitted or replaced, a commit of it on top. Anything else
 /// is `conflict` with nothing changed. `luros-project.json` keeps the
 /// project's own `projectID` (`GitProjectFile`), and stays as it was when

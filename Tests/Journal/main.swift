@@ -11,7 +11,7 @@ func require(_ condition: Bool, _ message: String) {
 }
 
 let directory = URL(fileURLWithPath: NSTemporaryDirectory())
-    .appendingPathComponent("apelin-journal-\(UUID().uuidString)", isDirectory: true)
+    .appendingPathComponent("luros-journal-\(UUID().uuidString)", isDirectory: true)
 try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
 defer { try? FileManager.default.removeItem(at: directory) }
 
@@ -84,8 +84,8 @@ require(
 )
 require(conversations[0].previous?.lastPathComponent == newer + ".old.log", "the rotated file goes with its journal")
 require(conversations[1].previous == nil, "a journal that never rotated has none")
-require(conversations[0].shareName == "apelin-agent-\(newer).log", "a conversation's journal is shared under its session")
-require(files[0].shareName == "apelin-2026-10-22_09-30-00_BBBBBBBB.log", "a launch's under its launch")
+require(conversations[0].shareName == "luros-agent-\(newer).log", "a conversation's journal is shared under its session")
+require(files[0].shareName == "luros-2026-10-22_09-30-00_BBBBBBBB.log", "a launch's under its launch")
 
 // a journal that rotates while its page is open is shared and deleted whole
 try Data("rotated since".utf8).write(to: agent.appendingPathComponent(older + ".old.log"))

@@ -2,7 +2,7 @@ import ApelinCore
 import Foundation
 
 /// Carries one request and its reply. The app's is `DaemonClient` (XPC to
-/// apelind); a worker's is `ChannelTransport` (its socketpair to the session
+/// lurosd); a worker's is `ChannelTransport` (its socketpair to the session
 /// host). Descriptors go out beside the request and come back beside the
 /// reply, in the order their `DescriptorSlot`s name.
 public protocol ApelinTransport: Sendable {

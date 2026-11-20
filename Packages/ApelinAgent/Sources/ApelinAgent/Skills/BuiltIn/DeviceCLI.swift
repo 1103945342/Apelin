@@ -1,6 +1,6 @@
 extension BuiltInSkills {
     static let deviceCLI = SkillDocument(
-        name: "apelin-icli",
+        name: "luros-icli",
         description: "Running icli, the device's command-line tool, through shell_run: apps, URLs, files, preferences, processes, launchd, packages, the screen and input, when no dedicated Luros tool does it, and icli probe, a JavaScriptCore script with Objective-C reflection for probing what the device has. What runs as mobile, what changes the device only as the user asks, roothide paths, and what to tell the user when icli is missing.",
         body: """
         # icli
@@ -125,7 +125,7 @@ extension BuiltInSkills {
         these, as mobile or with `root: true`: package installs and removals
         (`pkg install`, `pkg remove`, `pkg add-repo`, `app install`,
         `app uninstall`: a package goes through `apelin_package_install`, a
-        dependency as the apelin-package-dependencies skill says),
+        dependency as the luros-package-dependencies skill says),
         `sb respring` (apelin_device_respring does it) and `sb uicache`.
         Launchd changes (`svc load`, `unload`, `bootstrap`, `bootout`,
         `start`, `stop`, `kill`, `kickstart`, `enable`, `disable`, `setenv`,
@@ -143,7 +143,7 @@ extension BuiltInSkills {
         the bootstrap root: a file icli writes to `/tmp/out.txt` is
         `/rootfs/tmp/out.txt` to the shell. Hand icli a path the shell
         printed with the `jbroot` that `icli env` reports in front of it.
-        The apelin-bootstrap-paths skill has the rest.
+        The luros-bootstrap-paths skill has the rest.
 
         ## When icli is missing
         icli ships with Luros, in the app bundle at

@@ -16,7 +16,7 @@ public struct IlinkClient {
     public static let clientVersion = (2 << 16) | (4 << 8) | 10
     public static let appID = "bot"
     /// Self-declared name, as `bot_agent` (UA-style, ASCII).
-    public static let agentName = "Apelin/1.0"
+    public static let agentName = "Luros/1.0"
 
     public let baseURL: URL
     public let token: String?

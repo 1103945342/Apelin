@@ -1,9 +1,9 @@
 import ApelinBuild
 import ApelinProtocol
 
-// apelin-build: Extensions, templates, projects and builds.
+// luros-build: Extensions, templates, projects and builds.
 //
-// Runs as mobile, spawned by apelind's session host with its socketpair as
+// Runs as mobile, spawned by lurosd's session host with its socketpair as
 // descriptor 3; WorkerMain does the assignment and the privilege check.
 // Links ApelinCore, ApelinProtocol, ApelinProject, ApelinBuild — see AGENTS.md ▸ Decisions ▸ Process layout.
 //

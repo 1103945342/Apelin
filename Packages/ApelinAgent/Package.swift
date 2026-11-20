@@ -30,7 +30,7 @@ let package = Package(
         // ByteToMessageHandler's decoder `~Copyable`, and an iOS runtime
         // before 18 cannot find a conformance that carries such a condition:
         // configureHTTPServerPipeline's handler cast fails and the sign-in
-        // loopback aborts apelin-agent on iOS 17 when Safari connects. kwwk
+        // loopback aborts luros-agent on iOS 17 when Safari connects. kwwk
         // asks for 2.65.0, swift-nio-ssl for 2.98.0. Raise the ceiling only
         // once NIO's noncopyable conformances work on the deployment floor.
         .package(url: "https://github.com/apple/swift-nio.git", "2.98.0" ..< "2.104.0"),
@@ -48,14 +48,14 @@ let package = Package(
                 .product(name: "KWWKMCP", package: "kwwk"),
                 .product(name: "KWWKAI", package: "kwwk"),
                 // Not imported: it binds the swift-nio ceiling above to
-                // every build of apelin-agent. kwwk links NIOCore already.
+                // every build of luros-agent. kwwk links NIOCore already.
                 .product(name: "NIOCore", package: "swift-nio"),
                 // RunCodePresetRule: the words of a preset, as the host reads them;
                 // TokenEstimate: the output a run receives, as the app counts a reply.
                 .product(name: "ApelinProtocol", package: "ApelinKit"),
                 // CanonicalPath: the path rules the rest of Luros decides by.
                 .product(name: "ApelinCore", package: "ApelinKit"),
-                // The luros-project.json schema the apelin-project-description skill serves.
+                // The luros-project.json schema the luros-project-description skill serves.
                 .product(name: "ApelinProject", package: "ApelinKit"),
                 // ToolManifestValidator: the installed agent tool extensions
                 // whose tools a session offers.
@@ -63,7 +63,7 @@ let package = Package(
             ],
             path: "Sources/ApelinAgent",
         ),
-        // apelin-agent's worker: AgentHostBackend over ApelinService (the
+        // luros-agent's worker: AgentHostBackend over ApelinService (the
         // worker channel to the session host), keychain credentials and the
         // console's credential inbox.
         .target(

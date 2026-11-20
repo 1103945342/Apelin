@@ -7,7 +7,7 @@ import WidgetKit
 /// 16.0; the Live Activity from 16.2, with ActivityKit linked weakly
 /// (`-weak_framework ActivityKit` on this target and the app).
 @main
-struct ApelinWidgetsBundle: WidgetBundle {
+struct LurosWidgetsBundle: WidgetBundle {
     var body: some Widget {
         ChatsWidget()
         if #available(iOS 16.2, *) {

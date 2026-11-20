@@ -497,7 +497,7 @@ struct SessionJournalTests {
 
     private static func folder() throws -> URL {
         let folder = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-            .appendingPathComponent("apelin-journal-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("luros-journal-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         return folder
     }

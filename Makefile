@@ -1,12 +1,12 @@
-# Apelin Xcode build and jailbreak Debian packaging (roothide, rootless)
+# Luros Xcode build and jailbreak Debian packaging (roothide, rootless)
 
 SHELL := /bin/bash
 .SHELLFLAGS := -eu -o pipefail -c
 
 ROOT_DIR            := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
-PROJECT             := $(ROOT_DIR)/Apelin.xcodeproj
-# The app scheme builds apelind too: the app target depends on the daemon.
-SCHEME              := Apelin
+PROJECT             := $(ROOT_DIR)/Luros.xcodeproj
+# The app scheme builds lurosd too: the app target depends on the daemon.
+SCHEME              := Luros
 CONFIGURATION       ?= Release
 # Inside the repository, which .gitignore covers. A copy under /private/tmp is
 # a clean build after every reboot and every periodic clean-up — minutes here —
@@ -16,12 +16,12 @@ DERIVED_DATA        ?= $(ROOT_DIR)/build/DerivedData
 
 DEVICE_DESTINATION  := generic/platform=iOS
 PRODUCTS_DIR        := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-iphoneos
-TARGET_INTERMEDIATES := $(DERIVED_DATA)/Build/Intermediates.noindex/Apelin.build/$(CONFIGURATION)-iphoneos
-APP_BUNDLE          := $(PRODUCTS_DIR)/Apelin.app
-DAEMON_BINARY       := $(PRODUCTS_DIR)/apelind
-# The workers apelind's session host spawns; each one's entitlements are
+TARGET_INTERMEDIATES := $(DERIVED_DATA)/Build/Intermediates.noindex/Luros.build/$(CONFIGURATION)-iphoneos
+APP_BUNDLE          := $(PRODUCTS_DIR)/Luros.app
+DAEMON_BINARY       := $(PRODUCTS_DIR)/lurosd
+# The workers lurosd's session host spawns; each one's entitlements are
 # Packaging/Workers/<name>.entitlements.
-WORKERS             := apelin-environment apelin-build apelin-agent apelin-diagnostics apelin-log-reader
+WORKERS             := luros-environment luros-build luros-agent luros-diagnostics luros-log-reader
 WORKER_ENTITLEMENTS := $(addprefix $(ROOT_DIR)/Packaging/Workers/,$(addsuffix .entitlements,$(WORKERS)))
 PACKAGE_ID          := com.fluoxetine.luros
 BUNDLE_ID           := com.fluoxetine.luros
@@ -82,10 +82,10 @@ PROMPTS_EMBEDDER    := $(ROOT_DIR)/Packages/ApelinAgent/Scripts/embed-prompts.py
 # from the Mac (Documents/Console.md ▸ From the Mac).
 DEVICE_TOOL         := $(ROOT_DIR)/Scripts/device.py
 CONTROL_TEMPLATE    := $(ROOT_DIR)/Packaging/DEBIAN/control
-ENTITLEMENTS        := $(ROOT_DIR)/Packaging/Apelin.entitlements
-DAEMON_ENTITLEMENTS := $(ROOT_DIR)/Packaging/Apelind.entitlements
+ENTITLEMENTS        := $(ROOT_DIR)/Packaging/Luros.entitlements
+DAEMON_ENTITLEMENTS := $(ROOT_DIR)/Packaging/Lurosd.entitlements
 # The widget extension's (Widgets/Extension): sandboxed, the App Group alone.
-WIDGET_ENTITLEMENTS := $(ROOT_DIR)/Packaging/ApelinWidgets.entitlements
+WIDGET_ENTITLEMENTS := $(ROOT_DIR)/Packaging/LurosWidgets.entitlements
 # The development templates whose product is an executable signed with its
 # own entitlements, an app or a command-line tool: both carry the app's GPU
 # list. A tweak or a preference bundle is a library and runs with the
@@ -97,17 +97,17 @@ TEMPLATE_ENTITLEMENTS := $(wildcard $(ROOT_DIR)/Extensions/Development/com.fluox
 APP_GROUP           := group.com.fluoxetine.luros
 LAUNCH_DAEMON       := $(ROOT_DIR)/Packaging/$(DAEMON_ID).plist
 # Every Swift source root, for the greps and the gates that read source.
-SOURCE_ROOTS        := $(ROOT_DIR)/Apelin $(ROOT_DIR)/Apelind $(ROOT_DIR)/Shared $(ROOT_DIR)/Widgets $(ROOT_DIR)/Workers $(ROOT_DIR)/Packages/ApelinKit/Sources
+SOURCE_ROOTS        := $(ROOT_DIR)/Luros $(ROOT_DIR)/Lurosd $(ROOT_DIR)/Shared $(ROOT_DIR)/Widgets $(ROOT_DIR)/Workers $(ROOT_DIR)/Packages/ApelinKit/Sources
 # The shared package: `make harness` runs its tests on the Mac.
 APELINKIT           := $(ROOT_DIR)/Packages/ApelinKit
 SWIFTPM_SCRATCH     ?= $(APELINKIT)/.build
-# ApelinToolHost links into apelind's session host; the harness builds it to
-# typecheck apelind, in the scratch path its tests use below.
+# ApelinToolHost links into lurosd's session host; the harness builds it to
+# typecheck lurosd, in the scratch path its tests use below.
 TOOLHOST            := $(ROOT_DIR)/Packages/ApelinToolHost
 # The editor's text view and grammars, vendored (Packages/Runestone/README.md).
 RUNESTONE           := $(ROOT_DIR)/Packages/Runestone
 TOOLHOST_SCRATCH    ?= $(call package_scratch,ApelinToolHost)
-IRISIN_SHIM_DIR     := $(ROOT_DIR)/Apelind/Vendor/IrisinExternalClient/CIrisinExternalXPC
+IRISIN_SHIM_DIR     := $(ROOT_DIR)/Lurosd/Vendor/IrisinExternalClient/CIrisinExternalXPC
 # Every other standalone package under Packages/ (ApelinFormats,
 # ApelinDiagnostics, ApelinAgent, ApelinToolHost, and any added later) has
 # its tests run by `make harness` too, each in a scratch path of its own:
@@ -170,7 +170,7 @@ DEVICE_TOOL_ENV      = VPHONE=$(call shell_word,$(VPHONE)) VPHONE_HOST=$(call sh
 SUITE               ?= smoke
 
 # OTHER_CFLAGS on the command line reaches the package targets too, which do
-# not read Configuration/Base.xcconfig: BoringSSL (in apelin-agent, through
+# not read Configuration/Base.xcconfig: BoringSSL (in luros-agent, through
 # swift-nio-ssl) spells __FILE__ in its error macros, and without the map
 # every one is a derived-data path in the shipped binary. The vendored
 # tree-sitter runtime (Packages/Runestone) asserts with __FILE__ the same
@@ -198,10 +198,10 @@ shell_word = '$(subst ','\'',$(1))'
 all: deb
 
 help:
-	@echo "Apelin:"
-	@echo "  harness       Host tests on the Mac: RoothideRoot, ExecutableWatch, every package under Packages/, apelind and the workers typechecked"
+	@echo "Luros:"
+	@echo "  harness       Host tests on the Mac: RoothideRoot, ExecutableWatch, every package under Packages/, lurosd and the workers typechecked"
 	@echo "  check         Validate the project and packaging inputs (the checklist first)"
-	@echo "  build         Build the unsigned Apelin.app and apelind for iPhoneOS (iOS $(IOS_SDK_TIER) SDK or later)"
+	@echo "  build         Build the unsigned Luros.app and lurosd for iPhoneOS (iOS $(IOS_SDK_TIER) SDK or later)"
 	@echo "  deb           Build, ad-hoc sign and package the .deb (FLAVOR=$(FLAVOR))"
 	@echo "  deb-roothide  Package for roothide (unprefixed, iphoneos-arm64e)"
 	@echo "  deb-rootless  Package for a rootless bootstrap (/var/jb, iphoneos-arm64)"
@@ -211,11 +211,11 @@ help:
 	@echo "  deb-agent-tools The agent tool extensions and the assembler's source archive"
 	@echo "  install       Package for FLAVOR and update the installation on DEVICE_HOST:DEVICE_PORT"
 	@echo "  vphone        Package roothide and update the installation on the vphone (VPHONE=<name>, or the one running)"
-	@echo "  vphone-app    Build and put only Apelin.app over the vphone's installed one (no gates, harness or package)"
+	@echo "  vphone-app    Build and put only Luros.app over the vphone's installed one (no gates, harness or package)"
 	@echo "  vphone-app INCREMENTAL=1  The same with per-file incremental Swift instead of Release's whole-module: the fast loop"
 	@echo "  install-app   The same onto DEVICE_HOST:DEVICE_PORT"
 	@echo "  device-status   What the vphone or device has installed, registered and running"
-	@echo "  device-install  Install every built package (Apelin and its extensions) without building"
+	@echo "  device-install  Install every built package (Luros and its extensions) without building"
 	@echo "  device-test     Run a suite of console scripts on it (SUITE=$(SUITE); Scripts/device.py list)"
 	@echo "  device-run      Run console scripts by name (SCRIPT='i1-smoke terminal')"
 	@echo "  Scripts/device.py --help covers the rest: call, out, open, kill-host, crashes, screenshot, logs, shell"
@@ -242,7 +242,7 @@ checklist:
 sdk-tier:
 	@sdk="$$(xcrun --sdk iphoneos --show-sdk-version 2>/dev/null || true)"; \
 	if [[ -z "$$sdk" || "$$(printf '%s\n%s\n' "$(IOS_SDK_TIER)" "$$sdk" | sort -V | head -n1)" != "$(IOS_SDK_TIER)" ]]; then \
-		echo "error: the iPhoneOS SDK is $${sdk:-missing}; Apelin is linked against iOS $(IOS_SDK_TIER) or later: select Xcode $(IOS_SDK_TIER) or later with xcode-select or DEVELOPER_DIR" >&2; \
+		echo "error: the iPhoneOS SDK is $${sdk:-missing}; Luros is linked against iOS $(IOS_SDK_TIER) or later: select Xcode $(IOS_SDK_TIER) or later with xcode-select or DEVELOPER_DIR" >&2; \
 		exit 69; \
 	fi; \
 	echo "ok: iPhoneOS SDK $$sdk"
@@ -259,7 +259,7 @@ check:
 	@command -v xcodebuild >/dev/null || { echo "error: xcodebuild is required" >&2; exit 69; }
 	@command -v ldid >/dev/null || { echo "error: ldid is required (install it with your preferred package manager)" >&2; exit 69; }
 	@command -v dpkg-deb >/dev/null || { echo "error: dpkg-deb is required (install it with your preferred package manager)" >&2; exit 69; }
-	@test -d "$(PROJECT)" || { echo "error: Apelin.xcodeproj is missing" >&2; exit 66; }
+	@test -d "$(PROJECT)" || { echo "error: Luros.xcodeproj is missing" >&2; exit 66; }
 	@for script in "$(DEB_PACKAGER)" "$(DEVICE_INSTALLER)" "$(VERSION_APPLIER)" "$(XCODEBUILD_WRAPPER)" \
 		"$(LICENSE_COLLECTOR)" "$(ACCESSIBILITY_CHECK)" "$(STALE_STRINGS_CHECK)" "$(FORMAT_STRINGS_CHECK)" "$(TRANSLATIONS_CHECK)" \
 		"$(CATALOG_KEYS_CHECK)" "$(SHELL_DELETES_CHECK)" "$(PERSISTED_READS_CHECK)" "$(OBJC_DATA_CHECK)" \
@@ -279,7 +279,7 @@ check:
 	@! grep -nE '^[[:space:]]*(MARKETING_VERSION|CURRENT_PROJECT_VERSION|IPHONEOS_DEPLOYMENT_TARGET) =' "$(PROJECT)/project.pbxproj" \
 		|| { echo "error: versions and the deployment target live in Configuration/*.xcconfig, not project.pbxproj — a target-level value shadows the xcconfig" >&2; exit 65; }
 	@grep -qF 'collect-licenses.py' "$(PROJECT)/project.pbxproj" \
-		|| { echo "error: the Collect Licenses build phase is missing from the Apelin target — Settings ▸ About ▸ Licenses would be empty" >&2; exit 65; }
+		|| { echo "error: the Collect Licenses build phase is missing from the Luros target — Settings ▸ About ▸ Licenses would be empty" >&2; exit 65; }
 	@test -f "$(ROOT_DIR)/Licenses/review.json" || { echo "error: Licenses/review.json is missing" >&2; exit 66; }
 	@# Runestone is vendored source: the runtime and each grammar keep their
 	@# upstream LICENSE beside them, and every LICENSE in the package has the
@@ -313,7 +313,7 @@ check:
 	@# The tools the IDE cannot work without ride inside its bundle too: icli
 	@# and irisind are committed under Vendor/ with their digests, the package
 	@# depends on neither of their packages, and the maintainer scripts register
-	@# and remove the bundled daemon under Apelin's own label.
+	@# and remove the bundled daemon under Luros's own label.
 	@python3 "$(ROOT_DIR)/Scripts/check-vendored-tools.py" "$(ROOT_DIR)"
 	@# The terminal and the file browser are the app's own pages: no source
 	@# opens a Fila or iGhostVT URL or queries one, and the package depends on
@@ -326,11 +326,11 @@ check:
 	@# Every deb names its package manager icon, one Pages serves from
 	@# Documents/Site (Scripts/render-package-icons.py draws the extensions').
 	@for control in "$(CONTROL_TEMPLATE)" "$(ROOT_DIR)"/Extensions/*/*/Packaging/*/control "$(ROOT_DIR)"/Extensions/Development/Packaging/*/control; do \
-		icon="$$(sed -n 's#^Icon: https://1103945342.github.io/Apelin/##p' "$$control")"; \
+		icon="$$(sed -n 's#^Icon: https://1103945342.github.io/Luros/##p' "$$control")"; \
 		[[ -n "$$icon" && -f "$(ROOT_DIR)/Documents/Site/$$icon" ]] \
 			|| { echo "error: $${control#$(ROOT_DIR)/} has no Icon: a file in Documents/Site served by Pages" >&2; exit 65; }; \
 	done
-	@icon="$$(sed -n 's#.*"https://1103945342.github.io/Apelin/\(icons/[^"]*\)".*#\1#p' "$(ROOT_DIR)/Packages/ApelinKit/Sources/ApelinEnvironment/Toolchain/ToolchainPackaging.swift")"; \
+	@icon="$$(sed -n 's#.*"https://1103945342.github.io/Luros/\(icons/[^"]*\)".*#\1#p' "$(ROOT_DIR)/Packages/ApelinKit/Sources/ApelinEnvironment/Toolchain/ToolchainPackaging.swift")"; \
 		[[ -n "$$icon" && -f "$(ROOT_DIR)/Documents/Site/$$icon" ]] \
 			|| { echo "error: the toolchain deb's Icon is not a file in Documents/Site" >&2; exit 65; }
 	@# The extension formats against their fixtures, and every development
@@ -347,16 +347,16 @@ check:
 	done
 	@"$(ROOT_DIR)/Scripts/check-gpu-entitlements.py" "$(ENTITLEMENTS)" $(TEMPLATE_ENTITLEMENTS)
 	@"$(ROOT_DIR)/Scripts/check-launchd-paths.py" "$(LAUNCH_DAEMON)" --substituted-by "$(DEB_PACKAGER)"
-	@# On demand (owner, 2026-10-16): launchd starts apelind for a message to
-	@# its Mach service, and apelind exits itself once idle. RunAtLoad or
+	@# On demand (owner, 2026-10-16): launchd starts lurosd for a message to
+	@# its Mach service, and lurosd exits itself once idle. RunAtLoad or
 	@# KeepAlive would fight the idle exit — the scaffold's daemon was
 	@# restarted, throttled, every few seconds that way.
 	@for key in RunAtLoad KeepAlive AbandonProcessGroup; do \
 		! /usr/libexec/PlistBuddy -c "Print :$$key" "$(LAUNCH_DAEMON)" >/dev/null 2>&1 \
-			|| { echo "error: apelind is on demand; its launchd plist must not set $$key" >&2; exit 65; }; \
+			|| { echo "error: lurosd is on demand; its launchd plist must not set $$key" >&2; exit 65; }; \
 	done
 	@[[ "$$(/usr/libexec/PlistBuddy -c 'Print :MachServices:com.fluoxetine.luros.service' "$(LAUNCH_DAEMON)")" == true ]] \
-		|| { echo "error: the launchd plist must advertise com.fluoxetine.luros.service, which is what starts apelind" >&2; exit 65; }
+		|| { echo "error: the launchd plist must advertise com.fluoxetine.luros.service, which is what starts lurosd" >&2; exit 65; }
 	@[[ "$$(/usr/libexec/PlistBuddy -c 'Print :SoftResourceLimits:NumberOfFiles' "$(LAUNCH_DAEMON)")" == "10240" ]] \
 		|| { echo "error: the daemon and its sessions require a 10240 soft file-descriptor limit" >&2; exit 65; }
 	@[[ "$$(/usr/libexec/PlistBuddy -c 'Print :ProgramArguments:0' "$(LAUNCH_DAEMON)")" == "@PREFIX@/usr/libexec/lurosd" ]] \
@@ -371,7 +371,7 @@ check:
 		|| { echo "error: ChatWidgetStore.appGroup must be $(APP_GROUP), the App Group both targets carry" >&2; exit 65; }
 	@for key in com.fluoxetine.luros.client com.apple.private.security.no-sandbox platform-application com.apple.security.exception.mach-lookup.global-name; do \
 		! /usr/libexec/PlistBuddy -c "Print :$$key" "$(WIDGET_ENTITLEMENTS)" >/dev/null 2>&1 \
-			|| { echo "error: Packaging/ApelinWidgets.entitlements carries $$key; the widget extension stays sandboxed and unprivileged" >&2; exit 65; }; \
+			|| { echo "error: Packaging/LurosWidgets.entitlements carries $$key; the widget extension stays sandboxed and unprivileged" >&2; exit 65; }; \
 	done
 	@test -f "$(XPC_SHIM_DIR)/module.modulemap" -a -f "$(XPC_SHIM_DIR)/shim.h" \
 		|| { echo "error: Shared/XPCShim is missing — the XPC_TYPE_* macros are read through the CAppXPC module" >&2; exit 66; }
@@ -398,20 +398,20 @@ check:
 		echo "$$hits" >&2; \
 		exit 65; \
 	fi
-	@hits="$$(grep -rnwE 'exit|_exit' --include='*.swift' "$(ROOT_DIR)/Apelin" | grep -vE '^[^:]+/QuietExit\.swift:|^[^:]+:[0-9]+:[[:space:]]*//' | grep -E '\b_?exit\(' || true)"; \
+	@hits="$$(grep -rnwE 'exit|_exit' --include='*.swift' "$(ROOT_DIR)/Luros" | grep -vE '^[^:]+/QuietExit\.swift:|^[^:]+:[0-9]+:[[:space:]]*//' | grep -E '\b_?exit\(' || true)"; \
 	if [[ -n "$$hits" ]]; then \
 		echo "error: the app exits through QuietExit.run only:" >&2; \
 		echo "$$hits" >&2; \
 		exit 65; \
 	fi
 	@test ! -e "$(ROOT_DIR)/CLAUDE.md" || { echo "error: AGENTS.md is the only notes file; remove CLAUDE.md" >&2; exit 65; }
-	@"$(ACCESSIBILITY_CHECK)" "$(ROOT_DIR)/Apelin"
+	@"$(ACCESSIBILITY_CHECK)" "$(ROOT_DIR)/Luros"
 	@# Discipline: keys Xcode cannot see stay `extractionState: manual`, pruned
 	@# by hand with prune-xcstrings.py (Xcode closed, every source root
 	@# passed). `stale` is what Xcode writes during a build and never survives.
-	@"$(STALE_STRINGS_CHECK)" "$(ROOT_DIR)/Apelin" "$(ROOT_DIR)/Widgets"
-	@"$(FORMAT_STRINGS_CHECK)" "$(ROOT_DIR)/Apelin" "$(ROOT_DIR)/Widgets"
-	@"$(TRANSLATIONS_CHECK)" "$(ROOT_DIR)/Apelin" "$(ROOT_DIR)/Widgets"
+	@"$(STALE_STRINGS_CHECK)" "$(ROOT_DIR)/Luros" "$(ROOT_DIR)/Widgets"
+	@"$(FORMAT_STRINGS_CHECK)" "$(ROOT_DIR)/Luros" "$(ROOT_DIR)/Widgets"
+	@"$(TRANSLATIONS_CHECK)" "$(ROOT_DIR)/Luros" "$(ROOT_DIR)/Widgets"
 	@"$(SYMBOL_CHECK)" "$(IOS_DEPLOYMENT_FLOOR)" $(SOURCE_ROOTS)
 	@# An empty variable in a removed path removes from /, the bootstrap's
 	@# root on roothide: every recursive rm checks its variables with :?.
@@ -439,9 +439,9 @@ check:
 # package under Packages/ (HARNESS_PACKAGES; the diagnostics, log-reader and
 # agent workers' logic among them), the rule that what the root processes
 # link is system code, the session host's tests (the toolchain setup end to
-# end among them: apelin-environment-harness, the real environment worker
+# end among them: luros-environment-harness, the real environment worker
 # with a fake backend, against the install bridge and a fake irisind), and
-# apelind and every worker typechecked for macOS —
+# lurosd and every worker typechecked for macOS —
 # against the package scratch it imports — so a change that only compiles on
 # iOS shows.
 # Generated module maps for C targets are under out/ with swift-build (Xcode
@@ -464,7 +464,7 @@ harness:
 	@bash "$(ROOT_DIR)/Scripts/test-file-browser.sh"
 	@bash "$(ROOT_DIR)/Tests/TerminalUI/run.sh"
 	@python3 -I -B "$(ROOT_DIR)/Tests/ToolchainAudit/test_inventory.py"
-	@harness_dir="$$(mktemp -d /private/tmp/apelin-harness.XXXXXX)"; \
+	@harness_dir="$$(mktemp -d /private/tmp/luros-harness.XXXXXX)"; \
 	trap 'rm -rf -- "$${harness_dir:?}"' EXIT; \
 	xcrun --sdk macosx swiftc -swift-version 5 \
 		"$(ROOT_DIR)/Shared/RoothideRoot.swift" \
@@ -472,40 +472,40 @@ harness:
 		-o "$$harness_dir/roothide-root" && \
 	"$$harness_dir/roothide-root" && echo "ok: RoothideRoot" && \
 	xcrun --sdk macosx swiftc -swift-version 5 \
-		"$(ROOT_DIR)/Apelin/Interface/Chats/Messages/MessageImageLayout.swift" \
+		"$(ROOT_DIR)/Luros/Interface/Chats/Messages/MessageImageLayout.swift" \
 		"$(ROOT_DIR)/Tests/MessageImageLayout/main.swift" \
 		-o "$$harness_dir/message-image-layout" && \
 	"$$harness_dir/message-image-layout" && \
 	xcrun --sdk macosx swiftc -swift-version 5 \
-		"$(ROOT_DIR)/Apelin/Interface/Chats/Messages/TokenClimb.swift" \
+		"$(ROOT_DIR)/Luros/Interface/Chats/Messages/TokenClimb.swift" \
 		"$(ROOT_DIR)/Tests/TokenClimb/main.swift" \
 		-o "$$harness_dir/token-climb" && \
 	"$$harness_dir/token-climb" && \
 	xcrun --sdk macosx swiftc -swift-version 5 -target arm64-apple-macos13.0 \
-		"$(ROOT_DIR)/Apelin/Interface/Settings/Git/GitHubDeviceFlow.swift" \
+		"$(ROOT_DIR)/Luros/Interface/Settings/Git/GitHubDeviceFlow.swift" \
 		"$(ROOT_DIR)/Tests/GitHubDeviceFlow/main.swift" \
 		-o "$$harness_dir/github-device-flow" && \
 	"$$harness_dir/github-device-flow" && \
 	xcrun --sdk macosx swiftc -swift-version 5 \
-		"$(ROOT_DIR)/Apelin/Interface/Chats/Composer/ComposerDropPolicy.swift" \
+		"$(ROOT_DIR)/Luros/Interface/Chats/Composer/ComposerDropPolicy.swift" \
 		"$(ROOT_DIR)/Tests/ComposerDrop/main.swift" \
 		-o "$$harness_dir/composer-drop" && \
 	"$$harness_dir/composer-drop" && \
 	xcrun --sdk macosx swiftc -swift-version 5 \
-		"$(ROOT_DIR)/Apelin/Interface/Chats/Composer/Input/ComposerTips.swift" \
+		"$(ROOT_DIR)/Luros/Interface/Chats/Composer/Input/ComposerTips.swift" \
 		"$(ROOT_DIR)/Tests/ComposerTips/main.swift" \
 		-o "$$harness_dir/composer-tips" && \
 		"$$harness_dir/composer-tips" && \
 	xcrun --sdk macosx swiftc -swift-version 5 \
-		"$(ROOT_DIR)/Apelin/Interface/Settings/Logs/JournalFiles.swift" \
-		"$(ROOT_DIR)/Apelin/Interface/Settings/Logs/JournalLines.swift" \
+		"$(ROOT_DIR)/Luros/Interface/Settings/Logs/JournalFiles.swift" \
+		"$(ROOT_DIR)/Luros/Interface/Settings/Logs/JournalLines.swift" \
 		"$(ROOT_DIR)/Packages/ApelinKit/Sources/ApelinCore/LogText.swift" \
 		"$(ROOT_DIR)/Packages/ApelinAgent/Sources/ApelinAgent/Journal/DiagnosticJournal.swift" \
 		"$(ROOT_DIR)/Tests/Journal/main.swift" \
 		-o "$$harness_dir/journal" && \
 	"$$harness_dir/journal" && \
 	xcrun --sdk macosx swiftc -swift-version 5 \
-		"$(ROOT_DIR)/Apelin/Application/DeviceOwnerCheck.swift" \
+		"$(ROOT_DIR)/Luros/Application/DeviceOwnerCheck.swift" \
 		"$(ROOT_DIR)/Tests/DeviceOwnerCheck/main.swift" \
 		-o "$$harness_dir/device-owner-check" && \
 	"$$harness_dir/device-owner-check" && \
@@ -517,12 +517,12 @@ harness:
 	xcrun --sdk macosx swiftc -swift-version 5 \
 		"$(ROOT_DIR)/Widgets/Shared/ApelinLink.swift" \
 		"$(ROOT_DIR)/Widgets/Shared/ChatWidgetSnapshot.swift" \
-		"$(ROOT_DIR)/Apelin/Interface/Projects/RepositoryImport/RepositoryImportPlan.swift" \
+		"$(ROOT_DIR)/Luros/Interface/Projects/RepositoryImport/RepositoryImportPlan.swift" \
 		"$(ROOT_DIR)/Tests/ApelinLink/main.swift" \
-		-o "$$harness_dir/apelin-link" && \
-	"$$harness_dir/apelin-link" && \
+		-o "$$harness_dir/luros-link" && \
+	"$$harness_dir/luros-link" && \
 	xcrun --sdk macosx swiftc -swift-version 5 \
-		"$(ROOT_DIR)/Apelin/Application/ExecutableWatch.swift" \
+		"$(ROOT_DIR)/Luros/Application/ExecutableWatch.swift" \
 		"$(ROOT_DIR)/Tests/ExecutableWatch/main.swift" \
 		-o "$$harness_dir/executable-watch" && \
 	for mode in unchanged remove immediate-remove replace dpkg rollback; do \
@@ -561,10 +561,10 @@ harness:
 	"$(ROOT_DIR)/Scripts/test-chat-transcript.sh" "$$modules" && \
 	"$(ROOT_DIR)/Scripts/test-onboarding.sh" "$$modules" && \
 	xcrun --sdk macosx swiftc -swift-version 5 -typecheck -target arm64-apple-macos13.0 -I "$(XPC_SHIM_DIR)" -I "$(IRISIN_SHIM_DIR)" $$kit_flags -I "$$toolhost_modules" \
-		$$(find "$(ROOT_DIR)/Shared/Protocol" "$(ROOT_DIR)/Apelind" -name '*.swift' | sort) "$(ROOT_DIR)/Shared/RoothideRoot.swift" && \
-	echo "ok: apelind typechecks for macOS" && \
-	swift build --package-path "$(APELINKIT)" --scratch-path "$(SWIFTPM_SCRATCH)" --product apelin-environment-harness && \
-	environment_harness="$$(swift build --package-path "$(APELINKIT)" --scratch-path "$(SWIFTPM_SCRATCH)" --show-bin-path)/apelin-environment-harness" && \
+		$$(find "$(ROOT_DIR)/Shared/Protocol" "$(ROOT_DIR)/Lurosd" -name '*.swift' | sort) "$(ROOT_DIR)/Shared/RoothideRoot.swift" && \
+	echo "ok: lurosd typechecks for macOS" && \
+	swift build --package-path "$(APELINKIT)" --scratch-path "$(SWIFTPM_SCRATCH)" --product luros-environment-harness && \
+	environment_harness="$$(swift build --package-path "$(APELINKIT)" --scratch-path "$(SWIFTPM_SCRATCH)" --show-bin-path)/luros-environment-harness" && \
 	"$(ROOT_DIR)/Scripts/test-session-host.sh" "$$modules" "$$environment_harness" && echo "ok: session host tests (toolchain setup end to end included)" && \
 	for worker in "$(ROOT_DIR)"/Workers/*/; do \
 		flags="$$kit_flags"; \
@@ -616,16 +616,16 @@ else
 	@# xcodebuild never merges what the compiler extracted into a catalog, so a
 	@# new string is only there if someone put it there.
 	@"$(CATALOG_KEYS_CHECK)" \
-		"$(ROOT_DIR)/Apelin/Resources/Localizable.xcstrings" "$(TARGET_INTERMEDIATES)/Apelin.build" \
-		"$(ROOT_DIR)/Widgets/Extension/Resources/Localizable.xcstrings" "$(TARGET_INTERMEDIATES)/ApelinWidgets.build"
+		"$(ROOT_DIR)/Luros/Resources/Localizable.xcstrings" "$(TARGET_INTERMEDIATES)/Luros.build" \
+		"$(ROOT_DIR)/Widgets/Extension/Resources/Localizable.xcstrings" "$(TARGET_INTERMEDIATES)/LurosWidgets.build"
 endif
 
 # The packaging half of `deb`, without a build: CI and deb-all package one
 # build twice through it.
 _package:
-	@sdk="$$(xcrun vtool -show-build "$(APP_BUNDLE)/Apelin" | awk '$$1 == "sdk" { print $$2; exit }')"; \
+	@sdk="$$(xcrun vtool -show-build "$(APP_BUNDLE)/Luros" | awk '$$1 == "sdk" { print $$2; exit }')"; \
 	if [[ -z "$$sdk" || "$$(printf '%s\n%s\n' "$(IOS_SDK_TIER)" "$$sdk" | sort -V | head -n1)" != "$(IOS_SDK_TIER)" ]]; then \
-		echo "error: Apelin.app is linked against the iOS $${sdk:-unknown} SDK, older than $(IOS_SDK_TIER); build it again with Xcode $(IOS_SDK_TIER) or later" >&2; \
+		echo "error: Luros.app is linked against the iOS $${sdk:-unknown} SDK, older than $(IOS_SDK_TIER); build it again with Xcode $(IOS_SDK_TIER) or later" >&2; \
 		exit 65; \
 	fi
 	APELIN_AGENT_TOOLS="$(PACKAGES_DIR)" CONFIGURATION="$(CONFIGURATION)" "$(DEB_PACKAGER)" \
@@ -706,7 +706,7 @@ vphone:
 	$(MAKE) --no-print-directory install FLAVOR=roothide DEVICE_HOST="$$host" DEVICE_PORT=22
 
 # The inner loop while working on the app: no gates, no harness, no
-# package. The same build, incremental, then only Apelin.app goes over the
+# package. The same build, incremental, then only Luros.app goes over the
 # installed one, signed as the packager signs it. The daemon, the workers
 # and dpkg's record stay as the last package left them: a change outside the
 # app, and anything that ships, goes through `make vphone`.

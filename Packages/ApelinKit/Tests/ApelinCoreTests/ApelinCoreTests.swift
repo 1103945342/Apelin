@@ -115,7 +115,7 @@ final class JSONValueTests: XCTestCase {
 
 func temporaryDirectory() throws -> URL {
     let url = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-        .appendingPathComponent("apelin-tests-\(UUID().uuidString)", isDirectory: true)
+        .appendingPathComponent("luros-tests-\(UUID().uuidString)", isDirectory: true)
     try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
     return URL(fileURLWithPath: CanonicalPath.resolve(url.path)!, isDirectory: true)
 }

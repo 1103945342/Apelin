@@ -25,7 +25,7 @@ so a template that builds also runs. The packager derives `Depends` from the
 manifest; nothing is retyped in the control files.
 
 Every template's `package.icon` is its extension's own icon on Luros's
-Pages, `https://1103945342.github.io/Apelin/icons/<id>.png` (from app and
+Pages, `https://1103945342.github.io/Luros/icons/<id>.png` (from app and
 tweak 0.1.1, cli and preferences 0.1.2), so a package built from it shows
 that icon in a package manager until the user names their own;
 `check-templates.py` fails a template whose icon is another or not a file
@@ -117,7 +117,7 @@ Extensions/Development/package-extensions.sh <output-directory> [roothide|rootle
 scanner does, instantiates each template with its defaults, validates the
 generated project and prints its build and packaging digests, then builds it
 on the Mac with Xcode's iPhoneOS SDK by its own typed steps for every
-bootstrap it names — a stand-in for `apelin-build`, to prove the sources,
+bootstrap it names — a stand-in for `luros-build`, to prove the sources,
 headers and stubs compile and link. `--write-digests` refreshes each
 template's digest after a template edit.
 

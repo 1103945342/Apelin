@@ -6,7 +6,7 @@ import XCTest
 /// `Tools/check-fixtures.py` runs the reference implementation on.
 final class SchemaFixtureTests: XCTestCase {
     func testEmbeddedSchemasAreTheFiles() throws {
-        let project = try String(contentsOf: Repository.schemas.appendingPathComponent("apelin-project.schema.json"), encoding: .utf8)
+        let project = try String(contentsOf: Repository.schemas.appendingPathComponent("luros-project.schema.json"), encoding: .utf8)
         let manifest = try String(contentsOf: Repository.schemas.appendingPathComponent("extension-manifest.schema.json"), encoding: .utf8)
         XCTAssertEqual(EmbeddedSchemas.project + "\n", project, "run Packages/ApelinKit/Scripts/embed-schemas.py")
         XCTAssertEqual(EmbeddedSchemas.manifest + "\n", manifest, "run Packages/ApelinKit/Scripts/embed-schemas.py")

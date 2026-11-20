@@ -26,9 +26,9 @@ public struct ToolchainSelfTest: Sendable {
         let bin = root.appendingPathComponent("usr/bin")
         let samples: [(String, String, String)] = [
             // __builtin_available needs the builtins' __isPlatformVersionAtLeast at link time.
-            ("C", "c", "#include <stdio.h>\nint main(void) { if (__builtin_available(iOS 13.0, *)) puts(\"apelin-ok\"); else puts(\"bad\"); return 0; }\n"),
-            ("C++", "cpp", "#include <iostream>\n#include <vector>\nint main() { std::vector<int> v{1,2,3}; std::cout << (v.size()==3 ? \"apelin-ok\" : \"bad\") << std::endl; }\n"),
-            ("ObjC", "m", "#import <Foundation/Foundation.h>\n#include <stdio.h>\nint main(void) { @autoreleasepool { NSArray *a = @[@1,@2]; puts(a.count==2 ? \"apelin-ok\" : \"bad\"); } return 0; }\n"),
+            ("C", "c", "#include <stdio.h>\nint main(void) { if (__builtin_available(iOS 13.0, *)) puts(\"luros-ok\"); else puts(\"bad\"); return 0; }\n"),
+            ("C++", "cpp", "#include <iostream>\n#include <vector>\nint main() { std::vector<int> v{1,2,3}; std::cout << (v.size()==3 ? \"luros-ok\" : \"bad\") << std::endl; }\n"),
+            ("ObjC", "m", "#import <Foundation/Foundation.h>\n#include <stdio.h>\nint main(void) { @autoreleasepool { NSArray *a = @[@1,@2]; puts(a.count==2 ? \"luros-ok\" : \"bad\"); } return 0; }\n"),
         ]
         var results: [ToolchainTestResult] = []
         for arch in ["arm64", "arm64e"] {
@@ -93,7 +93,7 @@ public struct ToolchainSelfTest: Sendable {
                     try image.signed(identifier: "hello").write(to: executable, options: .atomic)
                     try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: executable.path)
                     let output = try await runProcess(executable, [], cwd: work, bin: bin)
-                    guard output.contains("apelin-ok") else {
+                    guard output.contains("luros-ok") else {
                         throw ToolchainFailure("The test program did not produce the expected output.")
                     }
                     results.append(.init(
@@ -137,7 +137,7 @@ public struct ToolchainSelfTest: Sendable {
 /// standard library, a library module in its own dylib with an executable
 /// that imports and loads it, and structured concurrency. Each is compiled
 /// to an object by `swiftc`, linked by `swiftc` (which links through clang),
-/// given a dSYM whose UUID must match, signed, and run for `apelin-ok`.
+/// given a dSYM whose UUID must match, signed, and run for `luros-ok`.
 /// An architecture runs only when the SDK has Swift interfaces for it: the
 /// iOS 27 SDK carries arm64e ones only.
 struct SwiftSelfTest {
@@ -155,13 +155,13 @@ struct SwiftSelfTest {
     let box = Box(Square(side: 3))
     let ok = words == ["ios", "on", "swift"] && table[0] == [3, 6] && caught && box.item.area == 9
         && "\\(words.joined(separator: "-"))" == "ios-on-swift"
-    print(ok ? "apelin-ok" : "bad")
+    print(ok ? "luros-ok" : "bad")
     """
     static let library = """
     public struct Greeter {
         public let name: String
         public init(name: String) { self.name = name }
-        public func greeting() -> String { "apelin-" + name }
+        public func greeting() -> String { "luros-" + name }
     }
     open class Counter { public private(set) var value = 0; public init() {}; open func step() { value += 1 } }
     """
@@ -170,7 +170,7 @@ struct SwiftSelfTest {
     final class Twice: Counter { override func step() { super.step(); super.step() } }
     let counter = Twice()
     counter.step()
-    print(Greeter(name: "ok").greeting() == "apelin-ok" && counter.value == 2 ? "apelin-ok" : "bad")
+    print(Greeter(name: "ok").greeting() == "luros-ok" && counter.value == 2 ? "luros-ok" : "bad")
     """
     static let cases = ["Swift", "Swift dylib", "Swift async", "Swift macro"]
     /// A macro, expanded by a plugin the in-process plugin server loads from
@@ -183,7 +183,7 @@ struct SwiftSelfTest {
     var changed = false
     withObservationTracking { _ = model.count } onChange: { changed = true }
     model.count += 1
-    print(changed && model.count == 1 ? "apelin-ok" : "bad")
+    print(changed && model.count == 1 ? "luros-ok" : "bad")
     """
     /// The newer of two `major.minor` versions.
     static func newer(_ lhs: String, _ rhs: String) -> String {
@@ -217,7 +217,7 @@ struct SwiftSelfTest {
             }
             let total = await ledger.sum
             let ok = total == 385 && squared == 121 && streamed == 6 && resumed == 7
-            print(ok ? "apelin-ok" : "bad")
+            print(ok ? "luros-ok" : "bad")
         }
     }
     """
@@ -344,7 +344,7 @@ struct SwiftSelfTest {
                         try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: image.path)
                     }
                     let output = try await runProcess(executable, [], cwd: work, bin: bin)
-                    guard output.contains("apelin-ok") else {
+                    guard output.contains("luros-ok") else {
                         throw ToolchainFailure("The test program did not produce the expected output: \(output)")
                     }
                     results.append(.init(

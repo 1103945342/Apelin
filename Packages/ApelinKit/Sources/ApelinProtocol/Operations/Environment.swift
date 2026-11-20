@@ -1,6 +1,6 @@
 // Environment tasks (toolchain setup and removal, SDK import), read and
 // cancelled through the session host's task registry.
-// Served by the session host (Apelind/Session/TaskRegistry.swift).
+// Served by the session host (Lurosd/Session/TaskRegistry.swift).
 
 public struct EnvironmentAttachRequest: TaskAttachRequest {
     public static let operation = AppOperation.environmentAttach

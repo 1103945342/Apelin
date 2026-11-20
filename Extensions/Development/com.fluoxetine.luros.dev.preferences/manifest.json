@@ -76,7 +76,7 @@
         { "path": "Resources/icon@3x.png", "format": "copy" },
         { "path": "Packaging/entry.plist", "format": "plist-xml" }
       ],
-      "digest": "sha256:e6b4ac091339602be546b33d33469975276032223406fbbab8e145a6f46d4162"
+      "digest": "sha256:ae393ab10f35b155d813d42191313d48c09e6f5daf84a669872d7c52bd622ce4"
     }
   ],
   "provenance": [

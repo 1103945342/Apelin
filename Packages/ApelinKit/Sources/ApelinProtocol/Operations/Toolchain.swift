@@ -3,7 +3,7 @@ import Foundation
 
 // Toolchain: Apple's Command Line Tools fetched, unpacked and retargeted on
 // the device, installed through Irisin, self-checked, registered.
-// Served by apelin-environment (Workers/Environment; Packages/ApelinToolchain).
+// Served by luros-environment (Workers/Environment; Packages/ApelinToolchain).
 //
 // Setup and removal are tasks of kind `environment`, read with
 // `environmentAttach`. Setup's events: `stage` {stage} through downloading,

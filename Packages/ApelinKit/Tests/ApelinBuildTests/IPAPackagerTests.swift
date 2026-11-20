@@ -74,7 +74,7 @@ final class IPAPackagerTests: XCTestCase {
     }
 
     func testTheAppGoesIntoPayloadAndTheArchiveReadsBack() throws {
-        let scratch = try scratchDirectory("apelin-ipa")
+        let scratch = try scratchDirectory("luros-ipa")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let inputs = try makeInputs(scratch)
         let app = try makeApp(in: scratch)
@@ -100,7 +100,7 @@ final class IPAPackagerTests: XCTestCase {
 
     /// Two writes of the same app with the same timestamp are the same bytes.
     func testTheSameBytesWriteTheSameArchive() throws {
-        let scratch = try scratchDirectory("apelin-ipa")
+        let scratch = try scratchDirectory("luros-ipa")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let inputs = try makeInputs(scratch)
         let products = try products(app: try makeApp(in: scratch).path)
@@ -130,7 +130,7 @@ final class IPAPackagerTests: XCTestCase {
     }
 
     func testExactlyOneAppIsPackaged() throws {
-        let scratch = try scratchDirectory("apelin-ipa")
+        let scratch = try scratchDirectory("luros-ipa")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let inputs = try makeInputs(scratch)
         let app = try makeApp(in: scratch)
@@ -200,7 +200,7 @@ final class IPAPackagerTests: XCTestCase {
     /// The widget an app carries goes in at the one place iOS looks for it,
     /// with the bytes the build signed, and the app on disk is left alone.
     func testAnAppCarriesItsWidget() throws {
-        let scratch = try scratchDirectory("apelin-ipa")
+        let scratch = try scratchDirectory("luros-ipa")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let inputs = try makeInputs(scratch)
         let app = try makeApp(in: scratch, identifier: "com.example.hello")
@@ -227,7 +227,7 @@ final class IPAPackagerTests: XCTestCase {
     /// The widget's executable keeps the mode the build signed it with, which
     /// is the only reason iOS runs it.
     func testTheWidgetsExecutableStaysExecutable() throws {
-        let scratch = try scratchDirectory("apelin-ipa")
+        let scratch = try scratchDirectory("luros-ipa")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let inputs = try makeInputs(scratch)
         let app = try makeApp(in: scratch, identifier: "com.example.hello")
@@ -245,7 +245,7 @@ final class IPAPackagerTests: XCTestCase {
     /// widget joins it: the archive names each folder once, however the folder
     /// came to be. A zip with the same member twice is one unzip warns about.
     func testAFolderTheAppAlreadyHasIsNamedOnce() throws {
-        let scratch = try scratchDirectory("apelin-ipa")
+        let scratch = try scratchDirectory("luros-ipa")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let inputs = try makeInputs(scratch)
         let app = try makeApp(in: scratch, identifier: "com.example.hello")
@@ -267,7 +267,7 @@ final class IPAPackagerTests: XCTestCase {
     /// An extension that is not one is refused before the archive is written:
     /// iOS would drop the whole app over it.
     func testAnExtensionThatIsNotOneIsRefused() throws {
-        let scratch = try scratchDirectory("apelin-ipa")
+        let scratch = try scratchDirectory("luros-ipa")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let inputs = try makeInputs(scratch)
         let app = try makeApp(in: scratch, identifier: "com.example.hello")

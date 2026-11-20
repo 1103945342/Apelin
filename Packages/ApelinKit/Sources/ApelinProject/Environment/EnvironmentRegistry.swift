@@ -2,7 +2,7 @@ import ApelinCore
 import ApelinProtocol
 import Foundation
 
-/// A toolchain apelin-environment registered: where its tools are on disk
+/// A toolchain luros-environment registered: where its tools are on disk
 /// (a physical path — the toolchain does not link libvroot and sees the real
 /// root) and what it can compile.
 public struct RegisteredToolchain: Codable, Sendable, Equatable {
@@ -66,7 +66,7 @@ public struct RegisteredToolchain: Codable, Sendable, Equatable {
     }
 }
 
-/// An SDK apelin-environment registered, at its physical path (what
+/// An SDK luros-environment registered, at its physical path (what
 /// `-isysroot` is given).
 public struct RegisteredSDK: Codable, Sendable, Equatable {
     public var id: String
@@ -86,8 +86,8 @@ public struct RegisteredSDK: Codable, Sendable, Equatable {
     }
 }
 
-/// What apelin-build reads about the registered environment. Writing it is
-/// apelin-environment's; this side only reads (`EnvironmentStores`), by the
+/// What luros-build reads about the registered environment. Writing it is
+/// luros-environment's; this side only reads (`EnvironmentStores`), by the
 /// IDs a project binds.
 public protocol EnvironmentRegistry: Sendable {
     func toolchains() throws -> [RegisteredToolchain]
@@ -107,7 +107,7 @@ public extension EnvironmentRegistry {
     }
 }
 
-/// apelin-environment's own stores, read as they are (ApelinEnvironment ▸
+/// luros-environment's own stores, read as they are (ApelinEnvironment ▸
 /// EnvironmentLayout): `Environment/Toolchains/registry.json`
 /// (`{toolchains: [ToolchainRecord], defaultID}`, a toolchain recorded only
 /// once its installed bytes passed the C self-test) and

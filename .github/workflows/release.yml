@@ -3,7 +3,7 @@
 # Nothing is tested or compiled here. The push of the commit to main ran
 # `ci.yml`: the host tests in one job and, beside them, the IDE's two
 # packages and every extension's compiled, packaged and verified in
-# another, kept as the artifact `apelin-<sha>`. The tag publishes that artifact, and only once that run
+# another, kept as the artifact `luros-<sha>`. The tag publishes that artifact, and only once that run
 # has succeeded: a failed test fails the run, and the release with it. What
 # ships is the file CI verified, not a second build of the same commit.
 #
@@ -70,7 +70,7 @@ jobs:
           echo "run=$run" >> "$GITHUB_OUTPUT"
       - uses: actions/download-artifact@v4
         with:
-          name: apelin-${{ github.sha }}
+          name: luros-${{ github.sha }}
           path: build/Packages/
           run-id: ${{ steps.ci.outputs.run }}
           github-token: ${{ github.token }}
@@ -113,14 +113,14 @@ jobs:
           sha256sum "${files[@]}" > SHA256SUMS
           cat SHA256SUMS
           # The publish step uploads this list, the IDE's debs first.
-          printf 'build/Packages/%s\n' "${files[@]}" SHA256SUMS > "$RUNNER_TEMP/apelin-release-files"
+          printf 'build/Packages/%s\n' "${files[@]}" SHA256SUMS > "$RUNNER_TEMP/luros-release-files"
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           version="${GITHUB_REF_NAME#v}"
-          notes="$RUNNER_TEMP/apelin-release.md"
+          notes="$RUNNER_TEMP/luros-release.md"
           if [ -f "Documents/Releases/$version.md" ]; then
             cp "Documents/Releases/$version.md" "$notes"
           else
@@ -131,7 +131,7 @@ jobs:
           SHA-256 sums are in \`SHA256SUMS\`.
           NOTES
           fi
-          mapfile -t files < "$RUNNER_TEMP/apelin-release-files"
+          mapfile -t files < "$RUNNER_TEMP/luros-release-files"
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             gh release upload "$GITHUB_REF_NAME" --clobber "${files[@]}"
             gh release edit "$GITHUB_REF_NAME" --notes-file "$notes"

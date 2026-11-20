@@ -12,7 +12,7 @@ import Foundation
 
 func temporaryFolder(_ tag: String) throws -> URL {
     let folder = FileManager.default.temporaryDirectory
-        .appendingPathComponent("apelin-file-browser-\(tag)-\(UUID().uuidString)", isDirectory: true)
+        .appendingPathComponent("luros-file-browser-\(tag)-\(UUID().uuidString)", isDirectory: true)
     try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
     return folder
 }

@@ -6,10 +6,10 @@ deb:
 
 | Package | Executable | Tools | Links | License |
 |---|---|---|---|---|
-| `com.fluoxetine.luros.agent-tools.disassembler` | `apelin-disassembler` | `disassemble{binary, address, count, arch?}`, `symbols{binary, filter?, kind?, limit?, offset?, arch?, output?}` (`output: file` sends the whole listing as an attachment) | Capstone, MachOReader | MIT, BSD-3-Clause, NCSA |
-| `com.fluoxetine.luros.agent-tools.assembler` | `apelin-assembler` | `assemble{arch, source, address?, syntax?}` | Keystone | GPL-2.0-only, MIT, NCSA |
+| `com.fluoxetine.luros.agent-tools.disassembler` | `luros-disassembler` | `disassemble{binary, address, count, arch?}`, `symbols{binary, filter?, kind?, limit?, offset?, arch?, output?}` (`output: file` sends the whole listing as an attachment) | Capstone, MachOReader | MIT, BSD-3-Clause, NCSA |
+| `com.fluoxetine.luros.agent-tools.assembler` | `luros-assembler` | `assemble{arch, source, address?, syntax?}` | Keystone | GPL-2.0-only, MIT, NCSA |
 
-Keystone is GPLv2, so it links into `apelin-assembler` alone: the
+Keystone is GPLv2, so it links into `luros-assembler` alone: the
 disassembler package carries no GPL code (the packager refuses a disassembler
 that defines `ks_asm`), and Luros neither depends on nor recommends either
 package. Both speak the protocol in `Packages/ApelinToolHost` and run as
@@ -21,7 +21,7 @@ mobile, in their own process, only when the agent calls them.
 Sources/MachOReader/        minimal Mach-O reader: fat/thin, 64-bit, segments, sections, LC_SYMTAB, LC_UUID (MIT)
 Sources/DisassemblerTools/  disassemble and symbols, on Capstone (libcapstone-spm 0.1.3)
 Sources/AssemblerTools/     assemble, on Keystone (libkeystone-spm 0.1.2, pinned by revision)
-Sources/apelin-*/           the two executables: build the server, run it
+Sources/luros-*/           the two executables: build the server, run it
 Packaging/<tool>/           manifest.json, control, entitlements (disassembler), SOURCE.md.in (assembler)
 Licenses/                   the reviewed notices both packages ship, and review.json with their hashes
 Scripts/                    build-agent-tools.sh, package-agent-tool.sh
@@ -31,7 +31,7 @@ Each package installs, under its prefix (none for roothide, `/var/jb` for
 rootless):
 
 ```
-usr/libexec/luros/agent-tools/apelin-<tool>
+usr/libexec/luros/agent-tools/luros-<tool>
 usr/share/luros/agent-tools/<id>/manifest.json
 usr/share/luros/agent-tools/<id>/licenses/…
 ```

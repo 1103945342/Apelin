@@ -8,7 +8,7 @@ import Foundation
 /// tools never: Luros's development extensions, whose support folders hold
 /// the headers and link stubs a template builds with (the Preferences
 /// framework's among them), and the registered SDKs. Both are mobile's to
-/// read: the extensions are the package's, the SDKs apelin-environment's.
+/// read: the extensions are the package's, the SDKs luros-environment's.
 ///
 /// Only an absolute path reaches one, and only when its realpath lies inside
 /// the folder's; a relative path is always the project's, so a link in the

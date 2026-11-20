@@ -12,7 +12,7 @@ page and it disagree.
 **`ApelinService`** (`Packages/ApelinKit/Sources/ApelinProtocol/Service/`)
 is the only surface: one typed `async throws` method per `AppOperation`,
 defined beside its request and response types in `Operations/<Domain>.swift`.
-The app's binding is `ApelinService.app` (`Apelin/Service/ApelinService.swift`,
+The app's binding is `ApelinService.app` (`Luros/Service/ApelinService.swift`,
 over `DaemonClient`); the console and the agent's tools call the same
 methods, so whatever the console scripts do, the UI can do the same way.
 Failures are `ApelinError` {code, message, reason?}: show `message` to
@@ -22,7 +22,7 @@ Operations by area (the full list is `AGENTS.md` ▸ The wire):
 
 | Area | Operations | Screen it feeds |
 |---|---|---|
-| Connection | `hello` (install root, protocol, operation list) | the *Connecting…* state; no error while apelind starts |
+| Connection | `hello` (install root, protocol, operation list) | the *Connecting…* state; no error while lurosd starts |
 | Environment | `toolchainStatus/Catalog/Setup/Remove`, `sdkList/Import/Remove`, `environmentAttach/Cancel` | Settings ▸ Toolchain, SDKs |
 | Projects | `extensionList`, `projectCreate`, `projectCheck` | new project from a template; project problems |
 | Build and install | `buildStart/Attach/Cancel`, `installPackage`, `removePackage`, `installationList`, `applicationList`, `applicationRemove`, `respring`, `approvalDigestState` | build log, diagnostics, install, Settings ▸ Apps |
@@ -36,7 +36,7 @@ Operations by area (the full list is `AGENTS.md` ▸ The wire):
 
 ## The UI dependencies are linked
 
-The app target (and only it: never apelind or a worker) links every UI
+The app target (and only it: never lurosd or a worker) links every UI
 package the owner chose on 2026-10-17. Package size was not a constraint:
 `DisplayLink`, `ListViewKit`, `Litext` and `LitextAnimation`,
 `MarkdownView` and `MarkdownParser`, `Runestone`, `GhosttyTerminal` and
@@ -89,7 +89,7 @@ the same way).
 The siblings' own helpers, not copied yet. Paths are in the sibling
 repositories under `owngoal-dev/`.
 
-- `Irisin/Irisin/Interface/InterfaceHostController.swift` — root container that swaps split and compact layouts as the window resizes, without a tab bar controller. (The split, its column host and the detail navigator are ported, in `Apelin/Interface/Split/`; the compact layout is not.)
+- `Irisin/Irisin/Interface/InterfaceHostController.swift` — root container that swaps split and compact layouts as the window resizes, without a tab bar controller. (The split, its column host and the detail navigator are ported, in `Luros/Interface/Split/`; the compact layout is not.)
 - `Irisin/Irisin/Interface/Components/Settings/SettingsController.swift`, `SettingsCell.swift` — inset grouped Settings driven by `SettingsItem` rows with live closures, and the build footer.
 - `Irisin/Irisin/Interface/Components/Settings/LicenseController.swift` — the Licenses screen over `Licenses.json`, the same file our collector writes.
 - `Irisin/Irisin/Interface/Components/LogViewerController/` — Dog's current journal as filterable rows, with a share menu.
@@ -170,7 +170,7 @@ New since the last UI-facing change:
 
 ## Working without a device: the replay
 
-A vphone or device without the package has no apelind, so every screen
+A vphone or device without the package has no lurosd, so every screen
 above would show only *Connecting…* and then the unprivileged fallback.
 **`ApelinReplay`** (`Packages/ApelinKit/Sources/ApelinReplay`) fills that
 gap: `ReplayTransport` is an `ApelinTransport` that answers from real event
@@ -217,7 +217,7 @@ flag (`AGENTS.md` ▸ Hard rules: the backend is resolved at runtime):
    other package bundles. The fixtures then ship in the app; check that
    `make deb` still passes the packager's repository-path grep.
 2. Where the app binds `ApelinService.app`, check one launch argument before
-   the first `hello`: with `-apelin-replay` (or `-apelin-replay immediate`),
+   the first `hello`: with `-luros-replay` (or `-luros-replay immediate`),
    bind `ApelinService.replay(try ReplayFixtures.bundled(), pacing: …)`
    instead of `DaemonClient`. Its `hello` answers at once with the recorded
    install root, so the app takes the privileged path.

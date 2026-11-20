@@ -1,6 +1,6 @@
 extension BuiltInSkills {
     static let preferenceBundle = SkillDocument(
-        name: "apelin-preference-bundle",
+        name: "luros-preference-bundle",
         description: "A Settings pane for a tweak: the PSListController subclass, Root.plist specifiers, the PreferenceLoader entry, the preferences domain it stores to, and how the tweak reads the same setting.",
         body: """
         # A preference bundle
@@ -31,7 +31,7 @@ extension BuiltInSkills {
           values through `readPreferenceValue:`/`setPreferenceValue:`; do not
           override them with NSUserDefaults. The `Preferences` framework is
           private: it is reached through the preferences extension's support
-          component (apelin-project-description), which supplies the declarations and
+          component (luros-project-description), which supplies the declarations and
           a link stub — do not expect SDK headers for it.
         - **The declarations** are one header,
           `<install root>/usr/share/luros/development/com.fluoxetine.luros.dev.preferences/support/include/Preferences/PSListController.h`
@@ -73,7 +73,7 @@ extension BuiltInSkills {
         ## How the tweak reads it
         The pane writes the value into the package's preferences domain and
         posts `<package id>/changed`. The tweak reads that domain and listens
-        for that name, as the apelin-tweak-runtime skill describes. Keep the row's
+        for that name, as the luros-tweak-runtime skill describes. Keep the row's
         `defaults`, the tweak's domain and the notification name the same
         string — the package id — on both sides.
 

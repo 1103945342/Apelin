@@ -57,7 +57,7 @@ struct EmptyVariableGuardTests {
     @Test(.timeLimit(.minutes(1)))
     func `the workspace build script's first lines stop before anything when Luros set nothing`() throws {
         let temporary = FileManager.default.temporaryDirectory
-            .appendingPathComponent("apelin-guard-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("luros-guard-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: temporary, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: temporary) }
         let script = try firstLines() + "echo \"stage=$stage\"\n"

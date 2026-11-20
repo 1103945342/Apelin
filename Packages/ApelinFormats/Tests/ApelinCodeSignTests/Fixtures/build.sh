@@ -3,7 +3,7 @@
 # build: the results are committed, and this is how they were made.
 #
 #   input/     built here from fixture.c with Xcode's iPhoneOS SDK: what
-#              apelin-build has after strip, the linker's own ad-hoc
+#              luros-build has after strip, the linker's own ad-hoc
 #              signature still in place (or none, -no_adhoc_codesign).
 #   expected/  the same files after `ldid -Hsha256 -S` (or `-S<file>` with
 #              entitlements.plist), the signature ApelinCodeSign writes.
@@ -15,7 +15,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 CC="xcrun --sdk iphoneos clang -mios-version-min=16.0 -Os -fvisibility=hidden"
-WORK=$(mktemp -d /private/tmp/apelin-codesign-fixtures.XXXXXX)
+WORK=$(mktemp -d /private/tmp/luros-codesign-fixtures.XXXXXX)
 trap 'rm -rf -- "${WORK:?}"' EXIT
 mkdir -p "$WORK/input" "$WORK/expected"
 
@@ -30,7 +30,7 @@ cat >"$WORK/Info.plist" <<'EOF'
 </plist>
 EOF
 
-# a tweak as apelin-build makes it: fat, rootless's two slices
+# a tweak as luros-build makes it: fat, rootless's two slices
 $CC -arch arm64 -arch arm64e fixture.c -dynamiclib -install_name @rpath/Fixture.dylib -o "$WORK/input/Fixture.dylib"
 # roothide's single slice, thin
 $CC -arch arm64e fixture.c -dynamiclib -install_name @rpath/Thin.dylib -o "$WORK/input/Thin.dylib"

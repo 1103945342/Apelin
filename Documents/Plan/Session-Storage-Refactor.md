@@ -9,7 +9,7 @@ Luros 的目标场景是移动设备上的低并发运行，同时允许单个�
 ## 固定边界
 
 - **不引入 SQLite**，不引入其他数据库、ORM 或通用存储框架。不以 Codex 的架构或规模作为选型依据。
-- **不修改、不升级、不 fork kwwk，不修改依赖检出内容，不等待上游补丁。** 固定 revision 为 `fb74cf5d855a6dbc60da38187e10d012e30a240a`，以 [Package.resolved](../../Apelin.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved) 核对。
+- **不修改、不升级、不 fork kwwk，不修改依赖检出内容，不等待上游补丁。** 固定 revision 为 `fb74cf5d855a6dbc60da38187e10d012e30a240a`，以 [Package.resolved](../../Luros.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved) 核对。
 - 优先保留既有日志、模型上下文和协议身份，使用局部初始化保护、小型摘要及可重建索引。新增机制须说明它解决的已复现问题、较小方案为何不足，以及维护成本。
 - root 宿主继续掌握权限与审批。摘要和缓存不能成为授权依据；恢复不能重新授予审批。
 - 模型上下文与展示历史分开处理，保留消息顺序、工具调用 ID、签名、不透明供应商字段及提示词缓存语义。归档保留可查询历史，不改变模型上下文。
@@ -29,7 +29,7 @@ Luros 的目标场景是移动设备上的低并发运行，同时允许单个�
 | 消息中断 | 输入先记录，模型上下文主要到轮末保存；中间退出后，旧 ID 可能被去重但没有进入恢复的上下文。 | 先复现并明确中断、待处理与重试结果，不以完整检查点体系作为前提。 |
 | App 与附件 | 聊天整份读写，草稿内嵌附件；模型图片也可内嵌 Base64。 | App 不能抵消后端按需读取的收益；附件优化按真实读写与内存成本单独决定。 |
 
-相关代码：[AgentHandler](../../Apelind/Dispatch/AgentHandler.swift)、[AgentWorker](../../Packages/ApelinAgent/Sources/ApelinAgentWorker/AgentWorker.swift)、[WorkerSupervisor](../../Apelind/Session/WorkerSupervisor.swift)、[SessionHost](../../Apelind/Session/SessionHost.swift)、[SessionEventLog](../../Packages/ApelinAgent/Sources/ApelinAgent/Persistence/SessionEventLog.swift)、[AgentSession](../../Packages/ApelinAgent/Sources/ApelinAgent/Session/AgentSession.swift)、[ChatStore](../../Apelin/Interface/Chats/ChatStore.swift)、[ChatRuntime](../../Apelin/Interface/Chats/ChatRuntime.swift)。
+相关代码：[AgentHandler](../../Lurosd/Dispatch/AgentHandler.swift)、[AgentWorker](../../Packages/ApelinAgent/Sources/ApelinAgentWorker/AgentWorker.swift)、[WorkerSupervisor](../../Lurosd/Session/WorkerSupervisor.swift)、[SessionHost](../../Lurosd/Session/SessionHost.swift)、[SessionEventLog](../../Packages/ApelinAgent/Sources/ApelinAgent/Persistence/SessionEventLog.swift)、[AgentSession](../../Packages/ApelinAgent/Sources/ApelinAgent/Session/AgentSession.swift)、[ChatStore](../../Luros/Interface/Chats/ChatStore.swift)、[ChatRuntime](../../Luros/Interface/Chats/ChatRuntime.swift)。
 
 ## 按需读取的最小组成
 

@@ -4,7 +4,7 @@ import Foundation
 
 /// An issue apelin_feedback_send files on Luros's own repository: the title
 /// and body its card showed, nothing else. The repository is the host's
-/// constant, and the footer apelin-environment's.
+/// constant, and the footer luros-environment's.
 public struct FeedbackToolRequest: Sendable, Hashable, Codable {
     public var context: HostCallContext
     public var title: String
@@ -87,7 +87,7 @@ public struct FeedbackReadToolResponse: Sendable, Hashable, Codable {
 
 /// An edit apelin_feedback_edit makes: the fields its card showed (nil for
 /// one that stays) and the title and body it was made against, which
-/// apelin-environment requires the issue still to have.
+/// luros-environment requires the issue still to have.
 public struct FeedbackEditToolRequest: Sendable, Hashable, Codable {
     public var context: HostCallContext
     public var number: Int

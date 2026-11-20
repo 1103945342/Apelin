@@ -6,7 +6,7 @@ call. `agentAPIConfiguration` is restricted to the provider editing form: the
 console refuses it before sending so a saved API key never enters its output or logs.
 It refuses `feedbackStar` too: a star on the reader's GitHub account comes only
 from their tap in the app.
-The console is the app itself, not a second peer of apelind, so "No
+The console is the app itself, not a second peer of lurosd, so "No
 CLI" holds. It never draws anything and never quits the app.
 
 The runner is `ApelinConsole` (`Packages/ApelinKit/Sources/ApelinConsole`),
@@ -14,11 +14,11 @@ parameterised on an `ApelinService`, a `DataFolder` and a log sink, and
 tested on the Mac by `make harness` (`Packages/ApelinKit/Tests/ApelinConsoleTests`) against a
 fake transport. The app keeps only the binding — `ApelinService.app`,
 `DataFolder.app`, the unified log — and the launch and foreground hooks
-(`Apelin/Console/ConsoleLaunch.swift`).
+(`Luros/Console/ConsoleLaunch.swift`).
 
 ## Start a Run
 
-- **Launch argument**: `-apelin-console <path>`. An absolute path is read in
+- **Launch argument**: `-luros-console <path>`. An absolute path is read in
   place; a relative one is under `~/Documents/com.fluoxetine.luros/console/`.
   The file is left where it is.
 - **Inbox**: drop `*.json` into `~/Documents/com.fluoxetine.luros/console/inbox/`.
@@ -118,12 +118,12 @@ in an order where each leaves what the next needs. `device.py list --check`
 shows which ones the device can run now.
 
 Before a run the harness refuses a folder in `SDKs/` with no record:
-apelin-environment deletes every unregistered folder there when it starts
+luros-environment deletes every unregistered folder there when it starts
 (`SDKStore.sweepOrphans`), so an SDK copied in by hand is lost at the next
 `sdkList`. Move it to `inbox/iPhoneOS.sdk` and import it.
 
 The rest of `device.py`: `status` (packages, the installed build against
-this checkout, apelind and its session host, toolchains, SDKs, projects,
+this checkout, lurosd and its session host, toolchains, SDKs, projects,
 the console folders), `install` (the built packages for the device's
 architecture; a deb whose `Depends` the device lacks is skipped and named),
 `out` (the device's latest runs, or one), `open`, `kill-host`, `exec`,
@@ -254,10 +254,10 @@ no `resumed` event. By hand, on the device:
 3. When `console/out/<runID>.jsonl` shows the `buildStart` (or `sdkImport`,
    `toolchainSetup`) step, and within the wait, kill the session host as
    root: `kill -9 $(cat <install root>/var/lib/luros/session.pid)`. Its
-   process name is apelind's — the kernel takes it from the executable,
-   and `apelind-session` is only its `argv[0]` — so `killall` cannot pick it
-   out: `killall apelind-session` finds nothing and `killall apelind` kills
-   the proxy too. Leave apelind itself alone: it starts the session host
+   process name is lurosd's — the kernel takes it from the executable,
+   and `lurosd-session` is only its `argv[0]` — so `killall` cannot pick it
+   out: `killall lurosd-session` finds nothing and `killall lurosd` kills
+   the proxy too. Leave lurosd itself alone: it starts the session host
    again, which writes its own pid to the file.
 4. Keep the app open until the run ends. It passes when both `expect` steps
    after the attach hold. The attach step's events hold a
@@ -338,7 +338,7 @@ when absent):
 | `path` + `exists` | there is (or is not) a value at `path` |
 
 While the operations are being written, `{"op": "expect", "request": {"errorCode": "unimplemented"}}`
-after an `"allowError": true` step proves the whole path — app, apelind,
+after an `"allowError": true` step proves the whole path — app, lurosd,
 session host and worker — answers.
 
 ## Error Codes
@@ -360,7 +360,7 @@ error, or on `ok: false` where the exact refusal is the worker's to choose.
 ### One per Domain
 
 - `hello.json` — needs nothing. `hello`, `extensionList`, `sdkList`,
-  `toolchainStatus`: apelind starts on demand and the workers come up.
+  `toolchainStatus`: lurosd starts on demand and the workers come up.
 - `environment.json` — needs the network and a registered SDK (the
   setup refuses to start without one). `toolchainStatus`, a
   `toolchainSetup` started unfollowed, `environmentAttach` (replay),
@@ -537,7 +537,7 @@ error, or on `ok: false` where the exact refusal is the worker's to choose.
 
 `Documents/Console/demo/` holds the scripts whose output became the replay
 fixtures (`Packages/ApelinKit/Sources/ApelinReplay/Fixtures`, read by
-`ReplayTransport` where no apelind runs; `Documents/Plan/Handoff.md` ▸ the
+`ReplayTransport` where no lurosd runs; `Documents/Plan/Handoff.md` ▸ the
 replay). They are checked for form like the scripts above, but are not
 needed to call every operation. Run them in this order on a device with a
 toolchain, an SDK, the four development extensions and Irisin:

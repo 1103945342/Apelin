@@ -32,7 +32,7 @@ extension ToolRunner {
         return converted
     }
 
-    /// One parameter's value as the call gave it; apelin-build judges it
+    /// One parameter's value as the call gave it; luros-build judges it
     /// against the parameter's kind, which apelin_template_list names.
     private static func templateValue(_ value: JSONValue, named name: String) throws -> TemplateValue {
         switch value {

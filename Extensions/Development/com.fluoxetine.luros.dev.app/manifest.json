@@ -51,7 +51,7 @@
         { "path": "Resources/Info.plist", "format": "plist-xml" },
         { "path": "Packaging/App.entitlements", "format": "plist-xml" }
       ],
-      "digest": "sha256:e219a63645f223741eb7fca30398f4f8e5aa8f4b0f6f8066a7c17d62f2253f9f"
+      "digest": "sha256:7590ab6f7cbb9683bfb229b2209c91276eeaee5d353831fcd3e59108efee89f8"
     },
     {
       "id": "uikit-swift",
@@ -75,7 +75,7 @@
         { "path": "Resources/Info.plist", "format": "plist-xml" },
         { "path": "Packaging/App.entitlements", "format": "plist-xml" }
       ],
-      "digest": "sha256:f51f080c5fc1bb6e6cb716f032173778954ccd508510e0e7259df63872f5a3b9"
+      "digest": "sha256:5942a1fdea925cc8200c681e4ce9432a0c66cf2644d0302d26c2b3e44e992daa"
     }
   ],
   "provenance": [
@@ -89,7 +89,7 @@
         "Kept: the manual main that deletes this bundle's .savedState before UIApplicationMain, the first screen's layout, the GPU IOKit user-client list with its reason, platform-application and no-sandbox, and the uikittools dependency whose triggers register the app.",
         "Changed: SceneRestorationReset is folded into main.swift; the Info.plist keys the Xcode project generated (INFOPLIST_KEY_*) are written out in Resources/Info.plist; the scene delegate gets a fixed Objective-C name because there is no Xcode module prefix.",
         "Added: package.icon, this extension's icon on Luros's Pages, written as the control's Icon so a package manager shows it beside the package; it is not the app's own icon.",
-        "Dropped: the daemon, the XPC client and its entitlements, the App Group, the storage entitlements, ExecutableWatch, QuietExit, the string catalogue and the Xcode project (apelin-build has no Xcode)."
+        "Dropped: the daemon, the XPC client and its entitlements, the App Group, the storage entitlements, ExecutableWatch, QuietExit, the string catalogue and the Xcode project (luros-build has no Xcode)."
       ]
     },
     {

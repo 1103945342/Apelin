@@ -11,7 +11,7 @@ import KWWKAI
 /// issue, of an issue that changed since that read (the user may have
 /// edited it on GitHub), one that changes nothing, and text `FeedbackRules`
 /// refuses. The card then names the issue and the whole new text, and
-/// apelin-environment writes it only while the issue still says what this
+/// luros-environment writes it only while the issue still says what this
 /// read saw, keeping its footer.
 enum FeedbackEdit {
     static let numberKey = "number"

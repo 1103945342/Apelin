@@ -60,7 +60,7 @@ public enum WorkerMain {
         signal(SIGPIPE, SIG_IGN)
         var metadata = stat()
         guard fstat(channelDescriptor, &metadata) == 0, metadata.st_mode & S_IFMT == S_IFSOCK else {
-            fputs("\(role.executableName): start this through apelind's session host\n", stderr)
+            fputs("\(role.executableName): start this through lurosd's session host\n", stderr)
             exit(EX_USAGE)
         }
 

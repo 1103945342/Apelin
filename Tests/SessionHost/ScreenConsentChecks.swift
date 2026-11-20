@@ -3,7 +3,7 @@ import ApelinProtocol
 import Foundation
 
 // Ask Before Using the Screen (ApelinProtocol's ScreenConsent,
-// Apelind/Session/Agent/AgentScreenRules.swift, AgentApprovals.authorize):
+// Lurosd/Session/Agent/AgentScreenRules.swift, AgentApprovals.authorize):
 // while a session asks, an agent's readUITree, uiAction and every
 // agentRunCode that runs icli need one approval the app gave that session
 // for exactly that call, in Strict, Relaxed and Full alike; with the
@@ -69,7 +69,7 @@ func screenConsentChecks(scratch: URL, scratchPath: String) async {
     func json(_ text: String) -> JSONValue {
         (try? JSONCoding.decode(JSONValue.self, from: Data(text.utf8))) ?? .null
     }
-    // apelin-agent's `detail` for each screen card, as ScreenRequestWireTests
+    // luros-agent's `detail` for each screen card, as ScreenRequestWireTests
     // pins it.
     let treeDetail = json(#"{"screenControl":{"operation":"readUITree","request":{}}}"#)
     let settingsTreeDetail = json(#"{"screenControl":{"operation":"readUITree","request":{"targetID":"com.apple.Preferences"}}}"#)

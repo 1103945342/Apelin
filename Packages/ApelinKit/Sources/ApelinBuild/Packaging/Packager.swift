@@ -35,7 +35,7 @@ public struct ArtifactRecord: Codable, Sendable, Equatable {
     /// cut from the package it made (`ExternalBuild`).
     public var buildDigest: String?
     public var packagingDigest: String
-    /// `external` for a workspace's own build; nil for apelin-build's.
+    /// `external` for a workspace's own build; nil for luros-build's.
     public var buildSystem: BuildSystemKind?
     /// The project's binding and template; nil for a workspace's build.
     public var toolchain: ProjectDocument.Binding?

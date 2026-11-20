@@ -29,7 +29,7 @@ import sys
 
 SKIP_DIRS = {".git", ".build", ".swiftpm", "build", "DerivedData", "node_modules", ".claude", "Tests", "Vendor"}
 SKIP_PATHS = ("Packages/Runestone/",)
-SOURCE_ROOTS = ("Apelin", "Apelind", "Workers", "Shared", "Widgets", "Packages")
+SOURCE_ROOTS = ("Luros", "Lurosd", "Workers", "Shared", "Widgets", "Packages")
 
 DECODE = re.compile(r"\b(?:decode|JSONFile\.read)\s*\(")
 # What a walk reads per entry: a decode, the bytes of a file, a stored item.

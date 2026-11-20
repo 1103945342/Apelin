@@ -100,7 +100,7 @@ final class GitResetServiceTests: XCTestCase {
         let result = try reset(git, shown)
         XCTAssertEqual(result["commit"]?.stringValue, shown.remoteCommit)
         XCTAssertEqual(result["projectFile"]?.stringValue, "repositoryWithProjectID")
-        XCTAssertTrue(result["backupBranch"]?.stringValue?.hasPrefix("apelin-backup/") == true)
+        XCTAssertTrue(result["backupBranch"]?.stringValue?.hasPrefix("luros-backup/") == true)
         XCTAssertEqual(try String(contentsOf: root.appendingPathComponent("luros-project.json"), encoding: .utf8), manifest(id: localID))
         XCTAssertEqual(try ProjectLocator(layout: home.layout).locate(localID).root.path, root.path, "the project is still itself")
         XCTAssertNil(FileManager.default.contents(atPath: root.appendingPathComponent("Mine.m").path))

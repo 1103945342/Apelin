@@ -14,7 +14,7 @@ final class NativeBuildFlagTests: XCTestCase {
     /// configuration's `cxxFlags` reach every C++ file.
     func testAPureCxxProductLinksWithClangTheStandardAndTheRuntime() throws {
         let registry = try NativeBuild.requireTools()
-        let scratch = try scratchDirectory("apelin-cxx-native")
+        let scratch = try scratchDirectory("luros-cxx-native")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
@@ -92,7 +92,7 @@ final class NativeBuildFlagTests: XCTestCase {
     /// Each keeps its own object, and both symbols reach the link.
     func testSourcesInDifferentFoldersKeepDifferentObjects() throws {
         let registry = try NativeBuild.requireTools()
-        let scratch = try scratchDirectory("apelin-native-collision")
+        let scratch = try scratchDirectory("luros-native-collision")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
@@ -140,7 +140,7 @@ final class NativeBuildFlagTests: XCTestCase {
     /// A file no compiler mode claims stops the build before any tool runs.
     func testASourceWithNoKnownLanguageStopsTheBuild() throws {
         let registry = try NativeBuild.requireTools()
-        let scratch = try scratchDirectory("apelin-native-unsupported")
+        let scratch = try scratchDirectory("luros-native-unsupported")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
@@ -179,7 +179,7 @@ final class NativeBuildFlagTests: XCTestCase {
     /// without compiling Swift is refused with a reason.
     func testABridgingHeaderReachesSwiftAndIsRefusedWithoutSwift() throws {
         let registry = try NativeBuild.requireTools()
-        let scratch = try scratchDirectory("apelin-native-bridge")
+        let scratch = try scratchDirectory("luros-native-bridge")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)

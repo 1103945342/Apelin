@@ -3,7 +3,7 @@ import Foundation
 // Files: scoped reads answered with a read-only descriptor, and the app's
 // manual protected edit (replace an existing regular file's contents, backup
 // first, one grant per save). Workers may never call the protected edit.
-// Served by the session host (Apelind/Dispatch/FilesHandler.swift).
+// Served by the session host (Lurosd/Dispatch/FilesHandler.swift).
 //
 // The protected edit, end to end:
 //

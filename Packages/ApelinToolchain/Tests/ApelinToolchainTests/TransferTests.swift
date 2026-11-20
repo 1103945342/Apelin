@@ -33,7 +33,7 @@ struct ToolchainTransferTests {
     }
 
     private static func scratch() throws -> URL {
-        let root = URL(fileURLWithPath: "/private/tmp/apelin-toolchain-transfer-" + UUID().uuidString)
+        let root = URL(fileURLWithPath: "/private/tmp/luros-toolchain-transfer-" + UUID().uuidString)
         try directory(root)
         return root
     }

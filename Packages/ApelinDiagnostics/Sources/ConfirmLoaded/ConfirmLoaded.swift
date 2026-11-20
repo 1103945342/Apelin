@@ -103,7 +103,7 @@ public struct LoadConfirmation: Codable, Hashable, Sendable {
 
 /// The marker and the filter. The target's image list is never read: on the
 /// iOS 27.0.1 vphone (roothide), reading SpringBoard's image list from
-/// apelin-diagnostics panicked the kernel ("VM entry … lock is invalid",
+/// luros-diagnostics panicked the kernel ("VM entry … lock is invalid",
 /// vm_entry_lock.c:168) on 2026-10-17: twice while the task-port read of
 /// dyld's image infos was in place, then once more through the kernel's
 /// region paths (`proc_pidinfo PROC_PIDREGIONPATHINFO`) alone. Both readers

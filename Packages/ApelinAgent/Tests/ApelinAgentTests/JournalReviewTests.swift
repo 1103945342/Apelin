@@ -69,7 +69,7 @@ struct JournalReviewTests {
     @Test
     func `a rotated file whose journal is gone still counts, and goes with it`() throws {
         let folder = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-            .appendingPathComponent("apelin-journal-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("luros-journal-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: folder) }
         for (index, name) in ["orphan.old.log", "a.log", "b.log"].enumerated() {
@@ -88,7 +88,7 @@ struct JournalReviewTests {
     @Test(.timeLimit(.minutes(2)))
     func `a call's end never holds up the session, however long its result`() async throws {
         let folder = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-            .appendingPathComponent("apelin-journal-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("luros-journal-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: folder) }
         let file = DiagnosticJournal(folder: folder, name: "slow")

@@ -3,7 +3,7 @@ import Foundation
 
 /// `~/Documents/com.fluoxetine.luros` and the folders the agent uses inside it.
 ///
-/// The home directory is mobile's (the app and `apelin-agent` have no
+/// The home directory is mobile's (the app and `luros-agent` have no
 /// container). Nothing here writes an install prefix: the home comes from the
 /// process, and tests pass their own.
 public struct ApelinDataRoot: Sendable, Hashable {

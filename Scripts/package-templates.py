@@ -40,7 +40,7 @@ def main():
     }, ensure_ascii=False, sort_keys=True, indent=2) + '\n').encode()
     args.output.mkdir(parents=True, exist_ok=True)
     destination = args.output / ('Apelin_' + args.version + '_Templates.tar.zst')
-    with tempfile.TemporaryDirectory(prefix='apelin-templates-') as work:
+    with tempfile.TemporaryDirectory(prefix='luros-templates-') as work:
         archive = Path(work) / 'templates.tar'
         with tarfile.open(archive, 'w', format=tarfile.PAX_FORMAT) as tar:
             for name, data in sorted(files.items()):

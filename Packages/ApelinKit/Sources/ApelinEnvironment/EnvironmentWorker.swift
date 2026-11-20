@@ -2,7 +2,7 @@ import ApelinCore
 import ApelinProtocol
 import Foundation
 
-/// apelin-environment's request handling, everything `Workers/Environment`
+/// luros-environment's request handling, everything `Workers/Environment`
 /// hands it: the toolchain and SDK operations, the git service and its
 /// settings, a repository made on GitHub and an issue opened on one, the
 /// package repository, the feedback filed, read and edited on Luros's own

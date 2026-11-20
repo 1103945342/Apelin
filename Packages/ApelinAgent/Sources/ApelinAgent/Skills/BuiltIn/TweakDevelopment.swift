@@ -1,6 +1,6 @@
 extension BuiltInSkills {
     static let tweakDevelopment = SkillDocument(
-        name: "apelin-tweak-development",
+        name: "luros-tweak-development",
         description: "Writing and changing a tweak in an Luros project: layout, hooks, filters, the on-device toolchain and SDK, and the edit-build loop.",
         body: """
         # Tweak development on the device
@@ -15,7 +15,7 @@ extension BuiltInSkills {
           link flags, frameworks, the deployment target (16.0) and build steps.
           Changing it, or a build script it names, makes the next `apelin_project_build` ask the
           user once (Strict mode); editing sources never does. Change it only
-          when the task needs it, and say why. The apelin-project-description skill
+          when the task needs it, and say why. The luros-project-description skill
           lists every member; read it before you edit the file.
         - Sources are Objective-C by default; write hooks the way the
           project's template does (its hook API comes from the injection
@@ -25,12 +25,12 @@ extension BuiltInSkills {
           loads into, by bundle id (`Filter.Bundles`) or executable
           (`Filter.Executables`). SpringBoard is `com.apple.springboard`.
         - Read the template's files before writing new ones; keep its naming.
-        - `apelin-icon.png`, beside `luros-project.json`, is the project's
+        - `luros-icon.png`, beside `luros-project.json`, is the project's
           icon in Luros: a square PNG, 1024 points or less. Write it when the
           user asks for an icon; without it Luros shows its kind's default.
           It is Luros's alone and never goes into the package.
         - A path in code, a maintainer script or a plist is spelled as the
-          apelin-bootstrap-paths skill says; logging is the apelin-tweak-runtime skill's.
+          luros-bootstrap-paths skill says; logging is the luros-tweak-runtime skill's.
 
         ## Finding the API you hook
         - `apelin_sdk_analyze_framework` lists a framework's exported symbols and
@@ -106,11 +106,11 @@ extension BuiltInSkills {
           first constant string or imported call (the build refuses one).
           Leave a symbol to load time with `-Wl,-U,_symbol`, one per symbol.
         - A roothide-aware repository's `jbroot(…)` and a rootless one's
-          `ROOT_PATH_NS(…)` become the apelin-bootstrap-paths skill's
+          `ROOT_PATH_NS(…)` become the luros-bootstrap-paths skill's
           `ApelinBootstrapPath(…)`.
         - An imported repository stays a workspace: its Theos Makefile is
           replaced by a build script of its own that compiles the rewritten
-          sources with the toolchain (the apelin-external-build skill), reading
+          sources with the toolchain (the luros-external-build skill), reading
           `TWEAK_NAME`, `_FILES`, `_FRAMEWORKS`, `_LIBRARIES`, `_CFLAGS`, the
           filter plist and `control` for what to build and package. Keep the
           package id, version and author the repository already has.
@@ -121,7 +121,7 @@ extension BuiltInSkills {
            `file_write`/`file_create` for new files.
         3. `apelin_project_build`. Fix every error diagnostic by file and line, rebuild.
            Treat warnings as work unless they are in the template.
-        4. Install and confirm as the apelin-packaging-and-install skill describes.
+        4. Install and confirm as the luros-packaging-and-install skill describes.
         5. Check the behaviour itself, not only that it loaded: bring up what
            you changed, read it with `apelin_screen_read_tree`, drive it with
            `apelin_screen_interact`, and read it again after each action;

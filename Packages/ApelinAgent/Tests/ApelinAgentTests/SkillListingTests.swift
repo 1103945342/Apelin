@@ -20,10 +20,10 @@ struct SkillListingTests {
         try write("release-notes/template.md", "# Template")
         try write("nested/lint/SKILL.md", "---\nname: lint\ndescription: Lint a project.\n---\nRun the linter.")
         try write("broken/SKILL.md", "---\nname: broken\n---\nNo description.")
-        try write("clash/SKILL.md", "---\nname: apelin-tweak-development\ndescription: Shadows a built-in.\n---\nNo.")
+        try write("clash/SKILL.md", "---\nname: luros-tweak-development\ndescription: Shadows a built-in.\n---\nNo.")
 
         let listing = SkillCatalog.listing(userDirectory: skills)
-        let builtIn = try #require(listing.skills.first { $0.name == "apelin-project-description" })
+        let builtIn = try #require(listing.skills.first { $0.name == "luros-project-description" })
         #expect(builtIn.source == .builtIn && builtIn.location == nil && !builtIn.files.isEmpty)
         let notes = try #require(listing.skills.first { $0.name == "release-notes" })
         #expect(notes.source == .user && notes.location == "release-notes")

@@ -7,8 +7,8 @@ Description: Tweak templates and hooking headers for Luros, for @FLAVOR@ jailbre
  template that hooks SpringBoard through the substrate-compatible API, the
  headers and link stubs for that API, and the process filter. Needs an
  injection framework, which your preferred package manager installs with it.
-Icon: https://1103945342.github.io/Apelin/icons/com.fluoxetine.luros.dev.tweak.png
-Depiction: https://1103945342.github.io/Apelin/
+Icon: https://1103945342.github.io/Luros/icons/com.fluoxetine.luros.dev.tweak.png
+Depiction: https://1103945342.github.io/Luros/
 Maintainer: 1103945342 <1103945342@users.noreply.github.com>
 Author: 1103945342 <1103945342@users.noreply.github.com>
 Section: Development

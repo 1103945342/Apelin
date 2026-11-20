@@ -5,7 +5,7 @@ import Foundation
 // one in, and its messages run as conversations of a project the reader picks.
 //
 // One channel for now — WeChat, through the ClawBot plugin's iLink bot API
-// (`ApelinCore/Ilink`). The session host owns it (`Apelind/Session/Channel`):
+// (`ApelinCore/Ilink`). The session host owns it (`Lurosd/Session/Channel`):
 // the sign-in, the long poll, and the conversation each WeChat peer talks in.
 // The app only reads its state and gives it instructions; no token is ever
 // part of a request or a reply.

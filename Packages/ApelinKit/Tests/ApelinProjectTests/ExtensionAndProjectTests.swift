@@ -121,7 +121,7 @@ final class ExtensionAndProjectTests: XCTestCase {
                 // a package manager shows the extension's own icon, from Pages
                 XCTAssertEqual(
                     try store.locate(projectID).project.package.icon,
-                    "https://1103945342.github.io/Apelin/icons/\(manifest.id).png",
+                    "https://1103945342.github.io/Luros/icons/\(manifest.id).png",
                     template.id,
                 )
 
@@ -162,7 +162,7 @@ final class ExtensionAndProjectTests: XCTestCase {
                 // and keeps Luros's own files out of it
                 XCTAssertEqual(
                     try String(contentsOf: created.root.appendingPathComponent(".git/info/exclude"), encoding: .utf8),
-                    "/Attachments/\n/.apelin-metadata-*\n.*.apelin-*\n",
+                    "/Attachments/\n/.luros-metadata-*\n.*.luros-*\n",
                     template.id,
                 )
             }

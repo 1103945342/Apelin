@@ -28,7 +28,7 @@ final class ExtensionTests: XCTestCase {
 
     /// The shipped manifest is the code's own description, field for field.
     func testManifestsMatchTheExecutables() throws {
-        for (executable, name) in [("apelin-disassembler", "disassembler"), ("apelin-assembler", "assembler")] {
+        for (executable, name) in [("luros-disassembler", "disassembler"), ("luros-assembler", "assembler")] {
             let process = Process()
             process.executableURL = Self.productsDirectory.appendingPathComponent(executable)
             process.arguments = ["--describe"]
@@ -58,8 +58,8 @@ final class ExtensionTests: XCTestCase {
 
     func testDisassembleAndSymbols() async throws {
         // A binary with symbols: the test bundle's own executable.
-        let binary = Self.productsDirectory.appendingPathComponent("apelin-disassembler").path
-        let client = try await client("apelin-disassembler", manifest: manifest("disassembler"))
+        let binary = Self.productsDirectory.appendingPathComponent("luros-disassembler").path
+        let client = try await client("luros-disassembler", manifest: manifest("disassembler"))
 
         let symbols = await client.call(tool: "symbols", arguments: ["binary": .string(binary), "filter": "main", "kind": "defined"])
         guard let listing = symbols.result?.text else { return XCTFail("\(String(describing: symbols.failure))") }
@@ -91,7 +91,7 @@ final class ExtensionTests: XCTestCase {
         guard let result = listed.result else { return XCTFail("\(String(describing: listed.failure))") }
         guard case let .file(file)? = result.content.last else { return XCTFail("no file in \(result.text)") }
         XCTAssertEqual(file.mimeType, "text/plain")
-        XCTAssertEqual(file.name, "apelin-disassembler.symbols.txt")
+        XCTAssertEqual(file.name, "luros-disassembler.symbols.txt")
         let attached = try String(decoding: file.readAll(limit: 32 << 20), as: UTF8.self)
         XCTAssertTrue(attached.contains(" T _main"))
         XCTAssertGreaterThan(attached.split(separator: "\n").count, 200, "unpaged: more than one page of symbols")
@@ -100,7 +100,7 @@ final class ExtensionTests: XCTestCase {
     }
 
     func testAssembleThenDisassemble() async throws {
-        let assembler = try await client("apelin-assembler", manifest: manifest("assembler"))
+        let assembler = try await client("luros-assembler", manifest: manifest("assembler"))
         let assembled = await assembler.call(tool: "assemble", arguments: ["arch": "arm64", "source": "mov x0, #0x2a; ret"])
         guard let text = assembled.result?.text else { return XCTFail("\(String(describing: assembled.failure))") }
         XCTAssertTrue(text.contains("bytes: 40 05 80 d2 c0 03 5f d6"), text)

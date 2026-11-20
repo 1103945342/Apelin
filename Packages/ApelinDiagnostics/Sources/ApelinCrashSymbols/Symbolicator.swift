@@ -4,7 +4,7 @@
 import ApelinCrashReport
 import Foundation
 
-/// How the symbolicator gets at a binary. apelin-diagnostics passes one that
+/// How the symbolicator gets at a binary. luros-diagnostics passes one that
 /// refuses every path, since symbols come only from the project's dSYMs;
 /// tests pass a plain open.
 public typealias ImageOpener = @Sendable (_ path: String) async throws -> FileHandle

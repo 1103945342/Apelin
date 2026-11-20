@@ -36,7 +36,7 @@ public enum RunCodeApproval: Codable, Sendable, Equatable {
     )
 
     /// The key of a root request's command in its `approvalRequested`
-    /// `detail`, in place of `command`: apelin-agent writes it, the host
+    /// `detail`, in place of `command`: luros-agent writes it, the host
     /// binds a root approval to it, and the app's card and the host's banner
     /// say "runs as root" from it. An ordinary request names `command`, so
     /// neither approval can stand in for the other.

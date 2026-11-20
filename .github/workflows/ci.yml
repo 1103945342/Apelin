@@ -18,7 +18,7 @@ permissions:
 # main keeps its own run however soon the next one follows, since a tag
 # on that commit publishes what the run built.
 concurrency:
-  group: apelin-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  group: luros-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: true
 
 env:
@@ -101,7 +101,7 @@ jobs:
         run: Packages/ApelinAgent/Scripts/sync-prompts.sh
 
       - name: Run host tests
-        run: make harness SWIFTPM_SCRATCH="$RUNNER_TEMP/apelin-spm"
+        run: make harness SWIFTPM_SCRATCH="$RUNNER_TEMP/luros-spm"
 
   build:
     name: Build and verify Debian packages
@@ -114,7 +114,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "DERIVED_DATA=$RUNNER_TEMP/apelin-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+          echo "DERIVED_DATA=$RUNNER_TEMP/luros-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
 
       - name: Check out repository
         uses: actions/checkout@v4
@@ -171,7 +171,7 @@ jobs:
       - name: Upload Debian packages
         uses: actions/upload-artifact@v4
         with:
-          name: apelin-${{ github.sha }}
+          name: luros-${{ github.sha }}
           path: |
             build/Packages/*.deb
             build/Packages/*_source.tar.xz
@@ -238,7 +238,7 @@ jobs:
         if: steps.lookup.outputs.published == '0'
         uses: actions/download-artifact@v4
         with:
-          name: apelin-${{ github.sha }}
+          name: luros-${{ github.sha }}
           path: build/Packages/
 
       - name: Publish
@@ -257,7 +257,7 @@ jobs:
             exit 1
           fi
           echo "$out"
-          notes="$RUNNER_TEMP/apelin-release.md"
+          notes="$RUNNER_TEMP/luros-release.md"
           if [ -f "../../Documents/Releases/$VERSION.md" ]; then
             cp "../../Documents/Releases/$VERSION.md" "$notes"
           else

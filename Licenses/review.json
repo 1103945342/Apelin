@@ -465,7 +465,7 @@
     "vendored/libgit2": {
       "sha256": "e0938121c0554985fe17196ac38fc590d149268e9c46e0c0e7a2eae1354fae71",
       "accepted": "owner, 2026-10-17",
-      "reason": "libgit2 is GPLv2 with the linking exception, which permits linking the unmodified library into a program under its own terms; its bundled xdiff (LGPL-2.1-or-later) is recorded as a known, accepted item. Linked only into the mobile apelin-environment worker, never into the app or apelind. See Licenses/Compatibility.md."
+      "reason": "libgit2 is GPLv2 with the linking exception, which permits linking the unmodified library into a program under its own terms; its bundled xdiff (LGPL-2.1-or-later) is recorded as a known, accepted item. Linked only into the mobile luros-environment worker, never into the app or lurosd. See Licenses/Compatibility.md."
     },
     "libgit2.xcframework/LICENSE": {
       "sha256": "c95277a8b217de956fc77fba9553b33e04b292c568303f50f0a7207cd8863a38",

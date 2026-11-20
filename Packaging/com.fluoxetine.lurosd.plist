@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-	apelind, Luros's privileged backend. On demand: no RunAtLoad and no
+	lurosd, Luros's privileged backend. On demand: no RunAtLoad and no
 	KeepAlive. launchd starts it for the first message to its Mach service;
 	it stays up while it has work (a connected app, a request, a task or a
 	worker in its session host) and exits 30 seconds after the last of them,

@@ -1,17 +1,17 @@
 // swift-tools-version: 5.9
 //
-// Luros's own shared code, linked into the app, apelind and the workers by
-// Apelin.xcodeproj and tested on the Mac with `swift test` (`make harness`).
+// Luros's own shared code, linked into the app, lurosd and the workers by
+// Luros.xcodeproj and tested on the Mac with `swift test` (`make harness`).
 //
 // Which binary links what is decided in the xcodeproj and written down in
 // AGENTS.md ▸ Decisions ▸ Process layout. The rule this manifest carries:
-// ApelinCore and ApelinProtocol link into the root processes (apelind, its
-// session host and apelin-log-reader), so they depend on nothing but the
+// ApelinCore and ApelinProtocol link into the root processes (lurosd, its
+// session host and luros-log-reader), so they depend on nothing but the
 // system — no package dependency, ever. `make harness` checks it. A
 // third-party library is added to the one target that needs it, which links
 // only into a mobile worker.
 //
-// The third-party code here is reached only by apelin-environment: libgit2
+// The third-party code here is reached only by luros-environment: libgit2
 // (GitKit) for the git service and SDK fetching, libarchive (ArchiveKit, the
 // pin ApelinFormats uses) for SDK archives, and ApelinFormats for Mach-O type
 // checks and the local toolchain deb. Licenses/review.json records each one.
@@ -41,11 +41,11 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/Lakr233/libgit2.xcframework.git", from: "1.0.0"),
         .package(url: "https://github.com/Lakr233/libarchive.xcframework.git", from: "1.0.0"),
-        // Mach-O reading, signing and the .deb writer (apelin-build), the
-        // .deb reader and writer (apelin-environment).
+        // Mach-O reading, signing and the .deb writer (luros-build), the
+        // .deb reader and writer (luros-environment).
         .package(path: "../ApelinFormats"),
         // The device-side Command Line Tools download, retarget and
-        // self-test (apelin-environment's RetargetToolchainBackend).
+        // self-test (luros-environment's RetargetToolchainBackend).
         .package(path: "../ApelinToolchain"),
     ],
     targets: [
@@ -54,7 +54,7 @@ let package = Package(
         // System only: the wire, the task model, the worker channel and the
         // typed ApelinService facade.
         .target(name: "ApelinProtocol", dependencies: ["ApelinCore"], swiftSettings: swiftSettings),
-        // apelin-environment: the toolchain registry and setup, the SDK
+        // luros-environment: the toolchain registry and setup, the SDK
         // manager, the project-scoped git service, transfer files, and the
         // worker's handler.
         .target(
@@ -71,7 +71,7 @@ let package = Package(
             ],
             swiftSettings: swiftSettings,
         ),
-        // apelin-build: compile, link, lipo, dSYM, strip, sign, package.
+        // luros-build: compile, link, lipo, dSYM, strip, sign, package.
         .target(
             name: "ApelinBuild",
             dependencies: [
@@ -104,7 +104,7 @@ let package = Package(
         // backend, spawned by the session host's end-to-end toolchain test
         // (Tests/SessionHost, `make harness`), and the fake irisind's unpacker.
         .executableTarget(
-            name: "apelin-environment-harness",
+            name: "luros-environment-harness",
             dependencies: [
                 "ApelinCore", "ApelinProtocol", "ApelinEnvironment",
                 .product(name: "ApelinDebArchive", package: "ApelinFormats"),
@@ -120,8 +120,8 @@ let package = Package(
 
         // An ApelinTransport that answers from event streams captured on a
         // device (Fixtures/, written by Documents/Console/demo/
-        // make-replay-fixtures.py), for working on the UI where no apelind
-        // runs. Never linked into apelind or a worker.
+        // make-replay-fixtures.py), for working on the UI where no lurosd
+        // runs. Never linked into lurosd or a worker.
         .target(
             name: "ApelinReplay",
             dependencies: ["ApelinCore", "ApelinProtocol"],

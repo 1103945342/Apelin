@@ -15,7 +15,7 @@ spec.loader.exec_module(inventory)
 class InstructionInventoryTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.workspace = tempfile.TemporaryDirectory(prefix='apelin-instruction-audit-')
+        cls.workspace = tempfile.TemporaryDirectory(prefix='luros-instruction-audit-')
         root = Path(cls.workspace.name)
         assembly = root / 'features.s'
         assembly.write_text('.text\n.globl _fixture\n_fixture:\n.rept 16\n'

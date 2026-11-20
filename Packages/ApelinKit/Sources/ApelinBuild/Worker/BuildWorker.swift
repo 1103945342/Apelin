@@ -3,7 +3,7 @@ import ApelinProject
 import ApelinProtocol
 import Foundation
 
-/// What apelin-build serves (Workers/Build/main.swift is one call to this):
+/// What luros-build serves (Workers/Build/main.swift is one call to this):
 /// `extensionList`, `projectCreate`, `projectCheck`, `projectRename` and
 /// `projectDelete` answered directly;
 /// `buildStart` accepted, then run on its own thread as the task the host
@@ -86,7 +86,7 @@ public final class BuildWorker: @unchecked Sendable {
                 return (
                     .failure(
                         request.request.requestID,
-                        ApelinError(.badRequest, "buildStart reaches apelin-build only as a task"),
+                        ApelinError(.badRequest, "buildStart reaches luros-build only as a task"),
                     ),
                     [],
                 )
@@ -407,7 +407,7 @@ public final class BuildWorker: @unchecked Sendable {
                 ]))
             }
         }
-        thread.name = "apelin-build \(taskID.rawValue)"
+        thread.name = "luros-build \(taskID.rawValue)"
         thread.stackSize = 8 << 20
         thread.start()
     }

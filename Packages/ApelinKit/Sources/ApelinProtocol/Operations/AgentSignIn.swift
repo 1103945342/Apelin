@@ -29,7 +29,7 @@ public struct AgentCredentialImportResponse: Codable, Sendable, Equatable {
 // MARK: - Sign-in
 
 //
-// Signing in to a provider runs kwwk's own flow in apelin-agent's
+// Signing in to a provider runs kwwk's own flow in luros-agent's
 // `credential-import` instance, the one executable that holds the keychain
 // group the sessions read; the app only shows what the flow asks for and
 // hands back what the user supplies. Sign-in events never return secrets.
@@ -42,7 +42,7 @@ public enum AgentSignInMethod: String, Codable, Sendable {
     /// (an RFC 8628 device flow: GitHub, Kimi, xAI): a `deviceCode` event.
     case deviceCode
     /// The provider's page in the browser: an `authorize` event. The page
-    /// either redirects to a loopback listener in apelin-agent
+    /// either redirects to a loopback listener in luros-agent
     /// (`acceptsCallbackURL` when a pasted address can stand in for it) or
     /// the flow asks the provider until the user has signed in.
     case browser

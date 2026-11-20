@@ -307,7 +307,7 @@ public struct RepositoryCreateToolResponse: Sendable, Hashable, Codable {
 }
 
 /// An issue apelin_git_create_issue opens on a repository the user chose:
-/// what its card named, nothing else. The footer is apelin-environment's.
+/// what its card named, nothing else. The footer is luros-environment's.
 public struct IssueCreateToolRequest: Sendable, Hashable, Codable {
     public var context: HostCallContext
     /// `owner/name`.

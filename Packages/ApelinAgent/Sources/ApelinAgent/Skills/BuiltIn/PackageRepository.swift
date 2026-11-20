@@ -1,6 +1,6 @@
 extension BuiltInSkills {
     static let packageRepository = SkillDocument(
-        name: "apelin-package-repository",
+        name: "luros-package-repository",
         description: "Maintaining the user's package repository (an APT source on GitHub Pages): its layout, the packages in debs/, depictions, the control fields a package needs, how a release is published, and keeping old versions in check.",
         body: """
         # Maintaining a package repository
@@ -26,7 +26,7 @@ extension BuiltInSkills {
           `<source>/depictions/<package id>/…`, the addresses a package's
           `Depiction`, `SileoDepiction` and `Icon` fields name: in a project,
           `package.depiction`, `package.sileoDepiction` and `package.icon`
-          (the apelin-package-depiction skill).
+          (the luros-package-depiction skill).
         - `index.html`: the source's home page; `CydiaIcon.png`: its icon.
         - `sileo-featured.json`: the banners Irisin shows at the top of the
           source, each naming a package and an image under `depictions/`.
@@ -53,7 +53,7 @@ extension BuiltInSkills {
           `Architecture`, `Description`, `Maintainer`, `Author` and `Section`
           (the package's category: Tweaks, Applications, Utilities, Themes…); the
           workflow fails without `Section`. A project sets them in its
-          luros-project.json (the apelin-project-description skill), not here.
+          luros-project.json (the luros-project-description skill), not here.
         - A new version is a new file. Never replace a published file under
           the same name: clients compare it with the index they cached.
 

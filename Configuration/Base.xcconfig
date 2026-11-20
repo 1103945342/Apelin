@@ -33,8 +33,8 @@ OTHER_CFLAGS = $(inherited) -ffile-prefix-map=$(SRCROOT)=. -ffile-prefix-map=$(O
 // linker takes their code into the worker, and there is nothing to embed.
 // Xcode 26's build system copies a package's framework into a command-line
 // tool anyway, to `$(TARGET_BUILD_DIR)/Frameworks`, one directory every tool
-// shares, so two workers linking libarchive (apelin-environment and, through
-// icli, apelin-diagnostics) fail with "Multiple commands produce". Xcode 27
+// shares, so two workers linking libarchive (luros-environment and, through
+// icli, luros-diagnostics) fail with "Multiple commands produce". Xcode 27
 // no longer does this for tools; this keeps the older one from trying.
 PACKAGE_SKIP_AUTO_EMBEDDING_STATIC_BINARY_FRAMEWORKS = YES
 
@@ -48,7 +48,7 @@ SWIFT_INCLUDE_PATHS = $(inherited) $(SRCROOT)/Shared/XPCShim
 // have no user-facing text, so for them it costs a few empty .stringsdata
 // files and changes nothing they ship. Swift extracts `String(localized:)`
 // and `LocalizationValue` keys into .stringsdata, which Xcode merges into
-// Apelin/Resources/Localizable.xcstrings (the manual discipline, AGENTS.md
+// Luros/Resources/Localizable.xcstrings (the manual discipline, AGENTS.md
 // ▸ Strings).
 SWIFT_EMIT_LOC_STRINGS = YES
 LOCALIZATION_PREFERS_STRING_CATALOGS = YES

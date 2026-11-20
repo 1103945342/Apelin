@@ -5,7 +5,7 @@ import KWWKAgent
 import KWWKAI
 import KWWKMCP
 
-/// One agent session: the core of an `apelin-agent` process.
+/// One agent session: the core of an `luros-agent` process.
 ///
 /// It owns a kwwk `Agent` with the §7 tools, puts every call through the
 /// approval gate, writes every event to `sessions/<id>/events.jsonl` before

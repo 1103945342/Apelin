@@ -4,7 +4,7 @@ import ApelinProtocol
 import Foundation
 import XCTest
 
-/// `projectDelete` as apelin-build serves it: the real folder that holds
+/// `projectDelete` as luros-build serves it: the real folder that holds
 /// the id asked for, gone whole, a link inside it removed and never
 /// followed; anything else refused with nothing removed.
 final class ProjectDeletionTests: XCTestCase {

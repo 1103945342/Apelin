@@ -29,7 +29,7 @@ func checkDeletedProjects() {
 
     // Read in a data folder, and kept there for the next reading.
     let base = URL(fileURLWithPath: "/private/tmp", isDirectory: true)
-        .appendingPathComponent("apelin-deleted-projects-\(UUID().uuidString.prefix(8))", isDirectory: true)
+        .appendingPathComponent("luros-deleted-projects-\(UUID().uuidString.prefix(8))", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: base) }
     let manager = FileManager.default
     let folder = DataFolder(home: base.appendingPathComponent("mobile").path)

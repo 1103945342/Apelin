@@ -10,7 +10,7 @@ For each Extensions/Development/<id>/manifest.json:
   4. build each generated project on the Mac with Xcode's iPhoneOS SDK,
      following its typed steps for every bootstrap it names (compile, link,
      bundle-resources, lipo, dsym, strip, sign), with the extension's support
-     headers, stubs and rpaths. This is a stand-in for apelin-build, to prove
+     headers, stubs and rpaths. This is a stand-in for luros-build, to prove
      the templates and stubs compile and link; it is not the device build.
 
 --write-digests rewrites each template's digest in its manifest first.
@@ -38,7 +38,7 @@ sys.path.insert(0, str(REPOSITORY / "Documents" / "Schemas" / "Tools"))
 import apelin_schema as schema  # noqa: E402
 
 PREFIX = {"rootless": "/var/jb", "roothide": ""}
-PAGES = "https://1103945342.github.io/Apelin/"
+PAGES = "https://1103945342.github.io/Luros/"
 SITE = REPOSITORY / "Documents" / "Site"
 
 
@@ -312,7 +312,7 @@ def main() -> int:
     if failures:
         return 1
 
-    with tempfile.TemporaryDirectory(prefix="apelin-w6a-templates.", dir="/private/tmp") as scratch:
+    with tempfile.TemporaryDirectory(prefix="luros-w6a-templates.", dir="/private/tmp") as scratch:
         for extension, manifest in extensions.values():
             for template in manifest["templates"]:
                 destination = Path(scratch) / manifest["id"] / template["id"]

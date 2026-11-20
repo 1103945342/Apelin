@@ -1,9 +1,9 @@
 import Foundation
 
 // Logs and crashes: a bounded, filtered system log stream (icli in
-// apelin-diagnostics; apelin-log-reader only where root is needed), crash
+// luros-diagnostics; luros-log-reader only where root is needed), crash
 // reports listed by ID and opened as a read-only descriptor.
-// Served by apelin-diagnostics (Workers/Diagnostics; Packages/ApelinDiagnostics)
+// Served by luros-diagnostics (Workers/Diagnostics; Packages/ApelinDiagnostics)
 // through the session host.
 
 /// The unified log is read live on iOS: a stream listens for
@@ -154,7 +154,7 @@ public struct SymbolicatedFrame: Codable, Sendable, Equatable {
 
 /// Symbolicates a report (by the id `crashList` gave) against the dSYMs the
 /// project's builds kept, matched by image UUID, and ranks suspects.
-/// Served by apelin-diagnostics; a report mobile cannot read is opened by
+/// Served by luros-diagnostics; a report mobile cannot read is opened by
 /// the host by id and passed read-only.
 public struct CrashSymbolicateRequest: OperationRequest {
     public typealias Response = CrashSymbolicateResponse

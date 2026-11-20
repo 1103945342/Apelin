@@ -25,8 +25,8 @@ enum ProjectBuildSystem: Equatable {
     }
 
     /// The script a workspace declares it builds with (`external.script`,
-    /// apelin-build's `ExternalBuildDeclaration`), as written; nil when it
-    /// declares none. apelin-build checks the declaration itself.
+    /// luros-build's `ExternalBuildDeclaration`), as written; nil when it
+    /// declares none. luros-build checks the declaration itself.
     static func externalScript(in root: ScopedRoot) -> String? {
         guard let external = manifest(in: root)?["external"] as? [String: Any],
               let script = external["script"] as? String, !script.isEmpty else { return nil }
@@ -48,5 +48,5 @@ enum ProjectBuildSystem: Equatable {
     /// What apelin_project_build answers on a workspace that declares no build,
     /// instead of the build worker's error about a description the
     /// workspace never had.
-    static let externalBuildRefusal = "This workspace declares no build yet. Write a script in the project that builds the package with the repository's own tools and writes one .deb into $APELIN_PACKAGE_DIR, then declare it in luros-project.json as \"external\": {\"script\": \"<its path>\"}; read the apelin-external-build skill first."
+    static let externalBuildRefusal = "This workspace declares no build yet. Write a script in the project that builds the package with the repository's own tools and writes one .deb into $APELIN_PACKAGE_DIR, then declare it in luros-project.json as \"external\": {\"script\": \"<its path>\"}; read the luros-external-build skill first."
 }

@@ -5,7 +5,7 @@
 # plan that never becomes acceptance, stale-plan refusal, a failed write that
 # publishes nothing, and everything surviving a restart.
 #
-# The store sits in Apelind and imports ApelinProtocol as a module; the device
+# The store sits in Lurosd and imports ApelinProtocol as a module; the device
 # has no `swift build`, so every source it reaches is copied into one scratch
 # module exactly as test-terminal.sh does: package imports go, Swift 6 trailing
 # commas go (the device's swiftc is 5.10).
@@ -34,7 +34,7 @@ sources=(
     Packages/ApelinKit/Sources/ApelinProtocol/Operations/AgentDelegationBrief.swift
     Packages/ApelinKit/Sources/ApelinProtocol/Operations/AgentAssignmentLedger.swift
     Packages/ApelinKit/Sources/ApelinProtocol/Operations/AgentTurnReport.swift
-    Apelind/Session/Agent/AgentAssignmentStore.swift
+    Lurosd/Session/Agent/AgentAssignmentStore.swift
     Tests/TeamCollaboration/AssignmentStoreChecks.swift
 )
 python3 - "$work" "${sources[@]}" <<'PY'

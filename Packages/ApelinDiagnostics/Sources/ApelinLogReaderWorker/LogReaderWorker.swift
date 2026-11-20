@@ -3,8 +3,8 @@ import ApelinLogReader
 import ApelinProtocol
 import Foundation
 
-/// `apelin-log-reader`: the root half of `logStream`, started by the session
-/// host only when apelin-diagnostics cannot read the live log as mobile. It
+/// `luros-log-reader`: the root half of `logStream`, started by the session
+/// host only when luros-diagnostics cannot read the live log as mobile. It
 /// serves one operation over a filter the wire fixes — no path, no
 /// predicate, no program — and answers bounded `log` events. System code
 /// only: ApelinLogReader (Foundation, libobjc, LoggingSupport opened at run

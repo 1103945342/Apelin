@@ -4,7 +4,7 @@
 set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 modules="$1"
-work="$(mktemp -d -t apelin-onboarding)"
+work="$(mktemp -d -t luros-onboarding)"
 trap 'rm -rf -- "${work:?}"' EXIT
 objects=()
 for module in ApelinCore ApelinProtocol; do
@@ -17,8 +17,8 @@ done
 [[ ${#objects[@]} -ge 2 ]] || { echo "error: onboarding tests need the harness modules" >&2; exit 1; }
 xcrun --sdk macosx swiftc -swift-version 5 -parse-as-library -target arm64-apple-macos13.0 \
     -I "$root/Shared/XPCShim" -I "$modules" "${objects[@]}" \
-    "$root/Apelin/Interface/Onboarding/WelcomeEnvironmentRecommendation.swift" \
-    "$root/Apelin/Interface/Projects/ProjectCreationDraft.swift" \
-    "$root/Apelin/Interface/Projects/ProjectBuildMethod.swift" \
+    "$root/Luros/Interface/Onboarding/WelcomeEnvironmentRecommendation.swift" \
+    "$root/Luros/Interface/Projects/ProjectCreationDraft.swift" \
+    "$root/Luros/Interface/Projects/ProjectBuildMethod.swift" \
     "$root/Tests/Onboarding/main.swift" -o "$work/onboarding"
 "$work/onboarding"

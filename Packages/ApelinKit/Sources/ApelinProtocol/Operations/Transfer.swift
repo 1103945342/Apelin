@@ -3,7 +3,7 @@ import Foundation
 
 // Transfer files: a toolchain (`.apetc`), an iPhoneOS SDK (`.apesdk`) or a
 // project (`.apeproj`) written on one device, sent anywhere, and opened in
-// Luros on another. Served by apelin-environment (Workers/Environment;
+// Luros on another. Served by luros-environment (Workers/Environment;
 // ApelinEnvironment ▸ Transfer).
 //
 // A transfer file is a tar compressed with zstd. Its first member is

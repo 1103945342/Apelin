@@ -4,7 +4,7 @@
 // an agent's lease only on the user's approval of exactly it, in every mode
 // (AgentForcePushRules); and a squash, which combines the local branch's
 // last commits into one, an agent's under Strict only on the user's
-// approval of exactly it (AgentSquashRules). Served by apelin-environment
+// approval of exactly it (AgentSquashRules). Served by luros-environment
 // with the rest of the git service (Git.swift).
 
 /// A forced push's lease, as `git push --force-with-lease=<branch>:<commit>`

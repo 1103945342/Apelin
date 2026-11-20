@@ -53,7 +53,7 @@ func expectErrorAsync(
 }
 
 let scratch = URL(fileURLWithPath: NSTemporaryDirectory())
-    .appendingPathComponent("apelin-terminal-checks-\(UUID().uuidString)")
+    .appendingPathComponent("luros-terminal-checks-\(UUID().uuidString)")
 try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
 defer { try? FileManager.default.removeItem(at: scratch) }
 let scratchPath = CanonicalPath.resolve(scratch.path)!

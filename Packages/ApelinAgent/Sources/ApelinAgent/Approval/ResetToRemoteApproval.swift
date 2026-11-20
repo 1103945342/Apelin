@@ -122,7 +122,7 @@ public struct ResetToRemoteApproval: Sendable, Hashable, Codable {
             break
         }
         let saved = head == nil && changedFileCount == 0 && overwrittenFileCount == 0
-            ? "" : " All of it is saved first on a new branch named apelin-backup/ and the time, which is the only way back."
+            ? "" : " All of it is saved first on a new branch named luros-backup/ and the time, which is the only way back."
         parts.append("Untracked files the remote does not have stay.\(saved) Each reset needs your approval, in every mode.")
         return parts.joined(separator: " ")
     }

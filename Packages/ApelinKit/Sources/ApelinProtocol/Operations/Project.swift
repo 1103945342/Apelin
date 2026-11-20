@@ -2,7 +2,7 @@ import ApelinCore
 
 // Development extensions, templates, projects under
 // ~/Documents/com.fluoxetine.luros/Projects/<name>/ and their checks.
-// Served by apelin-build (Workers/Build; ApelinProject).
+// Served by luros-build (Workers/Build; ApelinProject).
 
 public enum DevelopmentExtensionKind: String, Codable, Sendable {
     case workspace
@@ -224,7 +224,7 @@ public struct DescriptionDigests: Codable, Sendable, Equatable {
 /// What Confirm mode compares a later build or install against
 /// (Documents/Schemas/README.md ▸ Approval digests): both descriptions'
 /// canonical JSON and digests, and the template they came from. Made by
-/// apelin-build at `projectCreate`; kept by the host, never by a worker.
+/// luros-build at `projectCreate`; kept by the host, never by a worker.
 public struct ProjectBaseline: Codable, Sendable, Equatable {
     public struct Description: Codable, Sendable, Equatable {
         public var canonical: String
@@ -384,7 +384,7 @@ public struct ProjectCheckResponse: Codable, Sendable, Equatable {
     public var environment: ProjectEnvironmentBinding?
     /// `external` for a workspace, which builds with its own script (its
     /// `external` declaration) and has no description digests; absent for a
-    /// project apelin-build builds from its description.
+    /// project luros-build builds from its description.
     public var buildSystem: BuildSystemKind?
 
     public init(
@@ -402,7 +402,7 @@ public struct ProjectCheckResponse: Codable, Sendable, Equatable {
     }
 }
 
-/// Who builds a project: apelin-build from its description, or the
+/// Who builds a project: luros-build from its description, or the
 /// workspace's own script.
 public enum BuildSystemKind: String, Codable, Sendable {
     case apelin

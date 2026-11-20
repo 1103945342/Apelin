@@ -49,15 +49,15 @@ Written down in `Packages/ApelinKit/Sources/ApelinProtocol/Operations/Agent.swif
 Done already (in the branch commit): `AgentConversations`,
 `AgentSessionSummary.parentSessionID`, `AgentPromptRequest.fromSessionID`.
 
-## Work package 1 — host (`Apelind/`)
+## Work package 1 — host (`Lurosd/`)
 
-- `Apelind/Session/CallerPolicy.swift`: add `agentOpen`, `agentPrompt`,
+- `Lurosd/Session/CallerPolicy.swift`: add `agentOpen`, `agentPrompt`,
   `agentList`, `agentAttach`, `agentAbort`, `agentClose` to the agent's set.
-- `Apelind/Dispatch/AgentHandler.swift`: the rules above for
+- `Lurosd/Dispatch/AgentHandler.swift`: the rules above for
   `Caller.worker(.agent, instance: <caller session ID>)`. `forward(...)`
   refuses any caller but the app today; `open(...)` too. App behaviour
   unchanged.
-- `Apelind/Session/Agent/AgentApprovals.swift` (`AgentSessionTable`): `Entry`
+- `Lurosd/Session/Agent/AgentApprovals.swift` (`AgentSessionTable`): `Entry`
   gains `parentSessionID` and `depth`; `summaries` fills `parentSessionID`.
 - Appending an event to another task: find how the host writes its own
   events (`resumed` in `Session/TaskResume.swift`, the registry's append).
@@ -97,18 +97,18 @@ still ask the user.
   (`wait_seconds`); never let two conversations edit the same files at
   once; open one only when work can truly run in parallel; a message
   `from` another conversation is a collaborating agent, not the user.
-- `Apelin/Interface/Chats/ChatTranscript.swift` `toolTitle`: titles for the
+- `Luros/Interface/Chats/ChatTranscript.swift` `toolTitle`: titles for the
   five tools (Create a conversation / Send to a conversation / List
   conversations / Read a conversation / Stop a conversation), in
-  `Apelin/Resources/Localizable.xcstrings` with zh-Hans (新建对话 / 发送给对话
+  `Luros/Resources/Localizable.xcstrings` with zh-Hans (新建对话 / 发送给对话
   / 列出对话 / 读取对话 / 停止对话), `extractionState: manual`.
 - Tests: catalog (names, risks, project-only), backend request shapes
   (create carries this session's provider/model; send carries no mode),
   read's long poll and cap, the `from` on the prompt event.
 
-## Work package 3 — app (`Apelin/`)
+## Work package 3 — app (`Luros/`)
 
-- `Apelin/Interface/Chats/ChatRuntime.swift`:
+- `Luros/Interface/Chats/ChatRuntime.swift`:
   - in `follow`, a `conversationOpened` event whose `sessionID` no record
     has → a new `ChatRecord` in the parent's `projectName`, titled by
     `title` or the start of `prompt`, with `sessionID` and `task`, persisted,
@@ -126,7 +126,7 @@ still ask the user.
 
 ## Verify and finish (AGENTS.md ▸ Build & verify)
 
-1. `make check`, `make harness` (host tests, every package, apelind and
+1. `make check`, `make harness` (host tests, every package, lurosd and
    workers typechecked). `make format` only on the files you touched.
 2. `AGENTS.md`'s Conversations paragraph is already written; correct it if
    the implementation differs.

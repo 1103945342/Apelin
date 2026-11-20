@@ -15,7 +15,7 @@
       "license": "BSD-3-Clause AND NCSA",
       "source": "https://github.com/capstone-engine/capstone",
       "revision": "905d2d29514a97e18516871ec36bc4143549905d",
-      "covers": "apelin-disassembler only",
+      "covers": "luros-disassembler only",
       "files": {
         "LICENSE.TXT": {
           "sha256": "65e9ed46a59976eda8f5bd1ea79a680dea38dd299c760bc9a8d87a764ef5029b",
@@ -35,7 +35,7 @@
       "license": "BSD-3-Clause",
       "source": "https://github.com/Lakr233/libcapstone-spm",
       "revision": "5d3f53a59fada26884ffc9ab32129288ce1ee48f",
-      "covers": "apelin-disassembler only",
+      "covers": "luros-disassembler only",
       "files": {
         "LICENSE": {
           "sha256": "2a0b9715b2bb0676df91e3c8f24d14fbaa6f4e4f90c3be4b0cfa6142825c80b9",
@@ -47,7 +47,7 @@
       "license": "GPL-2.0-only AND NCSA",
       "source": "https://github.com/keystone-engine/keystone",
       "revision": "vendored in libkeystone-spm at 3ff184008e1ba49577b944579cd32d32c78451b5",
-      "covers": "apelin-assembler only",
+      "covers": "luros-assembler only",
       "files": {
         "COPYING": {
           "sha256": "ab15fd526bd8dd18a9e77ebc139656bf4d33e97fc7238cd11bf60e2b9b8666c6",
@@ -67,7 +67,7 @@
       "license": "GPL-2.0-only",
       "source": "https://github.com/Lakr233/libkeystone-spm",
       "revision": "3ff184008e1ba49577b944579cd32d32c78451b5",
-      "covers": "apelin-assembler only",
+      "covers": "luros-assembler only",
       "files": {
         "LICENSE": {
           "sha256": "92bc75fed85cf9a74f85362adde4846b83973d9d772c4a6729bb1039294e4da5",

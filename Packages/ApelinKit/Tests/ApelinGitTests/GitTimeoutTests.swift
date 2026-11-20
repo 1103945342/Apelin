@@ -23,7 +23,7 @@ final class GitTimeoutTests: XCTestCase {
         let silent = try SilentServer()
         defer { silent.stop() }
         let folder = FileManager.default.temporaryDirectory
-            .appendingPathComponent("apelin-git-timeout-\(UUID().uuidString)")
+            .appendingPathComponent("luros-git-timeout-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: folder) }
 
         let started = Date()

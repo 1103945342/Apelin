@@ -1,11 +1,11 @@
 import Foundation
 
-// Agent: one apelin-agent process per session (KWWKAgent), spawned by the
+// Agent: one luros-agent process per session (KWWKAgent), spawned by the
 // session host as mobile; the session is a task of kind `agent` whose events
 // are the agent's structured output (`message`, `toolCall`, `toolResult`,
 // `approvalRequested` {approvalID, tool, arguments}, `state`). The full list
 // is in AGENTS.md ▸ Decisions ▸ Agent sessions.
-// Served by apelin-agent (Workers/Agent; Packages/ApelinAgent) through the host.
+// Served by luros-agent (Workers/Agent; Packages/ApelinAgent) through the host.
 
 /// What a run is allowed to do, as the composer's pill sets it. Sent with
 /// every prompt, because it can change between messages; the approval mode

@@ -4,7 +4,7 @@ import Testing
 
 @Suite(.serialized) struct DownloadTests {
     @Test func `resumes verified prefix and restarts corruption`() async throws {
-        let root = URL(fileURLWithPath: "/private/tmp/apelin-toolchain-test-" + UUID().uuidString)
+        let root = URL(fileURLWithPath: "/private/tmp/luros-toolchain-test-" + UUID().uuidString)
         try directory(root); defer { try? FileManager.default.removeItem(at: root) }
         let body = Data((0 ..< 128).map(UInt8.init))
         let source = try ToolchainSource(productID: "fixture", version: "27.0", url: #require(URL(string: "https://download.invalid/CLTools_Executables.pkg")), size: 128)
@@ -29,7 +29,7 @@ import Testing
     /// after the first carries If-Range, the receipt names the whole file, and a
     /// validator that changes mid-download, or a range answered 200, restarts it.
     @Test func `parallel ranges assemble in order and refuse A changed package`() async throws {
-        let root = URL(fileURLWithPath: "/private/tmp/apelin-toolchain-test-" + UUID().uuidString)
+        let root = URL(fileURLWithPath: "/private/tmp/luros-toolchain-test-" + UUID().uuidString)
         try directory(root); defer { try? FileManager.default.removeItem(at: root) }
         let body = Data((0 ..< 1000).map { UInt8(truncatingIfNeeded: $0 &* 31 &+ 7) })
         let source = try ToolchainSource(productID: "fixture", version: "27.0", url: #require(URL(string: "https://ranges.invalid/CLTools_Executables.pkg")), size: Int64(body.count))
@@ -58,7 +58,7 @@ import Testing
     /// A later range refused outright (429, no validator) is not a changed
     /// package: the verified prefix and its receipt stay for the next attempt.
     @Test func `refused range keeps the verified prefix`() async throws {
-        let root = URL(fileURLWithPath: "/private/tmp/apelin-toolchain-test-" + UUID().uuidString)
+        let root = URL(fileURLWithPath: "/private/tmp/luros-toolchain-test-" + UUID().uuidString)
         try directory(root); defer { try? FileManager.default.removeItem(at: root) }
         let body = Data((0 ..< 1000).map { UInt8(truncatingIfNeeded: $0 &* 31 &+ 7) })
         let source = try ToolchainSource(productID: "fixture", version: "27.0", url: #require(URL(string: "https://ranges.invalid/CLTools_Executables.pkg")), size: Int64(body.count))
@@ -79,7 +79,7 @@ import Testing
 
     /// A range body longer than asked for is refused, not held.
     @Test func `overlong range is refused`() async throws {
-        let root = URL(fileURLWithPath: "/private/tmp/apelin-toolchain-test-" + UUID().uuidString)
+        let root = URL(fileURLWithPath: "/private/tmp/luros-toolchain-test-" + UUID().uuidString)
         try directory(root); defer { try? FileManager.default.removeItem(at: root) }
         let source = try ToolchainSource(productID: "fixture", version: "27.0", url: #require(URL(string: "https://ranges.invalid/CLTools_Executables.pkg")), size: 256)
         let config = URLSessionConfiguration.ephemeral

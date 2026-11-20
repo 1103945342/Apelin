@@ -44,7 +44,7 @@ public struct SessionMetadata: Sendable, Hashable, Codable {
 /// `events.jsonl` (one `SessionEventRecord` per line, sequence numbers from
 /// 1, appended before delivery) and `transcript.json` (the model
 /// conversation, rewritten at the end of every run so a restarted
-/// `apelin-agent` resumes it).
+/// `luros-agent` resumes it).
 ///
 /// Streamed text is coalesced before it is written: a `textDelta` or
 /// `thinkingDelta` joins the pending record of its kind, which is written

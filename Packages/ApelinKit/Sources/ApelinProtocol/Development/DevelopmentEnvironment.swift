@@ -161,7 +161,7 @@ public extension BuildBootstrap {
     /// Which layout this device's bootstrap is, from what the session host
     /// assigned: on roothide mobile's home is inside the jbroot (the install
     /// root), on rootless it is the system's `/var/mobile` beside `/var/jb`.
-    /// The install root comes from apelind's `hello`; nothing here guesses it.
+    /// The install root comes from lurosd's `hello`; nothing here guesses it.
     static func resolve(installRoot: String, home: String) -> BuildBootstrap {
         let root = installRoot.hasSuffix("/") ? String(installRoot.dropLast()) : installRoot
         guard !root.isEmpty else { return .rootless }
@@ -183,7 +183,7 @@ public enum ToolchainLayout {
     }
 }
 
-/// What apelin-environment registered, read as it wrote it:
+/// What luros-environment registered, read as it wrote it:
 /// `Environment/Toolchains/registry.json` (`{toolchains: [ToolchainRecord],
 /// defaultID}`, a toolchain recorded only once its installed bytes passed
 /// the C self-test) and `SDKs/.registry/<id>.json` (one `SDKRecord` each).
@@ -259,7 +259,7 @@ public struct RegisteredEnvironment: Sendable, Equatable {
 
 /// What `luros-project.json` binds: the toolchain and SDK by ID, and the
 /// deployment target. Read loosely, as the session host reads a manifest:
-/// the project checks are apelin-build's.
+/// the project checks are luros-build's.
 public struct ProjectManifestBinding: Sendable, Equatable {
     public static let manifestFile = "luros-project.json"
     static let maximumManifestBytes = 1 << 20

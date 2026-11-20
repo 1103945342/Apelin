@@ -27,7 +27,7 @@ import sys
 
 SKIP_DIRS = {".git", ".build", ".swiftpm", "build", "DerivedData", "node_modules", ".claude", "Vendor"}
 SKIP_PATHS = ("Packages/Runestone/",)
-SOURCE_ROOTS = ("Apelin", "Apelind", "Workers", "Shared", "Widgets", "Packages", "Extensions")
+SOURCE_ROOTS = ("Luros", "Lurosd", "Workers", "Shared", "Widgets", "Packages", "Extensions")
 
 DYNAMIC = re.compile(r"\bdynamic\b")
 DATA = re.compile(r"\bData\b")

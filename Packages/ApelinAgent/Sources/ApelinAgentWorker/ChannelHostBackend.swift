@@ -6,7 +6,7 @@ import Foundation
 
 /// `AgentHostBackend` over `ApelinService`: every system tool the agent has
 /// is one request to the session host, through the same typed facade the app
-/// and the console use. In `apelin-agent` the transport is the worker
+/// and the console use. In `luros-agent` the transport is the worker
 /// channel (`ChannelTransport`); tests pass a fake.
 ///
 /// Mapping (tool → host operation):
@@ -19,7 +19,7 @@ import Foundation
 /// list never asked for;
 /// apelin_log_read → a bounded `logStream` read to its end; apelin_crash_list →
 /// `crashList`; apelin_crash_read → `crashOpen` (a read-only descriptor);
-/// apelin_crash_symbolicate → `crashSymbolicate` (apelin-diagnostics, the project's
+/// apelin_crash_symbolicate → `crashSymbolicate` (luros-diagnostics, the project's
 /// dSYMs); apelin_screen_capture / apelin_screen_read_tree / apelin_screen_interact → `captureScreen` /
 /// `readUITree` / `uiAction`; apelin_sdk_analyze_framework and apelin_sdk_read_header's SDK →
 /// `sdkList`, the project's pinned SDK first; shell_run → `agentRunCode`,
@@ -215,7 +215,7 @@ public struct ChannelHostBackend: AgentHostBackend {
     }
 
     /// A project file that does not read is refused before its build
-    /// starts: by apelin-build, its errors run together, or in Strict mode
+    /// starts: by luros-build, its errors run together, or in Strict mode
     /// by the host, which then has no description to match and says only
     /// that approval is required. The check names each error's field, and
     /// the refusal where the schema is; nil when the file reads, so the
@@ -388,14 +388,14 @@ public struct ChannelHostBackend: AgentHostBackend {
         return diagnostics
     }
 
-    /// What apelin-build's check reports when `luros-project.json` did not
+    /// What luros-build's check reports when `luros-project.json` did not
     /// read: the file itself, its JSON, or its schema.
     static let unreadProjectCodes: Set = ["project.unreadable", "project.json", schemaErrorCode]
     /// A member the schema does not allow, lacks or types wrongly; its field
     /// says which.
     static let schemaErrorCode = "project.invalid"
 
-    static let schemaPointer = "luros-project.json does not match its schema; each error's field is the member to fix. Read the apelin-project-description skill and its file apelin-project.schema.json (apelin_skill_read) before editing it."
+    static let schemaPointer = "luros-project.json does not match its schema; each error's field is the member to fix. Read the luros-project-description skill and its file luros-project.schema.json (apelin_skill_read) before editing it."
 
     /// A finding as the check first wrote it, its field in front:
     /// `/configurations/Debug/linkerFlags: unknown member`.
@@ -747,7 +747,7 @@ public struct ChannelHostBackend: AgentHostBackend {
         )
     }
 
-    /// apelin-environment's refusals are in words the model acts on: an
+    /// luros-environment's refusals are in words the model acts on: an
     /// issue that changed since it was read, another account's.
     public func editFeedback(_ request: FeedbackEditToolRequest) async throws -> FeedbackEditToolResponse {
         let response: FeedbackEditResponse

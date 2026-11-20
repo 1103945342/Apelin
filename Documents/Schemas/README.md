@@ -4,7 +4,7 @@ Two documents, both JSON, both versioned, both read and never executed:
 
 | File | Lives at | Schema |
 |---|---|---|
-| `luros-project.json` | `~/Documents/com.fluoxetine.luros/Projects/<name>/` | [`apelin-project.schema.json`](apelin-project.schema.json) |
+| `luros-project.json` | `~/Documents/com.fluoxetine.luros/Projects/<name>/` | [`luros-project.schema.json`](luros-project.schema.json) |
 | development extension `manifest.json` | `<install-root>/usr/share/luros/development/<id>/`, or the copy Luros's package carries at `<install-root>/Applications/Luros.app/Development/<id>/` | [`extension-manifest.schema.json`](extension-manifest.schema.json) |
 
 The schemas are JSON Schema draft 2020-12. This file is the specification:
@@ -42,7 +42,7 @@ Extensions/Development/check-templates.py   every shipped extension, instantiate
 
 ## `luros-project.json`, version 1
 
-The build entry the UI, the agent and `apelin-build` all read. There is no
+The build entry the UI, the agent and `luros-build` all read. There is no
 other hidden configuration.
 
 | Member | Meaning |
@@ -193,7 +193,7 @@ schema). Steps of different products may interleave.
 | `sign {product, identity?}` | Ad-hoc (`identity: "adhoc"`, the only value), with the product's `entitlements` if any. |
 | `script {id, interpreter, file, arguments?, inputs?, outputs?, requiresApproval: true}` | The only step that runs project-supplied code: `argv = [<bootstrap interpreter>, file, arguments...]`, as mobile, in the project root. `interpreter` is `sh`, `bash`, `zsh`, `python3` or `perl`, resolved by the host inside the bootstrap. There is no command-string form. `requiresApproval` must be spelled `true` so a reader sees the step is reviewed. |
 
-What `apelin-build` always adds and a project cannot remove: `-isysroot`
+What `luros-build` always adds and a project cannot remove: `-isysroot`
 with the SDK's physical path, `-mios-version-min` / `-target` from
 `deploymentTarget`, `-arch`, `-O<optimization>`, `-g` when `debugInfo`,
 `-fobjc-arc` when `objcARC`, `-Werror=unguarded-availability-new`,
@@ -282,7 +282,7 @@ packages whose file still exists.
   printable ASCII, so it has no space or control character, and at most
   2048 characters, which are 2048 bytes. Every template writes its
   extension's icon on Luros's Pages,
-  `https://1103945342.github.io/Apelin/icons/<extension id>.png`; a project
+  `https://1103945342.github.io/Luros/icons/<extension id>.png`; a project
   may keep it, name its own or drop it.
 - `depiction` and `sileoDepiction` are written as the control's `Depiction`
   and `SileoDepiction`, after `Icon`, and nothing is written for one that is
@@ -552,7 +552,7 @@ the display fields above, and may declare the build Luros runs for it:
 | `external.interpreter` | `sh` (default), `bash`, `zsh`, `python3` or `perl`, the bootstrap's own. |
 | `external.arguments` | At most 32 one-line strings handed to the script after its path. |
 
-No other member goes in `external`. apelin-build reads it
+No other member goes in `external`. luros-build reads it
 (`ExternalBuildDeclaration`); what the script gets and must write is in
 AGENTS.md ▸ Workspace builds. No digest covers it: under Confirm every
 build of a workspace asks.

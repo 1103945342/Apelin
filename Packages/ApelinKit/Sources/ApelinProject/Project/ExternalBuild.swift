@@ -5,7 +5,7 @@ import Foundation
 
 /// Whether an `luros-project.json` is a workspace's: `kind` `workspace` or
 /// `buildSystem` `external`. A workspace has an identity and no description
-/// apelin-build builds from; the agent reads the same rule
+/// luros-build builds from; the agent reads the same rule
 /// (`ProjectBuildSystem`).
 public enum Workspace {
     public static func isWorkspace(_ manifest: JSONDocument) -> Bool {
@@ -24,7 +24,7 @@ public enum Workspace {
     }
 }
 
-/// A workspace's own build (owner, 2026-10-23): the script apelin-build runs
+/// A workspace's own build (owner, 2026-10-23): the script luros-build runs
 /// for it, declared under `external` in its `luros-project.json`. The
 /// repository keeps its own way of building — a Makefile, a shell script —
 /// and Luros takes from there the one `.deb` the script writes into
@@ -32,7 +32,7 @@ public enum Workspace {
 /// installed through the session host's bridge like any other.
 ///
 /// ```json
-/// "external": { "script": "scripts/apelin-build.sh", "interpreter": "sh", "arguments": ["--fast"] }
+/// "external": { "script": "scripts/luros-build.sh", "interpreter": "sh", "arguments": ["--fast"] }
 /// ```
 ///
 /// `interpreter` defaults to `sh`; `arguments` to none. The script is a

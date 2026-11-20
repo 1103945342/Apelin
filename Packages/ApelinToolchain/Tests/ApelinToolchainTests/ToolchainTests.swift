@@ -117,14 +117,14 @@ struct ToolchainTests {
 
     @Test(arguments: ["../escape", "/absolute", "a/../../escape", "bad\0path"])
     func `rejects archive escape`(path: String) throws {
-        let root = URL(fileURLWithPath: "/private/tmp/apelin-toolchain-test-" + UUID().uuidString)
+        let root = URL(fileURLWithPath: "/private/tmp/luros-toolchain-test-" + UUID().uuidString)
         try directory(root); defer { try? FileManager.default.removeItem(at: root) }
         #expect(throws: (any Error).self) { try PackageArchive(limits: .init()).extractCPIO(MemoryReader(cpio(path, mode: 0o100644, body: Data("x".utf8))), root: root) }
     }
 
     @Test func `rejects symlink chain and devices`() throws {
         for archive in [cpio("link", mode: 0o120777, body: Data("../escape".utf8)), cpio("device", mode: 0o020666, body: Data())] {
-            let root = URL(fileURLWithPath: "/private/tmp/apelin-toolchain-test-" + UUID().uuidString)
+            let root = URL(fileURLWithPath: "/private/tmp/luros-toolchain-test-" + UUID().uuidString)
             try directory(root); defer { try? FileManager.default.removeItem(at: root) }
             #expect(throws: (any Error).self) { try PackageArchive(limits: .init()).extractCPIO(MemoryReader(archive), root: root) }
         }
@@ -132,7 +132,7 @@ struct ToolchainTests {
 
     @Test func `extracts odc and enforces budget`() throws {
         let archive = cpio("./file", mode: 0o100644, body: Data("hello".utf8)) + cpio("TRAILER!!!", mode: 0, body: Data())
-        let root = URL(fileURLWithPath: "/private/tmp/apelin-toolchain-test-" + UUID().uuidString)
+        let root = URL(fileURLWithPath: "/private/tmp/luros-toolchain-test-" + UUID().uuidString)
         try directory(root); defer { try? FileManager.default.removeItem(at: root) }
         try PackageArchive(limits: .init()).extractCPIO(MemoryReader(archive), root: root)
         #expect(try Data(contentsOf: root.appendingPathComponent("file")) == Data("hello".utf8))

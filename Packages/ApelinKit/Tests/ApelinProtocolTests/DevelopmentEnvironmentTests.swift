@@ -4,14 +4,14 @@ import Foundation
 import XCTest
 
 /// The toolchain and SDK shell_run and the terminal compile with, chosen
-/// from apelin-environment's registries the way `projectCreate` binds them.
+/// from luros-environment's registries the way `projectCreate` binds them.
 final class DevelopmentEnvironmentTests: XCTestCase {
     private var home: URL!
     private var folder: DataFolder!
 
     override func setUpWithError() throws {
         let base = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-            .appendingPathComponent("apelin-development-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("luros-development-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
         home = URL(fileURLWithPath: CanonicalPath.resolve(base.path)!, isDirectory: true)
         folder = DataFolder(home: home.path)

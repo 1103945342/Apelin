@@ -268,9 +268,9 @@ final class ServiceTests: XCTestCase {
         XCTAssertThrowsError(try ConfirmLoadedResponse.from(finalState: interrupted)) { error in
             XCTAssertEqual((error as? ApelinError)?.code, .unavailable)
         }
-        let failed = TaskEvent(seq: EventSeq(1), kind: TaskEvent.stateKind, payload: .object(["state": .string("failed"), "message": .string("apelin-diagnostics exited")]))
+        let failed = TaskEvent(seq: EventSeq(1), kind: TaskEvent.stateKind, payload: .object(["state": .string("failed"), "message": .string("luros-diagnostics exited")]))
         XCTAssertThrowsError(try ConfirmLoadedResponse.from(finalState: failed)) { error in
-            XCTAssertEqual((error as? ApelinError)?.message, "apelin-diagnostics exited")
+            XCTAssertEqual((error as? ApelinError)?.message, "luros-diagnostics exited")
         }
     }
 }

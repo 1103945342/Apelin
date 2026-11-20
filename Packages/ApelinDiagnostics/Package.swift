@@ -27,7 +27,7 @@ let package = Package(
         // served over the worker channel.
         .library(name: "ApelinDiagnosticsWorker", targets: ["ApelinDiagnosticsWorker"]),
         // What Workers/LogReader/main.swift calls. System code only, like
-        // everything apelin-log-reader links: ApelinLogReader, ApelinCore,
+        // everything luros-log-reader links: ApelinLogReader, ApelinCore,
         // ApelinProtocol. `Scripts/check-system-only.py` holds it to that.
         .library(name: "ApelinLogReaderWorker", targets: ["ApelinLogReaderWorker"]),
     ],
@@ -65,7 +65,7 @@ let package = Package(
 
         .target(name: "ConfirmLoaded", dependencies: ["ApelinDiagnosticsCore"]),
 
-        // apelin-diagnostics (mobile): logStream, crashList, crashSymbolicate,
+        // luros-diagnostics (mobile): logStream, crashList, crashSymbolicate,
         // confirmLoaded, captureScreen, readUITree, uiAction.
         .target(
             name: "ApelinDiagnosticsWorker",
@@ -78,7 +78,7 @@ let package = Package(
             ],
             swiftSettings: [.enableUpcomingFeature("ConciseMagicFile")],
         ),
-        // apelin-log-reader (root): logStream through the root live stream.
+        // luros-log-reader (root): logStream through the root live stream.
         .target(
             name: "ApelinLogReaderWorker",
             dependencies: [

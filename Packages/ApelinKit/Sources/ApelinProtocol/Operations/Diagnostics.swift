@@ -2,7 +2,7 @@ import ApelinCore
 
 // Diagnostics and UI: confirm a build's tweak loaded (marker log, loaded
 // images, filter check), screenshots, the UI tree, one structured UI action.
-// Served by apelin-diagnostics (Workers/Diagnostics; Packages/ApelinDiagnostics)
+// Served by luros-diagnostics (Workers/Diagnostics; Packages/ApelinDiagnostics)
 // through the session host. `targetID` names a process or app the host has
 // bound to this verification; never a command.
 
@@ -32,7 +32,7 @@ public enum LoadTrigger: String, Codable, Sendable {
 /// A request to read the target's image list. Still decoded, so an older
 /// caller's request reads, and always refused (`badRequest`): on the
 /// iOS 27.0.1 vphone (2026-10-17), reading SpringBoard's image list from
-/// apelin-diagnostics panicked the kernel ("VM entry … lock is invalid",
+/// luros-diagnostics panicked the kernel ("VM entry … lock is invalid",
 /// vm_entry_lock.c:168) — twice while the task-port read of dyld's image
 /// infos was in place, then once more through the kernel's region paths
 /// alone. Neither reader exists any more.

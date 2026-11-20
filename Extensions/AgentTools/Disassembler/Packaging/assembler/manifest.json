@@ -5,14 +5,14 @@
   "version": "1.0.0",
   "license": "GPL-2.0-only AND MIT AND NCSA",
   "licenseFiles": [
-    "licenses/Apelin/LICENSE",
+    "licenses/Luros/LICENSE",
     "licenses/Keystone/COPYING",
     "licenses/Keystone/EXCEPTIONS-CLIENT",
     "licenses/Keystone/LLVM-LICENSE.TXT",
     "licenses/libkeystone-spm/LICENSE",
     "licenses/SOURCE.md"
   ],
-  "executable": "usr/libexec/luros/agent-tools/apelin-assembler",
+  "executable": "usr/libexec/luros/agent-tools/luros-assembler",
   "protocolVersions": [
     1
   ],

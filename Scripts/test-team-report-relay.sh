@@ -40,9 +40,9 @@ while IFS= read -r file; do sources+=("$file"); done < <(
     find Packages/ApelinKit/Sources/ApelinCore Packages/ApelinKit/Sources/ApelinProtocol -name '*.swift' | sort
 )
 sources+=(
-    Apelind/Session/Agent/AgentReportRelay.swift
-    Apelind/Session/Agent/AgentReportOutbox.swift
-    Apelind/Session/Agent/AgentAssignmentStore.swift
+    Lurosd/Session/Agent/AgentReportRelay.swift
+    Lurosd/Session/Agent/AgentReportOutbox.swift
+    Lurosd/Session/Agent/AgentAssignmentStore.swift
     Tests/TeamCollaboration/ReportRelayChecks.swift
 )
 

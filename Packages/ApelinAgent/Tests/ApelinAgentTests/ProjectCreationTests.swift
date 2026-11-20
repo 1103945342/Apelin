@@ -80,7 +80,7 @@ struct ProjectCreationTests {
             ]), cancellation: nil, mcp: nil)
         }
         try await create(["filterBundles": ["com.apple.springboard", "com.apple.Preferences"], "displayName": "X"])
-        // An empty list goes on too: apelin-build asks for 1 to 32 items.
+        // An empty list goes on too: luros-build asks for 1 to 32 items.
         try await create(["filterBundles": []])
         #expect(await backend.calls == [
             .createProject(

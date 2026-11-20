@@ -2,7 +2,7 @@ import Foundation
 
 // A project's work tree as it stood before a message's run, kept so the
 // reader can put the code back there (Checkpoint & Rewind). Served by
-// apelin-environment (libgit2) as mobile, in the project's own repository:
+// luros-environment (libgit2) as mobile, in the project's own repository:
 // each checkpoint is a commit of every file the repository does not ignore,
 // tracked or not, under `refs/apelin/checkpoints/<message id>`, a ref no
 // branch, push or clone carries. The index, HEAD and the branches are never
@@ -48,7 +48,7 @@ public struct GitCheckpointSaveResponse: Codable, Sendable, Equatable {
 /// Makes the work tree what it was at `messageID`'s checkpoint: each file
 /// the checkpoint holds written back, each file it does not hold removed,
 /// ignored files left alone. What the work tree held first is saved on a
-/// new branch `apelin-backup/checkpoint-<time>`, which the answer names, so
+/// new branch `luros-backup/checkpoint-<time>`, which the answer names, so
 /// the restore can itself be undone. The index and HEAD stay where they
 /// are. The app's alone, after the session's run has stopped
 /// (`agentRewind` with `truncate` false or true).

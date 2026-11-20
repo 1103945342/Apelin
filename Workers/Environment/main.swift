@@ -1,9 +1,9 @@
 import ApelinEnvironment
 import ApelinProtocol
 
-// apelin-environment: toolchain setup and removal, the SDK manager and the git service.
+// luros-environment: toolchain setup and removal, the SDK manager and the git service.
 //
-// Runs as mobile, spawned by apelind's session host with its socketpair as
+// Runs as mobile, spawned by lurosd's session host with its socketpair as
 // descriptor 3; WorkerMain does the assignment and the privilege check.
 // Links ApelinCore, ApelinProtocol, ApelinEnvironment, ApelinGit — see AGENTS.md ▸ Decisions ▸ Process layout.
 //

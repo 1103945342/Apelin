@@ -42,7 +42,7 @@ struct GitResetBackendTests {
             return (batch("reset", [
                 ("result", .object([
                     "remote": .string("origin"), "branch": .string("main"), "commit": .string(Self.remoteCommit),
-                    "previousHead": .string(Self.head), "backupBranch": .string("apelin-backup/20261031-120000"),
+                    "previousHead": .string(Self.head), "backupBranch": .string("luros-backup/20261031-120000"),
                     "projectFile": .string("repositoryWithProjectID"),
                 ])),
                 stateEvent(.succeeded),
@@ -65,7 +65,7 @@ struct GitResetBackendTests {
         #expect(sent.expectedRemoteCommit == Self.remoteCommit)
         #expect(sent.expectedHead == Self.head)
         #expect(sent.expectedURL == "https://github.com/owngoal-dev/Pineora.git")
-        #expect(reset.backupBranch == "apelin-backup/20261031-120000")
+        #expect(reset.backupBranch == "luros-backup/20261031-120000")
         #expect(reset.projectFile?.contains("this project's own projectID") == true)
     }
 

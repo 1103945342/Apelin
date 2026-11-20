@@ -239,7 +239,7 @@ struct GitToolTests {
         } catch let error as ToolDeniedError {
             #expect(error.message.contains("\"external\""))
             #expect(error.message.contains("APELIN_PACKAGE_DIR"))
-            #expect(error.message.contains("apelin-external-build skill"))
+            #expect(error.message.contains("luros-external-build skill"))
         }
         #expect(await harness.backend.calls.isEmpty)
         #expect(await harness.events.events.isEmpty, "nothing is asked")

@@ -122,7 +122,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
-          notes="$RUNNER_TEMP/apelin-release.md"
+          notes="$RUNNER_TEMP/luros-release.md"
           if git show "$SHA:Documents/Releases/$VERSION.md" > "$notes" 2>/dev/null; then
             :
           else

@@ -10,7 +10,7 @@ final class HostSigningTests: XCTestCase {
 
     override func setUpWithError() throws {
         base = URL(fileURLWithPath: CanonicalPath.resolve(NSTemporaryDirectory())!, isDirectory: true)
-            .appendingPathComponent("apelin-signing-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("luros-signing-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
     }
 

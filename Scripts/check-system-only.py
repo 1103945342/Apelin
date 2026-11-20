@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fail when anything but system code can reach a root process.
 
-apelind (the proxy and its session host) and apelin-log-reader run as root
+lurosd (the proxy and its session host) and luros-log-reader run as root
 and link nothing third-party. They link ApelinCore and ApelinProtocol from
 Packages/ApelinKit, so those two targets may depend on each other and on
 nothing else — no package dependency, no other target.
@@ -12,15 +12,15 @@ are held to the same rule: no package dependency, and no target but each
 other. Its other products (the extension side, the test double) never link
 into a root process.
 
-apelin-log-reader also links ApelinLogReaderWorker from
+luros-log-reader also links ApelinLogReaderWorker from
 Packages/ApelinDiagnostics, whose closure may hold only ApelinLogReader, its
 Objective-C shim and the shared request types, plus ApelinCore and
 ApelinProtocol — never icli.
 
-In the Xcode project, the Apelind target may link those products and no
+In the Xcode project, the Lurosd target may link those products and no
 other; WorkerLogReader links ApelinCore, ApelinProtocol and
 ApelinLogReaderWorker only. The vendored
-IrisinExternalClient is source compiled into apelind, not a package, and
+IrisinExternalClient is source compiled into lurosd, not a package, and
 imports system modules only (checked below).
 
 Usage: check-system-only.py <ApelinKit> [--scratch-path <dir>]
@@ -37,13 +37,13 @@ import sys
 KIT_SYSTEM_ONLY = {"ApelinCore", "ApelinProtocol"}
 TOOLHOST_SYSTEM_ONLY = {"ApelinToolCore", "ApelinToolHost"}
 ROOT_XCODE_TARGETS = {
-    "Apelind": KIT_SYSTEM_ONLY | TOOLHOST_SYSTEM_ONLY,
+    "Lurosd": KIT_SYSTEM_ONLY | TOOLHOST_SYSTEM_ONLY,
     "WorkerLogReader": KIT_SYSTEM_ONLY | {"ApelinLogReaderWorker"},
 }
 # Packages/ApelinDiagnostics: what ApelinLogReaderWorker may reach.
 LOG_READER_ROOT = "ApelinLogReaderWorker"
 LOG_READER_CLOSURE = {"ApelinLogReaderWorker", "ApelinLogReader", "ApelinLogReaderSPI", "ApelinDiagnosticsCore"}
-VENDORED_SOURCES = ["Apelind/Vendor/IrisinExternalClient"]
+VENDORED_SOURCES = ["Lurosd/Vendor/IrisinExternalClient"]
 SYSTEM_MODULES = {"CIrisinExternalXPC", "CryptoKit", "Darwin", "Dispatch", "Foundation", "XPC"}
 
 
@@ -92,12 +92,12 @@ def check_log_reader(package_path, scratch_path):
             continue
         seen.add(name)
         if name not in LOG_READER_CLOSURE:
-            fail(f"{LOG_READER_ROOT} reaches {name}: apelin-log-reader runs as root and takes system code only")
+            fail(f"{LOG_READER_ROOT} reaches {name}: luros-log-reader runs as root and takes system code only")
         for dependency in targets[name].get("dependencies", []):
             for kind, dependency_name, package in dependency_names(dependency):
                 if kind == "product":
                     if package != "ApelinKit" or dependency_name not in KIT_SYSTEM_ONLY:
-                        fail(f"{name} depends on product {dependency_name}: apelin-log-reader takes system code only")
+                        fail(f"{name} depends on product {dependency_name}: luros-log-reader takes system code only")
                 else:
                     pending.append(dependency_name)
 
@@ -127,7 +127,7 @@ def check_vendored(repository):
                 source = open(os.path.join(root, name), encoding="utf-8").read()
                 for module in re.findall(r"^\s*(?:@\w+\s+)*import\s+(\w+)", source, re.M):
                     if module not in SYSTEM_MODULES:
-                        fail(f"{relative}/{name} imports {module}; vendored code in apelind takes system modules only")
+                        fail(f"{relative}/{name} imports {module}; vendored code in lurosd takes system modules only")
 
 
 def main():
@@ -142,9 +142,9 @@ def main():
     check_package(arguments.package, arguments.scratch_path, KIT_SYSTEM_ONLY)
     check_package(os.path.join(packages, "ApelinToolHost"), arguments.toolhost_scratch_path, TOOLHOST_SYSTEM_ONLY)
     check_log_reader(os.path.join(packages, "ApelinDiagnostics"), arguments.diagnostics_scratch_path)
-    check_project(os.path.join(repository, "Apelin.xcodeproj"))
+    check_project(os.path.join(repository, "Luros.xcodeproj"))
     check_vendored(repository)
-    print("ok: apelind and apelin-log-reader link system code only")
+    print("ok: lurosd and luros-log-reader link system code only")
 
 
 if __name__ == "__main__":

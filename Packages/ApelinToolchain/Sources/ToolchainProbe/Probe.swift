@@ -85,7 +85,7 @@ struct Probe {
 
     struct Usage: Error, CustomStringConvertible {
         var description: String {
-            "usage: apelin-toolchain-probe compatibility | catalog | setup PRODUCT_ID STAGING OUTPUT [swift] | test TOOLCHAIN PHYSICAL_SDK SCRATCH"
+            "usage: luros-toolchain-probe compatibility | catalog | setup PRODUCT_ID STAGING OUTPUT [swift] | test TOOLCHAIN PHYSICAL_SDK SCRATCH"
         }
     }
 }

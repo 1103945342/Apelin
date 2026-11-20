@@ -49,7 +49,7 @@
     "name": "{{displayName}}",
     "version": "0.0.1",
     "description": "{{summary}}",
-    "icon": "https://1103945342.github.io/Apelin/icons/com.fluoxetine.luros.dev.app.png",
+    "icon": "https://1103945342.github.io/Luros/icons/com.fluoxetine.luros.dev.app.png",
     "author": "{{author}}",
     "section": "Applications",
     "depends": ["uikittools"],

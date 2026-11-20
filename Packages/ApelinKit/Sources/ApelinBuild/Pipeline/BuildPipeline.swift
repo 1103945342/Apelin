@@ -81,7 +81,7 @@ public final class BuildPipeline: @unchecked Sendable {
         logHandle = try FileHandle(forWritingTo: logURL)
         defer { try? logHandle?.close() }
         cache.log = { [weak self] line in self?.log(line) }
-        log("apelin-build \(inputs.buildID): \(project.package.id) \(project.package.version), \(inputs.configuration.rawValue), \(inputs.bootstrap.rawValue) [\(architectures.map(\.rawValue).joined(separator: " "))]")
+        log("luros-build \(inputs.buildID): \(project.package.id) \(project.package.version), \(inputs.configuration.rawValue), \(inputs.bootstrap.rawValue) [\(architectures.map(\.rawValue).joined(separator: " "))]")
         log("toolchain \(inputs.toolchain.id), SDK \(inputs.sdk.id) at \(inputs.sdk.path)")
         if let line = ManifestFormatting.run(projectRoot: inputs.projectRoot, checkedFiles: inputs.checkedFiles) {
             log(line)

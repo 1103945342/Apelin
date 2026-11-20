@@ -1,12 +1,12 @@
 # ApelinToolchain
 
-Device-side CLT acquisition and adaptation for the mobile `apelin-environment`
-worker. This standalone SwiftPM package does not link into `apelind` and does
+Device-side CLT acquisition and adaptation for the mobile `luros-environment`
+worker. This standalone SwiftPM package does not link into `lurosd` and does
 not change the app project. Requires iOS 16+; macOS is a host-test platform.
 There are no third-party package dependencies. Foundation, CryptoKit,
 Compression and system zlib provide networking, hashing and decompression.
 The one package dependency is local: `../ApelinFormats`, for `ApelinCodeSign`
-(CryptoKit only), the signer apelin-build uses too. Its libarchive pin is
+(CryptoKit only), the signer luros-build uses too. Its libarchive pin is
 resolved, never linked here.
 
 ```swift
@@ -147,14 +147,14 @@ Host verification:
 
 ```sh
 swift test --package-path Packages/ApelinToolchain \
-  --scratch-path /private/tmp/apelin-toolchain-tests
+  --scratch-path /private/tmp/luros-toolchain-tests
 # Optional: a locally downloaded Apple package, never a committed fixture.
 APELIN_TEST_PACKAGE=/path/to/CLTools_Executables.pkg swift test \
   --package-path Packages/ApelinToolchain \
-  --scratch-path /private/tmp/apelin-toolchain-tests --filter LivePackageTests
+  --scratch-path /private/tmp/luros-toolchain-tests --filter LivePackageTests
 ```
 
-Use the installed buildlock shims for all builds. `apelin-toolchain-probe`
+Use the installed buildlock shims for all builds. `luros-toolchain-probe`
 provides `catalog`, `setup PRODUCT_ID STAGING OUTPUT` and
 `test TOOLCHAIN PHYSICAL_SDK SCRATCH` for on-device validation. It is not an
 application peer, installer, or product CLI. `setup` requires uid 501. Sign

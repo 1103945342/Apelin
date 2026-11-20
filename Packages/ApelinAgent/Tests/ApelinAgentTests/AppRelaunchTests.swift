@@ -105,12 +105,12 @@ struct AppRelaunchTests {
 
     @Test
     func `the skills restart an app with icli's kill --force, then launch`() throws {
-        let icli = try #require(BuiltInSkills.all.first { $0.name == "apelin-icli" }).body
+        let icli = try #require(BuiltInSkills.all.first { $0.name == "luros-icli" }).body
         #expect(icli.contains("`app kill --force <bundle id>`"))
         #expect(!icli.contains("`app kill <"), "icli refuses a kill without --force")
         #expect(icli.contains("`app launch <bundle id>`"))
 
-        let install = try #require(BuiltInSkills.all.first { $0.name == "apelin-packaging-and-install" }).body
+        let install = try #require(BuiltInSkills.all.first { $0.name == "luros-packaging-and-install" }).body
         #expect(install.contains(#"{"argv": ["icli", "app", "kill", "--force", "<bundle id>"]}"#))
         #expect(install.contains(#"{"argv": ["icli", "app", "launch", "<bundle id>"]}"#))
         #expect(install.contains("`relaunchHint`"))

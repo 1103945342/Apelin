@@ -16,18 +16,18 @@
       "after": [{"removeProject": "Hello"}]
     },
     "i1-smoke": {
-      "needs": ["package:wiki.qaq.irisin>=4.7.3", "!package:com.example.apelin-smoke"],
+      "needs": ["package:wiki.qaq.irisin>=4.7.3", "!package:com.example.luros-smoke"],
       "before": [
-        {"root": "printf 'apelin smoke original\\n' > \"$JB/etc/apelin-smoke.conf\" && chown 0:0 \"$JB/etc/apelin-smoke.conf\" && chmod 644 \"$JB/etc/apelin-smoke.conf\""},
-        {"push": "Documents/Console/fixtures/apelin-smoke_1.0_all.deb", "to": "console/apelin-smoke_1.0_all.deb"}
+        {"root": "printf 'apelin smoke original\\n' > \"$JB/etc/luros-smoke.conf\" && chown 0:0 \"$JB/etc/luros-smoke.conf\" && chmod 644 \"$JB/etc/luros-smoke.conf\""},
+        {"push": "Documents/Console/fixtures/luros-smoke_1.0_all.deb", "to": "console/luros-smoke_1.0_all.deb"}
       ],
       "verify": [
-        {"root": "grep -qx 'apelin smoke edited' \"$JB/etc/apelin-smoke.conf\""},
+        {"root": "grep -qx 'apelin smoke edited' \"$JB/etc/luros-smoke.conf\""},
         {"root": "test ! -e \"$JB/usr/share/luros-smoke\""}
       ],
       "after": [
-        {"root": "rm -f \"$JB/etc/apelin-smoke.conf\""},
-        {"mobile": "rm -f \"$DATA/console/apelin-smoke_1.0_all.deb\""}
+        {"root": "rm -f \"$JB/etc/luros-smoke.conf\""},
+        {"mobile": "rm -f \"$DATA/console/luros-smoke_1.0_all.deb\""}
       ]
     },
     "tool-host": {
@@ -37,7 +37,7 @@
       "needs": ["package:com.fluoxetine.luros.agent-tools.disassembler>=1.1.0"],
       "verify": [
         {"root": "test -z \"$(ls -A \"$JB/var/lib/luros/attachments\" 2>/dev/null)\""},
-        {"root": "! killall -0 apelin-disassembler 2>/dev/null"}
+        {"root": "! killall -0 luros-disassembler 2>/dev/null"}
       ]
     },
     "i2-git": {

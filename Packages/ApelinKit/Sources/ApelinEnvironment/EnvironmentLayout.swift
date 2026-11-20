@@ -3,7 +3,7 @@ import ApelinProtocol
 import Darwin
 import Foundation
 
-/// Where apelin-environment keeps things, all of it in the data folder and
+/// Where luros-environment keeps things, all of it in the data folder and
 /// all of it mobile's:
 ///
 /// ```
@@ -28,7 +28,7 @@ import Foundation
 /// through the install bridge, never here.
 public struct EnvironmentLayout: Sendable {
     public let data: DataFolder
-    /// The install root apelind derived from its own path (the worker's
+    /// The install root lurosd derived from its own path (the worker's
     /// assignment carries it).
     public let installRoot: String
     /// Mobile's home as the host set it; with the install root it says which

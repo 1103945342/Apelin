@@ -193,7 +193,7 @@ public struct GitService: Sendable {
     /// through `.git/info/exclude`: the description and the icon beside it,
     /// and what every repository Luros makes keeps out
     /// (`ProjectExcludes.apelinFiles`).
-    static let apelinFiles = ["/luros-project.json", "/apelin-icon.png"] + ProjectExcludes.apelinFiles
+    static let apelinFiles = ["/luros-project.json", "/luros-icon.png"] + ProjectExcludes.apelinFiles
 
     /// Validates a clone-into request before the task is accepted: the
     /// project is an empty workspace's kind, has no repository yet, or only

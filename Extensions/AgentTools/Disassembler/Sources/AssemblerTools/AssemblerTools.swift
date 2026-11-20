@@ -1,5 +1,5 @@
 // The assembler extension links Keystone, which is GPL-2.0, and ships as
-// its own package for that reason. Nothing outside apelin-assembler links
+// its own package for that reason. Nothing outside luros-assembler links
 // this module.
 
 import ApelinToolExtension

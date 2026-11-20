@@ -5,7 +5,7 @@ import Darwin
 import Foundation
 
 // Toolchain setup end to end: the real EnvironmentWorker in its own process
-// (apelin-environment-harness, a fake toolchain backend and nothing else
+// (luros-environment-harness, a fake toolchain backend and nothing else
 // fake), wired to this host's install bridge the way SessionHost wires a
 // worker — CallerPolicy, the worker's own role, events only into tasks it
 // owns — with the fake irisind laying the package's files down under a
@@ -305,7 +305,7 @@ func toolchainEndToEnd(harness: String) async throws {
     check(record?.packageID == packageID && record?.components == [ToolchainComponent(kind: .c, selfCheckPassed: true)], "e2e: C passed its self-check")
     check(record?.selfTests?.count == 3 && record?.selfTests?.allSatisfy(\.passed) == true, "e2e: every self-test case passed")
 
-    // What apelin-build binds: the digest over the installed manifest's files.
+    // What luros-build binds: the digest over the installed manifest's files.
     let manifest = (try? Data(contentsOf: URL(fileURLWithPath: installed + "/manifest.json")))
         .flatMap { try? JSONCoding.decode(JSONValue.self, from: $0) }
     var digest = SHA256()

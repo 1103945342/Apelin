@@ -48,7 +48,7 @@ struct ScreenshotConsentTests {
 
     @Test
     func `the skills send icli's captures and the tweak loop through the same rule`() throws {
-        let icli = try Self.words(#require(BuiltInSkills.all.first { $0.name == "apelin-icli" }).body)
+        let icli = try Self.words(#require(BuiltInSkills.all.first { $0.name == "luros-icli" }).body)
         #expect(icli.contains("## Screenshots `screen shot`, `screen ocr` and `screen describe` capture the screen as `apelin_screen_capture` does, and so does anything else that reads its pixels."))
         #expect(icli.contains("Whatever takes it, a screenshot waits for the user, in every mode"))
         #expect(icli.contains("A request to test on the device is not consent, one consent covers one screenshot"))
@@ -58,7 +58,7 @@ struct ScreenshotConsentTests {
         #expect(loop.contains("read it with `apelin_screen_read_tree`, drive it with `apelin_screen_interact`"))
         #expect(loop.contains("or in a screenshot only once the user has agreed to that one (the prompt's rule, in every mode)"))
         for skill in BuiltInSkills.all where skill.body.contains("apelin_screen_capture") {
-            #expect(["apelin-icli"].contains(skill.name), "\(skill.name) names the screenshot tool outside the rule")
+            #expect(["luros-icli"].contains(skill.name), "\(skill.name) names the screenshot tool outside the rule")
         }
     }
 }

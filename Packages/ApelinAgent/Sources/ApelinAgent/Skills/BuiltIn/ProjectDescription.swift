@@ -2,7 +2,7 @@ import enum ApelinProject.ProjectValidation
 
 extension BuiltInSkills {
     static let projectDescription = SkillDocument(
-        name: "apelin-project-description",
+        name: "luros-project-description",
         description: "Every member of luros-project.json, the build description Luros's build reads: products, flags, steps, package, layout, tweak filter, the macros the build defines, and what asks the user.",
         body: """
         # The project description
@@ -11,7 +11,7 @@ extension BuiltInSkills {
         build reads. It is checked strictly: an unknown member, a duplicate
         key or a wrong type is an error naming its field, such as
         `/products/0/sources`. The complete schema is this skill's file
-        `apelin-project.schema.json` (apelin_skill_read with that file).
+        `luros-project.schema.json` (apelin_skill_read with that file).
         Luros writes it two spaces a level, one member or element a line,
         and every build puts it back in that form, values unchanged: keep to
         it, and read the file again before file_edit after a build.
@@ -30,7 +30,7 @@ extension BuiltInSkills {
         description written from scratch lacks them: it does not build, and
         no toolchain or SDK can be bound to it. Never rewrite a workspace
         (`"kind": "workspace"`) as one: it builds with a script of its own
-        (the apelin-external-build skill).
+        (the luros-external-build skill).
 
         ## What it builds
         - `kind`: `tweak` (a `dylib` product and `package.tweakFilter`),
@@ -214,7 +214,7 @@ extension BuiltInSkills {
         `{id, name, version, description, author, section, layout, …}`:
         - `id`: the Debian package name; a new project's is a
           `local.apelin.` placeholder to settle with the user before its
-          first install (the apelin-packaging-and-install skill's Package
+          first install (the luros-packaging-and-install skill's Package
           identity). `version`: a Debian version.
           `section`: Tweaks, Utilities, Development, System, Applications or
           Addons. Optional: `maintainer`, `longDescription` (a list of lines).
@@ -236,7 +236,7 @@ extension BuiltInSkills {
           control `Icon`: an `https://` URL in printable ASCII, at most 2048
           bytes. Every template writes its extension's icon on Luros's
           Pages, such as
-          `https://1103945342.github.io/Apelin/icons/com.fluoxetine.luros.dev.tweak.png`.
+          `https://1103945342.github.io/Luros/icons/com.fluoxetine.luros.dev.tweak.png`.
           Keep it, or put in an https image the user gives as their own. It
           is not an app's own icon, which its Info.plist names.
         - `depiction` and `sileoDepiction`: optional, the package's page in a
@@ -244,7 +244,7 @@ extension BuiltInSkills {
           and `SileoDepiction` (the native depiction JSON, where a changelog
           tab comes from), each an `https://` URL of the icon's form. No
           template writes them; add one only with an address the user gave.
-          The apelin-package-depiction skill has the JSON and where to host
+          The luros-package-depiction skill has the JSON and where to host
           it.
         - Relations: `depends`, `recommends`, `suggests`, `conflicts`,
           `breaks`, `replaces` and `provides`, each item like `"name (>=
@@ -258,7 +258,7 @@ extension BuiltInSkills {
           maps them for rootless and roothide. Never write `/var/jb` or a
           jbroot path. `mode` is `0644` or `0755`; `substitutePrefix: true`
           fills `@PREFIX@` and `@ROOTFS@` in a file, such as a launch daemon
-          plist (the apelin-bootstrap-paths skill).
+          plist (the luros-bootstrap-paths skill).
         - `tweakFilter` (tweak only): `{dylib: <product id>, bundles?,
           executables?, classes?}`. The packager writes the filter plist
           beside the dylib, which must be laid out under
@@ -270,7 +270,7 @@ extension BuiltInSkills {
           a project file. Only `@PREFIX@` and `@ROOTFS@` are substituted;
           `sh -n` must pass. They run as root and the install card shows
           them in full: add one only when the task needs it, written as the
-          apelin-packaging-and-install skill says.
+          luros-packaging-and-install skill says.
 
         ## What the build defines
         On every C and Objective-C compile: `APELIN_BUILD_ID`,
@@ -316,6 +316,6 @@ extension BuiltInSkills {
         }
         ```
         """,
-        files: ["apelin-project.schema.json": ProjectValidation.schemaText],
+        files: ["luros-project.schema.json": ProjectValidation.schemaText],
     )
 }

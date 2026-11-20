@@ -253,7 +253,7 @@ public struct WriteTarget: Sendable {
             mode = existing.st_mode & 0o7777
         }
 
-        let temporary = (directory as NSString).appendingPathComponent(".\(fileName).apelin-\(UUID().uuidString)")
+        let temporary = (directory as NSString).appendingPathComponent(".\(fileName).luros-\(UUID().uuidString)")
         let fd = open(temporary, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, mode)
         guard fd >= 0 else {
             throw PathPolicyError.io("could not write \(root.relative(target)): \(String(cString: strerror(errno)))")

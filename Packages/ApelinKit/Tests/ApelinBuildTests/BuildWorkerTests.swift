@@ -6,7 +6,7 @@ import ApelinProtocol
 import Foundation
 import XCTest
 
-/// apelin-build's operations as the session host reaches them: the event
+/// luros-build's operations as the session host reaches them: the event
 /// stream a build task produces, and a cancel.
 final class BuildWorkerTests: XCTestCase {
     final class Events: @unchecked Sendable {
@@ -162,7 +162,7 @@ final class BuildWorkerTests: XCTestCase {
     /// that reads differently by the time the build checks it does not build.
     func testABuildApprovedForAnotherDescriptionStopsAtTheCheck() throws {
         guard let registry = macRegistry() else { throw XCTSkip("no iPhoneOS SDK on this Mac") }
-        let scratch = try scratchDirectory("apelin-approved-digest")
+        let scratch = try scratchDirectory("luros-approved-digest")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, _) = try makeHome(in: scratch)
         let worker = BuildWorker(installRoot: "/var/jb", home: home.path, registry: registry, extensionDirectory: Repository.extensions)
@@ -198,7 +198,7 @@ final class BuildWorkerTests: XCTestCase {
 
     func testDistributionCheckWarnsAboutWhatTheTemplateLeft() throws {
         guard let registry = macRegistry() else { throw XCTSkip("no iPhoneOS SDK on this Mac") }
-        let scratch = try scratchDirectory("apelin-distribution-check")
+        let scratch = try scratchDirectory("luros-distribution-check")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, _) = try makeHome(in: scratch)
         let worker = BuildWorker(installRoot: "/var/jb", home: home.path, registry: registry, extensionDirectory: Repository.extensions)
@@ -240,7 +240,7 @@ final class BuildWorkerTests: XCTestCase {
 
     func testDistributionBuildsDistinctBootstrapArtifacts() throws {
         guard let registry = macRegistry() else { throw XCTSkip("no iPhoneOS SDK on this Mac") }
-        let scratch = try scratchDirectory("apelin-distribution")
+        let scratch = try scratchDirectory("luros-distribution")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, _) = try makeHome(in: scratch)
         let worker = BuildWorker(installRoot: "/var/jb", home: home.path, registry: registry, extensionDirectory: Repository.extensions)

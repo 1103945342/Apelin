@@ -5,13 +5,13 @@
   "version": "1.1.0",
   "license": "MIT AND BSD-3-Clause AND NCSA",
   "licenseFiles": [
-    "licenses/Apelin/LICENSE",
+    "licenses/Luros/LICENSE",
     "licenses/Capstone/LICENSE.TXT",
     "licenses/Capstone/LICENSE_BSD_3_CLAUSE.txt",
     "licenses/Capstone/LICENSE_LLVM.TXT",
     "licenses/libcapstone-spm/LICENSE"
   ],
-  "executable": "usr/libexec/luros/agent-tools/apelin-disassembler",
+  "executable": "usr/libexec/luros/agent-tools/luros-disassembler",
   "protocolVersions": [
     1
   ],

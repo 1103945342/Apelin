@@ -208,7 +208,7 @@ final class ToolHostClientTests: XCTestCase {
     func testAttachmentsTravelAsDescriptors() async throws {
         let client = makeClient()
         try await client.start()
-        let path = NSTemporaryDirectory() + "apelin-tool-attachment-\(getpid())"
+        let path = NSTemporaryDirectory() + "luros-tool-attachment-\(getpid())"
         FileManager.default.createFile(atPath: path, contents: Data("hello".utf8))
         defer { unlink(path) }
         let attachment = try ToolOutgoingAttachment(path: path, argument: "file", mimeType: "text/plain")
@@ -228,7 +228,7 @@ final class ToolHostClientTests: XCTestCase {
     func testAnUnlinkedReadOnlyCopyTravelsBothWays() async throws {
         let client = makeClient()
         try await client.start()
-        let path = NSTemporaryDirectory() + "apelin-tool-copy-\(getpid())"
+        let path = NSTemporaryDirectory() + "luros-tool-copy-\(getpid())"
         FileManager.default.createFile(atPath: path, contents: Data("abc\u{0}def".utf8))
         let descriptor = open(path, O_RDONLY | O_CLOEXEC)
         unlink(path)

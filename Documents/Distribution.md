@@ -31,7 +31,7 @@ indexed by GitHub Actions and served by GitHub Pages at
 GitHub welcome page) creates one from Luros's template, laid out after
 owngoal-dev/owngoal-packages, or links one the user has, adding what the
 template has and it lacks. Its clone is a workspace project, which its own
-conversation maintains (the agent's `apelin-package-repository` skill).
+conversation maintains (the agent's `luros-package-repository` skill).
 
 Once a release build succeeds, **Distribute ▸ Publish to Repository** on the
 build page, or **Publish to Repository** under the first page's Packages,
@@ -88,7 +88,7 @@ build.
 
 The project must have a valid `luros-project.json`, an SDK and toolchain binding,
 and architectures for the chosen bootstrap — or be a workspace that declares its
-own build script (`external`; see the agent's apelin-external-build skill). A manifest
+own build script (`external`; see the agent's luros-external-build skill). A manifest
 with no `build`, and a workspace with no script, have nothing to package:
 **Distribute…** in the menu is disabled and says which is missing, and the
 distribution page, if it is open when that is found, offers no target and says
@@ -113,7 +113,7 @@ wrote and lists, under the outcome and among the agent's build diagnostics:
 
 They are warnings, as above; the package can still be shared and published.
 
-For a project apelin-build builds, use its existing build and packaging description:
+For a project luros-build builds, use its existing build and packaging description:
 
 - Declare each target's actual architectures and bootstrap dependencies.
 - Keep package layout paths logical. The packager maps rootless paths under

@@ -1,7 +1,7 @@
 // SDK manager: download from a source that keeps one SDK per branch
 // (`sdk/<CanonicalName>`), import an archive or a folder, identify it from
 // SDKSettings.json, check and register it.
-// Served by apelin-environment (Workers/Environment; ApelinEnvironment, ApelinGit).
+// Served by luros-environment (Workers/Environment; ApelinEnvironment, ApelinGit).
 //
 // An import is a task of kind `environment`, read with `environmentAttach`.
 // Its events: `stage` {stage: fetching | extracting | inspecting |

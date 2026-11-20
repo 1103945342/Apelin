@@ -13,7 +13,7 @@ final class GitSquashTests: XCTestCase {
 
     private func scratch() -> URL {
         let base = URL(fileURLWithPath: CanonicalPath.resolve(NSTemporaryDirectory())!, isDirectory: true)
-        let url = base.appendingPathComponent("apelin-squash-\(UUID().uuidString)", isDirectory: true)
+        let url = base.appendingPathComponent("luros-squash-\(UUID().uuidString)", isDirectory: true)
         addTeardownBlock { try? FileManager.default.removeItem(at: url) }
         return url
     }

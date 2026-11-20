@@ -18,9 +18,9 @@ struct FeedbackEditToolTests {
         "body": "It ends before the link step, on roothide and rootless.",
     ]
     private static let edit = FeedbackEditApproval(
-        repository: "1103945342/Apelin",
+        repository: "1103945342/Luros",
         number: 12,
-        url: "https://github.com/1103945342/Apelin/issues/12",
+        url: "https://github.com/1103945342/Luros/issues/12",
         title: nil,
         body: "It ends before the link step, on roothide and rootless.",
         currentTitle: "The build log stops early",
@@ -28,9 +28,9 @@ struct FeedbackEditToolTests {
     )
     /// #12 as MockBackend keeps it before an edit.
     private static let filed = FeedbackReadToolResponse(
-        repository: "1103945342/Apelin",
+        repository: "1103945342/Luros",
         issue: 12,
-        url: "https://github.com/1103945342/Apelin/issues/12",
+        url: "https://github.com/1103945342/Luros/issues/12",
         title: "The build log stops early",
         state: "open",
         author: "someone",
@@ -131,7 +131,7 @@ struct FeedbackEditToolTests {
         #expect(request.tool == "apelin_feedback_edit")
         #expect(request.detail == .feedbackEdit(Self.edit), "only the body changes; the title it repeats stays")
         #expect(!request.allowsSessionScope)
-        #expect(request.reason.contains("body of issue #12 on 1103945342/Apelin"))
+        #expect(request.reason.contains("body of issue #12 on 1103945342/Luros"))
         #expect(!ToolRunner.allowsSessionScope(.local(.feedbackEdit), detail: .none))
 
         // Even after a "for this session" answer, the same edit, made again
@@ -160,7 +160,7 @@ struct FeedbackEditToolTests {
         guard case let .text(text)? = result.content.first else {
             Issue.record("no answer"); return
         }
-        #expect(text.text.contains("https://github.com/1103945342/Apelin/issues/12"))
+        #expect(text.text.contains("https://github.com/1103945342/Luros/issues/12"))
         #expect(text.text.contains("\"body\""))
     }
 
@@ -215,9 +215,9 @@ struct FeedbackEditToolTests {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }
         await harness.backend.setFeedbackIssue(FeedbackReadToolResponse(
-            repository: "1103945342/Apelin",
+            repository: "1103945342/Luros",
             issue: 13,
-            url: "https://github.com/1103945342/Apelin/issues/13",
+            url: "https://github.com/1103945342/Luros/issues/13",
             title: "Crash on launch",
             state: "open",
             author: "other",

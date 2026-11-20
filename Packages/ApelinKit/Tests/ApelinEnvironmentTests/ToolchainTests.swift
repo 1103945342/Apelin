@@ -31,7 +31,7 @@ struct FakeBackend: ToolchainBackend {
 
     static let id = "0123456789abcdef01234567"
     static let newest = ToolchainProduct(productID: "001-00002", version: "27.0", url: "https://example.invalid/27.pkg", size: 1)
-    static let tool = Data("#!/bin/sh\necho apelin-ok\n".utf8)
+    static let tool = Data("#!/bin/sh\necho luros-ok\n".utf8)
 
     func catalog() async throws -> [ToolchainProduct] {
         products ?? [
@@ -252,7 +252,7 @@ final class ToolchainServiceTests: XCTestCase {
         XCTAssertEqual(status.toolchains.map(\.id), [record.id])
         XCTAssertFalse(FileManager.default.fileExists(atPath: jobFolder(home).path), "the job folder goes once ready")
 
-        // What apelin-build reads, and what a project binds.
+        // What luros-build reads, and what a project binds.
         let stores = try EnvironmentStoresReader(home: home).toolchains()
         XCTAssertEqual(stores, try [record.id: "sha256:" + XCTUnwrap(record.contentDigest)])
 
@@ -762,7 +762,7 @@ final class ToolchainServiceTests: XCTestCase {
     }
 }
 
-/// apelin-build's view of the registry, read as EnvironmentStores reads it
+/// luros-build's view of the registry, read as EnvironmentStores reads it
 /// (ApelinProject is not linked here): id → binding digest.
 struct EnvironmentStoresReader {
     let home: TemporaryHome
@@ -818,7 +818,7 @@ final class ToolchainPackagerTests: XCTestCase {
             XCTAssertEqual(control.package, "com.fluoxetine.luros.toolchain." + FakeBackend.id)
             XCTAssertEqual(control.architecture, architecture)
             XCTAssertNil(control["Depends"])
-            XCTAssertEqual(control["Icon"], "https://1103945342.github.io/Apelin/icons/com.fluoxetine.luros.toolchain.png")
+            XCTAssertEqual(control["Icon"], "https://1103945342.github.io/Luros/icons/com.fluoxetine.luros.toolchain.png")
             XCTAssertEqual(control["Name"]?.hasPrefix("Command Line Tools "), true)
             XCTAssertEqual(control["Name"]?.hasSuffix(" (Luros)"), true)
             XCTAssertEqual(Set(contents.controlFiles.keys), ["control"], "no maintainer scripts")

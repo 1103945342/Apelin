@@ -16,8 +16,8 @@ by hand:
   written into the app's data folder. Nothing in them is a real session.
 - `make-banner.sh` — the whole run:
   1. builds the app for the iOS Simulator into
-     `/private/tmp/apelin-banner-deriveddata` (a screenshot build only:
-     Luros ships no simulator build, and nothing that needs apelind works
+     `/private/tmp/luros-banner-deriveddata` (a screenshot build only:
+     Luros ships no simulator build, and nothing that needs lurosd works
      there);
   2. installs it on an existing iPhone simulator (`SIMULATOR`, default
      "iPhone 18 Pro"), light mode, the status bar at 9:41;

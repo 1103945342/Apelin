@@ -78,8 +78,8 @@ final class GitImportManifestTests: XCTestCase {
         XCTAssertEqual(try ProjectLocator(layout: home.layout).locate(theirID).root.path, root.path, "the project has its ID now")
         let exclude = try String(contentsOf: root.appendingPathComponent(".git/info/exclude"), encoding: .utf8)
         XCTAssertFalse(exclude.contains("/luros-project.json\n"), "the file is the repository's, never kept out of it")
-        XCTAssertTrue(exclude.contains("/apelin-icon.png\n"))
-        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: root.path).filter { $0.contains("apelin-replaced") }, [])
+        XCTAssertTrue(exclude.contains("/luros-icon.png\n"))
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: root.path).filter { $0.contains("luros-replaced") }, [])
     }
 
     func testAnIDAnotherProjectHasGivesWayToTheWorkspaces() throws {

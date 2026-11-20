@@ -3,7 +3,7 @@
   "steps": [
     {"op": "hello"},
     {"op": "ptyOpen", "label": "pty", "follow": false,
-     "request": {"columns": 80, "rows": 24, "initialInput": "stty size; echo apelin-terminal-$((6*7))\n"}},
+     "request": {"columns": 80, "rows": 24, "initialInput": "stty size; echo luros-terminal-$((6*7))\n"}},
     {"op": "expect", "request": {"step": "pty", "path": "response.task.kind", "equals": "terminal"}},
     {"op": "wait", "request": {"seconds": 1}},
 

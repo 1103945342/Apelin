@@ -146,14 +146,14 @@ if [[ $mode == app ]]; then
         ldid -S -Cadhoc "$library"
     done
     packaging="$(cd "$(dirname "$0")/.." && pwd)/Packaging"
-    widget="$staging/Luros.app/PlugIns/ApelinWidgets.appex"
+    widget="$staging/Luros.app/PlugIns/LurosWidgets.appex"
     if [[ -d "$widget" ]]; then
         rm -rf -- "${widget:?}/_CodeSignature"
-        ldid -S"$packaging/ApelinWidgets.entitlements" -Cadhoc \
+        ldid -S"$packaging/LurosWidgets.entitlements" -Cadhoc \
             "$widget/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$widget/Info.plist")"
     fi
     executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$staging/Luros.app/Info.plist")"
-    ldid -S"$packaging/Apelin.entitlements" -Cadhoc "$staging/Luros.app/$executable"
+    ldid -S"$packaging/Luros.entitlements" -Cadhoc "$staging/Luros.app/$executable"
 fi
 
 # This installer updates an existing Luros installation. Derive its actual
@@ -167,7 +167,7 @@ remote_directory="$(run_sudo '
     case "$daemon" in /*) ;; *) echo "error: installed Luros daemon path is not absolute" >&2; exit 1 ;; esac
     install_root="${daemon%/usr/libexec/lurosd}"
     install_root="$(cd -P "${install_root:-/}" && pwd -P)"
-    directory="$(mktemp -d "${install_root%/}/.apelin-install.XXXXXXXX")"
+    directory="$(mktemp -d "${install_root%/}/.luros-install.XXXXXXXX")"
     cleanup() { rmdir "$directory"; }
     trap cleanup EXIT
     chown "${SUDO_UID:?}:${SUDO_GID:?}" "$directory"

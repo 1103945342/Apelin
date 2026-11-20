@@ -7,7 +7,7 @@ import Foundation
 public enum ProjectValidation {
     public static let schema = SchemaValidator(schema: try! StrictJSON.parse(Data(EmbeddedSchemas.project.utf8)))
 
-    /// The schema as written, for a reader: the agent's apelin-project-description
+    /// The schema as written, for a reader: the agent's luros-project-description
     /// skill hands it to a model that asks.
     public static let schemaText = EmbeddedSchemas.project
 

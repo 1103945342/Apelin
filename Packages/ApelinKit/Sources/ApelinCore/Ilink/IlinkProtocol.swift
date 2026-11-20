@@ -7,7 +7,7 @@ import Foundation
 //
 // Nothing here is Luros's protocol: this is the far side of the wire, and
 // what Luros does with a message lives in the session host
-// (`Apelind/Session/Channel/`). No token is ever put in an error or a log.
+// (`Lurosd/Session/Channel/`). No token is ever put in an error or a log.
 
 /// One QR code to scan, as `ilink/bot/get_bot_qrcode` answers it.
 public struct IlinkQRCode: Codable, Sendable, Equatable {

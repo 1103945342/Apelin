@@ -60,7 +60,7 @@ extension ToolRunner {
             }
         case .packageInstall:
             // A workspace has no packaging description: the package it built
-            // is judged by its own (apelin-build's ExternalBuild).
+            // is judged by its own (luros-build's ExternalBuild).
             if ProjectBuildSystem.read(in: root) == .external {
                 let artifact = try arguments.requireString("artifact_id")
                 guard let state = try? await digests.packagingState(ofArtifact: artifact, for: project) else {
@@ -195,7 +195,7 @@ extension ToolRunner {
         case .gitRemoveCredential:
             facts.gitSettings = "the credential for \(arguments.argString("host") ?? "")"
         case .gitCreateRepository:
-            // Checked before anyone is asked, and again by apelin-environment;
+            // Checked before anyone is asked, and again by luros-environment;
             // the card names what is created. The visibility has no default:
             // it is the user's to choose.
             guard let visibility = arguments.argString("visibility").flatMap(GitRepositoryVisibility.init(rawValue:)) else {
@@ -217,7 +217,7 @@ extension ToolRunner {
                 description: request.description,
             )
         case .gitCreateIssue:
-            // Checked before anyone is asked, and again by apelin-environment;
+            // Checked before anyone is asked, and again by luros-environment;
             // the card names the repository and the text that is sent.
             // Luros's own feedback is apelin_feedback_send's.
             let request = try GitIssueCreateRequest(
@@ -254,7 +254,7 @@ extension ToolRunner {
             facts.skillChange = try skillTools().change(removing: arguments)
         case .feedbackSend:
             // Checked before anyone is asked; the card shows the text that
-            // is sent, which apelin-environment checks again.
+            // is sent, which luros-environment checks again.
             let title = try arguments.requireString("title").trimmingCharacters(in: .whitespaces)
             let body = try arguments.requireString("body")
             if let problem = FeedbackRules.problem(title: title, body: body) {
@@ -275,7 +275,7 @@ extension ToolRunner {
             facts.feedbackEdit = try FeedbackEdit.approval(for: arguments, issue: issue)
         case .packagePublish:
             // Read and checked before anyone is asked; the card names what
-            // is sent, which the host and apelin-environment check again.
+            // is sent, which the host and luros-environment check again.
             let ids = try PackagePublish.buildIDs(arguments)
             let publication = try await backend.packagePublication(PackagePublicationRequest(context: probeContext, buildIDs: ids))
             facts.packagePublish = try PackagePublish.approval(for: ids, publication: publication)

@@ -47,11 +47,11 @@ for path in (root / "Packages/ApelinKit/Sources/ApelinCore").rglob("*.swift"):
     copy(str(path.relative_to(root)), str(pathlib.Path("Core") / "ApelinCore" / path.relative_to(root / "Packages/ApelinKit/Sources/ApelinCore")))
 for path in (root / "Packages/ApelinKit/Sources/ApelinProtocol").rglob("*.swift"):
     copy(str(path.relative_to(root)), str(pathlib.Path("Protocol") / path.relative_to(root / "Packages/ApelinKit/Sources/ApelinProtocol")))
-copy("Apelind/Session/Agent/AgentDelegationStore.swift", "Host/AgentDelegationStore.swift")
-copy("Apelind/Session/Agent/AgentDelegationAdmission.swift", "Host/AgentDelegationAdmission.swift")
-copy("Apelind/Session/Agent/AgentDelegatedMarker.swift", "Host/AgentDelegatedMarker.swift")
-copy("Apelind/Dispatch/AgentDelegationHandler.swift", "Host/AgentDelegationHandler.swift")
-copy("Apelind/Session/Agent/AgentAssignmentStore.swift", "Host/AgentAssignmentStore.swift")
+copy("Lurosd/Session/Agent/AgentDelegationStore.swift", "Host/AgentDelegationStore.swift")
+copy("Lurosd/Session/Agent/AgentDelegationAdmission.swift", "Host/AgentDelegationAdmission.swift")
+copy("Lurosd/Session/Agent/AgentDelegatedMarker.swift", "Host/AgentDelegatedMarker.swift")
+copy("Lurosd/Dispatch/AgentDelegationHandler.swift", "Host/AgentDelegationHandler.swift")
+copy("Lurosd/Session/Agent/AgentAssignmentStore.swift", "Host/AgentAssignmentStore.swift")
 copy("Tests/TeamCollaboration/DelegationHandlerChecks.swift", "Checks/DelegationHandlerChecks.swift")
 (work / "mods").mkdir()
 PYTHON

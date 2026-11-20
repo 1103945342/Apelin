@@ -29,7 +29,7 @@ extension ChannelHostBackend {
 
     /// Without a github.com sign-in, or with one GitHub refused, the model
     /// hears where the user signs in, read from the reply's reason; any
-    /// other refusal is the host's or apelin-environment's, in their words.
+    /// other refusal is the host's or luros-environment's, in their words.
     public func publishPackages(_ request: PackagePublishToolRequest) async throws -> PackagePublishToolResponse {
         let publication = request.publication
         let handle: TaskHandle

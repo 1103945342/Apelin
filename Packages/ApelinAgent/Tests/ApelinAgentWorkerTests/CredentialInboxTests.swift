@@ -13,7 +13,7 @@ struct CredentialInboxTests {
 
     init() throws {
         directory = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("apelin-inbox-\(UUID().uuidString)/credentials", isDirectory: true)
+            .appendingPathComponent("luros-inbox-\(UUID().uuidString)/credentials", isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         inbox = CredentialInbox(directory: directory)
     }
@@ -128,7 +128,7 @@ struct EventRelayMappingTests {
 
     /// The session host reads `detail.command` and `workingDirectory` back
     /// from this event to hold a shell_run approval to the command it showed
-    /// (`AgentApprovals.approvedSpec` in Apelind decodes exactly this shape).
+    /// (`AgentApprovals.approvedSpec` in Lurosd decodes exactly this shape).
     @Test
     func `a shell_run approval request carries its command in the shape the host reads`() {
         func payload(_ invocation: RunCodeInvocation, cwd: String) -> ApelinCore.JSONValue {
@@ -181,7 +181,7 @@ struct EventRelayMappingTests {
 
     /// The session host reads `detail.packageRemoval.installationID` back
     /// from this event to grant the removal once
-    /// (`AgentApprovals.recordInLedger` in Apelind; the session host's test
+    /// (`AgentApprovals.recordInLedger` in Lurosd; the session host's test
     /// relays exactly this payload).
     @Test
     func `a package removal request carries its installation in the shape the host reads`() throws {
@@ -226,7 +226,7 @@ struct EventRelayMappingTests {
 
     @Test
     func `the fallback digest covers the build description and nothing else`() throws {
-        let project = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("apelin-digest-\(UUID().uuidString)", isDirectory: true)
+        let project = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("luros-digest-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: project, withIntermediateDirectories: true)
         let manifest = project.appendingPathComponent("luros-project.json")
         try #"{"products": [1], "build": {"steps": []}, "package": {"id": "a"}}"#.write(to: manifest, atomically: true, encoding: .utf8)

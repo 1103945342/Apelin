@@ -31,8 +31,8 @@ fi
     -module-name ApelinCore -emit-module -emit-module-path "$work/ApelinCore.swiftmodule" \
     -emit-object "$core/CanonicalPath.swift" "$core/BootstrapRootPath.swift" -o "$work/ApelinCore.o"
 "${compiler[@]}" -swift-version 5 -I "$work" "$work/ApelinCore.o" \
-    Apelind/ProcessList.swift Apelind/Session/Install/AppBundle.swift \
-    Apelind/Session/Install/ApplicationInstall.swift Tests/ApplicationInstall/main.swift \
+    Lurosd/ProcessList.swift Lurosd/Session/Install/AppBundle.swift \
+    Lurosd/Session/Install/ApplicationInstall.swift Tests/ApplicationInstall/main.swift \
     -o "$work/check"
 if [[ "${1:-}" == --device ]]; then
     ldid "-S$2" "$work/check"

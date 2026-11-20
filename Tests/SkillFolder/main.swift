@@ -25,7 +25,7 @@ func fails(_ expected: SkillFolder.Failure, _ body: () throws -> Void) -> Bool {
 
 let manager = FileManager.default
 let base = URL(fileURLWithPath: NSTemporaryDirectory())
-    .appendingPathComponent("apelin-skill-folder-\(UUID().uuidString)", isDirectory: true)
+    .appendingPathComponent("luros-skill-folder-\(UUID().uuidString)", isDirectory: true)
 try manager.createDirectory(at: base, withIntermediateDirectories: false)
 defer { try? manager.removeItem(at: base) }
 

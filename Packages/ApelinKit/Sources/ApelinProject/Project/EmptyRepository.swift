@@ -11,13 +11,13 @@ import Foundation
 public enum ProjectExcludes {
     public static let apelinFiles = [
         "/Attachments/",
-        "/.apelin-metadata-*",
-        ".*.apelin-*",
+        "/.luros-metadata-*",
+        ".*.luros-*",
     ]
 }
 
 /// A new project's repository: what `git init -b main` leaves, written by
-/// hand because apelin-build, which makes projects, does not link libgit2.
+/// hand because luros-build, which makes projects, does not link libgit2.
 /// HEAD names `main`, which has no commit yet, and the config is git init's
 /// own, with nothing in it that runs; `info/exclude` holds
 /// `ProjectExcludes.apelinFiles`. It is written into the staging folder,

@@ -68,7 +68,7 @@ public struct ProjectStore: Sendable {
     /// An empty workspace has identity but no invented SDK or build recipe.
     /// `buildSystem: external` says so to a reader: whatever builds it is
     /// the workspace's own (a repository's Makefile, a script), never
-    /// apelin-build. A workspace written before the key existed has
+    /// luros-build. A workspace written before the key existed has
     /// `kind: workspace` and no `buildSystem`, and is read the same way. It
     /// starts as an untouched repository on `main` (`EmptyRepository`).
     public func createEmpty(name: String, automaticallyName: Bool = false) throws -> ProjectCreateResponse {

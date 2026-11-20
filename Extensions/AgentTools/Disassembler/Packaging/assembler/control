@@ -4,7 +4,7 @@ Version: @VERSION@
 Architecture: @ARCHITECTURE@
 Description: An assembler tool for Luros's agent, built on Keystone (GPLv2), for @FLAVOR@ jailbreaks
  An agent tool extension for Luros. It gives the agent one tool, assemble, which turns ARM64, ARM, Thumb or x86 assembly into machine code with Keystone. Keystone is licensed under the GNU GPL version 2, so this package ships separately from Luros. The license, and where to get the corresponding source, are installed in usr/share/luros/agent-tools/com.fluoxetine.luros.agent-tools.assembler/licenses under the jailbreak root.
-Icon: https://1103945342.github.io/Apelin/icons/com.fluoxetine.luros.agent-tools.assembler.png
+Icon: https://1103945342.github.io/Luros/icons/com.fluoxetine.luros.agent-tools.assembler.png
 Maintainer: 1103945342 <1103945342@users.noreply.github.com>
 Author: 1103945342 <1103945342@users.noreply.github.com>
 Section: Development

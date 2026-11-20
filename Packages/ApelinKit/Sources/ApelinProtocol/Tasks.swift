@@ -98,13 +98,13 @@ public enum TaskKind: String, Codable, Sendable {
     /// final `state`. The host owns it so a respring that takes the app
     /// down does not lose the answer.
     case confirmLoaded
-    /// A provider sign-in in apelin-agent's `credential-import` instance:
+    /// A provider sign-in in luros-agent's `credential-import` instance:
     /// what the user must see or open, then a final `state`. Read with
     /// `agentAttach`; never resumed, since the flow's secrets were the
     /// stopped process's alone.
     case signIn
 
-    /// One provider connectivity probe in apelin-agent's `credential-import`
+    /// One provider connectivity probe in luros-agent's `credential-import`
     /// instance: a `stage` event as each phase starts and ends, then the
     /// report in the final `state`. Read with `agentAttach`; never resumed,
     /// since the probe died with the process that ran it.

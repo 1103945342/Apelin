@@ -1,6 +1,6 @@
 import Foundation
 
-/// JSON Schema draft 2020-12, the subset `apelin-project.schema.json` and
+/// JSON Schema draft 2020-12, the subset `luros-project.schema.json` and
 /// `extension-manifest.schema.json` use, ported from the reference
 /// implementation's `Validator` with its error messages word for word (the
 /// fixtures' `expectations.json` match on them). An unknown keyword is an

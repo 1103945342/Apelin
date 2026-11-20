@@ -3,8 +3,8 @@ import Foundation
 // The repository's refs — branches and tags — and the two things that move
 // them without a commit of their own: a merge and an abort.
 //
-// Read by the app's Git page (Apelin/Interface/Git), served by
-// Apelind/Dispatch/GitHandler.swift from ApelinEnvironment's GitService over
+// Read by the app's Git page (Luros/Interface/Git), served by
+// Lurosd/Dispatch/GitHandler.swift from ApelinEnvironment's GitService over
 // libgit2. Every path and name here is the app's to spell, never a command:
 // the worker validates each one before it reaches libgit2.
 

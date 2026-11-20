@@ -2,7 +2,7 @@ import ApelinCore
 
 // Agent tool extensions: separate packages whose executables the session host
 // starts as mobile from their installed manifest, after its own checks.
-// Served by the session host (Apelind/Dispatch/ToolHostHandler.swift);
+// Served by the session host (Lurosd/Dispatch/ToolHostHandler.swift);
 // the extension protocol lives in Packages/ApelinToolHost.
 //
 // Files travel as descriptors beside the envelope, both ways, never as a

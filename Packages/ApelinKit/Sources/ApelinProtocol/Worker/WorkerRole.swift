@@ -16,11 +16,11 @@ public enum WorkerRole: String, Codable, CaseIterable, Sendable {
     /// The executable's name under `<install root>/usr/libexec/luros/`.
     public var executableName: String {
         switch self {
-        case .environment: "apelin-environment"
-        case .build: "apelin-build"
-        case .agent: "apelin-agent"
-        case .diagnostics: "apelin-diagnostics"
-        case .logReader: "apelin-log-reader"
+        case .environment: "luros-environment"
+        case .build: "luros-build"
+        case .agent: "luros-agent"
+        case .diagnostics: "luros-diagnostics"
+        case .logReader: "luros-log-reader"
         }
     }
 
@@ -43,7 +43,7 @@ public enum WorkerRole: String, Codable, CaseIterable, Sendable {
 public struct WorkerAssignment: Codable, Sendable, Equatable {
     public var role: WorkerRole
     public var protocolVersion: Int64
-    /// The install root apelind derived from its own path.
+    /// The install root lurosd derived from its own path.
     public var installRoot: String
     /// Mobile's home: `<jbroot>/var/mobile` on roothide, `/var/mobile` on rootless.
     public var home: String

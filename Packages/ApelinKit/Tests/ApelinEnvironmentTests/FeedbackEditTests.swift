@@ -9,7 +9,7 @@ import XCTest
 /// GitHub's API answered by a fake that keeps the issues and applies an
 /// edit, the github.com sign-in in memory.
 final class FeedbackEditTests: XCTestCase {
-    /// `/user`, and the issues of 1103945342/Apelin by number, noting each
+    /// `/user`, and the issues of 1103945342/Luros by number, noting each
     /// request.
     final class IssueGitHub: @unchecked Sendable {
         struct Issue {
@@ -53,7 +53,7 @@ final class FeedbackEditTests: XCTestCase {
             lock.withLock {
                 log.append(request)
                 let path = request.url?.path ?? ""
-                let prefix = "/repos/1103945342/Apelin/issues/"
+                let prefix = "/repos/1103945342/Luros/issues/"
                 var status = 200
                 var object: [String: Any] = ["message": "Not Found"]
                 if path == "/user" {
@@ -68,14 +68,14 @@ final class FeedbackEditTests: XCTestCase {
                     }
                     object = [
                         "number": number,
-                        "html_url": issue.htmlURL ?? "https://github.com/1103945342/Apelin/\(issue.isPullRequest ? "pull" : "issues")/\(number)",
+                        "html_url": issue.htmlURL ?? "https://github.com/1103945342/Luros/\(issue.isPullRequest ? "pull" : "issues")/\(number)",
                         "title": issue.title,
                         "body": issue.body.map { $0 as Any } ?? NSNull(),
                         "state": issue.state,
                         "user": ["login": issue.author],
                     ]
                     if issue.isPullRequest {
-                        object["pull_request"] = ["url": "https://api.github.com/repos/1103945342/Apelin/pulls/\(number)"]
+                        object["pull_request"] = ["url": "https://api.github.com/repos/1103945342/Luros/pulls/\(number)"]
                     }
                 } else {
                     status = 404
@@ -129,7 +129,7 @@ final class FeedbackEditTests: XCTestCase {
         let read = try await service(home, github: github).read(FeedbackReadRequest(number: 12))
         XCTAssertEqual(read, FeedbackReadResponse(
             number: 12,
-            url: "https://github.com/1103945342/Apelin/issues/12",
+            url: "https://github.com/1103945342/Luros/issues/12",
             title: "The build log stops early",
             body: "It ends before the link step.",
             footer: Self.footer,
@@ -143,7 +143,7 @@ final class FeedbackEditTests: XCTestCase {
         }
         XCTAssertEqual(
             Set(github.requests.compactMap(\.url?.absoluteString)),
-            ["https://api.github.com/repos/1103945342/Apelin/issues/12", "https://api.github.com/user"],
+            ["https://api.github.com/repos/1103945342/Luros/issues/12", "https://api.github.com/user"],
         )
 
         // Another account's issue, and one whose footer and body are gone.
@@ -184,7 +184,7 @@ final class FeedbackEditTests: XCTestCase {
         }
         XCTAssertTrue(github.edits.isEmpty)
         for sent in github.requests where sent.url?.path != "/user" {
-            XCTAssertTrue(sent.url?.path.hasPrefix("/repos/1103945342/Apelin/issues/") == true, "\(sent.url?.path ?? "")")
+            XCTAssertTrue(sent.url?.path.hasPrefix("/repos/1103945342/Luros/issues/") == true, "\(sent.url?.path ?? "")")
         }
     }
 
@@ -207,13 +207,13 @@ final class FeedbackEditTests: XCTestCase {
         let broadened = try await service.edit(edit(body: "It ends before the link step, on roothide and rootless.\n"))
         XCTAssertEqual(broadened, FeedbackEditResponse(
             number: 12,
-            url: "https://github.com/1103945342/Apelin/issues/12",
+            url: "https://github.com/1103945342/Luros/issues/12",
             title: "The build log stops early",
             body: "It ends before the link step, on roothide and rootless.",
         ))
         XCTAssertEqual(github.edits, [["body": "It ends before the link step, on roothide and rootless.\n\n---\n" + Self.footer]])
         let patch = try XCTUnwrap(github.requests.last)
-        XCTAssertEqual(patch.url?.absoluteString, "https://api.github.com/repos/1103945342/Apelin/issues/12")
+        XCTAssertEqual(patch.url?.absoluteString, "https://api.github.com/repos/1103945342/Luros/issues/12")
         XCTAssertEqual(patch.value(forHTTPHeaderField: "Authorization"), "Bearer \(Self.token)")
 
         // A title alone, sent alone; a body the request repeats is no change.

@@ -311,7 +311,7 @@ final class FixtureProtocolTests: XCTestCase {
             "artifact": Shape(type: .typed(BuildArtifact.self)),
             "state": state(fields("artifactID", "digest", "buildID", "packageID", "version", "bootstrap", as: .string)),
         ],
-        // Apelind ▸ Session/Install/InstallBridge.swift.
+        // Lurosd ▸ Session/Install/InstallBridge.swift.
         .install: [
             "stage": Shape(
                 required: ["stage": .string],
@@ -327,7 +327,7 @@ final class FixtureProtocolTests: XCTestCase {
             "conflict": Shape(type: .typed(InstallConflict.self)),
             "state": state(["result": .typed(InstallResult.self)]),
         ],
-        // Apelind ▸ Session/Terminal/TerminalHost.swift.
+        // Lurosd ▸ Session/Terminal/TerminalHost.swift.
         .terminal: [
             "started": Shape(required: ["pid": .number, "shell": .string, "cwd": .string], optional: fields("uid", "gid", as: .number)),
             "output": Shape(required: ["base64": .string], optional: ["text": .string]),

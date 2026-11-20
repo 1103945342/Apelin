@@ -21,7 +21,7 @@ from typing import Any
 from apelin_schema_validator import SchemaError, Validator  # noqa: F401
 
 SCHEMA_DIRECTORY = Path(__file__).resolve().parent.parent
-PROJECT_SCHEMA = SCHEMA_DIRECTORY / "apelin-project.schema.json"
+PROJECT_SCHEMA = SCHEMA_DIRECTORY / "luros-project.schema.json"
 MANIFEST_SCHEMA = SCHEMA_DIRECTORY / "extension-manifest.schema.json"
 
 

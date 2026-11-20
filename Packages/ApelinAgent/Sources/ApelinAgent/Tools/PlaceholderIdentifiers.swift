@@ -12,7 +12,7 @@ import Foundation
 /// never a refusal.
 public enum PlaceholderIdentifiers {
     /// What `projectCreate` puts in front of an identifier nobody chose, as
-    /// apelin-build's `DistributionCheck` reads it.
+    /// luros-build's `DistributionCheck` reads it.
     static let prefix = "local.apelin."
 
     /// apelin_project_create's, for the project it made at `root`: the
@@ -26,13 +26,13 @@ public enum PlaceholderIdentifiers {
     /// the name its goal gave it.
     static func renameHint(in root: ScopedRoot) -> String? {
         guard let named = named(in: root) else { return nil }
-        return "This project's \(named.subject) Luros made up: ask the user for \(named.permanent) before the first install and keep \(named.them) the same for debug and release builds (file_grep for local.apelin. finds every file that spells one). Once a package of this project is installed, a new identifier makes another package: agree a migration with the user first, as the apelin-packaging-and-install skill says."
+        return "This project's \(named.subject) Luros made up: ask the user for \(named.permanent) before the first install and keep \(named.them) the same for debug and release builds (file_grep for local.apelin. finds every file that spells one). Once a package of this project is installed, a new identifier makes another package: agree a migration with the user first, as the luros-packaging-and-install skill says."
     }
 
     /// A Debug build's, while nothing the project built is installed.
     static func buildHint(in root: ScopedRoot) -> String? {
         guard let named = named(in: root) else { return nil }
-        return "This project's \(named.subject) Luros made up, and nothing it built is installed now. Before installing, ask the user for \(named.permanent) or whether to keep \(named.them), the same for debug and release builds: changed after an install, an identifier makes another package (apelin-packaging-and-install skill)."
+        return "This project's \(named.subject) Luros made up, and nothing it built is installed now. Before installing, ask the user for \(named.permanent) or whether to keep \(named.them), the same for debug and release builds: changed after an install, an identifier makes another package (luros-packaging-and-install skill)."
     }
 
     /// Each placeholder the project still carries, as the notes name it:

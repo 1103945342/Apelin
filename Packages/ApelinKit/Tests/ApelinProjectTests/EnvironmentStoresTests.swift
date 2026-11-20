@@ -4,7 +4,7 @@ import ApelinProtocol
 import Foundation
 import XCTest
 
-/// apelin-build reads apelin-environment's files as that worker writes them.
+/// luros-build reads luros-environment's files as that worker writes them.
 final class EnvironmentStoresTests: XCTestCase {
     func testSwiftRequirementsSurviveTheRegistryBoundary() throws {
         let home = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
@@ -77,7 +77,7 @@ final class EnvironmentStoresTests: XCTestCase {
     }
 
     func testEmptyWhenNothingIsRegistered() throws {
-        let stores = EnvironmentStores(dataFolder: DataFolder(home: "/nonexistent-apelin-home"))
+        let stores = EnvironmentStores(dataFolder: DataFolder(home: "/nonexistent-luros-home"))
         XCTAssertEqual(try stores.toolchains(), [])
         XCTAssertEqual(try stores.sdks(), [])
         XCTAssertNil(try stores.defaultSDKID())

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Writes Documents/Schemas/*.schema.json into ApelinProject as Swift raw strings.
 
-The schemas are the specification; apelin-build validates against them on the
+The schemas are the specification; luros-build validates against them on the
 device, where the repository is not. ApelinProjectTests fails when the
 embedded copy and the files differ, so run this after editing a schema.
 """
@@ -17,7 +17,7 @@ lines = [
     "",
     "enum EmbeddedSchemas {",
 ]
-for name, ident in (("apelin-project.schema.json", "project"), ("extension-manifest.schema.json", "manifest")):
+for name, ident in (("luros-project.schema.json", "project"), ("extension-manifest.schema.json", "manifest")):
     text = (REPOSITORY / "Documents/Schemas" / name).read_text(encoding="utf-8")
     if '"""#' in text or "\\#" in text:
         raise SystemExit(f"{name} cannot be embedded as a raw string")

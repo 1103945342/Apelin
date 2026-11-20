@@ -3,7 +3,7 @@ import ApelinProtocol
 import Foundation
 
 /// An `ApelinTransport` that answers from `ReplayFixtures`, for the UI where
-/// no apelind runs (a vphone or device without the package). Behind
+/// no lurosd runs (a vphone or device without the package). Behind
 /// `ApelinService` it looks like the session host:
 ///
 /// - A plain operation answers the latest recorded reply whose request is

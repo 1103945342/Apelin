@@ -40,17 +40,17 @@ export TMPDIR="${APELIN_PROJECT_ROOT:-$root}/$work/tmp"
 trap 'rm -rf -- "${work:?}"' EXIT
 
 # Everything the checks reach, and the two stand-ins they compile instead of
-# Apelind/Spawn.swift and Apelind/System.swift.
+# Lurosd/Spawn.swift and Lurosd/System.swift.
 mapfile -t sources < <(
     ls Packages/ApelinKit/Sources/ApelinCore/*.swift
     ls Packages/ApelinKit/Sources/ApelinProtocol/*.swift
     find Packages/ApelinKit/Sources/ApelinProtocol -mindepth 2 -name '*.swift' | sort
-    echo Apelind/Session/CallerPolicy.swift
-    echo Apelind/Session/Files/FileScopes.swift
-    echo Apelind/Session/Files/ProtectedEditPolicy.swift
-    echo Apelind/Session/TaskRegistry.swift
-    echo Apelind/Session/Terminal/TerminalSession.swift
-    echo Apelind/Session/Terminal/TerminalHost.swift
+    echo Lurosd/Session/CallerPolicy.swift
+    echo Lurosd/Session/Files/FileScopes.swift
+    echo Lurosd/Session/Files/ProtectedEditPolicy.swift
+    echo Lurosd/Session/TaskRegistry.swift
+    echo Lurosd/Session/Terminal/TerminalSession.swift
+    echo Lurosd/Session/Terminal/TerminalHost.swift
     echo Tests/SessionHost/TerminalChecks.swift
     echo Tests/TerminalBackend/SpawnShim.swift
     echo Tests/TerminalBackend/main.swift

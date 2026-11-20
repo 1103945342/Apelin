@@ -13,7 +13,7 @@ final class ToolManifestTests: XCTestCase {
     }
 
     override func setUpWithError() throws {
-        root = NSTemporaryDirectory() + "apelin-tool-manifest-\(UUID().uuidString)"
+        root = NSTemporaryDirectory() + "luros-tool-manifest-\(UUID().uuidString)"
         try FileManager.default.createDirectory(atPath: root + "/usr/libexec/luros/agent-tools", withIntermediateDirectories: true)
         try FileManager.default.createDirectory(atPath: root + "/usr/share/luros/agent-tools/\(id)/licenses", withIntermediateDirectories: true)
         try FileManager.default.copyItem(atPath: ToolHostClientTests.fakeExecutable, toPath: root + "/usr/libexec/luros/agent-tools/sample")

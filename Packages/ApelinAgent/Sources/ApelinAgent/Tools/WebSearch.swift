@@ -49,7 +49,7 @@ struct WebSearch: Sendable {
                 "arguments": [
                     "objective": query,
                     "search_queries": [query],
-                    "session_id": "apelin-ios"
+                    "session_id": "luros-ios"
                 ]
             ]
         ]

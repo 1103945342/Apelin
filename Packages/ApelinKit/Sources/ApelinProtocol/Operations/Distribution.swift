@@ -1,7 +1,7 @@
 // The package repository a user publishes to: an APT source in a GitHub
 // repository of theirs, served by GitHub Pages and indexed there by the
 // workflow Luros's template brings (after owngoal-dev/owngoal-packages).
-// Served by apelin-environment, which holds the github.com credential the
+// Served by luros-environment, which holds the github.com credential the
 // user signed in with and calls GitHub's API with it; the app's alone, but
 // for the packages an agent publishes to the linked repository
 // (`DistributionPublishRequest`) and the feedback it files on Luros's own
@@ -200,7 +200,7 @@ public struct DistributionPublishRequest: OperationRequest {
 /// Files feedback as a public issue on Luros's own repository
 /// (`FeedbackRules.repository`, never one the request names) with the
 /// github.com sign-in, the title and body checked by `FeedbackRules` first
-/// and a footer apelin-environment writes added below the body. Not a task:
+/// and a footer luros-environment writes added below the body. Not a task:
 /// one request to GitHub. The app's, and an agent's as the host allows it
 /// (AgentFeedbackRules). Without a sign-in, `denied` with reason
 /// `authenticationRequired`.

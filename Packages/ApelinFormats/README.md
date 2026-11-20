@@ -15,7 +15,7 @@ a Mac.
 
 `ApelinMachO` and `ApelinDebian` have no dependencies, so a privileged
 process may link them. `ApelinDebArchive` links libarchive and is never
-linked into apelind.
+linked into lurosd.
 
 ## Where the code came from
 
@@ -66,7 +66,7 @@ bytes present, and damage throws `FormatFailure` rather than trapping.
 import ApelinDebArchive
 import ApelinDebian
 
-let layout = PackageLayout.rootless          // decided by apelind's hello
+let layout = PackageLayout.rootless          // decided by lurosd's hello
 var control = DebianControlFile(
     package: "com.example.hook",
     version: "1.0",
@@ -138,12 +138,12 @@ table:
 A logical path (`/usr/bin/x`) maps to a package path (`/var/jb/usr/bin/x`);
 `substitutingPlaceholders(in:)` fills `@PREFIX@` and `@ROOTFS@`. The `/var/jb`
 here is the rootless package format, never a runtime install root: which
-flavor to build for, and where the bootstrap is, come from apelind.
+flavor to build for, and where the bootstrap is, come from lurosd.
 
 ## Tests
 
 ```sh
-swift test --scratch-path /private/tmp/apelin-spm
+swift test --scratch-path /private/tmp/luros-spm
 ```
 
 The Mach-O fixtures in `Tests/ApelinMachOTests/Fixtures/binaries` are built by

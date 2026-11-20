@@ -6,7 +6,7 @@ import ApelinProtocol
 import Foundation
 
 /// One build from start to artifact: the project checked, the steps run,
-/// the deb written and registered by ID and SHA-256. apelin-build's
+/// the deb written and registered by ID and SHA-256. luros-build's
 /// `buildStart` is this, with its events turned into task events.
 public enum BuildService {
     public struct Result: Sendable {

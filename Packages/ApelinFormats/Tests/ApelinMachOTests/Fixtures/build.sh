@@ -18,7 +18,7 @@
 set -Eeuo pipefail
 here="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 out="$here/binaries"
-scratch="$(mktemp -d "${TMPDIR:-/tmp}/apelin-macho-fixture.XXXXXX")"
+scratch="$(mktemp -d "${TMPDIR:-/tmp}/luros-macho-fixture.XXXXXX")"
 trap 'rm -rf -- "${scratch:?}"' EXIT
 mkdir -p "$out"
 

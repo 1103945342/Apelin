@@ -28,7 +28,7 @@ final class FeedbackTests: XCTestCase {
             lock.withLock {
                 log.append(request)
                 let object: [String: Any] = (200 ..< 300).contains(status)
-                    ? ["number": 42, "html_url": "https://github.com/1103945342/Apelin/issues/42"]
+                    ? ["number": 42, "html_url": "https://github.com/1103945342/Luros/issues/42"]
                     : ["message": message]
                 let data = try! JSONSerialization.data(withJSONObject: object)
                 return (data, HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: nil, headerFields: nil)!)
@@ -68,12 +68,12 @@ final class FeedbackTests: XCTestCase {
         let github = FakeGitHub()
         let request = FeedbackSendRequest(title: "  The build log stops early ", body: "It ends before the link step.\n\n")
         let response = try await service(home, github: github).send(request)
-        XCTAssertEqual(response, FeedbackSendResponse(number: 42, url: "https://github.com/1103945342/Apelin/issues/42"))
+        XCTAssertEqual(response, FeedbackSendResponse(number: 42, url: "https://github.com/1103945342/Luros/issues/42"))
 
         XCTAssertEqual(github.requests.count, 1)
         let sent = try XCTUnwrap(github.requests.first)
         XCTAssertEqual(sent.httpMethod, "POST")
-        XCTAssertEqual(sent.url?.absoluteString, "https://api.github.com/repos/1103945342/Apelin/issues")
+        XCTAssertEqual(sent.url?.absoluteString, "https://api.github.com/repos/1103945342/Luros/issues")
         XCTAssertEqual(sent.value(forHTTPHeaderField: "Authorization"), "Bearer \(Self.token)")
         let body = try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(sent.httpBody)) as? [String: String])
         XCTAssertEqual(Set(body.keys), ["title", "body"], "nothing but the issue")
@@ -181,7 +181,7 @@ final class FeedbackTests: XCTestCase {
         github.status = 404
         github.message = "Not Found"
         let none = try await service.starState(FeedbackStarStateRequest())
-        XCTAssertEqual(none, FeedbackStarResponse(repository: "1103945342/Apelin", starred: false), "404 is no star, not a missing repository")
+        XCTAssertEqual(none, FeedbackStarResponse(repository: "1103945342/Luros", starred: false), "404 is no star, not a missing repository")
         github.status = 204
         let starred = try await service.starState(FeedbackStarStateRequest())
         XCTAssertTrue(starred.starred)
@@ -189,7 +189,7 @@ final class FeedbackTests: XCTestCase {
         XCTAssertEqual(github.requests.count, 2)
         for sent in github.requests {
             XCTAssertEqual(sent.httpMethod, "GET")
-            XCTAssertEqual(sent.url?.absoluteString, "https://api.github.com/user/starred/1103945342/Apelin")
+            XCTAssertEqual(sent.url?.absoluteString, "https://api.github.com/user/starred/1103945342/Luros")
             XCTAssertEqual(sent.value(forHTTPHeaderField: "Authorization"), "Bearer \(Self.token)")
         }
     }
@@ -199,12 +199,12 @@ final class FeedbackTests: XCTestCase {
         let github = FakeGitHub()
         github.status = 204
         let response = try await service(home, github: github).star(FeedbackStarRequest())
-        XCTAssertEqual(response, FeedbackStarResponse(repository: "1103945342/Apelin", starred: true))
+        XCTAssertEqual(response, FeedbackStarResponse(repository: "1103945342/Luros", starred: true))
 
         XCTAssertEqual(github.requests.count, 1)
         let sent = try XCTUnwrap(github.requests.first)
         XCTAssertEqual(sent.httpMethod, "PUT")
-        XCTAssertEqual(sent.url?.absoluteString, "https://api.github.com/user/starred/1103945342/Apelin")
+        XCTAssertEqual(sent.url?.absoluteString, "https://api.github.com/user/starred/1103945342/Luros")
         XCTAssertEqual(sent.value(forHTTPHeaderField: "Authorization"), "Bearer \(Self.token)")
         XCTAssertEqual(sent.httpBody, Data(), "a length of zero, as GitHub asks")
     }

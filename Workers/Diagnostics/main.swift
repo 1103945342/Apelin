@@ -1,9 +1,9 @@
 import ApelinDiagnosticsWorker
 
-// apelin-diagnostics: logs, crash reports, load confirmation, screenshots,
+// luros-diagnostics: logs, crash reports, load confirmation, screenshots,
 // the UI tree and UI actions, through icli.
 //
-// Runs as mobile, spawned by apelind's session host with its socketpair as
+// Runs as mobile, spawned by lurosd's session host with its socketpair as
 // descriptor 3; WorkerMain does the assignment and the privilege check.
 // Links ApelinCore, ApelinProtocol and Packages/ApelinDiagnostics'
 // ApelinDiagnosticsWorker (icli, crash symbolication, ConfirmLoaded) — see

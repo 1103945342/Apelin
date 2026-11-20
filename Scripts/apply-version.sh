@@ -38,7 +38,7 @@ read_current_project_version() {
 [[ -n "$build_number" ]] || build_number="$(read_current_project_version)"
 [[ -n "$build_number" ]] || { echo "error: CURRENT_PROJECT_VERSION is missing from Version.xcconfig" >&2; exit 65; }
 
-updated="$(mktemp "${TMPDIR:-/tmp}/apelin-version.XXXXXX")"
+updated="$(mktemp "${TMPDIR:-/tmp}/luros-version.XXXXXX")"
 trap 'rm -f "$updated"' EXIT
 
 awk -v version="$version" -v build="$build_number" '

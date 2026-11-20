@@ -59,7 +59,7 @@ _decoder_directories = []
 @functools.lru_cache(maxsize=1)
 def decoder_tool():
     """Use LLVM's C decoder without formatting millions of disassembly lines."""
-    directory = tempfile.TemporaryDirectory(prefix='apelin-instruction-decoder-')
+    directory = tempfile.TemporaryDirectory(prefix='luros-instruction-decoder-')
     _decoder_directories.append(directory)
     executable = Path(directory.name) / 'inventory'
     compiler = Path(subprocess.run(['xcrun', '--find', 'clang'], check=True,

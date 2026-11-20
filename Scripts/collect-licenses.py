@@ -26,7 +26,7 @@ import sys
 
 LICENSE_FILE = re.compile(r"^(LICEN[CS]E|COPYING|NOTICE)([-_.].*)?$", re.IGNORECASE)
 PACKAGE_RESOLVED = os.path.join(
-    "Apelin.xcodeproj", "project.xcworkspace", "xcshareddata", "swiftpm", "Package.resolved"
+    "Luros.xcodeproj", "project.xcworkspace", "xcshareddata", "swiftpm", "Package.resolved"
 )
 SKIPPED_DIRECTORIES = {
     ".git", ".build", ".swiftpm", "Tests", "Test", "Example", "Examples",
@@ -71,8 +71,8 @@ def xcconfig_setting(path, key):
 def app_entry(project):
     manifest = json.load(open(os.path.join(project, "manifest.json"), encoding="utf-8"))
     return entry(
-        "app/Apelin",
-        "Apelin",
+        "app/Luros",
+        "Luros",
         xcconfig_setting(os.path.join(project, "Configuration", "Version.xcconfig"), "MARKETING_VERSION"),
         manifest.get("homepage", ""),
         read(os.path.join(project, "LICENSE")),

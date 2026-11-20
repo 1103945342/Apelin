@@ -17,7 +17,7 @@ final class ExternalBuildTests: XCTestCase {
     private var worker: BuildWorker!
 
     override func setUpWithError() throws {
-        scratch = try scratchDirectory("apelin-external-build")
+        scratch = try scratchDirectory("luros-external-build")
         let (home, _) = try makeHome(in: scratch)
         // The Mac's own /bin/sh stands in for the bootstrap's.
         worker = BuildWorker(installRoot: "/", home: home.path)

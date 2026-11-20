@@ -39,7 +39,7 @@ sys.exit(code)
 
 class DaemonRegistrationTests(unittest.TestCase):
     def run_lifecycle(self, mode):
-        with tempfile.TemporaryDirectory(prefix="apelin-launchctl-test-") as directory:
+        with tempfile.TemporaryDirectory(prefix="luros-launchctl-test-") as directory:
             base = Path(directory)
             state = base / "state.json"
             state.write_text(json.dumps({"mode": mode, "loaded": True, "attempts": 0, "calls": []}))

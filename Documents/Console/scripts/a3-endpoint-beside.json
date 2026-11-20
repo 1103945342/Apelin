@@ -11,7 +11,7 @@
     {"op": "expect", "request": {"step": "fields", "path": "response.events.0.kind", "equals": "input"}},
     {"op": "expect", "request": {"step": "fields", "path": "response.events.0.payload.fields.1.key", "equals": "baseUrl"}},
     {"op": "agentSignInRespond", "request": {"taskID": "${key.response.taskID}", "verifyModel": false, "values": {
-      "apiKey": "apelin-placeholder-key", "baseUrl": "https://llm.example.invalid/v1", "defaultModel": "placeholder-model"
+      "apiKey": "luros-placeholder-key", "baseUrl": "https://llm.example.invalid/v1", "defaultModel": "placeholder-model"
     }}},
     {"op": "agentAttach", "label": "signed-in", "request": {"taskID": "${key.response.taskID}", "afterSeq": 0, "waitMilliseconds": 5000}},
     {"op": "expect", "request": {"step": "signed-in", "state": "succeeded"}},

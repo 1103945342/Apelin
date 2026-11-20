@@ -106,7 +106,7 @@ public struct DataFolder: Sendable, Equatable {
     }
 
     /// `WeChatChannel/`: the WeChat ClawBot channel's sign-in, its settings
-    /// and the phones it talks to (`Apelind/Session/Channel`).
+    /// and the phones it talks to (`Lurosd/Session/Channel`).
     public var weChatChannel: URL {
         folder("WeChatChannel")
     }

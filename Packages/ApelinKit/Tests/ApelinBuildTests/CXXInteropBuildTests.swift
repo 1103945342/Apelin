@@ -21,7 +21,7 @@ final class CXXInteropBuildTests: XCTestCase {
     /// object and the C++ runtime.
     func testSwiftConstructsANonInlineCXXTypeThroughAModulemap() throws {
         let registry = try NativeBuild.requireTools()
-        let scratch = try scratchDirectory("apelin-cxx-interop")
+        let scratch = try scratchDirectory("luros-cxx-interop")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
@@ -107,7 +107,7 @@ final class CXXInteropBuildTests: XCTestCase {
     /// still builds — Swift calls the inline members the header declares.
     func testAHeaderOnlyCXXModuleNeedsNoNativeSource() throws {
         let registry = try NativeBuild.requireTools()
-        let scratch = try scratchDirectory("apelin-cxx-header-only")
+        let scratch = try scratchDirectory("luros-cxx-header-only")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
@@ -177,7 +177,7 @@ final class CXXInteropBuildTests: XCTestCase {
     /// `import CxxKit` fails with "missing required module".
     func testAModulesInteropSettingsReachTheProductThatUsesIt() throws {
         let registry = try NativeBuild.requireTools()
-        let scratch = try scratchDirectory("apelin-cxx-chain")
+        let scratch = try scratchDirectory("luros-cxx-chain")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
@@ -245,7 +245,7 @@ final class CXXInteropBuildTests: XCTestCase {
     /// refused, before anything is linked.
     func testAProductTurningInteropOffAgainstAModuleIsRefused() throws {
         let registry = try NativeBuild.requireTools()
-        let scratch = try scratchDirectory("apelin-cxx-conflict")
+        let scratch = try scratchDirectory("luros-cxx-conflict")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
@@ -297,7 +297,7 @@ final class CXXInteropBuildTests: XCTestCase {
     /// file beside them links. Swift imports both and calls both.
     func testACModuleAndACXXModuleLiveTogetherThroughAModulemap() throws {
         let registry = try NativeBuild.requireTools()
-        let scratch = try scratchDirectory("apelin-cxx-both")
+        let scratch = try scratchDirectory("luros-cxx-both")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
@@ -366,7 +366,7 @@ final class CXXInteropBuildTests: XCTestCase {
     /// guard is what fails here.
     func testABridgingHeaderBesideInteropIsRefused() throws {
         let registry = try NativeBuild.requireTools()
-        let scratch = try scratchDirectory("apelin-cxx-bridge")
+        let scratch = try scratchDirectory("luros-cxx-bridge")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)

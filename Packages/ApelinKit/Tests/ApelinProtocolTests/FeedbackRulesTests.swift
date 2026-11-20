@@ -63,8 +63,8 @@ final class FeedbackRulesTests: XCTestCase {
     }
 
     func testThisDevicesOwnPathsAndNameAreRefused() {
-        XCTAssertNil(problem("see /opt/apelin-test/data/x"))
-        XCTAssertNotNil(problem("see /opt/apelin-test/data/x", paths: ["/opt/apelin-test"]))
+        XCTAssertNil(problem("see /opt/luros-test/data/x"))
+        XCTAssertNotNil(problem("see /opt/luros-test/data/x", paths: ["/opt/luros-test"]))
         XCTAssertNotNil(problem("it is Adas-iPhone that fails", names: ["Adas-iPhone"]))
         XCTAssertNil(problem("it is Adas-iPhones that fails", names: ["Adas-iPhone"]), "a word, not a part of one")
         XCTAssertNil(problem("on an iPhone 15 Pro", names: ["iPhone"]), "a name every device of its kind has says nothing")
@@ -106,7 +106,7 @@ final class FeedbackRulesTests: XCTestCase {
         let network = try XCTUnwrap(FeedbackRules.editProblem(title: nil, body: "From 192.168.1.20"))
         XCTAssertTrue(network.contains("local network"), network)
         XCTAssertNotNil(FeedbackRules.editProblem(title: "Fails at 192.168.0.2", body: nil), "the title is read too")
-        XCTAssertNotNil(FeedbackRules.editProblem(title: nil, body: "see /opt/apelin-test/data/x", paths: ["/opt/apelin-test"]))
+        XCTAssertNotNil(FeedbackRules.editProblem(title: nil, body: "see /opt/luros-test/data/x", paths: ["/opt/luros-test"]))
         XCTAssertNotNil(FeedbackRules.editProblem(title: nil, body: "it is Adas-iPhone that fails", names: ["Adas-iPhone"]))
         let footer = FeedbackRules.footer(appVersion: "0.2.7", appBuild: "18", osVersion: "17.3.1", bootstrap: .roothide)
         let withFooter = try XCTUnwrap(FeedbackRules.editProblem(title: nil, body: FeedbackRules.issueBody("Body.", footer: footer)))

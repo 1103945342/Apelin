@@ -74,7 +74,7 @@ func stateEvent(_ state: TaskState, _ message: String? = nil) -> (String, Apelin
 
 /// A descriptor holding `data`, from an unlinked temporary file.
 func descriptor(holding data: Data) -> OwnedDescriptor {
-    let path = NSTemporaryDirectory() + "apelin-agent-worker-\(UUID().uuidString)"
+    let path = NSTemporaryDirectory() + "luros-agent-worker-\(UUID().uuidString)"
     FileManager.default.createFile(atPath: path, contents: data)
     let fd = open(path, O_RDONLY)
     unlink(path)
@@ -89,7 +89,7 @@ struct Fixture {
 
     init(manifest: String? = nil) throws {
         project = try ApelinAgent.ProjectIdentity(id: "6f1c5b0e-0000-4000-8000-000000000001", name: ApelinAgent.ProjectName("Hello"))
-        projectURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("apelin-worker-tests-\(UUID().uuidString)/Hello", isDirectory: true)
+        projectURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("luros-worker-tests-\(UUID().uuidString)/Hello", isDirectory: true)
         try FileManager.default.createDirectory(at: projectURL, withIntermediateDirectories: true)
         if let manifest {
             try manifest.write(to: projectURL.appendingPathComponent("luros-project.json"), atomically: true, encoding: .utf8)
@@ -152,7 +152,7 @@ struct ChannelHostBackendTests {
         let response = try await fixture.backend.build(BuildRequest(context: fixture.context(), configuration: .debug, buildDescriptionDigest: "d"))
         #expect(response.diagnostics.map(\.field) == ["/configurations/Debug/linkerFlags", nil])
         let note = try #require(response.diagnostics.last)
-        #expect(note.severity == .note && note.message.contains("apelin-project.schema.json (apelin_skill_read)"))
+        #expect(note.severity == .note && note.message.contains("luros-project.schema.json (apelin_skill_read)"))
     }
 
     @Test
@@ -170,7 +170,7 @@ struct ChannelHostBackendTests {
         let refusal = await #expect(throws: ApelinError.self) { _ = try await fixture.backend.build(request) }
         #expect(refusal?.code == .badRequest)
         #expect(refusal?.message.contains("/configurations/Debug/linkerFlags: unknown member; /configurations/Release: missing optimization") == true)
-        #expect(refusal?.message.contains("apelin-project.schema.json") == true)
+        #expect(refusal?.message.contains("luros-project.schema.json") == true)
 
         // A refusal over anything else stands as it came.
         fixture.host.on(.buildStart) { _ in throw ApelinError(.notFound, "toolchain clt-16.4-c is not registered") }
@@ -215,7 +215,7 @@ struct ChannelHostBackendTests {
         ]))
         let check = try await fixture.backend.checkDistribution(DistributionCheckRequest(project: fixture.project))
         #expect(!check.ready && check.issues.map(\.field) == ["/configurations/Debug/linkerFlags", nil])
-        #expect(check.issues.last?.severity == .note && check.issues.last?.message.contains("apelin-project-description") == true)
+        #expect(check.issues.last?.severity == .note && check.issues.last?.message.contains("luros-project-description") == true)
     }
 
     @Test
@@ -387,7 +387,7 @@ struct ChannelHostBackendTests {
     func `apelin_package_confirm_loaded without respring sends no trigger; a check that ended without an answer throws`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.confirmLoaded, reply: TaskHandle(taskID: TaskID("confirm-task"), kind: .confirmLoaded))
-        fixture.host.on(.confirmLoadedAttach, reply: batch("confirm-task", [stateEvent(.failed, "apelin-diagnostics exited")]))
+        fixture.host.on(.confirmLoadedAttach, reply: batch("confirm-task", [stateEvent(.failed, "luros-diagnostics exited")]))
         await #expect(throws: ApelinError.self) {
             _ = try await fixture.backend.confirmLoaded(ApelinAgent.ConfirmLoadedRequest(context: fixture.context(), buildID: "B-42", target: "SpringBoard"))
         }
@@ -634,7 +634,7 @@ struct ChannelHostBackendTests {
     }
 
     @Test
-    func `Confirm reads the host's ledger: the digest apelin-build computed, then approvalDigestState`() async throws {
+    func `Confirm reads the host's ledger: the digest luros-build computed, then approvalDigestState`() async throws {
         let fixture = try Fixture(manifest: #"{"projectID": "x", "build": {"steps": []}}"#)
         let template = "sha256:" + String(repeating: "a", count: 64)
         let changed = "sha256:" + String(repeating: "b", count: 64)
@@ -681,7 +681,7 @@ struct ChannelHostBackendTests {
     }
 
     @Test
-    func `without a digest from apelin-build the agent's own stands in, and asks`() async throws {
+    func `without a digest from luros-build the agent's own stands in, and asks`() async throws {
         let fixture = try Fixture(manifest: #"{"projectID": "x", "build": {"steps": []}}"#)
         fixture.host.on(.projectCheck, reply: ProjectCheckResponse(passed: false))
         let ledger = HostDigestLedger(service: fixture.backend.service, projectURL: fixture.projectURL, dataFolder: fixture.dataFolder)

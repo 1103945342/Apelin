@@ -12,7 +12,7 @@ import PackageDescription
 ///   ordering, the control file generator and the bootstrap layouts. No
 ///   dependencies.
 /// - `ApelinDebArchive` reads and writes `.deb` files. The one target with a
-///   third-party dependency, and never linked into apelind.
+///   third-party dependency, and never linked into lurosd.
 /// - `ApelinCodeSign` signs a Mach-O the way `ldid -Hsha256 -S` does
 ///   (Irisin's signer). CryptoKit only. The one signer: ApelinToolchain's
 ///   retarget uses its signature and entitlements blobs too.

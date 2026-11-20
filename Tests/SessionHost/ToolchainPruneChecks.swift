@@ -5,7 +5,7 @@ import Foundation
 
 // The folders a removed toolchain package leaves on roothide, each with the
 // `.jbroot` link roothide adds and no package lists
-// (Apelind/Session/Install/ToolchainTreePruner.swift): such a skeleton goes,
+// (Lurosd/Session/Install/ToolchainTreePruner.swift): such a skeleton goes,
 // after a removal and at start for a package dpkg no longer lists; a file,
 // another link, a link in place of a folder or a name that is not one folder
 // keeps everything as it was.

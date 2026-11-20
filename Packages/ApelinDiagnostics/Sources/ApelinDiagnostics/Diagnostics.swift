@@ -497,7 +497,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
 
     // MARK: Respring
 
-    /// The fallback respring. The normal path is apelind's closed operation;
+    /// The fallback respring. The normal path is lurosd's closed operation;
     /// this is for when the worker must do it itself. FrontBoard relaunch
     /// first, then launchd stop of `com.apple.SpringBoard`.
     public func respring() throws -> RespringResult {

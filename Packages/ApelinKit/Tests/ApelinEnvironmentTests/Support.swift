@@ -13,7 +13,7 @@ struct TemporaryHome {
     init(_ test: XCTestCase) throws {
         // realpath: on macOS the temporary folder is behind /var → /private/var.
         let base = URL(fileURLWithPath: CanonicalPath.resolve(NSTemporaryDirectory())!, isDirectory: true)
-        home = base.appendingPathComponent("apelin-env-\(UUID().uuidString)", isDirectory: true)
+        home = base.appendingPathComponent("luros-env-\(UUID().uuidString)", isDirectory: true)
         let data = DataFolder(home: home.path)
         try FileManager.default.createDirectory(at: data.root, withIntermediateDirectories: true)
         layout = EnvironmentLayout(data: data, installRoot: home.appendingPathComponent("jbroot").path, home: home.path)

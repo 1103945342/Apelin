@@ -158,7 +158,7 @@ public extension GitRepository {
     /// commit is still `expectedRemoteCommit` and HEAD still
     /// `expectedHead` (nil: no commit), else throws `conflict` and changes
     /// nothing: the state moved since the user was shown it. What it would
-    /// lose goes first onto a new branch `apelin-backup/<yyyyMMdd-HHmmss>`:
+    /// lose goes first onto a new branch `luros-backup/<yyyyMMdd-HHmmss>`:
     /// HEAD's commit, with, when anything is uncommitted or replaced, a
     /// commit on top of it holding the work tree's tracked files and the
     /// files the remote's replace. Then the remote's tree is checked out
@@ -416,13 +416,13 @@ public extension GitRepository {
         }
     }
 
-    /// `refs/heads/apelin-backup/<yyyyMMdd-HHmmss>` at `commit`, a number
+    /// `refs/heads/luros-backup/<yyyyMMdd-HHmmss>` at `commit`, a number
     /// after it when that is taken. Answers the branch's name.
     @objc private dynamic func makeBackupBranch(_ commit: String, now: Date) throws -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyyMMdd-HHmmss"
-        let stamp = "apelin-backup/" + formatter.string(from: now)
+        let stamp = "luros-backup/" + formatter.string(from: now)
         var oid = git_oid()
         try GitError.check(git_oid_fromstr(&oid, commit), "read the backup")
         for attempt in 1 ... 100 {

@@ -16,7 +16,7 @@ struct EnvironmentContextTests {
     static let olderSDKID = "iphoneos17.0-5e6f7a8b"
 
     /// A registered toolchain and two SDKs in the home's data folder, the
-    /// way apelin-environment writes them, and a project bound to them.
+    /// way luros-environment writes them, and a project bound to them.
     /// Answers the canonical tool and SDK folders.
     @discardableResult
     static func register(in home: TemporaryHome, deploymentTarget: String = "15.0") throws -> (bin: String, sdk: String) {

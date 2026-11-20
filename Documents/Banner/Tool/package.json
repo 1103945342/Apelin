@@ -1,5 +1,5 @@
 {
-  "name": "apelin-banner",
+  "name": "luros-banner",
   "private": true,
   "type": "module",
   "description": "Fills Banner.fig's screenshot slots and renders the banner",

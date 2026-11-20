@@ -8,7 +8,7 @@ import Testing
 @Suite("apelin_package_publish is one distributionPublish task")
 struct PublishBackendTests {
     /// A data folder with a linked package repository's project and two
-    /// release builds' records and packages, as apelin-build leaves them.
+    /// release builds' records and packages, as luros-build leaves them.
     struct DataFolder {
         let root: URL
         let host = FakeHost()
@@ -16,7 +16,7 @@ struct PublishBackendTests {
 
         init(linked: Bool = true) throws {
             root = URL(fileURLWithPath: NSTemporaryDirectory())
-                .appendingPathComponent("apelin-publish-tests-\(UUID().uuidString)", isDirectory: true)
+                .appendingPathComponent("luros-publish-tests-\(UUID().uuidString)", isDirectory: true)
             let projects = root.appendingPathComponent("Projects", isDirectory: true)
             let repository = projects.appendingPathComponent("packages", isDirectory: true)
             try FileManager.default.createDirectory(at: repository, withIntermediateDirectories: true)

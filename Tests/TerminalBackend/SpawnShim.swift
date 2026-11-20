@@ -1,5 +1,5 @@
-// Stand-ins for the two types Apelind/Spawn.swift declares, which the checks
-// do not compile: that file's privilege check needs Apelind/System.swift,
+// Stand-ins for the two types Lurosd/Spawn.swift declares, which the checks
+// do not compile: that file's privilege check needs Lurosd/System.swift,
 // which imports XPC and does not build for iOS. Nothing here is exercised by
 // the checks — the shells they start run with no identity drop.
 

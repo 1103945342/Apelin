@@ -25,7 +25,7 @@ public enum BootstrapFlavor: String, Sendable, Hashable, CaseIterable, Codable {
 /// The `/var/jb` here is part of the rootless *package format* — the paths a
 /// rootless `.deb` must spell — and never the runtime install root. Which
 /// flavor to build for, and where the bootstrap actually is, comes from
-/// apelind's `hello`; nothing here guesses either.
+/// lurosd's `hello`; nothing here guesses either.
 public struct PackageLayout: Sendable, Hashable {
     public let flavor: BootstrapFlavor
 

@@ -49,7 +49,7 @@ Times are typical for one step; — is not run there.
 
 | Script | What it proves | iOS 26.4 | iOS 27.0.1 | iPad 27.0.1 | iOS 26.6.2 |
 |---|---|---|---|---|---|
-| hello, `extensionList`, `sdkList`, `toolchainStatus` | apelind starts on demand and answers; the session host and workers come up | pass, 1–14 ms | pass | pass | pass |
+| hello, `extensionList`, `sdkList`, `toolchainStatus` | lurosd starts on demand and answers; the session host and workers come up | pass, 1–14 ms | pass | pass | pass |
 | `i1-smoke.json` | PTY as uid/gid 501; protected edit with backup, spent grant and dpkg status refused; install and removal of the fixture deb through irisind, wrong digest refused | pass | pass (install 0.87 s, remove 0.35 s) | pass (install 0.8 s, remove 0.3 s) | pass |
 | `terminal.json` | open, resize, attach, close, resize after close refused | pass | pass | pass | pass |
 | The terminal's environment | `GIT_CONFIG_COUNT=1`, `safe.bareRepository=explicit` | pass | — | — | — |
@@ -80,11 +80,11 @@ Times are typical for one step; — is not run there.
 The session host was killed with `kill -9 $(cat <install
 root>/var/lib/luros/session.pid)` from a loop on the device watching the
 run's output (the harness's watcher since 2026-10-18); the proxy started a new host 1–2 s later every time. No crash
-report for apelind, its session host, a worker or the app came out of any
+report for lurosd, its session host, a worker or the app came out of any
 run.
 
-The daemon's lifecycle: after a reboot no apelind runs (no `RunAtLoad`, no
-`KeepAlive`); the first console request starts apelind and its session host
+The daemon's lifecycle: after a reboot no lurosd runs (no `RunAtLoad`, no
+`KeepAlive`); the first console request starts lurosd and its session host
 as root and the workers as uid 501, children of the session host. The idle
 exit after the last piece of work has not been timed on a device.
 
@@ -156,15 +156,15 @@ Each was fixed with a test before the results above.
 `confirmLoaded` was designed to read the target's loaded images as a second
 piece of evidence beside the marker line. On the iOS 27.0.1 vphones it
 panicked the kernel three times on 2026-10-17, always with the same
-signature, the panicked task `apelin-diagnostics`:
+signature, the panicked task `luros-diagnostics`:
 
 ```
 panic(cpu 0 caller …): VM entry … lock is invalid (0) <v:0 c:-- w:-- -/0> @vm_entry_lock.c:168
-Panicked task …: pid …: apelin-diagnostics
+Panicked task …: pid …: luros-diagnostics
 ```
 
 1. Twice on the iPad vphone, reading SpringBoard's image list while
-   apelin-diagnostics carried `com.apple.system-task-ports.read` and read
+   luros-diagnostics carried `com.apple.system-task-ports.read` and read
    dyld's image infos through the task read port
    (`mach_vm_read_overwrite`).
 2. With that reader and the entitlement removed, once more on the iPhone
@@ -265,7 +265,7 @@ console now goes on after a restart only past a successful respring.
       under Chats by its name, its page shows the Session, Model, Tool,
       Approval and Compaction lines, a call ID typed in the search field
       finds its `Started` and `Ended` lines (succeeded, denied, cancelled),
-      and Share sends `apelin-agent-<session>.log` with no key, home path
+      and Share sends `luros-agent-<session>.log` with no key, home path
       or jbroot in it. `kill-host` while a shell_run sleeps, then a message
       in the same chat: the call's `Ended … status=interrupted` line. On a
       Copilot GPT model where #26's compaction fails, the Compaction line
@@ -286,7 +286,7 @@ console now goes on after a restart only past a successful respring.
 - [ ] Open in Luros for a repository (2026-10-31, issue #31; only the
       Mac harness's `Tests/ApelinLink` and a node run of the landing
       page's checks have run). After `make vphone` (iPhone and iPad):
-      from a README, `https://1103945342.github.io/Apelin/open/?url=…`
+      from a README, `https://1103945342.github.io/Luros/open/?url=…`
       shows the repository and Open in Luros opens the sheet filled in,
       with the app cold and running; Import makes the project, clones it
       on the progress card and opens it on a new conversation that sends
@@ -335,7 +335,7 @@ console now goes on after a restart only past a successful respring.
       in Strict, Relaxed and Full alike; after Approve the folder is the
       repository's, `luros-project.json` keeps the project's projectID (git
       shows it changed), the project and its conversations are still there,
-      and the `apelin-backup/…` branch holds the old work. New Project with
+      and the `luros-backup/…` branch holds the old work. New Project with
       that address: the import succeeds and the sidebar shows the
       repository's name for it.
 
@@ -418,11 +418,11 @@ console now goes on after a restart only past a successful respring.
       in Quick Look, and file_read reads the `Attachments/` copy the
       result names. Ask it to disassemble a symbol the binary lacks: the
       call fails with the Disassembler's own words. Kill the extension's process
-      while the chat is open (`killall apelin-disassembler`): the next
+      while the chat is open (`killall luros-disassembler`): the next
       call opens it again and answers. Remove the Assembler package with
       the chat open: the next message's tools have no `assemble`, and the
       model was told it went; install it again and it comes back. Close
-      the chat: no `apelin-disassembler` process is left.
+      the chat: no `luros-disassembler` process is left.
       Run so far (2026-10-29, build 23 from CI, iOS 26.4 iPhone vphone,
       roothide, Relaxed, deepseek-v4-pro through an OpenAI-compatible key):
       a headless project chat called `assemble` (`ret` for arm64: `c0 03 5f
@@ -542,7 +542,7 @@ console now goes on after a restart only past a successful respring.
       to send feedback: apelin_feedback_send answers that GitHub
       authorization is needed and names Sign In with GitHub in Settings ▸
       Git, and nothing is posted. Signed in, under Strict: the card names
-      1103945342/Apelin and shows the whole title and body, offers no
+      1103945342/Luros and shows the whole title and body, offers no
       "for this session", and Approve posts one issue whose footer reads
       "Sent with Luros <version> (<build>) · iOS <version> · <bootstrap>"
       on a roothide and a rootless device, with the installed version;
@@ -555,7 +555,7 @@ console now goes on after a restart only past a successful respring.
       scope gh's sign-in asks for. Close the test issues afterwards.
 - [ ] Feedback edited by the agent (2026-10-30, AGENTS.md ▸ Distribution
       repository ▸ Feedback; it edits a public issue, so by hand only, on a
-      test issue the signed-in account opened on 1103945342/Apelin, closed
+      test issue the signed-in account opened on 1103945342/Luros, closed
       afterwards). Asked to broaden it, the agent reads it with
       apelin_feedback_read, shows the new body (or before and after) and
       calls apelin_feedback_edit only after 同意 or 确定, in Relaxed too;
@@ -580,13 +580,13 @@ console now goes on after a restart only past a successful respring.
       the model hands back its number and link. With issues turned off on
       the repository, and for a repository the account cannot see, the
       agent says what blocks it and posts nothing elsewhere, opens no
-      browser and drives no screen. Asked to file on 1103945342/Apelin, it
+      browser and drives no screen. Asked to file on 1103945342/Luros, it
       goes through apelin_feedback_send. Signed out, it names Sign In with
       GitHub in Settings ▸ Git.
 - [ ] The star prompt (2026-10-29, AGENTS.md ▸ Distribution repository ▸
       The star; it stars a real account, so by hand only). Signed out of
       GitHub, ten builds that succeed ask nothing and count for nothing.
-      Signed in with an account that has not starred 1103945342/Apelin:
+      Signed in with an account that has not starred 1103945342/Luros:
       the first nine builds that succeed after that (agent builds and
       distribution builds alike; failed builds and a reopened
       conversation's replay add none) ask nothing, the tenth asks "Do You
@@ -606,7 +606,7 @@ console now goes on after a restart only past a successful respring.
       `screenOff` false), a lit lock screen refused as "The device is
       locked.", and `home` from an app reaching the home screen. The
       `diagnostics` script's wake on an awake device answering `screenOff`
-      false and changing nothing. apelin-diagnostics carries fewer
+      false and changing nothing. luros-diagnostics carries fewer
       entitlements than the icli CLI: that its wake (SpringBoardServices'
       undim, then a HID home press) lights the screen as `icli button
       wake` does. On an iPhone with a passcode: a wake leaving the lit lock
@@ -781,7 +781,7 @@ console now goes on after a restart only past a successful respring.
       to be offline", the journal's `Network` line saying what the policy
       was and that it was opened, then the GitHub code arriving; the
       keyboard rising on an iPhone (the vphone has a hardware keyboard); a
-      link during the welcome dropped; the agent listing `apelin-icli` and
+      link during the welcome dropped; the agent listing `luros-icli` and
       running `icli device info`; in the dark before iOS 26, the GitHub and
       provider sign-in pages' button reading black on white.
 - [ ] GitHub, git and the package repository (2026-10-25). On the iOS
@@ -855,7 +855,7 @@ console now goes on after a restart only past a successful respring.
       development extensions installed.
 - [ ] The iOS 16.0 floor (oldest supported system).
 - [ ] On iOS 16, 17 or 18: an agent session starts (`agentList`, then
-      `agentOpen`). apelin-agent links `@rpath/libswiftCompatibilitySpan.dylib`.
+      `agentOpen`). luros-agent links `@rpath/libswiftCompatibilitySpan.dylib`.
       The OS has that library only from iOS 26, so on older systems it loads
       the copy the package installs in `usr/libexec/luros/`, through the
       worker's second rpath, `@executable_path`. Only the iOS 26.4 vphone, where
@@ -879,7 +879,7 @@ console now goes on after a restart only past a successful respring.
 - [ ] crashSymbolicate against a real crash of a built tweak.
 - [ ] The app, CLI and preference bundle templates built, installed and
       checked for what each does.
-- [ ] The idle exit of apelind timed after its last piece of work.
+- [ ] The idle exit of lurosd timed after its last piece of work.
 - [ ] Settings ▸ Model Providers: `accounts.json` in its new shape (a
       device code, a loopback, a polled page, two key forms), and a real
       sign-in by hand of each flow — a device code (Copilot, Kimi or Grok),
@@ -1083,7 +1083,7 @@ console now goes on after a restart only past a successful respring.
       both ways with `{"detail":"Unsupported parameter: metadata"}`): a long
       chat on a Codex model compacts from the menu and on its own.
 - [ ] A program the agent builds and runs itself (2026-10-29, AGENTS.md ▸
-      the system prompt, `apelin-device-executables`; none has run on a
+      the system prompt, `luros-device-executables`; none has run on a
       device, the skill quotes a field conversation). On the iOS 26.4 and
       iOS 27.0.1 iPhone vphones (roothide) and a rootless device: a C
       program built with shell_run's clang (`clang -arch arm64 probe.c -o
@@ -1443,7 +1443,7 @@ resolving deltas and checking out about 10,000 files.
 
 ### Where the time went, and what changed
 
-Measured on the devices with the probe (`apelin-toolchain-probe setup`,
+Measured on the devices with the probe (`luros-toolchain-probe setup`,
 download to packaging, as mobile) built from this tree before and after,
 CLT 15.0, the same manifest digest out of both:
 
@@ -1471,7 +1471,7 @@ CLT 15.0, the same manifest digest out of both:
 - **SDK inspection.** Every file's Mach-O check and digest on up to four
   cores; the digest and the first refusal are the walk-order ones. The
   same work, measured alone on an 18.0 tree (10,227 files): 4.2 s → 1.1 s
-  on the iPhone, 10.5 s → 2.9 s on the A12Z. It ships in apelin-environment,
+  on the iPhone, 10.5 s → 2.9 s on the A12Z. It ships in luros-environment,
   which could not be installed on these devices (no root), so the import
   itself was not timed after.
 - **The catalog** fetched each product's distribution one after another
@@ -2154,7 +2154,7 @@ members are updated without duplicate keys. The console's real i3 fixture now
 renames its newly created project and verifies the display name and unchanged
 project ID. The focused rerun passed all 9 extension/project tests, all 5
 metadata tests and both console-script tests (16/16), recorded in
-`/private/tmp/apelin-project-regression-tests-final.log`.
+`/private/tmp/luros-project-regression-tests-final.log`.
 
 
 ## Project distribution and setup (2026-10-22)
@@ -2205,14 +2205,14 @@ still name the placeholder without rewriting the existing chat title.
 `ScriptedSessionTests` passed all six tests, including greeting/no-candidate,
 concrete-goal/candidate, later-goal naming, and using the current model without
 adding the title completion to the conversation. Evidence:
-`/private/tmp/apelin-style-title-tests-3.log`. Real-model greeting behavior is a
+`/private/tmp/luros-style-title-tests-3.log`. Real-model greeting behavior is a
 separate device acceptance check; these deterministic tests do not claim it.
 
 After the metadata regression fix, the complete host harness passed, including
 all package tests, worker typechecks and 573/573 session-host checks
-(`/private/tmp/apelin-feature-harness-final3.log`). The later response-style and
+(`/private/tmp/luros-feature-harness-final3.log`). The later response-style and
 semantic-title changes passed the full agent-package regression run
-(`/private/tmp/apelin-agent-final-semantic.log`), including 57 tests in the main
+(`/private/tmp/luros-agent-final-semantic.log`), including 57 tests in the main
 agent suite. The live Copilot credential-dependent test remained skipped; this
 does not establish the real-model greeting behavior on Banana.
 
@@ -2223,7 +2223,7 @@ The next read showed UI Empty Workspace / Greeting, and a later read showed
 UI Template Tool with Settings open, still in the same app process. No manifest,
 preferences, chat, or session was written by this attempt. The unrelated state
 changes are recorded in
-`/private/tmp/apelin-project-acceptance112-timeline.json`; they are not evidence
+`/private/tmp/luros-project-acceptance112-timeline.json`; they are not evidence
 that the project actions or real-model greeting checks passed or failed.
 
 ### Build 113 project acceptance (2026-10-22)
@@ -2299,7 +2299,7 @@ deduplication.
 ### Final integration build 113
 
 The complete final host harness passed again in
-`/private/tmp/apelin-feature-harness-final112.log`: 573/573 session-host checks,
+`/private/tmp/luros-feature-harness-final112.log`: 573/573 session-host checks,
 all package suites and worker typechecks. Build 113 incorporates the shared
 project form inside welcome, preserves that form across Back/Next navigation,
 and validates canonical project and manifest paths before listing or
@@ -2351,7 +2351,7 @@ release artifacts are retained for the dedicated follow-up distribution-target
 work; user projects were not deleted.
 
 The final build-114 Banana smoke suite passed all seven cases
-(`/private/tmp/apelin-ui-smoke114.log`), including daemon handshake, terminal,
+(`/private/tmp/luros-ui-smoke114.log`), including daemon handshake, terminal,
 files, logs, diagnostics and managed installation. No new protocol or worker
 failure was observed after the welcome changes.
 
@@ -2391,7 +2391,7 @@ deb's, and LaunchServices' record reads build 1. `i1-smoke` passed all
 26 steps. In General Chat, with an OpenAI-compatible account, a greeting
 was answered and the conversation took a title. A message sent while a
 reply streamed appeared once, was taken by the run and was answered. No
-Luros, apelind or worker process left a crash report.
+Luros, lurosd or worker process left a crash report.
 
 A reply that is only `4.` drew nothing. MarkdownView reads it as an empty
 numbered-list item and draws no marker for an item without a paragraph.
@@ -2461,7 +2461,7 @@ call's own reason. The approved turn's finish and a later turn posted too,
 with Luros not running. Each banner went into the delivered list as
 `<session>.turn.<n>` or `<session>.approval.<n>`, with the session as its
 thread and `link` = `lurosdev://conversation/<session>`. With Luros in front,
-apelind still added the request and the app got `UIWillPresentNotification`;
+lurosd still added the request and the app got `UIWillPresentNotification`;
 nothing showed and nothing was delivered. Opening the conversation emptied
 the delivered list. After the session host was killed and the session opened
 again, the replayed `approvalRequested` and `finished` posted nothing and the
@@ -2493,7 +2493,7 @@ cold-launched it onto that chat; a reply measured above 50 tokens a second
 was followed for a page. On the iPad: a file dragged from Files in
 Windowed Apps tinted the composer and became an attachment card; the
 small and medium widgets were added and opened Luros; the chat, its menu
-and Settings drew in light and dark. No Luros, apelind or worker process
+and Settings drew in light and dark. No Luros, lurosd or worker process
 left a crash report.
 
 Found: a banner tapped in Notification Center did not open Luros, either
@@ -2538,15 +2538,15 @@ laid the bar, the composer and its model row, the menus and Settings out
 right to left, the iPad's sidebar on the right and the iPhone's drawer out
 from the right. Japanese and English screens were translated and unclipped,
 a chat 0.1.1 had saved as "New Chat" showed in the current language, and on
-the iPhone a message to the model was answered. No Luros, apelind or worker
+the iPhone a message to the model was answered. No Luros, lurosd or worker
 process left a crash report.
 
 ## Agent prompt and skills for imported repositories (2026-10-23, build 23)
 
 The roothide build 23 of `446b337` went onto the iOS 26.4 iPhone vphone over
 0.1.2 build 19 through `irisin-cli install --yes`; the app registered and
-came up as the verified foreground app, and the installed apelin-agent
-carries the apelin-project-description skill. No agent session was run on it, and
+came up as the verified foreground app, and the installed luros-agent
+carries the luros-project-description skill. No agent session was run on it, and
 `i1-smoke` was not: the guest sits behind its host's NAT, which has no
 Python for `Scripts/device.py`. A probe as mobile checked what the
 environment section now states: git and ldid are on the search path; make,
@@ -2601,7 +2601,7 @@ plain dyld opcodes, so every signed pointer is bound bare. On the vphone,
 a dylib returning a constant string answered `length` when linked
 normally and was killed (signal 9) on that first message when linked with
 `-undefined dynamic_lookup`; CLT 15.3's threaded binds under the same
-flag ran. apelin-build now refuses such a slice at its link; Luros's
+flag ran. luros-build now refuses such a slice at its link; Luros's
 templates and steps never pass the flag, so only a `linkFlags` entry or a
 workspace's own script can.
 
@@ -2716,10 +2716,10 @@ about five times a second, screenshots):
   one with Luros?" got 279 words, no tool call, and described the tweak
   template as Logos (`Tweak.x`, `%hook`); the template is plain
   Objective-C (`objc-hook/Sources/Tweak.m`) and Logos is not built. The
-  model did not read apelin-tweak-development.
-- Settings ▸ Agent ▸ Skills lists apelin-bootstrap-paths, apelin-tweak-runtime,
-  apelin-preference-bundle and apelin-package-dependencies among the nine built-ins, and
-  apelin-bootstrap-paths opens its body.
+  model did not read luros-tweak-development.
+- Settings ▸ Agent ▸ Skills lists luros-bootstrap-paths, luros-tweak-runtime,
+  luros-preference-bundle and luros-package-dependencies among the nine built-ins, and
+  luros-bootstrap-paths opens its body.
 
 On the iPad, which has no model account, Luros launches and Skills lists
 the same nine with none of the user's. It has no conversation with a trace
@@ -2737,7 +2737,7 @@ over 0.1.0. On both 27.0.1 guests `uicache` printed "Unable to register"
 page, and its installed `Info.plist` was the package's byte for byte. The
 smoke suite ran on all four by the shell stand-in and every script ended
 `ok` (`files` skipped on the iPads, which have no tweak extension). No
-crash report for Luros, apelind or a worker came out of the round on any
+crash report for Luros, lurosd or a worker came out of the round on any
 of the four.
 
 On the iPhone, with its deepseek-v4-pro account (an OpenAI-compatible key),
@@ -2806,7 +2806,7 @@ accessibility tree, screenshots):
   to Full (13 %). Removing the skill and going back to Strict missed
   nothing (98.5 %, 98.8 %): the earlier prefixes were still cached.
 - "What is a tweak, and how would I make one with Luros?" in a new General
-  Chat read apelin-tweak-development first (apelin_skill_read in the trace) and
+  Chat read luros-tweak-development first (apelin_skill_read in the trace) and
   answered that Luros's tweak is plain Objective-C, no Logos or Theos:
   hooks installed with MSHookMessageEx in a constructor, the original
   called instead of `%orig`, the filter plist, then template, build,
@@ -2868,7 +2868,7 @@ iPhone vphones and the iOS 26.4 iPad vphone:
   opened its chat. Asked to commit a `NOTES.md` and then match
   `origin/master`, the agent asked for the git author on a card, committed,
   and showed the reset card: the remote's address and commit, the branch's
-  old commit, the one local commit leaving it, the `apelin-backup/` branch,
+  old commit, the one local commit leaving it, the `luros-backup/` branch,
   and that a reset asks in every mode. Denied, nothing changed, and the
   agent said so.
 - A reply that came while another chat was open put a yellow dot in place
@@ -2917,7 +2917,7 @@ on the iPad:
   `files` on the iPad, which has no tweak extension, toolchain or SDK.
   `i1-smoke` ran this time: a shell stand-in for `Scripts/device.py` on
   the guests set up and checked its fixture package and
-  `/etc/apelin-smoke.conf`.
+  `/etc/luros-smoke.conf`.
 - Issue #38, on the iPhone (Strict, deepseek-v4-pro): with the session
   host and the app killed while a `shell_run` card waited, the reopened
   conversation had no card and a normal composer, and the next message was
@@ -3076,7 +3076,7 @@ on the iOS 26.4 iPhone vphone, issue #44:
 - The skill, in a new General Chat (Strict, deepseek-v4-pro), asked only
   how to give a tweak's page in a package manager a changelog tab and to
   read the skill that covers it: the model called `apelin_skill_read` with
-  `apelin-package-depiction`, found by its description in the prompt's
+  `luros-package-depiction`, found by its description in the prompt's
   list (the chat's journal has the call, 3,672 bytes in 78 lines), and
   answered the skill's name, its file `depiction.json` and the two
   members.

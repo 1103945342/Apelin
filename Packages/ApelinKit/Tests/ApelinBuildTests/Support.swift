@@ -15,7 +15,7 @@ enum Repository {
     static let extensions = root.appendingPathComponent("Extensions/Development")
 }
 
-func scratchDirectory(_ label: String = "apelin-i3-build") throws -> URL {
+func scratchDirectory(_ label: String = "luros-i3-build") throws -> URL {
     let url = URL(fileURLWithPath: "/private/tmp", isDirectory: true)
         .appendingPathComponent("\(label).\(UUID().uuidString.prefix(8))", isDirectory: true)
     try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)

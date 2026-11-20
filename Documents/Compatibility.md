@@ -171,7 +171,7 @@ available to current clients. The app's interface is unchanged.
   paths; use the component requirements to decide which operation is available.
 
 To inspect the table without a device or network request, run
-`apelin-toolchain-probe compatibility`. To review a new Apple package:
+`luros-toolchain-probe compatibility`. To review a new Apple package:
 
 1. Verify its source identity and digest, then prepare a static inventory with
    the opt-in `StaticInventoryTests` test. Set `APELIN_STATIC_PACKAGE` to the

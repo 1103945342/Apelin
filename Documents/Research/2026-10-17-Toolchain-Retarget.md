@@ -90,7 +90,7 @@ simultaneous whole-system peak or a jetsam pressure test.
 
 Each pass requires an explicit object compile, link against the physical SDK
 path, dsymutil while the object still exists, matching LC_UUID values, Swift
-ad-hoc signing, and execution printing `apelin-ok`. C++ uses vector/iostream;
+ad-hoc signing, and execution printing `luros-ok`. C++ uses vector/iostream;
 Objective-C uses Foundation collections and ARC. The six checks were repeated
 after the installed tree was made root-owned. The probe runs as mobile.
 
@@ -459,7 +459,7 @@ alternate installer or public daemon CLI.
 
 For this validation only, each device's prepared tree was copied into its
 installation location by hand and made root-owned; it was not an Irisin
-transaction. The product path has since replaced that: apelin-environment
+transaction. The product path has since replaced that: luros-environment
 packages the tree as `com.fluoxetine.luros.toolchain.<id>`, the session host
 installs it through irisind, and only a tree whose installed bytes pass the
 self-test is registered (`AGENTS.md` ▸ The environment worker).

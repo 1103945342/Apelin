@@ -11,9 +11,9 @@ Read with `proc_pid_rusage` (`RUSAGE_INFO_V4`), as root for the daemon.
 | process | physical footprint | resident | lifetime peak |
 |---|---|---|---|
 | Luros (app) | 490–506 MB | 329 MB | 622 MB |
-| apelind (session host, pid 70027) | 463.5 MB | 60 MB | 701 MB |
-| apelind (launchd proxy, pid 70026) | 2.5 MB | 8 MB | 35 MB |
-| apelin-agent (one worker) | 24–28 MB | 6–30 MB | 205 MB |
+| lurosd (session host, pid 70027) | 463.5 MB | 60 MB | 701 MB |
+| lurosd (launchd proxy, pid 70026) | 2.5 MB | 8 MB | 35 MB |
+| luros-agent (one worker) | 24–28 MB | 6–30 MB | 205 MB |
 
 On disk, the same event stream is kept three times:
 
@@ -32,10 +32,10 @@ This is not a leak (no retain cycle, no unbounded timer; the thumbnail `NSCache`
 is capped at 128 entries / 32 MB). It is "everything resident" by design, in both
 processes:
 
-- `ChatRecord.events` (`Apelin/Interface/Chats/ChatStore.swift:17`) only ever grows
+- `ChatRecord.events` (`Luros/Interface/Chats/ChatStore.swift:17`) only ever grows
   (`take`), and `ChatRuntime.load` (`ChatRuntime.swift:99`) reads every `Chats/*.json`
   at launch.
-- `TaskRegistry.load()` (`Apelind/Session/TaskRegistry.swift:105`) reads and decodes
+- `TaskRegistry.load()` (`Lurosd/Session/TaskRegistry.swift:105`) reads and decodes
   every task's whole log at startup and keeps it in `events[id]` for the life of the
   process, finished tasks included.
 - Every save re-encodes the whole record (`ChatRuntime.swift:1082`,

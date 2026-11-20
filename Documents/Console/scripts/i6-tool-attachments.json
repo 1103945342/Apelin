@@ -4,7 +4,7 @@
     "Install the disassembler agent tool extension 1.1.0 or later (com.fluoxetine.luros.agent-tools.disassembler, from build/Packages/ after make deb-agent-tools) with your preferred package manager: 1.1.0 adds symbols{output: file}, which returns the listing as an attachment.",
     "Proves toolHostCall carries a tool's file back. The console keeps no descriptors, so the file is observed through what the host says about the copy it made: response.attachments.0 has mimeType, name, byteCount and sha256 (of the bytes behind the read-only descriptor the console was handed and closed).",
     "Pass: the run ends ok. The page call answers inline text and no attachment; the file call answers a one-line summary and one text/plain attachment named dyld.symbols.txt with a byteCount above zero; a second identical call answers the same sha256 (the copy is the bytes, read whole each time). The close ends the extension.",
-    "Afterwards, as root: ls -la <install root>/var/lib/luros/attachments/ is empty (each copy is unlinked the moment it is opened), and no apelin-disassembler process is left (ps ax | grep apelin-disassembler)."
+    "Afterwards, as root: ls -la <install root>/var/lib/luros/attachments/ is empty (each copy is unlinked the moment it is opened), and no luros-disassembler process is left (ps ax | grep luros-disassembler)."
   ],
   "steps": [
     {"op": "hello"},

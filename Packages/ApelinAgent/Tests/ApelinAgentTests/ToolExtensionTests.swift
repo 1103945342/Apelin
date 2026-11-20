@@ -99,7 +99,7 @@ struct InstalledToolExtensions {
 
 /// A descriptor holding `data`, from an unlinked temporary file.
 func descriptor(holding data: Data) -> OwnedDescriptor {
-    let path = NSTemporaryDirectory() + "apelin-agent-tests-\(UUID().uuidString)"
+    let path = NSTemporaryDirectory() + "luros-agent-tests-\(UUID().uuidString)"
     FileManager.default.createFile(atPath: path, contents: data)
     let fd = open(path, O_RDONLY)
     unlink(path)

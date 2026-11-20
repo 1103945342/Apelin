@@ -1,6 +1,6 @@
 extension BuiltInSkills {
     static let gitWorkflow = SkillDocument(
-        name: "apelin-git-workflow",
+        name: "luros-git-workflow",
         description: "Keeping a project's history in git for the user: inspecting history, creating and switching branches, merging and resolving conflicts, when to commit, importing a workspace, pushing only when asked, and a squash or forced push only when explicitly requested.",
         body: """
         # Keeping the project in git
@@ -105,7 +105,7 @@ extension BuiltInSkills {
           "overwrite my code with the latest"), `git_reset_to_remote` does
           it: add the remote first when the project lacks one, then name it
           and the branch. Its card shows the user what is lost, and they
-          decide, in every mode; then tell them the `apelin-backup/…` branch
+          decide, in every mode; then tell them the `luros-backup/…` branch
           that keeps it. Never use it to resolve a conflict or get past a
           refused pull or push on your own: say what is in the way and ask.
         - From any other chat, a repository goes into a new workspace, whatever

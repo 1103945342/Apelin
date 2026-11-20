@@ -51,7 +51,7 @@ struct SkillAndPromptTests {
         let prompt = SystemPrompt.make(project: home.project, projectRoot: home.projectURL.path,
                                        skills: skills, mcpServers: [])
         #expect(prompt.contains("<skill name=\"theme-colours\" source=\"user\">Use for theme-colours work.</skill>"))
-        #expect(prompt.contains("<skill name=\"apelin-tweak-development\">"))
+        #expect(prompt.contains("<skill name=\"luros-tweak-development\">"))
         #expect(!prompt.contains("skill-body-marker"))
         #expect(!prompt.contains(BuiltInSkills.all[0].body))
         #expect(prompt.contains("call apelin_skill_read"))
@@ -82,11 +82,11 @@ struct SkillAndPromptTests {
         #expect(!body.contains(".hidden"))
         #expect(!body.contains("link.md"))
         #expect(try await call(["name": "theme-colours", "file": "references/palette.md"]) == "palette-marker")
-        #expect(try await call(["name": "apelin-tweak-development"]).contains(BuiltInSkills.all[0].body))
+        #expect(try await call(["name": "luros-tweak-development"]).contains(BuiltInSkills.all[0].body))
 
         await #expect(throws: (any Error).self) { _ = try await call(["name": "theme-colours", "file": "../outside.txt"]) }
         await #expect(throws: (any Error).self) { _ = try await call(["name": "theme-colours", "file": "link.md"]) }
-        await #expect(throws: (any Error).self) { _ = try await call(["name": "apelin-tweak-development", "file": "x.md"]) }
+        await #expect(throws: (any Error).self) { _ = try await call(["name": "luros-tweak-development", "file": "x.md"]) }
         await #expect(throws: ToolArgumentError.self) { _ = try await call(["name": "missing"]) }
     }
 
@@ -98,17 +98,17 @@ struct SkillAndPromptTests {
         func call(_ arguments: JSONValue) async throws -> String {
             try await text(runner.run(.local(.skillRead), toolCallID: UUID().uuidString, arguments: arguments, cancellation: nil, mcp: nil))
         }
-        #expect(try await call(["name": "apelin-tweak-development", "file": ""]).contains("# Tweak development"))
-        let guide = try await call(["name": "apelin-project-description"])
-        #expect(guide.contains("Files in this skill's folder (apelin_skill_read with file): apelin-project.schema.json"))
-        let schema = try await call(["name": "apelin-project-description", "file": "apelin-project.schema.json"])
+        #expect(try await call(["name": "luros-tweak-development", "file": ""]).contains("# Tweak development"))
+        let guide = try await call(["name": "luros-project-description"])
+        #expect(guide.contains("Files in this skill's folder (apelin_skill_read with file): luros-project.schema.json"))
+        let schema = try await call(["name": "luros-project-description", "file": "luros-project.schema.json"])
         #expect(schema.contains(#""title": "Luros project description, version 1""#))
     }
 
     @Test
-    func `the apelin-project-description skill names every member of the schema`() throws {
+    func `the luros-project-description skill names every member of the schema`() throws {
         let body = BuiltInSkills.projectDescription.body
-        let text = try #require(BuiltInSkills.projectDescription.files["apelin-project.schema.json"])
+        let text = try #require(BuiltInSkills.projectDescription.files["luros-project.schema.json"])
         let schema = try #require(JSONSerialization.jsonObject(with: Data(text.utf8)) as? [String: Any])
         let definitions = schema["$defs"] as? [String: Any] ?? [:]
         func resolved(_ node: Any?) -> [String: Any] {
@@ -141,10 +141,10 @@ struct SkillAndPromptTests {
                                        skills: skills, mcpServers: [])
         let names = Set(skills.map(\.name))
         // The device's hard-won rules each have a skill.
-        for name in ["apelin-tweak-development", "apelin-bootstrap-paths", "apelin-tweak-runtime", "apelin-preference-bundle",
-                     "apelin-project-description", "apelin-external-build", "apelin-packaging-and-install",
-                     "apelin-package-dependencies", "apelin-crash-triage", "apelin-icli", "apelin-device-executables",
-                     "apelin-package-depiction"]
+        for name in ["luros-tweak-development", "luros-bootstrap-paths", "luros-tweak-runtime", "luros-preference-bundle",
+                     "luros-project-description", "luros-external-build", "luros-packaging-and-install",
+                     "luros-package-dependencies", "luros-crash-triage", "luros-icli", "luros-device-executables",
+                     "luros-package-depiction"]
         {
             #expect(names.contains(name), "no built-in skill \(name)")
             #expect(prompt.contains("<skill name=\"\(name)\">"), "the prompt does not list \(name)")
@@ -159,10 +159,10 @@ struct SkillAndPromptTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func `the apelin-bootstrap-paths skill carries its C helper and apelin_skill_read serves it`() async throws {
+    func `the luros-bootstrap-paths skill carries its C helper and apelin_skill_read serves it`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
-        let skill = try #require(BuiltInSkills.all.first { $0.name == "apelin-bootstrap-paths" })
+        let skill = try #require(BuiltInSkills.all.first { $0.name == "luros-bootstrap-paths" })
         let header = try #require(skill.files["ApelinBootstrap.h"])
         // The helper is the one that builds for both bootstraps: the roothide
         // branch finds the jbroot from its own image, the rootless branch is
@@ -180,7 +180,7 @@ struct SkillAndPromptTests {
         }
         let runner = try runner(home)
         let served = try await text(runner.run(.local(.skillRead), toolCallID: UUID().uuidString,
-                                               arguments: ["name": "apelin-bootstrap-paths", "file": "ApelinBootstrap.h"],
+                                               arguments: ["name": "luros-bootstrap-paths", "file": "ApelinBootstrap.h"],
                                                cancellation: nil, mcp: nil))
         #expect(served == header)
     }
@@ -192,13 +192,13 @@ struct SkillAndPromptTests {
     /// for. That page draws in Irisin: it uses the view classes Irisin's
     /// renderer has, a tab name and a class on every tab.
     @Test(.timeLimit(.minutes(1)))
-    func `the apelin-package-depiction skill is listed, read on demand, and carries a depiction to start from`() async throws {
+    func `the luros-package-depiction skill is listed, read on demand, and carries a depiction to start from`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
-        let skill = try #require(BuiltInSkills.all.first { $0.name == "apelin-package-depiction" })
+        let skill = try #require(BuiltInSkills.all.first { $0.name == "luros-package-depiction" })
         let prompt = SystemPrompt.make(project: home.project, projectRoot: home.projectURL.path,
                                        skills: BuiltInSkills.all, mcpServers: [])
-        #expect(prompt.contains("<skill name=\"apelin-package-depiction\">\(skill.description)</skill>"))
+        #expect(prompt.contains("<skill name=\"luros-package-depiction\">\(skill.description)</skill>"))
         #expect(!prompt.contains("# A package's depiction"), "the body is read on demand, not listed")
         #expect(!prompt.contains("DepictionTabView"))
 
@@ -206,18 +206,18 @@ struct SkillAndPromptTests {
         func call(_ arguments: JSONValue) async throws -> String {
             try await text(runner.run(.local(.skillRead), toolCallID: UUID().uuidString, arguments: arguments, cancellation: nil, mcp: nil))
         }
-        let body = try await call(["name": "apelin-package-depiction"])
+        let body = try await call(["name": "luros-package-depiction"])
         #expect(body.contains("# A package's depiction"))
         for named in ["`package.depiction`", "`package.sileoDepiction`", "`Depiction`", "`SileoDepiction`",
-                      "Never make one up", "apelin-package-repository"]
+                      "Never make one up", "luros-package-repository"]
         {
             #expect(body.contains(named), "the skill no longer says \(named)")
         }
         #expect(body.contains("Files in this skill's folder (apelin_skill_read with file): depiction.json"))
         // the project description's guide sends the reader here
-        #expect(BuiltInSkills.projectDescription.body.contains("apelin-package-depiction"))
+        #expect(BuiltInSkills.projectDescription.body.contains("luros-package-depiction"))
 
-        let served = try await call(["name": "apelin-package-depiction", "file": "depiction.json"])
+        let served = try await call(["name": "luros-package-depiction", "file": "depiction.json"])
         #expect(served == BuiltInSkills.sampleDepiction)
         let root = try #require(JSONSerialization.jsonObject(with: Data(served.utf8)) as? [String: Any])
         #expect(root["class"] as? String == "DepictionTabView")
@@ -253,10 +253,10 @@ struct SkillAndPromptTests {
     /// template's GPU classes (owner, 2026-10-29), so the skill's file is
     /// theirs key for key.
     @Test(.timeLimit(.minutes(1)))
-    func `the apelin-device-executables skill carries the cli templates' entitlements, the app template's GPU classes among them`() async throws {
+    func `the luros-device-executables skill carries the cli templates' entitlements, the app template's GPU classes among them`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
-        let skill = try #require(BuiltInSkills.all.first { $0.name == "apelin-device-executables" })
+        let skill = try #require(BuiltInSkills.all.first { $0.name == "luros-device-executables" })
         let file = try #require(skill.files["Tool.entitlements"])
         func plist(_ data: Data) throws -> [String: Any] {
             try #require(PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any])
@@ -288,7 +288,7 @@ struct SkillAndPromptTests {
         #expect(skill.body.contains("version 0.1.1 of the command-line tool extension"))
         let runner = try runner(home)
         let served = try await text(runner.run(.local(.skillRead), toolCallID: UUID().uuidString,
-                                               arguments: ["name": "apelin-device-executables", "file": "Tool.entitlements"],
+                                               arguments: ["name": "luros-device-executables", "file": "Tool.entitlements"],
                                                cancellation: nil, mcp: nil))
         #expect(served == file)
     }
@@ -304,10 +304,10 @@ struct SkillAndPromptTests {
                                            skills: BuiltInSkills.all, mcpServers: [])
             let working = try #require(prompt.range(of: "# Working")?.upperBound)
             let device = try #require(prompt.range(of: "# This device")?.lowerBound)
-            #expect(prompt[working ..< device].contains("A program you compile and run yourself through shell_run is signed with ldid first, as the apelin-device-executables skill says"))
-            #expect(prompt.contains("<skill name=\"apelin-device-executables\">"))
+            #expect(prompt[working ..< device].contains("A program you compile and run yourself through shell_run is signed with ldid first, as the luros-device-executables skill says"))
+            #expect(prompt.contains("<skill name=\"luros-device-executables\">"))
         }
-        #expect(BuiltInSkills.externalBuild.body.contains("apelin-device-executables skill's `Tool.entitlements`"))
+        #expect(BuiltInSkills.externalBuild.body.contains("luros-device-executables skill's `Tool.entitlements`"))
     }
 
     @Test
@@ -463,8 +463,8 @@ struct SkillAndPromptTests {
     /// extension's support folder with the file tools, was told it was
     /// outside the project, and read it through the shell instead.
     @Test
-    func `the apelin-preference-bundle skill names the Preferences header where the read tools reach it`() throws {
-        let skill = try #require(BuiltInSkills.all.first { $0.name == "apelin-preference-bundle" })
+    func `the luros-preference-bundle skill names the Preferences header where the read tools reach it`() throws {
+        let skill = try #require(BuiltInSkills.all.first { $0.name == "luros-preference-bundle" })
         let installed = "com.fluoxetine.luros.dev.preferences/support/include/Preferences/PSListController.h"
         #expect(skill.body.contains("`<install root>/usr/share/luros/development/\(installed)`"))
         let words = skill.body.split(whereSeparator: \.isWhitespace).joined(separator: " ")
@@ -520,7 +520,7 @@ struct SkillAndPromptTests {
         let command = try #require(external.range(of: "dpkg-deb -b --root-owner-group"))
         #expect(step.upperBound <= command.lowerBound)
         for skill in BuiltInSkills.all where skill.body.contains("dpkg-deb") {
-            #expect(["apelin-external-build", "apelin-packaging-and-install"].contains(skill.name), "\(skill.name) names dpkg-deb")
+            #expect(["luros-external-build", "luros-packaging-and-install"].contains(skill.name), "\(skill.name) names dpkg-deb")
         }
     }
 

@@ -95,7 +95,7 @@ extension ModelDataSnapshot {
     /// models.dev answers from Japan and is slow from China; the repository's
     /// copy comes through jsDelivr, which is reachable there.
     public static let mirrorURL =
-        URL(string: "https://cdn.jsdelivr.net/gh/1103945342/Luros@main/Apelin/Resources/models.dev.json")!
+        URL(string: "https://cdn.jsdelivr.net/gh/1103945342/Luros@main/Luros/Resources/models.dev.json")!
     /// How old the copy may be before the app looks for a newer one.
     public static let refreshInterval: TimeInterval = 7 * 24 * 60 * 60
 

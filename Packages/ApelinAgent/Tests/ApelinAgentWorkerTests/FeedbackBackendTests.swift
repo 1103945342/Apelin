@@ -10,7 +10,7 @@ struct FeedbackBackendTests {
     @Test
     func `the issue goes as feedbackSend with its title and body alone`() async throws {
         let fixture = try Fixture()
-        fixture.host.on(.feedbackSend, reply: FeedbackSendResponse(number: 12, url: "https://github.com/1103945342/Apelin/issues/12"))
+        fixture.host.on(.feedbackSend, reply: FeedbackSendResponse(number: 12, url: "https://github.com/1103945342/Luros/issues/12"))
         let response = try await fixture.backend.sendFeedback(FeedbackToolRequest(
             context: fixture.context(),
             title: "The build log stops early",
@@ -19,7 +19,7 @@ struct FeedbackBackendTests {
         let sent = try #require(fixture.host.requests(FeedbackSendRequest.self).first)
         #expect(fixture.host.requests.map(\.operation) == [.feedbackSend])
         #expect(sent.title == "The build log stops early" && sent.body == "It ends before the link step.")
-        #expect(response == FeedbackToolResponse(repository: "1103945342/Apelin", issue: 12, url: "https://github.com/1103945342/Apelin/issues/12"))
+        #expect(response == FeedbackToolResponse(repository: "1103945342/Luros", issue: 12, url: "https://github.com/1103945342/Luros/issues/12"))
     }
 
     @Test
@@ -51,17 +51,17 @@ struct FeedbackBackendTests {
     func `a read is one feedbackRead, its revision named from the title and body`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.feedbackRead, reply: FeedbackReadResponse(
-            number: 12, url: "https://github.com/1103945342/Apelin/issues/12", title: "T", body: "B",
+            number: 12, url: "https://github.com/1103945342/Luros/issues/12", title: "T", body: "B",
             footer: "Sent with Luros 0.2.7 (18) · iOS 17.3.1 · rootless", author: "someone", state: "open", isAuthor: true,
         ))
         let read = try await fixture.backend.readFeedback(FeedbackReadToolRequest(context: fixture.context(), number: 12))
         #expect(fixture.host.requests.map(\.operation) == [.feedbackRead])
         #expect(fixture.host.requests(FeedbackReadRequest.self).first?.number == 12)
-        #expect(read.repository == "1103945342/Apelin" && read.issue == 12 && read.openedByUser)
+        #expect(read.repository == "1103945342/Luros" && read.issue == 12 && read.openedByUser)
         #expect(read.body == "B" && read.footer?.hasPrefix("Sent with Luros") == true)
         func revision(title: String, body: String) -> String {
             FeedbackReadToolResponse(
-                repository: "1103945342/Apelin", issue: 12, url: "", title: title, state: "closed", author: "other",
+                repository: "1103945342/Luros", issue: 12, url: "", title: title, state: "closed", author: "other",
                 openedByUser: false, body: body, footer: nil,
             ).revision
         }
@@ -74,7 +74,7 @@ struct FeedbackBackendTests {
     func `an edit is one feedbackEdit with what changes and what it was made against`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.feedbackEdit, reply: FeedbackEditResponse(
-            number: 12, url: "https://github.com/1103945342/Apelin/issues/12", title: "T", body: "New",
+            number: 12, url: "https://github.com/1103945342/Luros/issues/12", title: "T", body: "New",
         ))
         let edited = try await fixture.backend.editFeedback(FeedbackEditToolRequest(
             context: fixture.context(), number: 12, title: nil, body: "New", expectedTitle: "T", expectedBody: "B",
@@ -84,11 +84,11 @@ struct FeedbackBackendTests {
         #expect(sent.number == 12 && sent.title == nil && sent.body == "New")
         #expect(sent.expectedTitle == "T" && sent.expectedBody == "B")
         #expect(edited == FeedbackEditToolResponse(
-            repository: "1103945342/Apelin", issue: 12, url: "https://github.com/1103945342/Apelin/issues/12", changed: ["body"],
+            repository: "1103945342/Luros", issue: 12, url: "https://github.com/1103945342/Luros/issues/12", changed: ["body"],
             title: "T", body: "New",
         ), "the revision an edit after it passes is the text GitHub now has")
         let reread = FeedbackReadToolResponse(
-            repository: "1103945342/Apelin", issue: 12, url: "", title: "T", state: "open", author: "someone",
+            repository: "1103945342/Luros", issue: 12, url: "", title: "T", state: "open", author: "someone",
             openedByUser: true, body: "New", footer: nil,
         )
         #expect(edited.revision == reread.revision)
@@ -112,15 +112,15 @@ struct FeedbackBackendTests {
             id: "a", toolCallID: "c", tool: "apelin_feedback_edit", arguments: "{}", workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Replaces the body of issue #12.",
             detail: .feedbackEdit(FeedbackEditApproval(
-                repository: "1103945342/Apelin", number: 12, url: "https://github.com/1103945342/Apelin/issues/12",
+                repository: "1103945342/Luros", number: 12, url: "https://github.com/1103945342/Luros/issues/12",
                 title: nil, body: "New", currentTitle: "T", currentBody: "B",
             )),
             allowsSessionScope: false,
         )
         let payload = EventRelay.approvalPayload(request)
         let expected: ApelinCore.JSONValue = .object(["feedbackEdit": .object([
-            "repository": .string("1103945342/Apelin"), "number": .number(12),
-            "url": .string("https://github.com/1103945342/Apelin/issues/12"),
+            "repository": .string("1103945342/Luros"), "number": .number(12),
+            "url": .string("https://github.com/1103945342/Luros/issues/12"),
             "body": .string("New"), "currentTitle": .string("T"), "currentBody": .string("B"),
         ])])
         #expect(payload["detail"] == expected)
@@ -132,12 +132,12 @@ struct FeedbackBackendTests {
         let request = ApprovalRequest(
             id: "a", toolCallID: "c", tool: "apelin_feedback_send", arguments: "{}", workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Posts this title and body as a public issue.",
-            detail: .feedback(FeedbackApproval(repository: "1103945342/Apelin", title: "T", body: "B")),
+            detail: .feedback(FeedbackApproval(repository: "1103945342/Luros", title: "T", body: "B")),
             allowsSessionScope: false,
         )
         let payload = EventRelay.approvalPayload(request)
         let expected: ApelinCore.JSONValue = .object(["feedback": .object([
-            "repository": .string("1103945342/Apelin"), "title": .string("T"), "body": .string("B"),
+            "repository": .string("1103945342/Luros"), "title": .string("T"), "body": .string("B"),
         ])])
         #expect(payload["detail"] == expected)
         #expect(payload["allowsSessionScope"] == .bool(false))

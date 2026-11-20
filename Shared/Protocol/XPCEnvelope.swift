@@ -30,14 +30,14 @@ enum XPCEnvelope {
         }
         let version = xpc_dictionary_get_int64(message, Wire.protocolVersionKey)
         guard version == Wire.protocolVersion else {
-            NSLog("apelind: refused protocol version %lld; this build speaks %lld", version, Wire.protocolVersion)
+            NSLog("lurosd: refused protocol version %lld; this build speaks %lld", version, Wire.protocolVersion)
             return .failure(ApelinError(.unsupportedVersion, ""))
         }
         guard let name = string(Wire.operationKey, in: message) else {
             return .failure(ApelinError(.badRequest, "no operation"))
         }
         guard let operation = AppOperation(rawValue: name) else {
-            NSLog("apelind: refused unknown operation %@", name)
+            NSLog("lurosd: refused unknown operation %@", name)
             return .failure(ApelinError(.unknownOperation, ""))
         }
         let request = WireRequest(

@@ -59,20 +59,20 @@
 ```
 Luros.app (mobile)                     界面；只渲染，不持有长任务
   │  XPC，封闭操作
-apelind (root, 按需拉起)                瘦 proxy：鉴权、转发，不链接第三方代码
-  └─ apelind-session (root)             会话宿主：PTY、构建任务、agent 会话注册表
-       ├─ apelin-environment (mobile)   下载、解包、工具链改造、SDK 校验
-       ├─ apelin-agent (mobile)         每个 agent 会话一个进程，链接 KWWKAgent
-       ├─ apelin-build (mobile)         一次构建一个进程：调用工具链、签名、打包
+lurosd (root, 按需拉起)                瘦 proxy：鉴权、转发，不链接第三方代码
+  └─ lurosd-session (root)             会话宿主：PTY、构建任务、agent 会话注册表
+       ├─ luros-environment (mobile)   下载、解包、工具链改造、SDK 校验
+       ├─ luros-agent (mobile)         每个 agent 会话一个进程，链接 KWWKAgent
+       ├─ luros-build (mobile)         一次构建一个进程：调用工具链、签名、打包
        ├─ PTY shell (mobile)            用户终端；M1 不提供 root shell
-       ├─ apelin-diagnostics (mobile)   日志/UI 适配；受保护读取见 §9
-       ├─ apelin-log-reader (root)      按需日志读取；只用系统库，见 §9
+       ├─ luros-diagnostics (mobile)   日志/UI 适配；受保护读取见 §9
+       ├─ luros-log-reader (root)      按需日志读取；只用系统库，见 §9
        └─ 代理工具扩展进程 (mobile)       见 §6
 ```
 
 - 分层照 iGhostVT 的 `ighostvtd` / `ighostvtd-io`。[调研]
 - 构建、环境准备和 agent 以 mobile 身份运行；安装、respring 兜底、受保护文件访问走封闭操作。proxy、会话宿主与 root 日志 helper 都只用系统库，归档、icli 等第三方依赖放在 mobile 工作进程里。子进程避开 proxy 的 launchd 内存配置，不等于免受系统内存压力和 jetsam，必须实测。
-- **生命周期（owner 2026-10-16 决定）**：apelind 按需拉起，不用 `KeepAlive` / `RunAtLoad`。有工作就不退出：任一构建、环境任务、PTY、agent 会话、安装事务或已连接的 app 存在时，proxy 和会话宿主都保持运行；全部结束且没有连接后空闲一段时间再退出。app 被杀不算没有工作，agent 和构建照常跑完。宿主退出前把任务记录落盘，下次被拉起时恢复可重做的阶段；系统重启后不主动拉起，等 app 下次连接时恢复。A0 把现有 launchd plist 从 `KeepAlive` + `RunAtLoad` 改回按需，并验证"有工作不退、空闲才退"在两套 vphone 上成立。
+- **生命周期（owner 2026-10-16 决定）**：lurosd 按需拉起，不用 `KeepAlive` / `RunAtLoad`。有工作就不退出：任一构建、环境任务、PTY、agent 会话、安装事务或已连接的 app 存在时，proxy 和会话宿主都保持运行；全部结束且没有连接后空闲一段时间再退出。app 被杀不算没有工作，agent 和构建照常跑完。宿主退出前把任务记录落盘，下次被拉起时恢复可重做的阶段；系统重启后不主动拉起，等 app 下次连接时恢复。A0 把现有 launchd plist 从 `KeepAlive` + `RunAtLoad` 改回按需，并验证"有工作不退、空闲才退"在两套 vphone 上成立。
 - 每加一个操作，就同时改 `Shared/Protocol/AppProtocol.swift`、daemon 的 switch 和 `AGENTS.md` ▸ Decisions 的列表。
 
 **里程碑 1 要加的操作**（都是数据，没有一个是 `exec(path, argv)`）
@@ -95,7 +95,7 @@ apelind (root, 按需拉起)                瘦 proxy：鉴权、转发，不链
 
 **[现状]** 实际的封闭操作列表比上表多（`approvalDigestState`、`confirmLoadedAttach`、`crashSymbolicate`、`agentRunCode`、`agentCredentialImport`、`toolHostCall`、git 等），以 `AGENTS.md` ▸ Decisions ▸ The wire 为准。
 
-**[设计] 连接边界**：保持 `AGENTS.md` 的“No CLI”：只有 app 是 apelind 的公共 XPC peer。`apelin-agent`、`apelin-build`、`apelin-environment` 和诊断/扩展工作进程仅通过宿主创建并继承的 socketpair/管道通信，不加入 `clientPaths`，不为接入 root proxy 配发客户端 entitlement。宿主按它启动时登记的角色和会话识别调用方，忽略请求中自报的角色；子进程关闭无关继承 fd。
+**[设计] 连接边界**：保持 `AGENTS.md` 的“No CLI”：只有 app 是 lurosd 的公共 XPC peer。`luros-agent`、`luros-build`、`luros-environment` 和诊断/扩展工作进程仅通过宿主创建并继承的 socketpair/管道通信，不加入 `clientPaths`，不为接入 root proxy 配发客户端 entitlement。宿主按它启动时登记的角色和会话识别调用方，忽略请求中自报的角色；子进程关闭无关继承 fd。
 
 **[设计] 会话和权限边界**：以上是 app 控制面的拟新增操作，当前代码仍只有 `hello`；agent 的同类任务请求通过内部通道交给宿主。A0 定义版本协商、任务 ID、事件序号、重连重放与取消协议，功能实现时同步协议、分发和 `AGENTS.md`。宿主独立执行 §7 的审批判断，不依赖 agent 自称“已批准”。app 断开不结束任务；宿主或系统重启后恢复任务记录和可重做阶段。无特权后端时按 `AGENTS.md` 保持 Connecting… 的宽限期，并提供自身权限范围内的项目编辑。
 
@@ -132,7 +132,7 @@ apelind (root, 按需拉起)                瘦 proxy：鉴权、转发，不链
 - **[已验证]** 既有报告记录 CLT 27.0 的 `CLTools_Executables.pkg` 可从 Apple 软件更新目录找到并免登录下载；这是该版本的实测，不保证以后每个版本都有同样入口。
 - **[设计]** 来源适配器读取 Apple catalog，列出产品 ID、版本、下载大小和包来源；只对已有适配方案的版本显示“可设置”。记录原始 URL、catalog 产品标识、上游校验信息及本地 SHA256。上游校验与本地哈希分开记录，本地哈希只用于一致性检查，不能单独证明发行者身份。
 - **[设计]** 支持下载重试和断点续传；服务器对象变化时重新下载。找不到可用包或遇到未知格式时显示具体原因，保留已安装版本，不静默改用社区工具链镜像。
-- **[设计]** 首次安装由主包自带的 `apelin-environment` 完成归档读取和 Mach-O 处理，不能先依赖尚未能运行的 CLT 中的 `vtool`、`install_name_tool`、git 或 Swift。helper 随 Luros 的正常构建产生；归档库复用方案走 §11 的依赖审阅。
+- **[设计]** 首次安装由主包自带的 `luros-environment` 完成归档读取和 Mach-O 处理，不能先依赖尚未能运行的 CLT 中的 `vtool`、`install_name_tool`、git 或 Swift。helper 随 Luros 的正常构建产生；归档库复用方案走 §11 的依赖审阅。
 
 ### 3.2 组件和兼容性
 
@@ -281,7 +281,7 @@ agent 能调用的工具，除了 §7 的内置本地工具，其余都做成"�
 **协议**（草案）
 - 扩展随包带一个清单 `<prefix>/usr/share/luros/agent-tools/<id>/manifest.json`：id、名称、版本、许可、可执行文件的固定路径、提供的工具列表。
 - 每个工具有名称、描述、JSON Schema 参数，格式与 `AgentTool` 一致，Luros 直接转成 agent 的工具定义。
-- 启动方式：apelin-agent 经继承的内部通道向宿主请求 `toolHostOpen{id}`，宿主检查登记信息和审批后拉起扩展进程；公共 XPC 入口只供 app 使用。清单和可执行文件需满足 §2 的路径和权限规则，项目中的清单不作为可执行程序登记来源。
+- 启动方式：luros-agent 经继承的内部通道向宿主请求 `toolHostOpen{id}`，宿主检查登记信息和审批后拉起扩展进程；公共 XPC 入口只供 app 使用。清单和可执行文件需满足 §2 的路径和权限规则，项目中的清单不作为可执行程序登记来源。
 - **[设计]** stdin/stdout 用 JSON 行交换带 `protocolVersion`、`requestID` 的 `hello`、`call{tool, args}`、`result{content}`、`error` 和 `cancel`；stderr 单独记日志。限制帧大小和并发数，规定超时、取消、崩溃及协议不兼容的错误结果；一个扩展退出不结束 agent 会话。图片通过有大小限制的附件句柄传递，不把任意大 base64 塞进事件日志。
 - 扩展以 mobile 身份运行，不拿 root。文件通过宿主启动时继承的描述符或专用 socket 传递，JSON 里的附件 ID 映射到接收进程自己的 fd；不能把发送进程的 fd 整数当成可跨进程使用的句柄。传 fd 也不等于给进程提供了文件系统沙盒，不承诺可安全运行任意恶意扩展。
 - 每个工具声明风险等级（只读、写项目、系统），由宿主结合实际能力归类；扩展不能靠自称只读绕过审批。来源不明的工具按需要确认处理。
@@ -299,7 +299,7 @@ agent 能调用的工具，除了 §7 的内置本地工具，其余都做成"�
 
 ## 7. Agent
 
-**形态**：方案 C。`apelin-agent` 由会话宿主拉起，以 mobile 运行，链接 KWWKAgent 和 KWWKMCP，每个会话一个进程。app 被杀、respring、挂起都不会中断它。[调研]
+**形态**：方案 C。`luros-agent` 由会话宿主拉起，以 mobile 运行，链接 KWWKAgent 和 KWWKMCP，每个会话一个进程。app 被杀、respring、挂起都不会中断它。[调研]
 
 **模型与凭证**
 - Anthropic 原生接口，加 OpenAI 兼容接口。
@@ -352,7 +352,7 @@ agent 能调用的工具，除了 §7 的内置本地工具，其余都做成"�
 
 ## 8. 构建、打包、安装
 
-**构建流水线**：`apelin-build` 一次构建一个进程，以 mobile 运行，由会话宿主拉起，输出结构化事件（阶段、诊断、产物）。
+**构建流水线**：`luros-build` 一次构建一个进程，以 mobile 运行，由会话宿主拉起，输出结构化事件（阶段、诊断、产物）。
 
 计划阶段（既有实测使用临时工具完成了类似链路，产品实现仍待完成）：
 1. 编译：每个源文件、每个架构各一个 `.o`
@@ -364,14 +364,14 @@ agent 能调用的工具，除了 §7 的内置本地工具，其余都做成"�
 
 编译参数沿用 platformize-tweak-ios 的规则：`-Werror=unguarded-availability-new`、`-fvisibility=hidden`、`-ffile-prefix-map`，部署目标 16.0。
 
-**路径** [已验证]：工具链没有链接 libvroot，看到的是真实根目录。`-isysroot` 等参数必须传 jbroot 的物理路径，不能传 jbroot 视角的路径。物理路径由 apelind 的 `hello` 给出。
+**路径** [已验证]：工具链没有链接 libvroot，看到的是真实根目录。`-isysroot` 等参数必须传 jbroot 的物理路径，不能传 jbroot 视角的路径。物理路径由 lurosd 的 `hello` 给出。
 
 **签名**：复用 Irisin 的 `LdidStyleSignature`，原调研记录有与 `ldid -Hsha256 -S` 对照的夹具；复用时保留夹具，并增加本项目产物和设备安装后的运行验证，不能将夹具等价扩大为任意镜像的兼容保证。签名放进共享模块，不依赖 ldid 二进制；ldid 不进主包。
 
 **打包**：自己写 deb 写入端（ar 容器包含 `debian-binary`、control 归档和 data 归档），五件套里没有现成的写入端。控制文件、压缩格式、权限和链接条目以 Irisin 读取端可接受的格式为验收依据；逐类产物做往返检查。control、maintainer 脚本、`@PREFIX@` 规则沿用现有模板并适配项目类型。设备产品不调用 dpkg-deb；仓库现有的 Mac/CI 打包工具不在本次替换范围内。
 
 **安装**：一律打包后交给 Irisin 的守护进程。
-- 需要改 Irisin：把 Irisin 专属可执行路径白名单改为已约定的 jailbreak 根/系统可信路径范围，保留 audit token、允许的 euid、必要 entitlement、root 所有且不可被组/其他用户写的可执行文件检查。路径先规范化后按组件比较。**固定安装桥接方选为 `apelind-session`**：宿主执行审批、固定包内容后直接作为 irisind 客户端；app 的安装操作仍通过 apelind 控制面进入宿主。build/agent/扩展不持有 Irisin 客户端 entitlement，不直接提交安装。
+- 需要改 Irisin：把 Irisin 专属可执行路径白名单改为已约定的 jailbreak 根/系统可信路径范围，保留 audit token、允许的 euid、必要 entitlement、root 所有且不可被组/其他用户写的可执行文件检查。路径先规范化后按组件比较。**固定安装桥接方选为 `lurosd-session`**：宿主执行审批、固定包内容后直接作为 irisind 客户端；app 的安装操作仍通过 lurosd 控制面进入宿主。build/agent/扩展不持有 Irisin 客户端 entitlement，不直接提交安装。
 - Irisin 发新版，Luros 依赖这个版本；在此之前，设备上的联调用 dpkg 代替。**[现状]** 已完成：Luros 依赖 Irisin 4.7.0，所有安装和卸载都经 irisind。
 - Luros 里不出现对 `apt`、`dpkg` 二进制的调用（实测阶段的 dpkg 只是临时手段）。
 
@@ -384,7 +384,7 @@ bootstrap 核心包、安装服务、Luros 自身及受保护系统包始终不�
 **Irisin 信任边界 [设计，A1 两仓同步]**：路径范围放宽按既定产品方向推进，但其含义是信任满足检查的已安装包，不是只信任 Luros。模型里把已能安装、自签并取得 root-owned 可执行文件的包视为受信任的系统参与者；entitlement 是调用资格声明，不是已安装包之间的身份隔离。Luros 生成并装入的 CLI 也可能满足这些条件，恶意已安装包、root 或被篡改的安装服务不在 Luros 审批机制可防御的范围内。审批保护的是经 Luros 发起的工作流，不能承诺阻止有同等系统能力的软件绕开它。A1 必须把这一模型写入 Irisin 的鉴权文档、Luros 的实现决定及测试用例；若产品需要隔离已安装包，需重新决定不可自声明的身份/能力机制，不能靠 entitlement 名称补足。
 
 **respring 与确认加载**
-- respring 走 apelind 的封闭操作。
+- respring 走 lurosd 的封闭操作。
 - 确认加载三管齐下：插件里打一条带标记的日志；读目标进程已加载的库（Inspector 的做法）；静态检查过滤条件。
 - **[现状]** 只剩两管：日志标记和过滤条件的静态检查。读 SpringBoard 的已加载库让 iOS 27.0.1 内核 panic 了三次（task port 读 dyld image infos 两次，region path 遍历一次），两种读法都已删除，镜像证据永远是 `notRead`。`confirmLoaded` 是宿主持有的任务，respring 不会丢掉答案。记录见 `Documents/Research/Device-Validation.md`。
 - **[设计，待验证]** 重启循环恢复只针对本次安装的包，关联安装事务、进程重启和崩溃记录；不能因其他插件崩溃自动卸载无关包。停用方式必须由注入框架或模板明确支持，不能假定任意“开关文件”都有效；没有可靠停用接口时通过安装服务回滚/卸载，并提供界面外可用的恢复路径。恢复动作遵循用户选择的审批模式及已授权的恢复策略。
@@ -395,12 +395,12 @@ bootstrap 核心包、安装服务、Luros 自身及受保护系统包始终不�
 
 **icli 优先（owner 2026-10-16 决定）**：凡是 `owngoal-dev/icli` 已经能做的，一律用 icli，借此 dogfooding icli。按 icli README 当前列出的能力，覆盖：系统日志、崩溃报告读取、截图与 OCR、UI 树、点击/输入/滑动等 UI 动作、前台 app 与进程、已装 tweak 列表、重启 SpringBoard（respring 兜底）。缺什么、哪里不好用，在 icli 仓库补，不在 Luros 里另写一份。仍由 Luros 自己负责的只有 icli 没有的：崩溃符号化与嫌疑排序（XrashKit）、目标进程已加载库的核对（Inspector 的做法，icli 有了就换）。A2 逐项核对上面每个能力在 icli 里的实际 API 和所需 entitlement。
 
-- **日志**：宿主管理 `apelin-diagnostics`，读取系统日志并按项目 subsystem/进程过滤，经 `logStream` 和 `read_logs` 输出。日志读取用 icli；界面复用已有应用日志查看器，不把“查看器”当成系统日志读取实现。
+- **日志**：宿主管理 `luros-diagnostics`，读取系统日志并按项目 subsystem/进程过滤，经 `logStream` 和 `read_logs` 输出。日志读取用 icli；界面复用已有应用日志查看器，不把“查看器”当成系统日志读取实现。
 - **崩溃**：复用 XrashKit 的解析、符号化、嫌疑排序。受保护的报告由宿主按报告 ID 打开，只传只读 fd，普通可读报告无需提升权限。符号化用项目构建时保留并匹配 UUID 的 dSYM。
 - **加载确认**：见 §8。
 - **UI 验证**：通过 §7 的截图、UI 树与动作工具验证可见效果，复用 icli 对应模块；图像作为受限附件返回。公共 XPC 上的 `captureScreen` / `readUITree` / `uiAction` 供 app 的“手动 UI 验证”页面使用，app 的显式操作经宿主校验目标会话后转发给 mobile 诊断进程；root proxy 不直接执行 UI 自动化。agent 的同类请求只走内部通道，并按 §7 独立审批，不得声明成 app 手动操作。target ID 绑定本次验证的目标，动作采用固定类型与参数，不接收任意命令。
-- **icli 边界 [设计]**：来源是 `owngoal-dev/icli`（MIT），以 Swift package 引入 `IcliKit`、`IcliSystem`、`IcliLaunch` 中需要的产品，版本列入 §11。首选把所需模块链接进 mobile 的 `apelin-diagnostics`，由宿主经固定内部协议请求；若开发期使用 CLI，则由该工作进程调用安装时确定的固定 icli 路径及限定参数，不接收 agent 提供的任意子命令。A2/F 验证各能力所需 entitlement 和 UID，未验证组合标为不可用。icli 及其依赖只在 mobile 工作进程内运行。
-- **root 日志读取 [设计]**：仅当目标日志确需 root 时，由宿主从固定已安装路径启动图中的 `apelin-log-reader`。它只链接系统库，不链接 `IcliKit`、`IcliSystem`、libarchive 或其他第三方库，也不 exec icli。输入限定为宿主已核对的日志过滤条件/时间窗口，输出为有界日志记录；它不接收可执行路径、通用文件路径或 UI 操作。受保护崩溃报告仍由宿主按 report ID 只读打开，再交 mobile 进程解析。A2 检查 root helper 的链接与加载依赖，F 验证数据范围、限额和取消；没有可用系统读取实现时保留明确的能力缺失，不以提升整个诊断进程代替。
+- **icli 边界 [设计]**：来源是 `owngoal-dev/icli`（MIT），以 Swift package 引入 `IcliKit`、`IcliSystem`、`IcliLaunch` 中需要的产品，版本列入 §11。首选把所需模块链接进 mobile 的 `luros-diagnostics`，由宿主经固定内部协议请求；若开发期使用 CLI，则由该工作进程调用安装时确定的固定 icli 路径及限定参数，不接收 agent 提供的任意子命令。A2/F 验证各能力所需 entitlement 和 UID，未验证组合标为不可用。icli 及其依赖只在 mobile 工作进程内运行。
+- **root 日志读取 [设计]**：仅当目标日志确需 root 时，由宿主从固定已安装路径启动图中的 `luros-log-reader`。它只链接系统库，不链接 `IcliKit`、`IcliSystem`、libarchive 或其他第三方库，也不 exec icli。输入限定为宿主已核对的日志过滤条件/时间窗口，输出为有界日志记录；它不接收可执行路径、通用文件路径或 UI 操作。受保护崩溃报告仍由宿主按 report ID 只读打开，再交 mobile 进程解析。A2 检查 root helper 的链接与加载依赖，F 验证数据范围、限额和取消；没有可用系统读取实现时保留明确的能力缺失，不以提升整个诊断进程代替。
 - **文件描述符编辑**：复用 Fila 的 `AtomicSave`，受保护编辑仅走 §2 的 app 手动授权、有限 scope 和 `protectedEditCommit`；agent 的项目内保存以 mobile 权限完成。
 
 ## 10. 界面
@@ -422,14 +422,14 @@ owner 的原则：优先用乌龙工作室现有产品里的轮子。审批前�
 
 | 能力 | 来源 | 用法 | 要改什么 |
 |---|---|---|---|
-| Agent / MCP | 原调研中的 kwwk：`KWWKAgent`、`KWWKMCP` | 只链接到 mobile 的 `apelin-agent` | 固定仓库/版本，验证 iOS 产品；适配事件序列化、执行后端、可取消审批；核对完整传递依赖 |
-| 归档读取 | Irisin/Fila 使用的 libarchive 及其压缩依赖 | `apelin-environment` 处理 xar/cpio/zip/tar.xz/tar.zst；安装读取复用既有模块 | 逐格式验证实际构建能力；pbzx 单独确认并补最小适配器；校验解包限额 |
+| Agent / MCP | 原调研中的 kwwk：`KWWKAgent`、`KWWKMCP` | 只链接到 mobile 的 `luros-agent` | 固定仓库/版本，验证 iOS 产品；适配事件序列化、执行后端、可取消审批；核对完整传递依赖 |
+| 归档读取 | Irisin/Fila 使用的 libarchive 及其压缩依赖 | `luros-environment` 处理 xar/cpio/zip/tar.xz/tar.zst；安装读取复用既有模块 | 逐格式验证实际构建能力；pbzx 单独确认并补最小适配器；校验解包限额 |
 | 归档压缩与 deb 写入 | 现有 libarchive、xz/zstd 组件优先 | 在 mobile 的 environment/build 中生成 control/data 归档与 ar 容器 | 明确写入压缩格式、Irisin 兼容性、依赖版本/许可；已有库缺对应功能再加依赖 |
 | 终端引擎 | iGhostVT/Fila 使用的 `libghostty-spm` | 复用 app 的终端引擎 | 固定同一版本、核对 iOS floor 和传递许可；与 PTY 宿主区分 |
 | 语法解析 | Runestone/tree-sitter 与 ObjC grammar | 编辑器高亮 | 列出引擎和每个 grammar 的来源/版本/许可；补 ObjC，避免重复 vendor |
 | 日志、崩溃读取、截图、UI 树与动作、respring 兜底 | `owngoal-dev/icli` 的 `IcliKit`、`IcliSystem`、`IcliLaunch` | §9 的 mobile 诊断工作进程；能用 icli 的一律用 icli（dogfooding） | 核对 API、UID/entitlement、模块依赖与 MIT 通知；缺口在 icli 补；不链接进 root 日志 helper |
 | 高性能列表与富文本 | `Lakr233/ListViewKit`、`Lakr233/MarkdownView`、`Lakr233/Litext`、`Lakr233/DisplayLink`，用法参照 FlowDown | agent 面板、构建/系统日志、文件列表 | FlowDown 是 AGPL，只参照不复制；MarkdownView 的许可显示为 Other，及其依赖（SwiftMath、swift-cmark、swift-collections、LRUCache）逐一审阅；ListViewKit 在 iOS 16 实测 |
-| root 日志读取 | 系统日志 API，最小读取适配新写 | `apelin-log-reader`，仅在确需 root 时由宿主启动 | 只用系统库，固定过滤协议；A2 审核依赖、F 验证读取权限和限额 |
+| root 日志读取 | 系统日志 API，最小读取适配新写 | `luros-log-reader`，仅在确需 root 时由宿主启动 | 只用系统库，固定过滤协议；A2 审核依赖、F 验证读取权限和限额 |
 | hook 开发接口 | 所选注入框架兼容 API 的 headers 与 `.tbd` | 打进 tweak 开发扩展 | 固定来源与许可；核对 API/架构/运行时虚拟包，补真实 hook 测试 |
 | 终端视图、PTY 会话、会话宿主分层 | iGhostVT：`LockableTerminalView`、`PTYSession`、`SessionRegistry`、`IOSupervisor`、`iGhostVTProtocol` | 参照其分层；终端视图直接搬 | 去掉 relay 和远程；改名 |
 | 终端（简化备选） | Fila：`FilaTerminal` | 不用 | 里面有 `dpkg -i` 的调用 |
@@ -537,7 +537,7 @@ owner 的原则：优先用乌龙工作室现有产品里的轮子。审批前�
 
 **owner 第三轮批注（2026-10-16）**，均已写入正文并同步 `AGENTS.md`：
 - §1/§10：界面参照 FlowDown，用 ListViewKit、Litext、MarkdownView、DisplayLink；FlowDown 只参照不复制。
-- §2：apelind 按需拉起，有工作不退出，去掉 `KeepAlive`。
+- §2：lurosd 按需拉起，有工作不退出，去掉 `KeepAlive`。
 - §2/§9/§11：诊断与 UI 操作能用 icli 的都用 icli。
 - §2/§5.3：项目根固定在 `~/Documents/com.fluoxetine.luros/Projects/<name>/`。
 - §3.2：工具链安装完成时自动自检。
@@ -546,4 +546,4 @@ owner 的原则：优先用乌龙工作室现有产品里的轮子。审批前�
 - §6：所有包出 rootless/roothide 两个 deb，进仓库索引。
 - §4/§11/§14：git 后端定为 libgit2，在 `Lakr233/libgit2.xcframework` 维护。
 
-**实施时的验证记录**：每个测试组合记录系统版本、bootstrap 类型、目标架构、工具链/SDK ID、Apelin/Irisin 版本、步骤、预期/实际、产物 UUID 与日志摘要。使用不含设备标识的编号引用本地连接配置。产品全链路、Swift、rootless、真机和最低系统保持未完成状态，直到相应记录存在。原始聊天导出保存在仓库外，不作为计划附件提交。
+**实施时的验证记录**：每个测试组合记录系统版本、bootstrap 类型、目标架构、工具链/SDK ID、Luros/Irisin 版本、步骤、预期/实际、产物 UUID 与日志摘要。使用不含设备标识的编号引用本地连接配置。产品全链路、Swift、rootless、真机和最低系统保持未完成状态，直到相应记录存在。原始聊天导出保存在仓库外，不作为计划附件提交。

@@ -19,7 +19,7 @@ public enum KeychainCredentialError: Error, Equatable, LocalizedError {
 /// readable after first unlock on this device only and never synchronised.
 ///
 /// Nothing is shared with kk or `~/.kwwk`. `accessGroup` names the keychain
-/// access group the app and `apelin-agent` share, once A2's spike confirms
+/// access group the app and `luros-agent` share, once A2's spike confirms
 /// one works on the supported bootstraps; nil uses the process's default.
 public struct KeychainCredentialSource: CredentialSource {
     public static let service = "com.fluoxetine.luros.agent"

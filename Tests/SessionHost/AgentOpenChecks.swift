@@ -1,6 +1,6 @@
 import Foundation
 
-// One agentOpen of a session at a time (Apelind/Session/Agent/AgentOpenTurns.swift):
+// One agentOpen of a session at a time (Lurosd/Session/Agent/AgentOpenTurns.swift):
 // an open of a session that is being opened waits for that one to answer,
 // then finds the session it registered; another session's open never
 // waits; the waiting go in the order they came; a failed open frees the

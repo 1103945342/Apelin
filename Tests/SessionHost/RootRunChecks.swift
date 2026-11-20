@@ -3,7 +3,7 @@ import ApelinProtocol
 import Darwin
 import Foundation
 
-// shell_run as root (Apelind/Session/Agent/AgentApprovals.swift,
+// shell_run as root (Lurosd/Session/Agent/AgentApprovals.swift,
 // AgentRunCode.swift): Full mode runs it; Strict and Relaxed run it only
 // with one approval the app gave, with the owner checked, for exactly that
 // root request; an approval of an ordinary request, a session grant, a
@@ -34,7 +34,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
     }
     let install = ["irisin-cli", "install", "--yes", "mobilesubstrate"]
     let argv: (([String]) -> JSONValue) = { .object(["argv": .object(["_0": .array($0.map { .string($0) })])]) }
-    // What apelin-agent writes for a root request (`rootCommand`) or an
+    // What luros-agent writes for a root request (`rootCommand`) or an
     // ordinary one (`command`).
     func ask(
         _ entry: AgentSessionTable.Entry,
@@ -334,7 +334,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
     let normSame = await identity(norm, install, .user(approvalID: "norm-sources"), in: "Sources")
     check(normSame == .root, "and runs it in the directory it named")
 
-    // The exact JSON apelin-agent writes under detail.rootCommand (the same
+    // The exact JSON luros-agent writes under detail.rootCommand (the same
     // shapes as Packages/ApelinAgent/.../RootRequestWireTests.swift): the host
     // decodes each to the spec it compares with the run, so the command the
     // card shows is the command that runs. The app's approval is recorded

@@ -7,7 +7,7 @@ struct LivePackageTests {
     @Test(.enabled(if: ProcessInfo.processInfo.environment["APELIN_TEST_PACKAGE"] != nil))
     func `extracts real apple package`() throws {
         let input = try URL(fileURLWithPath: #require(ProcessInfo.processInfo.environment["APELIN_TEST_PACKAGE"]))
-        let root = URL(fileURLWithPath: "/private/tmp/apelin-toolchain-live-" + UUID().uuidString)
+        let root = URL(fileURLWithPath: "/private/tmp/luros-toolchain-live-" + UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
         try PackageArchive(limits: .init()).extract(input, to: root)
         let clt = try canonical(root.appendingPathComponent("Library/Developer/CommandLineTools"))

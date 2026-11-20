@@ -46,7 +46,7 @@ extension MockBackend {
             branch: card.branch,
             commit: card.remoteCommit,
             previousHead: card.head,
-            backupBranch: "apelin-backup/20261031-120000",
+            backupBranch: "luros-backup/20261031-120000",
             projectFile: nil,
         )
     }
@@ -72,7 +72,7 @@ struct GitResetToolTests {
         #expect(summary.contains("only when the user explicitly asks for the project to match the remote"))
         #expect(summary.contains("in every mode, Full included"))
         #expect(summary.contains("never to resolve a conflict or get past a refused pull or push"))
-        #expect(summary.contains("apelin-backup/"))
+        #expect(summary.contains("luros-backup/"))
         guard case let .object(schema) = ToolReason.adding(to: tool.parameters), case let .object(properties)? = schema["properties"] else {
             Issue.record("no schema"); return
         }
@@ -95,11 +95,11 @@ struct GitResetToolTests {
             #expect(request.reason.contains("nothing in common"))
             #expect(request.reason.contains("Sources/Tweak.m"))
             #expect(request.reason.contains("notes.txt"))
-            #expect(request.reason.contains("apelin-backup/"))
+            #expect(request.reason.contains("luros-backup/"))
             #expect(request.reason.contains("in every mode"))
             #expect(result.content.contains {
                 if case let .text(text) = $0 {
-                    text.text.contains("apelin-backup/20261031-120000")
+                    text.text.contains("luros-backup/20261031-120000")
                 } else {
                     false
                 }

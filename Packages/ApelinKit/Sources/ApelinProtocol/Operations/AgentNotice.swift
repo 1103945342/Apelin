@@ -5,7 +5,7 @@ import Foundation
 ///
 /// No operation carries it. The tool records a `notice` event {title?, body}
 /// in the session's `agent` task, and the session host posts it as the app
-/// the way it posts a turn's end or an approval (Apelind/Session/Notice/),
+/// the way it posts a turn's end or an approval (Lurosd/Session/Notice/),
 /// deciding again on its own: plain text cut to these lengths, at most
 /// `maximumPerTurn` between two of the session's prompts or turn ends,
 /// nothing for a headless session, nothing for an event a reopened

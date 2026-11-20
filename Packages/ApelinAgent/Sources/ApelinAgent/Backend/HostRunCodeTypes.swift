@@ -51,7 +51,7 @@ public struct RunCodeRequest: Sendable, Hashable, Codable {
 }
 
 /// The host did not run a call the agent sent as a preset: its own rule
-/// (Apelind's `AgentRunCode.preset`) does not count it as one. The call
+/// (Lurosd's `AgentRunCode.preset`) does not count it as one. The call
 /// needs the user's approval instead, which the runner asks for.
 public struct HostRefusedPresetError: Error, LocalizedError, Sendable {
     public var message: String

@@ -11,7 +11,7 @@ import KWWKAI
 /// folder, two packages of one ID, version and architecture, and a device
 /// with no linked repository or no GitHub sign-in. The card then names the
 /// repository and each package with the digest its build recorded, and
-/// apelin-environment publishes nothing unless every file still has it.
+/// luros-environment publishes nothing unless every file still has it.
 public enum PackagePublish {
     static let buildIDsKey = "build_ids"
 

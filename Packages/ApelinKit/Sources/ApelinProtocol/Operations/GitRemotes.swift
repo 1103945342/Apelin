@@ -1,7 +1,7 @@
 // A project repository's remotes (issue #32): listed, added or pointed at
 // another address, and removed. A remote is a name and the HTTPS address it
 // fetches from; nothing here quotes a user, password or token an address
-// was configured with. Served by apelin-environment (ApelinGit), on one
+// was configured with. Served by luros-environment (ApelinGit), on one
 // project as every git operation is: an agent's names its own session's.
 
 import Foundation

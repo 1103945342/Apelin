@@ -1,6 +1,6 @@
 extension BuiltInSkills {
     static let deviceExecutables = SkillDocument(
-        name: "apelin-device-executables",
+        name: "luros-device-executables",
         description: "Signing a program you compiled yourself before shell_run runs it (a helper, a converter, a test program), and the entitlements one needs that uses VideoToolbox, Core Video or IOSurface, Core Image, Metal or another framework that reaches for the GPU or a media accelerator. Read before running any Mach-O you linked.",
         body: """
         # Running a program you built
@@ -8,8 +8,8 @@ extension BuiltInSkills {
         This is for an executable you compile and run yourself through
         shell_run: a helper, a converter, a test program. A tool meant to
         stay goes in a package instead: a cli project
-        (apelin-project-description), whose build signs it for you, or a
-        workspace's build script (apelin-external-build).
+        (luros-project-description), whose build signs it for you, or a
+        workspace's build script (luros-external-build).
 
         ## Sign it, every time you link it
         A binary the toolchain linked and nothing signed is killed as it
@@ -27,7 +27,7 @@ extension BuiltInSkills {
            path.
 
         Give the compiler and ldid paths relative to the working directory,
-        as the apelin-bootstrap-paths skill says for roothide. The
+        as the luros-bootstrap-paths skill says for roothide. The
         environment section says whether ldid is on shell_run's PATH; when
         it is not, nothing here can sign your program, so tell the user
         rather than running it unsigned.

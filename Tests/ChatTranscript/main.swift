@@ -151,10 +151,10 @@ let feedbackEditApproval = ChatTranscript(events: [
     event(2, "approvalRequested", [
         "approvalID": .string("e1"), "tool": .string("apelin_feedback_edit"),
         "arguments": .string("{\"body\":\"It ends early on both bootstraps.\",\"number\":12,\"revision\":\"0123abcd\"}"),
-        "reason": .string("Replaces the body of issue #12 on 1103945342/Apelin."),
+        "reason": .string("Replaces the body of issue #12 on 1103945342/Luros."),
         "detail": .object(["feedbackEdit": .object([
-            "repository": .string("1103945342/Apelin"), "number": .number(12),
-            "url": .string("https://github.com/1103945342/Apelin/issues/12"),
+            "repository": .string("1103945342/Luros"), "number": .number(12),
+            "url": .string("https://github.com/1103945342/Luros/issues/12"),
             "body": .string("It ends early on both bootstraps."),
             "currentTitle": .string("The build log stops early"), "currentBody": .string("It ends early."),
         ])]),
@@ -163,7 +163,7 @@ let feedbackEditApproval = ChatTranscript(events: [
 precondition(feedbackEditApproval?.approvalTitle == "Edit a feedback issue")
 let feedbackEditDetail = feedbackEditApproval?.approvalDetail ?? ""
 precondition(
-    feedbackEditDetail.contains("repository\n1103945342/Apelin") && feedbackEditDetail.contains("issue\n#12")
+    feedbackEditDetail.contains("repository\n1103945342/Luros") && feedbackEditDetail.contains("issue\n#12")
         && feedbackEditDetail.contains("body\nIt ends early on both bootstraps.")
         && !feedbackEditDetail.contains("0123abcd") && !feedbackEditDetail.contains("title\n")
         && !feedbackEditDetail.contains("It ends early."),
@@ -259,7 +259,7 @@ precondition(CommandLineText.quoted(["a\u{200B}b"]) == "$'a\\u200Bb'", "a charac
 precondition(CommandLineText.quoted(["a\nb"]) == #"$'a\nb'"#)
 print("ok: a root command's card is marked and shows the command")
 
-let storageURL = FileManager.default.temporaryDirectory.appendingPathComponent("apelin-chat-store-\(UUID())")
+let storageURL = FileManager.default.temporaryDirectory.appendingPathComponent("luros-chat-store-\(UUID())")
 try FileManager.default.createDirectory(at: storageURL, withIntermediateDirectories: true)
 defer { try? FileManager.default.removeItem(at: storageURL) }
 let storage = ChatStore(folder: DataFolder(root: storageURL))
@@ -1042,7 +1042,7 @@ let otherTitle = try savedSummary(title: "Docs")
 precondition(otherTitle.title == "Docs", "any other title stays as it was")
 
 /// New Chat in every language a bundle has, read from its tables
-let languages = FileManager.default.temporaryDirectory.appendingPathComponent("apelin-languages-" + UUID().uuidString)
+let languages = FileManager.default.temporaryDirectory.appendingPathComponent("luros-languages-" + UUID().uuidString)
 for (language, translation) in [("ja", "新規チャット"), ("fr", "Nouvelle discussion"), ("ar", "محادثة جديدة")] {
     let folder = languages.appendingPathComponent(language + ".lproj")
     try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)

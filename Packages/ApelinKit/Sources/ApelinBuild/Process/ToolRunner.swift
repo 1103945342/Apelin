@@ -3,7 +3,7 @@ import Foundation
 
 /// libSystem's posix_spawn_file_actions_addchdir_np: present on every iOS this
 /// runs on, marked unavailable in the iOS SDK's header, so it is declared by
-/// its symbol the way Apelind/Spawn.swift declares the credential SPI.
+/// its symbol the way Lurosd/Spawn.swift declares the credential SPI.
 @_silgen_name("posix_spawn_file_actions_addchdir_np")
 private func spawnAddChdir(
     _ actions: UnsafeMutablePointer<posix_spawn_file_actions_t?>,
@@ -11,7 +11,7 @@ private func spawnAddChdir(
 ) -> Int32
 
 /// One tool invocation: an executable, its argv, a working directory and an
-/// environment. Always an array — nothing apelin-build runs is ever a
+/// environment. Always an array — nothing luros-build runs is ever a
 /// string handed to a shell.
 public struct ToolInvocation: Sendable, Equatable {
     public var executable: String
@@ -116,7 +116,7 @@ public struct BuildCancelled: Error, CustomStringConvertible, Sendable {
 
 /// posix_spawn with an argv array, stdin from /dev/null, stdout and stderr
 /// into one pipe, every other descriptor closed (`POSIX_SPAWN_CLOEXEC_DEFAULT`),
-/// a process group of its own. It runs as whoever calls it: apelin-build is
+/// a process group of its own. It runs as whoever calls it: luros-build is
 /// already mobile, and nothing here changes identity.
 public enum ToolRunner {
     public static func run(

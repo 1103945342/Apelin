@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Package one build of Luros.app (its widget extension inside), apelind and
+# Package one build of Luros.app (its widget extension inside), lurosd and
 # its workers as a .deb for one bootstrap layout, ad-hoc signed with ldid, and verify what was packaged: the
 # entitlements read back out of the signed binaries, no build path in any of
 # them, no placeholder left in anything shipped.
@@ -33,11 +33,11 @@ flavor="${12}"
 # <prefix>/usr/libexec/luros/<name> and signed with
 # Packaging/Workers/<name>.entitlements.
 workers_dir="${13}"
-workers=(apelin-environment apelin-build apelin-agent apelin-diagnostics apelin-log-reader)
+workers=(luros-environment luros-build luros-agent luros-diagnostics luros-log-reader)
 # SwiftPM resource bundles a worker reads at run time through Bundle.module.
 # Xcode's accessor for a command-line tool looks beside the executable
 # (Bundle.main.bundleURL) and names no build path, so each is installed next
-# to the workers. KWWKAI's model catalogue is the one apelin-agent needs; a
+# to the workers. KWWKAI's model catalogue is the one luros-agent needs; a
 # missing one is a fatalError on the first session.
 worker_resources=(kwwk_KWWKAI.bundle)
 # Back-deployed Swift runtime libraries a worker links by @rpath. Xcode embeds
@@ -45,7 +45,7 @@ worker_resources=(kwwk_KWWKAI.bundle)
 # toolchain's copy is installed next to the workers and signed like them. The
 # tool targets' rpaths are /usr/lib/swift first, then @executable_path: the
 # OS copy wins where the OS has one (libswiftCompatibilitySpan from iOS 26),
-# and iOS 16–18 load this one. Without it apelin-agent dies in dyld there.
+# and iOS 16–18 load this one. Without it luros-agent dies in dyld there.
 worker_runtime_libraries=(libswiftCompatibilitySpan.dylib)
 packaging_root="$(cd "$(dirname "$control_template")/.." && pwd -P)"
 # Sourced by the bootstrap's /etc/profile after it sets PATH anew: puts the
@@ -55,11 +55,11 @@ login_profile="$packaging_root/profile.d/com.fluoxetine.luros.sh"
 /bin/sh -n "$login_profile" || { echo "error: $login_profile is not valid sh" >&2; exit 65; }
 
 # The one app extension: the widgets (Widgets/Extension), sandboxed, signed
-# with Packaging/ApelinWidgets.entitlements, sharing one App Group with the
+# with Packaging/LurosWidgets.entitlements, sharing one App Group with the
 # app and nothing else.
-widget_appex=ApelinWidgets.appex
+widget_appex=LurosWidgets.appex
 widget_bundle_identifier=com.fluoxetine.luros.widgets
-widget_entitlements="$packaging_root/ApelinWidgets.entitlements"
+widget_entitlements="$packaging_root/LurosWidgets.entitlements"
 app_group=group.com.fluoxetine.luros
 
 [[ -d "$app_bundle" && -f "$app_bundle/Info.plist" ]] || { echo "error: $app_bundle is not a complete app bundle; expected a directory containing Info.plist" >&2; exit 66; }
@@ -203,11 +203,11 @@ output_name="$(basename "$output_deb")"
 mkdir -p "$(dirname "$output_deb")"
 output_directory="$(cd "$(dirname "$output_deb")" && pwd -P)"
 output_deb="$output_directory/$output_name"
-staging="$(mktemp -d "${TMPDIR:-/tmp}/apelin-deb.XXXXXX")"
+staging="$(mktemp -d "${TMPDIR:-/tmp}/luros-deb.XXXXXX")"
 temporary_deb="$output_directory/.$output_name.tmp.$$"
 # Scratch files live in their own per-run directory: macOS mktemp only
 # substitutes trailing Xs, so a file template with a suffix is a fixed path.
-scratch="$(mktemp -d "${TMPDIR:-/tmp}/apelin-deb-scratch.XXXXXX")"
+scratch="$(mktemp -d "${TMPDIR:-/tmp}/luros-deb-scratch.XXXXXX")"
 trap 'rm -rf -- "${staging:?}" "${scratch:?}"; rm -f "$temporary_deb"' EXIT
 app_signed_entitlements="$scratch/app-entitlements.plist"
 daemon_signed_entitlements="$scratch/daemon-entitlements.plist"
@@ -288,7 +288,7 @@ PY
 done
 find "$installed_agent_tools" -type d -exec chmod 0755 {} +
 find "$installed_agent_tools" -type f -exec chmod 0644 {} +
-for executable in "$installed_agent_tools"/apelin-*; do
+for executable in "$installed_agent_tools"/luros-*; do
     [[ -f "$executable" ]] && chmod 0755 "$executable"
 done
 /usr/bin/ditto "$daemon_binary" "$installed_daemon"
@@ -297,7 +297,7 @@ sed -e "s|@PREFIX@|$install_prefix|g" -e "s|@ROOTFS@|$rootfs|g" "$launch_plist" 
 # executable path, so the plist has to launch it by the path it is installed
 # at — a mismatch and every bootstrap path it derives is wrong.
 [[ "$(/usr/libexec/PlistBuddy -c 'Print :ProgramArguments:0' "$installed_plist")" == "$install_prefix/usr/libexec/lurosd" ]] || {
-    echo "error: the launch daemon does not point at the installed apelind" >&2
+    echo "error: the launch daemon does not point at the installed lurosd" >&2
     exit 65
 }
 rm -rf -- "${installed_app:?}/_CodeSignature"
@@ -468,7 +468,7 @@ done
 require_app_group "$app_signed_entitlements" "the app"
 
 # The widget extension stays a standard sandboxed extension: the App Group and
-# nothing that widens it. apelind authenticates peers by their binary, so an
+# nothing that widens it. lurosd authenticates peers by their binary, so an
 # extension with the client key or the service's Mach name would be an
 # entrance nobody designed — what was signed is checked, not what was asked.
 widget_signed_entitlements="$scratch/widget-entitlements.plist"
@@ -501,11 +501,11 @@ for key in platform-application \
     require_true "$daemon_signed_entitlements" "$key"
 done
 [[ "$(/usr/libexec/PlistBuddy -c 'Print :com.apple.private.usernotifications.bundle-identifiers:0' "$daemon_signed_entitlements" 2>/dev/null || true)" == "$bundle_identifier" ]] || {
-    echo "error: apelind is missing the usernotifications bundle-identifiers entitlement for $bundle_identifier" >&2
+    echo "error: lurosd is missing the usernotifications bundle-identifiers entitlement for $bundle_identifier" >&2
     exit 65
 }
-require_absent "$daemon_signed_entitlements" com.fluoxetine.luros.client apelind
-require_absent "$daemon_signed_entitlements" com.apple.security.iokit-user-client-class apelind
+require_absent "$daemon_signed_entitlements" com.fluoxetine.luros.client lurosd
+require_absent "$daemon_signed_entitlements" com.apple.security.iokit-user-client-class lurosd
 
 # The workers: platform and unsandboxed, and never a way into the public
 # service — no client marker, no lookup of its Mach name. They reach the
@@ -593,8 +593,8 @@ for tool in assembler disassembler; do
         echo "error: the app bundle does not carry the $agent_tool_id tool" >&2
         exit 65
     }
-    grep -F ".$install_prefix/Applications/Luros.app/AgentTools/apelin-$tool" <<<"$contents" >/dev/null || {
-        echo "error: the app bundle does not carry apelin-$tool" >&2
+    grep -F ".$install_prefix/Applications/Luros.app/AgentTools/luros-$tool" <<<"$contents" >/dev/null || {
+        echo "error: the app bundle does not carry luros-$tool" >&2
         exit 65
     }
 done

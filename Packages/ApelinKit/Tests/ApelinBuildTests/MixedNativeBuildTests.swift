@@ -17,7 +17,7 @@ import XCTest
 final class MixedNativeBuildTests: XCTestCase {
     func testOneExecutableOfEveryNativeLanguageBuildsForBothBootstraps() throws {
         let registry = try NativeBuild.requireTools()
-        let scratch = try scratchDirectory("apelin-mixed-native")
+        let scratch = try scratchDirectory("luros-mixed-native")
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)

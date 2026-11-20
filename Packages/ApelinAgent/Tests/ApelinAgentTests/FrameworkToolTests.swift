@@ -14,7 +14,7 @@ struct FrameworkToolTests {
 
     init() throws {
         base = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-            .appendingPathComponent("apelin-framework-tests-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("luros-framework-tests-\(UUID().uuidString)", isDirectory: true)
         let sdkURL = base.appendingPathComponent("iPhoneOS.sdk", isDirectory: true)
         self.sdkURL = sdkURL
         func write(_ relative: String, _ content: String) throws {

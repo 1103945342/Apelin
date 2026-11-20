@@ -147,7 +147,7 @@ struct ToolExtensionOffer: Sendable, Equatable {
     /// Writes what is left out to the device log.
     func logLeftOut() {
         for line in leftOut {
-            NSLog("apelin-agent: agent tool extension not offered: %@", line)
+            NSLog("luros-agent: agent tool extension not offered: %@", line)
         }
     }
 }

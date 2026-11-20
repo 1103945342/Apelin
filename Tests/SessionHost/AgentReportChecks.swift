@@ -3,7 +3,7 @@ import ApelinProtocol
 import Darwin
 import Foundation
 
-// The report outbox (`Apelind/Session/Agent/AgentReportOutbox.swift`): which
+// The report outbox (`Lurosd/Session/Agent/AgentReportOutbox.swift`): which
 // turns are reported, what a report carries, what a stop is bound to, what a
 // delivery acknowledges, and what a file that does not read refuses to become.
 

@@ -53,13 +53,13 @@ LAUNCHPAD = Path('/Applications/vphone-launchpad.app/Contents/MacOS/vphone-launc
 
 BUNDLE_ID = 'com.fluoxetine.luros'
 APP_PROCESS = 'Luros'
-CRASH_PREFIXES = ('Luros', 'apelind', 'apelin-', 'panic-')
+CRASH_PREFIXES = ('Luros', 'lurosd', 'luros-', 'panic-')
 
 # A non-login ssh shell on a guest can start with /usr/bin:/bin only, and a
 # rootless bootstrap's tools are under /var/jb; roothide's shell already
 # sees its own root as /.
 REMOTE_PATH = 'PATH="$PATH:/var/jb/usr/bin:/var/jb/usr/sbin:/var/jb/bin:/var/jb/sbin:/usr/bin:/usr/sbin:/bin:/sbin"'
-CONTROL_DIR = Path('/private/tmp') / f'apelin-device-ssh-{os.getuid()}'
+CONTROL_DIR = Path('/private/tmp') / f'luros-device-ssh-{os.getuid()}'
 
 ACTIONS = ('killSessionHost', 'killApp')
 SCRIPT_KEYS = {'needs', 'before', 'during', 'verify', 'after', 'expectOutput', 'timeout', 'manual', 'note'}
@@ -750,7 +750,7 @@ mkdir -p inbox && cp -R "$source" inbox/.{action["stageSDK"]}.part && mv inbox/.
                           '&& echo "killed the session host, pid $pid"')
             else:
                 action = 'killall -9 Luros && echo "killed the app"'
-            stem = f'/tmp/.apelin-harness-{tag}-{number}'
+            stem = f'/tmp/.luros-harness-{tag}-{number}'
             body = f'''
 tag={shlex.quote(tag)}; first={shlex.quote(needles[0])}; second={shlex.quote(needles[1])}
 deadline=$(( $(date +%s) + {int(self.timeout()) + 120} ))
@@ -848,7 +848,7 @@ echo "fired at $(date +%H:%M:%S.%N | cut -c1-12)"
         if facts['orphanSDKs'] and not self.options.force:
             listed = ', '.join(f'SDKs/{name}' for name in facts['orphanSDKs'])
             raise HarnessError(
-                f'{listed} has no record, and apelin-environment deletes every unregistered folder in SDKs/ when '
+                f'{listed} has no record, and luros-environment deletes every unregistered folder in SDKs/ when '
                 'it starts (SDKStore.sweepOrphans). Move it into the inbox to import it:\n'
                 f'  device.py exec -- mv "$DATA/SDKs/{facts["orphanSDKs"][0]}" "$DATA/inbox/iPhoneOS.sdk"\n'
                 'or pass --force to let it go')
@@ -1112,7 +1112,7 @@ def command_status(target, arguments):
         f'app {"running" if facts["appRunning"] else "not running"}')
     interesting = [(package, v) for package, v in sorted(facts['packages'].items())
                    if package.startswith('com.fluoxetine.luros.') or package in ('wiki.qaq.irisin', 'ellekit', 'wiki.qaq.icli')
-                   or package.startswith('local.apelin.') or package == 'com.example.apelin-smoke']
+                   or package.startswith('local.apelin.') or package == 'com.example.luros-smoke']
     say(f'{Style.bold("Packages  ")}' + (', '.join(f'{p} {v}' for p, v in interesting) or 'none beside Luros'))
     daemon = target.text(r'''
 launchctl print system/com.fluoxetine.lurosd 2>/dev/null | awk -F' = ' '/^\t(state|pid) = /{printf "%s %s ", $1, $2}' | tr -d '\t'
@@ -1128,7 +1128,7 @@ pid=$(cat "$JB/var/lib/luros/session.pid" 2>/dev/null) && kill -0 "$pid" 2>/dev/
     say(f'{Style.bold("Console   ")}inbox {console.get("inbox", 0)}, running {console.get("running", 0)}, '
         f'done {console.get("done", 0)}, runs {console.get("out", 0)}')
     if facts['orphanSDKs']:
-        say(Style.warn(f'warning   SDKs/{", SDKs/".join(facts["orphanSDKs"])} has no record: apelin-environment deletes it '
+        say(Style.warn(f'warning   SDKs/{", SDKs/".join(facts["orphanSDKs"])} has no record: luros-environment deletes it '
                        'when it starts. Move it to inbox/iPhoneOS.sdk to import it.'))
     if facts['running']:
         say(Style.warn(f'warning   a run is left in console/running/: {", ".join(facts["running"])}'))
@@ -1307,11 +1307,11 @@ def command_install(target, arguments):
             return status
     if others:
         say(f'==> installing {", ".join(deb.name for deb in others)}')
-        target.run('rm -rf /tmp/.apelin-harness-debs && mkdir -p /tmp/.apelin-harness-debs')
+        target.run('rm -rf /tmp/.luros-harness-debs && mkdir -p /tmp/.luros-harness-debs')
         for deb in others:
-            target.run(f'cat > /tmp/.apelin-harness-debs/{shlex.quote(deb.name)}', stdin=deb.read_bytes(), timeout=600)
+            target.run(f'cat > /tmp/.luros-harness-debs/{shlex.quote(deb.name)}', stdin=deb.read_bytes(), timeout=600)
         # Irisin's installer, never apt or dpkg
-        installed = target.run('irisin-cli install --yes /tmp/.apelin-harness-debs/*.deb 2>&1; status=$?; rm -rf /tmp/.apelin-harness-debs; exit $status',
+        installed = target.run('irisin-cli install --yes /tmp/.luros-harness-debs/*.deb 2>&1; status=$?; rm -rf /tmp/.luros-harness-debs; exit $status',
                                root=True, check=False, timeout=600)
         if installed.returncode:
             for line in installed.stdout.decode(errors='replace').splitlines():
@@ -1348,7 +1348,7 @@ def command_crashes(target, arguments):
                           root=True, check=False)
     names = listing.split()
     if not names:
-        say('no crash reports from Luros, apelind, its workers, or the kernel')
+        say('no crash reports from Luros, lurosd, its workers, or the kernel')
         return 0
     destination = target.results_folder / 'crashes'
     for name in names:
@@ -1492,7 +1492,7 @@ def main():
     sub.set_defaults(handler=command_screenshot)
     sub = commands.add_parser('logs', help="a bounded capture of the vphone's log")
     sub.add_argument('--seconds', type=int, default=10)
-    sub.add_argument('--process', help='apelind, Luros, apelin-build, …')
+    sub.add_argument('--process', help='lurosd, Luros, luros-build, …')
     sub.add_argument('--lines', type=int, default=500)
     sub.set_defaults(handler=command_logs)
     sub = commands.add_parser('address', help='print the target\'s address (for make vphone)')

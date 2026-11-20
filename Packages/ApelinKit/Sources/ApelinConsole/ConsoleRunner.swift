@@ -4,11 +4,11 @@ import Foundation
 
 /// The console: Luros run headless from a script, against the same
 /// `ApelinService` the UI and the agent's tools call. It is the app itself,
-/// not a second peer of apelind, so "No CLI" holds; the app binds it to
+/// not a second peer of lurosd, so "No CLI" holds; the app binds it to
 /// `ApelinService.app` and `DataFolder.app` and starts it from
-/// `didFinishLaunching` (Apelin/Console/ConsoleLaunch.swift).
+/// `didFinishLaunching` (Luros/Console/ConsoleLaunch.swift).
 ///
-/// Scripts come from the launch argument `-apelin-console <path>` and from
+/// Scripts come from the launch argument `-luros-console <path>` and from
 /// `~/Documents/com.fluoxetine.luros/console/inbox/*.json`, checked at launch and
 /// whenever the app comes to the foreground. An inbox script is claimed into
 /// `running/`, run, and moved to `done/`. Every run writes JSON lines to
@@ -16,7 +16,7 @@ import Foundation
 /// log, subsystem `com.fluoxetine.luros`, category `console`).
 /// Documents/Console.md has the format.
 public actor ConsoleRunner {
-    public static let launchArgument = "-apelin-console"
+    public static let launchArgument = "-luros-console"
 
     private let service: ApelinService
     private let folder: DataFolder

@@ -2,7 +2,7 @@ import ApelinCore
 import ApelinProtocol
 import Foundation
 
-// The session host's banners (Apelind/Session/Notice/AgentNotices.swift):
+// The session host's banners (Lurosd/Session/Notice/AgentNotices.swift):
 // which agent events post one, what it says, its identifiers, the excerpt,
 // and that a session opened again does not announce its old turns.
 

@@ -56,7 +56,7 @@ platformize-app-ios's; the quoted name is its section.
       **Done:** 5 s hello bound per attempt guarded by generation, 1 s retry, 10 s grace from the first miss (`AGENTS.md` ▸ Decisions).
 - [x] Every optional key in the launchd plist (`KeepAlive`, `RunAtLoad`, `AbandonProcessGroup`, `ProcessType`) is enabled or deleted to match the shape.
       `Packaging/<daemon id>.plist`; SKILL.md "Template".
-      **Done:** On demand (owner, 2026-10-16): no `RunAtLoad`, no `KeepAlive`; launchd starts apelind through `MachServices`, and apelind's `WorkLedger` exits 30 s after its last connection, request and session-host work, past launchd's respawn throttle. `Interactive` + 10240 files. No `AbandonProcessGroup`: the session host and workers are apelind's children and go with it. `make check` asserts all of it.
+      **Done:** On demand (owner, 2026-10-16): no `RunAtLoad`, no `KeepAlive`; launchd starts lurosd through `MachServices`, and lurosd's `WorkLedger` exits 30 s after its last connection, request and session-host work, past launchd's respawn throttle. `Interactive` + 10240 files. No `AbandonProcessGroup`: the session host and workers are lurosd's children and go with it. `make check` asserts all of it.
 - [x] `Scripts/check-launchd-paths.py` is copied in and wired into `make check` against the launchd plist; any watched, logged or working path is spelled `@PREFIX@/…` or `@ROOTFS@/…`, and the packager fills `@ROOTFS@` if one is used.
       SKILL.md "Every path launchd itself opens names its root".
       **Done:** Wired; the plist has no launchd path beyond its program, so no `@ROOTFS@` (the packager fills it if one appears).
@@ -68,7 +68,7 @@ platformize-app-ios's; the quoted name is its section.
 
 - [x] No install prefix is written in Swift: the daemon derives it from its own `proc_pidpath` and refuses to start from an unrecognised path.
       SKILL.md "The contract".
-      **Done:** apelind derives the root from `proc_pidpath` and exits `EX_CONFIG` from any other path.
+      **Done:** lurosd derives the root from `proc_pidpath` and exits `EX_CONFIG` from any other path.
 - [x] `Shared/RoothideRoot.swift` is in the project unchanged and is the only bootstrap check made before `hello`: no `dlopen` of libroothide through `.jbroot`, no "`/var/jb`, so rootless" fallback.
       `Shared/RoothideRoot.swift`; SKILL.md "The contract": roothide is recognised by the process's own path.
       **Done:** Identical to the template (diffed); nothing else checks the bootstrap before `hello`.
@@ -80,7 +80,7 @@ platformize-app-ios's; the quoted name is its section.
 
 - [x] The entitlement files and the launchd plist carry this app's names; `HELPER.entitlements` is renamed for a helper-per-job daemon and deleted otherwise.
       SKILL.md "Template".
-      **Done:** `Apelin.entitlements`, `Apelind.entitlements`, `com.fluoxetine.lurosd.plist`; no helper, so no `HELPER.entitlements`.
+      **Done:** `Luros.entitlements`, `Lurosd.entitlements`, `com.fluoxetine.lurosd.plist`; no helper, so no `HELPER.entitlements`.
 - [x] The App Group key is kept only if an extension shares a container and the packager substitutes `$(APP_GROUP_IDENTIFIER)`.
       `Packaging/<App>.entitlements`.
       **Done:** No extension: the App Group key and `APP_GROUP_IDENTIFIER` are gone, and `make check` refuses them.
@@ -127,7 +127,7 @@ platformize-app-ios's; the quoted name is its section.
 
 - [x] `Scripts/check-accessibility.py` is copied in and wired into `make check`, so a label on a cell or view that UIKit will never read fails the build.
       SKILL.md "The contract": a label on a container that is not an accessibility element is never read.
-      **Done:** Wired over `Apelin/`.
+      **Done:** Wired over `Luros/`.
 - [x] Every icon-only button and bar button item is labelled as it is written, the label is set beside the state it describes rather than once at construction, and no label repeats what VoiceOver already reads.
       SKILL.md "The contract": a control with no text has no name.
       **Done:** The one icon-only button, Settings, is labelled where it is made; nothing repeats a read label.
@@ -157,10 +157,10 @@ platformize-app-ios's; the quoted name is its section.
       **Done:** The manual discipline (`AGENTS.md` ▸ Decisions); `check-stale-strings.py` is the gate.
 - [x] `Scripts/check-stale-strings.py` is copied in and wired into `make check`, so a key Xcode reaped during a build cannot ride into a commit unseen.
       SKILL.md "Localization is verified against the compiler": nothing else catches the marker.
-      **Done:** Wired over `Apelin/`.
+      **Done:** Wired over `Luros/`.
 - [x] Every target's source root is written down for `prune-xcstrings.py` — app, extensions, macOS, visionOS, packages — and `--delete-orphans` is used only if this app has one target.
       SKILL.md: stale does not mean dead; a missing root deletes live strings and their translations.
-      **Done:** `Luros Apelind Shared` (`AGENTS.md` ▸ Decisions); one target, `--delete-orphans` still not used.
+      **Done:** `Luros Lurosd Shared` (`AGENTS.md` ▸ Decisions); one target, `--delete-orphans` still not used.
 - [x] One licence discipline is chosen (scanned or reviewed), and the collector, the Collect Licenses build phase, the screen and both gates are in before the first dependency.
       SKILL.md "Licenses are collected by the build".
       **Done:** Reviewed (Fila's): collector, build phase, Settings ▸ About ▸ Licenses, and both gates, before any dependency.
@@ -172,7 +172,7 @@ platformize-app-ios's; the quoted name is its section.
 
 - [x] `ci.yml` and `release.yml` are both in, copied as a pair: CI builds and keeps `<app>-<sha>` for thirty days, Release waits for that run, compiles nothing, and publishes the artifact CI verified.
       SKILL.md "Publishing": CI builds, Release publishes what CI built.
-      **Done:** Both in, trimmed: CI runs the harness beside deb-all and keeps `apelin-<sha>` 30 days; Release compiles nothing.
+      **Done:** Both in, trimmed: CI runs the harness beside deb-all and keeps `luros-<sha>` 30 days; Release compiles nothing.
 - [x] The SDK the app is linked against is chosen, `make build` refuses an older one, the packager reads it back from the app it ships, and CI selects that Xcode by name.
       iphone-duo-readiness, "Establish the baseline": the SDK, not the floor, decides how an iPhone Duo lays the app out.
       **Done:** iOS 27.1 (`IOS_SDK_TIER`, `AGENTS.md` ▸ Decisions ▸ The SDK tier); CI on the `xcode-27` image with Xcode 27.1.

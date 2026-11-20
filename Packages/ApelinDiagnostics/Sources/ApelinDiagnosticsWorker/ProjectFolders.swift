@@ -7,7 +7,7 @@ import Foundation
 /// `luros-project.json`, under `~/Documents/com.fluoxetine.luros/Projects/` and
 /// nowhere else. Canonical paths, compared by component.
 enum ProjectFolders {
-    /// Where a project's dSYMs are: apelin-build keeps each build's outputs in
+    /// Where a project's dSYMs are: luros-build keeps each build's outputs in
     /// `Builds/<projectID>/<buildID>/`, outside the project; the project
     /// folder is read too, for dSYMs a user put there.
     static func dsymDirectories(projectID: String, home: String) throws -> [URL] {

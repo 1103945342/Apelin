@@ -267,7 +267,7 @@ struct SupportTests {
     /// found through the second tool's only after the first's pass went by:
     /// the retarget resolves libM there, so select must have taken that file.
     @Test func `run paths a later loader passes on reach libraries already selected`() throws {
-        let scratch = URL(fileURLWithPath: "/private/tmp/apelin-closure-test-" + UUID().uuidString)
+        let scratch = URL(fileURLWithPath: "/private/tmp/luros-closure-test-" + UUID().uuidString)
         try directory(scratch); defer { try? FileManager.default.removeItem(at: scratch) }
         let root = try canonical(scratch)
         let files: [String: Data] = Dictionary(uniqueKeysWithValues: DependencyClosure.entryTools.map {

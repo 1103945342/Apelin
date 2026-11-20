@@ -21,7 +21,7 @@ final class GitSyncTests: XCTestCase {
 
     private func scratch() -> URL {
         let base = URL(fileURLWithPath: CanonicalPath.resolve(NSTemporaryDirectory())!, isDirectory: true)
-        let url = base.appendingPathComponent("apelin-sync-\(UUID().uuidString)", isDirectory: true)
+        let url = base.appendingPathComponent("luros-sync-\(UUID().uuidString)", isDirectory: true)
         addTeardownBlock { try? FileManager.default.removeItem(at: url) }
         return url
     }

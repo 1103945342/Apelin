@@ -168,7 +168,7 @@ enum TerminalSessionListCheck {
         // written leaves every record where it was, and the same deletion goes
         // through once the file can be written again.
         let base = FileManager.default.temporaryDirectory
-            .appendingPathComponent("apelin-terminal-delete-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("luros-terminal-delete-\(UUID().uuidString)", isDirectory: true)
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: base) }
         let file = base.appendingPathComponent("Terminals/sessions.json")

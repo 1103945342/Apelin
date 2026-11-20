@@ -1,5 +1,5 @@
 // Build: compile, link, lipo, dSYM, strip, sign (last), package a deb.
-// Served by apelin-build (Workers/Build; ApelinBuild); tasks in the host's registry.
+// Served by luros-build (Workers/Build; ApelinBuild); tasks in the host's registry.
 //
 // Events a build emits (kind → payload): `stage` {stage}, `diagnostic`
 // (a ProjectDiagnostic), `log` {line}, `artifact` (a BuildArtifact),
@@ -80,7 +80,7 @@ public struct BuildArtifact: Codable, Sendable, Equatable {
 /// What a build records for `confirmLoaded` (the build side of Milestone 1
 /// §8 "respring 与确认加载"): the marker the template's constructor logs,
 /// the subsystem it logs under, and where the dylib and its filter will be
-/// once installed. apelin-build writes it into the artifact record
+/// once installed. luros-build writes it into the artifact record
 /// (`~/Documents/com.fluoxetine.luros/Builds/artifacts/<artifactID>.json`,
 /// member `loadCheck`; artifactID is the build ID); the diagnostics side reads it by build ID.
 public struct BuildLoadCheck: Codable, Sendable, Equatable {
@@ -145,7 +145,7 @@ public struct BuildStartRequest: OperationRequest {
     public var configuration: BuildConfiguration
     public var bootstrap: BuildBootstrap?
     /// Written by the session host alone, for an agent's build under
-    /// Confirm: the build digest its check approved. apelin-build refuses
+    /// Confirm: the build digest its check approved. luros-build refuses
     /// the build if the description it runs has another.
     public var approvedBuildDigest: String?
 

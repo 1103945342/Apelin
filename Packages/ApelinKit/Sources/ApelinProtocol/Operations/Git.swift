@@ -8,7 +8,7 @@
 // repository made before gets it on a git call once the project has an
 // `Attachments` folder. A project that is not a repository is `notFound`
 // with reason `notARepository`.
-// Served by apelin-environment (Workers/Environment; ApelinGit, libgit2).
+// Served by luros-environment (Workers/Environment; ApelinGit, libgit2).
 //
 // `projectID` is the `projectID` in a project's luros-project.json, or, for
 // a folder that has none yet (a fresh clone), the project's folder name.
@@ -345,7 +345,7 @@ public extension ApelinError.Reason {
 // MARK: Settings and credentials (the app's only)
 
 /// A saved HTTPS credential as the settings list shows it; the token never
-/// leaves apelin-environment's keychain item.
+/// leaves luros-environment's keychain item.
 public struct GitCredentialSummary: Codable, Sendable, Equatable, Hashable {
     /// Lowercased, with `:port` when the URL names one: what a remote's
     /// host must equal for the credential to be offered to it.
@@ -393,7 +393,7 @@ public struct GitAuthorSetRequest: OperationRequest {
 
 /// Saves, or replaces, the credential for one host: a username and a token
 /// (a personal access token, used as the HTTPS password). Kept in
-/// apelin-environment's keychain group, this device only, never
+/// luros-environment's keychain group, this device only, never
 /// synchronised; no reply, event or log carries the token, and the console
 /// refuses this operation before sending it.
 public struct GitCredentialSetRequest: OperationRequest {

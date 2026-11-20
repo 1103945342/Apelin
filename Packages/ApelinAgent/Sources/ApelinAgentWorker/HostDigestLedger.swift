@@ -5,21 +5,21 @@ import CryptoKit
 import Foundation
 
 /// The agent's read of Confirm's build and install rule, from the session
-/// host's private ledger: the description digest as apelin-build computes it
+/// host's private ledger: the description digest as luros-build computes it
 /// (`projectCheck` ▸ `descriptionDigests`), then `approvalDigestState` for
 /// where it stands — the template's own (no prompt), approved before, or
 /// changed (ask once; the host records the approval when it relays the
 /// user's yes). The host enforces the same rule itself on every build and
 /// install, so this only decides whether the agent asks first.
 ///
-/// When apelin-build does not answer a digest, the agent falls back to its
+/// When luros-build does not answer a digest, the agent falls back to its
 /// own SHA-256 over `configurations`/`products`/`build` (build) or `package`
 /// (packaging) with keys sorted; that never equals the template's, so the
 /// call asks — erring toward asking, never past the host.
 struct HostDigestLedger: ApprovalDigestStore {
     let service: ApelinService
     let projectURL: URL
-    /// `~/Documents/com.fluoxetine.luros`, whose `Builds/artifacts/` apelin-build
+    /// `~/Documents/com.fluoxetine.luros`, whose `Builds/artifacts/` luros-build
     /// records each package in.
     let dataFolder: URL
 
@@ -45,7 +45,7 @@ struct HostDigestLedger: ApprovalDigestStore {
         }
     }
 
-    /// A workspace's package: the packaging digest apelin-build recorded
+    /// A workspace's package: the packaging digest luros-build recorded
     /// for it (`Builds/artifacts/<id>.json`), then where it stands. The host
     /// judges the install by the digest it recorded from the build's own
     /// event, so a record changed since only makes the agent ask.
@@ -75,7 +75,7 @@ struct HostDigestLedger: ApprovalDigestStore {
         }
     }
 
-    /// `descriptionDigests.<kind>` from apelin-build's `projectCheck`.
+    /// `descriptionDigests.<kind>` from luros-build's `projectCheck`.
     func hostDigest(_ kind: DescriptionKind, projectID: String) async -> String? {
         guard let digests = try? await service.projectCheck(projectID: projectID).descriptionDigests else { return nil }
         return kind == .build ? digests.build : digests.packaging

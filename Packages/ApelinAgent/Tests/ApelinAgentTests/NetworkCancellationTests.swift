@@ -249,7 +249,7 @@ struct NetworkCancellationTests {
     /// One hanging request, then ordinary replies. It deliberately never
     /// reads the cancellation handle; the wrapper must protect the session.
     private struct HangingProvider: APIProvider {
-        let api = "apelin-cancel-test-\(UUID().uuidString)"
+        let api = "luros-cancel-test-\(UUID().uuidString)"
         let first = AssistantMessageStream.makeStream()
         let calls = NetworkRecoveryTests.Counter()
 

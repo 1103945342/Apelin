@@ -5,14 +5,14 @@ import Foundation
 import XCTest
 
 /// The console against a fake transport, in a data folder of its own: what
-/// a device run does, without apelind.
+/// a device run does, without lurosd.
 final class ConsoleRunnerTests: XCTestCase {
     private var folder: DataFolder!
     private var fake: FakeTransport!
     private var runner: ConsoleRunner!
 
     override func setUpWithError() throws {
-        let base = FileManager.default.temporaryDirectory.appendingPathComponent("apelin-console-\(UUID().uuidString)", isDirectory: true)
+        let base = FileManager.default.temporaryDirectory.appendingPathComponent("luros-console-\(UUID().uuidString)", isDirectory: true)
         folder = DataFolder(root: base.appendingPathComponent(DataFolder.bundleIdentifier, isDirectory: true))
         try FileManager.default.createDirectory(at: folder.root, withIntermediateDirectories: true)
         fake = FakeTransport()

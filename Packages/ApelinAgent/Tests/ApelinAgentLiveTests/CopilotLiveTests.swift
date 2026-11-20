@@ -19,7 +19,7 @@ struct CopilotLiveTests {
         let entry = try #require(await store.credentials(for: CredentialProviderID.githubCopilot), "no github-copilot entry")
         let credentials = DeliveredCredentialSource([CredentialProviderID.githubCopilot: entry])
 
-        let home = FileManager.default.temporaryDirectory.appendingPathComponent("apelin-live-\(UUID().uuidString)", isDirectory: true)
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent("luros-live-\(UUID().uuidString)", isDirectory: true)
         defer { try? FileManager.default.removeItem(at: home) }
         let dataRoot = ApelinDataRoot(home: home)
         let project = try ProjectIdentity(id: "live", name: ProjectName("Live"))

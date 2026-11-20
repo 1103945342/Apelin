@@ -8,7 +8,7 @@ import ApelinProtocol
 import ConfirmLoaded
 import Foundation
 
-/// `apelin-diagnostics`: logs, crash reports, load confirmation, the screen
+/// `luros-diagnostics`: logs, crash reports, load confirmation, the screen
 /// and the UI, every one through icli where icli can (the owner's rule), as
 /// mobile. The session host forwards `logStream` and `confirmLoaded` (both
 /// tasks), `crashList`, `crashSymbolicate`, `captureScreen`, `readUITree` and
@@ -166,7 +166,7 @@ private struct EncodableBox: Encodable {
 /// pass: a pipe would block the writer before the reader has the other end.
 enum DescriptorFile {
     static func holding(_ data: Data) throws -> OwnedDescriptor {
-        var template = Array((NSTemporaryDirectory() + "apelin-diagnostics.XXXXXX").utf8CString)
+        var template = Array((NSTemporaryDirectory() + "luros-diagnostics.XXXXXX").utf8CString)
         let descriptor = template.withUnsafeMutableBufferPointer { mkstemp($0.baseAddress!) }
         guard descriptor >= 0 else {
             throw ApelinError(.internal, "Could not create a temporary file: \(String(cString: strerror(errno)))")

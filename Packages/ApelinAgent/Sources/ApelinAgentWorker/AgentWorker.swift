@@ -5,7 +5,7 @@ import Darwin
 import Foundation
 import KWWKAI
 
-/// `apelin-agent`: one agent session per process. The session host spawns
+/// `luros-agent`: one agent session per process. The session host spawns
 /// it as mobile for `agentOpen` (instance = session id) and forwards the
 /// session's prompt, steer, abort, approve and close to it; the same
 /// executable, spawned as the `credential-import` instance, serves

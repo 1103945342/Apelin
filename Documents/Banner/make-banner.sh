@@ -11,7 +11,7 @@ set -euo pipefail
 HERE=${0:A:h}
 ROOT=${HERE:h:h}
 WORK=$ROOT/build/Banner
-DERIVED=/private/tmp/apelin-banner-deriveddata
+DERIVED=/private/tmp/luros-banner-deriveddata
 SIMULATOR=${SIMULATOR:-iPhone 18 Pro}
 BUNDLE=com.fluoxetine.luros
 # One screenshot per slot, in slot order: Screenshot 1 is the largest.
@@ -23,11 +23,11 @@ mkdir -p "$WORK/screenshots"
 # --- The app, for the simulator ----------------------------------------------
 # A screenshot build only: Luros ships no simulator build. The packages the
 # device build resolved are reused when they are there.
-if [[ -d /private/tmp/apelin-deriveddata/SourcePackages && ! -e $DERIVED/SourcePackages ]]; then
+if [[ -d /private/tmp/luros-deriveddata/SourcePackages && ! -e $DERIVED/SourcePackages ]]; then
     mkdir -p "$DERIVED"
-    ln -s /private/tmp/apelin-deriveddata/SourcePackages "$DERIVED/SourcePackages"
+    ln -s /private/tmp/luros-deriveddata/SourcePackages "$DERIVED/SourcePackages"
 fi
-xcodebuild -project "$ROOT/Apelin.xcodeproj" -scheme Apelin -configuration Debug \
+xcodebuild -project "$ROOT/Luros.xcodeproj" -scheme Luros -configuration Debug \
     -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
     -derivedDataPath "$DERIVED" -clonedSourcePackagesDirPath "$DERIVED/SourcePackages" \
     -skipMacroValidation -skipPackagePluginValidation \

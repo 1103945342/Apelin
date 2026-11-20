@@ -5,18 +5,18 @@ import Foundation
 /// the agent's `apelin_feedback_send`; owner, 2026-10-29). It is a public
 /// issue under the user's GitHub account, so the repository is fixed here,
 /// never a request's, and the title and body are checked — by the agent
-/// before it asks, by apelin-environment again before it posts, with this
+/// before it asks, by luros-environment again before it posts, with this
 /// device's own paths and name — for what would say which device sent it
 /// or let someone in: a home or install path, a local network address or
 /// name, a device identifier, a token or key. The check reads shapes; it
 /// cannot prove a text holds nothing private, which is why Strict shows the
-/// user the whole text first. Below the body apelin-environment writes
+/// user the whole text first. Below the body luros-environment writes
 /// `footer`: Luros's version, the iOS version and the bootstrap, naming
 /// no device. An edit of an issue the account opened (`feedbackEdit`;
 /// owner, 2026-10-30) checks the title or body it puts in the same way,
 /// and keeps below the body the footer the issue had (`split`).
 public enum FeedbackRules {
-    public static let repository = "1103945342/Apelin"
+    public static let repository = "1103945342/Luros"
     public static let maximumTitleLength = 120
     public static let maximumBodyBytes = 16 * 1024
 
@@ -64,7 +64,7 @@ public enum FeedbackRules {
         return "the title or body holds \(kind), which a public issue must not carry: leave it out and send again"
     }
 
-    /// The line apelin-environment writes below the body: only what a report
+    /// The line luros-environment writes below the body: only what a report
     /// needs to be reproduced, never the device's name, model or identifier.
     public static func footer(appVersion: String?, appBuild: String?, osVersion: String, bootstrap: BuildBootstrap) -> String {
         var apelin = "Luros " + (appVersion ?? "(version unknown)")

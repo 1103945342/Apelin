@@ -2,7 +2,7 @@ import ApelinCore
 import ApelinProtocol
 import Foundation
 
-// The note that the session host restarted (Apelind/Session/Agent/AgentHostRun.swift):
+// The note that the session host restarted (Lurosd/Session/Agent/AgentHostRun.swift):
 // the app's open of a conversation it names, the first in a host's run,
 // tells its worker; once a message has reached the conversation no open in
 // the same run does; a new conversation, an agent's open and a caller that

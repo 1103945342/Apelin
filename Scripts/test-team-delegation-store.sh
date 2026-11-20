@@ -21,7 +21,7 @@ files = [
     'Packages/ApelinKit/Sources/ApelinProtocol/Operations/AgentDelegation.swift',
     'Packages/ApelinKit/Sources/ApelinProtocol/Operations/AgentAssignmentLedger.swift',
     'Packages/ApelinKit/Sources/ApelinCore/CanonicalPath.swift',
-    'Apelind/Session/Agent/AgentDelegationStore.swift',
+    'Lurosd/Session/Agent/AgentDelegationStore.swift',
     'Tests/TeamCollaboration/DelegationStoreChecks.swift',
 ]
 for name in files:

@@ -1,4 +1,4 @@
-/// The XPC side of the wire between the app and apelind. The operations,
+/// The XPC side of the wire between the app and lurosd. The operations,
 /// their request and response types and the envelope are in
 /// `Packages/ApelinKit/Sources/ApelinProtocol` (`AppOperation`, `Wire`), so
 /// the workers and the Mac tests share them; this is what only the two XPC

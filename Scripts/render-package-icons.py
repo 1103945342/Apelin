@@ -6,7 +6,7 @@ Documents/Icon/AppIcon.icon — with the leaf swapped for a green mark of what
 the package adds. The marks are written here; the script writes one SVG per
 package to Documents/Icon/Packages/ and renders it with Chrome to a 512 px
 PNG in Documents/Site/icons/, which Pages serves at
-https://1103945342.github.io/Apelin/icons/<name>.png. Luros's own icon stays
+https://1103945342.github.io/Luros/icons/<name>.png. Luros's own icon stays
 Documents/Site/icon.png, rendered from the .icon.
 
 The four development extensions' icons are also each project kind's icon in
@@ -28,7 +28,7 @@ SOURCES = ROOT / "Documents/Icon/Packages"
 OUTPUT = ROOT / "Documents/Site/icons"
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 SIZE = 512
-ASSETS = ROOT / "Apelin/Resources/Assets.xcassets"
+ASSETS = ROOT / "Luros/Resources/Assets.xcassets"
 # The image sets are drawn at 40 points, the most the app shows one at.
 ASSET_POINTS = 40
 
@@ -190,7 +190,7 @@ def main() -> int:
         return 69
     SOURCES.mkdir(parents=True, exist_ok=True)
     OUTPUT.mkdir(parents=True, exist_ok=True)
-    scratch = pathlib.Path(tempfile.mkdtemp(prefix="apelin-icons-"))
+    scratch = pathlib.Path(tempfile.mkdtemp(prefix="luros-icons-"))
     try:
         for name, mark in MARKS.items():
             source = SOURCES / f"{name}.svg"

@@ -8,7 +8,7 @@ final class GitRepositoryTests: XCTestCase {
 
     private func temporaryRepository() throws -> (URL, GitRepository) {
         let base = URL(fileURLWithPath: CanonicalPath.resolve(NSTemporaryDirectory())!, isDirectory: true)
-        let url = base.appendingPathComponent("apelin-git-\(UUID().uuidString)", isDirectory: true)
+        let url = base.appendingPathComponent("luros-git-\(UUID().uuidString)", isDirectory: true)
         addTeardownBlock { try? FileManager.default.removeItem(at: url) }
         return try (url, GitRepository.create(at: url))
     }
@@ -123,7 +123,7 @@ final class GitNetworkTests: XCTestCase {
     }
 
     private func destination() -> URL {
-        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("apelin-net-\(UUID().uuidString)")
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("luros-net-\(UUID().uuidString)")
         addTeardownBlock { try? FileManager.default.removeItem(at: url) }
         return url
     }

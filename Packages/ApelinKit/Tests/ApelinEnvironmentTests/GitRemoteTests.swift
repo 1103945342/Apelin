@@ -47,7 +47,7 @@ final class GitRemoteServiceTests: XCTestCase {
         let (url, seed) = try bareRemote(home)
         let id = "8a6f3c1e-0000-4000-8000-000000000101"
         let root = try project(home, name: "Space", id: id, kind: "workspace")
-        try Data("icon".utf8).write(to: root.appendingPathComponent("apelin-icon.png"))
+        try Data("icon".utf8).write(to: root.appendingPathComponent("luros-icon.png"))
         try FileManager.default.createDirectory(at: root.appendingPathComponent("Attachments"), withIntermediateDirectories: true)
         try Data("a".utf8).write(to: root.appendingPathComponent("Attachments/x"))
         let git = service(home)
@@ -242,7 +242,7 @@ final class GitRemoteServiceTests: XCTestCase {
         let attachments = root.appendingPathComponent("Attachments", isDirectory: true)
         try FileManager.default.createDirectory(at: attachments, withIntermediateDirectories: true)
         try Data("image".utf8).write(to: attachments.appendingPathComponent("4b0c0f5e-0000-4000-8000-000000000001"))
-        try Data("partial".utf8).write(to: root.appendingPathComponent(".Tweak.m.apelin-1F2E3D4C"))
+        try Data("partial".utf8).write(to: root.appendingPathComponent(".Tweak.m.luros-1F2E3D4C"))
     }
 
     func testCommitAllStagesNewChangedAndDeletedFilesButNotIgnoredOnes() throws {

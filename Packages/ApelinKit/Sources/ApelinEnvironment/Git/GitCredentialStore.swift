@@ -20,7 +20,7 @@ public protocol GitCredentialStore: Sendable {
 
 /// The credentials in the keychain: generic-password items under service
 /// `com.fluoxetine.luros.git` in access group `com.fluoxetine.luros.git`, which only
-/// apelin-environment carries (Packaging/Workers/apelin-environment.entitlements),
+/// luros-environment carries (Packaging/Workers/luros-environment.entitlements),
 /// account the host, data the JSON `{"username", "token"}`. Readable after
 /// the first unlock, so a push runs with the screen locked; this device
 /// only, never synchronised.

@@ -19,15 +19,15 @@ notice, and the reviewed revision of every package that ships a prebuilt
 binary. A changed or missing notice, a new component, or a binary upgrade
 fails the build until a person re-reads it and updates this file. The labels
 are reviewed descriptions, not a keyword verdict. `Licenses.json` goes into
-the app bundle only, never into apelind.
+the app bundle only, never into lurosd.
 
 The workers' dependencies: icli (with libarchive.xcframework, a prebuilt
 binary whose `LICENSE` carries libarchive, xz, zstd and lz4 in full; its
-revision is in `binaryRevisions`) in apelin-diagnostics; kwwk with its whole
+revision is in `binaryRevisions`) in luros-diagnostics; kwwk with its whole
 tree (swift-nio, swift-nio-ssl and the BoringSSL it compiles,
 swift-nio-http2, swift-crypto, swift-asn1, swift-atomics, swift-collections,
 swift-system, swift-argument-parser as a pin, libwebp, libpng, zlib, Cstb) in
-apelin-agent; libgit2 in apelin-environment. Folders here: `BoringSSL`
+luros-agent; libgit2 in luros-environment. Folders here: `BoringSSL`
 (compiled from swift-nio-ssl's checkout, which has no license file for it),
 `ios-mcp` (icli keeps that notice as `Resources/Licenses/ios-mcp.txt`, a name
 the collector does not walk) and `libgit2`. `review.json`'s `excludedPaths`

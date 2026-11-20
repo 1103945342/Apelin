@@ -1,4 +1,4 @@
-/// `hello`: answered by apelind itself, never forwarded. The app is
+/// `hello`: answered by lurosd itself, never forwarded. The app is
 /// privileged exactly when this answers; it is never a build flag.
 public struct HelloRequest: OperationRequest {
     public typealias Response = HelloResponse
@@ -7,7 +7,7 @@ public struct HelloRequest: OperationRequest {
 }
 
 public struct HelloResponse: Codable, Sendable, Equatable {
-    /// The install root apelind derived from its own path: `/var/jb` on
+    /// The install root lurosd derived from its own path: `/var/jb` on
     /// rootless, the jbroot on roothide, `/` for a rootful layout.
     public var installRoot: String
     /// The daemon's `Wire.protocolVersion`.

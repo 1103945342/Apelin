@@ -28,7 +28,7 @@ public struct SignInReporter: Sendable {
     }
 }
 
-/// apelin-agent's accounts: the `credential-import` instance signs in,
+/// luros-agent's accounts: the `credential-import` instance signs in,
 /// lists and signs out here, against the keychain the sessions read.
 ///
 /// A sign-in is kwwk's own flow (`SignInLogin`), run in this process with
