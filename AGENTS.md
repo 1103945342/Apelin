@@ -692,8 +692,9 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     extensions; the proxy counts the app.
   - *Install bridge* (`Session/Install/`). The host is irisind's client:
     apelind carries `wiki.qaq.irisin.client` (with `platform-application` and
-    `no-sandbox`; the app and the workers never do), the main package
-    depends on `wiki.qaq.irisin (>= 4.7.3)` — from 4.7.3 irisind takes an external client only at euid 0, which the session host is; nothing running as mobile may call it. `installPackage{artifactID,
+    `no-sandbox`; the app and the workers never do), and the package carries
+    its own `irisind` inside the app bundle, so it depends on no Irisin
+    package — from 4.7.3 irisind takes an external client only at euid 0, which the session host is; nothing running as mobile may call it. `installPackage{artifactID,
     digest}` takes a build's artifact — recorded by the host from the build
     worker's own `artifact` event (`path` inside the data folder, `digest`,
     `packageID`, `version`, `projectID`, `packagingDigest`, `packageFiles`) —, a toolchain
@@ -4040,14 +4041,15 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   else.
 - **Diagnostics** use `owngoal-dev/icli` for everything it can do — logs,
   crash reports, screenshots, the UI tree and actions, respring — and gaps are
-  filled in icli, not beside it. The package depends on the icli CLI too
-  (`com.icli.icli (>= 0.10.0)`, from apt.owngoal.dev; owner, 2026-10-26),
-  which the agent runs through shell_run as the `apelin-icli` skill says —
-  dedicated tools first, mobile's commands only, `icli probe` (a
+  filled in icli, not beside it. The package carries the icli CLI inside its
+  own app bundle, so it depends on no icli package: the bundle's `bin` is last
+  on every run's `PATH`, behind the bootstrap's directories, and an icli the
+  device installed wins. The agent runs it through shell_run as the
+  `apelin-icli` skill says — dedicated tools first, mobile's commands only,
+  `icli probe` (a
   JavaScriptCore script with Objective-C reflection, in process, read-only
   `api()`, no `proc.run` or `exit()`, never `probe repl`) to look into what
-  the device has, and, when it is missing, asking the user to install it
-  from `https://apt.owngoal.dev`.
+  the device has.
 - **Lists and rich text** follow FlowDown: ListViewKit, MarkdownView, Litext
   and DisplayLink. FlowDown is the owner's own code (Lakr233's Inhouse
   Code; owner, 2026-10-21), so it is brought across as it is, whatever
@@ -4068,6 +4070,19 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   framework. Templates from OwnGoal's open-source template repositories reach
   the extensions by a file convention, and the app discovers extensions and
   templates at launch.
+- **The two device tools ride inside the app too**: `icli` and `irisind` are
+  committed under `Vendor/` with their digests (`Vendor/README.md`), staged
+  into `Applications/Apelin.app/Vendor/`, and the package depends on neither
+  `com.icli.icli` nor `wiki.qaq.irisin`. The bundle's `bin` goes last on every
+  run's `PATH`, behind the bootstrap's own directories, so an `icli` the
+  device installed still wins. `postinst` registers the bundled `irisind`
+  under the label `wiki.qaq.apelin.irisind` with the Mach service irisind
+  serves, and only when no Irisin job is on disk: a device with the real
+  package keeps its daemon, and `prerm`/`postrm` stop and remove only
+  Apelin's. `Scripts/check-vendored-tools.py` fails when a binary, the table,
+  the packaging script, the control file or the maintainer scripts stop
+  agreeing. Neither copy reads a resource from the rest of its original
+  package, and both link only system libraries.
 - **Not in v1**: source packages (later, when a user links their GitHub, the
   app manages the repository instead), and DCRM in any form.
 - **Milestone 1 is the whole chain end to end**: the toolchain set up on the

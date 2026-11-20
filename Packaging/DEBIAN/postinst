@@ -57,6 +57,64 @@ loaded() {
     return 1
 }
 
+# irisind: Apelin carries its own copy of the daemon that installs, registers
+# and removes packages, so the IDE needs no Irisin package. A device that has
+# Irisin keeps its own daemon: the copy is registered only when no Irisin job
+# is on disk, and then under Apelin's own label and file, so removing the IDE
+# removes exactly what it added and never Irisin's.
+iris_label=wiki.qaq.apelin.irisind
+iris_plist="@PREFIX@/Library/LaunchDaemons/$iris_label.plist"
+iris_daemon="@PREFIX@/Applications/Apelin.app/Vendor/libexec/irisind"
+if [ -x "$iris_daemon" ] && [ ! -e "@PREFIX@/Library/LaunchDaemons/wiki.qaq.irisind.plist" ]; then
+    cat >"$iris_plist.new" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AbandonProcessGroup</key>
+	<true/>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>DISABLE_TWEAKS</key>
+		<string>1</string>
+	</dict>
+	<key>Label</key>
+	<string>$iris_label</string>
+	<key>MachServices</key>
+	<dict>
+		<key>wiki.qaq.irisin.service</key>
+		<true/>
+	</dict>
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>$iris_daemon</string>
+	</array>
+	<key>Umask</key>
+	<integer>18</integer>
+	<key>UserName</key>
+	<string>root</string>
+</dict>
+</plist>
+EOF
+    chmod 0644 "$iris_plist.new"
+    mv -f "$iris_plist.new" "$iris_plist"
+    if irislaunchctl="$(find_tool launchctl)"; then
+        "$irislaunchctl" bootout "system/$iris_label" 2>/dev/null || true
+        "$irislaunchctl" enable "system/$iris_label" 2>/dev/null || true
+        iris_attempt=0
+        while [ "$iris_attempt" -lt 5 ]; do
+            "$irislaunchctl" bootstrap system "$iris_plist" >/dev/null 2>&1 && break
+            iris_attempt=$((iris_attempt + 1))
+            sleep 1
+        done
+        if [ "$iris_attempt" -ge 5 ]; then
+            echo "warning: the package daemon Apelin carries could not be registered. Installing a package will fail until it is; reinstall Apelin to try again." >&2
+        fi
+    fi
+fi
+
 if launchctl="$(find_tool launchctl)"; then
     # Roothide redirects system + plist to the foreground user's domain.
     # Use the same path form for bootout; the service-label form does not

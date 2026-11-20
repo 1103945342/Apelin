@@ -310,6 +310,11 @@ check:
 	@# updates the copy the bundle carries.
 	@! grep -nE '^(Pre-Depends|Depends|Recommends|Suggests):.*wiki\.qaq\.apelin\.(dev|agent-tools)\.' "$(CONTROL_TEMPLATE)" \
 		|| { echo "error: the IDE depends on, recommends or suggests an extension (above)" >&2; exit 65; }
+	@# The tools the IDE cannot work without ride inside its bundle too: icli
+	@# and irisind are committed under Vendor/ with their digests, the package
+	@# depends on neither of their packages, and the maintainer scripts register
+	@# and remove the bundled daemon under Apelin's own label.
+	@python3 "$(ROOT_DIR)/Scripts/check-vendored-tools.py" "$(ROOT_DIR)"
 	@# The terminal and the file browser are the app's own pages: no source
 	@# opens a Fila or iGhostVT URL or queries one, and the package depends on
 	@# neither. Attribution in a comment names no URL and passes.

@@ -125,13 +125,16 @@ public struct DevelopmentEnvironment: Sendable, Equatable {
 
     /// The directories shell_run looks a bare command name up in, and its
     /// `PATH` behind the toolchain: the bootstrap's bin directories, then
-    /// the system's. The agent's system prompt names what it finds there.
+    /// the system's, then the tools Apelin carries in its own bundle. The
+    /// bundle's `icli` is last so an `icli` the device installed still wins;
+    /// it is there because the package no longer depends on it.
     public static func searchPath(installRoot: String) -> [String] {
         let prefix = installRoot == "/" ? "" : installRoot
         var directories = ["\(prefix)/usr/bin", "\(prefix)/bin", "\(prefix)/usr/local/bin"]
         if !prefix.isEmpty {
             directories += ["/usr/bin", "/bin"]
         }
+        directories.append("\(prefix)/Applications/Apelin.app/Vendor/bin")
         return directories
     }
 

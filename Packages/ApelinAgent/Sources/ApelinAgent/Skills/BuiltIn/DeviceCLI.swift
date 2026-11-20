@@ -146,13 +146,13 @@ extension BuiltInSkills {
         The apelin-bootstrap-paths skill has the rest.
 
         ## When icli is missing
-        If shell_run cannot find `icli`, do not look for a replacement or a
-        copy. Tell the user that Apelin needs icli and that it comes from
-        OwnGoal's repository: add `https://apt.owngoal.dev` to their package
-        manager's sources if it is not there, then install icli
-        (`com.icli.icli`). Once that repository is among their sources you
-        may also offer to install it as the apelin-package-dependencies
-        skill says. Go on after it is installed.
+        icli ships with Apelin, in the app bundle at
+        `Applications/Apelin.app/Vendor/bin` — the last directory on every
+        run's `PATH`. If shell_run cannot find it, say so: Apelin's copy is
+        missing from the installation, so the fix is to reinstall Apelin,
+        never to add a repository or install another copy. A newer icli of
+        the user's own, earlier on the `PATH`, is what runs when they have
+        one.
         """,
     )
 }

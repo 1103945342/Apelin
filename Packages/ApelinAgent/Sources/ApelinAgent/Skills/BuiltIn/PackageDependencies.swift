@@ -24,7 +24,12 @@ extension BuiltInSkills {
         shell_run and `root: true`:
         `{"argv": ["irisin-cli", "install", "--yes", "<package id>"], "root": true}`.
         `irisin-cli` installs only as root (as mobile it exits 77), and
-        `--yes` because nothing can answer a prompt. In Strict and Relaxed
+        `--yes` because nothing can answer a prompt. It comes with the Irisin
+        package, which Apelin does not carry — Apelin brings only `irisind`,
+        the daemon behind it. When shell_run cannot find `irisin-cli`, the
+        device has no Irisin: say so and let the user install Irisin, or that
+        dependency through their own package manager, before going on. Never
+        fetch a copy. In Strict and Relaxed
         mode the user approves each such call, with Face ID, Touch ID or the
         passcode; in Full mode it runs at once. Say which package and why
         before you ask. If the user declines, or the package is in none of

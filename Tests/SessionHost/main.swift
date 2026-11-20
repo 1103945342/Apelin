@@ -2689,8 +2689,8 @@ do {
         return (parts[0], parts.count > 1 ? parts[1] : "")
     }) { first, _ in first }
     check(entries.count == variables.count, "shell_run gets each variable once: \(entries)")
-    check(variables["PATH"] == "\(developmentBin):/var/jb/usr/bin:/var/jb/bin:/var/jb/usr/local/bin:/usr/bin:/bin",
-          "shell_run's PATH is the toolchain's tools, then its search path: \(String(describing: variables["PATH"]))")
+    check(variables["PATH"] == "\(developmentBin):/var/jb/usr/bin:/var/jb/bin:/var/jb/usr/local/bin:/usr/bin:/bin:/var/jb/Applications/Apelin.app/Vendor/bin",
+          "shell_run's PATH is the toolchain's tools, then its search path, then the tools the bundle carries: \(String(describing: variables["PATH"]))")
     check(variables["SDKROOT"] == developmentOldSDK && variables["IPHONEOS_DEPLOYMENT_TARGET"] == "15.0",
           "shell_run has the project's SDK and deployment target, as its terminal does")
     check(variables["HOME"] == developmentHome && variables["APELIN_PROJECT_ROOT"] == developmentProject && variables["TMPDIR"] == "/var/jb/var/tmp",

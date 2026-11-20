@@ -238,6 +238,17 @@ for extension in "$repository_root"/Extensions/Development/wiki.qaq.apelin.dev.*
 done
 find "$installed_development" -type d -exec chmod 0755 {} +
 find "$installed_development" -type f -exec chmod 0644 {} +
+# The two device tools Apelin cannot work without ride inside the app as well:
+# icli goes on the PATH every run gets, and the copy of irisind is the daemon
+# postinst registers when the device has no Irisin of its own. Both are
+# committed under Vendor/ with their digests: the package is built on macOS,
+# where neither package is installed.
+installed_vendor="$installed_app/Vendor"
+mkdir -p "$installed_vendor/bin" "$installed_vendor/libexec"
+for tool in bin/icli libexec/irisind; do
+    /usr/bin/ditto "$repository_root/Vendor/$tool" "$installed_vendor/$tool"
+    chmod 0755 "$installed_vendor/$tool"
+done
 /usr/bin/ditto "$daemon_binary" "$installed_daemon"
 sed -e "s|@PREFIX@|$install_prefix|g" -e "s|@ROOTFS@|$rootfs|g" "$launch_plist" >"$installed_plist"
 # The daemon recovers its install root by stripping this suffix off its own
@@ -506,6 +517,12 @@ if dpkg-deb -f "$temporary_deb" Depends Pre-Depends Recommends Suggests | grep -
     echo "error: the IDE must not depend on, recommend or suggest an extension" >&2
     exit 65
 fi
+# The IDE carries icli and irisind inside its own bundle, so it must not depend
+# on either package: a device without them installs in one go.
+if dpkg-deb -f "$temporary_deb" Depends Pre-Depends | grep -qE '(^|[ ,|])(wiki\.qaq\.irisin|com\.icli\.icli)([ ,($|]|$)'; then
+    echo "error: the IDE carries icli and irisind itself and must not depend on either package" >&2
+    exit 65
+fi
 contents="$(dpkg-deb --contents "$temporary_deb")"
 grep -F ".$install_prefix/Applications/Apelin.app/$app_executable" <<<"$contents" >/dev/null
 for extension in wiki.qaq.apelin.dev.app wiki.qaq.apelin.dev.tweak wiki.qaq.apelin.dev.cli wiki.qaq.apelin.dev.preferences; do
@@ -515,6 +532,15 @@ for extension in wiki.qaq.apelin.dev.app wiki.qaq.apelin.dev.tweak wiki.qaq.apel
     }
 done
 grep -F ".$install_prefix/Applications/Apelin.app/Licenses.json" <<<"$contents" >/dev/null
+# The bundled tools carry no package of their own, so the package that carries
+# them must: a deb without them installs an IDE that can neither drive the
+# device nor install a package.
+for tool in Vendor/bin/icli Vendor/libexec/irisind; do
+    grep -F ".$install_prefix/Applications/Apelin.app/$tool" <<<"$contents" >/dev/null || {
+        echo "error: the app bundle does not carry $tool" >&2
+        exit 65
+    }
+done
 grep -F ".$install_prefix/Applications/Apelin.app/PlugIns/$widget_appex/$widget_executable" <<<"$contents" >/dev/null
 for resource in "${app_resources[@]}"; do
     grep -F ".$install_prefix/Applications/Apelin.app/$resource/Info.plist" <<<"$contents" >/dev/null

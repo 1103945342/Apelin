@@ -24,4 +24,18 @@ if [ "${1:-}" = remove ] || [ "${1:-}" = purge ]; then
     fi
 fi
 
+# Apelin wrote this job file itself in postinst, so no package removes it:
+# dpkg does not know it, and postrm is the last chance to take it away. A file
+# Irisin's own package wrote is a different name and is never touched.
+iris_label=wiki.qaq.apelin.irisind
+iris_plist="@PREFIX@/Library/LaunchDaemons/$iris_label.plist"
+if [ "${1:-}" = remove ] || [ "${1:-}" = purge ]; then
+    if launchctl="$(find_tool launchctl)"; then
+        "$launchctl" bootout "system/$iris_label" 2>/dev/null || true
+        "$launchctl" bootout "user/501/$iris_label" 2>/dev/null || true
+        "$launchctl" bootout "gui/501/$iris_label" 2>/dev/null || true
+    fi
+    rm -f "${iris_plist:?}"
+fi
+
 exit 0
