@@ -34,7 +34,6 @@ final class WorkBuddyEffortCache: @unchecked Sendable {
         lock.withLock { entries[storeID] = (efforts, Date()) }
     }
 }
-
 /// The endpoint's model family is distinct from its wire format. DeepSeek's
 /// Anthropic endpoint accepts Claude aliases but still runs DeepSeek models.
 enum ProviderModels {
@@ -54,7 +53,9 @@ enum ProviderModels {
 
     /// The kwwk model catalog the account's models come from.
     private static func catalogKey(_ provider: AgentProvider, credentials: OAuthCredentials) -> String? {
-        provider == .deepSeek || isDeepSeek(credentials) ? "deepseek" : providerDescriptor(forStoreId: provider.storeID)?.catalogKey
+        provider == .deepSeek || isDeepSeek(credentials)
+            ? "deepseek"
+            : providerDescriptor(forStoreId: provider.kind.storeID)?.catalogKey
     }
 
     static func list(_ provider: AgentProvider, credentials: OAuthCredentials) -> [String] {
@@ -124,6 +125,13 @@ enum ProviderModels {
     }
 
     /// The reasoning levels each model takes, keyed by its id.
+    ///
+    /// WorkBuddy's own config is the authority: `fetch` reads it and keeps
+    /// what each model offers, and a model it named answers from there. A
+    /// model the config has not been read for — the account list is drawn
+    /// before any fetch, and again after a restart — falls back to the
+    /// bundled row, which is what the picker showed before this was
+    /// live; `catalogFacts` answers for what neither named.
     static func reasoningEfforts(
         _ provider: AgentProvider,
         credentials: OAuthCredentials,
@@ -236,7 +244,7 @@ enum ProviderModels {
             let path = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
             url.path = "/" + path + (path.hasSuffix("v1") ? "/models" : "/v1/models")
             url.path = url.path.replacingOccurrences(of: "//", with: "/")
-        } else if provider == .openAI || provider == .openAICompatible || provider == .openRouter || provider == .deepSeek {
+        } else if [.openAI, .openAICompatible, .openRouter, .deepSeek].contains(provider.kind) {
             let path = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
             url.path = "/" + (path.isEmpty ? "v1" : path) + "/models"
         } else if provider == .google {

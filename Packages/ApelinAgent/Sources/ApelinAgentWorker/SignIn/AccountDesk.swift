@@ -106,50 +106,52 @@ public actor AccountDesk {
         let stored = await Set(store.providerIds())
         var accounts: [AgentAccount] = []
         accounts.reserveCapacity(AgentProvider.signInOrder.count)
-        for provider in AgentProvider.signInOrder {
-            let accountStarted = DispatchTime.now().uptimeNanoseconds
-            let requested = extraModels[provider.rawValue] ?? []
-            let others = Array(provider.signInMethods.dropFirst())
-            var account = AgentAccount(
-                provider: provider,
-                method: provider.signInMethod,
-                alternativeMethods: others.isEmpty ? nil : others,
-                signedIn: stored.contains(provider.storeID),
-            )
-            // An item that does not decode is still signed in: Sign Out is
-            // how it goes away, and the account names no model.
-            if account.signedIn, let credentials = try? await store.credentials(for: provider.storeID) {
-                account.account = Self.accountLabel(provider, credentials)
-                account.expiresAt = Self.lapses(credentials)
-                let models = onlyExtraModels
-                    ? Self.narrowed(requested)
-                    : Self.widened(requested, provider: provider, credentials: credentials)
-                account.models = models
-                // A narrower account with no model leaves the catalogs nothing
-                // to name, and reading them for it costs a file check apiece.
-                // The whole list keeps every field it always carried, empty
-                // model list or not, so nothing else changes for it.
-                if !models.isEmpty || !onlyExtraModels {
-                    let facts = ProviderModels.catalogFacts(provider, credentials: credentials, models: models)
-                    let tiers = ProviderModels.serviceTiers(provider, credentials: credentials)
-                    if onlyExtraModels {
-                        let asked = Set(models)
-                        account.reasoningEfforts = facts.reasoningEfforts.filter { asked.contains($0.key) }
-                        account.serviceTiers = tiers.filter { asked.contains($0.key) }
-                        account.capabilities = facts.capabilities
-                    } else {
-                        account.reasoningEfforts = facts.reasoningEfforts
-                        account.serviceTiers = tiers
-                        account.capabilities = facts.capabilities
-                    }
-                }
-                account.usesAPIKey = ProviderModels.usesAPIKey(provider, credentials: credentials) ? true : nil
-            }
-            accounts.append(account)
-            if account.signedIn {
-                Self.log.notice(
-                    "listed \(provider.storeID, privacy: .public) in \(Self.milliseconds(since: accountStarted), privacy: .public) ms: \(account.models?.count ?? 0, privacy: .public) models, catalog \(account.capabilities == nil ? 0 : 1, privacy: .public)",
+        for listedProvider in AgentProvider.signInOrder {
+            for provider in Self.listed(listedProvider, stored: stored) {
+                let accountStarted = DispatchTime.now().uptimeNanoseconds
+                let requested = extraModels[provider.rawValue] ?? []
+                let others = Array(provider.signInMethods.dropFirst())
+                var account = AgentAccount(
+                    provider: provider,
+                    method: provider.signInMethod,
+                    alternativeMethods: others.isEmpty ? nil : others,
+                    signedIn: stored.contains(provider.storeID),
                 )
+                // An item that does not decode is still signed in: Sign Out is
+                // how it goes away, and the account names no model.
+                if account.signedIn, let credentials = try? await store.credentials(for: provider.storeID) {
+                    account.account = Self.accountLabel(provider, credentials)
+                    account.expiresAt = Self.lapses(credentials)
+                    let models = onlyExtraModels
+                        ? Self.narrowed(requested)
+                        : Self.widened(requested, provider: provider, credentials: credentials)
+                    account.models = models
+                    // A narrower account with no model leaves the catalogs nothing
+                    // to name, and reading them for it costs a file check apiece.
+                    // The whole list keeps every field it always carried, empty
+                    // model list or not, so nothing else changes for it.
+                    if !models.isEmpty || !onlyExtraModels {
+                        let facts = ProviderModels.catalogFacts(provider, credentials: credentials, models: models)
+                        let tiers = ProviderModels.serviceTiers(provider, credentials: credentials)
+                        if onlyExtraModels {
+                            let asked = Set(models)
+                            account.reasoningEfforts = facts.reasoningEfforts.filter { asked.contains($0.key) }
+                            account.serviceTiers = tiers.filter { asked.contains($0.key) }
+                            account.capabilities = facts.capabilities
+                        } else {
+                            account.reasoningEfforts = facts.reasoningEfforts
+                            account.serviceTiers = tiers
+                            account.capabilities = facts.capabilities
+                        }
+                    }
+                    account.usesAPIKey = ProviderModels.usesAPIKey(provider, credentials: credentials) ? true : nil
+                }
+                accounts.append(account)
+                if account.signedIn {
+                    Self.log.notice(
+                        "listed \(provider.storeID, privacy: .public) in \(Self.milliseconds(since: accountStarted), privacy: .public) ms: \(account.models?.count ?? 0, privacy: .public) models, catalog \(account.capabilities == nil ? 0 : 1, privacy: .public)",
+                    )
+                }
             }
         }
         Self.log.notice(
@@ -180,6 +182,26 @@ public actor AccountDesk {
     static func narrowed(_ extraModels: [String]) -> [String] {
         var seen: Set<String> = []
         return extraModels.filter { !$0.isEmpty && seen.insert($0).inserted }
+    }
+
+    /// What the list shows for `provider`: itself, and for the
+    /// OpenAI-compatible login every endpoint signed in to, in number
+    /// order, then one more that is not, so there is always one to add
+    /// (#60). The one to add is the first endpoint while that is free,
+    /// else the lowest number no endpoint has.
+    static func listed(_ provider: AgentProvider, stored: Set<String>) -> [AgentProvider] {
+        guard provider == .openAICompatible else { return [provider] }
+        let numbers = stored.compactMap(CredentialProviderID.endpointNumber).sorted()
+        var endpoints = numbers.map(AgentProvider.openAICompatibleEndpoint)
+        if stored.contains(provider.storeID) {
+            endpoints.insert(provider, at: 0)
+            if let free = AgentProvider.endpointNumbers.first(where: { !numbers.contains($0) }) {
+                endpoints.append(.openAICompatibleEndpoint(free))
+            }
+        } else {
+            endpoints.append(provider)
+        }
+        return endpoints
     }
 
     /// The explicit app-only editor reads the saved key directly; no task is

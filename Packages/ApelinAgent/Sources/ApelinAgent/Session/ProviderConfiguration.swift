@@ -45,6 +45,8 @@ public enum ProviderConfiguration: Sendable, Hashable, Codable {
         case .anthropic: .anthropic(model: model, oauth: false)
         case .anthropicOAuth: .anthropic(model: model, oauth: true)
         case .openAICompatible: .openAICompatible(model: model)
+        case let .openAICompatibleEndpoint(number):
+            .stored(storeID: CredentialProviderID.openAICompatibleEndpoint(number), model: model)
         case .openAICodex: .stored(storeID: "openai-codex", model: model)
         case .cursor: .stored(storeID: "cursor", model: model)
         case .devin: .stored(storeID: "devin", model: model)
@@ -84,10 +86,15 @@ public enum ProviderResolutionError: Error, Equatable, LocalizedError {
     /// No credential for this provider; the session waits for the app to
     /// deliver or sign in again. Nothing is read from the environment.
     case missingCredentials(String)
+    /// The sign-in is saved, and could not be exchanged or renewed for a
+    /// session: the request for it failed, in these words and, where it
+    /// can be told, for this reason.
+    case unresolved(message: String, reason: ApelinError.Reason?)
 
     public var errorDescription: String? {
         switch self {
         case let .missingCredentials(id): "No saved sign-in for \(id). Sign in again in Apelin."
+        case let .unresolved(message, _): message
         }
     }
 }
@@ -110,6 +117,12 @@ public struct ResolvedProvider: Sendable {
 }
 
 public enum ProviderResolver {
+    /// How long a sign-in's exchange or renewal may take. A session's open
+    /// and a message that changes its provider wait on it, with the app's
+    /// send behind them, and kwwk's own request gives a connection that
+    /// answers nothing five minutes.
+    public static let exchangeWait: Duration = .seconds(20)
+
     /// What the app's model settings override on the model's own record. A
     /// figure that is not positive leaves the record's alone; a switch that is
     /// absent leaves what the catalogs read; `followsCatalog` is decided when
@@ -132,10 +145,15 @@ public enum ProviderResolver {
     }
 
     /// Registers the provider on kwwk's registry from `credentials`, with
-    /// the same model capabilities used when verifying the account.
+    /// the same model capabilities used when verifying the account. A
+    /// sign-in that is saved and cannot be exchanged or renewed within
+    /// `wait` is `ProviderResolutionError.unresolved`, with the reason
+    /// `network` explains: no route, or a provider out of reach.
     public static func resolve(
         _ configuration: ProviderConfiguration,
         credentials: any CredentialSource,
+        network: NetworkPath = .system,
+        wait: Duration = exchangeWait,
         modelParameters: AgentModelParameters? = nil,
         diagnostic: @Sendable (String) -> Void = { _ in },
     ) async throws -> ResolvedProvider {
@@ -155,12 +173,31 @@ public enum ProviderResolver {
         let manager = OAuthManager(source: credentials, providers: KimiIdentity.refreshers(for: storeID))
         diagnostic("provider refreshers prepared in \(elapsed(since: preparing))")
         let registering = Date()
-        guard let resolved = try await ProviderRegistration.resolve(
-            storeID: storeID,
-            manager: manager,
-            modelOverride: configuration.modelID,
-            parameters: modelParameters,
-        ) else {
+        let modelID = configuration.modelID
+        let resolved: ResolvedAuth?
+        do {
+            resolved = try await Deadline.within(wait) {
+                try await ProviderRegistration.resolve(
+                    storeID: storeID,
+                    manager: manager,
+                    modelOverride: modelID,
+                    parameters: modelParameters,
+                )
+            }
+        } catch is Deadline.Exceeded {
+            throw ProviderResolutionError.unresolved(
+                message: "The model provider did not answer in time.",
+                reason: network.isSatisfied() ? .timeout : .offline,
+            )
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            throw ProviderResolutionError.unresolved(
+                message: ErrorDescription.localized(error.localizedDescription),
+                reason: FailureReason.of(error, hasRoute: network.isSatisfied()),
+            )
+        }
+        guard let resolved else {
             throw ProviderResolutionError.missingCredentials(storeID)
         }
         diagnostic("provider registered in \(elapsed(since: registering))")

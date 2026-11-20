@@ -213,6 +213,7 @@ public actor AgentSession {
             resolved = try await ProviderResolver.resolve(
                 configuration.provider,
                 credentials: credentials,
+                network: configuration.network,
                 modelParameters: configuration.modelParameters,
                 diagnostic: { journal.startup($0) },
             )
@@ -280,9 +281,9 @@ public actor AgentSession {
                 inner: journal.observingRequests { model, context, options in
                     try await KWWKAI.stream(model: model, context: context, options: options)
                 },
-            ) {
+            ) { wait in
                 journal.waitingForNetwork()
-                _ = try? await log.append(.reconnecting)
+                _ = try? await log.append(wait == .route ? .waitingForNetwork : .reconnecting)
             },
             toolExecution: .sequential,
             sessionId: configuration.id,
@@ -383,6 +384,7 @@ public actor AgentSession {
         let resolved = try await ProviderResolver.resolve(
             provider,
             credentials: credentials,
+            network: configuration.network,
             modelParameters: modelParameters,
         )
         guard runTask == nil, pendingDrain == nil, !historyMutation else { return false }
@@ -1393,10 +1395,37 @@ public actor AgentSession {
         schedulePending()
     }
 
+    /// What a stop was stopping, for whoever must know whether it ended.
+    public final class StoppedWork: @unchecked Sendable {
+        private let lock = NSLock()
+        private var ended = false
+
+        init(_ tasks: [Task<Void, Never>]) {
+            guard !tasks.isEmpty else {
+                ended = true
+                return
+            }
+            Task {
+                for task in tasks {
+                    await task.value
+                }
+                self.lock.withLock { self.ended = true }
+            }
+        }
+
+        /// Whether the stopped run and compaction have ended. A run started
+        /// since the stop does not count.
+        @objc public dynamic var hasEnded: Bool {
+            lock.withLock { ended }
+        }
+    }
+
     /// Stops the run. Waiting approvals resolve as denied. Once the loop's
     /// already-emitted message events settle, untaken reader and source
     /// messages are dropped separately; sources never return to the composer.
-    public func abort() async {
+    @discardableResult
+    public func abort() async -> StoppedWork {
+        let stopped = StoppedWork([runTask, compaction].compactMap(\.self))
         aborted = true
         stopGeneration &+= 1
         titleTask?.cancel()
@@ -1413,6 +1442,7 @@ public actor AgentSession {
         // entries in runEnded; clearing kwwk's queues above prevents more.
         if runTask == nil || runEnding { await dropQueued() }
         await gate.cancelAll(reason: "aborted")
+        return stopped
     }
 
     /// Answers a waiting approval. The host relays this from the app after
@@ -1568,6 +1598,7 @@ public actor AgentSession {
                 await record(.error(
                     message: assistant.errorMessage.map(ErrorDescription.localized)
                         ?? "The model provider returned an error. Try again.",
+                    reason: assistant.providerFailure.flatMap { FailureReason.of($0, hasRoute: hasRoute) },
                 ))
             }
         case .streamRewind:
@@ -1861,7 +1892,16 @@ public actor AgentSession {
             return
         }
         journal.runFailed(error.localizedDescription)
-        await record(.error(message: error.localizedDescription))
+        await record(.error(
+            message: ErrorDescription.localized(error.localizedDescription),
+            reason: FailureReason.of(error, hasRoute: hasRoute),
+        ))
+    }
+
+    /// Whether the device has a route to the network now, which tells a
+    /// failure with none from one the provider's side explains.
+    private var hasRoute: Bool {
+        configuration.network.isSatisfied()
     }
 
     /// Returns once a run whose loop has returned has recorded its end.

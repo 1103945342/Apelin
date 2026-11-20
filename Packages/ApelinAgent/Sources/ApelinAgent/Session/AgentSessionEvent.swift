@@ -35,8 +35,11 @@ public enum AgentSessionEvent: Sendable, Hashable, Codable {
     /// and is asked for again: its text and thinking are not the reply.
     case messageDiscarded
     /// A model request failed and is being made again: kwwk's retry, or a
-    /// wait for the network to come back (`NetworkRecovery`).
+    /// failed handshake asked again (`NetworkRecovery`).
     case reconnecting
+    /// A model request failed with no route to the network, and waits for
+    /// one before it is made again (`NetworkRecovery`).
+    case waitingForNetwork
     /// Streamed assistant text.
     case textDelta(String)
     /// Streamed reasoning text.
@@ -68,7 +71,9 @@ public enum AgentSessionEvent: Sendable, Hashable, Codable {
     /// as the composer's pill would: the mode it is now and why. The app
     /// writes it where the pill reads it, so the next prompt goes out with it.
     case runModeChanged(runMode: AgentRunMode, reason: String)
-    case error(message: String)
+    /// `reason`: why a model request failed, where the agent can tell
+    /// (`FailureReason`); the message stays the provider's own words.
+    case error(message: String, reason: ApelinError.Reason? = nil)
     /// A run ended.
     case finished(reason: FinishReason)
     /// The app asked to compact the conversation, between runs.
