@@ -118,7 +118,7 @@ extension BuiltInSkills {
         the same rules. A thrown script is `ok: false`, not a crash. Never
         run `icli probe repl`: it is interactive and shell_run has no
         terminal. An icli older than 0.10.0 has no `probe`; say so and
-        point the user to `https://apt.owngoal.dev` for the update.
+        say so, and let the user update icli with their package manager, or reinstall Luros, which carries a current one.
 
         ## As mobile; what changes the device only as the user asks
         shell_run runs as mobile, and the commands above work so. Never run

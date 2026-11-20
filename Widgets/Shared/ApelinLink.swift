@@ -13,7 +13,7 @@ import Foundation
 ///   it and taps Send. Without `prompt` the composer is empty.
 /// - `lurosdev://import?url=<address>&branch=<name>` asks whether to import a
 ///   Git repository into a new project: Open in Luros on a README, through
-///   the page at `https://owngoal-dev.github.io/Apelin/open/`. It carries
+///   the page at `https://1103945342.github.io/Apelin/open/`. It carries
 ///   the repository's HTTPS address and, optionally, a branch, each named
 ///   once, and nothing else: any other parameter is ignored. One whose
 ///   address or branch Luros would not take is `invalidImport`.

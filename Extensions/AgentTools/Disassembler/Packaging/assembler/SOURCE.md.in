@@ -12,7 +12,7 @@ to build and package it, is:
 - `@SOURCE_ARCHIVE@` (SHA-256 `@SOURCE_SHA256@`), published beside this
   package wherever this package is published;
 - and, equivalently, these public repositories at these revisions:
-  - Luros, https://github.com/owngoal-dev/Apelin at commit `@APELIN_COMMIT@`:
+  - Luros, https://github.com/1103945342/Apelin at commit `@APELIN_COMMIT@`:
     `Packages/ApelinToolHost` and `Extensions/AgentTools/Disassembler`;
   - libkeystone-spm (Keystone as a Swift package),
     https://github.com/Lakr233/libkeystone-spm at commit `@KEYSTONE_REVISION@`.

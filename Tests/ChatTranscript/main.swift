@@ -151,10 +151,10 @@ let feedbackEditApproval = ChatTranscript(events: [
     event(2, "approvalRequested", [
         "approvalID": .string("e1"), "tool": .string("apelin_feedback_edit"),
         "arguments": .string("{\"body\":\"It ends early on both bootstraps.\",\"number\":12,\"revision\":\"0123abcd\"}"),
-        "reason": .string("Replaces the body of issue #12 on owngoal-dev/Apelin."),
+        "reason": .string("Replaces the body of issue #12 on 1103945342/Apelin."),
         "detail": .object(["feedbackEdit": .object([
-            "repository": .string("owngoal-dev/Apelin"), "number": .number(12),
-            "url": .string("https://github.com/owngoal-dev/Apelin/issues/12"),
+            "repository": .string("1103945342/Apelin"), "number": .number(12),
+            "url": .string("https://github.com/1103945342/Apelin/issues/12"),
             "body": .string("It ends early on both bootstraps."),
             "currentTitle": .string("The build log stops early"), "currentBody": .string("It ends early."),
         ])]),
@@ -163,7 +163,7 @@ let feedbackEditApproval = ChatTranscript(events: [
 precondition(feedbackEditApproval?.approvalTitle == "Edit a feedback issue")
 let feedbackEditDetail = feedbackEditApproval?.approvalDetail ?? ""
 precondition(
-    feedbackEditDetail.contains("repository\nowngoal-dev/Apelin") && feedbackEditDetail.contains("issue\n#12")
+    feedbackEditDetail.contains("repository\n1103945342/Apelin") && feedbackEditDetail.contains("issue\n#12")
         && feedbackEditDetail.contains("body\nIt ends early on both bootstraps.")
         && !feedbackEditDetail.contains("0123abcd") && !feedbackEditDetail.contains("title\n")
         && !feedbackEditDetail.contains("It ends early."),

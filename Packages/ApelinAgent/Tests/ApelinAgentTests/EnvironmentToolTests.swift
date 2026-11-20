@@ -89,7 +89,7 @@ struct EnvironmentToolTests {
         }
         #expect(detail == .toolchainSetup(setup))
         #expect(reason.contains("Command Line Tools 16.4") && reason.contains("C and Swift") && reason.contains("MB"), "\(reason)")
-        let sdkImport = SDKImportApproval(source: "OwnGoal iOS SDKs", url: "https://github.com/owngoal-dev/iOS-SDKs.git", branch: "sdk/iPhoneOS17.5", version: "17.5")
+        let sdkImport = SDKImportApproval(source: "OwnGoal iOS SDKs", url: "https://github.com/1103945342/iOS-SDKs.git", branch: "sdk/iPhoneOS17.5", version: "17.5")
         guard case let .ask(importReason, importDetail) = policy.evaluate(InvocationFacts(tool: .local(.sdkImport), sdkImport: sdkImport), root: root) else {
             Issue.record("an import asks")
             return
@@ -168,7 +168,7 @@ struct EnvironmentToolTests {
         #expect(asked.count == 1 && asked.first?.allowsSessionScope == false)
         let sent = await harness.backend.calls.last
         #expect(sent == .sdkImport(
-            url: "https://github.com/owngoal-dev/iOS-SDKs.git",
+            url: "https://github.com/1103945342/iOS-SDKs.git",
             branch: "sdk/iPhoneOS17.5",
             evidence: .user(requestID: asked[0].id, fingerprint: asked[0].fingerprint),
         ))

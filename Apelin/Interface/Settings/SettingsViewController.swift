@@ -278,7 +278,7 @@ final class SettingsViewController: TableController {
 
     /// A new issue on Luros's repository, in the browser.
     @objc private dynamic static func reportProblem() {
-        guard let url = URL(string: "https://github.com/owngoal-dev/Apelin/issues/new") else { return }
+        guard let url = URL(string: "https://github.com/1103945342/Apelin/issues/new") else { return }
         UIApplication.shared.open(url)
     }
 }

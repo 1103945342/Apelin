@@ -818,7 +818,7 @@ final class ToolchainPackagerTests: XCTestCase {
             XCTAssertEqual(control.package, "com.fluoxetine.luros.toolchain." + FakeBackend.id)
             XCTAssertEqual(control.architecture, architecture)
             XCTAssertNil(control["Depends"])
-            XCTAssertEqual(control["Icon"], "https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.toolchain.png")
+            XCTAssertEqual(control["Icon"], "https://1103945342.github.io/Apelin/icons/com.fluoxetine.luros.toolchain.png")
             XCTAssertEqual(control["Name"]?.hasPrefix("Command Line Tools "), true)
             XCTAssertEqual(control["Name"]?.hasSuffix(" (Luros)"), true)
             XCTAssertEqual(Set(contents.controlFiles.keys), ["control"], "no maintainer scripts")

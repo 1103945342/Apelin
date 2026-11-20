@@ -16,7 +16,7 @@ import Foundation
 /// owner, 2026-10-30) checks the title or body it puts in the same way,
 /// and keeps below the body the footer the issue had (`split`).
 public enum FeedbackRules {
-    public static let repository = "owngoal-dev/Apelin"
+    public static let repository = "1103945342/Apelin"
     public static let maximumTitleLength = 120
     public static let maximumBodyBytes = 16 * 1024
 

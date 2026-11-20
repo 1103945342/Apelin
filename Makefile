@@ -326,11 +326,11 @@ check:
 	@# Every deb names its package manager icon, one Pages serves from
 	@# Documents/Site (Scripts/render-package-icons.py draws the extensions').
 	@for control in "$(CONTROL_TEMPLATE)" "$(ROOT_DIR)"/Extensions/*/*/Packaging/*/control "$(ROOT_DIR)"/Extensions/Development/Packaging/*/control; do \
-		icon="$$(sed -n 's#^Icon: https://owngoal-dev.github.io/Apelin/##p' "$$control")"; \
+		icon="$$(sed -n 's#^Icon: https://1103945342.github.io/Apelin/##p' "$$control")"; \
 		[[ -n "$$icon" && -f "$(ROOT_DIR)/Documents/Site/$$icon" ]] \
 			|| { echo "error: $${control#$(ROOT_DIR)/} has no Icon: a file in Documents/Site served by Pages" >&2; exit 65; }; \
 	done
-	@icon="$$(sed -n 's#.*"https://owngoal-dev.github.io/Apelin/\(icons/[^"]*\)".*#\1#p' "$(ROOT_DIR)/Packages/ApelinKit/Sources/ApelinEnvironment/Toolchain/ToolchainPackaging.swift")"; \
+	@icon="$$(sed -n 's#.*"https://1103945342.github.io/Apelin/\(icons/[^"]*\)".*#\1#p' "$(ROOT_DIR)/Packages/ApelinKit/Sources/ApelinEnvironment/Toolchain/ToolchainPackaging.swift")"; \
 		[[ -n "$$icon" && -f "$(ROOT_DIR)/Documents/Site/$$icon" ]] \
 			|| { echo "error: the toolchain deb's Icon is not a file in Documents/Site" >&2; exit 65; }
 	@# The extension formats against their fixtures, and every development

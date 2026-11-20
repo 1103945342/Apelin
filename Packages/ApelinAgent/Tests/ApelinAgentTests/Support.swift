@@ -233,7 +233,7 @@ actor MockBackend: AgentHostBackend {
     var sdkList = SDKListToolResponse(
         installed: [InstalledSDK(id: "iPhoneOS18.2-aaaaaaaa", version: "18.2", readBy: ["clt-16.4-c"], boundByThisProject: true)],
         available: [
-            AvailableSDK(version: "17.5", branch: "sdk/iPhoneOS17.5", source: "OwnGoal iOS SDKs", sourceURL: "https://github.com/owngoal-dev/iOS-SDKs.git", readBy: ["clt-16.4-c"]),
+            AvailableSDK(version: "17.5", branch: "sdk/iPhoneOS17.5", source: "OwnGoal iOS SDKs", sourceURL: "https://github.com/1103945342/iOS-SDKs.git", readBy: ["clt-16.4-c"]),
         ],
     )
     /// What apelin_project_set_environment's check answers, by SDK id.
@@ -628,15 +628,15 @@ actor MockBackend: AgentHostBackend {
     /// The registry's digest of each id is `sha256:<id>`.
     func sendFeedback(_ request: FeedbackToolRequest) -> FeedbackToolResponse {
         calls.append(.feedback(title: request.title, body: request.body, evidence: request.context.approval))
-        return FeedbackToolResponse(repository: "owngoal-dev/Apelin", issue: 7, url: "https://github.com/owngoal-dev/Apelin/issues/7")
+        return FeedbackToolResponse(repository: "1103945342/Apelin", issue: 7, url: "https://github.com/1103945342/Apelin/issues/7")
     }
 
     /// What apelin_feedback_read answers, by number: #12, the user's own,
     /// unless a test sets others.
     var feedbackIssues: [Int: FeedbackReadToolResponse] = [12: FeedbackReadToolResponse(
-        repository: "owngoal-dev/Apelin",
+        repository: "1103945342/Apelin",
         issue: 12,
-        url: "https://github.com/owngoal-dev/Apelin/issues/12",
+        url: "https://github.com/1103945342/Apelin/issues/12",
         title: "The build log stops early",
         state: "open",
         author: "someone",
@@ -652,7 +652,7 @@ actor MockBackend: AgentHostBackend {
     func readFeedback(_ request: FeedbackReadToolRequest) throws -> FeedbackReadToolResponse {
         calls.append(.feedbackRead(request.number))
         guard let issue = feedbackIssues[request.number] else {
-            throw ToolDeniedError(message: "owngoal-dev/Apelin has no issue #\(request.number)")
+            throw ToolDeniedError(message: "1103945342/Apelin has no issue #\(request.number)")
         }
         return issue
     }
@@ -675,9 +675,9 @@ actor MockBackend: AgentHostBackend {
         }
         let changed: [String] = [request.title.map { _ in "title" }, request.body.map { _ in "body" }].compactMap(\.self)
         return FeedbackEditToolResponse(
-            repository: "owngoal-dev/Apelin",
+            repository: "1103945342/Apelin",
             issue: request.number,
-            url: "https://github.com/owngoal-dev/Apelin/issues/\(request.number)",
+            url: "https://github.com/1103945342/Apelin/issues/\(request.number)",
             changed: changed,
             title: request.title ?? request.expectedTitle,
             body: request.body ?? request.expectedBody,

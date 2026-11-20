@@ -236,7 +236,7 @@ extension BuiltInSkills {
           control `Icon`: an `https://` URL in printable ASCII, at most 2048
           bytes. Every template writes its extension's icon on Luros's
           Pages, such as
-          `https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.dev.tweak.png`.
+          `https://1103945342.github.io/Apelin/icons/com.fluoxetine.luros.dev.tweak.png`.
           Keep it, or put in an https image the user gives as their own. It
           is not an app's own icon, which its Info.plist names.
         - `depiction` and `sileoDepiction`: optional, the package's page in a

@@ -6,7 +6,7 @@ Documents/Icon/AppIcon.icon — with the leaf swapped for a green mark of what
 the package adds. The marks are written here; the script writes one SVG per
 package to Documents/Icon/Packages/ and renders it with Chrome to a 512 px
 PNG in Documents/Site/icons/, which Pages serves at
-https://owngoal-dev.github.io/Apelin/icons/<name>.png. Luros's own icon stays
+https://1103945342.github.io/Apelin/icons/<name>.png. Luros's own icon stays
 Documents/Site/icon.png, rendered from the .icon.
 
 The four development extensions' icons are also each project kind's icon in

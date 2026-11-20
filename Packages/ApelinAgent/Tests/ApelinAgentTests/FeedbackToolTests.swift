@@ -8,7 +8,7 @@ import Testing
 struct FeedbackToolTests {
     private static let arguments: JSONValue = ["title": "  The build log stops early ", "body": "It ends before the link step."]
     private static let issue = FeedbackApproval(
-        repository: "owngoal-dev/Apelin",
+        repository: "1103945342/Apelin",
         title: "The build log stops early",
         body: "It ends before the link step.",
     )
@@ -81,7 +81,7 @@ struct FeedbackToolTests {
         #expect(request.tool == "apelin_feedback_send")
         #expect(request.detail == .feedback(Self.issue), "the text sent, the title trimmed")
         #expect(!request.allowsSessionScope)
-        #expect(request.reason.contains("public issue on owngoal-dev/Apelin"))
+        #expect(request.reason.contains("public issue on 1103945342/Apelin"))
         #expect(!ToolRunner.allowsSessionScope(.local(.feedbackSend), detail: .none))
 
         // Even after a "for this session" answer, the same issue asks again.
@@ -97,7 +97,7 @@ struct FeedbackToolTests {
         guard case let .text(text)? = result.content.first else {
             Issue.record("no answer"); return
         }
-        #expect(text.text.contains("https://github.com/owngoal-dev/Apelin/issues/7"))
+        #expect(text.text.contains("https://github.com/1103945342/Apelin/issues/7"))
     }
 
     @Test

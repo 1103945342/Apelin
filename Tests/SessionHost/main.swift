@@ -3011,7 +3011,7 @@ do {
     let setupDetail: JSONValue = .object(["toolchainSetup": .object([
         "productID": .string("082-1"), "version": .string("16.4"), "components": .array([.string("c")]), "sizeBytes": .number(1),
     ])])
-    let sourceURL = "https://github.com/owngoal-dev/iOS-SDKs.git"
+    let sourceURL = "https://github.com/1103945342/iOS-SDKs.git"
     let importDetail: JSONValue = .object(["sdkImport": .object([
         "source": .string("OwnGoal iOS SDKs"), "url": .string(sourceURL), "branch": .string("sdk/iPhoneOS17.5"), "version": .string("17.5"),
     ])])
@@ -3037,10 +3037,10 @@ do {
     check(!packageFile, "and never sets one up from a file")
     for source: SDKSource in [
         .url("https://example.com/iPhoneOS17.5.sdk.tar.xz"), .inbox(path: "sdk"), .file(DescriptorSlot(index: 0)),
-        .repository(url: "https://user:token@github.com/owngoal-dev/iOS-SDKs.git", branch: "sdk/iPhoneOS17.5"),
+        .repository(url: "https://user:token@github.com/1103945342/iOS-SDKs.git", branch: "sdk/iPhoneOS17.5"),
         .repository(url: sourceURL + "?token=1", branch: "sdk/iPhoneOS17.5"),
         .repository(url: sourceURL + "#frag", branch: "sdk/iPhoneOS17.5"),
-        .repository(url: "http://github.com/owngoal-dev/iOS-SDKs.git", branch: "sdk/iPhoneOS17.5"),
+        .repository(url: "http://github.com/1103945342/iOS-SDKs.git", branch: "sdk/iPhoneOS17.5"),
     ] {
         let passed = await authorized(SDKImportRequest(source: source), relaxed)
         check(!passed, "an agent imports an SDK only from an HTTPS repository without credentials (\(source))")
@@ -3432,7 +3432,7 @@ do {
     ) async {
         var detail: [String: JSONValue] = [
             "repository": .string(FeedbackRules.repository), "number": .number(number),
-            "url": .string("https://github.com/owngoal-dev/Apelin/issues/12"),
+            "url": .string("https://github.com/1103945342/Apelin/issues/12"),
             "body": .string(body), "currentTitle": .string("The build log stops early"), "currentBody": .string(currentBody),
         ]
         if let title {
@@ -3590,7 +3590,7 @@ do {
     }
     let unasked = await authorized(strict)
     check(unasked?.code == .denied, "Strict opens an issue only as the user approved it")
-    await ask("issue-elsewhere", repository: "owngoal-dev/Apelin")
+    await ask("issue-elsewhere", repository: "1103945342/Apelin")
     await ask("issue-body", body: "Another body.")
     await ask("issue-tool", tool: "apelin_feedback_send")
     let near = await authorized(strict)

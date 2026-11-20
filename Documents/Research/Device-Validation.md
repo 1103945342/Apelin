@@ -286,7 +286,7 @@ console now goes on after a restart only past a successful respring.
 - [ ] Open in Luros for a repository (2026-10-31, issue #31; only the
       Mac harness's `Tests/ApelinLink` and a node run of the landing
       page's checks have run). After `make vphone` (iPhone and iPad):
-      from a README, `https://owngoal-dev.github.io/Apelin/open/?url=…`
+      from a README, `https://1103945342.github.io/Apelin/open/?url=…`
       shows the repository and Open in Luros opens the sheet filled in,
       with the app cold and running; Import makes the project, clones it
       on the progress card and opens it on a new conversation that sends
@@ -542,7 +542,7 @@ console now goes on after a restart only past a successful respring.
       to send feedback: apelin_feedback_send answers that GitHub
       authorization is needed and names Sign In with GitHub in Settings ▸
       Git, and nothing is posted. Signed in, under Strict: the card names
-      owngoal-dev/Apelin and shows the whole title and body, offers no
+      1103945342/Apelin and shows the whole title and body, offers no
       "for this session", and Approve posts one issue whose footer reads
       "Sent with Luros <version> (<build>) · iOS <version> · <bootstrap>"
       on a roothide and a rootless device, with the installed version;
@@ -555,7 +555,7 @@ console now goes on after a restart only past a successful respring.
       scope gh's sign-in asks for. Close the test issues afterwards.
 - [ ] Feedback edited by the agent (2026-10-30, AGENTS.md ▸ Distribution
       repository ▸ Feedback; it edits a public issue, so by hand only, on a
-      test issue the signed-in account opened on owngoal-dev/Apelin, closed
+      test issue the signed-in account opened on 1103945342/Apelin, closed
       afterwards). Asked to broaden it, the agent reads it with
       apelin_feedback_read, shows the new body (or before and after) and
       calls apelin_feedback_edit only after 同意 or 确定, in Relaxed too;
@@ -580,13 +580,13 @@ console now goes on after a restart only past a successful respring.
       the model hands back its number and link. With issues turned off on
       the repository, and for a repository the account cannot see, the
       agent says what blocks it and posts nothing elsewhere, opens no
-      browser and drives no screen. Asked to file on owngoal-dev/Apelin, it
+      browser and drives no screen. Asked to file on 1103945342/Apelin, it
       goes through apelin_feedback_send. Signed out, it names Sign In with
       GitHub in Settings ▸ Git.
 - [ ] The star prompt (2026-10-29, AGENTS.md ▸ Distribution repository ▸
       The star; it stars a real account, so by hand only). Signed out of
       GitHub, ten builds that succeed ask nothing and count for nothing.
-      Signed in with an account that has not starred owngoal-dev/Apelin:
+      Signed in with an account that has not starred 1103945342/Apelin:
       the first nine builds that succeed after that (agent builds and
       distribution builds alike; failed builds and a reopened
       conversation's replay add none) ask nothing, the tenth asks "Do You

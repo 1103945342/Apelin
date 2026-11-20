@@ -118,7 +118,7 @@ final class PackagerControlTests: XCTestCase {
             home: home.path,
         )
         let products = try JSONDecoder().decode(BuildProducts.self, from: Data(#"{"products": [], "dsyms": [], "log": ""}"#.utf8))
-        let icon = "https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.dev.tweak.png"
+        let icon = "https://1103945342.github.io/Apelin/icons/com.fluoxetine.luros.dev.tweak.png"
 
         let control = try Packager(inputs: inputs, products: products, shell: "/bin/sh").control()
         XCTAssertEqual(control["Icon"], icon, "the template's icon")

@@ -26,7 +26,7 @@ Luros is an IDE for iPhone and iPad running custom firmware on iOS and iPadOS 16
 
 ## Installation
 
-Add **[apt.owngoal.dev](https://apt.owngoal.dev/)** in your preferred package manager, or download the package for your bootstrap from [Releases](https://github.com/owngoal-dev/Apelin/releases):
+Add **[apt.owngoal.dev](https://apt.owngoal.dev/)** in your preferred package manager, or download the package for your bootstrap from [Releases](https://github.com/1103945342/Apelin/releases):
 
 | Bootstrap | Package |
 | --- | --- |
@@ -51,14 +51,14 @@ The development extensions add the project templates and come with Luros by defa
 A repository's README can carry a button that opens the repository in Luros, which asks before importing it into a new project:
 
 ```markdown
-[![Open in Luros](https://owngoal-dev.github.io/Apelin/open/badge.svg)](https://owngoal-dev.github.io/Apelin/open/?url=https%3A%2F%2Fgithub.com%2Fowner%2Frepo)
+[![Open in Luros](https://1103945342.github.io/Apelin/open/badge.svg)](https://1103945342.github.io/Apelin/open/?url=https%3A%2F%2Fgithub.com%2Fowner%2Frepo)
 ```
 
 `url` is the repository's HTTPS address, URL-encoded. Add `&branch=<name>` to check out a branch other than the default. The link carries nothing else: no command, no message for the agent and no credential. Luros shows the address, the branch and the new project's name, and imports only once you confirm. Nothing in the repository runs, and nothing is sent to the agent. A private repository needs a sign-in: Sign In with GitHub in Settings ▸ Git for github.com. Without Luros, the page explains how to install it and lets you copy the address.
 
 ## Report a Problem
 
-Choose Report a Problem in Settings, or [open an issue on GitHub](https://github.com/owngoal-dev/Apelin/issues/new). Search the existing issues first to avoid duplicates.
+Choose Report a Problem in Settings, or [open an issue on GitHub](https://github.com/1103945342/Apelin/issues/new). Search the existing issues first to avoid duplicates.
 
 If Luros crashes or a build or an installation fails, include the log from Settings ▸ Logs. The log may contain your project names, paths and repository addresses, so review it before you share it.
 
@@ -83,7 +83,7 @@ The [session reliability and history plan](Documents/Plan/Session-Storage-Refact
 
 ## Acknowledgements
 
-Apple's Command Line Tools and iPhoneOS SDKs remain Apple's, under Apple's terms. Luros never ships them. The SDK repository [owngoal-dev/iOS-SDKs](https://github.com/owngoal-dev/iOS-SDKs) is forked from [xybp888/iOS-SDKs](https://github.com/xybp888/iOS-SDKs).
+Apple's Command Line Tools and iPhoneOS SDKs remain Apple's, under Apple's terms. Luros never ships them. The SDK repository [owngoal-dev/iOS-SDKs](https://github.com/1103945342/iOS-SDKs) is forked from [xybp888/iOS-SDKs](https://github.com/xybp888/iOS-SDKs).
 
 Third-party components keep their own licenses. Their notices are in [Licenses/](Licenses/) and in the app under Settings ▸ Open Source Licenses.
 

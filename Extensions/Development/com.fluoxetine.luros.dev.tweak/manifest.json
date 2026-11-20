@@ -102,7 +102,7 @@
         { "path": "luros-project.json", "format": "json" },
         { "path": "Sources/Tweak.m", "format": "objc" }
       ],
-      "digest": "sha256:88523864cb46917d3f88714493cca567f5ed4ae0643b4d3c5c9ab357dc7b7cac"
+      "digest": "sha256:98df5467640ae559479dc3dfff80187427cd15236d295571331095026f15aac7"
     }
   ],
   "provenance": [

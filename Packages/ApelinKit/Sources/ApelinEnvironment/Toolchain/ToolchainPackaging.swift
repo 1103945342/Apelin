@@ -123,7 +123,7 @@ public struct ToolchainPackager: Sendable {
 
     /// Every toolchain's package manager icon: one for all of them, drawn
     /// by Scripts/render-package-icons.py and served by the project's Pages.
-    static let icon = "https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.toolchain.png"
+    static let icon = "https://1103945342.github.io/Apelin/icons/com.fluoxetine.luros.toolchain.png"
 
     public func package(_ prepared: PreparedToolchain) throws -> LocalArtifact {
         let packageLayout: PackageLayout = layout.isRoothide ? .roothide : .rootless

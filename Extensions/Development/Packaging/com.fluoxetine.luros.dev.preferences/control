@@ -8,10 +8,10 @@ Description: Settings pane templates for Luros, for @FLAVOR@ jailbreaks
  shows it in Settings, and declarations for the private Preferences
  framework. Needs PreferenceLoader, which your preferred package manager
  installs with it.
-Icon: https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.dev.preferences.png
-Depiction: https://owngoal-dev.github.io/Apelin/
-Maintainer: OwnGoal Studio <not-gonna-reply@owngoal.dev>
-Author: OwnGoal Studio <not-gonna-reply@owngoal.dev>
+Icon: https://1103945342.github.io/Apelin/icons/com.fluoxetine.luros.dev.preferences.png
+Depiction: https://1103945342.github.io/Apelin/
+Maintainer: 1103945342 <1103945342@users.noreply.github.com>
+Author: 1103945342 <1103945342@users.noreply.github.com>
 Section: Development
 Priority: optional
 Depends: @DEPENDS@

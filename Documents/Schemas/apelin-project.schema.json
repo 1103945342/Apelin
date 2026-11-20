@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://owngoal-dev.github.io/Apelin/schemas/apelin-project-1.json",
+  "$id": "https://1103945342.github.io/Apelin/schemas/apelin-project-1.json",
   "title": "Luros project description, version 1",
   "description": "luros-project.json at the root of ~/Documents/com.fluoxetine.luros/Projects/<name>/. The one build entry the UI, the agent and apelin-build all read. Documents/Schemas/README.md is the prose specification; it also fixes which members form the build and packaging descriptions whose digests drive Confirm-mode approval.",
   "type": "object",

@@ -5,10 +5,10 @@ Architecture: @ARCHITECTURE@
 Description: Command-line tool templates for Luros, for @FLAVOR@ jailbreaks
  Lets Luros create, build and package C and Objective-C command-line tools
  on the device, installed into the bootstrap's /usr/bin.
-Icon: https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.dev.cli.png
-Depiction: https://owngoal-dev.github.io/Apelin/
-Maintainer: OwnGoal Studio <not-gonna-reply@owngoal.dev>
-Author: OwnGoal Studio <not-gonna-reply@owngoal.dev>
+Icon: https://1103945342.github.io/Apelin/icons/com.fluoxetine.luros.dev.cli.png
+Depiction: https://1103945342.github.io/Apelin/
+Maintainer: 1103945342 <1103945342@users.noreply.github.com>
+Author: 1103945342 <1103945342@users.noreply.github.com>
 Section: Development
 Priority: optional
 Depends: @DEPENDS@

@@ -282,7 +282,7 @@ packages whose file still exists.
   printable ASCII, so it has no space or control character, and at most
   2048 characters, which are 2048 bytes. Every template writes its
   extension's icon on Luros's Pages,
-  `https://owngoal-dev.github.io/Apelin/icons/<extension id>.png`; a project
+  `https://1103945342.github.io/Apelin/icons/<extension id>.png`; a project
   may keep it, name its own or drop it.
 - `depiction` and `sileoDepiction` are written as the control's `Depiction`
   and `SileoDepiction`, after `Icon`, and nothing is written for one that is

@@ -46,7 +46,7 @@
     "name": "{{displayName}}",
     "version": "0.0.1",
     "description": "{{summary}}",
-    "icon": "https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.dev.cli.png",
+    "icon": "https://1103945342.github.io/Apelin/icons/com.fluoxetine.luros.dev.cli.png",
     "author": "{{author}}",
     "section": "Utilities",
     "layout": [

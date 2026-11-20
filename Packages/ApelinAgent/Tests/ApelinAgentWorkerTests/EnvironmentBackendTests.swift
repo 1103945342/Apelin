@@ -82,7 +82,7 @@ struct EnvironmentBackendTests {
             return (SDKListResponse(
                 sdks: [SDKRecord(id: "iPhoneOS18.2-aaaaaaaa", canonicalName: "iPhoneOS18.2", version: "18.2", path: "/x")],
                 sources: [
-                    SDKSourceStatus(name: "OwnGoal iOS SDKs", url: "https://github.com/owngoal-dev/iOS-SDKs.git", enabled: true, branches: ["sdk/iPhoneOS17.5", "sdk/iPhoneOS18.2", "sdk/iPhoneOS27.0", "sdk/notes"]),
+                    SDKSourceStatus(name: "OwnGoal iOS SDKs", url: "https://github.com/1103945342/iOS-SDKs.git", enabled: true, branches: ["sdk/iPhoneOS17.5", "sdk/iPhoneOS18.2", "sdk/iPhoneOS27.0", "sdk/notes"]),
                     SDKSourceStatus(name: "Off", url: "https://example.com/x.git", enabled: false, branches: ["sdk/iPhoneOS16.0"]),
                     SDKSourceStatus(name: "Broken", url: "https://example.com/y.git", enabled: true, problem: "timed out"),
                 ],
@@ -95,7 +95,7 @@ struct EnvironmentBackendTests {
         #expect(list.installed.first?.boundByThisProject == true && list.installed.first?.readBy == ["clt-16.4-c"])
         #expect(list.available.map(\.version) == ["27.0", "17.5"], "newest first, the registered one and other branches left out")
         #expect(list.available.first { $0.version == "27.0" }?.readBy == [], "16.4 reads up to 18.5")
-        #expect(list.available.first { $0.version == "17.5" }?.sourceURL == "https://github.com/owngoal-dev/iOS-SDKs.git")
+        #expect(list.available.first { $0.version == "17.5" }?.sourceURL == "https://github.com/1103945342/iOS-SDKs.git")
         #expect(list.sourceProblems == ["Broken: timed out"])
     }
 
@@ -140,8 +140,8 @@ struct EnvironmentBackendTests {
             ("result", .object(["sdk": ApelinCore.JSONValue(encoding: SDKRecord(id: "iPhoneOS17.5-bbbbbbbb", canonicalName: "iPhoneOS17.5", version: "17.5", path: "/x"))])),
             stateEvent(.succeeded),
         ]))
-        let result = try await fixture.backend.sdkImport(SDKImportToolRequest(context: fixture.context(), url: "https://github.com/owngoal-dev/iOS-SDKs.git", branch: "sdk/iPhoneOS17.5"))
-        #expect(fixture.host.requests(SDKImportRequest.self).first?.source == .repository(url: "https://github.com/owngoal-dev/iOS-SDKs.git", branch: "sdk/iPhoneOS17.5"))
+        let result = try await fixture.backend.sdkImport(SDKImportToolRequest(context: fixture.context(), url: "https://github.com/1103945342/iOS-SDKs.git", branch: "sdk/iPhoneOS17.5"))
+        #expect(fixture.host.requests(SDKImportRequest.self).first?.source == .repository(url: "https://github.com/1103945342/iOS-SDKs.git", branch: "sdk/iPhoneOS17.5"))
         #expect(result.succeeded && result.sdk?.id == "iPhoneOS17.5-bbbbbbbb" && result.stages == ["fetching"])
     }
 

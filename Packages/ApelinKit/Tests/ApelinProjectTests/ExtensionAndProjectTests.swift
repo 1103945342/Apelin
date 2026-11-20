@@ -121,7 +121,7 @@ final class ExtensionAndProjectTests: XCTestCase {
                 // a package manager shows the extension's own icon, from Pages
                 XCTAssertEqual(
                     try store.locate(projectID).project.package.icon,
-                    "https://owngoal-dev.github.io/Apelin/icons/\(manifest.id).png",
+                    "https://1103945342.github.io/Apelin/icons/\(manifest.id).png",
                     template.id,
                 )
 

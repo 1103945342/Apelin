@@ -9,7 +9,7 @@ import Foundation
 /// clone). The list lives in `Environment/sdk-sources.json`; there is no
 /// wire operation for it, and without the file the default list stands.
 ///
-/// The default list is `owngoal-dev/iOS-SDKs`, enabled: a detached fork of
+/// The default list is `1103945342/iOS-SDKs`, enabled: a detached fork of
 /// `xybp888/iOS-SDKs`, credited in its README, with one branch
 /// `sdk/iPhoneOS<version>` per SDK holding `iPhoneOS<version>.sdk`, named
 /// for the version its own `SDKSettings.json` gives. The owner had it
@@ -45,7 +45,7 @@ public struct SDKSourceList: Codable, Sendable, Equatable {
     public static let knownSources: [Source] = [
         Source(
             name: "OwnGoal iOS SDKs",
-            url: "https://github.com/owngoal-dev/iOS-SDKs.git",
+            url: "https://github.com/1103945342/iOS-SDKs.git",
             enabled: true,
             branchPrefix: "sdk/",
             note: "Apple's iPhoneOS SDKs, one per branch, collected by xybp888/iOS-SDKs.",

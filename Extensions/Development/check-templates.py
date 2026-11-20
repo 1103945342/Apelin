@@ -38,7 +38,7 @@ sys.path.insert(0, str(REPOSITORY / "Documents" / "Schemas" / "Tools"))
 import apelin_schema as schema  # noqa: E402
 
 PREFIX = {"rootless": "/var/jb", "roothide": ""}
-PAGES = "https://owngoal-dev.github.io/Apelin/"
+PAGES = "https://1103945342.github.io/Apelin/"
 SITE = REPOSITORY / "Documents" / "Site"
 
 

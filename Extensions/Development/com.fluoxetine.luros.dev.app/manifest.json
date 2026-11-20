@@ -51,7 +51,7 @@
         { "path": "Resources/Info.plist", "format": "plist-xml" },
         { "path": "Packaging/App.entitlements", "format": "plist-xml" }
       ],
-      "digest": "sha256:eef25700bea87ecd51b7c6e37feb054ceba814d9e904a2386abbd54d77533c58"
+      "digest": "sha256:e219a63645f223741eb7fca30398f4f8e5aa8f4b0f6f8066a7c17d62f2253f9f"
     },
     {
       "id": "uikit-swift",
@@ -75,7 +75,7 @@
         { "path": "Resources/Info.plist", "format": "plist-xml" },
         { "path": "Packaging/App.entitlements", "format": "plist-xml" }
       ],
-      "digest": "sha256:7612e398819c2e57cd401e61a4e56371e59a52ddeff9497cf7cb0329776b6e0c"
+      "digest": "sha256:f51f080c5fc1bb6e6cb716f032173778954ccd508510e0e7259df63872f5a3b9"
     }
   ],
   "provenance": [

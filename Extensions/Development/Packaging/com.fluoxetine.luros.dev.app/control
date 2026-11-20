@@ -6,10 +6,10 @@ Description: UIKit app templates for Luros, for @FLAVOR@ jailbreaks
  Lets Luros create, build and package UIKit apps on the device, installed
  into /Applications: an Objective-C template, and a Swift one for when the
  Swift toolchain component is set up.
-Icon: https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.dev.app.png
-Depiction: https://owngoal-dev.github.io/Apelin/
-Maintainer: OwnGoal Studio <not-gonna-reply@owngoal.dev>
-Author: OwnGoal Studio <not-gonna-reply@owngoal.dev>
+Icon: https://1103945342.github.io/Apelin/icons/com.fluoxetine.luros.dev.app.png
+Depiction: https://1103945342.github.io/Apelin/
+Maintainer: 1103945342 <1103945342@users.noreply.github.com>
+Author: 1103945342 <1103945342@users.noreply.github.com>
 Section: Development
 Priority: optional
 Depends: @DEPENDS@
