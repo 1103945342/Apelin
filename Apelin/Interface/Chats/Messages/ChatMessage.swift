@@ -75,8 +75,6 @@ struct ChatMessage: Identifiable, Hashable {
     var banner: ToolCallBanner?
     /// A tool row whose result has not come back yet.
     var awaitsResult = false
-    /// On a running summary, the calls in its trace still waiting for a result.
-    var runningTools = 0
     /// What a running summary says of a model request that failed, while
     /// nothing has come of it yet.
     enum Recovery: Hashable {
