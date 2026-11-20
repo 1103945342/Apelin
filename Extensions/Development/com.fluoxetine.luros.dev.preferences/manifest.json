@@ -61,7 +61,7 @@
       "toolchainComponents": ["c-family"],
       "project": "luros-project.json",
       "parameters": [
-        { "name": "productName", "type": "identifier", "label": "Product Name", "help": "The bundle name, also the prefix of its principal class.", "required": true, "default": "ApelinSettings" },
+        { "name": "productName", "type": "identifier", "label": "Product Name", "help": "The bundle name, also the prefix of its principal class.", "required": true, "default": "LurosSettings" },
         { "name": "displayName", "type": "string", "label": "Title in Settings", "default": "Luros Settings", "maxLength": 64 },
         { "name": "summary", "type": "string", "label": "Description", "default": "Built on this device with Luros.", "maxLength": 200 },
         { "name": "author", "type": "string", "label": "Author", "default": "Luros User", "maxLength": 64 }

@@ -15,7 +15,7 @@ import subprocess
 
 REPO = Path(__file__).resolve().parent.parent
 OUT = REPO / ".build/mixed-device"
-KIT = REPO / "Packages/ApelinKit/Sources"
+KIT = REPO / "Packages/LurosKit/Sources"
 ENTITLEMENTS = "Extensions/Development/com.fluoxetine.luros.dev.cli/templates/c/Packaging/Tool.entitlements"
 
 
@@ -40,23 +40,23 @@ def source(path):
 def prepare_harness():
     # Compile exact repository implementations, only flattening module imports
     # and Swift 6 trailing argument commas for this device's Swift 5.10 parser.
-    document = source("ApelinProject/Project/ProjectDocument.swift")
+    document = source("LurosProject/Project/ProjectDocument.swift")
     start = document.index("    /// Decodes a document that already passed validation.")
     end = document.index("\n}", start)
     document = document[:start] + document[end:]
-    files = source("ApelinProject/Project/ApprovalDigests.swift").split("/// The two descriptions Confirm mode")[0]
-    pipeline = (KIT / "ApelinBuild/Pipeline/BuildPipeline.swift").read_text()
+    files = source("LurosProject/Project/ApprovalDigests.swift").split("/// The two descriptions Confirm mode")[0]
+    pipeline = (KIT / "LurosBuild/Pipeline/BuildPipeline.swift").read_text()
     target = pipeline[pipeline.index("    private func targetFlags("):pipeline.index("    // MARK: Swift modules")]
     methods = pipeline[pipeline.index("    // MARK: Swift modules"):pipeline.index("    /// An arm64e slice linked")]
     harness = (REPO / "Tests/MixedBuildDevice/Harness.swift").read_text()
     harness = harness.replace("    // INSERT_PIPELINE_METHODS", target + methods)
     text = "\n".join([
-        source("ApelinCore/CanonicalPath.swift"), document,
-        source("ApelinProject/Project/SourceLanguage.swift"),
-        source("ApelinProject/Project/CXXInteropSettings.swift"), files,
-        source("ApelinProject/Project/ProjectGlob.swift"),
-        source("ApelinBuild/Process/ToolRunner.swift"),
-        source("ApelinBuild/Pipeline/ProductSourcePlan.swift"), harness,
+        source("LurosCore/CanonicalPath.swift"), document,
+        source("LurosProject/Project/SourceLanguage.swift"),
+        source("LurosProject/Project/CXXInteropSettings.swift"), files,
+        source("LurosProject/Project/ProjectGlob.swift"),
+        source("LurosBuild/Process/ToolRunner.swift"),
+        source("LurosBuild/Pipeline/ProductSourcePlan.swift"), harness,
     ])
     text = re.sub(r",(\s*[)\]])", r"\1", text)
     write("Harness.swift", text)

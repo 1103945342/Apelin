@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import UIKit
 
 /// Settings ▸ Agent ▸ Default Models. Each auxiliary agent operation can use
@@ -71,10 +71,10 @@ final class DefaultModelsController: TableController {
         dataSource.beginLoad()
         loader = Task { [weak self] in
             do {
-                var accounts = try await EnabledModels.accounts(from: ApelinService.app.agentAccountsWithKnownModels())
+                var accounts = try await EnabledModels.accounts(from: LurosService.app.agentAccountsWithKnownModels())
                 for index in accounts.indices where accounts[index].models?.isEmpty != false {
                     do {
-                        accounts[index].models = try await ApelinService.app
+                        accounts[index].models = try await LurosService.app
                             .agentModelList(provider: accounts[index].provider).models
                     } catch {
                         // Keep the account visible even if this provider's model catalog is unavailable.

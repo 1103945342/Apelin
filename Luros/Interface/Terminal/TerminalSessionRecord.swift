@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import Foundation
 
 /// How many shells the app keeps books for at once. The host caps its own

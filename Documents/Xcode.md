@@ -59,7 +59,7 @@ a fresh project beside the old one and compare.
 
 ## Where it lives
 
-- `Packages/ApelinKit/Sources/ApelinProject/Project/XcodeProject.swift` —
+- `Packages/LurosKit/Sources/LurosProject/Project/XcodeProject.swift` —
   the generator, called from `ProjectStore.create`.
-- `Packages/ApelinKit/Tests/ApelinProjectTests/XcodeProjectTests.swift` —
+- `Packages/LurosKit/Tests/LurosProjectTests/XcodeProjectTests.swift` —
   the projects it writes, read back as property lists.

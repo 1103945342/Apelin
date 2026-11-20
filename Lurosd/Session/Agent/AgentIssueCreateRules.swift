@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// An agent's `gitIssueCreate` (apelin_git_create_issue, owner,
@@ -27,13 +27,13 @@ enum AgentIssueCreateRules {
 
     /// Nil when the session may open it, else why not; under Confirm the
     /// approval that covers it is spent.
-    static func authorize(_ issue: GitIssueCreateRequest, session: String?, registry: TaskRegistry) async -> ApelinError? {
+    static func authorize(_ issue: GitIssueCreateRequest, session: String?, registry: TaskRegistry) async -> LurosError? {
         guard let session, let entry = await AgentSessionTable.shared.entry(session) else {
-            return ApelinError(.denied, "no agent session for this worker")
+            return LurosError(.denied, "no agent session for this worker")
         }
         guard entry.mode.asks else { return nil }
         guard await AgentApprovals.spend(entry: entry, registry: registry, covers: { covers(issue, asked: $0) }) else {
-            return ApelinError(
+            return LurosError(
                 .denied,
                 "approval required: the user has not approved opening this issue on \(issue.repository)",
             )

@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Then
 import UIKit
 import UniformTypeIdentifiers
@@ -96,7 +96,7 @@ final class SDKCatalogController: TableController {
         dataSource.beginLoad()
         loader = Task { [weak self] in
             do {
-                let list = try await ApelinService.app.sdkList(includeSources: true, readSources: true)
+                let list = try await LurosService.app.sdkList(includeSources: true, readSources: true)
                 guard !Task.isCancelled else { return }
                 self?.show(list)
             } catch {
@@ -262,7 +262,7 @@ final class SDKCatalogController: TableController {
         view.isUserInteractionEnabled = false
         Task { [weak self] in
             do {
-                let handle = try await ApelinService.app.sdkImport(source, descriptors: descriptors)
+                let handle = try await LurosService.app.sdkImport(source, descriptors: descriptors)
                 self?.view.isUserInteractionEnabled = true
                 self?.openTask(handle)
             } catch {

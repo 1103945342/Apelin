@@ -28,7 +28,7 @@ root = pathlib.Path(sys.argv[1])
 work = pathlib.Path(sys.argv[2])
 trailing = re.compile(r",(\s*)([\)\]])")
 for source in (
-    "Packages/ApelinAgent/Sources/ApelinAgent/Paths/ConfinedWriter.swift",
+    "Packages/LurosAgent/Sources/LurosAgent/Paths/ConfinedWriter.swift",
     "Tests/TeamCollaboration/ConfinedWriterChecks.swift",
 ):
     text = (root / source).read_text()

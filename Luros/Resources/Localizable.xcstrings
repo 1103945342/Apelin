@@ -121970,7 +121970,7 @@
       }
     },
     "Luros cannot build on roothide Bootstrap. Bootstrap runs only programs it signs itself, and it does not sign Luros’s build tools or the programs they build." : {
-      "comment" : "luros-environment's and luros-build's refusal on roothide Bootstrap (HostSigning.bootstrapRefusal in ApelinCore), shown in alerts and on the Build Tools welcome page. The key must stay that text.",
+      "comment" : "luros-environment's and luros-build's refusal on roothide Bootstrap (HostSigning.bootstrapRefusal in LurosCore), shown in alerts and on the Build Tools welcome page. The key must stay that text.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {

@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import CryptoKit
 import Darwin
 import Foundation
@@ -30,12 +30,12 @@ actor ProtectedEditor {
         let target = try ProtectedEditPolicy.evaluate(request.path, installRoot: installRoot)
         let descriptor = Darwin.open(target.path, O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC)
         guard descriptor >= 0 else {
-            throw ApelinError(.internal, "\(target.path): \(String(cString: strerror(errno)))")
+            throw LurosError(.internal, "\(target.path): \(String(cString: strerror(errno)))")
         }
         let owned = OwnedDescriptor(adopting: descriptor)
         var metadata = stat()
         guard fstat(descriptor, &metadata) == 0, UInt64(metadata.st_ino) == target.version.inode else {
-            throw ApelinError(.conflict, "\(target.path) changed while it was opened; try again")
+            throw LurosError(.conflict, "\(target.path) changed while it was opened; try again")
         }
         sweep()
         let id = UUID().uuidString.lowercased()
@@ -55,7 +55,7 @@ actor ProtectedEditor {
     /// The grant's file, for `fileRead{grant:<id>}`; the grant stays.
     func grantedPath(_ id: String) throws -> String {
         sweep()
-        guard let grant = grants[id] else { throw ApelinError(.notFound, "no grant \(id), or it expired") }
+        guard let grant = grants[id] else { throw LurosError(.notFound, "no grant \(id), or it expired") }
         return grant.target.path
     }
 
@@ -66,7 +66,7 @@ actor ProtectedEditor {
         sweep()
         // One save per grant, whatever happens next.
         guard let grant = grants.removeValue(forKey: request.grantID) else {
-            throw ApelinError(.notFound, "no grant \(request.grantID), or it expired or was used; open the file again")
+            throw LurosError(.notFound, "no grant \(request.grantID), or it expired or was used; open the file again")
         }
         let target = grant.target
         guard request.expectedVersion.inode == target.version.inode,
@@ -74,10 +74,10 @@ actor ProtectedEditor {
               request.expectedVersion.size == target.version.size,
               request.expectedVersion.sha256 == nil || request.expectedVersion.sha256 == target.version.sha256
         else {
-            throw ApelinError(.conflict, "the version you edited is not the one this grant was made for")
+            throw LurosError(.conflict, "the version you edited is not the one this grant was made for")
         }
         if target.needsConfirmation, !request.confirmed {
-            throw ApelinError(
+            throw LurosError(
                 .denied,
                 "\(target.path) is a LaunchDaemons plist: confirm the change (confirmed: true); it is saved only, never loaded",
             )
@@ -87,7 +87,7 @@ actor ProtectedEditor {
         // Still the file that was granted, byte for byte?
         let current = try ProtectedEditPolicy.evaluate(target.path, installRoot: installRoot)
         guard current.version.inode == target.version.inode, current.version.sha256 == target.version.sha256 else {
-            throw ApelinError(.conflict, "\(target.path) changed after it was opened; open it again")
+            throw LurosError(.conflict, "\(target.path) changed after it was opened; open it again")
         }
 
         let backupID = try backups.save(path: target.path)
@@ -106,18 +106,18 @@ actor ProtectedEditor {
     ) throws -> Data {
         if let base64 = request.contentsBase64 {
             guard request.contents == nil else {
-                throw ApelinError(.badRequest, "send the contents once: a descriptor or base64")
+                throw LurosError(.badRequest, "send the contents once: a descriptor or base64")
             }
             guard let data = Data(base64Encoded: base64) else {
-                throw ApelinError(.badRequest, "contentsBase64 is not base64")
+                throw LurosError(.badRequest, "contentsBase64 is not base64")
             }
             guard data.count <= ProtectedEditPolicy.maximumBytes else {
-                throw ApelinError(.badRequest, "the new contents are too large")
+                throw LurosError(.badRequest, "the new contents are too large")
             }
             return data
         }
         guard let slot = request.contents, descriptors.indices.contains(slot.index) else {
-            throw ApelinError(.badRequest, "the new contents are missing")
+            throw LurosError(.badRequest, "the new contents are missing")
         }
         let descriptor = descriptors[slot.index].rawValue
         var data = Data()
@@ -135,7 +135,7 @@ actor ProtectedEditor {
                 continue
             }
             guard count >= 0 else {
-                throw ApelinError(.badRequest, "reading the new contents: \(String(cString: strerror(errno)))")
+                throw LurosError(.badRequest, "reading the new contents: \(String(cString: strerror(errno)))")
             }
             if count == 0 {
                 break
@@ -143,7 +143,7 @@ actor ProtectedEditor {
             data.append(contentsOf: buffer[0 ..< count])
             offset += off_t(count)
             guard data.count <= ProtectedEditPolicy.maximumBytes else {
-                throw ApelinError(.badRequest, "the new contents are too large")
+                throw LurosError(.badRequest, "the new contents are too large")
             }
         }
         return data
@@ -227,17 +227,17 @@ struct BackupStore: Sendable {
 
         let source = open(path, O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC)
         guard source >= 0 else {
-            throw ApelinError(.internal, "backing up \(path): \(String(cString: strerror(errno)))")
+            throw LurosError(.internal, "backing up \(path): \(String(cString: strerror(errno)))")
         }
         defer { close(source) }
         let destination = openat(directory, name, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0o600)
         guard destination >= 0 else {
-            throw ApelinError(.internal, "backing up \(path): \(String(cString: strerror(errno)))")
+            throw LurosError(.internal, "backing up \(path): \(String(cString: strerror(errno)))")
         }
         defer { close(destination) }
         guard fcopyfile(source, destination, nil, copyfile_flags_t(COPYFILE_DATA)) == 0, fsync(destination) == 0 else {
             unlinkat(directory, name, 0)
-            throw ApelinError(.internal, "backing up \(path): \(String(cString: strerror(errno)))")
+            throw LurosError(.internal, "backing up \(path): \(String(cString: strerror(errno)))")
         }
         if geteuid() == 0 {
             _ = fchown(destination, owner, group)
@@ -259,12 +259,12 @@ struct BackupStore: Sendable {
     /// anywhere else.
     private func openFolder() throws -> Int32 {
         var parentDescriptor = open(home, O_RDONLY | O_DIRECTORY | O_CLOEXEC)
-        guard parentDescriptor >= 0 else { throw ApelinError(.unavailable, "mobile's home \(home) is missing") }
+        guard parentDescriptor >= 0 else { throw LurosError(.unavailable, "mobile's home \(home) is missing") }
         for level in Self.levels.dropLast() {
             let next = openat(parentDescriptor, level, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
             close(parentDescriptor)
             guard next >= 0 else {
-                throw ApelinError(.unavailable, "the data folder is missing or not a folder (\(level))")
+                throw LurosError(.unavailable, "the data folder is missing or not a folder (\(level))")
             }
             parentDescriptor = next
         }
@@ -279,10 +279,10 @@ struct BackupStore: Sendable {
                 }
             }
         } else if errno != EEXIST {
-            throw ApelinError(.internal, "making \(folder): \(String(cString: strerror(errno)))")
+            throw LurosError(.internal, "making \(folder): \(String(cString: strerror(errno)))")
         }
         let descriptor = openat(parentDescriptor, name, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
-        guard descriptor >= 0 else { throw ApelinError(.denied, "\(folder) is not a folder") }
+        guard descriptor >= 0 else { throw LurosError(.denied, "\(folder) is not a folder") }
         return descriptor
     }
 }

@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import UIKit
 
 /// Settings ▸ Agent ▸ Prompt Injection: the switch, and the text every

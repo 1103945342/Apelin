@@ -7,7 +7,7 @@ modules="$1"
 work="$(mktemp -d -t luros-onboarding)"
 trap 'rm -rf -- "${work:?}"' EXIT
 objects=()
-for module in ApelinCore ApelinProtocol; do
+for module in LurosCore LurosProtocol; do
     if [[ -f "$modules/$module.o" ]]; then
         objects+=("$modules/$module.o")
     else

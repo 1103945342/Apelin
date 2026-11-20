@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Darwin
 import Foundation
 
@@ -20,7 +20,7 @@ enum LogsHandler: DomainHandler {
         case .crashOpen:
             CrashReports.open(request)
         default:
-            request.fail(ApelinError(.badRequest, "\(request.operation.rawValue) is not a logs operation"))
+            request.fail(LurosError(.badRequest, "\(request.operation.rawValue) is not a logs operation"))
         }
     }
 
@@ -37,7 +37,7 @@ enum LogsHandler: DomainHandler {
             return await host.attach(request, LogStreamRequest.self)
         }
         guard poll.filter != nil else {
-            return request.fail(ApelinError(.badRequest, "logStream needs a filter or a stream"))
+            return request.fail(LurosError(.badRequest, "logStream needs a filter or a stream"))
         }
         var (reply, descriptors) = await host.startTask(request, kind: .logStream, role: .diagnostics)
         if case let .failure(error) = reply.result, error.code == .denied {
@@ -97,14 +97,14 @@ enum CrashReports {
             return request.fail(error)
         }
         guard isValidID(crash.id) else {
-            return request.fail(ApelinError(.badRequest, "\(crash.id) is not a crash report id"))
+            return request.fail(LurosError(.badRequest, "\(crash.id) is not a crash report id"))
         }
         guard let path = path(for: crash.id) else {
-            return request.fail(ApelinError(.notFound, "no crash report \(crash.id)"))
+            return request.fail(LurosError(.notFound, "no crash report \(crash.id)"))
         }
         let descriptor = Darwin.open(path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC)
         guard descriptor >= 0 else {
-            return request.fail(ApelinError(
+            return request.fail(LurosError(
                 .notFound,
                 "\(crash.id) cannot be opened: \(String(cString: strerror(errno)))",
             ))
@@ -112,10 +112,10 @@ enum CrashReports {
         let owned = OwnedDescriptor(adopting: descriptor)
         var metadata = stat()
         guard fstat(descriptor, &metadata) == 0, metadata.st_mode & S_IFMT == S_IFREG else {
-            return request.fail(ApelinError(.badRequest, "\(crash.id) is not a regular file"))
+            return request.fail(LurosError(.badRequest, "\(crash.id) is not a regular file"))
         }
         guard metadata.st_size <= maximumBytes else {
-            return request.fail(ApelinError(
+            return request.fail(LurosError(
                 .badRequest,
                 "\(crash.id) is larger than \(maximumBytes / (1024 * 1024)) MB",
             ))

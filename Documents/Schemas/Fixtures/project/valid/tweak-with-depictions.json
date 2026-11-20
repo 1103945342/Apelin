@@ -46,7 +46,7 @@
     {
       "id": "tweak",
       "type": "dylib",
-      "name": "ApelinTweak",
+      "name": "LurosTweak",
       "sources": [
         "Sources/*.m"
       ],
@@ -114,7 +114,7 @@
     ],
     "layout": [
       {
-        "path": "/Library/MobileSubstrate/DynamicLibraries/ApelinTweak.dylib",
+        "path": "/Library/MobileSubstrate/DynamicLibraries/LurosTweak.dylib",
         "product": "tweak"
       }
     ],

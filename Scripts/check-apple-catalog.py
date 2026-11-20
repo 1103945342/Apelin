@@ -16,7 +16,7 @@ A package marked `withdrawn` there is one Apple is known to have stopped
 serving: Luros offers it only while the catalog lists it, so its recorded
 address is not asked again.
 
-Everything is read from `Packages/ApelinToolchain/.../Support.swift`, so there
+Everything is read from `Packages/LurosToolchain/.../Support.swift`, so there
 is no second table to keep. `.github/workflows/apple-catalog.yml` runs this
 every day and files an issue with what it prints.
 
@@ -40,7 +40,7 @@ CATALOG = (
     "https://swscan.apple.com/content/catalogs/others/index-27-26-15-14-13-12-10.16-10.15-10.14-10.13-10.12-10.11"
     "-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog"
 )
-SUPPORT = "Packages/ApelinToolchain/Sources/ApelinToolchain/Support.swift"
+SUPPORT = "Packages/LurosToolchain/Sources/LurosToolchain/Support.swift"
 VERSION = re.compile(r'(?:Command Line Tools (?:for Xcode )?|"SU_VERS"\s*=\s*")([0-9]+(?:\.[0-9]+)*)')
 PACKAGE = re.compile(
     r'productID: "(?P<id>[^"]+)",\s*sha256: "[0-9a-f]{64}",\s*url: "(?P<url>[^"]+)",\s*size: (?P<size>[\d_]+),'

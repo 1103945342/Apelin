@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 /// A conversation row or an ordered entry in its summary's trace.

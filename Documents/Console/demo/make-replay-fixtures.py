@@ -6,7 +6,7 @@ Usage: make-replay-fixtures.py <capture> [--out <dir>]
 <capture> holds out/*.jsonl (the console's output, Documents/Console.md ▸
 Output) and scripts/*.json (the scripts that wrote them; each run names its
 script in `run.start`). The fixtures are written to --out, by default
-Packages/ApelinKit/Sources/ApelinReplay/Fixtures beside this repository:
+Packages/LurosKit/Sources/LurosReplay/Fixtures beside this repository:
 
   replies.json       every plain reply: {operation, request, response | error,
                      source}, in the order the runs made them, the request
@@ -43,11 +43,11 @@ from typing import NoReturn
 sys.dont_write_bytecode = True
 
 REPOSITORY = Path(__file__).resolve().parents[3]
-DEFAULT_OUT = REPOSITORY / "Packages/ApelinKit/Sources/ApelinReplay/Fixtures"
+DEFAULT_OUT = REPOSITORY / "Packages/LurosKit/Sources/LurosReplay/Fixtures"
 
 # Every attach answers a batch; its events belong to the task, not a reply.
 ATTACH_OPERATIONS = {"buildAttach", "environmentAttach", "agentAttach", "ptyAttach", "logStream", "confirmLoadedAttach"}
-# Errors from the wire (Envelope.swift ▸ ApelinError.Code); the console's own
+# Errors from the wire (Envelope.swift ▸ LurosError.Code); the console's own
 # (`taskEnded`, `expectationFailed`, …) say nothing about the operation.
 WIRE_ERRORS = {
     "unimplemented", "badRequest", "unknownOperation", "unsupportedVersion", "denied", "notFound",

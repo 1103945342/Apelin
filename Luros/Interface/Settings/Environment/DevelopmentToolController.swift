@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import UIKit
 
 /// Settings ▸ Environment ▸ Third-Party Tools: the four packages Luros's own
@@ -43,7 +43,7 @@ final class DevelopmentToolController: UITableViewController {
         reading = true
         tableView.reloadData()
         task = Task { [weak self] in
-            let response = try? await ApelinService.app.developmentTools()
+            let response = try? await LurosService.app.developmentTools()
             guard !Task.isCancelled else { return }
             await MainActor.run {
                 guard let self else { return }

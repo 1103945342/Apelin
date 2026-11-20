@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// An agent's `gitRepositoryCreate` (apelin_git_create_repository, owner,
@@ -27,14 +27,14 @@ enum AgentRepositoryCreateRules {
 
     /// Nil when the session may make it, else why not; under Confirm the
     /// approval that covers it is spent.
-    static func authorize(_ create: GitRepositoryCreateRequest, session: String?, registry: TaskRegistry) async -> ApelinError? {
+    static func authorize(_ create: GitRepositoryCreateRequest, session: String?, registry: TaskRegistry) async -> LurosError? {
         guard let session, let entry = await AgentSessionTable.shared.entry(session) else {
-            return ApelinError(.denied, "no agent session for this worker")
+            return LurosError(.denied, "no agent session for this worker")
         }
         guard entry.mode.asks else { return nil }
         guard await AgentApprovals.spend(entry: entry, registry: registry, covers: { covers(create, asked: $0) }) else {
             let owner = create.owner.map { "\($0)/" } ?? ""
-            return ApelinError(
+            return LurosError(
                 .denied,
                 "approval required: the user has not approved creating the \(create.visibility.rawValue) repository \(owner)\(create.name) on GitHub",
             )

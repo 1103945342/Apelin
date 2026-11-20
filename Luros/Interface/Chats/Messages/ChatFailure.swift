@@ -1,11 +1,11 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 /// What an error in a conversation says: one short line naming what went
 /// wrong, and under it what to do about it or what the provider said.
 ///
 /// The agent names the failures it can tell apart (the reasons of
-/// ApelinProtocol's `AgentFailure.swift`), and each of those is said here,
+/// LurosProtocol's `AgentFailure.swift`), and each of those is said here,
 /// in the reader's language. Any other comes in the words it was recorded
 /// with.
 struct ChatFailure: Hashable {
@@ -14,7 +14,7 @@ struct ChatFailure: Hashable {
 
     /// An `error` event's failure: `message` as it was recorded, `reason`
     /// when the agent gave one.
-    init(message: String, reason: ApelinError.Reason?) {
+    init(message: String, reason: LurosError.Reason?) {
         let message = message.trimmingCharacters(in: .whitespacesAndNewlines)
         title = reason.flatMap(Self.title(for:)) ?? String(localized: "Something Went Wrong")
         if let advice = reason.flatMap(Self.advice(for:)) {
@@ -28,7 +28,7 @@ struct ChatFailure: Hashable {
 
     /// The line a failure the agent named goes by, nil for one this
     /// version does not know.
-    static func title(for reason: ApelinError.Reason) -> String? {
+    static func title(for reason: LurosError.Reason) -> String? {
         switch reason {
         case .offline: String(localized: "No Internet Connection")
         case .network: String(localized: "Unable to Reach Model Provider")
@@ -44,7 +44,7 @@ struct ChatFailure: Hashable {
 
     /// What to do about a failure whose cause says it: these replace the
     /// provider's words, which only repeat the title.
-    private static func advice(for reason: ApelinError.Reason) -> String? {
+    private static func advice(for reason: LurosError.Reason) -> String? {
         switch reason {
         case .offline: String(localized: "Connect to the internet, then send your message again.")
         case .network: String(localized: "Check your network or proxy, then send your message again.")
@@ -56,7 +56,7 @@ struct ChatFailure: Hashable {
     }
 
     /// What stands under a failure whose provider said nothing of its own.
-    private static func fallback(for reason: ApelinError.Reason) -> String? {
+    private static func fallback(for reason: LurosError.Reason) -> String? {
         switch reason {
         case .rateLimit, .server: String(localized: "Wait a moment, then send your message again.")
         default: nil

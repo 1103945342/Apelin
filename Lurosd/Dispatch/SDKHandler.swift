@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 
 /// The SDK manager, served by luros-environment. An agent's import passes
 /// the host's own check first (`AgentEnvironmentRules`).
@@ -13,7 +13,7 @@ enum SDKHandler: DomainHandler {
             }
             return await host.startTask(request, kind: .environment, role: .environment, resumable: true)
         default:
-            return request.fail(ApelinError(.badRequest, "\(request.operation.rawValue) is not an SDK operation"))
+            return request.fail(LurosError(.badRequest, "\(request.operation.rawValue) is not an SDK operation"))
         }
     }
 }

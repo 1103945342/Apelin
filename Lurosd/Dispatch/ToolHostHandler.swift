@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 
 /// Agent tool extensions, started by the host from their installed manifests
 /// as mobile (Session/ToolHost). A session is its opener's.
@@ -27,7 +27,7 @@ enum ToolHostHandler: DomainHandler {
                 try await host.toolHosts.close(close, caller: request.caller)
             }
         default:
-            return request.fail(ApelinError(.badRequest, "\(request.operation.rawValue) is not a toolhost operation"))
+            return request.fail(LurosError(.badRequest, "\(request.operation.rawValue) is not a toolhost operation"))
         }
     }
 }

@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// Agent sessions: one luros-agent per session (instance = session ID).
@@ -142,7 +142,7 @@ enum AgentHandler: DomainHandler {
             }
             return await host.cancel(request, AgentSignInCancelRequest.self)
         default:
-            return request.fail(ApelinError(.badRequest, "\(request.operation.rawValue) is not an agent operation"))
+            return request.fail(LurosError(.badRequest, "\(request.operation.rawValue) is not an agent operation"))
         }
     }
 
@@ -217,8 +217,8 @@ enum AgentHandler: DomainHandler {
                     throw error
                 }
             } catch {
-                let reason = (error as? ApelinError)?.message ?? String(describing: error)
-                throw ApelinError(
+                let reason = (error as? LurosError)?.message ?? String(describing: error)
+                throw LurosError(
                     .conflict,
                     "the project's conversation “\(entry.title ?? entry.sessionID)” could not be closed (\(reason)), so the project was not deleted"
                 )
@@ -232,7 +232,7 @@ enum AgentHandler: DomainHandler {
     /// A sign-in task of this host's, still running.
     private static func signInTask(_ taskID: TaskID, host: SessionHost) async throws -> TaskRegistry.Record {
         guard let record = await host.registry.record(taskID), record.kind == .signIn else {
-            throw ApelinError(.notFound, "This sign-in has ended. Try again.")
+            throw LurosError(.notFound, "This sign-in has ended. Try again.")
         }
         return record
     }
@@ -244,12 +244,12 @@ enum AgentHandler: DomainHandler {
         do {
             let record = try await signInTask(request.decode(AgentSignInRespondRequest.self).taskID, host: host)
             guard !record.state.isTerminal else {
-                throw ApelinError(.conflict, "This sign-in has ended. Try again.")
+                throw LurosError(.conflict, "This sign-in has ended. Try again.")
             }
             guard let worker = await host.workers.existing(.agent, instance: credentialInstance),
                   !worker.channel.isClosed
             else {
-                throw ApelinError(.notFound, "This sign-in has ended. Try again.")
+                throw LurosError(.notFound, "This sign-in has ended. Try again.")
             }
             return try await worker.call(request.request, descriptors: [])
         } catch {
@@ -270,11 +270,11 @@ enum AgentHandler: DomainHandler {
             guard let entry = await AgentSessionTable.shared.entry(instance),
                   let record = await host.registry.record(entry.task.taskID), !record.state.isTerminal
             else {
-                throw ApelinError(.denied, "this agent worker serves no open session")
+                throw LurosError(.denied, "this agent worker serves no open session")
             }
             return entry
         case .worker:
-            throw ApelinError(.denied, "\(request.operation.rawValue) is not available to this caller")
+            throw LurosError(.denied, "\(request.operation.rawValue) is not available to this caller")
         }
     }
 
@@ -293,12 +293,12 @@ enum AgentHandler: DomainHandler {
         }
         let sessionID = (request.caller == .app ? asked.sessionID : nil) ?? UUID().uuidString.lowercased()
         guard UUID(uuidString: sessionID) != nil else {
-            return request.fail(ApelinError(.badRequest, "a session ID must be a UUID"))
+            return request.fail(LurosError(.badRequest, "a session ID must be a UUID"))
         }
         let reply = await AgentOpenTurns.shared.run(for: sessionID) {
             await open(request, asked, sessionID: sessionID, host: host)
         }
-        return reply ?? request.fail(ApelinError(.cancelled, "the chat was not opened: the request was cancelled"))
+        return reply ?? request.fail(LurosError(.cancelled, "the chat was not opened: the request was cancelled"))
     }
 
     /// Resolves the project, registers the session's task, starts its worker
@@ -331,7 +331,7 @@ enum AgentHandler: DomainHandler {
                         AgentConversationRules.coversOpen(open, target: target, asked: $0)
                     }
                     guard approved else {
-                        throw ApelinError(
+                        throw LurosError(
                             .denied,
                             "approval required: opening a conversation in \(target.name) needs the user's approval of this call"
                         )
@@ -339,11 +339,11 @@ enum AgentHandler: DomainHandler {
                 }
                 project = try AgentProjects.resolve(home: host.home, projectID: open.projectID, projectName: open.projectName)
                 if project != target {
-                    throw ApelinError(.conflict, "the project moved while the conversation was being opened")
+                    throw LurosError(.conflict, "the project moved while the conversation was being opened")
                 }
             } else {
                 guard asked.delegationBrief == nil else {
-                    throw ApelinError(.denied, "Only a verified opener may supply a delegation brief.")
+                    throw LurosError(.denied, "Only a verified opener may supply a delegation brief.")
                 }
                 open = asked
                 project = try AgentProjects.resolve(
@@ -369,7 +369,7 @@ enum AgentHandler: DomainHandler {
         do {
             authority = try await host.delegations.record(sessionID)
             if let authority, authority.projectID != project.id {
-                throw ApelinError(.conflict, "The saved assignment belongs to another project.")
+                throw LurosError(.conflict, "The saved assignment belongs to another project.")
             }
             if authority != nil {
                 // A record written before the marker existed is marked here,
@@ -379,12 +379,12 @@ enum AgentHandler: DomainHandler {
                 // It was opened from a brief whose record is gone. A chat an
                 // agent opened before briefs existed has no marker: it never
                 // had an authority to lose, and reopens as it always did.
-                throw ApelinError(.denied, "This delegated chat has no saved brief. Start a new structured assignment; it cannot reopen unrestricted.")
+                throw LurosError(.denied, "This delegated chat has no saved brief. Start a new structured assignment; it cannot reopen unrestricted.")
             }
         } catch { return request.fail(error) }
         if let existing {
             guard existing.project == project else {
-                return request.fail(ApelinError(.conflict, "This chat belongs to another project. Start a new chat."))
+                return request.fail(LurosError(.conflict, "This chat belongs to another project. Start a new chat."))
             }
             if let record = await host.registry.record(existing.task.taskID), !record.state.isTerminal {
                 // Nothing to open: the conversation runs already, and what its
@@ -401,12 +401,12 @@ enum AgentHandler: DomainHandler {
             if let metadata = try? AgentProjects.readManifest(metadataPath),
                metadata["project"]?["id"]?.stringValue != project.id
             {
-                return request.fail(ApelinError(.conflict, "This chat belongs to another project. Start a new chat."))
+                return request.fail(LurosError(.conflict, "This chat belongs to another project. Start a new chat."))
             }
         }
         if opener != nil {
             guard await AgentSessionTable.shared.reserveChild(project: project.id, registry: host.registry) else {
-                return request.fail(ApelinError(
+                return request.fail(LurosError(
                     .conflict,
                     "\(AgentConversations.maximumOpenChildren) conversations agents opened are already running in this project; stop one first"
                 ))
@@ -415,7 +415,7 @@ enum AgentHandler: DomainHandler {
         if let opener {
             do {
                 guard let brief = open.delegationBrief else {
-                    throw ApelinError(.badRequest, "A delegated conversation requires a brief.")
+                    throw LurosError(.badRequest, "A delegated conversation requires a brief.")
                 }
                 _ = try await host.delegations.register(child: sessionID, opener: opener.sessionID,
                                                         projectID: project.id, brief: brief)
@@ -424,7 +424,7 @@ enum AgentHandler: DomainHandler {
                                                        brief: brief, request: request.requestID)
             } catch {
                 await AgentSessionTable.shared.releaseChild(project: project.id)
-                return request.fail(ApelinError(.denied, error.localizedDescription))
+                return request.fail(LurosError(.denied, error.localizedDescription))
             }
         }
         // Whether the worker is told the host restarted is the host's
@@ -492,8 +492,8 @@ enum AgentHandler: DomainHandler {
                 throw error
             }
         } catch {
-            let failure = (error as? ApelinError)
-                ?? ApelinError(.unavailable, "The chat could not be started. Try again.")
+            let failure = (error as? LurosError)
+                ?? LurosError(.unavailable, "The chat could not be started. Try again.")
             await host.registry.finish(handle.taskID, .failed, message: failure.description)
             // This is safe even if accounting fails: only an untouched opening
             // seed is removed, never an observed turn or a pending report.
@@ -515,7 +515,7 @@ enum AgentHandler: DomainHandler {
                     }
                 } catch {
                     NSLog("lurosd-session: failed start could not be recorded in the assignment ledger: %@", error.localizedDescription)
-                    return request.fail(ApelinError(.unavailable,
+                    return request.fail(LurosError(.unavailable,
                         "\(failureReason) Its assignment could not be marked failed: \(error.localizedDescription). Inspect the team account before retrying."))
                 }
                 await AgentReportRelay.shared.accountChanged(opener.sessionID)
@@ -573,7 +573,7 @@ enum AgentHandler: DomainHandler {
                         AgentConversationRules.coversSend(prompt, target: target, asked: $0)
                     }
                     guard approved else {
-                        throw ApelinError(
+                        throw LurosError(
                             .denied,
                             "approval required: a message to a conversation of \(target.project.name) needs the user's approval of this call"
                         )
@@ -639,10 +639,10 @@ enum AgentHandler: DomainHandler {
         do {
             let fork = try request.decode(AgentForkRequest.self)
             guard UUID(uuidString: fork.newSessionID) != nil, fork.newSessionID != fork.sessionID else {
-                throw ApelinError(.badRequest, "a fork's session ID must be a new UUID")
+                throw LurosError(.badRequest, "a fork's session ID must be a new UUID")
             }
             if await AgentSessionTable.shared.entry(fork.newSessionID) != nil {
-                throw ApelinError(.conflict, "a session \(fork.newSessionID) is open already")
+                throw LurosError(.conflict, "a session \(fork.newSessionID) is open already")
             }
         } catch {
             return request.fail(error)
@@ -743,7 +743,7 @@ enum AgentHandler: DomainHandler {
         prepare: (() async -> Void)? = nil
     ) async -> HostReply {
         guard await AgentSessionTable.shared.entry(id) != nil, let worker = await host.workers.existing(.agent, instance: id), !worker.channel.isClosed else {
-            return request.fail(ApelinError(.notFound, "This chat is no longer running."))
+            return request.fail(LurosError(.notFound, "This chat is no longer running."))
         }
         await prepare?()
         let token: UUID?
@@ -759,7 +759,7 @@ enum AgentHandler: DomainHandler {
         } catch {
             await AgentReportRelay.shared.resolveStop(token, accepted: false)
             return request.fail(
-                (error as? ApelinError) ?? ApelinError(.unavailable, "This chat could not be reached. Try again.")
+                (error as? LurosError) ?? LurosError(.unavailable, "This chat could not be reached. Try again.")
             )
         }
     }
@@ -795,13 +795,13 @@ enum AgentHandler: DomainHandler {
     private static func runCode(_ request: HostRequest, host: SessionHost) async -> HostReply {
         await request.serve(AgentRunCodeRequest.self) { run in
             guard case let .worker(.agent, instance) = request.caller, instance == run.sessionID else {
-                throw ApelinError(.denied, "only the agent session's own worker can call shell_run")
+                throw LurosError(.denied, "only the agent session's own worker can call shell_run")
             }
             // Taken before the checks, so a Stop or Close that comes while
             // they run still ends the process once it spawns.
             let stopsSeen = AgentRunCode.stopCount(session: run.sessionID)
             guard let entry = await AgentSessionTable.shared.entry(run.sessionID) else {
-                throw ApelinError(.notFound, "no agent session \(run.sessionID)")
+                throw LurosError(.notFound, "no agent session \(run.sessionID)")
             }
             let identity = try await AgentApprovals.authorize(
                 run,

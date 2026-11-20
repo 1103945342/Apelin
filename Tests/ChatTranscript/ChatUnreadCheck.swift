@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 /// A conversation becomes unread when a reply comes while the reader is

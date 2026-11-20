@@ -1,7 +1,7 @@
 #!/bin/bash
 # The session host's macOS-runnable tests (Tests/SessionHost/main.swift),
-# compiled with the Lurosd sources they exercise against the ApelinCore and
-# ApelinProtocol that `swift build` left in <modules>. Run by `make harness`.
+# compiled with the Lurosd sources they exercise against the LurosCore and
+# LurosProtocol that `swift build` left in <modules>. Run by `make harness`.
 #
 # usage: test-session-host.sh <modules-dir> [<luros-environment-harness>]
 #        test-session-host.sh --device [<tool.entitlements>]
@@ -35,8 +35,8 @@ if [[ "${1:-}" == --device ]]; then
     # The two files are the device toolchain's: it predates trailing commas in
     # calls, so the copies it reads are the repository's with those removed.
     python3 - "$work" \
-        Packages/ApelinKit/Sources/ApelinCore/JSON.swift \
-        Packages/ApelinKit/Sources/ApelinProtocol/Operations/AgentTurnReport.swift <<'PYTHON'
+        Packages/LurosKit/Sources/LurosCore/JSON.swift \
+        Packages/LurosKit/Sources/LurosProtocol/Operations/AgentTurnReport.swift <<'PYTHON'
 import re, sys
 work = sys.argv[1]
 for source in sys.argv[2:]:
@@ -48,15 +48,15 @@ PYTHON
     core="$work/JSON.swift"
     report="$work/AgentTurnReport.swift"
     # The two modules the outbox reads, each built from the one file it needs,
-    # as Scripts/test-file-browser.sh builds ApelinCore for CanonicalPath.
-    swiftc -swift-version 5 -target arm64-apple-ios16.0 -parse-as-library -module-name ApelinCore \
-        -emit-module -emit-module-path "$work/ApelinCore.swiftmodule" "$core"
-    swiftc -swift-version 5 -target arm64-apple-ios16.0 -parse-as-library -module-name ApelinCore \
-        -c -o "$work/ApelinCore.o" "$core"
-    swiftc -swift-version 5 -target arm64-apple-ios16.0 -parse-as-library -module-name ApelinProtocol \
-        -emit-module -emit-module-path "$work/ApelinProtocol.swiftmodule" "$report"
-    swiftc -swift-version 5 -target arm64-apple-ios16.0 -parse-as-library -module-name ApelinProtocol \
-        -c -o "$work/ApelinProtocol.o" "$report"
+    # as Scripts/test-file-browser.sh builds LurosCore for CanonicalPath.
+    swiftc -swift-version 5 -target arm64-apple-ios16.0 -parse-as-library -module-name LurosCore \
+        -emit-module -emit-module-path "$work/LurosCore.swiftmodule" "$core"
+    swiftc -swift-version 5 -target arm64-apple-ios16.0 -parse-as-library -module-name LurosCore \
+        -c -o "$work/LurosCore.o" "$core"
+    swiftc -swift-version 5 -target arm64-apple-ios16.0 -parse-as-library -module-name LurosProtocol \
+        -emit-module -emit-module-path "$work/LurosProtocol.swiftmodule" "$report"
+    swiftc -swift-version 5 -target arm64-apple-ios16.0 -parse-as-library -module-name LurosProtocol \
+        -c -o "$work/LurosProtocol.o" "$report"
 
     cat > "$work/main.swift" <<'SWIFT'
 import Darwin
@@ -86,7 +86,7 @@ SWIFT
         Lurosd/Session/Agent/AgentReportOutbox.swift \
         Tests/SessionHost/AgentReportChecks.swift \
         "$work/main.swift" \
-        "$work/ApelinCore.o" "$work/ApelinProtocol.o" \
+        "$work/LurosCore.o" "$work/LurosProtocol.o" \
         -o "$work/report-checks"
     ldid "-S$entitlements" "$work/report-checks"
     "$work/report-checks"
@@ -167,14 +167,14 @@ sources=(
 
 # The objects: one per module (the new build system) or one per source file.
 objects=()
-for module in ApelinCore ApelinProtocol; do
+for module in LurosCore LurosProtocol; do
     if [[ -f "$modules/$module.o" ]]; then
         objects+=("$modules/$module.o")
     else
         while IFS= read -r object; do objects+=("$object"); done < <(find "$modules/.." "$modules" -maxdepth 2 -path "*/$module.build/*.o" | sort -u)
     fi
 done
-[[ ${#objects[@]} -ge 2 ]] || { echo "error: no ApelinCore/ApelinProtocol objects near $modules" >&2; exit 1; }
+[[ ${#objects[@]} -ge 2 ]] || { echo "error: no LurosCore/LurosProtocol objects near $modules" >&2; exit 1; }
 
 xcrun --sdk macosx swiftc -swift-version 5 -target arm64-apple-macos13.0 \
     -I "$root/Shared/XPCShim" -I "$modules" \

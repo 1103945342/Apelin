@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Then
 import UIKit
 import UniformTypeIdentifiers
@@ -104,7 +104,7 @@ final class ToolchainController: TableController {
         dataSource.beginLoad()
         loader = Task { [weak self] in
             do {
-                let status = try await ApelinService.app.toolchainStatus()
+                let status = try await LurosService.app.toolchainStatus()
                 guard !Task.isCancelled else { return }
                 self?.show(status)
             } catch {
@@ -159,7 +159,7 @@ final class ToolchainController: TableController {
     }
 
     @objc dynamic static func unavailableText(_ error: Error) -> String {
-        if let error = error as? ApelinError, error.code == .backendUnavailable {
+        if let error = error as? LurosError, error.code == .backendUnavailable {
             return String(localized: """
             Luros’s background service is unavailable. Reinstall Luros with your preferred package \
             manager to restore it.

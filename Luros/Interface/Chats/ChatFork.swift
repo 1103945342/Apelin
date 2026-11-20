@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 
 /// Helpers for a conversation created from a sealed model snapshot. The fork
 /// worker replays its new session log and marks those records in the event

@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// One package the install bridge put on the device, from the moment it chose
@@ -137,7 +137,7 @@ actor InstallationStore {
 
     func save(_ record: InstallationRecord) throws {
         loadIfNeeded()
-        guard Self.validID(record.installationID) else { throw ApelinError(.internal, "bad installation ID") }
+        guard Self.validID(record.installationID) else { throw LurosError(.internal, "bad installation ID") }
         var record = record
         record.updatedAt = Date()
         try FileManager.default.createDirectory(
@@ -154,7 +154,7 @@ actor InstallationStore {
 
     @discardableResult
     func update(_ id: String, _ change: (inout InstallationRecord) -> Void) throws -> InstallationRecord {
-        guard var record = record(id) else { throw ApelinError(.notFound, "no installation \(id)") }
+        guard var record = record(id) else { throw LurosError(.notFound, "no installation \(id)") }
         change(&record)
         try save(record)
         return record

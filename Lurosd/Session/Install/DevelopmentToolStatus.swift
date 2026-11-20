@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 /// The four programs Luros's own work needs, and whether this device has

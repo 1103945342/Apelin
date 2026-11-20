@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import UIKit
 
 /// One provider's models, each with the figures the app reads it against:

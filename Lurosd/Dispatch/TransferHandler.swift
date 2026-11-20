@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 
 /// Transfer files (.apetc, .apesdk, .apeproj), served by luros-environment.
 /// The app's alone: no worker may call these (CallerPolicy).
@@ -18,7 +18,7 @@ enum TransferHandler: DomainHandler {
             // record, which the same import run again picks up.
             await host.startTask(request, kind: .environment, role: .environment, resumable: true)
         default:
-            request.fail(ApelinError(.badRequest, "\(request.operation.rawValue) is not a transfer operation"))
+            request.fail(LurosError(.badRequest, "\(request.operation.rawValue) is not a transfer operation"))
         }
     }
 }

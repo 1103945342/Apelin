@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Then
 import UIKit
 
@@ -106,7 +106,7 @@ final class ToolchainCatalogController: TableController {
         dataSource.beginLoad()
         loader = Task { [weak self] in
             do {
-                let catalog = try await ApelinService.app.toolchainCatalog()
+                let catalog = try await LurosService.app.toolchainCatalog()
                 guard !Task.isCancelled, let self else { return }
                 refreshControl?.endRefreshing()
                 products = catalog.products
@@ -280,7 +280,7 @@ final class ToolchainCatalogController: TableController {
         presenter.view.isUserInteractionEnabled = false
         Task { [weak self] in
             do {
-                let handle = try await ApelinService.app.toolchainSetup(ToolchainSetupRequest(
+                let handle = try await LurosService.app.toolchainSetup(ToolchainSetupRequest(
                     source: .appleCatalog(productID: product.productID),
                     components: product.supportsSwift == true ? [.c, .swift] : [.c],
                 ))

@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import UIKit
 
 final class MemoriesController: TableController {

@@ -7,7 +7,7 @@
 # what an open that lands after the page moved on is worth (TerminalAttachment,
 # TerminalBatchCheck).
 #
-# The model imports ApelinCore for JSONCoding, JSONValue, PreservedList and
+# The model imports LurosCore for JSONCoding, JSONValue, PreservedList and
 # UnreadableFile alone, so the module is built from those two files here: two
 # stages, then the model and the checks against it. None of it needs UIKit,
 # SnapKit or ghostty; the page and the session are typechecked by the app.
@@ -42,13 +42,13 @@ if [[ "${1:-}" == --device ]]; then
 fi
 
 core=(
-    Packages/ApelinKit/Sources/ApelinCore/JSON.swift
-    Packages/ApelinKit/Sources/ApelinCore/PreservedList.swift
+    Packages/LurosKit/Sources/LurosCore/JSON.swift
+    Packages/LurosKit/Sources/LurosCore/PreservedList.swift
 )
-"${compiler[@]}" -swift-version 5 -parse-as-library -module-name ApelinCore \
-    -emit-module -emit-module-path "$work/ApelinCore.swiftmodule" "${core[@]}"
-"${compiler[@]}" -swift-version 5 -parse-as-library -wmo -module-name ApelinCore \
-    -c -o "$work/ApelinCore.o" "${core[@]}"
+"${compiler[@]}" -swift-version 5 -parse-as-library -module-name LurosCore \
+    -emit-module -emit-module-path "$work/LurosCore.swiftmodule" "${core[@]}"
+"${compiler[@]}" -swift-version 5 -parse-as-library -wmo -module-name LurosCore \
+    -c -o "$work/LurosCore.o" "${core[@]}"
 
 model=(
     Luros/Interface/Terminal/TerminalTarget.swift
@@ -73,7 +73,7 @@ checks=(
 # modifying the attachment, and a closure that reached back into it would trap
 # here rather than in the app.
 "${compiler[@]}" -swift-version 5 -parse-as-library -enforce-exclusivity=checked \
-    -I "$work" -o "$work/check" "${model[@]}" "${checks[@]}" "$work/ApelinCore.o"
+    -I "$work" -o "$work/check" "${model[@]}" "${checks[@]}" "$work/LurosCore.o"
 
 if [[ -n "$entitlements" ]]; then
     ldid "-S$entitlements" "$work/check"

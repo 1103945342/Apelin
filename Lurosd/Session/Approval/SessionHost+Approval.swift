@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// The host's own Confirm-mode decision (Milestone 1 §7, 宿主执行策略): the
@@ -29,7 +29,7 @@ extension SessionHost {
         do {
             build = try request.decode(BuildStartRequest.self)
         } catch {
-            return request.fail(ApelinError(.badRequest, "\(error)"))
+            return request.fail(LurosError(.badRequest, "\(error)"))
         }
         // Only the host names the digest it approved.
         build.approvedBuildDigest = nil
@@ -39,7 +39,7 @@ extension SessionHost {
         do {
             request.request.payload = try JSONCoding.encode(build)
         } catch {
-            return request.fail(ApelinError(.internal, "encoding the build request: \(error)"))
+            return request.fail(LurosError(.internal, "encoding the build request: \(error)"))
         }
         return nil
     }
@@ -70,7 +70,7 @@ extension SessionHost {
               let digest = json["descriptionDigests"]?["build"]?.stringValue
         else {
             return request.fail(
-                ApelinError(
+                LurosError(
                     .denied,
                     "approval required: the host could not compute the build description of \(build.projectID), so it cannot tell it matches the template",
                 ),
@@ -79,14 +79,14 @@ extension SessionHost {
         do {
             guard try await approvals.allows(digest, kind: .build, project: build.projectID) else {
                 return request.fail(
-                    ApelinError(
+                    LurosError(
                         .denied,
                         "approval required: the build description \(digest) of project \(build.projectID) changed since the template and was never approved",
                     ),
                 )
             }
         } catch {
-            return request.fail((error as? ApelinError) ?? ApelinError(.internal, "\(error)"))
+            return request.fail((error as? LurosError) ?? LurosError(.internal, "\(error)"))
         }
         build.approvedBuildDigest = digest
         return nil

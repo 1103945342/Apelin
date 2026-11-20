@@ -35,7 +35,7 @@ REPOSITORY = HERE.parent.parent
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(REPOSITORY / "Documents" / "Schemas" / "Tools"))
 
-import apelin_schema as schema  # noqa: E402
+import luros_schema as schema  # noqa: E402
 
 PREFIX = {"rootless": "/var/jb", "roothide": ""}
 PAGES = "https://1103945342.github.io/Luros/"

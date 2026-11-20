@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 import SPIndicator
 
@@ -15,7 +15,7 @@ enum ChatLinkTarget {
     /// The conversation or project `link` names, or nil when it names
     /// nothing the app can open. An import is a sheet over the page
     /// (`RepositoryImportFlow`), never a destination.
-    static func resolve(_ link: ApelinLink, in runtime: ChatRuntime) async -> Destination? {
+    static func resolve(_ link: LurosLink, in runtime: ChatRuntime) async -> Destination? {
         switch link {
         case .app, .unknown, .importRepository, .invalidImport:
             nil
@@ -29,7 +29,7 @@ enum ChatLinkTarget {
     }
 
     /// Says, briefly, that `link` opened nothing; what was shown stays.
-    static func reportUnresolved(_ link: ApelinLink) {
+    static func reportUnresolved(_ link: LurosLink) {
         let title = switch link {
         case .conversation: String(localized: "Conversation Not Found")
         case .project: String(localized: "Project Not Found")
@@ -46,7 +46,7 @@ enum ChatLinkTarget {
         if let summary = summary(for: id, in: runtime) {
             return summary
         }
-        guard let sessions = try? await ApelinService.app.agentList().sessions,
+        guard let sessions = try? await LurosService.app.agentList().sessions,
               let session = sessions.first(where: { sameID($0.sessionID, id) })
         else { return nil }
         // the launch may have taken it in while the list was read

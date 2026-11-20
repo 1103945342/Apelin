@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// An agent's `distributionPublish` (apelin_package_publish; owner,
@@ -41,18 +41,18 @@ enum AgentPublishRules {
         session: String?,
         registry: TaskRegistry,
         artifacts: ArtifactRegistry,
-    ) async -> ApelinError? {
+    ) async -> LurosError? {
         guard let session, let entry = await AgentSessionTable.shared.entry(session) else {
-            return ApelinError(.denied, "no agent session for this worker")
+            return LurosError(.denied, "no agent session for this worker")
         }
         guard let repository = publish.repository, !repository.isEmpty,
               let digests = publish.digests, digests.count == publish.files.count
         else {
-            return ApelinError(.badRequest, "an agent's publish names the repository and each package's digest")
+            return LurosError(.badRequest, "an agent's publish names the repository and each package's digest")
         }
         for (file, digest) in zip(publish.files, digests) {
             guard let built = await artifacts.artifact(path: file), InstallDigest.normalized(digest) == built.digest else {
-                return ApelinError(
+                return LurosError(
                     .denied,
                     "an agent publishes only packages Luros's builds made, as they made them: \((file as NSString).lastPathComponent) is not one with that digest; build it again with apelin_project_build",
                 )
@@ -61,7 +61,7 @@ enum AgentPublishRules {
         guard entry.mode.asks else { return nil }
         guard await AgentApprovals.spend(entry: entry, registry: registry, covers: { covers(publish, asked: $0) }) else {
             let count = publish.files.count == 1 ? "this package" : "these \(publish.files.count) packages"
-            return ApelinError(.denied, "approval required: the user has not approved publishing \(count) to \(repository)")
+            return LurosError(.denied, "approval required: the user has not approved publishing \(count) to \(repository)")
         }
         return nil
     }

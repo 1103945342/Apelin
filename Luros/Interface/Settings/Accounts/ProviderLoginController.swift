@@ -1,6 +1,6 @@
 import AlertController
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import SnapKit
 import SPIndicator
 import Then
@@ -228,7 +228,7 @@ final class ProviderLoginController: UIViewController {
         guard !progress.isFinished else { return }
         follower?.cancel()
         if let handle {
-            Task { try? await ApelinService.app.agentSignInCancel(taskID: handle.taskID) }
+            Task { try? await LurosService.app.agentSignInCancel(taskID: handle.taskID) }
         }
     }
 
@@ -259,25 +259,25 @@ final class ProviderLoginController: UIViewController {
             let handle: TaskHandle
             do {
                 if editing {
-                    let configuration = try await ApelinService.app.agentAPIConfiguration(provider: provider)
+                    let configuration = try await LurosService.app.agentAPIConfiguration(provider: provider)
                     guard !Task.isCancelled else { return }
                     self?.savedValues = configuration.values
                 }
-                handle = try await ApelinService.app.agentSignIn(provider: provider, method: method)
+                handle = try await LurosService.app.agentSignIn(provider: provider, method: method)
             } catch {
                 guard !Task.isCancelled else { return }
                 self?.lose(error)
                 return
             }
             guard !Task.isCancelled else {
-                try? await ApelinService.app.agentSignInCancel(taskID: handle.taskID)
+                try? await LurosService.app.agentSignInCancel(taskID: handle.taskID)
                 return
             }
             self?.handle = handle
             var cursor = EventSeq.start
             while !Task.isCancelled {
                 do {
-                    for try await event in ApelinService.app.events(of: handle, afterSeq: cursor) {
+                    for try await event in LurosService.app.events(of: handle, afterSeq: cursor) {
                         cursor = event.seq
                         self?.receive(event)
                     }
@@ -286,7 +286,7 @@ final class ProviderLoginController: UIViewController {
                     if Task.isCancelled {
                         return
                     }
-                    if let error = error as? ApelinError, error.code.endsTaskFollowing {
+                    if let error = error as? LurosError, error.code.endsTaskFollowing {
                         self?.lose(error)
                         return
                     }
@@ -314,7 +314,7 @@ final class ProviderLoginController: UIViewController {
     }
 
     @objc dynamic static func unavailableText(_ error: Error) -> String {
-        if let error = error as? ApelinError, error.code == .backendUnavailable {
+        if let error = error as? LurosError, error.code == .backendUnavailable {
             return String(localized: """
             Luros’s background service is unavailable. Reinstall Luros with your preferred package \
             manager to sign in.
@@ -350,7 +350,7 @@ final class ProviderLoginController: UIViewController {
             guard let self else { return }
             defer { submitting = false; updatePrimary() }
             do {
-                let accounts = try await ApelinService.app.agentAccountList().accounts
+                let accounts = try await LurosService.app.agentAccountList().accounts
                 guard let account = accounts.first(where: { $0.provider == self.provider && $0.signedIn }),
                       let navigation = navigationController, navigation.presentingViewController != nil
                 else { return }
@@ -612,13 +612,13 @@ final class ProviderLoginController: UIViewController {
         render()
         Task { [weak self] in
             do {
-                try await ApelinService.app.agentSignInRespond(taskID: handle.taskID, fields: [.callbackURL: address])
+                try await LurosService.app.agentSignInRespond(taskID: handle.taskID, fields: [.callbackURL: address])
             } catch {
                 guard let self, self.handle == handle else { return }
                 isPasting = false
                 render()
                 guard !progress.isFinished else { return }
-                if let error = error as? ApelinError, error.code == .badRequest {
+                if let error = error as? LurosError, error.code == .badRequest {
                     presentNotice(
                         title: "Address Not Accepted",
                         message: """
@@ -642,14 +642,14 @@ final class ProviderLoginController: UIViewController {
             guard let self else { return }
             do {
                 try await ProviderProgress.run(title: "Fetching Models", from: self, cancel: {
-                    try? await ApelinService.app.agentSignInCancel(taskID: handle.taskID)
+                    try? await LurosService.app.agentSignInCancel(taskID: handle.taskID)
                 }) {
-                    try await ApelinService.app.agentSignInRespond(
+                    try await LurosService.app.agentSignInRespond(
                         taskID: handle.taskID,
                         fields: values,
                         verifyModel: false,
                     )
-                    for try await event in ApelinService.app.events(of: handle) {
+                    for try await event in LurosService.app.events(of: handle) {
                         self.receive(event)
                         if self.progress.isFinished {
                             break

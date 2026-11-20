@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import UIKit
 
 /// The first step of distributing a project. The release packages builds
@@ -371,7 +371,7 @@ final class ProjectDistributionController: TableController {
                     checkFailure = nil
                     return
                 }
-                let response = try await ApelinService.app.projectCheck(
+                let response = try await LurosService.app.projectCheck(
                     projectID: project.id,
                     purpose: .distribution,
                     bootstrap: target,
@@ -404,7 +404,7 @@ final class ProjectDistributionController: TableController {
             if let project = try? await DistributionProject.resolve(named: projectName), project.method.canBuild {
                 isIPA = project.isIPA
                 // the link needs no network; a failure leaves every package unpublished
-                let linked = try? await ApelinService.app.distributionRepositoryList(repositories: false).linked
+                let linked = try? await LurosService.app.distributionRepositoryList(repositories: false).linked
                 found = await DistributionPackages.newest(
                     projectID: project.id,
                     package: project.package,
@@ -508,7 +508,7 @@ enum DistributionProject {
     static func id(named name: String) async throws -> String {
         let project = try await resolve(named: name)
         if let blocker = project.method.blocker {
-            throw ApelinError(.badRequest, blocker)
+            throw LurosError(.badRequest, blocker)
         }
         return project.id
     }
@@ -535,11 +535,11 @@ enum DistributionProject {
                   let manifest = CanonicalPath.resolve(root.appendingPathComponent("luros-project.json").path),
                   manifest == canonical + "/luros-project.json"
             else {
-                throw ApelinError(.notFound, String(localized: "This project is no longer available."))
+                throw LurosError(.notFound, String(localized: "This project is no longer available."))
             }
             let value = try JSONCoding.decode(JSONValue.self, from: Data(contentsOf: URL(fileURLWithPath: manifest)))
             guard let id = value["projectID"]?.stringValue else {
-                throw ApelinError(.notFound, String(localized: "This project is no longer available."))
+                throw LurosError(.notFound, String(localized: "This project is no longer available."))
             }
             let method = ProjectBuildMethod(manifest: value)
             var package: (id: String, version: String)?

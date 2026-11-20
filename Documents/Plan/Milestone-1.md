@@ -52,7 +52,7 @@
 
 **已经验证过的部分** [已验证]：第 1 步的下载和解包、第 2 步的社区 SDK 下载，以及临时工具完成的编译、打包、安装与加载链路。工具链改造在 Mac 上做，签名和安装使用临时 ldid/dpkg，未验证产品的设备端改造器、签名实现或 Irisin 桥接；不等于上述六步产品验收已通过。
 
-**[现状]** 六步都已在两台 vphone 上经产品路径完成（设备端改造、`ApelinCodeSign`、经 irisind 安装、respring、日志标记确认加载），但由 console 驱动，不是界面操作；rootless、真机、iOS 16、iPad 和 Swift 仍未验证，agent 只验证了拒绝路径。
+**[现状]** 六步都已在两台 vphone 上经产品路径完成（设备端改造、`LurosCodeSign`、经 irisind 安装、respring、日志标记确认加载），但由 console 驱动，不是界面操作；rootless、真机、iOS 16、iPad 和 Swift 仍未验证，agent 只验证了拒绝路径。
 
 ## 2. 进程与 wire
 

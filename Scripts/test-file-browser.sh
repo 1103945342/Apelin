@@ -6,7 +6,7 @@
 # that opened it is gone — plus the locations menu, read off the bundle's own
 # path.
 #
-# The model imports ApelinCore for CanonicalPath alone, so the module is built
+# The model imports LurosCore for CanonicalPath alone, so the module is built
 # from that one file here: two stages, then the model, the tests and
 # Shared/RoothideRoot.swift against it.
 #
@@ -36,11 +36,11 @@ if [[ "${1:-}" == --device ]]; then
     compiler=(swiftc -target arm64-apple-ios16.0)
 fi
 
-core=(Packages/ApelinKit/Sources/ApelinCore/CanonicalPath.swift)
-"${compiler[@]}" -swift-version 5 -parse-as-library -module-name ApelinCore \
-    -emit-module -emit-module-path "$work/ApelinCore.swiftmodule" "${core[@]}"
-"${compiler[@]}" -swift-version 5 -parse-as-library -module-name ApelinCore \
-    -c -o "$work/ApelinCore.o" "${core[@]}"
+core=(Packages/LurosKit/Sources/LurosCore/CanonicalPath.swift)
+"${compiler[@]}" -swift-version 5 -parse-as-library -module-name LurosCore \
+    -emit-module -emit-module-path "$work/LurosCore.swiftmodule" "${core[@]}"
+"${compiler[@]}" -swift-version 5 -parse-as-library -module-name LurosCore \
+    -c -o "$work/LurosCore.o" "${core[@]}"
 
 model=(
     Luros/Interface/Files/FileBrowserBreadcrumb.swift
@@ -64,7 +64,7 @@ checks=(
 )
 
 "${compiler[@]}" -swift-version 5 -I "$work" \
-    "${model[@]}" Shared/RoothideRoot.swift "$work/ApelinCore.o" "${checks[@]}" \
+    "${model[@]}" Shared/RoothideRoot.swift "$work/LurosCore.o" "${checks[@]}" \
     -o "$work/file-browser"
 if [[ -n "$entitlements" ]]; then
     ldid "-S$entitlements" "$work/file-browser"

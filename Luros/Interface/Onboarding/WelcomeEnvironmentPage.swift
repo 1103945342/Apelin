@@ -1,7 +1,7 @@
 // Copyright (c) 2026 OwnGoal Studio. MIT; see LICENSE beside this file.
 // Table/action-bar layout copied from Irisin's WelcomeRepositoriesController.
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import UIKit
 
 /// The recommended toolchain and SDK for this device. The page's button
@@ -84,9 +84,9 @@ final class WelcomeEnvironmentPage: WelcomeListPage {
         updateRows()
         operation = Task { [weak self] in
             do {
-                async let catalog = ApelinService.app.toolchainCatalog()
-                async let toolchains = ApelinService.app.toolchainStatus()
-                async let sdks = ApelinService.app.sdkList(includeSources: true, readSources: true)
+                async let catalog = LurosService.app.toolchainCatalog()
+                async let toolchains = LurosService.app.toolchainStatus()
+                async let sdks = LurosService.app.sdkList(includeSources: true, readSources: true)
                 let values = try await (catalog, toolchains, sdks)
                 guard !Task.isCancelled, let self else { return }
                 resolving = false
@@ -218,7 +218,7 @@ final class WelcomeEnvironmentPage: WelcomeListPage {
                 let page: EnvironmentTaskController
                 if recommendation.installedToolchain == nil {
                     let components: [ToolchainComponentKind] = recommendation.includesSwift ? [.c, .swift] : [.c]
-                    let handle = try await ApelinService.app.toolchainSetup(.init(
+                    let handle = try await LurosService.app.toolchainSetup(.init(
                         source: .appleCatalog(productID: recommendation.toolchain.productID),
                         components: components,
                     ))
@@ -229,7 +229,7 @@ final class WelcomeEnvironmentPage: WelcomeListPage {
                         doneTitle: String(localized: "Toolchain Ready"),
                     )
                 } else if let source = recommendation.sdk.source {
-                    let handle = try await ApelinService.app.sdkImport(source)
+                    let handle = try await LurosService.app.sdkImport(source)
                     page = EnvironmentTaskController(
                         handle: handle,
                         work: .sdkImport,

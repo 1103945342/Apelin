@@ -81,7 +81,7 @@ the same executable in session mode; the workers are its children.
   renamed into the other, and a deb keeps every check it had.
 - **A project made from a template also carries an Xcode project.**
   `ProjectStore.create` writes `<name>.xcodeproj` and `Xcode/` beside
-  `luros-project.json` (`XcodeProject`, `ApelinProject/Project/XcodeProject.swift`),
+  `luros-project.json` (`XcodeProject`, `LurosProject/Project/XcodeProject.swift`),
   from that same description: one native target per product, the
   configurations' settings, the sources and resources its globs matched when
   it was written, a shared scheme each, and the extension support's headers
@@ -249,7 +249,7 @@ the same executable in session mode; the workers are its children.
   `make check` on a bare one; a plist without such keys needs neither.
 - **One saved entry that does not read never costs the others.** A list
   kept on disk and written back is read one element at a time
-  (`PreservedList` in ApelinCore: what does not decode is kept and written
+  (`PreservedList` in LurosCore: what does not decode is kept and written
   back as it was), a folder of records is read per file, and a file that
   does not read at all is set aside (`UnreadableFile.setAside`) — never
   replaced by an empty state the next save makes permanent, and never a
@@ -409,7 +409,7 @@ the same executable in session mode; the workers are its children.
 
 What `CHECKLIST.md` asked to be written down, and where the answer lives.
 
-- **The wire** (`Packages/ApelinKit/Sources/ApelinProtocol`) is a closed
+- **The wire** (`Packages/LurosKit/Sources/LurosProtocol`) is a closed
   list of operations, `AppOperation`, and none of them is `exec(path, argv)`:
   `hello` (answered by lurosd itself with the install root it derived from
   its own path, its protocol version and the operation list);
@@ -470,7 +470,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `afterSeq`), ended by a `state` event, stopped by a cancel.
   An operation is added in four places together: its case in
   `AppOperation.swift` (`domain`, `requestType`); its request/response types
-  and `ApelinService` method in `Operations/<Domain>.swift`; its case in
+  and `LurosService` method in `Operations/<Domain>.swift`; its case in
   `Lurosd/Dispatch/<Domain>Handler.swift` (and `CallerPolicy` if a worker may
   call it); and this list. A worker-served operation is then a case in that
   worker's handler.
@@ -478,7 +478,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   (`Lurosd/Session/Channel/WeChatChannel.swift`; the wire in
   `Operations/Channel.swift`, the page in `Interface/Settings/ChannelController.swift`).
   Settings ▸ Plugins signs one in — today the WeChat ClawBot plugin, through
-  its iLink bot API (`ApelinCore/Ilink`): a QR code the reader scans with a
+  its iLink bot API (`LurosCore/Ilink`): a QR code the reader scans with a
   phone, a long poll for messages, one POST per reply. It lives in the host
   because what a message becomes is the host's own work: the channel asks
   through the dispatcher as the app's caller, so a message gets every check a
@@ -625,22 +625,22 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   and `buildAttach` (its local toolchain package, through the same bridge),
   the diagnostics worker `crashOpen` and `respring`, and nothing else call
   anything. Workers: `luros-environment` (toolchain, SDKs, git, transfer
-  files; ApelinEnvironment, ApelinGit, ApelinProject, Packages/ApelinToolchain,
-  which brings ApelinFormats' ApelinCodeSign),
-  `luros-build` (extensions, projects, builds; ApelinProject, ApelinBuild,
-  Packages/ApelinFormats), `luros-agent` (one per session; ApelinProject,
-  Packages/ApelinAgent), `luros-diagnostics` (icli, crashes, UI;
-  Packages/ApelinDiagnostics), all mobile; `luros-log-reader` (root,
-  ApelinCore, ApelinProtocol and ApelinLogReaderWorker only). luros-log-reader
-  adds to ApelinCore and ApelinProtocol only ApelinLogReaderWorker, whose
-  closure is ApelinLogReader, its Objective-C shim and the shared request
-  types; lurosd links those two, ApelinToolHost and ApelinToolCore
-  (Packages/ApelinToolHost) and compiles the vendored IrisinExternalClient
+  files; LurosEnvironment, LurosGit, LurosProject, Packages/LurosToolchain,
+  which brings LurosFormats' LurosCodeSign),
+  `luros-build` (extensions, projects, builds; LurosProject, LurosBuild,
+  Packages/LurosFormats), `luros-agent` (one per session; LurosProject,
+  Packages/LurosAgent), `luros-diagnostics` (icli, crashes, UI;
+  Packages/LurosDiagnostics), all mobile; `luros-log-reader` (root,
+  LurosCore, LurosProtocol and LurosLogReaderWorker only). luros-log-reader
+  adds to LurosCore and LurosProtocol only LurosLogReaderWorker, whose
+  closure is LurosLogReader, its Objective-C shim and the shared request
+  types; lurosd links those two, LurosToolHost and LurosToolCore
+  (Packages/LurosToolHost) and compiles the vendored IrisinExternalClient
   (`Lurosd/Vendor/`, MIT, Irisin 4.7.0, its LICENSE beside it) — every one
   of them system code that depends on nothing else. `make harness` checks
   all of it (`Scripts/check-system-only.py`). The agent, diagnostics and
   log-reader workers' `main.swift` is one call into a package library
-  (`ApelinAgentWorker`, `ApelinDiagnosticsWorker`, `ApelinLogReaderWorker`),
+  (`LurosAgentWorker`, `LurosDiagnosticsWorker`, `LurosLogReaderWorker`),
   so the logic is tested by `make harness`.
   Each worker's entitlements are `Packaging/Workers/<name>.entitlements`,
   never the client key.
@@ -773,7 +773,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     Nothing on the wire writes the ledger, and
     `approvalDigestState` is its read side for the agent.
     The screen (owner, 2026-10-30; `Session/Agent/AgentScreenRules.swift`,
-    ApelinProtocol's `ScreenConsent`): the session table keeps each
+    LurosProtocol's `ScreenConsent`): the session table keeps each
     session's Ask Before Using the Screen (`asksBeforeScreen`), the app's
     from every `agentOpen` and from an `agentPrompt` that carries it, an
     agent-opened session its opener's. While it is on, in every mode, an
@@ -913,7 +913,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     line, cut to 40 and 180 characters; at most three between two of the
     session's prompts or turn ends, an empty one none; no operation
     carries it, the event is data the host reads by these rules,
-    `AgentNoticeRules` in ApelinProtocol). Never for `aborted`, nor for a
+    `AgentNoticeRules` in LurosProtocol). Never for `aborted`, nor for a
     session opened with `closeWhenFinished`. The title is the session's
     latest `title`, else its first message's opening, else "New Chat"; keys
     are `localizedUserNotificationString` keys the app also spells.
@@ -963,7 +963,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `r1-resume-build.json`, `r1-resume-sdk-import.json` and
   `r2-resume-toolchain.json` check a resume, killing the host by its
   `session.pid` (steps in `Documents/Console.md`).
-- **The environment worker** (`Packages/ApelinKit/Sources/ApelinEnvironment`,
+- **The environment worker** (`Packages/LurosKit/Sources/LurosEnvironment`,
   `EnvironmentWorker`; layout in `EnvironmentLayout`). A task-starting
   operation is checked before it is accepted — a bad request is the reply,
   not a failed task — then runs in `Environment/staging/<taskID>/` and ends
@@ -975,7 +975,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   names, no directory through a link, no special files, bounded); identity
   only from `SDKSettings.json`, `Foundation.tbd` and the Swift interfaces;
   every link must resolve inside; Mach-O judged by header type through
-  ApelinMachO — `MH_DYLIB`, `MH_DYLIB_STUB`, `MH_OBJECT` pass, `MH_EXECUTE`
+  LurosMachO — `MH_DYLIB`, `MH_DYLIB_STUB`, `MH_OBJECT` pass, `MH_EXECUTE`
   in any slice or static-archive member, `MH_BUNDLE` and the rest are
   refused; each file's check and digest run on up to four cores, and the
   digest and a refusal are the ones walk order gives. Registered as
@@ -993,7 +993,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   (2026-10-21, `Documents/Research/Device-Validation.md` ▸ Real devices). An
   explicit list, including an empty one, replaces the default. SDKs stay
   Apple's under Apple's terms.
-  *Git*: libgit2 in `ApelinGit`, no libgit2 type public. A project is named
+  *Git*: libgit2 in `LurosGit`, no libgit2 type public. A project is named
   by its `projectID` or, before it has a description, its folder name, and
   resolved to exactly one component below the realpath of `Projects/` — or,
   for a repository the workspace keeps in a subdirectory, that and `/` and
@@ -1007,7 +1007,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   makes starts as a repository on `main` with no commit (owner,
   2026-10-25): luros-build, which has no libgit2, writes what
   `git init -b main` leaves into the staging folder (`EmptyRepository`
-  in ApelinProject), so project and repository arrive together; `gitInit`
+  in LurosProject), so project and repository arrive together; `gitInit`
   makes one on `main` for a project that has none (`conflict` when it has
   a `.git`; any other call on one without is `notFound`, reason
   `notARepository`). Both write `.git/info/exclude`, never `.gitignore`,
@@ -1020,7 +1020,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `GitLibrary` gives a remote 30 s to accept a connection and 120 s of
   silence during a transfer (#59; `GIT_OPT_SET_SERVER_CONNECT_TIMEOUT`,
   `GIT_OPT_SET_SERVER_TIMEOUT`, set through the two C functions of
-  `ApelinGitOptions`, since Swift cannot call the variadic
+  `LurosGitOptions`, since Swift cannot call the variadic
   `git_libgit2_opts`): a stalled clone, fetch or push fails "timed out"
   instead of holding its task, and whoever reads that task, for good.
   `GitTimeoutTests` clones from a server that says nothing.
@@ -1056,7 +1056,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `GitLeaseTests` proves it through `git daemon`. A `lease` event
   {branch, expectedCommit, localCommit?, found?, held} records what the
   remote said, and the result `forced`. A squash (owner, 2026-10-31;
-  `GitSquashRequest`, `ApelinGit/GitSquash.swift`) is `gitSquash {base,
+  `GitSquashRequest`, `LurosGit/GitSquash.swift`) is `gitSquash {base,
   message, expectedHead}`, one request, not a task: the commits after
   `base` on the checked-out branch become one commit on `base` with HEAD's
   tree, the message and the author `gitCommit` would take; the branch
@@ -1095,7 +1095,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   push given an address where a remote's name goes is `badRequest`
   saying to add a remote at it first, never `noSuchRemote`.
   "Remote wins" (owner, 2026-10-31, issue #32; `GitService+Reset.swift`,
-  ApelinGit's `GitReset.swift`): `gitResetPreview {projectID, remote,
+  LurosGit's `GitReset.swift`): `gitResetPreview {projectID, remote,
   branch?}` fetches that branch alone (nil: the one the remote's HEAD
   names) into its remote-tracking branch, whatever refspecs the remote
   has, and answers what a reset would do (`GitResetPreview`: the remote's
@@ -1174,7 +1174,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   Create and Link under it. An agent's git call is checked by
   `GitHandler` to name its own session's project before it is forwarded.
   A repository on GitHub (owner, 2026-10-29; `GitHubRepositoryService` in
-  `ApelinEnvironment/Git/`): `gitRepositoryCreate {name, visibility,
+  `LurosEnvironment/Git/`): `gitRepositoryCreate {name, visibility,
   owner?, description?}` makes an empty one — `auto_init` off, so no
   README, licence or `.gitignore`, and GitHub's defaults for the rest —
   with the github.com sign-in, on the account or in the organization
@@ -1217,7 +1217,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   takes an optional repository address for the empty workspace and sends
   it to the project's first conversation, where the agent's `git_clone`
   imports it; the app does nothing more.
-  *Toolchains*: `ToolchainBackend`, implemented by `Packages/ApelinToolchain`
+  *Toolchains*: `ToolchainBackend`, implemented by `Packages/LurosToolchain`
   through `RetargetToolchainBackend`, compiled only when that package is
   linked (`#if canImport`); without it setup answers `unavailable`. Setup
   keeps `Toolchains/jobs/<key>/job.json` (§3.4 stage, the task, a failure,
@@ -1270,7 +1270,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   package can no longer be downloaded or a new release waits for a review;
   a withdrawn package's address is not asked again.
   roothide Bootstrap, the TrollStore one, runs none of them (issue #35;
-  `HostSigning` in ApelinCore): it trust-caches nothing it installs and
+  `HostSigning` in LurosCore): it trust-caches nothing it installs and
   runs only a Mach-O carrying the CoreTrust-bypass signature its dpkg
   hook writes (Bootstrap-basebin `autosign.m`: its own `ldid`, then
   `fastPathSign`), and what Luros signs is ad hoc and goes through
@@ -1317,7 +1317,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   is part of the ID; scheme 2 keeps `libclang_rt.ios.a`, which `@available`
   links against. Per-release Swift requirements and clang-module CPU
   requirements are carried in the manifest, catalog and registered record.
-  The release table in `ApelinToolchain/Support.swift` also records the
+  The release table in `LurosToolchain/Support.swift` also records the
   reviewed Apple product IDs and package SHA-256 values, recommended SDK and
   actual verified SDKs. Changed source bytes are refused before extraction.
   The package comes down as 8 MB ranges, four in flight, each checked as
@@ -1372,7 +1372,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   irisind); on a device by `Documents/Console/scripts/t1-toolchain-setup.json`,
   `t2-toolchain-remove.json` and `t3-toolchain-side-by-side.json`.
 - **Transfer files** (2026-10-21; `Operations/Transfer.swift`,
-  `ApelinEnvironment/Transfer/`, `Lurosd/Dispatch/TransferHandler.swift`,
+  `LurosEnvironment/Transfer/`, `Lurosd/Dispatch/TransferHandler.swift`,
   `Luros/Interface/Transfer/`). A registered toolchain (`.apetc`), a
   registered SDK (`.apesdk`) or a project (`.apeproj`) goes from one device
   to another as one file, user to own device: nothing is uploaded, and the
@@ -1390,7 +1390,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   other member `payload/<path>`. A toolchain's payload is its retargeted
   tree as setup packaged it (its own `manifest.json` at the top), never a
   deb: export copies the installed tree back to those bytes
-  (`ToolchainTransfer.exportCopy` in Packages/ApelinToolchain: every file
+  (`ToolchainTransfer.exportCopy` in Packages/LurosToolchain: every file
   checked against the toolchain manifest's digest, RootHide's runtime brand
   undone, folders and links as they are), and the importing device packages
   it for its own bootstrap with `ToolchainPackager`, so what irisind gets is
@@ -1475,12 +1475,12 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   from a JSON script: `-luros-console <path>`, or
   `~/Documents/com.fluoxetine.luros/console/inbox/*.json` at launch and on every
   foreground; results as JSON lines in `console/out/<runID>.jsonl` and the
-  unified log (`com.fluoxetine.luros`, `console`). It calls `ApelinService`, the
+  unified log (`com.fluoxetine.luros`, `console`). It calls `LurosService`, the
   one typed surface — one async method per operation — that the UI and the
-  agent's tools (over `ChannelTransport`) call too; `ApelinService.app`
+  agent's tools (over `ChannelTransport`) call too; `LurosService.app`
   (`Luros/Service/`) binds it to `DaemonClient`. The runner is the
-  `ApelinConsole` library (ApelinCore and ApelinProtocol only), given an
-  `ApelinService`, a `DataFolder` and a log sink; the app keeps the binding
+  `LurosConsole` library (LurosCore and LurosProtocol only), given an
+  `LurosService`, a `DataFolder` and a log sink; the app keeps the binding
   and the launch and foreground hooks (`Luros/Console/`). A step answering
   a task handle, or an attach answering an unfinished batch, follows the
   task to its end (an attach by ID reads a task an earlier run started). A followed task
@@ -1491,7 +1491,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   survives), so a run that stops right after it goes on at the next step;
   anything else left running is
   `run.interrupted`. `make harness` tests it against a fake transport
-  (`Packages/ApelinKit/Tests/ApelinConsoleTests`): every typed `ApelinService` method once,
+  (`Packages/LurosKit/Tests/LurosConsoleTests`): every typed `LurosService` method once,
   from a switch over `AppOperation` with no default, so an operation added
   without a method does not build; the runner; and every script in
   `Documents/Console/scripts/` — one per domain, which together must call
@@ -1506,9 +1506,9 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `Documents/Console/device-harness.json`, beside the suites; every script
   has one, a script that cannot run unattended says why under `manual`, and
   every other one is in `regression` (`make check` runs `device.py lint`).
-- **The replay** (`Packages/ApelinKit/Sources/ApelinReplay`, ApelinCore and
-  ApelinProtocol only) is how the UI works where no lurosd runs:
-  `ReplayTransport` answers `ApelinService` from event streams the console
+- **The replay** (`Packages/LurosKit/Sources/LurosReplay`, LurosCore and
+  LurosProtocol only) is how the UI works where no lurosd runs:
+  `ReplayTransport` answers `LurosService` from event streams the console
   captured on a device — the latest reply whose request matches, else the
   latest of that operation, else `unavailable`; a task's start, then its
   events by long-poll attach, paced as recorded or at once; an agent
@@ -1519,16 +1519,16 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   scripts' output beside it: the bootstrap folder, hostnames, model and
   kernel build scrubbed, logs trimmed, seq renumbered without gaps, and
   nothing written if a key, a Mac path or a device identifier survives.
-  `ApelinReplayTests` (`make harness`) reads every fixture strictly through
+  `LurosReplayTests` (`make harness`) reads every fixture strictly through
   the protocol types — a field a type does not know fails — with a shape
-  table for the event payloads ApelinProtocol has no type for, checks seq
-  from 1 to a final `state`, and replays tasks through `ApelinService`. A
+  table for the event payloads LurosProtocol has no type for, checks seq
+  from 1 to a final `state`, and replays tasks through `LurosService`. A
   protocol change that breaks a fixture means a new capture, not a hand
   edit. It is linked into nothing; the app selects it by a launch argument
   (`Documents/Plan/Handoff.md` ▸ the replay), never by build flag, and it
   never links into lurosd or a worker.
 - **Agent sessions** (`Lurosd/Dispatch/AgentHandler.swift`,
-  `Packages/ApelinAgent/Sources/ApelinAgentWorker`). `agentOpen` comes
+  `Packages/LurosAgent/Sources/LurosAgentWorker`). `agentOpen` comes
   from the app, or from an agent for its own project (Conversations,
   below): the host resolves the project by `projectID` or `projectName`
   (canonical `Projects/<name>`, its `luros-project.json` id), makes the
@@ -1575,7 +1575,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   (`waitingForNetwork`), so the reader is told the device is offline the
   moment the first request fails, not after the retries run out.
   A failure says why where the agent can tell (owner, 2026-11-14;
-  `FailureReason`, the reasons of ApelinProtocol's `AgentFailure.swift`): kwwk's own
+  `FailureReason`, the reasons of LurosProtocol's `AgentFailure.swift`): kwwk's own
   reading of it (`ProviderFailure.category`) and whether there is a route
   come to `offline`, `network` (a route, and a provider out of reach: a name
   that does not resolve, a connection refused, dropped or not made
@@ -1583,7 +1583,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `contextOverflow`, which the `error` event carries as `reason` beside the
   provider's words; a refusal, a request the provider would not take and
   anything that is not a model request carry none. It is an
-  `ApelinError.Reason`, as an error reply's is, open-ended on the wire and
+  `LurosError.Reason`, as an error reply's is, open-ended on the wire and
   in the log, so one a peer does not know still reads.
   A sign-in is exchanged or renewed when a session opens and when a message
   changes its provider, with the app's send waiting behind it, and kwwk's
@@ -1667,7 +1667,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   while appends go on, so an open answers at once and a send never waits
   behind the history; a line that will not decode stands as an `error` of
   its number. Beside it the worker keeps the conversation's diagnostic
-  journal (owner, issue #27; `ApelinAgent/Journal/`), which Settings ▸
+  journal (owner, issue #27; `LurosAgent/Journal/`), which Settings ▸
   Logs lists under Chats: `Journal/Agent/<session>.log` in the data
   folder, its levels made as mobile without following a link (Dog's own
   files stay at the top of `Journal/`), in Dog's line format — a
@@ -1705,7 +1705,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   ends `interrupted`, and one the journal shows started and never ended is
   ended `interrupted` when the conversation opens again, so a crash leaves
   no call that looks as if it were running. Every line is redacted first
-  (`JournalRedaction` over ApelinCore's `LogRedaction`, every rule linear
+  (`JournalRedaction` over LurosCore's `LogRedaction`, every rule linear
   in the text and a long text redacted only as far as it can be kept,
   then cut): tokens and keys by their shapes (`ghp_`, `gho_`,
   `github_pat_`, `sk-`, `oc_sk_`, `xai-`, `glpat-`, `hf_`, `gsk_`,
@@ -1802,7 +1802,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   call, which `toolCall` follows once its arguments are whole), `text` and `thinking` (streamed text coalesced
   to ≥ 512 bytes or 250 ms), `received` {tokens} (the output tokens the
   run has received so far: what streams of a message — text, thinking and
-  a call's arguments alike — estimated by ApelinProtocol's
+  a call's arguments alike — estimated by LurosProtocol's
   `TokenEstimate`, each message that has ended at the provider's
   `usage.output`, or its estimate when that is 0; the session records it
   at most every 250 ms and at each message's end, never per delta
@@ -2302,7 +2302,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   the project from `Projects/` for the card, the host resolves it again.
   Links (2026-10-22): the app opens `lurosdev://conversation/<session ID>`
   (selecting its project) and `lurosdev://project/<projectID>`
-  (`ApelinLink`); apelin_conversation_create, apelin_conversation_list,
+  (`LurosLink`); apelin_conversation_create, apelin_conversation_list,
   apelin_conversation_read and apelin_project_create answer them beside the IDs, and
   the system prompt tells the model to hand the user a markdown link
   whenever it opens or points to another conversation or project.
@@ -2320,7 +2320,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   sent within 30 s of the session's last; the host cuts and counts again
   (`AgentNoticeRules`).
   Questions (2026-11-05, `Tools/UserQuestions.swift`, `AgentQuestion` in
-  ApelinProtocol), in any chat: apelin_question_ask {question, options:
+  LurosProtocol), in any chat: apelin_question_ask {question, options:
   [{label, detail?}] (2 to 4), multiple?} → no host request: the call
   waits on the gate as an approval does, its `approvalRequested` carrying
   `detail.question` {question, options, multiple}, and the app shows the
@@ -2338,7 +2338,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   takes one, labels that are not its options and repeats go, and Other is
   cut to its limit — the alert no longer reads "answerDoesNotFit" for the
   card's own doing, and a gate that does refuse reaches it as its sentence
-  (`AgentSession.approve` rethrows it as an `ApelinError`). Owner's decision
+  (`AgentSession.approve` rethrows it as an `LurosError`). Owner's decision
   (2026-11-05): the call blocks rather than ending the turn, so the answer
   is the same turn's; it rides the approval path so a question survives a
   closed app, a reconnect and a new attach, and the banner says "Answer
@@ -2350,7 +2350,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   only. Tested by `QuestionToolTests` and `Tests/ChatTranscript/
   QuestionCardCheck.swift`.
   Run mode (2026-11-11, `Tools/RunModes.swift`, `AgentRunModeRequest` in
-  ApelinProtocol), in any chat: apelin_run_mode {mode: plan | build, why}
+  LurosProtocol), in any chat: apelin_run_mode {mode: plan | build, why}
   → the conversation's own run mode, the pill's setting, changed by the
   agent. A switch to plan asks nobody and is applied at once: a plan run
   can only read, and the case it is for — a task too large or too unclear
@@ -2519,7 +2519,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   killed — a descendant that left the group (setsid) is neither found nor
   killed, and the pipes it still holds are closed on it, the output marked
   `truncated` —, so the timeout bounds the call. Every run but a preset gets
-  the development environment (`DevelopmentEnvironment` in ApelinProtocol,
+  the development environment (`DevelopmentEnvironment` in LurosProtocol,
   the one builder the terminal and the system prompt read too): the
   project's bound toolchain, else the registry's default, first on `PATH`
   (also `APELIN_TOOLCHAIN_BIN`), and `SDKROOT` — the project's bound SDK,
@@ -2574,8 +2574,8 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `--no-ext-diff --no-textconv` for diff and log, `--ignore-submodules=all` for status
   and diff, and no system or global config (`GIT_CONFIG_NOSYSTEM`,
   `GIT_CONFIG_GLOBAL=/dev/null`, discovery stopped above the project);
-  the words of a preset are one rule, ApelinProtocol's `RunCodePresetRule`,
-  which ApelinAgent's presets read too, with paths read from the same
+  the words of a preset are one rule, LurosProtocol's `RunCodePresetRule`,
+  which LurosAgent's presets read too, with paths read from the same
   working directory — or an approval the app gave through
   `agentApprove` for a `shell_run` `approvalRequested` of this session, used
   once, and only for the command its `detail.command` showed (shell text
@@ -2593,7 +2593,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   every unspent approval, a root one included. A call
   the agent sent as a preset that the host's rule does not count is
   refused with `RunCodeApproval.presetRefusal` (`denied`, reason
-  `notAPreset`: the agent goes by `ApelinError.reason`, never the message);
+  `notAPreset`: the agent goes by `LurosError.reason`, never the message);
   the agent then asks the user (`approvalRequested` with the command), sends
   it again with that approval. Nothing remembers the refusal: whether a
   call is a preset depends on the repository (a `.git` made, a
@@ -2632,10 +2632,10 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   keeps that rule, is no name `AgentToolName.canonical` knows, takes no
   `reason` argument and is declared by one installed extension only;
   otherwise the tool is left out, both of a duplicate
-  (`ToolExtensionOffer`). Luros's own names are ApelinProtocol's
+  (`ToolExtensionOffer`). Luros's own names are LurosProtocol's
   `AgentToolName`, which the session host's approval rules, the app's
   titles and widget and the agent read; what each tool does stays in
-  ApelinAgent's `ToolCatalog`. `AgentToolName.legacyNames` keeps the names 0.1.8 and
+  LurosAgent's `ToolCatalog`. `AgentToolName.legacyNames` keeps the names 0.1.8 and
   before used (and `notify_user`), and `canonical` answers the tool either
   kind of name means: the app titles an old conversation's calls as new
   ones, the widget and apelin_conversation_read show today's names, and the
@@ -2665,7 +2665,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   store ids and reasons, never contents. The import runs in an luros-agent
   instance named `credential-import`, so the item is written and read by
   the same signed executable.
-- **Agent sign-in** (`Packages/ApelinAgent/Sources/ApelinAgentWorker/SignIn/`,
+- **Agent sign-in** (`Packages/LurosAgent/Sources/LurosAgentWorker/SignIn/`,
   `Luros/Interface/Settings/Accounts/`). Settings ▸ Model Providers (one
   row on the Settings root, the signed-in count beside it, pushing
   `ModelProvidersController`: signed in first with who as and a `…` menu,
@@ -2718,7 +2718,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   and wire values, with only trailing call commas removed for Swift 5.10, and
   checks stage timing, partial replies, empty replies, cancellation and deadline
   races. It does not test the SDK transports or replace `make check`.
-  `ModelConnectivityTests` in ApelinAgentWorkerTests covers the pure-Hi context,
+  `ModelConnectivityTests` in LurosAgentWorkerTests covers the pure-Hi context,
   optional settings, local-start filtering, missing credentials, blocked prompt
   providers and failure redaction; run it with the package suite on the CI toolchain.
   API-key model IDs need not occur in
@@ -2910,7 +2910,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   replaces the device's openai-compatible sign-in); the real sign-ins by
   hand.
 - **Diagnostics** (`Lurosd/Dispatch/{Logs,Diagnostics}Handler.swift`,
-  `Packages/ApelinDiagnostics/Sources/{ApelinDiagnosticsWorker,ApelinLogReaderWorker}`).
+  `Packages/LurosDiagnostics/Sources/{LurosDiagnosticsWorker,LurosLogReaderWorker}`).
   A `logStream` with a `filter` opens a task on luros-diagnostics (icli as
   mobile) and answers its first batch; one with `stream` reads on. The worker
   reads its first second before accepting, and answers `denied` when the
@@ -2932,7 +2932,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `crashOpen` is the host's own (open as root, `O_NOFOLLOW`, canonical parent
   equal to one of the three, regular, ≤ 16 MB, read-only descriptor);
   luros-diagnostics asks it for a report mobile cannot read.
-  `crashSymbolicate` decodes the report with ApelinCrash, symbolicates
+  `crashSymbolicate` decodes the report with LurosCrash, symbolicates
   against every dSYM in `Builds/<projectID>/` (and the project folder) by image UUID (no image is
   opened by a path a report names) and ranks suspects. `confirmLoaded` is a
   task (kind `confirmLoaded`, read with `confirmLoadedAttach`) the session
@@ -2942,8 +2942,8 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   {`listening`, `trigger`} and ends with `state` `succeeded`
   carrying the `ConfirmLoadedResponse` as `result` (the check ran; whether
   it found the tweak is `result.loaded`), kept on disk with the task whether
-  or not anyone is attached; `ApelinService.confirmLoaded` starts it and
-  reads it to the end. The evidence is the marker `ApelinLoaded <buildID>`
+  or not anyone is attached; `LurosService.confirmLoaded` starts it and
+  reads it to the end. The evidence is the marker `LurosLoaded <buildID>`
   under the package id's subsystem, heard on the live log, which starts
   listening before an optional `trigger: respring` (the host's respring,
   icli's FrontBoard relaunch when the host has none); the live log has no
@@ -3489,14 +3489,14 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
 
 ### Projects and builds (luros-build, 2026-10-17)
 
-- **Documents** (`ApelinProject`) go through `StrictJSON` (UTF-8, no BOM,
+- **Documents** (`LurosProject`) go through `StrictJSON` (UTF-8, no BOM,
   no duplicate member, integers only within ±(2^53−1)), then the schemas
-  themselves, embedded by `Packages/ApelinKit/Scripts/embed-schemas.py` and
+  themselves, embedded by `Packages/LurosKit/Scripts/embed-schemas.py` and
   held to `Documents/Schemas/*.schema.json` by a test, then the rules beyond
-  them — `Documents/Schemas/Tools/apelin_schema.py` ported message for
+  them — `Documents/Schemas/Tools/luros_schema.py` ported message for
   message. Canonical JSON and both approval digests are byte-identical to
   it: the fixtures, the edit table, and every shipped template instantiated
-  by both and compared file by file are in `ApelinProjectTests`.
+  by both and compared file by file are in `LurosProjectTests`.
 - **The written form** (owner, 2026-10-31, issue #30; `ProjectManifestFormat`,
   the reference's `manifest_text`, Documents/Schemas/README.md ▸ Written
   form): every writer of `luros-project.json` writes it as
@@ -3546,7 +3546,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `descriptionDigests` of the project as it is now, absent when a
   description cannot be computed. With `purpose: distribution` (and an
   optional `bootstrap`) it adds `distribution.*` warnings (`DistributionCheck`
-  in ApelinBuild: template placeholders, the template's first version, a
+  in LurosBuild: template placeholders, the template's first version, a
   `local.apelin.` identifier, an app without an icon, a version already
   packaged for the target), never an error; the distribution page and the
   agent's `apelin_project_check_distribution` tool read them (`Documents/Distribution.md`).
@@ -3559,9 +3559,9 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   is how the agent's apelin_project_set_environment is judged before it writes
   (`ProjectCheck.binding`, `run(projectID:environment:)`).
 - **The environment** luros-build reads through `EnvironmentRegistry`
-  (`ApelinProject/Environment`); on the device that is `EnvironmentStores`,
+  (`LurosProject/Environment`); on the device that is `EnvironmentStores`,
   luros-environment's own files read as they are — `Environment/Toolchains/registry.json`
-  and `SDKs/.registry/<id>.json` — without linking ApelinEnvironment. A
+  and `SDKs/.registry/<id>.json` — without linking LurosEnvironment. A
   toolchain's binding digest is `sha256:` + its `contentDigest`, an SDK's
   `sha256:` + its tree `digest`; a component counts only if its self-check
   passed; tools are `<path>/usr/bin/<tool>` (or the CLT's
@@ -3570,10 +3570,10 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   A record's `path` names the bootstrap root it was registered under,
   which roothide renames on a reboot (issue #34), so every reader of the
   records — `ToolchainRegistry.load`, `SDKStore.list`, `EnvironmentStores`,
-  `RegisteredEnvironment.read` — takes it through ApelinCore's
+  `RegisteredEnvironment.read` — takes it through LurosCore's
   `BootstrapRootPath.rebased` onto a path of its own under the current
   root first; rootless paths are left as they are.
-- **A build** (`ApelinBuild`) has one ID: the host's task ID, which is
+- **A build** (`LurosBuild`) has one ID: the host's task ID, which is
   `APELIN_BUILD_ID`, the artifact ID and what `confirmLoaded` takes. Its
   layout comes from the assignment — mobile's home inside the install root
   is roothide, otherwise rootless — and it builds only that one. Outputs live
@@ -3649,9 +3649,9 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   stay in `.build/mixed-device`. It checks
   compile/link/runtime only, not host integration, packaging or installation.
   XCTest and the full `make check` remain CI's job on this device without
-  make/Xcode. Signing is `ApelinCodeSign`, no ldid:
+  make/Xcode. Signing is `LurosCodeSign`, no ldid:
   byte for byte what `ldid -Hsha256 -S[entitlements]` writes. It is the one
-  signer: the toolchain retarget (`Packages/ApelinToolchain`,
+  signer: the toolchain retarget (`Packages/LurosToolchain`,
   `MachOImage.signed`) lays out its own slice but builds the blobs with the
   same `LdidStyleSignature` and `LdidEntitlements`, which Irisin's seven
   device fixtures there hold too; never a second copy. Script steps
@@ -3709,7 +3709,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   the regular files and links the deb installs as dpkg lists them
   (`packageFiles`, fewest components first, at most 256), read back from
   the deb by both builds,
-  and `loadCheck` (`BuildLoadCheck`: marker `ApelinLoaded <buildID>`,
+  and `loadCheck` (`BuildLoadCheck`: marker `LurosLoaded <buildID>`,
   subsystem the package ID, the dylib and its filter plist — `<dylib name>.plist`
   beside it — logically and under this install root, the filter). The file
   is mobile's: `installPackage{artifactID, digest}` copies the deb to the
@@ -3726,12 +3726,12 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   where a changelog tab comes from. Luros passes the addresses on and
   hosts nothing), maintainer scripts with
   `@PREFIX@`/`@ROOTFS@` filled and `sh -n` passing, `control.tar.gz`
-  (`controlCompression = .gzip`, which the host reads) and `data.tar.zst`. ApelinDebArchive brings
+  (`controlCompression = .gzip`, which the host reads) and `data.tar.zst`. LurosDebArchive brings
   `libarchive.xcframework` into luros-build, reviewed in `Licenses/`.
 - **Workspace builds** (owner, 2026-10-23: an imported repository stays
   external and keeps its own build; it is never converted to a description).
   A workspace declares one script in its manifest, `"external": {script,
-  interpreter?, arguments?}` (`ExternalBuildDeclaration` in ApelinProject:
+  interpreter?, arguments?}` (`ExternalBuildDeclaration` in LurosProject:
   a regular file inside the project by canonical path, `sh` by default or
   bash, zsh, python3, perl, at most 32 one-line arguments, nothing else).
   `buildStart` on a workspace runs it in luros-build (`ExternalBuild`),
@@ -3775,15 +3775,15 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   rewritten as a description), the agent's
   `ExternalBuildToolTests` and the session host's approval checks.
 - **Tested** by `make harness`: the schema fixtures and the reference
-  implementation, `ApelinCodeSign` against ldid's own output
-  (`Packages/ApelinFormats/Tests/ApelinCodeSignTests/Fixtures/build.sh`), and
+  implementation, `LurosCodeSign` against ldid's own output
+  (`Packages/LurosFormats/Tests/LurosCodeSignTests/Fixtures/build.sh`), and
   the tweak template built with Xcode's tools and iPhoneOS SDK into a
   roothide and a rootless deb read back by dpkg-deb, codesign and ldid. On a
   device: `Documents/Console/scripts/i3-chain.json` (create → check → build →
   install → confirmLoaded with `trigger: respring`; delete
   `Projects/I3 Chain Tweak` before running it again).
 - **Distribution repository** (owner, 2026-10-25;
-  `Operations/Distribution.swift`, `ApelinEnvironment/Distribution/`,
+  `Operations/Distribution.swift`, `LurosEnvironment/Distribution/`,
   `Lurosd/Dispatch/DistributionHandler.swift`,
   `Luros/Interface/Settings/Git/DistributionRepository*`). The user's own
   package repository: a GitHub repository of theirs that GitHub Actions
@@ -3868,7 +3868,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `Documents/Console/scripts/distribution.json` (refusals, unlink and a
   read of the star: nothing is written to GitHub).
   *Feedback* (owner, 2026-10-29; `Operations/Feedback.swift`,
-  `ApelinEnvironment/Distribution/FeedbackService.swift`). `feedbackSend
+  `LurosEnvironment/Distribution/FeedbackService.swift`). `feedbackSend
   {title, body}` files a public issue on Luros's own repository,
   `FeedbackRules.repository` (1103945342/Luros, never one a request
   names), with the same github.com sign-in (`GitHubAPI.createIssue`); one
@@ -4110,8 +4110,8 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
 Luros/                  the app: main.swift (manual UIApplicationMain), Application/
                          (delegate, ExecutableWatch, QuietExit, saved-state reset),
                          Interface/<feature>/, Resources/ (assets, string catalogue)
-                         Console/ (the console's launch hook), Service/ (ApelinService.app),
-                         DaemonClient (the app's ApelinTransport)
+                         Console/ (the console's launch hook), Service/ (LurosService.app),
+                         DaemonClient (the app's LurosTransport)
 Lurosd/                 the daemon, product `lurosd`: main.swift (mode switch), Proxy/
                          (listener, WorkLedger, SessionLink), Session/ (SessionHost,
                          TaskRegistry, WorkerSupervisor, CallerPolicy, Approval/, Install/,
@@ -4120,13 +4120,13 @@ Lurosd/                 the daemon, product `lurosd`: main.swift (mode switch), 
                          PeerAuthenticator, Spawn, syscalls
 Workers/<Name>/          one tool target each: Environment, Build, Agent, Diagnostics,
                          LogReader (products luros-environment … luros-log-reader)
-Packages/ApelinKit/      local package: ApelinCore, ApelinProtocol (AppOperation,
+Packages/LurosKit/      local package: LurosCore, LurosProtocol (AppOperation,
                          Operations/<Domain>.swift, Tasks, Envelope, Service/, Worker/),
-                         ApelinEnvironment, ApelinBuild, ApelinProject, ApelinGit,
-                         ApelinConsole (the console's runner, linked into the app),
-                         ApelinReplay (ApelinService from captured runs, Fixtures/); Tests/
-Packages/<Other>/        standalone packages the workers link (ApelinToolchain,
-                         ApelinFormats, ApelinDiagnostics, ApelinAgent, ApelinToolHost)
+                         LurosEnvironment, LurosBuild, LurosProject, LurosGit,
+                         LurosConsole (the console's runner, linked into the app),
+                         LurosReplay (LurosService from captured runs, Fixtures/); Tests/
+Packages/<Other>/        standalone packages the workers link (LurosToolchain,
+                         LurosFormats, LurosDiagnostics, LurosAgent, LurosToolHost)
 Packages/Runestone/      the editor's text view and grammars, vendored and trimmed
                          (README.md: origins, changes, adding a language); the app only
 Shared/                  compiled into the app and lurosd: the XPC side of the wire
@@ -4135,19 +4135,19 @@ Shared/                  compiled into the app and lurosd: the XPC side of the w
 Widgets/                 Extension/ (target LurosWidgets, LurosWidgets.appex: the home
                          screen widget and the Live Activity, Resources/ with its
                          catalogue); Shared/ (compiled into the app and the extension:
-                         ApelinLink, ChatWidgetSnapshot, ChatActivityAttributes)
+                         LurosLink, ChatWidgetSnapshot, ChatActivityAttributes)
 Configuration/           Version, Base, Development and Release xcconfigs
 Packaging/               entitlements (Workers/<name>.entitlements too), the launchd plist,
                          DEBIAN/{control,postinst,prerm,postrm}
 Scripts/                 package-deb.sh, install-device.sh, device.py (the device harness),
                          collect-licenses.py and the gates
-Tests/                   the harness's host tests (RoothideRoot, ExecutableWatch, ApelinLink,
+Tests/                   the harness's host tests (RoothideRoot, ExecutableWatch, LurosLink,
                          SessionHost)
 Licenses/                reviewed notices: review.json, Compatibility.md, one folder per component
 Documents/               Icon/ (the .icon source, in no target), Site/ (Pages), Releases/,
                          Banner/ (the banner's template and make-banner.sh), screenshots.jpg,
                          Plan/ (Milestone-1, Handoff), Research/ (Device-Validation, the
-                         toolchain retarget, ApelinHello), Console.md, Console/ (scripts/,
+                         toolchain retarget, LurosHello), Console.md, Console/ (scripts/,
                          device-harness.json, fixtures/, demo/: the capture scripts and
                          the replay sanitiser),
                          Schemas/
@@ -4162,11 +4162,11 @@ manifest.json            the owngoal-packages entry
   is running. Preserve other tasks' uncommitted changes. Report any failed
   step explicitly instead of claiming the round is complete.
 - `make harness` — the host tests on the Mac: RoothideRoot, ExecutableWatch
-  against a real replace/unlink/rollback, `swift test` for ApelinKit (the
-  wire, the worker channel, paths, `ApelinService` and the console with its
+  against a real replace/unlink/rollback, `swift test` for LurosKit (the
+  wire, the worker channel, paths, `LurosService` and the console with its
   scripts), the system-only check, and lurosd and
   every worker typechecked for macOS. Run this first. `SWIFTPM_SCRATCH`
-  moves the package's build directory (default `Packages/ApelinKit/.build`).
+  moves the package's build directory (default `Packages/LurosKit/.build`).
 - `bash Scripts/test-application-install.sh` — standalone installer regression
   on the Mac, also run by `make harness`. It compiles the production installer
   with its two core path utilities, checks roothide/rootless argument spelling,
@@ -4384,7 +4384,7 @@ adding a dated record beside it.
   handler's conformances carry a `where Decoder: ~Copyable` condition, and a
   Swift runtime before 6.0 (iOS before 18) cannot find such a conformance;
   NIO's own `as?` casts to its handler protocols fail there too, silently.
-  The iOS 26 and 27 vphones never show it. `Packages/ApelinAgent` holds
+  The iOS 26 and 27 vphones never show it. `Packages/LurosAgent` holds
   swift-nio to `2.98.0..<2.104.0` through a product dependency, so the app's
   and the package's `Package.resolved` both pin 2.103.0. Stay below 2.104.0
   until NIO's noncopyable conformances work on the deployment floor, and
@@ -4399,7 +4399,7 @@ adding a dated record beside it.
   signatures, none of the five drops one in an ordinary link, and Xcode
   27's ld switches such a link to chained fixups itself. luros-build
   refuses a slice like that at its link (`DyldInfo.dropsPointerSignatures`
-  in ApelinMachO); a symbol left to load time is named with
+  in LurosMachO); a symbol left to load time is named with
   `-Wl,-U,_symbol`, which every release links signed.
 - **`Data` through an `@objc` thunk.** 0.3.6 made every member of our classes
   `@objc dynamic`, the toolchain's reader and decoder among them, and users'
@@ -4468,7 +4468,7 @@ adding a dated record beside it.
 - **An opened thought the model is still writing** (`ChatStreamPacing`, tested in `Tests/ChatTranscript/StreamPacingCheck.swift`; owner, 2026-11-15: "展开还在流式输出的长思考，界面很卡"). An opened thought is one label holding all of it, and the model writes it a token at a time: drawing and measuring the whole of a long run on every event is what made the transcript stutter, and it grew with the run. The row now takes its text from a clock keyed by the step — advanced at most every 0.3 s while the thought runs — and, while it runs, draws only its newest 6,000 characters behind an ellipsis; the whole of it is drawn the moment it has stopped. `ChatTraceSteps` takes the same paced steps for what it draws and for what it measures, so the height the list gives a row is the height of the text the row shows: measured ahead of the row, it would clip it. A step that is not a thought, and every thought that has stopped, is untouched.
 - `ProjectPickerController` lists real projects; `NewProjectController` chooses a catalog template, using its default parameters and calls `projectCreate`. Settings includes a read-only Templates catalog with single-line names with source-file byte counts at the trailing edge, no subtitles and no disclosure navigation. The built-in `com.fluoxetine.luros.workspace/empty` template creates only a workspace identity manifest, atomically and without SDK/toolchain requirements. It supplies no build or install baseline; a build requires a real build description.
 
-- Templates are a single read-only release catalog, with additions and corrections submitted as repository pull requests. There is no create/delete action or separate user template library. `make template-archive` validates and reproducibly packs sources, support files and licenses as `Apelin_<version>_Templates.tar.zst`; CI records its checksum and Release publishes that exact artifact without rebuilding. The command-line tool templates' `Tool.entitlements` carry the app templates' GPU and IOSurface IOKit user-client list under both keys from `com.fluoxetine.luros.dev.cli` 0.1.1 (owner, 2026-10-29; `make check` holds the app's entitlements and every app and cli template's to `Scripts/check-gpu-entitlements.py`, while a tweak or preference bundle, a library, runs with its host process's), and a project keeps the entitlements its template wrote, so a cli project made from 0.1.0 has no list until one is added, a build description change Strict reviews. Every template writes its extension's package manager icon on Pages, `https://1103945342.github.io/Luros/icons/<extension id>.png`, as `package.icon` (owner, 2026-10-29; app and tweak 0.1.1, cli and preferences 0.1.2), which the build writes as the deb's `Icon`, so a package manager shows it beside the installed package and in the user's package repository; the user keeps it or names their own https image, a packaging description change Strict reviews. It is not an app's own icon, nor a Settings row's: the preference bundle template carries that one in its bundle from `com.fluoxetine.luros.dev.preferences` 0.1.3 (owner, 2026-10-30, issue #19), `Resources/icon.png` with its @2x and @3x at 29 points, the extension's plate scaled from the `ProjectIconPreferences` image set, named by the PreferenceLoader entry's `icon`, for the developer to replace. A project made before has none and keeps its digests.
+- Templates are a single read-only release catalog, with additions and corrections submitted as repository pull requests. There is no create/delete action or separate user template library. `make template-archive` validates and reproducibly packs sources, support files and licenses as `Luros_<version>_Templates.tar.zst`; CI records its checksum and Release publishes that exact artifact without rebuilding. The command-line tool templates' `Tool.entitlements` carry the app templates' GPU and IOSurface IOKit user-client list under both keys from `com.fluoxetine.luros.dev.cli` 0.1.1 (owner, 2026-10-29; `make check` holds the app's entitlements and every app and cli template's to `Scripts/check-gpu-entitlements.py`, while a tweak or preference bundle, a library, runs with its host process's), and a project keeps the entitlements its template wrote, so a cli project made from 0.1.0 has no list until one is added, a build description change Strict reviews. Every template writes its extension's package manager icon on Pages, `https://1103945342.github.io/Luros/icons/<extension id>.png`, as `package.icon` (owner, 2026-10-29; app and tweak 0.1.1, cli and preferences 0.1.2), which the build writes as the deb's `Icon`, so a package manager shows it beside the installed package and in the user's package repository; the user keeps it or names their own https image, a packaging description change Strict reviews. It is not an app's own icon, nor a Settings row's: the preference bundle template carries that one in its bundle from `com.fluoxetine.luros.dev.preferences` 0.1.3 (owner, 2026-10-30, issue #19), `Resources/icon.png` with its @2x and @3x at 29 points, the extension's plate scaled from the `ProjectIconPreferences` image set, named by the PreferenceLoader entry's `icon`, for the developer to replace. A project made before has none and keeps its digests.
 
 
 ## Project display names and external project actions
@@ -4533,10 +4533,10 @@ app or a command removed is just as gone; a folder renamed outside Luros,
 whose conversations were already unreachable, loses them too. Only a
 folder the app listed before in that `Projects/` counts as gone
 (`DeletedProjects`), so a wrong or new `Projects/` takes nothing. Tested by
-`ProjectDeletionTests` (ApelinKit), the session host's checks (the
+`ProjectDeletionTests` (LurosKit), the session host's checks (the
 temporary folder, the link, another id, the session's own project,
 Strict's spend, the sessions closed), `ProjectDeleteToolTests` and
-`ProjectDeleteBackendTests` (ApelinAgent) and `DeletedProjectsCheck` in
+`ProjectDeleteBackendTests` (LurosAgent) and `DeletedProjectsCheck` in
 the transcript harness; on a device only the refusal in `hello.json`
 runs unattended (Device-Validation ▸ Still to run has the rest).
 
@@ -4648,10 +4648,10 @@ project or conversation the files belong to. These pages have model and unit
 checks only — none of their screens has run on a device — so this paragraph
 describes intent, not verified behaviour (Device-Validation ▸ Still to run).
 
-The agent's system prompt (`ApelinAgent/Session/SystemPrompt.swift`) is kept
-short, after pi's. Its text is `Packages/ApelinAgent/Prompts/*.md`, one file
+The agent's system prompt (`LurosAgent/Session/SystemPrompt.swift`) is kept
+short, after pi's. Its text is `Packages/LurosAgent/Prompts/*.md`, one file
 per section, compiled in as `SystemPromptText.swift` by
-`Packages/ApelinAgent/Scripts/embed-prompts.py` (never a resource bundle,
+`Packages/LurosAgent/Scripts/embed-prompts.py` (never a resource bundle,
 whose accessor carries the build path); edit the Markdown and push: the Debug
 build runs `Scripts/sync-prompts.sh` before building, which regenerates the
 Swift, builds with it, and on a push to main commits it as github-actions[bot]
@@ -4781,7 +4781,7 @@ approval mode. Skills are pi's progressive disclosure: the prompt lists each
 built-in and user skill (`~/Documents/com.fluoxetine.luros/skills`) by name and
 description only, and `apelin_skill_read{name, file?}` reads the body, or a file in a
 user skill's own folder (no link out of it), on demand; it is a read preset.
-The built-ins are one Swift file each under `ApelinAgent/Skills/BuiltIn/`,
+The built-ins are one Swift file each under `LurosAgent/Skills/BuiltIn/`,
 listed by `BuiltInSkills.all`; what they claim about the device was read from
 Luros's own templates and pipeline, the sibling apps (Irisin's installer,
 icli, Xrash, iGhostVT, Fila, LookInside's tweak) and roothide's developer
@@ -4802,7 +4802,7 @@ installed; an imported repository keeps building with a script of its own.
 `luros-bootstrap-paths` (owner, 2026-10-24) is roothide and rootless path spelling —
 jbroot vs `/var/jb`, `/rootfs`, `@PREFIX@`/`@ROOTFS@`, `@loader_path/.jbroot`,
 the compiler-vs-shell split, and never storing a resolved jbroot path
-(2026-10-29) — and carries `ApelinBootstrap.h`, a
+(2026-10-29) — and carries `LurosBootstrap.h`, a
 jbroot()/ROOT_PATH_NS() helper written so one source builds for both
 bootstraps (compiled by hand for roothide arm64e and rootless arm64 with the
 template's flags; a test holds that the skill ships the header).
@@ -4883,7 +4883,7 @@ catalogue a session reads, each skill's body and files as `apelin_skill_read` se
 them, its place in the folder (`location`) and every problem kwwk or a taken
 built-in name raises. A row opens the instructions; the plus copies in a folder
 with a `SKILL.md` at its top, or one Markdown file as the `SKILL.md` of a folder
-named for it (`SkillFolder`, in ApelinCore: links and hidden entries left
+named for it (`SkillFolder`, in LurosCore: links and hidden entries left
 behind, at most 2,000 files and 32 MB, staged under a hidden name and moved
 in whole, an existing one replaced only after asking); a swipe removes a
 folder skill or a problem's place, after asking, never through a link out of
@@ -4939,7 +4939,7 @@ data folder (in its own `var/mobile`), the project, `$APELIN_PROJECT_ROOT`,
 so none is written into anything that outlives the run (project files,
 build scripts, Makefiles, `AGENTS.md`/`CLAUDE.md`, memory, skills, package
 scripts, code): code resolves it at run time (`jbroot()`, the
-luros-bootstrap-paths skill's `ApelinBootstrapPath()`), plists and
+luros-bootstrap-paths skill's `LurosBootstrapPath()`), plists and
 maintainer scripts take `@PREFIX@`/`@ROOTFS@`, scripts Luros's run-time
 variables or project-relative paths (owner, 2026-10-29; rootless's `/var/jb`
 does not move, and the skill says so), and which of cmake,
@@ -5048,7 +5048,7 @@ The device check is `Documents/Research/Device-Validation.md` ▸ Still to run
 
 ## Long-term agent memory
 
-`MemoryStore` in ApelinCore owns `memories.json` and `memories.lock` directly
+`MemoryStore` in LurosCore owns `memories.json` and `memories.lock` directly
 inside the shared data folder. App and mobile agent workers use the same store;
 there is no daemon operation or provider-specific memory service. Records have
 stable UUIDs, a short title, a body and an optional stable project ID. Nil means
@@ -5161,11 +5161,11 @@ fragment. The chat's ListViewKit keeps its own update mechanism.
   another says an import is under way. An import link waits through the
   welcome rather than being dropped.
   `lurosdev://` opens the app as it is. The format is fixed — the agent
-  writes these links. `ApelinLink`
-  (`Widgets/Shared/ApelinLink.swift`, Foundation only; `Tests/ApelinLink` in
+  writes these links. `LurosLink`
+  (`Widgets/Shared/LurosLink.swift`, Foundation only; `Tests/LurosLink` in
   `make harness`) parses and builds them; the scheme is declared in the
   partial `Luros/Resources/Info.plist`. `SceneDelegate` hands an `apelin:`
-  URL from the connection options or `openURLContexts` to `ApelinLinkRouter`
+  URL from the connection options or `openURLContexts` to `LurosLinkRouter`
   and anything else to `TransferOpener`, as before. A link tapped in a
   transcript (`ChatMessageRow`'s `linkHandler`) goes there too, never through
   the system. `RootInterfaceController.open(_:)` resolves it with

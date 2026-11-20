@@ -1,0 +1,321 @@
+import enum LurosProject.ProjectValidation
+
+extension BuiltInSkills {
+    static let projectDescription = SkillDocument(
+        name: "luros-project-description",
+        description: "Every member of luros-project.json, the build description Luros's build reads: products, flags, steps, package, layout, tweak filter, the macros the build defines, and what asks the user.",
+        body: """
+        # The project description
+
+        `luros-project.json` at the project root is the one thing Luros's
+        build reads. It is checked strictly: an unknown member, a duplicate
+        key or a wrong type is an error naming its field, such as
+        `/products/0/sources`. The complete schema is this skill's file
+        `luros-project.schema.json` (apelin_skill_read with that file).
+        Luros writes it two spaces a level, one member or element a line,
+        and every build puts it back in that form, values unchanged: keep to
+        it, and read the file again before file_edit after a build.
+
+        ## Members Luros writes
+        Never invent, copy or change these:
+        - `schemaVersion` (1) and `projectID`, a lowercase UUID approvals are
+          bound to.
+        - `template`: the template the project was made from.
+        - `environment` `{toolchain, sdk}`, each `{id, digest}`: the
+          registered toolchain and SDK. Change them only with
+          apelin_project_set_environment; never type a digest.
+        - `displayName` and `autoName`: the name Luros shows.
+
+        Only apelin_project_create writes `template` and `environment`, so a
+        description written from scratch lacks them: it does not build, and
+        no toolchain or SDK can be bound to it. Never rewrite a workspace
+        (`"kind": "workspace"`) as one: it builds with a script of its own
+        (the luros-external-build skill).
+
+        ## What it builds
+        - `kind`: `tweak` (a `dylib` product and `package.tweakFilter`),
+          `app` (an `app` product), `cli` (an `executable`) or `preferences`
+          (a `bundle`). A project may carry more products than its kind's,
+          such as a tweak with its own preference bundle.
+        - `language`: `c`, `objc` or `swift`, the project's main language.
+          Each product may mix `.c`, `.m`, `.cpp`, `.cc`, `.cxx`, `.C`, `.mm`
+          and `.swift`. The build chooses a compiler for each actual source,
+          not from this label; Swift sources compile together per product.
+        - `deploymentTarget`: a string, "16.0" or later.
+        - `architectures`: `{"rootless": ["arm64", "arm64e"], "roothide":
+          ["arm64e"]}`. The keys present are the bootstraps it packages for.
+        - `configurations`: `Debug` and `Release`, each `{optimization,
+          debugInfo, defines?, cFlags?, cxxFlags?, swiftFlags?, linkFlags?}`.
+          `cFlags` goes to C, Objective-C, C++ and Objective-C++;
+          `cxxFlags` follows it for C++ and Objective-C++ only. `swiftFlags`
+          goes to the product's Swift compile. Keep language-specific flags
+          here, not in a shared compile step's `flags`.
+          `optimization` is "0", "1", "2", "3", "s" or "z". `defines` maps a
+          name to its value; no name starts with `APELIN_`. Each flag is one
+          argument starting with `-`, never shell text: `-framework X` is two
+          items. The member is `linkFlags`, not `linkerFlags`.
+
+        ## products (one to eight)
+        `{id, type, name, sources, …}`:
+        - `id`: lowercase, such as `tweak`. `type`: `dylib`, `app`, `bundle`,
+          `executable`, or `appex` — an app's extension, `Name.appex`: an `app`
+          product's bundle-resources and Info.plist, linked as an executable
+          whose entry point is `_NSExtensionMain`. An `.ipa` carries the app's
+          `appex` products in `PlugIns/<name>.appex` (the `ipa` format below); a
+          deb installs one through `layout`. `name`: the Mach-O file name;
+          product names are unique.
+        - `sources`: project paths that may use `*`, `**` and `?`, such as
+          `Sources/*.m` or `src/**/*.m`.
+        - Optional: `headerSearchPaths`, `frameworks`, `weakFrameworks`,
+          `libraries` (`-l` names, such as `substrate`),
+          `frameworkSearchPaths` and `librarySearchPaths` (project paths),
+          `objcARC`, `installName` (dylib only; default
+          `@rpath/<name>.dylib`), `entitlements` (a project plist), and
+          `infoPlist` and `resources` (app, appex and bundle only).
+        - `bridgingHeader`: an optional project-relative C/Objective-C header
+          imported by Swift with `-import-objc-header`. Put C++ behind C ABI
+          declarations or an Objective-C wrapper implemented in `.mm`. It
+          cannot be combined with `cxxInterop` (below): the importer stops
+          reading it when interop is on, silently. Swift and native code share
+          `headerSearchPaths` and the configuration's preprocessor defines.
+        - `cxxStandard`: optional, for example `c++17` or `c++20`, passed only
+          to `.cpp`, `.cc`, `.cxx`, `.C` and `.mm`. `objcARC` applies only to
+          `.m` and `.mm`. C++ sources automatically link `libc++`. With
+          `cxxInterop` on it is also the importer's standard.
+        - `cxxInterop`: optional, `true` or `false`; Swift's direct C++ interop
+          (below). Off unless named.
+        - With both Swift and Objective-C/Objective-C++, the build emits
+          `<name>-Swift.h` before compiling `.m`/`.mm` and adds its generated
+          directory to their includes. Import it in implementations, not in
+          the bridging header, to avoid a circular dependency. Mark Swift
+          declarations `@objc` and use Objective-C-representable types.
+          A mixed app/executable without `main.swift` uses `-parse-as-library`
+          (Swift `@main` or a native main); use `main.swift` for top-level
+          Swift statements. Provide exactly one entry point.
+        - `headerSearchPaths`, `frameworkSearchPaths`, `librarySearchPaths`
+          and `weakFrameworks` work for Swift as well as native products.
+          A product containing Swift, or linking `swiftModules`, links with
+          `swiftc`; a native-only product links with `clang`.
+        - `swiftModules`: `[name]`, the project modules below this product
+          compiles against and links, each together with the modules it
+          imports.
+        - `extensionSupport`: `[{extension, component}]`, the headers, link
+          stubs and rpaths an installed development extension provides, the
+          build picking each bootstrap's own. A tweak hooking with substrate
+          has `{"extension": "com.fluoxetine.luros.dev.tweak", "component":
+          "substrate"}`, `libraries: ["substrate"]` and depends on
+          `mobilesubstrate`; a preference bundle has
+          `{"extension": "com.fluoxetine.luros.dev.preferences", "component":
+          "preferences"}`, `frameworks` with `Preferences`, and depends on
+          `preferenceloader`.
+
+        ## Swift and C++
+
+        A product may import C++ directly instead of through a C facade:
+        `"cxxInterop": true`, and its Swift compiler gets
+        `-cxx-interoperability-mode=default`. The arrangement:
+
+        ```json
+        "products": [{
+          "id": "tool", "type": "executable", "name": "cxxprobe",
+          "sources": ["Sources/*.swift"], "headerSearchPaths": ["Vendor/CxxKit/include"],
+          "cxxInterop": true, "cxxStandard": "c++20", "swiftModules": ["CxxKit"]
+        }],
+        "swiftModules": [{
+          "name": "CxxKit", "sources": ["Vendor/CxxKit/Sources/*.swift"],
+          "cxxInterop": true, "headerSearchPaths": ["Vendor/CxxKit/include"], "cxxStandard": "c++20"
+        }]
+        ```
+
+        - Off unless named. A `swiftModules` entry with `cxxInterop: true`
+          turns it on for every product that names it (directly or through a
+          module that imports it) and for the modules it imports;
+          `cxxInterop: false` beside such a member is an error.
+        - A module's `headerSearchPaths` and `cxxStandard` reach the products
+          that compile against it; the product's own `headerSearchPaths` reach
+          the importer too. A module still compiles `.swift` sources only —
+          the C++ is in the headers.
+        - The closure names one `-std`: `c++17` when nobody names one, and
+          the same value for the importer and native C++. Two different
+          standards, or `c++11`/`gnu++11`, are refused. A module is compiled
+          on its own, so a module inside a closure that compiles as other than
+          `c++17` must name that standard itself.
+        - No bridging header: with interop on Swift's importer never reads
+          `bridgingHeader` and says nothing about it, so a product that names
+          one is refused (`project.cxxInterop.bridgingHeader`, also when a
+          swiftModules entry turned interop on). Put those C declarations in a
+          C module instead: a `module.modulemap` with
+          `module CAPI [extern_c] { header "API.h" export * }`, its folder in
+          `headerSearchPaths`, and `import CAPI` in Swift — beside any C++
+          module, in the same product. `[extern_c]` (or the header's own
+          `extern "C"` guards) is needed: the importer reads that header as
+          C++, and without it the C functions are exported C++-mangled and
+          fail only at link, with no diagnostic.
+        - The product's `cFlags` and `cxxFlags` reach the importer as `-Xcc`,
+          and its defines as `-Xcc -D…`; `APELIN_PRODUCT_NAME` stays a
+          product's own.
+        - It needs Command Line Tools 15.0 (Swift 5.9) or newer and a CPU
+          that can build clang modules (A13 on); `projectCheck` says which is
+          missing. The product must compile a `.swift` source or name a swift
+          module.
+        - The first build that imports the C++ standard library is slow:
+          Swift's importer compiles every header it reaches as a clang module,
+          and `<vector>` with `<string>` took 222 s on device before the
+          modules existed, 4 s once cached. The cache is
+          `Builds/.swift-module-cache`, shared by builds; it is keyed on the
+          preprocessor state, so it is compiled once per bootstrap and
+          configuration (and per project, since the project's defines count
+          too). The importer is never given `APELIN_BUILD_ID`,
+          `APELIN_PACKAGE_ID` or `APELIN_VERSION`, so rebuilding, or bumping
+          the version, costs nothing. Keep C++ out of the headers Swift
+          imports (a pimpl or a C facade) where that matters.
+
+        ## swiftModules
+        Swift modules built out of the project's own files, such as one target
+        of a package the project vendors (each module stays Swift-only):
+
+        ```json
+        "swiftModules": [
+          {"name": "LogKit", "sources": ["Vendor/LogKit/Sources/**/*.swift"]},
+          {"name": "NetKit", "sources": ["Vendor/NetKit/Sources/**/*.swift"],
+           "dependencies": ["LogKit"]},
+          {"name": "CxxKit", "sources": ["Vendor/CxxKit/Sources/**/*.swift"],
+           "cxxInterop": true, "headerSearchPaths": ["Vendor/CxxKit/include"],
+           "cxxStandard": "c++20"}
+        ]
+        ```
+
+        `name` is what the Swift sources `import`; `sources` its `.swift`
+        files; `dependencies` the modules it imports, built before it. Each
+        module becomes one `.swiftmodule` and one object per architecture, and
+        a Swift product that lists it in `swiftModules` compiles against it
+        and links it. `cxxInterop`, `headerSearchPaths` and `cxxStandard` are
+        the module's side of Swift and C++ (above); `sources` stays `.swift`
+        only — a module never carries C or C++ sources. SwiftPM never runs and
+        nothing is downloaded: to use a package, copy its sources into the
+        project and describe each target this way; its own `Package.swift` is
+        never read, so its resources and `Bundle.module` are not available.
+        Names are unique and never a product's name, and modules may not
+        depend on each other in a cycle.
+
+        ## build.steps
+        Per product, in this order: `compile`, `link`, `bundle-resources`
+        (app, appex and bundle), `lipo`, `dsym`, `strip`, `sign`. `compile`,
+        `link`, `lipo` and `sign` are required and `sign` comes last, as
+        `{"type": "sign", "product": "tweak", "identity": "adhoc"}`. `compile`
+        and `link` take extra `flags`; `strip` takes `style`, `non-global` or
+        `debug`. A `script` step, `{"type": "script", "id", "interpreter",
+        "file", "arguments"?, "inputs"?, "outputs"?, "requiresApproval":
+        true}`, runs a project script (sh, bash, zsh, python3 or perl) as
+        mobile in the project root, to generate sources; it always asks the
+        user in Strict mode.
+
+        ## package
+        `{id, name, version, description, author, section, layout, …}`:
+        - `id`: the Debian package name; a new project's is a
+          `local.apelin.` placeholder to settle with the user before its
+          first install (the luros-packaging-and-install skill's Package
+          identity). `version`: a Debian version.
+          `section`: Tweaks, Utilities, Development, System, Applications or
+          Addons. Optional: `maintainer`, `longDescription` (a list of lines).
+        - `format`: `deb` (the default, what a package manager installs) or
+          `ipa`, for an app project whose build should hand back an `.ipa`
+          instead: the app the build made, inside `Payload/`, zipped and
+          left as it was signed, to be signed again for a certificate and a
+          device. An `ipa` project has exactly one app product and no more
+          than eight `appex` ones; each extension the build made goes in at
+          `Payload/<app>.app/PlugIns/<name>.appex`, so a widget or a share
+          sheet travels with the app. It has no `layout`, relations,
+          `tweakFilter` or `maintainerScripts`, and installs nothing as a
+          package: `apelin_package_install` on the ipa artifact puts the app
+          on the device instead — unpacked, signed with ldid and registered
+          with uicache, its extensions beside it — and `apelin_package_remove`
+          takes it off again. Share `.ipa` in Distribute… hands the file out.
+          Never publish one to a package repository.
+        - `icon`: the image a package manager shows beside the package, its
+          control `Icon`: an `https://` URL in printable ASCII, at most 2048
+          bytes. Every template writes its extension's icon on Luros's
+          Pages, such as
+          `https://1103945342.github.io/Luros/icons/com.fluoxetine.luros.dev.tweak.png`.
+          Keep it, or put in an https image the user gives as their own. It
+          is not an app's own icon, which its Info.plist names.
+        - `depiction` and `sileoDepiction`: optional, the package's page in a
+          package manager, written as the control's `Depiction` (a web page)
+          and `SileoDepiction` (the native depiction JSON, where a changelog
+          tab comes from), each an `https://` URL of the icon's form. No
+          template writes them; add one only with an address the user gave.
+          The luros-package-depiction skill has the JSON and where to host
+          it.
+        - Relations: `depends`, `recommends`, `suggests`, `conflicts`,
+          `breaks`, `replaces` and `provides`, each item like `"name (>=
+          1.0)"`, alternatives joined by ` | `; `dependsByBootstrap`
+          `{rootless?, roothide?}` for one bootstrap only. The packager adds
+          `firmware` and the `Architecture`; never write them.
+        - `layout`: `{path, product}` or `{path, file, mode?,
+          substitutePrefix?}` items. Paths are as the package sees them,
+          rooted at the bootstrap, such as
+          `/Library/MobileSubstrate/DynamicLibraries/X.dylib`; the packager
+          maps them for rootless and roothide. Never write `/var/jb` or a
+          jbroot path. `mode` is `0644` or `0755`; `substitutePrefix: true`
+          fills `@PREFIX@` and `@ROOTFS@` in a file, such as a launch daemon
+          plist (the luros-bootstrap-paths skill).
+        - `tweakFilter` (tweak only): `{dylib: <product id>, bundles?,
+          executables?, classes?}`. The packager writes the filter plist
+          beside the dylib, which must be laid out under
+          `/Library/MobileSubstrate/DynamicLibraries/`; do not ship one
+          yourself. A new tweak's `bundles` come from the template's
+          `filterBundles`, an array of bundle IDs in apelin_project_create's
+          `values`, such as `["com.apple.Preferences"]`.
+        - `maintainerScripts`: `{preinst?, postinst?, prerm?, postrm?}`, each
+          a project file. Only `@PREFIX@` and `@ROOTFS@` are substituted;
+          `sh -n` must pass. They run as root and the install card shows
+          them in full: add one only when the task needs it, written as the
+          luros-packaging-and-install skill says.
+
+        ## What the build defines
+        On every C and Objective-C compile: `APELIN_BUILD_ID`,
+        `APELIN_PACKAGE_ID`, `APELIN_VERSION` and `APELIN_PRODUCT_NAME`
+        (string literals); `APELIN_BOOTSTRAP_ROOTLESS` or
+        `APELIN_BOOTSTRAP_ROOTHIDE` (1, for the bootstrap being built); and
+        `APELIN_CONFIGURATION_DEBUG` or `APELIN_CONFIGURATION_RELEASE` (1).
+        Swift gets the bootstrap and configuration as conditions. Code that
+        behaves differently per bootstrap tests these; a repository's own
+        macro is defined from them in a header. The build always passes the
+        SDK, `-arch`, the deployment target, `-fvisibility=hidden` and
+        `-Werror=unguarded-availability-new`, and `-fobjc-arc` with `objcARC`.
+
+        ## What asks the user
+        In Strict mode the next build asks once after a change to `kind`,
+        `language`, `deploymentTarget`, `architectures`, `configurations`,
+        `build`, `products` (except their `sources`, `headerSearchPaths` and
+        `resources`), or an entitlements or script file. The next install
+        asks once after a change to `package` (except `version`), a
+        maintainer script or an installed file. Editing sources and bumping
+        `version` never ask.
+
+        ## A tweak's build members
+        ```json
+        "products": [{
+          "id": "tweak", "type": "dylib", "name": "MyTweak",
+          "sources": ["Sources/*.m"], "objcARC": true,
+          "frameworks": ["Foundation", "UIKit"], "libraries": ["substrate"],
+          "extensionSupport": [{"extension": "com.fluoxetine.luros.dev.tweak", "component": "substrate"}]
+        }],
+        "build": {"steps": [
+          {"type": "compile", "product": "tweak"}, {"type": "link", "product": "tweak"},
+          {"type": "lipo", "product": "tweak"}, {"type": "dsym", "product": "tweak"},
+          {"type": "strip", "product": "tweak", "style": "non-global"},
+          {"type": "sign", "product": "tweak", "identity": "adhoc"}
+        ]},
+        "package": {
+          "id": "com.example.mytweak", "name": "MyTweak", "version": "1.0.0",
+          "description": "What it does.", "author": "Someone", "section": "Tweaks",
+          "depends": ["mobilesubstrate"],
+          "layout": [{"path": "/Library/MobileSubstrate/DynamicLibraries/MyTweak.dylib", "product": "tweak"}],
+          "tweakFilter": {"dylib": "tweak", "bundles": ["com.apple.springboard"]}
+        }
+        ```
+        """,
+        files: ["luros-project.schema.json": ProjectValidation.schemaText],
+    )
+}

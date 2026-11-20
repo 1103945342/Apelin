@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// A project deleted for good (`projectDelete`; apelin_project_delete,
@@ -21,7 +21,7 @@ enum AgentProjectDeleteRules {
     /// by its id, in the folder named when one is.
     static func target(_ delete: ProjectDeleteRequest, home: String) throws -> ResolvedProject {
         guard !delete.projectID.hasPrefix(ResolvedProject.temporaryIDPrefix) else {
-            throw ApelinError(.badRequest, "A temporary chat's folder is no project: it goes with its chat.")
+            throw LurosError(.badRequest, "A temporary chat's folder is no project: it goes with its chat.")
         }
         return try AgentProjects.resolve(home: home, projectID: delete.projectID, projectName: delete.projectName)
     }
@@ -37,19 +37,19 @@ enum AgentProjectDeleteRules {
 
     /// Nil when the session may delete `target`, else why not; under
     /// Confirm the approval that covers it is spent.
-    static func authorize(_ target: ResolvedProject, session: String?, registry: TaskRegistry) async -> ApelinError? {
+    static func authorize(_ target: ResolvedProject, session: String?, registry: TaskRegistry) async -> LurosError? {
         guard let session, let entry = await AgentSessionTable.shared.entry(session) else {
-            return ApelinError(.denied, "no agent session for this worker")
+            return LurosError(.denied, "no agent session for this worker")
         }
         guard target.id != entry.project.id else {
-            return ApelinError(
+            return LurosError(
                 .denied,
                 "a conversation cannot delete its own project, which it runs in: delete it from General Chat or another project's conversation, or in Projects ▸ All Projects…",
             )
         }
         guard entry.mode.asks else { return nil }
         guard await AgentApprovals.spend(entry: entry, registry: registry, covers: { covers(target, asked: $0) }) else {
-            return ApelinError(.denied, "approval required: the user has not approved deleting the project \(target.name)")
+            return LurosError(.denied, "approval required: the user has not approved deleting the project \(target.name)")
         }
         return nil
     }

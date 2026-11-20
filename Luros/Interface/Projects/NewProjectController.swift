@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Then
 import UIKit
 
@@ -184,7 +184,7 @@ final class NewProjectController: TableController, UITextFieldDelegate {
             nameField.placeholder = draft.suggestion
             updateCreate()
             do {
-                let catalog = try await ApelinService.app.extensionList()
+                let catalog = try await LurosService.app.extensionList()
                 guard !Task.isCancelled else { return }
                 var seen = Set<String>()
                 let available = catalog.extensions.filter(\.problems.isEmpty).flatMap { item in
@@ -385,7 +385,7 @@ final class NewProjectController: TableController, UITextFieldDelegate {
         Task {
             defer { setCreating(false) }
             do {
-                let created = try await ApelinService.app.projectCreate(ProjectCreateRequest(
+                let created = try await LurosService.app.projectCreate(ProjectCreateRequest(
                     templateID: entry.template.id,
                     name: name,
                     automaticallyName: automaticallyName,

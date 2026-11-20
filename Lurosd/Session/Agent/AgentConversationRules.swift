@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// What an agent may do with other conversations (`AgentConversations`),
@@ -36,22 +36,22 @@ enum AgentConversationRules {
         target: ResolvedProject
     ) throws -> AgentOpenRequest {
         guard !target.isTemporary else {
-            throw ApelinError(.denied, "an agent opens conversations only in a project; name one with its projectID or folder")
+            throw LurosError(.denied, "an agent opens conversations only in a project; name one with its projectID or folder")
         }
         guard opener.depth < AgentConversations.maximumDepth else {
-            throw ApelinError(
+            throw LurosError(
                 .denied,
                 "a conversation another agent opened \(opener.depth) deep cannot open more; do the work here"
             )
         }
         guard let prompt = open.prompt, !prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw ApelinError(.badRequest, "a conversation an agent opens starts with a prompt")
+            throw LurosError(.badRequest, "a conversation an agent opens starts with a prompt")
         }
         guard let brief = open.delegationBrief else {
-            throw ApelinError(.badRequest, "A delegated conversation needs a structured brief; prompt prose grants no authority.")
+            throw LurosError(.badRequest, "A delegated conversation needs a structured brief; prompt prose grants no authority.")
         }
         do { try brief.validate() }
-        catch { throw ApelinError(.badRequest, error.localizedDescription) }
+        catch { throw LurosError(.badRequest, error.localizedDescription) }
         return AgentOpenRequest(
             projectID: target.id,
             projectName: target.name,
@@ -79,19 +79,19 @@ enum AgentConversationRules {
         descriptorCount: Int
     ) throws -> AgentPromptRequest {
         guard descriptorCount == 0, prompt.attachments?.isEmpty ?? true else {
-            throw ApelinError(.badRequest, "a message from another conversation carries no files")
+            throw LurosError(.badRequest, "a message from another conversation carries no files")
         }
         guard let target else {
-            throw ApelinError(.notFound, "no conversation \(prompt.sessionID)")
+            throw LurosError(.notFound, "no conversation \(prompt.sessionID)")
         }
         guard target.sessionID != sender.sessionID else {
-            throw ApelinError(.badRequest, "a conversation does not send messages to itself")
+            throw LurosError(.badRequest, "a conversation does not send messages to itself")
         }
         guard !target.project.isTemporary else {
-            throw ApelinError(.denied, "conversation \(target.sessionID) is a temporary chat, which takes messages only from the user")
+            throw LurosError(.denied, "conversation \(target.sessionID) is a temporary chat, which takes messages only from the user")
         }
         guard !prompt.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw ApelinError(.badRequest, "the message is empty")
+            throw LurosError(.badRequest, "the message is empty")
         }
         // No `reports`: the host writes those, and the sender's are dropped.
         return AgentPromptRequest(sessionID: target.sessionID, text: prompt.text, fromSessionID: sender.sessionID, delivery: prompt.delivery)
@@ -111,10 +111,10 @@ enum AgentConversationRules {
     /// An agent aborts or closes only a conversation it opened.
     static func mayStop(_ target: AgentSessionTable.Entry?, caller: AgentSessionTable.Entry, sessionID: String) throws {
         guard let target else {
-            throw ApelinError(.notFound, "no conversation \(sessionID)")
+            throw LurosError(.notFound, "no conversation \(sessionID)")
         }
         guard target.parentSessionID == caller.sessionID else {
-            throw ApelinError(.denied, "an agent stops only the conversations it opened")
+            throw LurosError(.denied, "an agent stops only the conversations it opened")
         }
     }
 
@@ -128,7 +128,7 @@ enum AgentConversationRules {
         reachable: Bool = false
     ) throws {
         guard let target else {
-            throw ApelinError(.denied, "task \(taskID) is not a conversation of this project")
+            throw LurosError(.denied, "task \(taskID) is not a conversation of this project")
         }
         guard target.project != caller.project else { return }
         try mayReach(target.project, caller: caller, reachable: reachable)
@@ -139,10 +139,10 @@ enum AgentConversationRules {
     static func mayReach(_ project: ResolvedProject, caller: AgentSessionTable.Entry, reachable: Bool) throws {
         guard project != caller.project else { return }
         guard !project.isTemporary else {
-            throw ApelinError(.denied, "a temporary chat's conversations are the user's alone")
+            throw LurosError(.denied, "a temporary chat's conversations are the user's alone")
         }
         guard !caller.mode.asks || reachable else {
-            throw ApelinError(
+            throw LurosError(
                 .denied,
                 "approval required: the user has not let this conversation reach the project \(project.name)"
             )

@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 // The session host's banners (Lurosd/Session/Notice/AgentNotices.swift):

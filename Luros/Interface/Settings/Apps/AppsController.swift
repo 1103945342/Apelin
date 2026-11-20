@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import SPIndicator
 import Then
 import UIKit
@@ -72,7 +72,7 @@ final class AppsController: TableController {
         dataSource.beginLoad()
         loader = Task { [weak self] in
             do {
-                let response = try await ApelinService.app.applicationList()
+                let response = try await LurosService.app.applicationList()
                 guard !Task.isCancelled, let self else { return }
                 show(response.applications)
             } catch {
@@ -203,7 +203,7 @@ final class AppsController: TableController {
         removing = true
         Task { [weak self] in
             do {
-                try await ApelinService.app.applicationRemove(bundleID: app.bundleID, path: app.path)
+                try await LurosService.app.applicationRemove(bundleID: app.bundleID, path: app.path)
                 guard let self else { return }
                 removing = false
                 SPIndicator.present(title: String(localized: "Removed"), preset: .done, haptic: .success)
@@ -226,7 +226,7 @@ final class AppsController: TableController {
             cancelTitle: "Later",
             confirmTitle: "Restart",
         ) {
-            Task { try? await ApelinService.app.respring() }
+            Task { try? await LurosService.app.respring() }
         }
     }
 }

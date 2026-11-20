@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 
 /// Who sent a request to the session host: the app through lurosd, or a
 /// worker through the socketpair it was spawned with, by the role the host

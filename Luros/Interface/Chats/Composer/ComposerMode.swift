@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 /// What a run is allowed to do, as the pill under the composer sets it.
@@ -53,7 +53,7 @@ enum ComposerMode: String, CaseIterable, Codable, Sendable {
 
     /// The approval mode a run starts in, for a mode that sets one. Automatic
     /// runs ask nothing; the other two keep whatever the reader chose.
-    var impliedApprovalMode: ApelinProtocol.ApprovalMode? {
+    var impliedApprovalMode: LurosProtocol.ApprovalMode? {
         switch self {
         case .auto: .full
         case .plan, .build: nil

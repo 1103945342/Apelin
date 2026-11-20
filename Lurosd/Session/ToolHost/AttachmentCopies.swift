@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import CryptoKit
 import Darwin
 import Foundation
@@ -37,13 +37,13 @@ struct AttachmentCopies: Sendable {
     func copy(_ source: Int32, maximumBytes: Int) throws -> Copy {
         var info = stat()
         guard fstat(source, &info) == 0 else {
-            throw ApelinError(.badRequest, "an attachment's descriptor is not open")
+            throw LurosError(.badRequest, "an attachment's descriptor is not open")
         }
         guard info.st_mode & S_IFMT == S_IFREG else {
-            throw ApelinError(.badRequest, "an attachment is not a regular file")
+            throw LurosError(.badRequest, "an attachment is not a regular file")
         }
         guard info.st_size <= off_t(maximumBytes) else {
-            throw ApelinError(
+            throw LurosError(
                 .badRequest,
                 "an attachment is \(info.st_size) bytes, over the \(maximumBytes)-byte limit",
             )
@@ -61,13 +61,13 @@ struct AttachmentCopies: Sendable {
                     if errno == EINTR {
                         continue
                     }
-                    throw ApelinError(.badRequest, "an attachment cannot be read: \(String(cString: strerror(errno)))")
+                    throw LurosError(.badRequest, "an attachment cannot be read: \(String(cString: strerror(errno)))")
                 }
                 if count == 0 {
                     break
                 }
                 guard offset + count <= maximumBytes else {
-                    throw ApelinError(
+                    throw LurosError(
                         .badRequest,
                         "an attachment grew past the \(maximumBytes)-byte limit while it was read",
                     )
@@ -82,7 +82,7 @@ struct AttachmentCopies: Sendable {
                             if errno == EINTR {
                                 continue
                             }
-                            throw ApelinError(
+                            throw LurosError(
                                 .unavailable,
                                 "the attachment copy cannot be written: \(String(cString: strerror(errno)))",
                             )
@@ -107,7 +107,7 @@ struct AttachmentCopies: Sendable {
         var template = Array((directory.path + "/attachment.XXXXXX").utf8CString)
         let writer = template.withUnsafeMutableBufferPointer { mkstemp($0.baseAddress!) }
         guard writer >= 0 else {
-            throw ApelinError(.unavailable, "no attachment copy can be made: \(String(cString: strerror(errno)))")
+            throw LurosError(.unavailable, "no attachment copy can be made: \(String(cString: strerror(errno)))")
         }
         let path = String(cString: template)
         let reader = open(path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC)
@@ -115,7 +115,7 @@ struct AttachmentCopies: Sendable {
         unlink(path)
         guard reader >= 0 else {
             close(writer)
-            throw ApelinError(.unavailable, "no attachment copy can be made: \(String(cString: strerror(failure)))")
+            throw LurosError(.unavailable, "no attachment copy can be made: \(String(cString: strerror(failure)))")
         }
         _ = fcntl(writer, F_SETFD, FD_CLOEXEC)
         _ = fchmod(writer, 0o400)
@@ -127,7 +127,7 @@ struct AttachmentCopies: Sendable {
     private func prepareDirectory() throws {
         let path = directory.path
         if mkdir(path, 0o700) != 0, errno != EEXIST {
-            throw ApelinError(.unavailable, "\(path) cannot be made: \(String(cString: strerror(errno)))")
+            throw LurosError(.unavailable, "\(path) cannot be made: \(String(cString: strerror(errno)))")
         }
         var info = stat()
         guard lstat(path, &info) == 0,
@@ -135,7 +135,7 @@ struct AttachmentCopies: Sendable {
               info.st_uid == geteuid(),
               info.st_mode & 0o077 == 0
         else {
-            throw ApelinError(.unavailable, "\(path) is not a private directory of this process's user")
+            throw LurosError(.unavailable, "\(path) is not a private directory of this process's user")
         }
     }
 }

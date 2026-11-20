@@ -46,7 +46,7 @@
     {
       "id": "app",
       "type": "app",
-      "name": "ApelinApp",
+      "name": "LurosApp",
       "sources": [
         "Sources/App/*.swift"
       ],
@@ -110,7 +110,7 @@
     ],
     "layout": [
       {
-        "path": "/Applications/ApelinApp.app",
+        "path": "/Applications/LurosApp.app",
         "product": "app"
       }
     ]

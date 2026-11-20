@@ -175,7 +175,7 @@ Panicked task …: pid …: luros-diagnostics
 The kernel backtraces were not symbolicated. Both readers are gone, the
 image evidence is always `notRead`, `imageCheck` is refused with
 `badRequest` before a task starts (`i3-image-check-refused.json`), and only
-the marker `ApelinLoaded <buildID>` heard on the live log, plus the static
+the marker `LurosLoaded <buildID>` heard on the live log, plus the static
 filter check, decides `loaded`. Do not add an image reader back without a
 safe mechanism proven on that kernel. The run that panicked was left in
 `console/running/` and would have been resumed at the next launch; the
@@ -190,8 +190,8 @@ console now goes on after a restart only past a successful respring.
 - An interrupted toolchain setup leaves its job record and
   `Environment/staging/<taskID>/` until the next setup of the same source,
   which clears them.
-- Only the `ApelinLoaded` marker is checked; whether the template's hook
-  ran (`ApelinHooked`) is not part of the evidence.
+- Only the `LurosLoaded` marker is checked; whether the template's hook
+  ran (`LurosHooked`) is not part of the evidence.
 - Procursus' PreferenceLoader 2.2.8 on the iOS 26.4 iPhone vphone added no
   row for an installed pane, neither in Settings' list nor under Apps, so
   a Settings row and its icon are seen only on an older iOS.
@@ -284,7 +284,7 @@ console now goes on after a restart only past a successful respring.
       rename and apelin_project_set_environment each write it formatted.
 
 - [ ] Open in Luros for a repository (2026-10-31, issue #31; only the
-      Mac harness's `Tests/ApelinLink` and a node run of the landing
+      Mac harness's `Tests/LurosLink` and a node run of the landing
       page's checks have run). After `make vphone` (iPhone and iPad):
       from a README, `https://1103945342.github.io/Luros/open/?url=…`
       shows the repository and Open in Luros opens the sheet filled in,
@@ -2878,7 +2878,7 @@ iPhone vphones and the iOS 26.4 iPad vphone:
   started and ended, the approval resolved as denied after 579 s, and each
   run with its model and host. `git_status`'s 40-digit HEAD was written as
   `<device id>`: the redaction takes a SHA-1 for an old-style UDID.
-- The vphone's leftover test tweaks (`ApelinHello`, `I3ChainTweak`,
+- The vphone's leftover test tweaks (`LurosHello`, `I3ChainTweak`,
   `DemoTweak`) put their alerts over Luros at launch; they are not Luros's.
 
 ## A renamed roothide root and an unreadable chat (2026-11-02, 0.3.4)
@@ -3178,7 +3178,7 @@ tests: a stopped call that never answers is left and one that ends by
 itself keeps its answer (`ConversationToolTests`), a clone from a server
 that says nothing fails "timed out" (`GitTimeoutTests`), the host's
 bounded wait (`PatienceChecks`), a further endpoint's identity on the wire
-(`ApelinProtocolTests`), its sign-in, list and registration
+(`LurosProtocolTests`), its sign-in, list and registration
 (`AccountDeskTests`), the web address as typed (`WebAddressCheck`), and a
 withdrawn package left out of the catalog (`SupportTests`).
 

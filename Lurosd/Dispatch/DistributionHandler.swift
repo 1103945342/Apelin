@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 
 /// The user's package repository, served by luros-environment, which holds
 /// the github.com sign-in. The app's alone (CallerPolicy), but for a publish,
@@ -28,7 +28,7 @@ enum DistributionHandler: DomainHandler {
         case .feedbackRead, .feedbackStarState, .feedbackStar:
             await host.forward(request, to: .environment)
         default:
-            request.fail(ApelinError(.badRequest, "\(request.operation.rawValue) is not a distribution operation"))
+            request.fail(LurosError(.badRequest, "\(request.operation.rawValue) is not a distribution operation"))
         }
     }
 

@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Darwin
 import Foundation
 
@@ -32,19 +32,19 @@ struct DpkgFileLists: PackageFileLists {
             if errno == ENOENT {
                 return []
             }
-            throw ApelinError(.unavailable, "\(name).list: \(String(cString: strerror(errno)))")
+            throw LurosError(.unavailable, "\(name).list: \(String(cString: strerror(errno)))")
         }
         let handle = FileHandle(fileDescriptor: descriptor, closeOnDealloc: true)
         var metadata = stat()
         guard fstat(descriptor, &metadata) == 0, metadata.st_mode & S_IFMT == S_IFREG,
               metadata.st_size <= Self.maximumBytes
         else {
-            throw ApelinError(.unavailable, "\(name).list is not a file list")
+            throw LurosError(.unavailable, "\(name).list is not a file list")
         }
         // An empty file reads as nil.
         let data = try handle.read(upToCount: Self.maximumBytes + 1) ?? Data()
         guard data.count <= Self.maximumBytes else {
-            throw ApelinError(.unavailable, "\(name).list is not a file list")
+            throw LurosError(.unavailable, "\(name).list is not a file list")
         }
         return Self.parse(String(decoding: data, as: UTF8.self))
     }

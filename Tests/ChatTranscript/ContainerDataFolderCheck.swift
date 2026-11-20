@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import Foundation
 
 /// The data folder a rootless app kept in its data container moves into

@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import CoreImage.CIFilterBuiltins
 import UIKit
 
@@ -161,7 +161,7 @@ final class ChannelController: TableController {
 
     private func load() async {
         do {
-            apply(try await ApelinService.app.channelStatus())
+            apply(try await LurosService.app.channelStatus())
         } catch {
             // The background service is not there yet (or was restarted);
             // the next second tries again.
@@ -310,9 +310,9 @@ final class ChannelController: TableController {
         case .code:
             askForNumber()
         case .signIn:
-            run { try await ApelinService.app.channelSignIn() }
+            run { try await LurosService.app.channelSignIn() }
         case .signOut:
-            run { try await ApelinService.app.channelSignOut() }
+            run { try await LurosService.app.channelSignOut() }
         case .project:
             chooseProject()
         case .approvalMode:
@@ -347,7 +347,7 @@ final class ChannelController: TableController {
             guard let code = alert?.textFields?.first?.text?.trimmingCharacters(in: .whitespaces), !code.isEmpty else {
                 return
             }
-            self?.run { try await ApelinService.app.channelVerifyCode(code) }
+            self?.run { try await LurosService.app.channelVerifyCode(code) }
         })
         present(alert, animated: true)
     }
@@ -355,11 +355,11 @@ final class ChannelController: TableController {
     private func chooseProject() {
         let sheet = UIAlertController(title: String(localized: "Project"), message: nil, preferredStyle: .actionSheet)
         sheet.addAction(UIAlertAction(title: String(localized: "General Chat"), style: .default) { [weak self] _ in
-            self?.run { try await ApelinService.app.channelConfigure(clearsProject: true) }
+            self?.run { try await LurosService.app.channelConfigure(clearsProject: true) }
         })
         for name in Self.projectNames() {
             sheet.addAction(UIAlertAction(title: name, style: .default) { [weak self] _ in
-                self?.run { try await ApelinService.app.channelConfigure(projectName: name) }
+                self?.run { try await LurosService.app.channelConfigure(projectName: name) }
             })
         }
         sheet.addAction(UIAlertAction(title: String(localized: "Cancel"), style: .cancel))
@@ -370,7 +370,7 @@ final class ChannelController: TableController {
         let sheet = UIAlertController(title: String(localized: "Approval Mode"), message: nil, preferredStyle: .actionSheet)
         for mode in [ApprovalMode.relaxed, .confirm, .full] {
             sheet.addAction(UIAlertAction(title: AgentPermissions.title(for: mode), style: .default) { [weak self] _ in
-                self?.run { try await ApelinService.app.channelConfigure(approvalMode: mode) }
+                self?.run { try await LurosService.app.channelConfigure(approvalMode: mode) }
             })
         }
         sheet.addAction(UIAlertAction(title: String(localized: "Cancel"), style: .cancel))
@@ -396,7 +396,7 @@ final class ChannelController: TableController {
     private func show(_ error: any Error) {
         let alert = UIAlertController(
             title: String(localized: "Could Not Connect"),
-            message: (error as? ApelinError)?.message ?? String(describing: error),
+            message: (error as? LurosError)?.message ?? String(describing: error),
             preferredStyle: .alert
         )
         alert.addAction(UIAlertAction(title: String(localized: "Done"), style: .default))
@@ -483,7 +483,7 @@ enum ChannelModelList {
         let models = EnabledModels.selectedModelIDs()
         guard models != pushed else { return }
         do {
-            _ = try await ApelinService.app.channelConfigure(enabledModels: models)
+            _ = try await LurosService.app.channelConfigure(enabledModels: models)
             pushed = models
         } catch {
             // The background service is not there yet: the next change or
@@ -516,7 +516,7 @@ enum ChannelLanguage {
         guard language != pushed else { return }
         for attempt in 0 ..< max(1, retries) {
             do {
-                _ = try await ApelinService.app.channelConfigure(language: language)
+                _ = try await LurosService.app.channelConfigure(language: language)
                 pushed = language
                 return
             } catch {

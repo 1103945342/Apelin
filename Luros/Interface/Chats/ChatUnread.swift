@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 /// Which conversations hold a reply the reader has not seen (issue #28):

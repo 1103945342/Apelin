@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// The host's side of an agent session's approvals: what the app approved is
@@ -45,7 +45,7 @@ enum AgentApprovals {
            let entry = await sessions.entry(approve.sessionID),
            await isRootRequest(requested(approve.approvalID, entry: entry, registry: registry))
         {
-            throw ApelinError(
+            throw LurosError(
                 .denied,
                 "a command that runs as root is approved only in the conversation, with Face ID, Touch ID or the passcode"
             )
@@ -207,7 +207,7 @@ enum AgentApprovals {
         }
         switch run.approval {
         case .relaxed:
-            throw ApelinError(.denied, "this session is in Strict mode")
+            throw LurosError(.denied, "this session is in Strict mode")
         case .preset:
             let project = entry.project.path
             let directory = try AgentRunCode.workingDirectory(run.workingDirectory, project: project)
@@ -226,15 +226,15 @@ enum AgentApprovals {
             // a refused call leaves it alone.
             let asked = await requested(approvalID, entry: entry, registry: registry)
             guard let asked, asked["tool"]?.stringValue == AgentToolName.shellRun.rawValue else {
-                throw ApelinError(.denied, "\(approvalID) is not an approval this session requested for shell_run")
+                throw LurosError(.denied, "\(approvalID) is not an approval this session requested for shell_run")
             }
             guard let approved = approvedSpec(asked), approved == run.spec,
                   directoryName(asked["workingDirectory"]?.stringValue) == directoryName(run.workingDirectory)
             else {
-                throw ApelinError(.denied, "\(approvalID) was given for another command or working directory")
+                throw LurosError(.denied, "\(approvalID) was given for another command or working directory")
             }
             guard await AgentSessionTable.shared.consume(run.sessionID, approvalID: approvalID) else {
-                throw ApelinError(.denied, "the app has not approved \(approvalID)")
+                throw LurosError(.denied, "the app has not approved \(approvalID)")
             }
             return .mobile(preset: nil)
         case .session:
@@ -242,7 +242,7 @@ enum AgentApprovals {
             // command and directory the app approved for the session.
             let grant = RunCodeGrant(spec: run.spec, directory: directoryName(run.workingDirectory))
             guard await AgentSessionTable.shared.hasGrant(run.sessionID, grant) else {
-                throw ApelinError(.denied, "the app has not approved this command in this directory for the session")
+                throw LurosError(.denied, "the app has not approved this command in this directory for the session")
             }
             return .mobile(preset: nil)
         }
@@ -266,24 +266,24 @@ enum AgentApprovals {
             return
         }
         guard case let .user(approvalID) = run.approval else {
-            throw ApelinError(.denied, "running as root needs the user's approval of this call, every time")
+            throw LurosError(.denied, "running as root needs the user's approval of this call, every time")
         }
         let asked = await requested(approvalID, entry: entry, registry: registry)
         guard let asked, asked["tool"]?.stringValue == AgentToolName.shellRun.rawValue,
               let approved = approvedSpec(asked, key: RunCodeApproval.rootCommandDetail), approved == run.spec,
               directoryName(asked["workingDirectory"]?.stringValue) == directoryName(run.workingDirectory)
         else {
-            throw ApelinError(.denied, "\(approvalID) is not the user's approval of this command as root here")
+            throw LurosError(.denied, "\(approvalID) is not the user's approval of this command as root here")
         }
         guard await AgentSessionTable.shared.consume(run.sessionID, approvalID: approvalID) else {
-            throw ApelinError(.denied, "the app has not approved \(approvalID)")
+            throw LurosError(.denied, "the app has not approved \(approvalID)")
         }
     }
 
     /// Nothing runs as root for a session whose task has ended.
     private static func requireLive(_ entry: AgentSessionTable.Entry, registry: TaskRegistry) async throws {
         guard let record = await registry.record(entry.task.taskID), !record.state.isTerminal else {
-            throw ApelinError(.denied, "this session has ended; nothing more runs as root for it")
+            throw LurosError(.denied, "this session has ended; nothing more runs as root for it")
         }
     }
 
@@ -297,7 +297,7 @@ enum AgentApprovals {
     /// The command a shell_run approval request showed the user, as the
     /// `RunCodeSpec` the agent sends for it: luros-agent puts the classified
     /// invocation in `detail.command` — `detail.rootCommand` for a root
-    /// request — (ApelinAgent's `RunCodeInvocation`, in its synthesized
+    /// request — (LurosAgent's `RunCodeInvocation`, in its synthesized
     /// Codable shape) and hands shell text to `sh`
     /// (`ChannelHostBackend.spec`). A request without one approves nothing.
     static func approvedSpec(_ asked: JSONValue, key: String = "command") -> RunCodeSpec? {
@@ -311,7 +311,7 @@ enum AgentApprovals {
         }
     }
 
-    /// ApelinAgent's `RunCodeInvocation`, case for case, so it decodes what
+    /// LurosAgent's `RunCodeInvocation`, case for case, so it decodes what
     /// that one encodes.
     private enum RequestedInvocation: Decodable {
         case argv([String])

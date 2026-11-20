@@ -1,5 +1,5 @@
 // Copyright (c) 2026 OwnGoal Studio. MIT; see LICENSE beside this file.
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 /// Picks a pair, not two independent newest releases. The service's host

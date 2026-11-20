@@ -19,12 +19,12 @@ if args.entitlements and not Path(args.entitlements).is_file():
     parser.error('entitlements file does not exist')
 out = Path('build/model-connectivity')
 out.mkdir(parents=True, exist_ok=True)
-wire = Path('Packages/ApelinKit/Sources/ApelinProtocol/Operations/AgentModelTest.swift').read_text()
+wire = Path('Packages/LurosKit/Sources/LurosProtocol/Operations/AgentModelTest.swift').read_text()
 # The wire values verbatim; request/service declarations need the full package.
 wire = wire[:wire.index('public struct AgentModelTestRequest')] + wire[
-    wire.index('public struct AgentModelTestResponse'):wire.index('public extension ApelinService')]
-report = Path('Packages/ApelinAgent/Sources/ApelinAgentWorker/ModelTestReport.swift').read_text()
-report = report.replace('import ApelinProtocol\n', '')
+    wire.index('public struct AgentModelTestResponse'):wire.index('public extension LurosService')]
+report = Path('Packages/LurosAgent/Sources/LurosAgentWorker/ModelTestReport.swift').read_text()
+report = report.replace('import LurosProtocol\n', '')
 check = Path('Tests/ModelConnectivity/Check.swift').read_text()
 # Swift 5.10 on the device lacks Swift 6's trailing call-argument commas.
 source = re.sub(r',(\s*\))', r'\1', wire + '\n' + report + '\n' + check)

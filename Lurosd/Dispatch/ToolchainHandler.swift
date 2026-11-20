@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 
 /// Toolchain setup and removal, served by luros-environment. An agent's
 /// setup passes the host's own check first (`AgentEnvironmentRules`).
@@ -16,13 +16,13 @@ enum ToolchainHandler: DomainHandler {
             // quick and harmless to run again by hand: not resumed
             return await host.startTask(request, kind: .environment, role: .environment, resumable: false)
         default:
-            return request.fail(ApelinError(.badRequest, "\(request.operation.rawValue) is not a toolchain operation"))
+            return request.fail(LurosError(.badRequest, "\(request.operation.rawValue) is not a toolchain operation"))
         }
     }
 
     /// Nil for the app; for an agent, the refusal of a setup that is not
     /// one from the catalog, or under Confirm one the user did not approve.
-    static func agentRefusal(_ request: HostRequest, host: SessionHost) async -> ApelinError? {
+    static func agentRefusal(_ request: HostRequest, host: SessionHost) async -> LurosError? {
         guard case let .worker(.agent, instance) = request.caller else { return nil }
         var entry: AgentSessionTable.Entry?
         if let instance {
@@ -37,7 +37,7 @@ enum ToolchainHandler: DomainHandler {
             )
             return nil
         } catch {
-            return (error as? ApelinError) ?? ApelinError(.badRequest, "\(error)")
+            return (error as? LurosError) ?? LurosError(.badRequest, "\(error)")
         }
     }
 }

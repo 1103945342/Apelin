@@ -34,7 +34,7 @@
       "toolchainComponents": ["c-family"],
       "project": "luros-project.json",
       "parameters": [
-        { "name": "productName", "type": "identifier", "label": "Command Name", "help": "The executable installed into /usr/bin.", "required": true, "default": "apelinhello" },
+        { "name": "productName", "type": "identifier", "label": "Command Name", "help": "The executable installed into /usr/bin.", "required": true, "default": "luroshello" },
         { "name": "displayName", "type": "string", "label": "Package Name", "default": "Luros Hello", "maxLength": 64 },
         { "name": "summary", "type": "string", "label": "Description", "default": "Built on this device with Luros.", "maxLength": 200 },
         { "name": "author", "type": "string", "label": "Author", "default": "Luros User", "maxLength": 64 }
@@ -55,7 +55,7 @@
       "toolchainComponents": ["c-family"],
       "project": "luros-project.json",
       "parameters": [
-        { "name": "productName", "type": "identifier", "label": "Command Name", "help": "The executable installed into /usr/bin.", "required": true, "default": "apelinhello" },
+        { "name": "productName", "type": "identifier", "label": "Command Name", "help": "The executable installed into /usr/bin.", "required": true, "default": "luroshello" },
         { "name": "displayName", "type": "string", "label": "Package Name", "default": "Luros Hello", "maxLength": 64 },
         { "name": "summary", "type": "string", "label": "Description", "default": "Built on this device with Luros.", "maxLength": 200 },
         { "name": "author", "type": "string", "label": "Author", "default": "Luros User", "maxLength": 64 }

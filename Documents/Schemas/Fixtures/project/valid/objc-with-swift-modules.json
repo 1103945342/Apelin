@@ -46,7 +46,7 @@
     {
       "id": "app",
       "type": "app",
-      "name": "ApelinApp",
+      "name": "LurosApp",
       "sources": [
         "Sources/*.m"
       ],
@@ -106,7 +106,7 @@
     ],
     "layout": [
       {
-        "path": "/Applications/ApelinApp.app",
+        "path": "/Applications/LurosApp.app",
         "product": "app"
       }
     ]

@@ -1,10 +1,10 @@
-import ApelinCore
-import ApelinProtocol
-import ApelinToolHost
+import LurosCore
+import LurosProtocol
+import LurosToolHost
 import Darwin
 import Foundation
 
-// ApelinToolCore has its own JSONValue, ToolRisk and ToolDescriptor; this is
+// LurosToolCore has its own JSONValue, ToolRisk and ToolDescriptor; this is
 // the one file in lurosd that imports it, so names are spelled with their
 // module wherever both could be meant.
 
@@ -56,20 +56,20 @@ actor ToolHostSessions {
     func open(_ request: ToolHostOpenRequest, caller: Caller) async throws -> ToolHostOpenResponse {
         sweep()
         guard sessions.count + opening < Self.maximumSessions else {
-            throw ApelinError(.unavailable, "too many tool extension sessions are open")
+            throw LurosError(.unavailable, "too many tool extension sessions are open")
         }
         // Other opens can run while this one awaits the start; it holds its
         // place against the limit until it is in `sessions` or has failed.
         opening += 1
         defer { opening -= 1 }
         guard ToolManifestValidator.isValidID(request.id) else {
-            throw ApelinError(.badRequest, "not an extension ID: \(request.id)")
+            throw LurosError(.badRequest, "not an extension ID: \(request.id)")
         }
         let validated: ValidatedToolManifest
         do {
             validated = try ToolManifestValidator.validate(installRoot: installRoot, id: request.id)
         } catch let error as ToolManifestError {
-            throw ApelinError(.denied, "the extension's manifest was refused: \(error.reason)")
+            throw LurosError(.denied, "the extension's manifest was refused: \(error.reason)")
         }
         let root = installRoot == "/" ? "" : installRoot
         let environment = [
@@ -90,7 +90,7 @@ actor ToolHostSessions {
             try await client.start()
         } catch {
             _ = await client.terminate()
-            throw ApelinError(.unavailable, "the extension did not start: \(error)")
+            throw LurosError(.unavailable, "the extension did not start: \(error)")
         }
         let id = UUID().uuidString.lowercased()
         sessions[id] = Session(
@@ -111,7 +111,7 @@ actor ToolHostSessions {
     ) async throws -> (ToolHostCallResponse, [OwnedDescriptor]) {
         let session = try owned(request.sessionID, by: caller)
         guard session.manifest.tool(named: request.tool) != nil else {
-            throw ApelinError(.badRequest, "\(session.extensionID) declares no tool \(request.tool)")
+            throw LurosError(.badRequest, "\(session.extensionID) declares no tool \(request.tool)")
         }
         let arguments = try Self.convert(request.arguments)
         let limits = session.client.configuration.limits
@@ -138,7 +138,7 @@ actor ToolHostSessions {
                 let copy: AttachmentCopies.Copy
                 do {
                     copy = try copies.copy(file.descriptor, maximumBytes: maximumBytes)
-                } catch let error as ApelinError {
+                } catch let error as LurosError {
                     return (
                         ToolHostCallResponse(
                             text: result.text,
@@ -208,14 +208,14 @@ actor ToolHostSessions {
         maximumBytes: Int,
     ) throws -> [ToolOutgoingAttachment] {
         guard slots.count <= maximumAttachments else {
-            throw ApelinError(.badRequest, "a call carries at most \(maximumAttachments) attachments")
+            throw LurosError(.badRequest, "a call carries at most \(maximumAttachments) attachments")
         }
         var used = Set<Int>()
         return try slots.map { slot in
             guard descriptors.indices.contains(slot.descriptor.index),
                   used.insert(slot.descriptor.index).inserted
             else {
-                throw ApelinError(
+                throw LurosError(
                     .badRequest,
                     "attachment slot \(slot.descriptor.index) names a descriptor this request does not carry, or one another slot already names",
                 )
@@ -223,9 +223,9 @@ actor ToolHostSessions {
             for (field, value) in [("argument", slot.argument), ("mimeType", slot.mimeType), ("name", slot.name)] {
                 guard let value else { continue }
                 guard !value.isEmpty, value.utf8.count <= Self.maximumAttachmentFieldBytes,
-                      !ApelinCore.CanonicalPath.containsNUL(value)
+                      !LurosCore.CanonicalPath.containsNUL(value)
                 else {
-                    throw ApelinError(
+                    throw LurosError(
                         .badRequest,
                         "an attachment's \(field) must be 1–\(Self.maximumAttachmentFieldBytes) bytes with no NUL",
                     )
@@ -240,7 +240,7 @@ actor ToolHostSessions {
                     name: slot.name,
                 )
             } catch {
-                throw ApelinError(.unavailable, "the attachment copy cannot be passed on: \(error)")
+                throw LurosError(.unavailable, "the attachment copy cannot be passed on: \(error)")
             }
         }
     }
@@ -248,7 +248,7 @@ actor ToolHostSessions {
     private func owned(_ id: String, by caller: Caller) throws -> Session {
         sweep()
         guard let session = sessions[id], session.owner == caller else {
-            throw ApelinError(.notFound, "no tool session \(id)")
+            throw LurosError(.notFound, "no tool session \(id)")
         }
         return session
     }
@@ -258,22 +258,22 @@ actor ToolHostSessions {
         sessions = sessions.filter { $0.value.client.exitStatus == nil }
     }
 
-    private static func describe(_ tool: ApelinToolCore.ToolDescriptor) -> ApelinProtocol.ToolDescriptor {
-        let risk: ApelinProtocol.ToolRisk = switch tool.risk {
+    private static func describe(_ tool: LurosToolCore.ToolDescriptor) -> LurosProtocol.ToolDescriptor {
+        let risk: LurosProtocol.ToolRisk = switch tool.risk {
         case .readOnly: .readOnly
         case .writeProject: .writesProject
         case .system: .system
         }
-        let schema = (try? JSONCoding.decode(ApelinCore.JSONValue.self, from: JSONEncoder().encode(tool.parameters)))
+        let schema = (try? JSONCoding.decode(LurosCore.JSONValue.self, from: JSONEncoder().encode(tool.parameters)))
             ?? .object([:])
-        return ApelinProtocol.ToolDescriptor(name: tool.name, summary: tool.description, schema: schema, risk: risk)
+        return LurosProtocol.ToolDescriptor(name: tool.name, summary: tool.description, schema: schema, risk: risk)
     }
 
-    private static func convert(_ value: ApelinCore.JSONValue) throws -> ApelinToolCore.JSONValue {
+    private static func convert(_ value: LurosCore.JSONValue) throws -> LurosToolCore.JSONValue {
         do {
-            return try JSONDecoder().decode(ApelinToolCore.JSONValue.self, from: JSONCoding.encode(value))
+            return try JSONDecoder().decode(LurosToolCore.JSONValue.self, from: JSONCoding.encode(value))
         } catch {
-            throw ApelinError(.badRequest, "the arguments are not JSON the extension takes")
+            throw LurosError(.badRequest, "the arguments are not JSON the extension takes")
         }
     }
 }

@@ -7,7 +7,7 @@
 	System libraries only.
 
 	The logging keys: diagnosticd may still ask a root client for them
-	(Packages/ApelinDiagnostics/README.md, "Root log read"; unverified on
+	(Packages/LurosDiagnostics/README.md, "Root log read"; unverified on
 	iOS). Nothing else — no UI, IOKit, task-port or storage key.
 
 	Never `com.fluoxetine.luros.client` and never the Mach-lookup of

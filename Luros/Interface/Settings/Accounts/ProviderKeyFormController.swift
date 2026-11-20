@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import UIKit
 
 /// The editable part of an API-key sign-in. The parent owns the sign-in

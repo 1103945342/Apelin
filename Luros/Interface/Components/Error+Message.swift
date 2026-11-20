@@ -1,14 +1,14 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 extension Error {
-    /// What an alert says about this error. `ApelinError` is not a
+    /// What an alert says about this error. `LurosError` is not a
     /// `LocalizedError`, and its `localizedDescription` is Foundation's
     /// "The operation couldn't be completed" with a type name in it.
     /// The peer's message is kept when it sent one; otherwise the code is
     /// put in the user's words, never shown by its raw name.
     var readableMessage: String {
-        if let error = self as? ApelinError {
+        if let error = self as? LurosError {
             if error.code == .backendUnavailable || error.message.isEmpty {
                 return error.code.readableMessage
             }
@@ -18,7 +18,7 @@ extension Error {
     }
 }
 
-extension ApelinError.Code {
+extension LurosError.Code {
     /// Whether a page following a task stops on this error instead of
     /// attaching again: the host does not have the task, will not show it,
     /// refused the request, or is not there at all.

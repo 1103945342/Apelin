@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Dispatch
 import Foundation
 @preconcurrency import XPC
@@ -11,8 +11,8 @@ private func appCreateMachServiceConnection(
     _ flags: UInt64,
 ) -> xpc_connection_t?
 
-/// The app's connection to lurosd, and the `ApelinTransport` under
-/// `ApelinService.app`.
+/// The app's connection to lurosd, and the `LurosTransport` under
+/// `LurosService.app`.
 ///
 /// Hello first. A miss means launchd has not started the daemon yet, so it is
 /// retried; only after `gracePeriod`, measured from the first miss, does the
@@ -25,7 +25,7 @@ private func appCreateMachServiceConnection(
 /// next call says hello again on a new connection. Calls made while the app
 /// runs without the backend fail with `.backendUnavailable`; each one first
 /// tries a single hello, so a daemon started later is found.
-final class DaemonClient: ApelinTransport, @unchecked Sendable {
+final class DaemonClient: LurosTransport, @unchecked Sendable {
     static let shared = DaemonClient()
 
     private static let gracePeriod: TimeInterval = 10
@@ -53,11 +53,11 @@ final class DaemonClient: ApelinTransport, @unchecked Sendable {
     private var state = State.unknown
     private var helloWaiters: [(xpc_connection_t?) -> Void] = []
 
-    // MARK: ApelinTransport
+    // MARK: LurosTransport
 
     func call(_ request: WireRequest, descriptors: [OwnedDescriptor]) async throws -> (WireReply, [OwnedDescriptor]) {
         guard let connection = await connection() else {
-            throw ApelinError(.backendUnavailable, "Luros’s background service is not running")
+            throw LurosError(.backendUnavailable, "Luros’s background service is not running")
         }
         // Attach requests add their wait to the ordinary bound. A model test is
         // a task now and answers with its handle at once, like any other.
@@ -76,7 +76,7 @@ final class DaemonClient: ApelinTransport, @unchecked Sendable {
                 if xpc_get_type(reply) == AppXPC.typeError {
                     self.dropped(connection)
                     continuation.resume(
-                        throwing: ApelinError(
+                        throwing: LurosError(
                             .unavailable,
                             String(localized: "The connection to Luros’s background service closed. Try again."),
                         ),
@@ -89,7 +89,7 @@ final class DaemonClient: ApelinTransport, @unchecked Sendable {
                 guard once.claim() else { return }
                 let waited = Duration.seconds(Int(bound)).formatted(.units(allowed: [.seconds], width: .wide))
                 continuation.resume(
-                    throwing: ApelinError(
+                    throwing: LurosError(
                         .timeout,
                         String(localized: "Luros’s background service did not answer within \(waited). Try again."),
                     ),

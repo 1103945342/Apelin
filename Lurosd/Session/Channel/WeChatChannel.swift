@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// The WeChat ClawBot channel, held by the session host: the sign-in whose
@@ -653,7 +653,7 @@ actor WeChatChannel {
             var request = Self.prompt(for: target, text: Self.promptText(incoming))
             request.attachments = incoming.attachments.isEmpty ? nil : incoming.attachments
             try await deliver(WireRequest(request), descriptors: incoming.descriptors)
-        } catch let error as ApelinError where error.code == .notFound {
+        } catch let error as LurosError where error.code == .notFound {
             replies[target.sessionID] = nil
             await openConversation(with: target.userID, incoming: incoming, reopening: target)
         } catch {
@@ -1479,7 +1479,7 @@ actor WeChatChannel {
     /// approval once, or a question answered with the labels it offered.
     /// Nil when taken, the refusal otherwise — `notFound` for an ask whose
     /// run, or whose approval, is no longer there.
-    private func settle(_ ask: ChannelAsk, answer: ChannelAnswer) async -> ApelinError? {
+    private func settle(_ ask: ChannelAsk, answer: ChannelAnswer) async -> LurosError? {
         let request = AgentApproveRequest(
             sessionID: ask.sessionID,
             approvalID: ask.approvalID,
@@ -1488,7 +1488,7 @@ actor WeChatChannel {
             answer: answer.approved ? answer.answer : nil
         )
         guard let wire = try? WireRequest(request) else {
-            return ApelinError(.badRequest, "the answer could not be encoded")
+            return LurosError(.badRequest, "the answer could not be encoded")
         }
         let reply = await route(wire, [])
         if case let .failure(error) = reply.result {
@@ -1519,7 +1519,7 @@ actor WeChatChannel {
     }
 
     private func failed(_ error: any Error, to reply: Reply) {
-        message = (error as? ApelinError)?.message ?? String(describing: error)
+        message = (error as? LurosError)?.message ?? String(describing: error)
         Task { [weak self] in
             await self?.send("Luros could not start this turn.", to: reply.userID, contextToken: reply.contextToken)
         }

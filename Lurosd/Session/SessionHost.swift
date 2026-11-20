@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Darwin
 import Foundation
 
@@ -106,7 +106,7 @@ final class SessionHost: @unchecked Sendable {
             registry: registry,
             dispatch: { [unowned self] record, request in
                 guard let role = record.owner else {
-                    throw ApelinError(.internal, "task \(record.id) has no worker")
+                    throw LurosError(.internal, "task \(record.id) has no worker")
                 }
                 // The previous run's package, if it reported one, is not this run's.
                 if record.kind == .build {
@@ -125,7 +125,7 @@ final class SessionHost: @unchecked Sendable {
                 if case let .failure(error) = refusal.0.result {
                     return error
                 }
-                return ApelinError(.denied, "\(request.operation.rawValue) was refused")
+                return LurosError(.denied, "\(request.operation.rawValue) was refused")
             }
         )
         resumers[.build] = { record in await restart.resume(record) }
@@ -434,7 +434,7 @@ final class SessionHost: @unchecked Sendable {
             let worker = try await workers.worker(role, instance: instance)
             return try await worker.call(request.request, descriptors: request.descriptors)
         } catch {
-            return request.fail((error as? ApelinError) ?? ApelinError(.unavailable, String(describing: error)))
+            return request.fail((error as? LurosError) ?? LurosError(.unavailable, String(describing: error)))
         }
     }
 
@@ -476,7 +476,7 @@ final class SessionHost: @unchecked Sendable {
             }
             return (.success(request.requestID, handle), [])
         } catch {
-            let failure = (error as? ApelinError) ?? ApelinError(.unavailable, String(describing: error))
+            let failure = (error as? LurosError) ?? LurosError(.unavailable, String(describing: error))
             await registry.finish(handle.taskID, .failed, message: failure.description)
             return request.fail(failure)
         }

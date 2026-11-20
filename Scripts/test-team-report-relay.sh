@@ -8,7 +8,7 @@
 # host status wave and the same status is not pushed twice; an outbox that does
 # not read delivers nothing and is left as it was.
 #
-# The relay and the outbox are the real sources. ApelinCore and ApelinProtocol
+# The relay and the outbox are the real sources. LurosCore and LurosProtocol
 # are copied into one scratch module (package imports dropped, Swift 6 trailing
 # commas removed, the key-path overload spelled as a closure), together with the
 # assignment ledger the final account comes from, and the two host types the
@@ -37,7 +37,7 @@ fi
 
 sources=()
 while IFS= read -r file; do sources+=("$file"); done < <(
-    find Packages/ApelinKit/Sources/ApelinCore Packages/ApelinKit/Sources/ApelinProtocol -name '*.swift' | sort
+    find Packages/LurosKit/Sources/LurosCore Packages/LurosKit/Sources/LurosProtocol -name '*.swift' | sort
 )
 sources+=(
     Lurosd/Session/Agent/AgentReportRelay.swift
@@ -58,7 +58,7 @@ for path in sys.argv[2:]:
     # Top-level code is only allowed in a file named main.swift.
     name = "main.swift" if path.endswith("ReportRelayChecks.swift") else path.replace("/", "__")
     text = open(path, encoding="utf-8").read()
-    text = re.sub(r"^import (ApelinCore|ApelinProtocol)\n", "", text, flags=re.M)
+    text = re.sub(r"^import (LurosCore|LurosProtocol)\n", "", text, flags=re.M)
     text = trailing.sub(r"\1", text)
     text = text.replace("octets.compactMap(\\.self)", "octets.compactMap { $0 }")
     target = os.path.join(work, name)

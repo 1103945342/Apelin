@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import UIKit
 
 /// How Settings shows each provider: its name, its mark and the one line

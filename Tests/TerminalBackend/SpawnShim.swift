@@ -3,7 +3,7 @@
 // which imports XPC and does not build for iOS. Nothing here is exercised by
 // the checks — the shells they start run with no identity drop.
 
-import ApelinProtocol
+import LurosProtocol
 import Darwin
 
 struct SpawnIdentity {

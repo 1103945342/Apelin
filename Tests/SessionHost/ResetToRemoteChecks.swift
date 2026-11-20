@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 // A reset to a remote (Lurosd/Session/Agent/AgentResetToRemoteRules.swift,
@@ -44,7 +44,7 @@ func resetToRemoteChecks(scratch: URL, scratchPath: String) async {
         expectedURL: url,
     )
     // What luros-agent writes into git_reset_to_remote's approvalRequested
-    // (ApelinAgentWorker's tests hold that shape).
+    // (LurosAgentWorker's tests hold that shape).
     func ask(
         _ entry: AgentSessionTable.Entry,
         _ approvalID: String,
@@ -65,7 +65,7 @@ func resetToRemoteChecks(scratch: URL, scratchPath: String) async {
             "detail": .object([AgentResetToRemoteRules.detailKey: .object(detail)]),
         ]))
     }
-    func authorized(_ entry: AgentSessionTable.Entry?, _ request: GitResetToRemoteRequest = reset) async -> ApelinError? {
+    func authorized(_ entry: AgentSessionTable.Entry?, _ request: GitResetToRemoteRequest = reset) async -> LurosError? {
         await AgentResetToRemoteRules.authorize(request, session: entry?.sessionID, registry: registry)
     }
 

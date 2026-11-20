@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// Every task the session host owns: its record, its numbered events, and
@@ -391,9 +391,9 @@ actor TaskRegistry {
         afterSeq: EventSeq,
         waitMilliseconds: Int,
     ) async throws -> TaskEventBatch {
-        guard let record = records[id] else { throw ApelinError(.notFound, "This task could not be found.") }
+        guard let record = records[id] else { throw LurosError(.notFound, "This task could not be found.") }
         guard record.kind.attachOperation == operation else {
-            throw ApelinError(.badRequest, "task \(id) is read with \(record.kind.attachOperation.rawValue)")
+            throw LurosError(.badRequest, "task \(id) is read with \(record.kind.attachOperation.rawValue)")
         }
         if pending(id, afterSeq).isEmpty, !record.state.isTerminal, waitMilliseconds > 0 {
             let wait = min(waitMilliseconds, Self.maximumWaitMilliseconds)
@@ -452,7 +452,7 @@ actor TaskRegistry {
     /// Marks the cancel; the caller tells the owning worker. A task with no
     /// worker to stop it ends here.
     func requestCancel(_ id: TaskID) throws -> Record {
-        guard var record = records[id] else { throw ApelinError(.notFound, "This task could not be found.") }
+        guard var record = records[id] else { throw LurosError(.notFound, "This task could not be found.") }
         guard !record.state.isTerminal else { return record }
         record.cancelRequested = true
         records[id] = record

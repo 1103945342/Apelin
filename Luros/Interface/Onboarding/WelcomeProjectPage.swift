@@ -1,7 +1,7 @@
 // Copyright (c) 2026 OwnGoal Studio. MIT; see LICENSE beside this file.
 // Table/action-bar layout copied from Irisin's WelcomeRepositoriesController.
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import UIKit
 
 /// Lists templates grouped by kind, as Settings ▸ Templates does. Picking one
@@ -63,7 +63,7 @@ final class WelcomeProjectPage: WelcomeListPage {
         updateRows()
         dataSource.beginLoad()
         loader = Task { [weak self] in
-            guard let catalog = try? await ApelinService.app.extensionList(),
+            guard let catalog = try? await LurosService.app.extensionList(),
                   !Task.isCancelled, let self
             else { return }
             let usable = catalog.extensions.filter { $0.problems.isEmpty && !$0.templates.isEmpty }
@@ -116,7 +116,7 @@ final class WelcomeProjectPage: WelcomeListPage {
             do {
                 let existing = await (try? ProjectSummary.load()) ?? []
                 let draft = ProjectCreationDraft(avoiding: existing.map(\.name))
-                let created = try await ApelinService.app.projectCreate(ProjectCreateRequest(
+                let created = try await LurosService.app.projectCreate(ProjectCreateRequest(
                     templateID: row.template.id,
                     name: draft.trimmedName,
                     automaticallyName: true,

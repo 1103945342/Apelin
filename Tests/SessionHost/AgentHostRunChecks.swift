@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 // The note that the session host restarted (Lurosd/Session/Agent/AgentHostRun.swift):

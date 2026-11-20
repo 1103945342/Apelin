@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import CryptoKit
 import Foundation
 
@@ -375,7 +375,7 @@ struct ChatTranscript {
                 var row = ChatMessage(id: id, role: .assistant, text: message)
                 row.failure = ChatFailure(
                     message: message,
-                    reason: payload?["reason"]?.stringValue.map(ApelinError.Reason.init(rawValue:)),
+                    reason: payload?["reason"]?.stringValue.map(LurosError.Reason.init(rawValue:)),
                 )
                 add(row)
             case "received":

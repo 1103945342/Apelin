@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import CryptoKit
 import Darwin
 import Foundation
@@ -38,7 +38,7 @@ final class EnvironmentHarness: @unchecked Sendable {
         defer { (argv + envp).forEach { free($0) } }
         let status = posix_spawn(&spawned, executable, &actions, nil, argv, envp)
         guard status == 0 else {
-            throw ApelinError(.unavailable, "spawning the harness: \(String(cString: strerror(status)))")
+            throw LurosError(.unavailable, "spawning the harness: \(String(cString: strerror(status)))")
         }
         pid = spawned
         channel = WorkerChannel(adopting: local)
@@ -62,7 +62,7 @@ final class EnvironmentHarness: @unchecked Sendable {
         channel.start()
         try channel.sendControl(WorkerControl.assign, body: assignment)
         guard ready.wait(timeout: .now() + 10) == .success else {
-            throw ApelinError(.unavailable, "the harness did not answer its assignment")
+            throw LurosError(.unavailable, "the harness did not answer its assignment")
         }
     }
 
@@ -73,7 +73,7 @@ final class EnvironmentHarness: @unchecked Sendable {
             return (
                 .failure(
                     id,
-                    ApelinError(.denied, "\(request.request.operation.rawValue) is not available to this caller"),
+                    LurosError(.denied, "\(request.request.operation.rawValue) is not available to this caller"),
                 ),
                 [],
             )
@@ -113,10 +113,10 @@ final class EnvironmentHarness: @unchecked Sendable {
             default:
                 return (.failure(id, .unimplemented(request.request.operation)), [])
             }
-        } catch let error as ApelinError {
+        } catch let error as LurosError {
             return (.failure(id, error), [])
         } catch {
-            return (.failure(id, ApelinError(.internal, String(describing: error))), [])
+            return (.failure(id, LurosError(.internal, String(describing: error))), [])
         }
     }
 
@@ -198,7 +198,7 @@ func toolchainEndToEnd(harness: String) async throws {
         process.standardOutput = FileHandle.nullDevice
         try process.run()
         process.waitUntilExit()
-        guard process.terminationStatus == 0 else { throw ApelinError(.internal, "unpacking failed") }
+        guard process.terminationStatus == 0 else { throw LurosError(.internal, "unpacking failed") }
     }
     irisin.onRemove = { packageID in
         let id = String(packageID.dropFirst(ManagedPackagePolicy.toolchainPrefix.count))

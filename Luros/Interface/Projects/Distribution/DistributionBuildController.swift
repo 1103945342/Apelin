@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Then
 import UIKit
 
@@ -343,7 +343,7 @@ final class DistributionBuildController: TableController {
     }
 
     private func build(projectID: String) async throws -> BuildArtifact {
-        let handle = try await ApelinService.app.buildStart(
+        let handle = try await LurosService.app.buildStart(
             projectID: projectID,
             configuration: configuration,
             bootstrap: target,
@@ -352,7 +352,7 @@ final class DistributionBuildController: TableController {
             var artifact: BuildArtifact?
             var succeeded = false
             var failure: String?
-            for try await event in ApelinService.app.events(of: handle) {
+            for try await event in LurosService.app.events(of: handle) {
                 try Task.checkCancellation()
                 record(event)
                 if event.kind == "stage", let name = event.payload?["stage"]?.stringValue {
@@ -376,7 +376,7 @@ final class DistributionBuildController: TableController {
             }
             try Task.checkCancellation()
             guard succeeded, let artifact, artifact.bootstrap == target.rawValue else {
-                throw ApelinError(
+                throw LurosError(
                     .internal,
                     failure ?? (method == .script
                         ? String(localized: "The package could not be built. Check the build script’s log and try again.")
@@ -385,7 +385,7 @@ final class DistributionBuildController: TableController {
             }
             return artifact
         } onCancel: {
-            Task { try? await ApelinService.app.buildCancel(taskID: handle.taskID) }
+            Task { try? await LurosService.app.buildCancel(taskID: handle.taskID) }
         }
     }
 
@@ -419,11 +419,11 @@ final class DistributionBuildController: TableController {
             var failure: String?
             var succeeded = false
             do {
-                let handle = try await ApelinService.app.installPackage(
+                let handle = try await LurosService.app.installPackage(
                     artifactID: artifact.artifactID,
                     digest: artifact.digest,
                 )
-                for try await event in ApelinService.app.events(of: handle) {
+                for try await event in LurosService.app.events(of: handle) {
                     if event.kind == TaskEvent.stateKind {
                         succeeded = event.payload?["state"]?.stringValue == TaskState.succeeded.rawValue
                         failure = event.payload?["message"]?.stringValue

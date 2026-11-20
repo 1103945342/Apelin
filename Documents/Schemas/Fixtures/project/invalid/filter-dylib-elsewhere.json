@@ -46,7 +46,7 @@
     {
       "id": "tweak",
       "type": "dylib",
-      "name": "ApelinTweak",
+      "name": "LurosTweak",
       "sources": [
         "Sources/*.m"
       ],
@@ -111,7 +111,7 @@
     ],
     "layout": [
       {
-        "path": "/usr/lib/ApelinTweak.dylib",
+        "path": "/usr/lib/LurosTweak.dylib",
         "product": "tweak"
       }
     ],

@@ -1,6 +1,6 @@
 // Open in Luros: reads `url` and an optional `branch` from this page's
-// address, checks them as Luros does (ApelinLink.isRepositoryAddress and
-// isBranchName in Widgets/Shared/ApelinLink.swift), and offers the
+// address, checks them as Luros does (LurosLink.isRepositoryAddress and
+// isBranchName in Widgets/Shared/LurosLink.swift), and offers the
 // lurosdev://import link Luros asks about. Nothing read here is ever put into
 // the page as markup: text goes in as text, and the link is built from the
 // checked values, each URL-encoded.

@@ -1,11 +1,11 @@
-import ApelinConsole
-import ApelinCore
-import ApelinProtocol
+import LurosConsole
+import LurosCore
+import LurosProtocol
 import UIKit
 
 extension ConsoleRunner {
     /// The app's console: lurosd through `DaemonClient`, mobile's data
-    /// folder, the unified log. The runner itself is ApelinConsole's, tested
+    /// folder, the unified log. The runner itself is LurosConsole's, tested
     /// on the Mac by `make harness`.
     static let shared = ConsoleRunner(service: .app, folder: .app, log: UnifiedLogSink())
 }

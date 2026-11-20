@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 
 /// Install through irisind, managed removal and its list, respring and the
 /// approval ledger's read side: the host's own work (Session/Install/InstallBridge,
@@ -36,7 +36,7 @@ enum InstallHandler: DomainHandler {
                 try await host.approvals.state(of: query.digest, kind: query.kind, project: query.projectID)
             }
         default:
-            request.fail(ApelinError(.badRequest, "\(request.operation.rawValue) is not an install operation"))
+            request.fail(LurosError(.badRequest, "\(request.operation.rawValue) is not an install operation"))
         }
     }
 }

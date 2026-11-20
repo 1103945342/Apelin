@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// Starting a worker's task again after the session host restarted: a build
@@ -46,7 +46,7 @@ struct TaskResume: Sendable {
     typealias Dispatch = @Sendable (_ record: TaskRegistry.Record, _ request: WireRequest) async throws -> WireReply
     /// The host's own checks of the request for its original caller (the
     /// agent's Confirm mode); nil lets it through.
-    typealias Recheck = @Sendable (_ caller: Caller, _ request: WireRequest) async -> ApelinError?
+    typealias Recheck = @Sendable (_ caller: Caller, _ request: WireRequest) async -> LurosError?
 
     let registry: TaskRegistry
     let dispatch: Dispatch
@@ -125,7 +125,7 @@ struct TaskResume: Sendable {
                 await registry.finish(record.id, .failed, message: error.description)
             }
         } catch {
-            let failure = (error as? ApelinError) ?? ApelinError(.unavailable, String(describing: error))
+            let failure = (error as? LurosError) ?? LurosError(.unavailable, String(describing: error))
             await registry.finish(record.id, .failed, message: failure.description)
         }
     }

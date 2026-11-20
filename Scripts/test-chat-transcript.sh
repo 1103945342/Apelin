@@ -13,7 +13,7 @@
 # show, how a sign-in page says it is finished from another device, which
 # typed text the Web capture takes for an address, and which version of a
 # linked package the app shows, against the harness modules.
-# Usage: test-chat-transcript.sh <ApelinKit modules directory>
+# Usage: test-chat-transcript.sh <LurosKit modules directory>
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
@@ -96,14 +96,14 @@ sources=(
 
 # The objects: one per module (the new build system) or one per source file.
 objects=()
-for module in ApelinCore ApelinProtocol; do
+for module in LurosCore LurosProtocol; do
     if [[ -f "$modules/$module.o" ]]; then
         objects+=("$modules/$module.o")
     else
         while IFS= read -r object; do objects+=("$object"); done < <(find "$modules/.." "$modules" -maxdepth 2 -path "*/$module.build/*.o" | sort -u)
     fi
 done
-[[ ${#objects[@]} -ge 2 ]] || { echo "error: no ApelinCore/ApelinProtocol objects near $modules" >&2; exit 1; }
+[[ ${#objects[@]} -ge 2 ]] || { echo "error: no LurosCore/LurosProtocol objects near $modules" >&2; exit 1; }
 
 xcrun --sdk macosx swiftc -swift-version 5 -target arm64-apple-macos13.0 \
     -I "$root/Shared/XPCShim" -I "$modules" \

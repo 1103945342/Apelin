@@ -106,7 +106,7 @@ jobs:
           assembler_version="${assembler#com.fluoxetine.luros.agent-tools.assembler_}"
           assembler_version="${assembler_version%_iphoneos-arm64.deb}"
           files+=("$(one "com.fluoxetine.luros.agent-tools.assembler_${assembler_version}_source.tar.xz")")
-          files+=("Apelin_${version}_dSYMs.zip" "Apelin_${version}_Templates.tar.zst")
+          files+=("Luros_${version}_dSYMs.zip" "Luros_${version}_Templates.tar.zst")
           for file in "${files[@]}"; do
             [ -f "$file" ] || { echo "::error::$file is missing from CI's packages"; exit 1; }
           done

@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 
 /// Scoped reads and the app's manual protected edit: the host's own work
 /// (Session/Files). CallerPolicy already keeps workers away from the
@@ -21,7 +21,7 @@ enum FilesHandler: DomainHandler {
                 try await host.editor.commit(commit, descriptors: request.descriptors)
             }
         default:
-            return request.fail(ApelinError(.badRequest, "\(request.operation.rawValue) is not a files operation"))
+            return request.fail(LurosError(.badRequest, "\(request.operation.rawValue) is not a files operation"))
         }
     }
 
@@ -35,7 +35,7 @@ enum FilesHandler: DomainHandler {
                 (descriptor, path) = try FileScopes.open(read.relativePath, inside: directory)
             case let .grant(id):
                 guard read.relativePath.isEmpty || read.relativePath == "." else {
-                    throw ApelinError(.badRequest, "a grant scope is one file; leave relativePath empty")
+                    throw LurosError(.badRequest, "a grant scope is one file; leave relativePath empty")
                 }
                 let granted = try await host.editor.grantedPath(id)
                 (descriptor, path) = try FileScopes.openRegular(granted, inside: granted)

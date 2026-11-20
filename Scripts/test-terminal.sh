@@ -42,9 +42,9 @@ trap 'rm -rf -- "${work:?}"' EXIT
 # Everything the checks reach, and the two stand-ins they compile instead of
 # Lurosd/Spawn.swift and Lurosd/System.swift.
 mapfile -t sources < <(
-    ls Packages/ApelinKit/Sources/ApelinCore/*.swift
-    ls Packages/ApelinKit/Sources/ApelinProtocol/*.swift
-    find Packages/ApelinKit/Sources/ApelinProtocol -mindepth 2 -name '*.swift' | sort
+    ls Packages/LurosKit/Sources/LurosCore/*.swift
+    ls Packages/LurosKit/Sources/LurosProtocol/*.swift
+    find Packages/LurosKit/Sources/LurosProtocol -mindepth 2 -name '*.swift' | sort
     echo Lurosd/Session/CallerPolicy.swift
     echo Lurosd/Session/Files/FileScopes.swift
     echo Lurosd/Session/Files/ProtectedEditPolicy.swift
@@ -71,7 +71,7 @@ for path in sys.argv[2:]:
     # Top-level code is only allowed in a file named main.swift.
     name = "main.swift" if path.endswith("Tests/TerminalBackend/main.swift") else path.replace("/", "__")
     text = open(path, encoding="utf-8").read()
-    text = re.sub(r"^import (ApelinCore|ApelinProtocol)\n", "", text, flags=re.M)
+    text = re.sub(r"^import (LurosCore|LurosProtocol)\n", "", text, flags=re.M)
     text = text.replace("compactMap(\\.self)", "compactMap { $0 }")
     text = re.sub(r",(\s*[\)\]\}])", r"\1", text)
     target = os.path.join(work, name)

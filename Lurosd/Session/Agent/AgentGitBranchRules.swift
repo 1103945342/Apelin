@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// Matches a branch mutation to the exact tool and arguments the reader saw.
@@ -15,7 +15,7 @@ enum AgentGitBranchRules {
             return value
         }
         func paths(_ value: JSONValue?) -> [String]? {
-            // ApelinCore's JSONValue carries no `arrayValue` accessor: the
+            // LurosCore's JSONValue carries no `arrayValue` accessor: the
             // array is read as the case it is.
             guard case let .array(items)? = value else { return nil }
             return items.compactMap { $0.stringValue }
@@ -107,14 +107,14 @@ enum AgentGitBranchRules {
     }
 
     /// Spend one exact approval in Strict mode, never a session-wide grant.
-    static func authorize(_ request: WireRequest, session: String?, registry: TaskRegistry) async -> ApelinError? {
+    static func authorize(_ request: WireRequest, session: String?, registry: TaskRegistry) async -> LurosError? {
         guard let session, let entry = await AgentSessionTable.shared.entry(session) else {
-            return ApelinError(.denied, "no agent session for this worker")
+            return LurosError(.denied, "no agent session for this worker")
         }
         guard entry.mode.asks else { return nil }
         let covered = await AgentApprovals.spend(entry: entry, registry: registry) { asked in
             covers(request, project: entry.project.id, asked: asked)
         }
-        return covered ? nil : ApelinError(.denied, "approval required: this branch or merge operation has not been approved")
+        return covered ? nil : LurosError(.denied, "approval required: this branch or merge operation has not been approved")
     }
 }

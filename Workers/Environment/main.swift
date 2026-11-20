@@ -1,13 +1,13 @@
-import ApelinEnvironment
-import ApelinProtocol
+import LurosEnvironment
+import LurosProtocol
 
 // luros-environment: toolchain setup and removal, the SDK manager and the git service.
 //
 // Runs as mobile, spawned by lurosd's session host with its socketpair as
 // descriptor 3; WorkerMain does the assignment and the privilege check.
-// Links ApelinCore, ApelinProtocol, ApelinEnvironment, ApelinGit — see AGENTS.md ▸ Decisions ▸ Process layout.
+// Links LurosCore, LurosProtocol, LurosEnvironment, LurosGit — see AGENTS.md ▸ Decisions ▸ Process layout.
 //
-// Everything is served by EnvironmentWorker (Packages/ApelinKit/Sources/ApelinEnvironment).
+// Everything is served by EnvironmentWorker (Packages/LurosKit/Sources/LurosEnvironment).
 
 let box = WorkerBox()
 

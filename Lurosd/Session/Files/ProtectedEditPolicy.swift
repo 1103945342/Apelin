@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import CryptoKit
 import Darwin
 import Foundation
@@ -34,56 +34,56 @@ enum ProtectedEditPolicy {
     /// Checks `path` and answers the file it names, with its current version
     /// (the SHA-256 of its contents included).
     static func evaluate(_ path: String, installRoot: String) throws -> Target {
-        guard !CanonicalPath.containsNUL(path) else { throw ApelinError(.badRequest, "the path contains a NUL byte") }
-        guard path.hasPrefix("/") else { throw ApelinError(.badRequest, "a protected edit takes an absolute path") }
+        guard !CanonicalPath.containsNUL(path) else { throw LurosError(.badRequest, "the path contains a NUL byte") }
+        guard path.hasPrefix("/") else { throw LurosError(.badRequest, "a protected edit takes an absolute path") }
         var linkCheck = stat()
         guard lstat(path, &linkCheck) == 0 else {
-            throw ApelinError(.notFound, "\(path): \(String(cString: strerror(errno)))")
+            throw LurosError(.notFound, "\(path): \(String(cString: strerror(errno)))")
         }
         guard linkCheck.st_mode & S_IFMT != S_IFLNK else {
-            throw ApelinError(.denied, "\(path) is a symbolic link; open the file it points to")
+            throw LurosError(.denied, "\(path) is a symbolic link; open the file it points to")
         }
         guard let canonical = CanonicalPath.resolve(path), let root = CanonicalPath.resolve(installRoot) else {
-            throw ApelinError(.notFound, "\(path) does not resolve")
+            throw LurosError(.notFound, "\(path) does not resolve")
         }
         guard CanonicalPath.isCanonical(canonical, inside: root), canonical != root else {
-            throw ApelinError(.denied, "a protected edit stays inside the bootstrap's install root (\(root))")
+            throw LurosError(.denied, "a protected edit stays inside the bootstrap's install root (\(root))")
         }
         let relative = CanonicalPath.components(String(canonical.dropFirst(root.count == 1 ? 0 : root.count)))
         for tree in refusedTrees {
             let parts = CanonicalPath.components(tree)
             if relative.count >= parts.count, zip(relative, parts).allSatisfy({ $0 == $1 }) {
-                throw ApelinError(.denied, "\(canonical) is a package manager's or Luros's own record")
+                throw LurosError(.denied, "\(canonical) is a package manager's or Luros's own record")
             }
         }
 
         let descriptor = open(canonical, O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC)
-        guard descriptor >= 0 else { throw ApelinError(.denied, "\(canonical): \(String(cString: strerror(errno)))") }
+        guard descriptor >= 0 else { throw LurosError(.denied, "\(canonical): \(String(cString: strerror(errno)))") }
         defer { close(descriptor) }
         return try evaluate(descriptor: descriptor, canonical: canonical, relative: relative.map(String.init))
     }
 
     static func evaluate(descriptor: Int32, canonical: String, relative: [String]) throws -> Target {
         var metadata = stat()
-        guard fstat(descriptor, &metadata) == 0 else { throw ApelinError(.internal, String(cString: strerror(errno))) }
+        guard fstat(descriptor, &metadata) == 0 else { throw LurosError(.internal, String(cString: strerror(errno))) }
         guard metadata.st_mode & S_IFMT == S_IFREG else {
-            throw ApelinError(.denied, "\(canonical) is not a regular file")
+            throw LurosError(.denied, "\(canonical) is not a regular file")
         }
         guard metadata.st_nlink <= 1 else {
-            throw ApelinError(
+            throw LurosError(
                 .denied,
                 "\(canonical) has \(metadata.st_nlink) hard links; replacing it would split them",
             )
         }
         guard metadata.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH) == 0 else {
-            throw ApelinError(.denied, "\(canonical) is executable and cannot be edited here.")
+            throw LurosError(.denied, "\(canonical) is executable and cannot be edited here.")
         }
         guard metadata.st_size <= maximumBytes else {
-            throw ApelinError(.denied, "\(canonical) is too large to edit here.")
+            throw LurosError(.denied, "\(canonical) is too large to edit here.")
         }
         var magic = [UInt8](repeating: 0, count: 4)
         if pread(descriptor, &magic, 4, 0) == 4, isMachO(magic) {
-            throw ApelinError(.denied, "\(canonical) is a Mach-O binary")
+            throw LurosError(.denied, "\(canonical) is a Mach-O binary")
         }
         let digest = try sha256(descriptor: descriptor)
         let needsConfirmation = relative.count >= 3
@@ -123,7 +123,7 @@ enum ProtectedEditPolicy {
             if count < 0, errno == EINTR {
                 continue
             }
-            guard count >= 0 else { throw ApelinError(.internal, String(cString: strerror(errno))) }
+            guard count >= 0 else { throw LurosError(.internal, String(cString: strerror(errno))) }
             if count == 0 {
                 break
             }

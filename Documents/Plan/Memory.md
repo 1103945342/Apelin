@@ -108,7 +108,7 @@ unfinished tasks (order 60–80 MB). Disk use is unchanged.
 
 ## 5. Phase A measured (this branch, on the device)
 
-A harness built from `ApelinProtocol` + `ApelinCore` + `TaskRegistry` and run on the
+A harness built from `LurosProtocol` + `LurosCore` + `TaskRegistry` and run on the
 device, loading a copy of the real `/var/lib/luros/tasks` (258 MB, 1748 tasks),
 reading its own footprint with `proc_pid_rusage` after `load()`:
 

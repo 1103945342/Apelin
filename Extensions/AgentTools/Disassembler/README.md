@@ -12,7 +12,7 @@ deb:
 Keystone is GPLv2, so it links into `luros-assembler` alone: the
 disassembler package carries no GPL code (the packager refuses a disassembler
 that defines `ks_asm`), and Luros neither depends on nor recommends either
-package. Both speak the protocol in `Packages/ApelinToolHost` and run as
+package. Both speak the protocol in `Packages/LurosToolHost` and run as
 mobile, in their own process, only when the agent calls them.
 
 ## Layout
@@ -66,6 +66,6 @@ what ships.
   `EXCEPTIONS-CLIENT` and LLVM license, libkeystone-spm's license, and
   `SOURCE.md`, which names the corresponding-source archive the build writes
   beside the debs (`com.fluoxetine.luros.agent-tools.assembler_<version>_source.tar.xz`:
-  this folder, `Packages/ApelinToolHost`, and both dependency checkouts) with
+  this folder, `Packages/LurosToolHost`, and both dependency checkouts) with
   its SHA-256, and the public repositories and revisions it was made from.
   Publish that archive wherever the assembler debs are published.

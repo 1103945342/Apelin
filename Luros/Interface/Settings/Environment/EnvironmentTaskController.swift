@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import SnapKit
 import Then
 import UIKit
@@ -118,7 +118,7 @@ final class EnvironmentTaskController: TableController {
             var cursor = EventSeq.start
             while !Task.isCancelled {
                 do {
-                    for try await event in ApelinService.app.events(of: handle, afterSeq: cursor) {
+                    for try await event in LurosService.app.events(of: handle, afterSeq: cursor) {
                         cursor = event.seq
                         self?.receive(event)
                     }
@@ -127,7 +127,7 @@ final class EnvironmentTaskController: TableController {
                     if Task.isCancelled {
                         return
                     }
-                    if let error = error as? ApelinError, error.code.endsTaskFollowing {
+                    if let error = error as? LurosError, error.code.endsTaskFollowing {
                         self?.lose(error)
                         return
                     }
@@ -416,7 +416,7 @@ final class EnvironmentTaskController: TableController {
         cancelRequested = true
         Task { [weak self, handle] in
             do {
-                try await ApelinService.app.environmentCancel(taskID: handle.taskID)
+                try await LurosService.app.environmentCancel(taskID: handle.taskID)
             } catch {
                 guard let self else { return }
                 cancelRequested = false

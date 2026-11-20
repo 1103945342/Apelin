@@ -14,7 +14,7 @@ if [[ "${1:-}" == --device ]]; then
     compiler=(swiftc -target arm64-apple-ios16.0)
 fi
 "${compiler[@]}" -swift-version 5 -parse-as-library \
-    Packages/ApelinKit/Sources/ApelinProtocol/Operations/AgentDelegationBrief.swift \
+    Packages/LurosKit/Sources/LurosProtocol/Operations/AgentDelegationBrief.swift \
     Tests/TeamCollaboration/BriefChecks.swift -o "$work/brief-checks"
 if [[ -n "$entitlements" ]]; then
     ldid "-S$entitlements" "$work/brief-checks"

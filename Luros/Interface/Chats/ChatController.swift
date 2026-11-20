@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import ListViewKit
 import SnapKit
 import SPIndicator
@@ -1220,7 +1220,7 @@ final class ChatController: UIViewController {
             let models = EnabledModels.selectedModelIDs()
             let accounts = try await modelAccounts.value(for: models) { models in
                 let start = ProcessInfo.processInfo.systemUptime
-                let response = try await ApelinService.app.agentAccountList(extraModels: models, onlyExtraModels: true)
+                let response = try await LurosService.app.agentAccountList(extraModels: models, onlyExtraModels: true)
                 let elapsed = Int((ProcessInfo.processInfo.systemUptime - start) * 1000)
                 logger.notice("account request including connection and worker: \(elapsed, privacy: .public) ms")
                 return response.accounts
@@ -1534,7 +1534,7 @@ extension ChatController: ComposerView.Delegate {
     /// reach) is a passing line, spoken too, since nothing else marks it;
     /// any other keeps its own words in an alert.
     private func saySendFailed(_ error: any Error) {
-        guard let reason = (error as? ApelinError)?.reason, let cause = ChatFailure.title(for: reason) else {
+        guard let reason = (error as? LurosError)?.reason, let cause = ChatFailure.title(for: reason) else {
             presentNotice(title: "Unable to Send Message", message: error.readableMessage)
             return
         }
@@ -1567,7 +1567,7 @@ extension ChatController: ComposerView.Delegate {
         rewriteTask = Task { [weak self] in
             guard let self else { return }
             do {
-                let answer = try await ApelinService.app.agentRewritePrompt(
+                let answer = try await LurosService.app.agentRewritePrompt(
                     text: draft,
                     provider: selection.provider,
                     model: selection.model,
@@ -1666,7 +1666,7 @@ extension ChatController: ComposerView.Delegate {
             }
             guard let self else { return }
             do {
-                let listing = try await ApelinService.app.agentSkillList()
+                let listing = try await LurosService.app.agentSkillList()
                 composer.setSkills(listing.skills)
             } catch {
                 // No skills is a usable composer: the actions still run.

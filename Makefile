@@ -75,9 +75,9 @@ CHAT_PAIRING_CHECK := $(ROOT_DIR)/Scripts/check-chat-pairing.py
 RETIRED_APPS_CHECK := $(ROOT_DIR)/Scripts/check-retired-apps.py
 SYMBOL_CHECK        := $(ROOT_DIR)/Scripts/check-symbol-availability.py
 RPATH_CHECK         := $(ROOT_DIR)/Scripts/check-rpath-dependencies.py
-# The agent's system prompt is Packages/ApelinAgent/Prompts/*.md, compiled in
+# The agent's system prompt is Packages/LurosAgent/Prompts/*.md, compiled in
 # as SystemPromptText.swift; --check fails when the two differ.
-PROMPTS_EMBEDDER    := $(ROOT_DIR)/Packages/ApelinAgent/Scripts/embed-prompts.py
+PROMPTS_EMBEDDER    := $(ROOT_DIR)/Packages/LurosAgent/Scripts/embed-prompts.py
 # The device harness: console scripts and suites on a vphone or a device,
 # from the Mac (Documents/Console.md ▸ From the Mac).
 DEVICE_TOOL         := $(ROOT_DIR)/Scripts/device.py
@@ -97,24 +97,24 @@ TEMPLATE_ENTITLEMENTS := $(wildcard $(ROOT_DIR)/Extensions/Development/com.fluox
 APP_GROUP           := group.com.fluoxetine.luros
 LAUNCH_DAEMON       := $(ROOT_DIR)/Packaging/$(DAEMON_ID).plist
 # Every Swift source root, for the greps and the gates that read source.
-SOURCE_ROOTS        := $(ROOT_DIR)/Luros $(ROOT_DIR)/Lurosd $(ROOT_DIR)/Shared $(ROOT_DIR)/Widgets $(ROOT_DIR)/Workers $(ROOT_DIR)/Packages/ApelinKit/Sources
+SOURCE_ROOTS        := $(ROOT_DIR)/Luros $(ROOT_DIR)/Lurosd $(ROOT_DIR)/Shared $(ROOT_DIR)/Widgets $(ROOT_DIR)/Workers $(ROOT_DIR)/Packages/LurosKit/Sources
 # The shared package: `make harness` runs its tests on the Mac.
-APELINKIT           := $(ROOT_DIR)/Packages/ApelinKit
+APELINKIT           := $(ROOT_DIR)/Packages/LurosKit
 SWIFTPM_SCRATCH     ?= $(APELINKIT)/.build
-# ApelinToolHost links into lurosd's session host; the harness builds it to
+# LurosToolHost links into lurosd's session host; the harness builds it to
 # typecheck lurosd, in the scratch path its tests use below.
-TOOLHOST            := $(ROOT_DIR)/Packages/ApelinToolHost
+TOOLHOST            := $(ROOT_DIR)/Packages/LurosToolHost
 # The editor's text view and grammars, vendored (Packages/Runestone/README.md).
 RUNESTONE           := $(ROOT_DIR)/Packages/Runestone
-TOOLHOST_SCRATCH    ?= $(call package_scratch,ApelinToolHost)
+TOOLHOST_SCRATCH    ?= $(call package_scratch,LurosToolHost)
 IRISIN_SHIM_DIR     := $(ROOT_DIR)/Lurosd/Vendor/IrisinExternalClient/CIrisinExternalXPC
-# Every other standalone package under Packages/ (ApelinFormats,
-# ApelinDiagnostics, ApelinAgent, ApelinToolHost, and any added later) has
+# Every other standalone package under Packages/ (LurosFormats,
+# LurosDiagnostics, LurosAgent, LurosToolHost, and any added later) has
 # its tests run by `make harness` too, each in a scratch path of its own:
 # its own .build by default, or <SWIFTPM_SCRATCH>-<name> when SWIFTPM_SCRATCH
 # is given. Live and network tests stay off unless their variable is set.
 # Runestone is UIKit and has no Mac build, so the harness skips it.
-HARNESS_PACKAGES    := $(filter-out ApelinKit Runestone,$(notdir $(patsubst %/Package.swift,%,$(wildcard $(ROOT_DIR)/Packages/*/Package.swift))))
+HARNESS_PACKAGES    := $(filter-out LurosKit Runestone,$(notdir $(patsubst %/Package.swift,%,$(wildcard $(ROOT_DIR)/Packages/*/Package.swift))))
 ifeq ($(origin SWIFTPM_SCRATCH),file)
 package_scratch      = $(ROOT_DIR)/Packages/$(1)/.build
 else
@@ -135,9 +135,9 @@ AGENT_TOOLS_SCRATCH ?= $(DERIVED_DATA)/AgentToolsSPM
 # them on purpose).
 DEV_EXTENSIONS      := com.fluoxetine.luros.dev.app com.fluoxetine.luros.dev.tweak com.fluoxetine.luros.dev.cli com.fluoxetine.luros.dev.preferences
 # The worker packages' scratch paths, which the worker typechecks read.
-APELIN_DIAGNOSTICS  := $(ROOT_DIR)/Packages/ApelinDiagnostics
-DIAGNOSTICS_SCRATCH := $(call package_scratch,ApelinDiagnostics)
-AGENT_SCRATCH       := $(call package_scratch,ApelinAgent)
+APELIN_DIAGNOSTICS  := $(ROOT_DIR)/Packages/LurosDiagnostics
+DIAGNOSTICS_SCRATCH := $(call package_scratch,LurosDiagnostics)
+AGENT_SCRATCH       := $(call package_scratch,LurosAgent)
 # The oldest iOS the package claims. `check` refuses one in project.pbxproj.
 IOS_DEPLOYMENT_FLOOR := $(shell sed -n 's/^[[:space:]]*IPHONEOS_DEPLOYMENT_TARGET[[:space:]]*=[[:space:]]*\([0-9.]*\).*/\1/p' "$(CONFIG_DIR)/Base.xcconfig")
 # The oldest iPhoneOS SDK the app is linked against. The SDK, not the floor,
@@ -330,7 +330,7 @@ check:
 		[[ -n "$$icon" && -f "$(ROOT_DIR)/Documents/Site/$$icon" ]] \
 			|| { echo "error: $${control#$(ROOT_DIR)/} has no Icon: a file in Documents/Site served by Pages" >&2; exit 65; }; \
 	done
-	@icon="$$(sed -n 's#.*"https://1103945342.github.io/Luros/\(icons/[^"]*\)".*#\1#p' "$(ROOT_DIR)/Packages/ApelinKit/Sources/ApelinEnvironment/Toolchain/ToolchainPackaging.swift")"; \
+	@icon="$$(sed -n 's#.*"https://1103945342.github.io/Luros/\(icons/[^"]*\)".*#\1#p' "$(ROOT_DIR)/Packages/LurosKit/Sources/LurosEnvironment/Toolchain/ToolchainPackaging.swift")"; \
 		[[ -n "$$icon" && -f "$(ROOT_DIR)/Documents/Site/$$icon" ]] \
 			|| { echo "error: the toolchain deb's Icon is not a file in Documents/Site" >&2; exit 65; }
 	@# The extension formats against their fixtures, and every development
@@ -433,7 +433,7 @@ check:
 # The Mac half of "where things get tested": what can run without a device.
 # RoothideRoot against libroothide's own name rule, ExecutableWatch against a
 # real executable replaced, unlinked and rolled back the way dpkg does it,
-# ApelinKit's tests (the wire, the worker channel, paths, projects against the
+# LurosKit's tests (the wire, the worker channel, paths, projects against the
 # schema fixtures, and the tweak template built end to end into both debs with
 # Xcode's tools when the iPhoneOS SDK is there), the tests of every other
 # package under Packages/ (HARNESS_PACKAGES; the diagnostics, log-reader and
@@ -499,8 +499,8 @@ harness:
 	xcrun --sdk macosx swiftc -swift-version 5 \
 		"$(ROOT_DIR)/Luros/Interface/Settings/Logs/JournalFiles.swift" \
 		"$(ROOT_DIR)/Luros/Interface/Settings/Logs/JournalLines.swift" \
-		"$(ROOT_DIR)/Packages/ApelinKit/Sources/ApelinCore/LogText.swift" \
-		"$(ROOT_DIR)/Packages/ApelinAgent/Sources/ApelinAgent/Journal/DiagnosticJournal.swift" \
+		"$(ROOT_DIR)/Packages/LurosKit/Sources/LurosCore/LogText.swift" \
+		"$(ROOT_DIR)/Packages/LurosAgent/Sources/LurosAgent/Journal/DiagnosticJournal.swift" \
 		"$(ROOT_DIR)/Tests/Journal/main.swift" \
 		-o "$$harness_dir/journal" && \
 	"$$harness_dir/journal" && \
@@ -510,15 +510,15 @@ harness:
 		-o "$$harness_dir/device-owner-check" && \
 	"$$harness_dir/device-owner-check" && \
 	xcrun --sdk macosx swiftc -swift-version 5 \
-		"$(ROOT_DIR)/Packages/ApelinKit/Sources/ApelinCore/SkillFolder.swift" \
+		"$(ROOT_DIR)/Packages/LurosKit/Sources/LurosCore/SkillFolder.swift" \
 		"$(ROOT_DIR)/Tests/SkillFolder/main.swift" \
 		-o "$$harness_dir/skill-folder" && \
 	"$$harness_dir/skill-folder" && \
 	xcrun --sdk macosx swiftc -swift-version 5 \
-		"$(ROOT_DIR)/Widgets/Shared/ApelinLink.swift" \
+		"$(ROOT_DIR)/Widgets/Shared/LurosLink.swift" \
 		"$(ROOT_DIR)/Widgets/Shared/ChatWidgetSnapshot.swift" \
 		"$(ROOT_DIR)/Luros/Interface/Projects/RepositoryImport/RepositoryImportPlan.swift" \
-		"$(ROOT_DIR)/Tests/ApelinLink/main.swift" \
+		"$(ROOT_DIR)/Tests/LurosLink/main.swift" \
 		-o "$$harness_dir/luros-link" && \
 	"$$harness_dir/luros-link" && \
 	xcrun --sdk macosx swiftc -swift-version 5 \
@@ -529,21 +529,21 @@ harness:
 		cp -p "$$harness_dir/executable-watch" "$$harness_dir/$$mode" && "$$harness_dir/$$mode" "$$mode" \
 			|| { echo "error: ExecutableWatch failed in mode $$mode" >&2; exit 1; }; \
 	done && echo "ok: ExecutableWatch" && \
-	swift test --package-path "$(APELINKIT)" --scratch-path "$(SWIFTPM_SCRATCH)" && echo "ok: ApelinKit tests" && \
+	swift test --package-path "$(APELINKIT)" --scratch-path "$(SWIFTPM_SCRATCH)" && echo "ok: LurosKit tests" && \
 	$(foreach package,$(HARNESS_PACKAGES),swift test --package-path "$(ROOT_DIR)/Packages/$(package)" --scratch-path "$(call package_scratch,$(package))" && echo "ok: $(package) tests" && ) \
 	"$(ROOT_DIR)/Scripts/check-system-only.py" "$(APELINKIT)" --scratch-path "$(SWIFTPM_SCRATCH)" \
 		--toolhost-scratch-path "$(TOOLHOST_SCRATCH)" --diagnostics-scratch-path "$(DIAGNOSTICS_SCRATCH)" && \
-	swift build --package-path "$(TOOLHOST)" --scratch-path "$(TOOLHOST_SCRATCH)" --target ApelinToolHost \
+	swift build --package-path "$(TOOLHOST)" --scratch-path "$(TOOLHOST_SCRATCH)" --target LurosToolHost \
 		|| { echo "error: a harness step above failed" >&2; exit 1; }; \
 	toolhost_modules=; \
 	for candidate in "$(TOOLHOST_SCRATCH)/out/Products/Debug" "$(TOOLHOST_SCRATCH)/debug/Modules" "$(TOOLHOST_SCRATCH)/debug"; do \
-		if [[ -e "$$candidate/ApelinToolHost.swiftmodule" ]]; then toolhost_modules="$$candidate"; break; fi; \
+		if [[ -e "$$candidate/LurosToolHost.swiftmodule" ]]; then toolhost_modules="$$candidate"; break; fi; \
 	done; \
-	[[ -n "$$toolhost_modules" ]] || { echo "error: no ApelinToolHost.swiftmodule under $(TOOLHOST_SCRATCH)" >&2; exit 1; }; \
+	[[ -n "$$toolhost_modules" ]] || { echo "error: no LurosToolHost.swiftmodule under $(TOOLHOST_SCRATCH)" >&2; exit 1; }; \
 	module_flags() { \
 		local scratch="$$1" candidate; \
 		for candidate in "$$scratch/out/Products/Debug" "$$scratch/debug/Modules" "$$scratch/debug"; do \
-			if [[ -e "$$candidate/ApelinProtocol.swiftmodule" ]]; then echo "-I $$candidate"; break; fi; \
+			if [[ -e "$$candidate/LurosProtocol.swiftmodule" ]]; then echo "-I $$candidate"; break; fi; \
 		done; \
 		{ find "$$scratch/out" -name '*.modulemap' -path '*GeneratedModuleMaps*' 2>/dev/null; \
 		  find "$$scratch" -path '*/debug/*.build/module.modulemap' -not -path '*/out/*' -not -path '*/index-build/*' 2>/dev/null; \
@@ -554,9 +554,9 @@ harness:
 	}; \
 	modules=; \
 	for candidate in "$(SWIFTPM_SCRATCH)/out/Products/Debug" "$(SWIFTPM_SCRATCH)/debug/Modules" "$(SWIFTPM_SCRATCH)/debug"; do \
-		if [[ -e "$$candidate/ApelinProtocol.swiftmodule" ]]; then modules="$$candidate"; break; fi; \
+		if [[ -e "$$candidate/LurosProtocol.swiftmodule" ]]; then modules="$$candidate"; break; fi; \
 	done; \
-	[[ -n "$$modules" ]] || { echo "error: no ApelinProtocol.swiftmodule under $(SWIFTPM_SCRATCH)" >&2; exit 1; }; \
+	[[ -n "$$modules" ]] || { echo "error: no LurosProtocol.swiftmodule under $(SWIFTPM_SCRATCH)" >&2; exit 1; }; \
 	kit_flags="$$(module_flags "$(SWIFTPM_SCRATCH)")"; \
 	"$(ROOT_DIR)/Scripts/test-chat-transcript.sh" "$$modules" && \
 	"$(ROOT_DIR)/Scripts/test-onboarding.sh" "$$modules" && \
@@ -568,8 +568,8 @@ harness:
 	"$(ROOT_DIR)/Scripts/test-session-host.sh" "$$modules" "$$environment_harness" && echo "ok: session host tests (toolchain setup end to end included)" && \
 	for worker in "$(ROOT_DIR)"/Workers/*/; do \
 		flags="$$kit_flags"; \
-		if grep -qE '^import (ApelinDiagnosticsWorker|ApelinLogReaderWorker)$$' "$$worker"*.swift; then flags="$$(module_flags "$(DIAGNOSTICS_SCRATCH)")"; fi; \
-		if grep -qE '^import ApelinAgentWorker$$' "$$worker"*.swift; then flags="$$(module_flags "$(AGENT_SCRATCH)")"; fi; \
+		if grep -qE '^import (LurosDiagnosticsWorker|LurosLogReaderWorker)$$' "$$worker"*.swift; then flags="$$(module_flags "$(DIAGNOSTICS_SCRATCH)")"; fi; \
+		if grep -qE '^import LurosAgentWorker$$' "$$worker"*.swift; then flags="$$(module_flags "$(AGENT_SCRATCH)")"; fi; \
 		xcrun --sdk macosx swiftc -swift-version 5 -typecheck -target arm64-apple-macos14.0 $$flags \
 			$$(find "$$worker" -name '*.swift' | sort) \
 			|| { echo "error: $${worker#$(ROOT_DIR)/} does not typecheck for macOS" >&2; exit 1; }; \

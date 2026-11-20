@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import Foundation
 
 /// A git_squash card shows what the approval is bound to, `detail.squash`,

@@ -46,7 +46,7 @@
     {
       "id": "prefs",
       "type": "bundle",
-      "name": "ApelinSettings",
+      "name": "LurosSettings",
       "sources": [
         "Sources/*.m"
       ],
@@ -121,11 +121,11 @@
     ],
     "layout": [
       {
-        "path": "/Library/PreferenceBundles/ApelinSettings.bundle",
+        "path": "/Library/PreferenceBundles/LurosSettings.bundle",
         "product": "prefs"
       },
       {
-        "path": "/Library/PreferenceLoader/Preferences/ApelinSettings.plist",
+        "path": "/Library/PreferenceLoader/Preferences/LurosSettings.plist",
         "file": "Packaging/entry.plist",
         "mode": "0644"
       }

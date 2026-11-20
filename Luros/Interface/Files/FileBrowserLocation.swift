@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import Foundation
 
 /// Where the browser stands: one canonical directory.

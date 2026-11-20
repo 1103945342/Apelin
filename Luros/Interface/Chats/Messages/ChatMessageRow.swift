@@ -128,7 +128,7 @@ final class ChatMessageRow: ListRowView {
             }
             guard let url else { return }
             // an lurosdev:// link opens its conversation in place
-            if ApelinLinkRouter.open(url, in: self?.window?.windowScene) {
+            if LurosLinkRouter.open(url, in: self?.window?.windowScene) {
                 return
             }
             if ["https", "http"].contains(url.scheme?.lowercased() ?? "") {

@@ -36,7 +36,7 @@ struct ChatWidgetSnapshot: Codable, Hashable, Sendable {
         }
 
         var link: URL {
-            ApelinLink.conversation(id).url
+            LurosLink.conversation(id).url
         }
     }
 

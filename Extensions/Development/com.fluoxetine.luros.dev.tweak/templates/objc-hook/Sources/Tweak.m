@@ -29,13 +29,13 @@ static void HookedDidFinishLaunching(id self, SEL _cmd, id application) {
     if (OriginalDidFinishLaunching != NULL) {
         OriginalDidFinishLaunching(self, _cmd, application);
     }
-    os_log(TweakLog(), "ApelinHooked %{public}s -[SpringBoard applicationDidFinishLaunching:]", APELIN_BUILD_ID);
+    os_log(TweakLog(), "LurosHooked %{public}s -[SpringBoard applicationDidFinishLaunching:]", APELIN_BUILD_ID);
 }
 
 __attribute__((constructor)) static void TweakInitialize(void) {
     // Luros's confirm_loaded looks for this exact marker and build id under
     // the package id's subsystem. Keep the line, and keep it public.
-    os_log(TweakLog(), "ApelinLoaded %{public}s in %{public}s", APELIN_BUILD_ID, getprogname());
+    os_log(TweakLog(), "LurosLoaded %{public}s in %{public}s", APELIN_BUILD_ID, getprogname());
 
     Class springBoard = objc_getClass("SpringBoard");
     if (springBoard == Nil) {

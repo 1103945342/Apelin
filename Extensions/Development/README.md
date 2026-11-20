@@ -39,9 +39,9 @@ as the app's `ProjectIconPreferences` image set draws it, which the entry's
 
 - **objc-hook** — a dylib filtered to `com.apple.springboard` that calls
   `MSHookMessageEx` on `-[SpringBoard applicationDidFinishLaunching:]` (the
-  method `Documents/Research/ApelinHello` hooked on the iOS 27 vphone) and
-  logs, under the package id's os_log subsystem, `ApelinLoaded <build id> in
-  <process>` from its constructor and `ApelinHooked <build id> …` from the
+  method `Documents/Research/LurosHello` hooked on the iOS 27 vphone) and
+  logs, under the package id's os_log subsystem, `LurosLoaded <build id> in
+  <process>` from its constructor and `LurosHooked <build id> …` from the
   hook. `apelin_package_confirm_loaded` matches the first; the second shows the hook API was
   really called.
 - **uikit-objc / uikit-swift** — a scene-based app whose `main` deletes this
@@ -157,4 +157,4 @@ owngoal-packages entry lists the four package ids with their own versions.
 
 Templates are a read-only catalog shipped with Luros. New templates and changes to existing templates are contributed through pull requests to this repository; the app does not maintain a separate user template library.
 
-`make template-archive` validates the manifests and template digests, then writes `build/Packages/Apelin_<version>_Templates.tar.zst`. It contains every development extension's template sources, support files and licenses, plus `catalog.json` with the app version and the built-in empty workspace. File ordering, ownership metadata and timestamps are fixed for reproducible output. The packager decompresses and compares every byte before accepting the archive. CI builds this archive, includes it in `SHA256SUMS`, and Release publishes those verified bytes alongside the packages.
+`make template-archive` validates the manifests and template digests, then writes `build/Packages/Luros_<version>_Templates.tar.zst`. It contains every development extension's template sources, support files and licenses, plus `catalog.json` with the app version and the built-in empty workspace. File ordering, ownership metadata and timestamps are fixed for reproducible output. The packager decompresses and compares every byte before accepting the archive. CI builds this archive, includes it in `SHA256SUMS`, and Release publishes those verified bytes alongside the packages.

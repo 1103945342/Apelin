@@ -29,7 +29,7 @@ Luros 的目标场景是移动设备上的低并发运行，同时允许单个�
 | 消息中断 | 输入先记录，模型上下文主要到轮末保存；中间退出后，旧 ID 可能被去重但没有进入恢复的上下文。 | 先复现并明确中断、待处理与重试结果，不以完整检查点体系作为前提。 |
 | App 与附件 | 聊天整份读写，草稿内嵌附件；模型图片也可内嵌 Base64。 | App 不能抵消后端按需读取的收益；附件优化按真实读写与内存成本单独决定。 |
 
-相关代码：[AgentHandler](../../Lurosd/Dispatch/AgentHandler.swift)、[AgentWorker](../../Packages/ApelinAgent/Sources/ApelinAgentWorker/AgentWorker.swift)、[WorkerSupervisor](../../Lurosd/Session/WorkerSupervisor.swift)、[SessionHost](../../Lurosd/Session/SessionHost.swift)、[SessionEventLog](../../Packages/ApelinAgent/Sources/ApelinAgent/Persistence/SessionEventLog.swift)、[AgentSession](../../Packages/ApelinAgent/Sources/ApelinAgent/Session/AgentSession.swift)、[ChatStore](../../Luros/Interface/Chats/ChatStore.swift)、[ChatRuntime](../../Luros/Interface/Chats/ChatRuntime.swift)。
+相关代码：[AgentHandler](../../Lurosd/Dispatch/AgentHandler.swift)、[AgentWorker](../../Packages/LurosAgent/Sources/LurosAgentWorker/AgentWorker.swift)、[WorkerSupervisor](../../Lurosd/Session/WorkerSupervisor.swift)、[SessionHost](../../Lurosd/Session/SessionHost.swift)、[SessionEventLog](../../Packages/LurosAgent/Sources/LurosAgent/Persistence/SessionEventLog.swift)、[AgentSession](../../Packages/LurosAgent/Sources/LurosAgent/Session/AgentSession.swift)、[ChatStore](../../Luros/Interface/Chats/ChatStore.swift)、[ChatRuntime](../../Luros/Interface/Chats/ChatRuntime.swift)。
 
 ## 按需读取的最小组成
 

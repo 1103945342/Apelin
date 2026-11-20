@@ -1,8 +1,8 @@
 // Lakr233's Inhouse Code, from FlowDown.
 // I CAN DO WHAT THE FUCK I WANT.
 
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import PDFKit
 import PhotosUI
 import ScrubberKit
@@ -111,7 +111,7 @@ final class ComposerAttachmentImport: NSObject, UIImagePickerControllerDelegate,
                 // the system deletes its copy once this returns
                 let read = Result { () throws -> ComposerAttachment in
                     guard let url else {
-                        throw error ?? ApelinError(
+                        throw error ?? LurosError(
                             .badRequest,
                             String(localized: "The dropped item could not be read."),
                         )
@@ -138,19 +138,19 @@ final class ComposerAttachmentImport: NSObject, UIImagePickerControllerDelegate,
     /// read by its canonical path, an image or else text (a PDF's own).
     nonisolated static func readAttachment(at url: URL, name: String) throws -> ComposerAttachment {
         guard let path = CanonicalPath.resolve(url.path) else {
-            throw ApelinError(.badRequest, String(localized: "The selected file could not be read."))
+            throw LurosError(.badRequest, String(localized: "The selected file could not be read."))
         }
         let source = URL(fileURLWithPath: path)
         let values = try source.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey])
         guard values.isRegularFile == true, let size = values.fileSize, size <= 32 * 1024 * 1024 else {
-            throw ApelinError(
+            throw LurosError(
                 .badRequest,
                 String(localized: "Choose a regular file smaller than 32 MB."),
             )
         }
         let data = try Data(contentsOf: source)
         guard data.count <= 32 * 1024 * 1024 else {
-            throw ApelinError(.badRequest, String(localized: "Choose a file smaller than 32 MB."))
+            throw LurosError(.badRequest, String(localized: "Choose a file smaller than 32 MB."))
         }
         let image = UIImage(data: data) != nil
         let text = source.pathExtension.lowercased() == "pdf"
@@ -247,7 +247,7 @@ final class ComposerAttachmentImport: NSObject, UIImagePickerControllerDelegate,
                     }
                 }
                 guard let document, !document.textDocument.isEmpty else {
-                    throw ApelinError(
+                    throw LurosError(
                         .unavailable,
                         String(localized: "The webpage did not return readable content."),
                     )

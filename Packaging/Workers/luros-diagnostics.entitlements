@@ -7,7 +7,7 @@
 	reads the target app's bundle and container, so it carries the storage
 	pair.
 
-	Each group below is a row of Packages/ApelinDiagnostics/README.md's
+	Each group below is a row of Packages/LurosDiagnostics/README.md's
 	privilege matrix, read from icli 0.8.6's docs/entitlements.md. Only the
 	rows luros-diagnostics serves are here: no pasteboard, keychain, install,
 	location, launchd or reboot key. None has been run from an Luros process

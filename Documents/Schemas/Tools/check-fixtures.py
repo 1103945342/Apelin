@@ -29,7 +29,7 @@ HERE = Path(__file__).resolve().parent
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(HERE))
 
-import apelin_schema as schema  # noqa: E402
+import luros_schema as schema  # noqa: E402
 
 FIXTURES = HERE.parent / "Fixtures"
 
@@ -205,12 +205,12 @@ EDITS = [
     ("bridging header content edited", lambda r: append(r / "Sources/Bridge.h", "/* edited */\n"), False, False),
     ("deployment target raised", lambda r: edit_json(r / "luros-project.json", lambda d: d.__setitem__("deploymentTarget", "17.0")), True, False),
     ("postinst edited", lambda r: append(r / "Packaging/postinst", "# edited\n"), False, True),
-    ("installed data file edited", lambda r: append(r / "Packaging/apelinhello.conf", "x=1\n"), False, True),
+    ("installed data file edited", lambda r: append(r / "Packaging/luroshello.conf", "x=1\n"), False, True),
     ("dependency added", lambda r: edit_json(r / "luros-project.json", lambda d: d["package"].__setitem__("depends", ["coreutils"])), False, True),
     ("icon set", lambda r: edit_json(r / "luros-project.json", lambda d: d["package"].__setitem__("icon", "https://example.com/icon.png")), False, True),
-    ("depiction set", lambda r: edit_json(r / "luros-project.json", lambda d: d["package"].__setitem__("depiction", "https://example.com/depictions/apelinhello/")), False, True),
-    ("native depiction set", lambda r: edit_json(r / "luros-project.json", lambda d: d["package"].__setitem__("sileoDepiction", "https://example.com/depictions/apelinhello/depiction.json")), False, True),
-    ("install path changed", lambda r: edit_json(r / "luros-project.json", lambda d: d["package"]["layout"][0].__setitem__("path", "/usr/local/bin/apelinhello")), False, True),
+    ("depiction set", lambda r: edit_json(r / "luros-project.json", lambda d: d["package"].__setitem__("depiction", "https://example.com/depictions/luroshello/")), False, True),
+    ("native depiction set", lambda r: edit_json(r / "luros-project.json", lambda d: d["package"].__setitem__("sileoDepiction", "https://example.com/depictions/luroshello/depiction.json")), False, True),
+    ("install path changed", lambda r: edit_json(r / "luros-project.json", lambda d: d["package"]["layout"][0].__setitem__("path", "/usr/local/bin/luroshello")), False, True),
 ]
 
 

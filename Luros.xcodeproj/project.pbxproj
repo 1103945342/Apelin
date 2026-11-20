@@ -7,32 +7,32 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AA0000000000000000000103 /* ApelinCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000102 /* ApelinCore */; };
-		AA0000000000000000000105 /* ApelinProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000104 /* ApelinProtocol */; };
-		AA0000000000000000000107 /* ApelinProject in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000106 /* ApelinProject */; };
-		AA0000000000000000000502 /* ApelinConsole in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000501 /* ApelinConsole */; };
-		AA0000000000000000000109 /* ApelinCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000108 /* ApelinCore */; };
-		AA000000000000000000010B /* ApelinProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000010A /* ApelinProtocol */; };
-		A10000000000000000000003 /* ApelinToolHost in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000002 /* ApelinToolHost */; };
-		A10000000000000000000005 /* ApelinToolCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000004 /* ApelinToolCore */; };
-		AA0000000000000000000117 /* ApelinCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000116 /* ApelinCore */; };
-		AA0000000000000000000119 /* ApelinProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000118 /* ApelinProtocol */; };
-		AA000000000000000000011B /* ApelinEnvironment in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000011A /* ApelinEnvironment */; };
-		AA000000000000000000011D /* ApelinGit in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000011C /* ApelinGit */; };
-		AA0000000000000000000129 /* ApelinCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000128 /* ApelinCore */; };
-		AA000000000000000000012B /* ApelinProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000012A /* ApelinProtocol */; };
-		AA000000000000000000012D /* ApelinProject in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000012C /* ApelinProject */; };
-		AA000000000000000000012F /* ApelinBuild in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000012E /* ApelinBuild */; };
-		AA000000000000000000013B /* ApelinCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000013A /* ApelinCore */; };
-		AA000000000000000000013D /* ApelinProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000013C /* ApelinProtocol */; };
-		AA000000000000000000013F /* ApelinProject in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000013E /* ApelinProject */; };
-		AA000000000000000000014B /* ApelinCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000014A /* ApelinCore */; };
-		AA000000000000000000014D /* ApelinProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000014C /* ApelinProtocol */; };
-		AA0000000000000000000159 /* ApelinCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000158 /* ApelinCore */; };
-		AA000000000000000000015B /* ApelinProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000015A /* ApelinProtocol */; };
-		AA0000000000000000000404 /* ApelinAgentWorker in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000403 /* ApelinAgentWorker */; };
-		AA0000000000000000000406 /* ApelinDiagnosticsWorker in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000405 /* ApelinDiagnosticsWorker */; };
-		AA0000000000000000000408 /* ApelinLogReaderWorker in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000407 /* ApelinLogReaderWorker */; };
+		AA0000000000000000000103 /* LurosCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000102 /* LurosCore */; };
+		AA0000000000000000000105 /* LurosProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000104 /* LurosProtocol */; };
+		AA0000000000000000000107 /* LurosProject in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000106 /* LurosProject */; };
+		AA0000000000000000000502 /* LurosConsole in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000501 /* LurosConsole */; };
+		AA0000000000000000000109 /* LurosCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000108 /* LurosCore */; };
+		AA000000000000000000010B /* LurosProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000010A /* LurosProtocol */; };
+		A10000000000000000000003 /* LurosToolHost in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000002 /* LurosToolHost */; };
+		A10000000000000000000005 /* LurosToolCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000004 /* LurosToolCore */; };
+		AA0000000000000000000117 /* LurosCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000116 /* LurosCore */; };
+		AA0000000000000000000119 /* LurosProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000118 /* LurosProtocol */; };
+		AA000000000000000000011B /* LurosEnvironment in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000011A /* LurosEnvironment */; };
+		AA000000000000000000011D /* LurosGit in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000011C /* LurosGit */; };
+		AA0000000000000000000129 /* LurosCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000128 /* LurosCore */; };
+		AA000000000000000000012B /* LurosProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000012A /* LurosProtocol */; };
+		AA000000000000000000012D /* LurosProject in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000012C /* LurosProject */; };
+		AA000000000000000000012F /* LurosBuild in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000012E /* LurosBuild */; };
+		AA000000000000000000013B /* LurosCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000013A /* LurosCore */; };
+		AA000000000000000000013D /* LurosProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000013C /* LurosProtocol */; };
+		AA000000000000000000013F /* LurosProject in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000013E /* LurosProject */; };
+		AA000000000000000000014B /* LurosCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000014A /* LurosCore */; };
+		AA000000000000000000014D /* LurosProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000014C /* LurosProtocol */; };
+		AA0000000000000000000159 /* LurosCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000158 /* LurosCore */; };
+		AA000000000000000000015B /* LurosProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000015A /* LurosProtocol */; };
+		AA0000000000000000000404 /* LurosAgentWorker in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000403 /* LurosAgentWorker */; };
+		AA0000000000000000000406 /* LurosDiagnosticsWorker in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000405 /* LurosDiagnosticsWorker */; };
+		AA0000000000000000000408 /* LurosLogReaderWorker in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000407 /* LurosLogReaderWorker */; };
 		A20000000000000000000111 /* DisplayLink in Frameworks */ = {isa = PBXBuildFile; productRef = A20000000000000000000110 /* DisplayLink */; };
 		A20000000000000000000121 /* ListViewKit in Frameworks */ = {isa = PBXBuildFile; productRef = A20000000000000000000120 /* ListViewKit */; };
 		A20000000000000000000131 /* Litext in Frameworks */ = {isa = PBXBuildFile; productRef = A20000000000000000000130 /* Litext */; };
@@ -60,7 +60,7 @@
 			containerPortal = AA0000000000000000000001 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = AA0000000000000000000040;
-			remoteInfo = Apelind;
+			remoteInfo = Lurosd;
 		};
 		AA0000000000000000000114 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -147,22 +147,22 @@
 			);
 			target = AA0000000000000000000030 /* Luros */;
 		};
-		AA0000000000000000000017 /* Exceptions for "Shared" folder in "Apelind" target */ = {
+		AA0000000000000000000017 /* Exceptions for "Shared" folder in "Lurosd" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				XPCShim/module.modulemap,
 				XPCShim/shim.h,
 			);
-			target = AA0000000000000000000040 /* Apelind */;
+			target = AA0000000000000000000040 /* Lurosd */;
 		};
-		A10000000000000000000006 /* Exceptions for "Apelind" folder in "Apelind" target */ = {
+		A10000000000000000000006 /* Exceptions for "Lurosd" folder in "Lurosd" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Vendor/IrisinExternalClient/CIrisinExternalXPC/module.modulemap,
 				Vendor/IrisinExternalClient/CIrisinExternalXPC/shim.h,
 				Vendor/IrisinExternalClient/LICENSE,
 			);
-			target = AA0000000000000000000040 /* Apelind */;
+			target = AA0000000000000000000040 /* Lurosd */;
 		};
 		A50000000000000000000105 /* Exceptions for "Widgets/Extension" folder in "LurosWidgets" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -191,17 +191,17 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				AA0000000000000000000016 /* Exceptions for "Shared" folder in "Luros" target */,
-				AA0000000000000000000017 /* Exceptions for "Shared" folder in "Apelind" target */,
+				AA0000000000000000000017 /* Exceptions for "Shared" folder in "Lurosd" target */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
 		};
-		AA0000000000000000000014 /* Apelind */ = {
+		AA0000000000000000000014 /* Lurosd */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				A10000000000000000000006 /* Exceptions for "Apelind" folder in "Apelind" target */,
+				A10000000000000000000006 /* Exceptions for "Lurosd" folder in "Lurosd" target */,
 			);
-			path = Apelind;
+			path = Lurosd;
 			sourceTree = "<group>";
 		};
 		AA000000000000000000010E /* Workers/Environment */ = {
@@ -248,10 +248,10 @@
 		AA0000000000000000000033 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				AA0000000000000000000103 /* ApelinCore in Frameworks */,
-				AA0000000000000000000105 /* ApelinProtocol in Frameworks */,
-				AA0000000000000000000107 /* ApelinProject in Frameworks */,
-				AA0000000000000000000502 /* ApelinConsole in Frameworks */,
+				AA0000000000000000000103 /* LurosCore in Frameworks */,
+				AA0000000000000000000105 /* LurosProtocol in Frameworks */,
+				AA0000000000000000000107 /* LurosProject in Frameworks */,
+				AA0000000000000000000502 /* LurosConsole in Frameworks */,
 				A20000000000000000000111 /* DisplayLink in Frameworks */,
 				A20000000000000000000121 /* ListViewKit in Frameworks */,
 				A20000000000000000000131 /* Litext in Frameworks */,
@@ -275,53 +275,53 @@
 		AA0000000000000000000043 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				AA0000000000000000000109 /* ApelinCore in Frameworks */,
-				AA000000000000000000010B /* ApelinProtocol in Frameworks */,
-				A10000000000000000000003 /* ApelinToolHost in Frameworks */,
-				A10000000000000000000005 /* ApelinToolCore in Frameworks */,
+				AA0000000000000000000109 /* LurosCore in Frameworks */,
+				AA000000000000000000010B /* LurosProtocol in Frameworks */,
+				A10000000000000000000003 /* LurosToolHost in Frameworks */,
+				A10000000000000000000005 /* LurosToolCore in Frameworks */,
 			);
 		};
 		AA0000000000000000000110 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				AA0000000000000000000117 /* ApelinCore in Frameworks */,
-				AA0000000000000000000119 /* ApelinProtocol in Frameworks */,
-				AA000000000000000000011B /* ApelinEnvironment in Frameworks */,
-				AA000000000000000000011D /* ApelinGit in Frameworks */,
+				AA0000000000000000000117 /* LurosCore in Frameworks */,
+				AA0000000000000000000119 /* LurosProtocol in Frameworks */,
+				AA000000000000000000011B /* LurosEnvironment in Frameworks */,
+				AA000000000000000000011D /* LurosGit in Frameworks */,
 			);
 		};
 		AA0000000000000000000122 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				AA0000000000000000000129 /* ApelinCore in Frameworks */,
-				AA000000000000000000012B /* ApelinProtocol in Frameworks */,
-				AA000000000000000000012D /* ApelinProject in Frameworks */,
-				AA000000000000000000012F /* ApelinBuild in Frameworks */,
+				AA0000000000000000000129 /* LurosCore in Frameworks */,
+				AA000000000000000000012B /* LurosProtocol in Frameworks */,
+				AA000000000000000000012D /* LurosProject in Frameworks */,
+				AA000000000000000000012F /* LurosBuild in Frameworks */,
 			);
 		};
 		AA0000000000000000000134 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				AA000000000000000000013B /* ApelinCore in Frameworks */,
-				AA000000000000000000013D /* ApelinProtocol in Frameworks */,
-				AA000000000000000000013F /* ApelinProject in Frameworks */,
-				AA0000000000000000000404 /* ApelinAgentWorker in Frameworks */,
+				AA000000000000000000013B /* LurosCore in Frameworks */,
+				AA000000000000000000013D /* LurosProtocol in Frameworks */,
+				AA000000000000000000013F /* LurosProject in Frameworks */,
+				AA0000000000000000000404 /* LurosAgentWorker in Frameworks */,
 			);
 		};
 		AA0000000000000000000144 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				AA000000000000000000014B /* ApelinCore in Frameworks */,
-				AA000000000000000000014D /* ApelinProtocol in Frameworks */,
-				AA0000000000000000000406 /* ApelinDiagnosticsWorker in Frameworks */,
+				AA000000000000000000014B /* LurosCore in Frameworks */,
+				AA000000000000000000014D /* LurosProtocol in Frameworks */,
+				AA0000000000000000000406 /* LurosDiagnosticsWorker in Frameworks */,
 			);
 		};
 		AA0000000000000000000152 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				AA0000000000000000000159 /* ApelinCore in Frameworks */,
-				AA000000000000000000015B /* ApelinProtocol in Frameworks */,
-				AA0000000000000000000408 /* ApelinLogReaderWorker in Frameworks */,
+				AA0000000000000000000159 /* LurosCore in Frameworks */,
+				AA000000000000000000015B /* LurosProtocol in Frameworks */,
+				AA0000000000000000000408 /* LurosLogReaderWorker in Frameworks */,
 			);
 		};
 		A50000000000000000000113 /* Frameworks */ = {
@@ -338,7 +338,7 @@
 				AA0000000000000000000011 /* Configuration */,
 				AA0000000000000000000012 /* Luros */,
 				AA0000000000000000000013 /* Shared */,
-				AA0000000000000000000014 /* Apelind */,
+				AA0000000000000000000014 /* Lurosd */,
 				AA000000000000000000010E /* Workers/Environment */,
 				AA0000000000000000000120 /* Workers/Build */,
 				AA0000000000000000000132 /* Workers/Agent */,
@@ -396,10 +396,10 @@
 			);
 			name = Luros;
 			packageProductDependencies = (
-				AA0000000000000000000102 /* ApelinCore */,
-				AA0000000000000000000104 /* ApelinProtocol */,
-				AA0000000000000000000106 /* ApelinProject */,
-				AA0000000000000000000501 /* ApelinConsole */,
+				AA0000000000000000000102 /* LurosCore */,
+				AA0000000000000000000104 /* LurosProtocol */,
+				AA0000000000000000000106 /* LurosProject */,
+				AA0000000000000000000501 /* LurosConsole */,
 				A20000000000000000000110 /* DisplayLink */,
 				A20000000000000000000120 /* ListViewKit */,
 				A20000000000000000000130 /* Litext */,
@@ -423,9 +423,9 @@
 			productReference = AA0000000000000000000031 /* Luros.app */;
 			productType = "com.apple.product-type.application";
 		};
-		AA0000000000000000000040 /* Apelind */ = {
+		AA0000000000000000000040 /* Lurosd */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AA0000000000000000000070 /* Build configuration list for PBXNativeTarget "Apelind" */;
+			buildConfigurationList = AA0000000000000000000070 /* Build configuration list for PBXNativeTarget "Lurosd" */;
 			buildPhases = (
 				AA0000000000000000000042 /* Sources */,
 				AA0000000000000000000043 /* Frameworks */,
@@ -434,14 +434,14 @@
 			);
 			fileSystemSynchronizedGroups = (
 				AA0000000000000000000013 /* Shared */,
-				AA0000000000000000000014 /* Apelind */,
+				AA0000000000000000000014 /* Lurosd */,
 			);
-			name = Apelind;
+			name = Lurosd;
 			packageProductDependencies = (
-				AA0000000000000000000108 /* ApelinCore */,
-				AA000000000000000000010A /* ApelinProtocol */,
-				A10000000000000000000002 /* ApelinToolHost */,
-				A10000000000000000000004 /* ApelinToolCore */,
+				AA0000000000000000000108 /* LurosCore */,
+				AA000000000000000000010A /* LurosProtocol */,
+				A10000000000000000000002 /* LurosToolHost */,
+				A10000000000000000000004 /* LurosToolCore */,
 			);
 			productName = lurosd;
 			productReference = AA0000000000000000000041 /* lurosd */;
@@ -463,10 +463,10 @@
 			);
 			name = WorkerEnvironment;
 			packageProductDependencies = (
-				AA0000000000000000000116 /* ApelinCore */,
-				AA0000000000000000000118 /* ApelinProtocol */,
-				AA000000000000000000011A /* ApelinEnvironment */,
-				AA000000000000000000011C /* ApelinGit */,
+				AA0000000000000000000116 /* LurosCore */,
+				AA0000000000000000000118 /* LurosProtocol */,
+				AA000000000000000000011A /* LurosEnvironment */,
+				AA000000000000000000011C /* LurosGit */,
 			);
 			productName = "luros-environment";
 			productReference = AA000000000000000000010D /* luros-environment */;
@@ -488,10 +488,10 @@
 			);
 			name = WorkerBuild;
 			packageProductDependencies = (
-				AA0000000000000000000128 /* ApelinCore */,
-				AA000000000000000000012A /* ApelinProtocol */,
-				AA000000000000000000012C /* ApelinProject */,
-				AA000000000000000000012E /* ApelinBuild */,
+				AA0000000000000000000128 /* LurosCore */,
+				AA000000000000000000012A /* LurosProtocol */,
+				AA000000000000000000012C /* LurosProject */,
+				AA000000000000000000012E /* LurosBuild */,
 			);
 			productName = "luros-build";
 			productReference = AA000000000000000000011F /* luros-build */;
@@ -513,10 +513,10 @@
 			);
 			name = WorkerAgent;
 			packageProductDependencies = (
-				AA000000000000000000013A /* ApelinCore */,
-				AA000000000000000000013C /* ApelinProtocol */,
-				AA000000000000000000013E /* ApelinProject */,
-				AA0000000000000000000403 /* ApelinAgentWorker */,
+				AA000000000000000000013A /* LurosCore */,
+				AA000000000000000000013C /* LurosProtocol */,
+				AA000000000000000000013E /* LurosProject */,
+				AA0000000000000000000403 /* LurosAgentWorker */,
 			);
 			productName = "luros-agent";
 			productReference = AA0000000000000000000131 /* luros-agent */;
@@ -538,9 +538,9 @@
 			);
 			name = WorkerDiagnostics;
 			packageProductDependencies = (
-				AA000000000000000000014A /* ApelinCore */,
-				AA000000000000000000014C /* ApelinProtocol */,
-				AA0000000000000000000405 /* ApelinDiagnosticsWorker */,
+				AA000000000000000000014A /* LurosCore */,
+				AA000000000000000000014C /* LurosProtocol */,
+				AA0000000000000000000405 /* LurosDiagnosticsWorker */,
 			);
 			productName = "luros-diagnostics";
 			productReference = AA0000000000000000000141 /* luros-diagnostics */;
@@ -562,9 +562,9 @@
 			);
 			name = WorkerLogReader;
 			packageProductDependencies = (
-				AA0000000000000000000158 /* ApelinCore */,
-				AA000000000000000000015A /* ApelinProtocol */,
-				AA0000000000000000000407 /* ApelinLogReaderWorker */,
+				AA0000000000000000000158 /* LurosCore */,
+				AA000000000000000000015A /* LurosProtocol */,
+				AA0000000000000000000407 /* LurosLogReaderWorker */,
 			);
 			productName = "luros-log-reader";
 			productReference = AA000000000000000000014F /* luros-log-reader */;
@@ -625,10 +625,10 @@
 			mainGroup = AA0000000000000000000010;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */,
-				AA0000000000000000000401 /* XCLocalSwiftPackageReference "Packages/ApelinDiagnostics" */,
-				AA0000000000000000000402 /* XCLocalSwiftPackageReference "Packages/ApelinAgent" */,
-				A10000000000000000000001 /* XCLocalSwiftPackageReference "Packages/ApelinToolHost" */,
+				AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */,
+				AA0000000000000000000401 /* XCLocalSwiftPackageReference "Packages/LurosDiagnostics" */,
+				AA0000000000000000000402 /* XCLocalSwiftPackageReference "Packages/LurosAgent" */,
+				A10000000000000000000001 /* XCLocalSwiftPackageReference "Packages/LurosToolHost" */,
 				A20000000000000000000007 /* XCLocalSwiftPackageReference "Packages/Runestone" */,
 				A20000000000000000000001 /* XCRemoteSwiftPackageReference "DisplayLink" */,
 				A20000000000000000000002 /* XCRemoteSwiftPackageReference "ListViewKit" */,
@@ -649,7 +649,7 @@
 			projectRoot = "";
 			targets = (
 				AA0000000000000000000030 /* Luros */,
-				AA0000000000000000000040 /* Apelind */,
+				AA0000000000000000000040 /* Lurosd */,
 				AA000000000000000000010C /* WorkerEnvironment */,
 				AA000000000000000000011E /* WorkerBuild */,
 				AA0000000000000000000130 /* WorkerAgent */,
@@ -742,7 +742,7 @@
 /* Begin PBXTargetDependency section */
 		AA0000000000000000000021 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = AA0000000000000000000040 /* Apelind */;
+			target = AA0000000000000000000040 /* Lurosd */;
 			targetProxy = AA0000000000000000000020 /* PBXContainerItemProxy */;
 		};
 		AA0000000000000000000115 /* PBXTargetDependency */ = {
@@ -1111,7 +1111,7 @@
 			);
 			defaultConfigurationName = Release;
 		};
-		AA0000000000000000000070 /* Build configuration list for PBXNativeTarget "Apelind" */ = {
+		AA0000000000000000000070 /* Build configuration list for PBXNativeTarget "Lurosd" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AA0000000000000000000071 /* Debug */,
@@ -1170,21 +1170,21 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */ = {
+		AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/ApelinKit;
+			relativePath = Packages/LurosKit;
 		};
-		AA0000000000000000000401 /* XCLocalSwiftPackageReference "Packages/ApelinDiagnostics" */ = {
+		AA0000000000000000000401 /* XCLocalSwiftPackageReference "Packages/LurosDiagnostics" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/ApelinDiagnostics;
+			relativePath = Packages/LurosDiagnostics;
 		};
-		AA0000000000000000000402 /* XCLocalSwiftPackageReference "Packages/ApelinAgent" */ = {
+		AA0000000000000000000402 /* XCLocalSwiftPackageReference "Packages/LurosAgent" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/ApelinAgent;
+			relativePath = Packages/LurosAgent;
 		};
-		A10000000000000000000001 /* XCLocalSwiftPackageReference "Packages/ApelinToolHost" */ = {
+		A10000000000000000000001 /* XCLocalSwiftPackageReference "Packages/LurosToolHost" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/ApelinToolHost;
+			relativePath = Packages/LurosToolHost;
 		};
 		A20000000000000000000007 /* XCLocalSwiftPackageReference "Packages/Runestone" */ = {
 			isa = XCLocalSwiftPackageReference;
@@ -1292,135 +1292,135 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		AA0000000000000000000102 /* ApelinCore */ = {
+		AA0000000000000000000102 /* LurosCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinCore;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosCore;
 		};
-		AA0000000000000000000104 /* ApelinProtocol */ = {
+		AA0000000000000000000104 /* LurosProtocol */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinProtocol;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosProtocol;
 		};
-		AA0000000000000000000106 /* ApelinProject */ = {
+		AA0000000000000000000106 /* LurosProject */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinProject;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosProject;
 		};
-		AA0000000000000000000501 /* ApelinConsole */ = {
+		AA0000000000000000000501 /* LurosConsole */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinConsole;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosConsole;
 		};
-		AA0000000000000000000108 /* ApelinCore */ = {
+		AA0000000000000000000108 /* LurosCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinCore;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosCore;
 		};
-		AA000000000000000000010A /* ApelinProtocol */ = {
+		AA000000000000000000010A /* LurosProtocol */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinProtocol;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosProtocol;
 		};
-		AA0000000000000000000116 /* ApelinCore */ = {
+		AA0000000000000000000116 /* LurosCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinCore;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosCore;
 		};
-		AA0000000000000000000118 /* ApelinProtocol */ = {
+		AA0000000000000000000118 /* LurosProtocol */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinProtocol;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosProtocol;
 		};
-		AA000000000000000000011A /* ApelinEnvironment */ = {
+		AA000000000000000000011A /* LurosEnvironment */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinEnvironment;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosEnvironment;
 		};
-		AA000000000000000000011C /* ApelinGit */ = {
+		AA000000000000000000011C /* LurosGit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinGit;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosGit;
 		};
-		AA0000000000000000000128 /* ApelinCore */ = {
+		AA0000000000000000000128 /* LurosCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinCore;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosCore;
 		};
-		AA000000000000000000012A /* ApelinProtocol */ = {
+		AA000000000000000000012A /* LurosProtocol */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinProtocol;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosProtocol;
 		};
-		AA000000000000000000012C /* ApelinProject */ = {
+		AA000000000000000000012C /* LurosProject */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinProject;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosProject;
 		};
-		AA000000000000000000012E /* ApelinBuild */ = {
+		AA000000000000000000012E /* LurosBuild */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinBuild;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosBuild;
 		};
-		AA000000000000000000013A /* ApelinCore */ = {
+		AA000000000000000000013A /* LurosCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinCore;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosCore;
 		};
-		AA000000000000000000013C /* ApelinProtocol */ = {
+		AA000000000000000000013C /* LurosProtocol */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinProtocol;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosProtocol;
 		};
-		AA000000000000000000013E /* ApelinProject */ = {
+		AA000000000000000000013E /* LurosProject */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinProject;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosProject;
 		};
-		AA000000000000000000014A /* ApelinCore */ = {
+		AA000000000000000000014A /* LurosCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinCore;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosCore;
 		};
-		AA000000000000000000014C /* ApelinProtocol */ = {
+		AA000000000000000000014C /* LurosProtocol */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinProtocol;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosProtocol;
 		};
-		AA0000000000000000000158 /* ApelinCore */ = {
+		AA0000000000000000000158 /* LurosCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinCore;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosCore;
 		};
-		AA000000000000000000015A /* ApelinProtocol */ = {
+		AA000000000000000000015A /* LurosProtocol */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/ApelinKit" */;
-			productName = ApelinProtocol;
+			package = AA0000000000000000000101 /* XCLocalSwiftPackageReference "Packages/LurosKit" */;
+			productName = LurosProtocol;
 		};
-		AA0000000000000000000403 /* ApelinAgentWorker */ = {
+		AA0000000000000000000403 /* LurosAgentWorker */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000402 /* XCLocalSwiftPackageReference "Packages/ApelinAgent" */;
-			productName = ApelinAgentWorker;
+			package = AA0000000000000000000402 /* XCLocalSwiftPackageReference "Packages/LurosAgent" */;
+			productName = LurosAgentWorker;
 		};
-		AA0000000000000000000405 /* ApelinDiagnosticsWorker */ = {
+		AA0000000000000000000405 /* LurosDiagnosticsWorker */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000401 /* XCLocalSwiftPackageReference "Packages/ApelinDiagnostics" */;
-			productName = ApelinDiagnosticsWorker;
+			package = AA0000000000000000000401 /* XCLocalSwiftPackageReference "Packages/LurosDiagnostics" */;
+			productName = LurosDiagnosticsWorker;
 		};
-		AA0000000000000000000407 /* ApelinLogReaderWorker */ = {
+		AA0000000000000000000407 /* LurosLogReaderWorker */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000401 /* XCLocalSwiftPackageReference "Packages/ApelinDiagnostics" */;
-			productName = ApelinLogReaderWorker;
+			package = AA0000000000000000000401 /* XCLocalSwiftPackageReference "Packages/LurosDiagnostics" */;
+			productName = LurosLogReaderWorker;
 		};
-		A10000000000000000000002 /* ApelinToolHost */ = {
+		A10000000000000000000002 /* LurosToolHost */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A10000000000000000000001 /* XCLocalSwiftPackageReference "Packages/ApelinToolHost" */;
-			productName = ApelinToolHost;
+			package = A10000000000000000000001 /* XCLocalSwiftPackageReference "Packages/LurosToolHost" */;
+			productName = LurosToolHost;
 		};
-		A10000000000000000000004 /* ApelinToolCore */ = {
+		A10000000000000000000004 /* LurosToolCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A10000000000000000000001 /* XCLocalSwiftPackageReference "Packages/ApelinToolHost" */;
-			productName = ApelinToolCore;
+			package = A10000000000000000000001 /* XCLocalSwiftPackageReference "Packages/LurosToolHost" */;
+			productName = LurosToolCore;
 		};
 		A20000000000000000000110 /* DisplayLink */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 
 /// Ask Before Using the Screen (`ScreenConsent`, owner, 2026-10-30): while
 /// the app says a session asks, its agent reads the UI tree, acts on the
@@ -16,12 +16,12 @@ enum AgentScreenRules {
     /// session's setting holds back and no approval covers, after spending
     /// the one that does; nil lets it through. Any other caller and
     /// operation passes.
-    static func authorize(_ request: WireRequest, caller: Caller, registry: TaskRegistry) async -> ApelinError? {
+    static func authorize(_ request: WireRequest, caller: Caller, registry: TaskRegistry) async -> LurosError? {
         guard case let .worker(.agent, session) = caller,
               request.operation == .readUITree || request.operation == .uiAction
         else { return nil }
         guard let session, let entry = await AgentSessionTable.shared.entry(session) else {
-            return ApelinError(.denied, "no agent session for this worker")
+            return LurosError(.denied, "no agent session for this worker")
         }
         guard entry.asksBeforeScreen else { return nil }
         let covers: (JSONValue) -> Bool
@@ -37,10 +37,10 @@ enum AgentScreenRules {
                 what = "this action on the screen"
             }
         } catch {
-            return ApelinError(.badRequest, "\(request.operation.rawValue) could not be read")
+            return LurosError(.badRequest, "\(request.operation.rawValue) could not be read")
         }
         guard await AgentApprovals.spend(entry: entry, registry: registry, covers: covers) else {
-            return ApelinError(
+            return LurosError(
                 .denied,
                 "approval required: Ask Before Using the Screen is on, and the user has not approved \(what) with this call",
             )
@@ -53,17 +53,17 @@ enum AgentScreenRules {
     /// that said it uses the screen; throws otherwise, leaving it unspent.
     static func spend(_ run: AgentRunCodeRequest, entry: AgentSessionTable.Entry, registry: TaskRegistry) async throws {
         guard case let .user(approvalID) = run.approval else {
-            throw ApelinError(
+            throw LurosError(
                 .denied,
                 "approval required: Ask Before Using the Screen is on, and this command runs a program that opens apps and links or reads and acts on the screen; it needs the user's approval of this call, every time",
             )
         }
         let asked = await AgentApprovals.requested(approvalID, entry: entry, registry: registry)
         guard let asked, covers(run, asked: asked) else {
-            throw ApelinError(.denied, "\(approvalID) is not the user's approval of this command, which uses the screen")
+            throw LurosError(.denied, "\(approvalID) is not the user's approval of this command, which uses the screen")
         }
         guard await AgentSessionTable.shared.consume(entry.sessionID, approvalID: approvalID) else {
-            throw ApelinError(.denied, "the app has not approved \(approvalID)")
+            throw LurosError(.denied, "the app has not approved \(approvalID)")
         }
     }
 

@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import SnapKit
 import SPIndicator
 import Then
@@ -177,7 +177,7 @@ final class GitHubLoginController: UIViewController {
                 guard !Task.isCancelled else { return }
                 self?.show(.saving)
                 let login = try await github.login(token: token)
-                try await ApelinService.app.gitCredentialSet(GitCredentialSetRequest(
+                try await LurosService.app.gitCredentialSet(GitCredentialSetRequest(
                     host: GitHubDeviceFlow.host,
                     username: login,
                     token: token,

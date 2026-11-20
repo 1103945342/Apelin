@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import Foundation
 
 /// A project whose folder has gone from `Projects/` takes its conversations

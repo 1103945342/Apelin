@@ -1,8 +1,8 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
-// Ask Before Using the Screen (ApelinProtocol's ScreenConsent,
+// Ask Before Using the Screen (LurosProtocol's ScreenConsent,
 // Lurosd/Session/Agent/AgentScreenRules.swift, AgentApprovals.authorize):
 // while a session asks, an agent's readUITree, uiAction and every
 // agentRunCode that runs icli need one approval the app gave that session

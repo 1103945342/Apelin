@@ -63,7 +63,7 @@ final class FileEditorController: UIViewController {
         $0.setImage(UIImage(systemName: "textformat"), for: .bookmark, state: .normal)
     }
 
-    private let theme = ApelinEditorTheme()
+    private let theme = LurosEditorTheme()
     /// What the file held when it was opened, to tell an edit from a redraw.
     /// `nil` until the file is on screen, and for a file that failed to load.
     private var openedText: String?
@@ -223,7 +223,7 @@ final class FileEditorController: UIViewController {
             try ProjectFileContent.read(at: url)
         }
         guard let text = try? await reading.value else { return nil }
-        let theme = ApelinEditorTheme()
+        let theme = LurosEditorTheme()
         let state = await Task.detached(priority: .userInitiated) {
             highlightedState(for: text, theme: theme, fileName: relativePath)
         }.value
@@ -242,7 +242,7 @@ final class FileEditorController: UIViewController {
     /// page blank while it did.
     nonisolated private static func highlightedState(
         for text: String,
-        theme: ApelinEditorTheme,
+        theme: LurosEditorTheme,
         fileName: String,
     ) -> TextViewState {
         if let language = RunestoneLanguage(fileName: fileName) {

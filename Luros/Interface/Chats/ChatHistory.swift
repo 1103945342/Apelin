@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 /// Where a conversation's fold starts. A conversation can hold a hundred

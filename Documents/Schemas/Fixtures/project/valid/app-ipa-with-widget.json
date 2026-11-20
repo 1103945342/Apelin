@@ -45,7 +45,7 @@
     {
       "id": "app",
       "type": "app",
-      "name": "ApelinApp",
+      "name": "LurosApp",
       "sources": [
         "Sources/*.m"
       ],
@@ -64,7 +64,7 @@
     {
       "id": "widgets",
       "type": "appex",
-      "name": "ApelinAppWidgets",
+      "name": "LurosAppWidgets",
       "sources": [
         "Widgets/*.m"
       ],

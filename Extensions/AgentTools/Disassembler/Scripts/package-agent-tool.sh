@@ -162,7 +162,7 @@ if [[ "$tool" == assembler ]]; then
         }
     done
     apelin_commit="$(git -C "$repository_root" rev-parse HEAD)"
-    if [[ -n "$(git -C "$repository_root" status --porcelain -- Packages/ApelinToolHost Extensions/AgentTools/Disassembler LICENSE)" ]]; then
+    if [[ -n "$(git -C "$repository_root" status --porcelain -- Packages/LurosToolHost Extensions/AgentTools/Disassembler LICENSE)" ]]; then
         apelin_commit="$apelin_commit, with uncommitted changes"
     fi
     archive_name="${package_id}_${version}_source.tar.xz"
@@ -172,7 +172,7 @@ if [[ "$tool" == assembler ]]; then
         mkdir -p "$source_tree/Luros/Packages" "$source_tree/Luros/Extensions/AgentTools" "$source_tree/Dependencies"
         excludes=(--exclude .build --exclude .swiftpm --exclude build --exclude .DS_Store --exclude .git)
         rsync -a "${excludes[@]}" "$repository_root/LICENSE" "$source_tree/Luros/"
-        rsync -a "${excludes[@]}" "$repository_root/Packages/ApelinToolHost" "$source_tree/Luros/Packages/"
+        rsync -a "${excludes[@]}" "$repository_root/Packages/LurosToolHost" "$source_tree/Luros/Packages/"
         rsync -a "${excludes[@]}" "$extension_root" "$source_tree/Luros/Extensions/AgentTools/"
         rsync -a "${excludes[@]}" "$checkouts/libkeystone-spm" "$checkouts/libcapstone-spm" "$source_tree/Dependencies/"
         tar --uid 0 --gid 0 --uname root --gname wheel --no-xattrs --no-mac-metadata -cJf "$scratch/$archive_name" -C "$source_tree" Luros Dependencies

@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 /// Every conversation the sidebar lists offers Delete, whatever it is

@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Darwin
 import Foundation
 
@@ -185,7 +185,7 @@ actor WorkerSupervisor {
             )
         } catch {
             channel.close()
-            throw ApelinError(.unavailable, "\(error)")
+            throw LurosError(.unavailable, "\(error)")
         }
 
         // Read and written on `queue` alone, where the process is reaped.
@@ -233,7 +233,7 @@ actor WorkerSupervisor {
         guard await ready.wait(seconds: Self.readyTimeout) else {
             channel.close()
             kill(pid, SIGKILL)
-            throw ApelinError(.unavailable, "A background process did not start in time. Try again.")
+            throw LurosError(.unavailable, "A background process did not start in time. Try again.")
         }
         return worker
     }

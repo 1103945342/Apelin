@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 /// The team of one conversation, as the host's assignment ledger holds it:

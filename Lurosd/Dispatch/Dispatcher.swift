@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// One request as the session host sees it.
@@ -23,7 +23,7 @@ struct HostRequest: Sendable {
             return try request.decode(type)
         } catch {
             NSLog("lurosd-session: could not read %@", operation.rawValue)
-            throw ApelinError(
+            throw LurosError(
                 .badRequest,
                 """
                 Luros could not read this request. Reinstall Luros with your preferred package manager, \
@@ -37,13 +37,13 @@ struct HostRequest: Sendable {
 typealias HostReply = (WireReply, [OwnedDescriptor])
 
 extension HostRequest {
-    /// An `ApelinError` goes out as it is; anything else becomes `.internal`.
+    /// An `LurosError` goes out as it is; anything else becomes `.internal`.
     func fail(_ error: any Error) -> HostReply {
-        if let error = error as? ApelinError {
+        if let error = error as? LurosError {
             return (.failure(requestID, error), [])
         }
         NSLog("lurosd-session: %@ failed: %@", operation.rawValue, String(describing: error))
-        return (.failure(requestID, ApelinError(.internal)), [])
+        return (.failure(requestID, LurosError(.internal)), [])
     }
 
     /// Decodes the request as `R`, runs `body`, encodes its answer; thrown
@@ -67,7 +67,7 @@ protocol DomainHandler {
 enum Dispatcher {
     static func handle(_ request: HostRequest, host: SessionHost) async -> HostReply {
         guard CallerPolicy.allows(request.caller, request.operation) else {
-            return request.fail(ApelinError(.denied, "\(request.operation.rawValue) is not available to this caller"))
+            return request.fail(LurosError(.denied, "\(request.operation.rawValue) is not available to this caller"))
         }
         if let refusal = await AgentDelegationAdmission.refusal(request, host: host) {
             return refusal
@@ -84,7 +84,7 @@ enum Dispatcher {
     private static func route(_ request: HostRequest, host: SessionHost) async -> HostReply {
         switch request.operation.domain {
         // lurosd answers hello itself; one that reaches the host is a bug.
-        case .hello: request.fail(ApelinError(.badRequest, "hello is answered by lurosd"))
+        case .hello: request.fail(LurosError(.badRequest, "hello is answered by lurosd"))
         case .toolchain: await ToolchainHandler.handle(request, host: host)
         case .sdk: await SDKHandler.handle(request, host: host)
         case .environment: await EnvironmentHandler.handle(request, host: host)

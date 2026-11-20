@@ -1,5 +1,5 @@
 import AlertController
-import ApelinCore
+import LurosCore
 import QuickLook
 import SnapKit
 import SPIndicator

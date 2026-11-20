@@ -1,7 +1,7 @@
 # Console
 
 Luros runs headless from a script: the permitted operations on the wire, in order,
-through `ApelinService` — the same typed surface the UI and the agent's tools
+through `LurosService` — the same typed surface the UI and the agent's tools
 call. `agentAPIConfiguration` is restricted to the provider editing form: the
 console refuses it before sending so a saved API key never enters its output or logs.
 It refuses `feedbackStar` too: a star on the reader's GitHub account comes only
@@ -9,10 +9,10 @@ from their tap in the app.
 The console is the app itself, not a second peer of lurosd, so "No
 CLI" holds. It never draws anything and never quits the app.
 
-The runner is `ApelinConsole` (`Packages/ApelinKit/Sources/ApelinConsole`),
-parameterised on an `ApelinService`, a `DataFolder` and a log sink, and
-tested on the Mac by `make harness` (`Packages/ApelinKit/Tests/ApelinConsoleTests`) against a
-fake transport. The app keeps only the binding — `ApelinService.app`,
+The runner is `LurosConsole` (`Packages/LurosKit/Sources/LurosConsole`),
+parameterised on an `LurosService`, a `DataFolder` and a log sink, and
+tested on the Mac by `make harness` (`Packages/LurosKit/Tests/LurosConsoleTests`) against a
+fake transport. The app keeps only the binding — `LurosService.app`,
 `DataFolder.app`, the unified log — and the launch and foreground hooks
 (`Luros/Console/ConsoleLaunch.swift`).
 
@@ -178,7 +178,7 @@ A script is an array of steps, or `{"name": "…", "steps": [ … ]}`.
 
 | field | meaning |
 |---|---|
-| `op` | an operation name from `AppOperation` (`Packages/ApelinKit/Sources/ApelinProtocol/AppOperation.swift`), or `wait`, or `expect` |
+| `op` | an operation name from `AppOperation` (`Packages/LurosKit/Sources/LurosProtocol/AppOperation.swift`), or `wait`, or `expect` |
 | `request` | the operation's request as JSON — the Codable form of its `…Request` type in `Operations/<Domain>.swift`. Defaults to `{}` |
 | `label` | a name later steps refer to |
 | `follow` | for a step that answers a task handle (`{"taskID", "kind"}`): read its events (`step.event` lines) until it finishes; defaults to true. A response that carries a handle as `task` (an agent session, a terminal) is followed only with `"follow": true`, since those run until closed. An attach (`buildAttach`, `environmentAttach`, `agentAttach`, `ptyAttach`, `logStream`) answers a batch: its events are the step's first, and a task not yet finished is read on from the batch's `lastSeq` with the same attach until it ends — so a script can pick up by ID a task an earlier run or host started; `"follow": false` keeps just the one batch (for a terminal or agent session still open). A followed task is announced by a `step.task` line, which lets a later launch re-attach to it. A followed task that ends in any state but `succeeded` fails the step, and so does a finished batch in such a state |
@@ -536,7 +536,7 @@ error, or on `ok: false` where the exact refusal is the worker's to choose.
 ### Demo captures and the replay fixtures
 
 `Documents/Console/demo/` holds the scripts whose output became the replay
-fixtures (`Packages/ApelinKit/Sources/ApelinReplay/Fixtures`, read by
+fixtures (`Packages/LurosKit/Sources/LurosReplay/Fixtures`, read by
 `ReplayTransport` where no lurosd runs; `Documents/Plan/Handoff.md` ▸ the
 replay). They are checked for form like the scripts above, but are not
 needed to call every operation. Run them in this order on a device with a
@@ -567,7 +567,7 @@ rebuilds each request from its script, merges every read of a task by
 strings, trims build logs and the log stream, numbers each task's events
 from 1 again, and writes nothing if a key, a Mac path or a device
 identifier survives. `make harness` then reads the result through the
-protocol types (`ApelinReplayTests`). The capture folder holds the
+protocol types (`LurosReplayTests`). The capture folder holds the
 credential's effects, never the credential, but it stays outside the
 repository all the same.
 

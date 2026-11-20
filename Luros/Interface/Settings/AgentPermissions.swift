@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 /// Two device-wide choices, the mode and Ask Before Using the Screen,

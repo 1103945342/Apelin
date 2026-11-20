@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import UIKit
 
 /// Why an import that had made its project did not finish, once that
@@ -7,7 +7,7 @@ import UIKit
 struct RepositoryImportFailure: Error {
     /// The host's words, or what the task's state means.
     var message: String
-    /// `ApelinError.Reason`'s raw value, when the host named one.
+    /// `LurosError.Reason`'s raw value, when the host named one.
     var reason: String?
     /// The folder of a project that should have gone and did not.
     var leftProject: String?
@@ -31,7 +31,7 @@ enum RepositoryImporter {
         name: String,
         update: @escaping @MainActor (ProgressCard.Status) -> Void,
     ) async throws -> ProjectSummary {
-        let service = ApelinService.app
+        let service = LurosService.app
         // Each request is sent whole, never cut off by a cancel, so what it
         // made is known and can be taken away.
         let created = try await Task {
@@ -64,7 +64,7 @@ enum RepositoryImporter {
             }
             var failure = error as? RepositoryImportFailure ?? RepositoryImportFailure(
                 message: error is CancellationError ? String(localized: "The task was cancelled.") : error.readableMessage,
-                reason: (error as? ApelinError)?.reason?.rawValue,
+                reason: (error as? LurosError)?.reason?.rawValue,
             )
             failure.leftProject = removed ? nil : created.name
             throw failure
@@ -87,7 +87,7 @@ enum RepositoryImporter {
         var progress = EnvironmentTaskProgress(work: .repositoryImport)
         var reason: String?
         var projectID: String?
-        for try await event in ApelinService.app.events(of: handle) {
+        for try await event in LurosService.app.events(of: handle) {
             progress.apply(event)
             if event.kind == TaskEvent.stateKind {
                 reason = event.payload?["reason"]?.stringValue
@@ -120,7 +120,7 @@ enum RepositoryImporter {
     /// Answers whether it went; a clone that does not end within
     /// `discardWait` leaves it.
     private static func discard(_ created: ProjectCreateResponse, clone: TaskHandle?) async -> Bool {
-        let service = ApelinService.app
+        let service = LurosService.app
         if let clone {
             try? await service.environmentCancel(taskID: clone.taskID)
             let ended = await withTaskGroup(of: Bool.self) { group in

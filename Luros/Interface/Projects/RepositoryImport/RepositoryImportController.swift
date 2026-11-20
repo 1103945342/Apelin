@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import SPIndicator
 import Then
 import UIKit
@@ -329,7 +329,7 @@ final class RepositoryImportController: TableController, UITextFieldDelegate {
     /// the one Luros takes for its host: Sign In with GitHub for
     /// github.com, a token the user gives the agent anywhere else.
     @objc private dynamic func report(_ error: Error) {
-        if (error as? ApelinError)?.code == .conflict {
+        if (error as? LurosError)?.code == .conflict {
             // the name, taken since the projects were read; nothing was made
             presentNotice(title: "Name Already Used", message: error.readableMessage) { [weak self] in
                 self?.nameField.becomeFirstResponder()
@@ -341,7 +341,7 @@ final class RepositoryImportController: TableController, UITextFieldDelegate {
             return
         }
         let host = URLComponents(string: request.address)?.host?.lowercased() ?? ""
-        let needsSignIn = failure.reason == ApelinError.Reason.authenticationRequired.rawValue
+        let needsSignIn = failure.reason == LurosError.Reason.authenticationRequired.rawValue
         if needsSignIn, host == "github.com", failure.leftProject == nil {
             presentConfirmation(
                 title: "Sign In with GitHub",

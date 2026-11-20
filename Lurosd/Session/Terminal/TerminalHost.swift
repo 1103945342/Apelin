@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Darwin
 import Foundation
 
@@ -50,7 +50,7 @@ actor TerminalHost {
 
     func open(_ request: PtyOpenRequest) async throws -> PtyOpenResponse {
         guard sessions.count + opening < Self.maximumSessions else {
-            throw ApelinError(.unavailable, "too many terminals are open")
+            throw LurosError(.unavailable, "too many terminals are open")
         }
         try Self.checkSize(columns: request.columns, rows: request.rows)
         let start = try directory(for: request)
@@ -67,7 +67,7 @@ actor TerminalHost {
         do {
             session = try TerminalSession.spawn(launch, queue: queue)
         } catch {
-            throw ApelinError(.unavailable, "the terminal did not start: \(error)")
+            throw LurosError(.unavailable, "the terminal did not start: \(error)")
         }
 
         // Everything above is synchronous; this await is where other opens can
@@ -168,14 +168,14 @@ actor TerminalHost {
     /// start in home.
     func directory(for request: PtyOpenRequest) throws -> Start {
         if request.projectID != nil, request.workingDirectory != nil {
-            throw ApelinError(.badRequest, "a terminal starts in a project or in a chosen folder, not both")
+            throw LurosError(.badRequest, "a terminal starts in a project or in a chosen folder, not both")
         }
         if request.relativePath != nil, request.projectID == nil {
-            throw ApelinError(.badRequest, "relativePath names a folder inside a project, so it needs a projectID")
+            throw LurosError(.badRequest, "relativePath names a folder inside a project, so it needs a projectID")
         }
         if let project = request.projectID {
             guard case let .directory(root) = try scopes.resolve(project, caller: .app) else {
-                throw ApelinError(.badRequest, "projectID does not name a project")
+                throw LurosError(.badRequest, "projectID does not name a project")
             }
             return Start(
                 path: try Self.subdirectory(request.relativePath, inside: root),
@@ -193,20 +193,20 @@ actor TerminalHost {
     /// after links are resolved, and a folder rather than a file.
     static func subdirectory(_ relativePath: String?, inside root: String) throws -> String {
         guard let root = CanonicalPath.resolve(root) else {
-            throw ApelinError(.notFound, "the project's folder does not exist")
+            throw LurosError(.notFound, "the project's folder does not exist")
         }
         guard let relative = relativePath, !relative.isEmpty, relative != "." else { return root }
         guard CanonicalPath.isPlainRelative(relative) else {
-            throw ApelinError(.badRequest, "\(relative) is not a plain relative path inside the project")
+            throw LurosError(.badRequest, "\(relative) is not a plain relative path inside the project")
         }
         guard let folder = CanonicalPath.resolve(root + "/" + relative) else {
-            throw ApelinError(.notFound, "the project has no folder \(relative)")
+            throw LurosError(.notFound, "the project has no folder \(relative)")
         }
         guard CanonicalPath.isCanonical(folder, inside: root) else {
-            throw ApelinError(.denied, "\(relative) leads outside the project")
+            throw LurosError(.denied, "\(relative) leads outside the project")
         }
         guard isDirectory(folder) else {
-            throw ApelinError(.badRequest, "\(relative) is not a folder inside the project")
+            throw LurosError(.badRequest, "\(relative) is not a folder inside the project")
         }
         return folder
     }
@@ -215,13 +215,13 @@ actor TerminalHost {
     /// folder.
     static func folder(_ path: String) throws -> String {
         guard !path.isEmpty, !CanonicalPath.containsNUL(path), path.hasPrefix("/") else {
-            throw ApelinError(.badRequest, "a working directory is an absolute path")
+            throw LurosError(.badRequest, "a working directory is an absolute path")
         }
         guard let folder = CanonicalPath.resolve(path) else {
-            throw ApelinError(.notFound, "there is no folder at \(path)")
+            throw LurosError(.notFound, "there is no folder at \(path)")
         }
         guard isDirectory(folder) else {
-            throw ApelinError(.badRequest, "\(path) is not a folder")
+            throw LurosError(.badRequest, "\(path) is not a folder")
         }
         return folder
     }
@@ -235,12 +235,12 @@ actor TerminalHost {
     /// `inputOnly` — the shell's output as it comes.
     func descriptor(for taskID: TaskID, inputOnly: Bool = false) throws -> OwnedDescriptor {
         guard let session = sessions[taskID.rawValue] else {
-            throw ApelinError(.notFound, "no open terminal \(taskID)")
+            throw LurosError(.notFound, "no open terminal \(taskID)")
         }
         do {
             return try OwnedDescriptor(adopting: session.attachPeer(inputOnly: inputOnly))
         } catch {
-            throw ApelinError(.internal, "\(error)")
+            throw LurosError(.internal, "\(error)")
         }
     }
 
@@ -254,7 +254,7 @@ actor TerminalHost {
 
     func resize(_ request: PtyResizeRequest) throws -> Acknowledged {
         guard let session = sessions[request.sessionID] else {
-            throw ApelinError(.notFound, "no open terminal \(request.sessionID)")
+            throw LurosError(.notFound, "no open terminal \(request.sessionID)")
         }
         try Self.checkSize(columns: request.columns, rows: request.rows)
         session.resize(columns: UInt16(request.columns), rows: UInt16(request.rows))
@@ -263,7 +263,7 @@ actor TerminalHost {
 
     func close(_ request: PtyCloseRequest) throws -> Acknowledged {
         guard let session = sessions[request.sessionID] else {
-            throw ApelinError(.notFound, "no open terminal \(request.sessionID)")
+            throw LurosError(.notFound, "no open terminal \(request.sessionID)")
         }
         session.terminate()
         return Acknowledged()
@@ -275,7 +275,7 @@ actor TerminalHost {
 
     private static func checkSize(columns: Int, rows: Int) throws {
         guard sizeRange.contains(columns), sizeRange.contains(rows) else {
-            throw ApelinError(
+            throw LurosError(
                 .badRequest,
                 "columns and rows must each be \(sizeRange.lowerBound) to \(sizeRange.upperBound)",
             )
@@ -322,7 +322,7 @@ actor TerminalHost {
             "/bin/sh",
         ]
         guard let shell = candidates.first(where: { access($0, X_OK) == 0 }) else {
-            throw ApelinError(.unavailable, "no shell is installed")
+            throw LurosError(.unavailable, "no shell is installed")
         }
         let name = (shell as NSString).lastPathComponent
         let arguments = name == "sh" ? ["-i"] : ["-il"]

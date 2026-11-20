@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// What an agent may set up on the device — a toolchain from Apple's
@@ -22,22 +22,22 @@ enum AgentEnvironmentRules {
     static let setupTool = AgentToolName.toolchainSetup.rawValue
     static let importTool = AgentToolName.sdkImport.rawValue
 
-    static func refusal(_ setup: ToolchainSetupRequest, descriptorCount: Int) -> ApelinError? {
+    static func refusal(_ setup: ToolchainSetupRequest, descriptorCount: Int) -> LurosError? {
         guard descriptorCount == 0, case let .appleCatalog(productID?) = setup.source, !productID.isEmpty else {
-            return ApelinError(.denied, "an agent sets up a toolchain only from Apple's catalog, naming its product")
+            return LurosError(.denied, "an agent sets up a toolchain only from Apple's catalog, naming its product")
         }
         return nil
     }
 
-    static func refusal(_ request: SDKImportRequest, descriptorCount: Int) -> ApelinError? {
+    static func refusal(_ request: SDKImportRequest, descriptorCount: Int) -> LurosError? {
         guard descriptorCount == 0, case let .repository(url, branch) = request.source, !branch.isEmpty else {
-            return ApelinError(.denied, "an agent imports an SDK only from an SDK source's repository")
+            return LurosError(.denied, "an agent imports an SDK only from an SDK source's repository")
         }
         guard let parts = URLComponents(string: url), parts.scheme?.lowercased() == "https",
               parts.host?.isEmpty == false, parts.user == nil, parts.password == nil,
               parts.query == nil, parts.fragment == nil
         else {
-            return ApelinError(.denied, "an SDK source is an HTTPS address with no credentials, query or fragment")
+            return LurosError(.denied, "an SDK source is an HTTPS address with no credentials, query or fragment")
         }
         return nil
     }
@@ -71,7 +71,7 @@ enum AgentEnvironmentRules {
         entry: AgentSessionTable.Entry?,
         registry: TaskRegistry,
     ) async throws {
-        guard let entry else { throw ApelinError(.denied, "no agent session for this worker") }
+        guard let entry else { throw LurosError(.denied, "no agent session for this worker") }
         let covers: (JSONValue) -> Bool
         switch request.operation {
         case .toolchainSetup:
@@ -91,7 +91,7 @@ enum AgentEnvironmentRules {
         }
         guard entry.mode.asks else { return }
         guard await AgentApprovals.spend(entry: entry, registry: registry, covers: covers) else {
-            throw ApelinError(
+            throw LurosError(
                 .denied,
                 "approval required: the user has not approved this \(request.operation == .sdkImport ? "SDK import" : "toolchain setup")",
             )

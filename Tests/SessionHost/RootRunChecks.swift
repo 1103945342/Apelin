@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Darwin
 import Foundation
 
@@ -335,7 +335,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
     check(normSame == .root, "and runs it in the directory it named")
 
     // The exact JSON luros-agent writes under detail.rootCommand (the same
-    // shapes as Packages/ApelinAgent/.../RootRequestWireTests.swift): the host
+    // shapes as Packages/LurosAgent/.../RootRequestWireTests.swift): the host
     // decodes each to the spec it compares with the run, so the command the
     // card shows is the command that runs. The app's approval is recorded
     // straight in the table here; the relay and its owner check are above.

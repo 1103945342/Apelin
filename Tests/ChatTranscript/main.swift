@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 func event(_ seq: UInt64, _ kind: String, _ values: [String: JSONValue] = [:]) -> TaskEvent {
@@ -520,7 +520,7 @@ precondition(noRoute?.failure?.spoken == "No Internet Connection\nConnect to the
 precondition(ChatTranscript(events: [event(1, "message", ["text": .string("Done.")])]) { _ in nil }.messages.allSatisfy { $0.failure == nil },
              "a reply is no failure")
 for reason in ["offline", "network", "timeout", "authentication", "quota", "rateLimit", "server", "contextOverflow"] {
-    precondition(ChatFailure.title(for: ApelinError.Reason(rawValue: reason)) != nil, "\(reason) has a line of its own")
+    precondition(ChatFailure.title(for: LurosError.Reason(rawValue: reason)) != nil, "\(reason) has a line of its own")
 }
 
 precondition(ChatFailure.title(for: .notAPreset) == nil, "another operation's reason is no model failure")

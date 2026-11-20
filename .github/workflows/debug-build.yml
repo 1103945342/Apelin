@@ -58,7 +58,7 @@ jobs:
         shell: bash
         env:
           PUSH_TOKEN: ${{ github.token }}
-        run: Packages/ApelinAgent/Scripts/sync-prompts.sh
+        run: Packages/LurosAgent/Scripts/sync-prompts.sh
 
       - name: Restore SwiftPM cache
         uses: actions/cache@v4

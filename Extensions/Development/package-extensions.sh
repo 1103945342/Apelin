@@ -50,8 +50,8 @@ manifest_field() {
     python3 -I -B - "$schema_tools" "$@" <<'PY'
 import sys
 sys.path.insert(0, sys.argv[1])
-import apelin_schema
-manifest = apelin_schema.load_json(sys.argv[2])
+import luros_schema
+manifest = luros_schema.load_json(sys.argv[2])
 field = sys.argv[3]
 if field == "depends":
     flavor = sys.argv[4]
@@ -76,12 +76,12 @@ verify_installed() {
 import sys
 from pathlib import Path
 sys.path.insert(0, sys.argv[1])
-import apelin_schema
+import luros_schema
 root = Path(sys.argv[2])
-manifest = apelin_schema.load_json(root / "manifest.json")
-errors = apelin_schema.validate_manifest(manifest)
+manifest = luros_schema.load_json(root / "manifest.json")
+errors = luros_schema.validate_manifest(manifest)
 for template in manifest["templates"]:
-    errors += apelin_schema.check_template(root, template)
+    errors += luros_schema.check_template(root, template)
 if errors:
     print("\n".join(errors), file=sys.stderr)
     sys.exit(65)

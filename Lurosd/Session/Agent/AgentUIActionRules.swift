@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 
 /// An agent never operates Luros's own screen: coordinate taps through
 /// All Projects deleted a project with its chats, and the same taps could

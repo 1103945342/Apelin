@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import Foundation
 
 /// The guard the browser hands the editor is a value of its own: it keeps

@@ -1,6 +1,6 @@
 // Copyright (c) 2026 OwnGoal Studio. MIT; see LICENSE beside this file.
 // Table/action-bar layout copied from Irisin's WelcomeRepositoriesController.
-import ApelinProtocol
+import LurosProtocol
 import UIKit
 
 final class WelcomeProvidersPage: WelcomeListPage {
@@ -97,7 +97,7 @@ final class WelcomeProvidersPage: WelcomeListPage {
         dataSource.beginLoad()
         loader = Task { [weak self] in
             do {
-                let response = try await ApelinService.app.agentAccountList()
+                let response = try await LurosService.app.agentAccountList()
                 guard !Task.isCancelled, let self else { return }
                 accounts = response.accounts
                 updateRows()
@@ -109,9 +109,9 @@ final class WelcomeProvidersPage: WelcomeListPage {
         Task { [weak self] in
             guard let self else { return }
             do {
-                let accounts = try await ApelinService.app.agentAccountsWithKnownModels()
+                let accounts = try await LurosService.app.agentAccountsWithKnownModels()
                 guard let account = accounts.first(where: { $0.provider == provider }) else {
-                    throw ApelinError(
+                    throw LurosError(
                         .unimplemented,
                         String(localized: "This provider is not available. You can add another provider in Settings."),
                     )

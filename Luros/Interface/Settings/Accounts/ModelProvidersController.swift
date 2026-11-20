@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Then
 import UIKit
 
@@ -118,7 +118,7 @@ final class ModelProvidersController: TableController, UISearchResultsUpdating {
         dataSource.beginLoad()
         loader = Task { [weak self] in
             do {
-                let accounts = try await ApelinService.app.agentAccountsWithKnownModels()
+                let accounts = try await LurosService.app.agentAccountsWithKnownModels()
                 guard !Task.isCancelled, let self else { return }
                 self.accounts = accounts
                 failure = nil
@@ -328,7 +328,7 @@ final class ModelProvidersController: TableController, UISearchResultsUpdating {
     private func signOut(_ provider: AgentProvider) {
         Task { [weak self] in
             do {
-                try await ApelinService.app.agentSignOut(provider: provider)
+                try await LurosService.app.agentSignOut(provider: provider)
                 EnabledModels.remove(for: provider)
                 self?.load()
             } catch {

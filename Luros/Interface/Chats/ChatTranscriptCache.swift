@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 /// The transcripts the runtime keeps, one per conversation, each brought up

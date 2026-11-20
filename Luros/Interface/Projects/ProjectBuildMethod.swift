@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import Foundation
 
 /// How a project's package is built, read off its `luros-project.json`:

@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import Foundation
 
 /// The terminal sessions list's rules, from the same source the app runs

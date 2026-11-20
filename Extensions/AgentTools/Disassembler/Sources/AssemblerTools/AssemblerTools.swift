@@ -2,7 +2,7 @@
 // its own package for that reason. Nothing outside luros-assembler links
 // this module.
 
-import ApelinToolExtension
+import LurosToolExtension
 import Foundation
 import Keystone
 

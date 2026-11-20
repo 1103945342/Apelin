@@ -45,7 +45,7 @@
     {
       "id": "widgets",
       "type": "appex",
-      "name": "ApelinAppWidgets",
+      "name": "LurosAppWidgets",
       "sources": [
         "Widgets/*.m"
       ],

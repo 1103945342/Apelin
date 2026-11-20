@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import CryptoKit
 import Foundation
 
@@ -50,7 +50,7 @@ struct DistributionPackage {
 
 /// The release packages the distribution page offers, read from the
 /// artifact records luros-build writes as mobile
-/// (`Builds/artifacts/<artifactID>.json`: `ArtifactRecord` in ApelinBuild,
+/// (`Builds/artifacts/<artifactID>.json`: `ArtifactRecord` in LurosBuild,
 /// which the app does not link), each file read back before it is offered.
 enum DistributionPackages {
     /// The fields of `ArtifactRecord` read here.
@@ -91,7 +91,7 @@ enum DistributionPackages {
         guard isWorkspace || package != nil else { return [:] }
         return await Task.detached { () -> [BuildBootstrap: DistributionPackage] in
             let releases = records().filter { record in
-                // ApelinProject's `ConfigurationName` spelling, not the wire's
+                // LurosProject's `ConfigurationName` spelling, not the wire's
                 record.projectID == projectID && record.configuration == "Release"
                     // An .ipa goes nowhere a package repository takes: only a
                     // deb is published, so it is not offered here.
@@ -132,10 +132,10 @@ enum DistributionPackages {
               let builds = CanonicalPath.resolve(buildsFolder.path),
               CanonicalPath.isCanonical(canonical, inside: builds)
         else {
-            throw ApelinError(.notFound, String(localized: "The package is no longer available. Build it again."))
+            throw LurosError(.notFound, String(localized: "The package is no longer available. Build it again."))
         }
         guard sha256(ofFileAt: canonical) == digest else {
-            throw ApelinError(.conflict, String(localized: "The package changed after it was built. Build it again before exporting."))
+            throw LurosError(.conflict, String(localized: "The package changed after it was built. Build it again before exporting."))
         }
         return URL(fileURLWithPath: canonical)
     }

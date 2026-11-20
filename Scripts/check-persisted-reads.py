@@ -13,7 +13,7 @@ Two shapes took users' data (issues #33 and the audit after #34):
    `?? [:]` or `?? SomeType()`. The empty value is what the next save writes,
    over every good entry: one toolchain record a version could not read
    unregistered all of them. Read lists with `PreservedList`, and set a file
-   that does not read aside with `UnreadableFile` (both in ApelinCore).
+   that does not read aside with `UnreadableFile` (both in LurosCore).
 
 A line, or the line above it, carrying `// persisted-read: <why>` passes:
 for data that is never written back from what was read, say so there.

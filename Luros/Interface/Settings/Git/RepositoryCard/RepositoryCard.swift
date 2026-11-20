@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import CoreImage.CIFilterBuiltins
 import UIKit
 

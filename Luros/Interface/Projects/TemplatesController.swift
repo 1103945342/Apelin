@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import UIKit
 
 /// The installed template catalog, shared by Settings and project creation.
@@ -55,7 +55,7 @@ final class TemplatesController: TableController {
             guard let self else { return }
             defer { refreshControl?.endRefreshing() }
             do {
-                let catalog = try await ApelinService.app.extensionList()
+                let catalog = try await LurosService.app.extensionList()
                 guard !Task.isCancelled else { return }
                 // Quarantined duplicate extensions remain visible in the catalog.
                 var occurrences: [String: Int] = [:]

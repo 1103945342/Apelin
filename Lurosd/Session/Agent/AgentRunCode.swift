@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Darwin
 import Foundation
 
@@ -124,22 +124,22 @@ enum AgentRunCode {
         switch spec {
         case let .argv(argv):
             guard let name = argv.first, !name.isEmpty else {
-                throw ApelinError(.badRequest, "shell_run needs an executable")
+                throw LurosError(.badRequest, "shell_run needs an executable")
             }
             guard argv.allSatisfy({ !CanonicalPath.containsNUL($0) }), argv.count <= maximumArguments else {
-                throw ApelinError(
+                throw LurosError(
                     .badRequest,
                     "shell_run takes at most \(maximumArguments) arguments, and none may contain a NUL byte",
                 )
             }
             if name.contains("/") {
                 guard let path = executableFile(name.hasPrefix("/") ? name : directory + "/" + name) else {
-                    throw ApelinError(.notFound, "\(name) is not an executable file")
+                    throw LurosError(.notFound, "\(name) is not an executable file")
                 }
                 return (path, argv)
             }
             guard let path = findExecutable(name, in: searched) else {
-                throw ApelinError(
+                throw LurosError(
                     .notFound,
                     "\(name) is not \(lookedIn): give the executable's path, or run a shell builtin with bash -c",
                 )
@@ -148,16 +148,16 @@ enum AgentRunCode {
         case let .script(interpreter, source):
             guard let flag = interpreters.first(where: { $0.name == interpreter })?.flag else {
                 let names = interpreters.map(\.name).joined(separator: ", ")
-                throw ApelinError(.badRequest, "\(interpreter) is not one of \(names)")
+                throw LurosError(.badRequest, "\(interpreter) is not one of \(names)")
             }
             guard !CanonicalPath.containsNUL(source), source.utf8.count <= maximumSourceBytes else {
-                throw ApelinError(
+                throw LurosError(
                     .badRequest,
                     "the script must not contain a NUL byte or be larger than \(maximumSourceBytes / 1024) KiB",
                 )
             }
             guard let path = findExecutable(interpreter, in: searched) else {
-                throw ApelinError(.notFound, "\(interpreter) is not \(lookedIn)")
+                throw LurosError(.notFound, "\(interpreter) is not \(lookedIn)")
             }
             return (path, [path, flag, source])
         }
@@ -171,11 +171,11 @@ enum AgentRunCode {
               let path = CanonicalPath.resolve(project + "/" + relative),
               CanonicalPath.isCanonical(path, inside: project)
         else {
-            throw ApelinError(.denied, "the working directory must stay inside the project")
+            throw LurosError(.denied, "the working directory must stay inside the project")
         }
         var metadata = stat()
         guard stat(path, &metadata) == 0, metadata.st_mode & S_IFMT == S_IFDIR else {
-            throw ApelinError(.notFound, "\(relative) is not a directory in the project")
+            throw LurosError(.notFound, "\(relative) is not a directory in the project")
         }
         return path
     }
@@ -191,7 +191,7 @@ enum AgentRunCode {
         stopsSeen: Int,
     ) async throws -> AgentRunCodeResponse {
         guard timeoutRange.contains(request.timeoutSeconds) else {
-            throw ApelinError(
+            throw LurosError(
                 .badRequest,
                 "timeoutSeconds must be \(timeoutRange.lowerBound)–\(timeoutRange.upperBound)",
             )
@@ -326,10 +326,10 @@ enum AgentRunCode {
     ) throws -> AgentRunCodeResponse {
         var out: [Int32] = [-1, -1]
         var err: [Int32] = [-1, -1]
-        guard pipe(&out) == 0 else { throw ApelinError(.internal, "pipe: \(String(cString: strerror(errno)))") }
+        guard pipe(&out) == 0 else { throw LurosError(.internal, "pipe: \(String(cString: strerror(errno)))") }
         guard pipe(&err) == 0 else {
             close(out[0]); close(out[1])
-            throw ApelinError(.internal, "pipe: \(String(cString: strerror(errno)))")
+            throw LurosError(.internal, "pipe: \(String(cString: strerror(errno)))")
         }
         for descriptor in out + err {
             _ = fcntl(descriptor, F_SETFD, FD_CLOEXEC)
@@ -348,7 +348,7 @@ enum AgentRunCode {
         posix_spawn_file_actions_adddup2(&actions, err[1], 2)
         guard spawnAddChdir(&actions, directory) == 0 else {
             [out[0], out[1], err[0], err[1]].forEach { close($0) }
-            throw ApelinError(.internal, "could not set shell_run's working directory")
+            throw LurosError(.internal, "could not set shell_run's working directory")
         }
 
         var everySignal = sigset_t()
@@ -370,7 +370,7 @@ enum AgentRunCode {
                 && spawnSetUID(&attributes, uid_t(WorkerRole.mobileUID)) == 0)
         else {
             [out[0], out[1], err[0], err[1]].forEach { close($0) }
-            throw ApelinError(.internal, "could not set mobile's identity for shell_run")
+            throw LurosError(.internal, "could not set mobile's identity for shell_run")
         }
 
         let started = Date()
@@ -384,7 +384,7 @@ enum AgentRunCode {
         close(err[1])
         guard status == 0 else {
             close(out[0]); close(err[0])
-            throw ApelinError(.internal, "posix_spawn \(executable): \(String(cString: strerror(status)))")
+            throw LurosError(.internal, "posix_spawn \(executable): \(String(cString: strerror(status)))")
         }
 
         let stdout = CappedReader(descriptor: out[0], cap: outputCap)

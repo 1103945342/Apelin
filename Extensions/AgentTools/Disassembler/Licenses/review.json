@@ -3,7 +3,7 @@
   "components": {
     "Luros": {
       "license": "MIT",
-      "covers": "ApelinToolHost, MachOReader and the extensions' own code",
+      "covers": "LurosToolHost, MachOReader and the extensions' own code",
       "files": {
         "LICENSE": {
           "sha256": "79b8af7a9877c42384ecc70ee213d554ec4ba0c65a029ff3e6af2fe045595523",

@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// The git service on a project, served by luros-environment (libgit2),
@@ -56,7 +56,7 @@ enum GitHandler: DomainHandler {
             // again, which the caller decides.
             return await host.startTask(request, kind: .environment, role: .environment, resumable: false)
         default:
-            return request.fail(ApelinError(.badRequest, "\(request.operation.rawValue) is not a git operation"))
+            return request.fail(LurosError(.badRequest, "\(request.operation.rawValue) is not a git operation"))
         }
     }
 
@@ -70,20 +70,20 @@ enum GitHandler: DomainHandler {
 
     /// An agent's git call acts on its own session's project and no other:
     /// a push carries the user's credential for the remote's host.
-    private static func agentScopeRefusal(_ request: HostRequest, sessionID: String?) async -> ApelinError? {
+    private static func agentScopeRefusal(_ request: HostRequest, sessionID: String?) async -> LurosError? {
         struct Scoped: Decodable { var projectID: String }
         guard let sessionID, let entry = await AgentSessionTable.shared.entry(sessionID) else {
-            return ApelinError(.denied, "no agent session for this worker")
+            return LurosError(.denied, "no agent session for this worker")
         }
         guard let scoped = try? JSONCoding.decode(Scoped.self, from: request.request.payload) else {
-            return ApelinError(.badRequest, "\(request.operation.rawValue) names no project")
+            return LurosError(.badRequest, "\(request.operation.rawValue) names no project")
         }
         // A request may name a folder inside its project — a repository the
         // workspace keeps there — and that is still the same project.
         guard [entry.project.id, entry.project.name].contains(where: {
             scoped.projectID == $0 || scoped.projectID.hasPrefix($0 + "/")
         }) else {
-            return ApelinError(.denied, "an agent's git call acts only on its own project")
+            return LurosError(.denied, "an agent's git call acts only on its own project")
         }
         return nil
     }

@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import UIKit
 
 /// One skill from Settings ▸ Skills: its description, the instructions the

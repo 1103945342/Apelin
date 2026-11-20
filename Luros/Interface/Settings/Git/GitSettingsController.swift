@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import SPIndicator
 import Then
 import UIKit
@@ -141,9 +141,9 @@ final class GitSettingsController: TableController {
         dataSource.beginLoad()
         loader = Task { [weak self] in
             do {
-                let answer = try await ApelinService.app.gitSettings()
+                let answer = try await LurosService.app.gitSettings()
                 // the link needs no network; a failure leaves it unknown
-                let link = try? await ApelinService.app.distributionRepositoryList(repositories: false).linked
+                let link = try? await LurosService.app.distributionRepositoryList(repositories: false).linked
                 guard !Task.isCancelled, let self else { return }
                 showAuthor(of: answer)
                 settings = answer
@@ -223,7 +223,7 @@ final class GitSettingsController: TableController {
         updateControls()
         Task { [weak self] in
             do {
-                try await ApelinService.app.gitAuthorSet(
+                try await LurosService.app.gitAuthorSet(
                     name: name.isEmpty ? nil : name,
                     email: email.isEmpty ? nil : email,
                 )
@@ -272,7 +272,7 @@ final class GitSettingsController: TableController {
     @objc private dynamic func remove(host: String) {
         Task { [weak self] in
             do {
-                try await ApelinService.app.gitCredentialRemove(host: host)
+                try await LurosService.app.gitCredentialRemove(host: host)
                 SPIndicator.present(title: String(localized: "Removed"), preset: .done, haptic: .success)
             } catch {
                 self?.presentNotice(title: "Unable to Remove Credential", message: error.readableMessage)

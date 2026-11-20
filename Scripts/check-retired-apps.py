@@ -23,7 +23,7 @@ What counts as a runtime reference, and what does not:
 Attribution is not a reference: a comment that says a module was ported from
 Fila, or a design token taken from iGhostVT, names no URL, no bundle
 identifier and no dependency, and passes. Test fixtures under `Tests/` and
-the sample crash reports under `Packages/ApelinDiagnostics/Tests/` are data,
+the sample crash reports under `Packages/LurosDiagnostics/Tests/` are data,
 not the app reaching for anything.
 
 Usage: check-retired-apps.py [<root>]

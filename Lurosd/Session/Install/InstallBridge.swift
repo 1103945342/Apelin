@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import CryptoKit
 import Darwin
 import Foundation
@@ -71,7 +71,7 @@ actor InstallBridge {
 
     func install(_ request: InstallPackageRequest, caller: Caller) async throws -> TaskHandle {
         guard let digest = InstallDigest.normalized(request.digest) else {
-            throw ApelinError(.badRequest, "digest must be the package's SHA-256: 64 hex digits")
+            throw LurosError(.badRequest, "digest must be the package's SHA-256: 64 hex digits")
         }
 
         // What is being installed, and who says so.
@@ -84,30 +84,30 @@ actor InstallBridge {
             // luros-environment's local toolchain package (or the app
             // reinstalling it): `Environment/Artifacts/<artifactID>.deb`.
             guard caller == .app || caller.isEnvironment else {
-                throw ApelinError(.denied, "a toolchain package is installed by the environment worker or the app")
+                throw LurosError(.denied, "a toolchain package is installed by the environment worker or the app")
             }
             origin = .environment
             source = paths.dataFolder + "/Environment/Artifacts/" + request.artifactID + ".deb"
             expectedPackage = ManagedPackagePolicy.toolchainPrefix + toolchain
         } else if request.artifactID.hasPrefix("file:") {
             guard caller == .app else {
-                throw ApelinError(.denied, "only the app installs a file; the agent installs build artifacts")
+                throw LurosError(.denied, "only the app installs a file; the agent installs build artifacts")
             }
             let relative = String(request.artifactID.dropFirst(5))
             guard CanonicalPath.isPlainRelative(relative) else {
-                throw ApelinError(.badRequest, "file: takes a path inside ~/Documents/com.fluoxetine.luros")
+                throw LurosError(.badRequest, "file: takes a path inside ~/Documents/com.fluoxetine.luros")
             }
             origin = .file
             source = paths.dataFolder + "/" + relative
         } else {
             guard let found = await artifacts.artifact(request.artifactID) else {
-                throw ApelinError(.notFound, "no build produced artifact \(request.artifactID)")
+                throw LurosError(.notFound, "no build produced artifact \(request.artifactID)")
             }
             guard found.digest == digest else {
-                throw ApelinError(.conflict, "artifact \(request.artifactID) is \(found.digest), not \(digest)")
+                throw LurosError(.conflict, "artifact \(request.artifactID) is \(found.digest), not \(digest)")
             }
             guard caller == .app || caller.isAgent else {
-                throw ApelinError(.denied, "build artifacts are installed by the app or the agent")
+                throw LurosError(.denied, "build artifacts are installed by the app or the agent")
             }
             // An `.ipa` is an app, not a package: it is unpacked and put on
             // the device here, and dpkg never sees it.
@@ -136,7 +136,7 @@ actor InstallBridge {
         do {
             let stagedDigest = try stage(from: source, to: staged)
             guard stagedDigest == digest else {
-                throw ApelinError(
+                throw LurosError(
                     .conflict,
                     "the package's SHA-256 is \(stagedDigest), not \(digest); it changed after it was approved",
                 )
@@ -153,7 +153,7 @@ actor InstallBridge {
         case let (control?, expected):
             if let expected, expected != control.packageID {
                 unlink(staged.path)
-                throw ApelinError(
+                throw LurosError(
                     .conflict,
                     "the package was expected to be \(expected); its control file says \(control.packageID)",
                 )
@@ -168,7 +168,7 @@ actor InstallBridge {
             version = artifact?.version ?? ""
         default:
             unlink(staged.path)
-            throw ApelinError(
+            throw LurosError(
                 .badRequest,
                 "the package's control file could not be read (gzip, xz or uncompressed control members only)",
             )
@@ -247,16 +247,16 @@ actor InstallBridge {
     }
 
     private func checkAgentInstall(artifact: ArtifactRegistry.Artifact?, session: String?) async throws {
-        guard let artifact else { throw ApelinError(.denied, "the agent installs build artifacts only") }
+        guard let artifact else { throw LurosError(.denied, "the agent installs build artifacts only") }
         guard await approvals.mode(session: session).asks else { return }
         guard let project = artifact.projectID, let packaging = artifact.packagingDigest else {
-            throw ApelinError(
+            throw LurosError(
                 .denied,
                 "approval required: the build recorded no packaging digest for \(artifact.artifactID), so the host cannot tell it matches the template",
             )
         }
         guard try await approvals.allows(packaging, kind: .packaging, project: project) else {
-            throw ApelinError(
+            throw LurosError(
                 .denied,
                 "approval required: the packaging description \(packaging) of project \(project) changed since the template and was never approved",
             )
@@ -285,7 +285,7 @@ actor InstallBridge {
             if record.status == .staged {
                 let descriptor = open(staged.path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC)
                 guard descriptor >= 0 else {
-                    throw ApelinError(.internal, "The package to install could not be found. Install it again.")
+                    throw LurosError(.internal, "The package to install could not be found. Install it again.")
                 }
                 defer { close(descriptor) }
                 let status = try await withServiceGrace {
@@ -444,7 +444,7 @@ actor InstallBridge {
             let staged = workspace.appendingPathComponent("package.ipa")
             let stagedDigest = try stage(from: artifact.path, to: staged)
             guard stagedDigest == record.artifactDigest else {
-                throw ApelinError(
+                throw LurosError(
                     .conflict,
                     "the .ipa's SHA-256 is \(stagedDigest), not \(record.artifactDigest); it changed after it was approved",
                 )
@@ -463,7 +463,7 @@ actor InstallBridge {
                     attributes: [.posixPermissions: 0o755]
                 )
             } catch {
-                throw ApelinError(.internal, "\(layout.applications) could not be made")
+                throw LurosError(.internal, "\(layout.applications) could not be made")
             }
 
             // What holds the path decides whether this goes in, takes the
@@ -485,7 +485,7 @@ actor InstallBridge {
             case let .replace(adopt):
                 adopting = adopt
             case let .refuse(why):
-                throw ApelinError(.conflict, why)
+                throw LurosError(.conflict, why)
             }
 
             // Signed where it lies in staging, then read back: the bundle that
@@ -530,7 +530,7 @@ actor InstallBridge {
             }
             try ApplicationInstall.register(destination, layout: layout, installRoot: paths.installRoot)
             guard registeredBundle(bundle.bundleID, at: destination.path, layout: layout) else {
-                throw ApelinError(
+                throw LurosError(
                     .internal,
                     "LaunchServices did not list \(bundle.bundleID) at \(destination.path) after registering it"
                 )
@@ -665,7 +665,7 @@ actor InstallBridge {
                     )
                 }
                 guard Self.removeTree(URL(fileURLWithPath: bundlePath), inside: layout.applications) else {
-                    throw ApelinError(.denied, "\(bundlePath) is not inside \(layout.applications)")
+                    throw LurosError(.denied, "\(bundlePath) is not inside \(layout.applications)")
                 }
                 // Every other record of this bundle named the app this
                 // removal took away — an earlier install under a root the
@@ -781,10 +781,10 @@ actor InstallBridge {
 
     func remove(_ request: RemovePackageRequest, caller: Caller) async throws -> TaskHandle {
         guard InstallationStore.validID(request.installationID) else {
-            throw ApelinError(.badRequest, "an installation ID is the lowercase UUID returned by the install")
+            throw LurosError(.badRequest, "an installation ID is the lowercase UUID returned by the install")
         }
         guard let existing = await installations.record(request.installationID) else {
-            throw ApelinError(.notFound, "no installation \(request.installationID)")
+            throw LurosError(.notFound, "no installation \(request.installationID)")
         }
         if existing.application == nil {
             try await ManagedPackagePolicy.checkRemoval(
@@ -793,13 +793,13 @@ actor InstallBridge {
                 records: installations.all(),
             )
         } else if existing.status == .superseded {
-            throw ApelinError(
+            throw LurosError(
                 .denied,
                 "A later install of \(existing.packageID) took this app's place. Remove that installation instead.",
             )
         } else {
             guard existing.status == .installed else {
-                throw ApelinError(.denied, "This app is not installed, or it is still being installed or removed.")
+                throw LurosError(.denied, "This app is not installed, or it is still being installed or removed.")
             }
         }
         var record = existing
@@ -810,7 +810,7 @@ actor InstallBridge {
             guard let session,
                   await approvals.takeRemoval(installationID: record.installationID, session: session)
             else {
-                throw ApelinError(
+                throw LurosError(
                     .denied,
                     "approval required: removing \(record.packageID) needs the user's approval for this removal",
                 )
@@ -928,22 +928,22 @@ actor InstallBridge {
             case .build:
                 return
             case .environment:
-                throw ApelinError(.denied, "Luros's toolchain packages are removed in Settings, not by the agent.")
+                throw LurosError(.denied, "Luros's toolchain packages are removed in Settings, not by the agent.")
             case .file:
-                throw ApelinError(
+                throw LurosError(
                     .denied,
                     "This package was installed from a file, not by a project's build, so the agent cannot remove it. Remove it with your preferred package manager.",
                 )
             }
         case .worker(.environment, _):
             guard record.origin == .environment else {
-                throw ApelinError(
+                throw LurosError(
                     .denied,
                     "the environment worker removes the toolchain packages it installed, nothing else",
                 )
             }
         case .worker:
-            throw ApelinError(.denied, "removePackage is not available to this caller")
+            throw LurosError(.denied, "removePackage is not available to this caller")
         }
     }
 
@@ -981,7 +981,7 @@ actor InstallBridge {
                     guard record.status == .installed,
                           FileManager.default.fileExists(atPath: application.path(under: applications))
                     else {
-                        throw ApelinError(.conflict, "This app is no longer on the device.")
+                        throw LurosError(.conflict, "This app is no longer on the device.")
                     }
                 } else {
                     try ManagedPackagePolicy.checkRemoval(record, installed: installed, records: records)
@@ -1038,10 +1038,10 @@ actor InstallBridge {
         guard let app = listed.first(where: { $0.bundleID == request.bundleID && $0.path == request.path })
             ?? listed.first(where: { $0.bundleID == request.bundleID && request.path == nil })
         else {
-            throw ApelinError(.notFound, "This app is no longer on the device.")
+            throw LurosError(.notFound, "This app is no longer on the device.")
         }
         guard app.removable else {
-            throw ApelinError(.denied, app.reason ?? "This app cannot be removed from here.")
+            throw LurosError(.denied, app.reason ?? "This app cannot be removed from here.")
         }
         let layout = ApplicationInstall.Layout(installRoot: paths.installRoot)
         // The registration, by the path LaunchServices names — for a bundle
@@ -1051,7 +1051,7 @@ actor InstallBridge {
         }
         if let path = app.path {
             guard Self.removeTree(URL(fileURLWithPath: path), inside: layout.applications) else {
-                throw ApelinError(.denied, "\(path) is not inside \(layout.applications)")
+                throw LurosError(.denied, "\(path) is not inside \(layout.applications)")
             }
         }
         // Every record of this bundle says it is gone: the one this install
@@ -1207,7 +1207,7 @@ actor InstallBridge {
                 }
             }
             if let record = await registry.record(taskID), record.state.isTerminal {
-                throw ApelinError(.cancelled, "the task ended")
+                throw LurosError(.cancelled, "the task ended")
             }
             try? await Task.sleep(nanoseconds: UInt64(pollInterval * 1_000_000_000))
         }
@@ -1234,23 +1234,23 @@ actor InstallBridge {
         } catch let error as InstallServiceError {
             switch error.code {
             case .unavailable, .interrupted:
-                throw ApelinError(
+                throw LurosError(
                     .unavailable,
                     "Irisin is not responding. Make sure Irisin \(InstallServiceRequirement.minimumIrisin) or later is installed, then try again.",
                 )
-            default: throw ApelinError(.unavailable, Self.message(error))
+            default: throw LurosError(.unavailable, Self.message(error))
             }
         }
         let missing = InstallServiceRequirement.capabilities.subtracting(info.capabilities)
         guard missing.isEmpty else {
             NSLog("lurosd-session: irisind lacks %@", missing.sorted().joined(separator: ", "))
-            throw ApelinError(
+            throw LurosError(
                 .unavailable,
                 "This version of Irisin cannot install packages for Luros. Update Irisin, then try again.",
             )
         }
         guard Self.sameRoot(info.installRoot, paths.installRoot) else {
-            throw ApelinError(
+            throw LurosError(
                 .unavailable,
                 "Irisin installs to \(info.installRoot), but Luros is installed in \(paths.installRoot). Make sure Luros and Irisin are installed in the same location, then try again.",
             )
@@ -1266,9 +1266,9 @@ actor InstallBridge {
     /// goes; answers the copy's digest. The source must be a regular file
     /// whose open descriptor still lies inside the data folder.
     private func stage(from source: String, to staged: URL) throws -> String {
-        guard !CanonicalPath.containsNUL(source) else { throw ApelinError(.badRequest, "the path contains a NUL byte") }
+        guard !CanonicalPath.containsNUL(source) else { throw LurosError(.badRequest, "the path contains a NUL byte") }
         let input = open(source, O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC)
-        guard input >= 0 else { throw ApelinError(.notFound, "\(source): \(String(cString: strerror(errno)))") }
+        guard input >= 0 else { throw LurosError(.notFound, "\(source): \(String(cString: strerror(errno)))") }
         defer { close(input) }
         // Where the descriptor actually is, after every link in the path was
         // followed: a mobile-writable folder swapped for a link cannot send
@@ -1276,14 +1276,14 @@ actor InstallBridge {
         guard let opened = FileScopes.descriptorPath(input), let folder = CanonicalPath.resolve(paths.dataFolder),
               CanonicalPath.isCanonical(opened, inside: folder)
         else {
-            throw ApelinError(.denied, "an artifact lives inside ~/Documents/com.fluoxetine.luros")
+            throw LurosError(.denied, "an artifact lives inside ~/Documents/com.fluoxetine.luros")
         }
         var metadata = stat()
         guard fstat(input, &metadata) == 0, metadata.st_mode & S_IFMT == S_IFREG else {
-            throw ApelinError(.badRequest, "\(source) is not a regular file")
+            throw LurosError(.badRequest, "\(source) is not a regular file")
         }
         guard metadata.st_size > 0, Int64(metadata.st_size) <= Self.maximumPackageBytes else {
-            throw ApelinError(.badRequest, "a package must be 1 byte to \(Self.maximumPackageBytes >> 30) GiB")
+            throw LurosError(.badRequest, "a package must be 1 byte to \(Self.maximumPackageBytes >> 30) GiB")
         }
         try FileManager.default.createDirectory(
             at: paths.staging,
@@ -1291,7 +1291,7 @@ actor InstallBridge {
             attributes: [.posixPermissions: 0o700],
         )
         let output = open(staged.path, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0o600)
-        guard output >= 0 else { throw ApelinError(.internal, "staging: \(String(cString: strerror(errno)))") }
+        guard output >= 0 else { throw LurosError(.internal, "staging: \(String(cString: strerror(errno)))") }
         defer { close(output) }
         var hash = SHA256()
         let size = 1 << 20
@@ -1304,7 +1304,7 @@ actor InstallBridge {
                 continue
             }
             guard count >= 0 else {
-                throw ApelinError(.internal, "reading \(source): \(String(cString: strerror(errno)))")
+                throw LurosError(.internal, "reading \(source): \(String(cString: strerror(errno)))")
             }
             if count == 0 {
                 break
@@ -1316,28 +1316,28 @@ actor InstallBridge {
                 if result < 0, errno == EINTR {
                     continue
                 }
-                guard result > 0 else { throw ApelinError(.internal, "staging: \(String(cString: strerror(errno)))") }
+                guard result > 0 else { throw LurosError(.internal, "staging: \(String(cString: strerror(errno)))") }
                 written += result
             }
             offset += off_t(count)
             guard Int64(offset) <= Self.maximumPackageBytes else {
-                throw ApelinError(.badRequest, "a package is at most \(Self.maximumPackageBytes >> 30) GiB")
+                throw LurosError(.badRequest, "a package is at most \(Self.maximumPackageBytes >> 30) GiB")
             }
         }
-        guard fsync(output) == 0 else { throw ApelinError(.internal, "staging: \(String(cString: strerror(errno)))") }
+        guard fsync(output) == 0 else { throw LurosError(.internal, "staging: \(String(cString: strerror(errno)))") }
         return hash.finalize().map { String(format: "%02x", $0) }.joined()
     }
 
     private func readControl(_ staged: URL) throws -> DebControlPeek.Control? {
         let descriptor = open(staged.path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC)
         guard descriptor >= 0 else {
-            throw ApelinError(.internal, "The package to install could not be found. Install it again.")
+            throw LurosError(.internal, "The package to install could not be found. Install it again.")
         }
         defer { close(descriptor) }
         do {
             return try DebControlPeek.read(descriptor: descriptor)
         } catch DebControlPeek.Failure.notADebian {
-            throw ApelinError(.badRequest, "the artifact is not a Debian package")
+            throw LurosError(.badRequest, "the artifact is not a Debian package")
         } catch {
             return nil
         }
@@ -1404,7 +1404,7 @@ actor InstallBridge {
     }
 
     private static func message(_ error: Error) -> String {
-        if let error = error as? ApelinError {
+        if let error = error as? LurosError {
             return error.message.isEmpty ? error.code.rawValue : error.message
         }
         if let error = error as? InstallServiceError {

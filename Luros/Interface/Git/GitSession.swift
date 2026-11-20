@@ -1,9 +1,9 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// One changed path, as the page lists it. The wire's own name is spelled
-/// here so the page can be written without importing `ApelinProtocol`, whose
+/// here so the page can be written without importing `LurosProtocol`, whose
 /// `UIAction` would stand in for UIKit's at every button.
 typealias GitEntry = GitStatusEntry
 typealias GitStatus = GitStatusResponse
@@ -107,8 +107,8 @@ final class GitSession {
             onChange?()
         }
         do {
-            status = try await ApelinService.app.gitStatus(projectID: scopeID)
-            branches = try await ApelinService.app.gitBranches(projectID: scopeID)
+            status = try await LurosService.app.gitStatus(projectID: scopeID)
+            branches = try await LurosService.app.gitBranches(projectID: scopeID)
             failure = nil
             isNotARepository = false
         } catch {
@@ -120,7 +120,7 @@ final class GitSession {
     /// The status alone — what a stage or an unstage changes.
     func reloadStatus() async {
         do {
-            status = try await ApelinService.app.gitStatus(projectID: scopeID)
+            status = try await LurosService.app.gitStatus(projectID: scopeID)
             failure = nil
             isNotARepository = false
         } catch {
@@ -131,7 +131,7 @@ final class GitSession {
 
     func reloadBranches() async {
         do {
-            branches = try await ApelinService.app.gitBranches(projectID: scopeID)
+            branches = try await LurosService.app.gitBranches(projectID: scopeID)
             failure = nil
         } catch {
             failure = error.readableMessage
@@ -141,7 +141,7 @@ final class GitSession {
 
     func reloadStashes() async {
         do {
-            stashes = try await ApelinService.app.gitStashList(projectID: scopeID).stashes
+            stashes = try await LurosService.app.gitStashList(projectID: scopeID).stashes
         } catch {
             stashes = []
         }
@@ -150,7 +150,7 @@ final class GitSession {
     /// The first page of commits, replacing whatever was there.
     func reloadCommits() async {
         do {
-            let page = try await ApelinService.app.gitLog(
+            let page = try await LurosService.app.gitLog(
                 projectID: scopeID, limit: Self.commitPageSize, skip: 0,
             )
             commits = page.commits
@@ -167,7 +167,7 @@ final class GitSession {
     func loadMoreCommits() async -> Bool {
         guard hasMoreCommits else { return false }
         do {
-            let page = try await ApelinService.app.gitLog(
+            let page = try await LurosService.app.gitLog(
                 projectID: scopeID, limit: Self.commitPageSize, skip: commits.count,
             )
             let known = Set(commits.map(\.id))
@@ -186,15 +186,15 @@ final class GitSession {
 
     /// The two whole texts of one file, for the line-by-line page.
     func fileVersions(path: String, staged: Bool) async throws -> GitFileVersionsResponse {
-        try await ApelinService.app.gitFileVersions(projectID: scopeID, path: path, staged: staged)
+        try await LurosService.app.gitFileVersions(projectID: scopeID, path: path, staged: staged)
     }
 
     func commitDetail(_ commit: String) async throws -> GitCommitDetailResponse {
-        try await ApelinService.app.gitCommitDetail(projectID: scopeID, commit: commit)
+        try await LurosService.app.gitCommitDetail(projectID: scopeID, commit: commit)
     }
 
     func commitFileVersions(commit: String, path: String) async throws -> GitFileVersionsResponse {
-        let detail = try await ApelinService.app.gitCommitFileDiff(
+        let detail = try await LurosService.app.gitCommitFileDiff(
             projectID: scopeID, commit: commit, path: path,
         )
         return Self.versions(fromPatch: detail.diff)
@@ -203,7 +203,7 @@ final class GitSession {
     // MARK: - Staging and committing
 
     func stage(_ paths: [String]) async {
-        await perform { try await ApelinService.app.gitStage(projectID: self.scopeID, paths: paths) }
+        await perform { try await LurosService.app.gitStage(projectID: self.scopeID, paths: paths) }
     }
 
     /// Every path the work tree holds a change for. The protocol stages a
@@ -215,7 +215,7 @@ final class GitSession {
     }
 
     func unstage(_ paths: [String]) async {
-        await perform { try await ApelinService.app.gitUnstage(projectID: self.scopeID, paths: paths) }
+        await perform { try await LurosService.app.gitUnstage(projectID: self.scopeID, paths: paths) }
     }
 
     func unstageAll() async {
@@ -227,21 +227,21 @@ final class GitSession {
     /// Puts a path back: `head` drops both the staged and the work-tree
     /// change, `index` only what is not staged.
     func restore(_ paths: [String], source: GitRestoreRequest.Source) async {
-        await perform { try await ApelinService.app.gitRestore(projectID: self.scopeID, paths: paths, source: source) }
+        await perform { try await LurosService.app.gitRestore(projectID: self.scopeID, paths: paths, source: source) }
     }
 
     func deleteUntracked(_ paths: [String]) async {
-        await perform { try await ApelinService.app.gitDeletePaths(projectID: self.scopeID, paths: paths) }
+        await perform { try await LurosService.app.gitDeletePaths(projectID: self.scopeID, paths: paths) }
     }
 
     func ignore(_ pattern: String) async {
-        await perform { _ = try await ApelinService.app.gitIgnoreAppend(projectID: self.scopeID, pattern: pattern) }
+        await perform { _ = try await LurosService.app.gitIgnoreAppend(projectID: self.scopeID, pattern: pattern) }
     }
 
     /// Commits the index with `message`; `all` stages every change first, as
     /// `git add --all` does, and `amend` rewrites HEAD's commit instead.
     func commit(message: String, all: Bool = false, amend: Bool = false) async throws {
-        _ = try await ApelinService.app.gitCommit(GitCommitRequest(
+        _ = try await LurosService.app.gitCommit(GitCommitRequest(
             projectID: scopeID,
             message: message,
             all: all ? true : nil,
@@ -254,7 +254,7 @@ final class GitSession {
     // MARK: - Branches, tags and merges
 
     func createBranch(name: String, startPoint: String?, checkout: Bool) async throws {
-        _ = try await ApelinService.app.gitBranchCreate(GitBranchCreateRequest(
+        _ = try await LurosService.app.gitBranchCreate(GitBranchCreateRequest(
             projectID: scopeID, name: name, startPoint: startPoint, checkout: checkout,
         ))
         await reload()
@@ -263,7 +263,7 @@ final class GitSession {
 
     func checkout(_ branch: GitBranchRow) async throws {
         let (remote, name) = Self.split(branch)
-        _ = try await ApelinService.app.gitBranchCheckout(GitBranchCheckoutRequest(
+        _ = try await LurosService.app.gitBranchCheckout(GitBranchCheckoutRequest(
             projectID: scopeID, name: name, remote: remote,
         ))
         await reload()
@@ -275,7 +275,7 @@ final class GitSession {
         let short = remote
             ? name.split(separator: "/").dropFirst().joined(separator: "/")
             : name
-        _ = try await ApelinService.app.gitBranchCheckout(GitBranchCheckoutRequest(
+        _ = try await LurosService.app.gitBranchCheckout(GitBranchCheckoutRequest(
             projectID: scopeID, name: short, remote: remoteName,
         ))
         await reload()
@@ -284,21 +284,21 @@ final class GitSession {
 
     func deleteBranch(_ branch: GitBranchRow) async throws {
         let (remote, name) = Self.split(branch)
-        _ = try await ApelinService.app.gitBranchDelete(GitBranchDeleteRequest(
+        _ = try await LurosService.app.gitBranchDelete(GitBranchDeleteRequest(
             projectID: scopeID, name: name, remote: remote,
         ))
         await reload()
     }
 
     func renameBranch(from: String, to: String) async throws {
-        _ = try await ApelinService.app.gitBranchRename(GitBranchRenameRequest(
+        _ = try await LurosService.app.gitBranchRename(GitBranchRenameRequest(
             projectID: scopeID, from: from, to: to,
         ))
         await reload()
     }
 
     func merge(_ branch: String, noFastForward: Bool) async throws -> GitMergeResponse {
-        let answer = try await ApelinService.app.gitMerge(GitMergeRequest(
+        let answer = try await LurosService.app.gitMerge(GitMergeRequest(
             projectID: scopeID, branch: branch, noFastForward: noFastForward,
         ))
         await reload()
@@ -307,12 +307,12 @@ final class GitSession {
     }
 
     func abortMerge() async throws {
-        try await ApelinService.app.gitMergeAbort(projectID: scopeID)
+        try await LurosService.app.gitMergeAbort(projectID: scopeID)
         await reload()
     }
 
     func createTag(name: String, commit: String?, message: String?) async throws {
-        _ = try await ApelinService.app.gitTagCreate(GitTagCreateRequest(
+        _ = try await LurosService.app.gitTagCreate(GitTagCreateRequest(
             projectID: scopeID, name: name, commit: commit, message: message,
         ))
         await reload()
@@ -320,13 +320,13 @@ final class GitSession {
     }
 
     func deleteTag(_ name: String) async throws {
-        try await ApelinService.app.gitTagDelete(projectID: scopeID, name: name)
+        try await LurosService.app.gitTagDelete(projectID: scopeID, name: name)
         await reload()
         await reloadCommits()
     }
 
     func reset(to commit: String, mode: GitResetMode) async throws {
-        _ = try await ApelinService.app.gitReset(projectID: scopeID, commit: commit, mode: mode)
+        _ = try await LurosService.app.gitReset(projectID: scopeID, commit: commit, mode: mode)
         await reload()
         await reloadCommits()
     }
@@ -334,7 +334,7 @@ final class GitSession {
     // MARK: - Stashes
 
     func saveStash(message: String?, includeUntracked: Bool) async throws -> Bool {
-        let saved = try await ApelinService.app.gitStashSave(
+        let saved = try await LurosService.app.gitStashSave(
             projectID: scopeID, message: message, includeUntracked: includeUntracked,
         ).saved
         await reload()
@@ -342,7 +342,7 @@ final class GitSession {
     }
 
     func applyStash(_ stash: GitStashRow, pop: Bool) async throws -> [String] {
-        let conflicts = try await ApelinService.app.gitStashApply(
+        let conflicts = try await LurosService.app.gitStashApply(
             projectID: scopeID, index: stash.index, pop: pop,
         ).conflicts
         await reload()
@@ -350,12 +350,12 @@ final class GitSession {
     }
 
     func dropStash(_ stash: GitStashRow) async throws {
-        try await ApelinService.app.gitStashDrop(projectID: scopeID, index: stash.index)
+        try await LurosService.app.gitStashDrop(projectID: scopeID, index: stash.index)
         await reload()
     }
 
     func clearStashes() async throws {
-        try await ApelinService.app.gitStashClear(projectID: scopeID)
+        try await LurosService.app.gitStashClear(projectID: scopeID)
         await reload()
     }
 
@@ -363,17 +363,17 @@ final class GitSession {
 
     /// Starts a pull; the page follows the task it answers with.
     func pull() async throws -> TaskHandle {
-        try await ApelinService.app.gitPull(projectID: scopeID)
+        try await LurosService.app.gitPull(projectID: scopeID)
     }
 
     func push(branch: String, url: String? = nil) async throws -> TaskHandle {
-        try await ApelinService.app.gitPush(GitPushRequest(
+        try await LurosService.app.gitPush(GitPushRequest(
             projectID: scopeID, branch: branch, url: url,
         ))
     }
 
     func initialise() async throws {
-        _ = try await ApelinService.app.gitInit(projectID: projectName)
+        _ = try await LurosService.app.gitInit(projectID: projectName)
         isNotARepository = false
         await reload()
         await reloadCommits()
@@ -406,7 +406,7 @@ final class GitSession {
     /// Imports a repository into the workspace: the reference app's clone,
     /// which fills the folder that is there rather than making a new one.
     func cloneInto(url: String) async throws {
-        let handle = try await ApelinService.app.gitCloneInto(GitCloneIntoRequest(
+        let handle = try await LurosService.app.gitCloneInto(GitCloneIntoRequest(
             projectID: projectName, url: url, branch: nil,
         ))
         try await follow(handle)
@@ -434,7 +434,7 @@ final class GitSession {
     func follow(_ handle: TaskHandle) async throws {
         var terminal: TaskState = .failed
         var message: String?
-        for try await event in ApelinService.app.events(of: handle) {
+        for try await event in LurosService.app.events(of: handle) {
             guard event.kind == TaskEvent.stateKind else { continue }
             if let raw = event.payload?["state"]?.stringValue, let state = TaskState(rawValue: raw) {
                 terminal = state
@@ -450,7 +450,7 @@ final class GitSession {
 
     private func note(_ error: Error) {
         failure = error.readableMessage
-        if let error = error as? ApelinError,
+        if let error = error as? LurosError,
            error.code == .notFound,
            error.reason?.rawValue == "notARepository"
         {

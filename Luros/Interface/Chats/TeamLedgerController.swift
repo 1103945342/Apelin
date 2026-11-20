@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import UIKit
 
 /// The team of the conversation on the page, read-only: the conversations it
@@ -144,7 +144,7 @@ final class TeamLedgerController: UIViewController {
         loading = true
         defer { loading = false }
         do {
-            let answer = try await ApelinService.app.agentDelegation(
+            let answer = try await LurosService.app.agentDelegation(
                 AgentDelegationRequest(sessionID: sessionID, action: .read)
             )
             model = TeamLedgerModel(

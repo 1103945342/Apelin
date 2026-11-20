@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 
 /// Builds, served by luros-build. One process per build is the plan;
 /// pass a per-build `instance` to `startTask` when the worker is ready for it.
@@ -12,7 +12,7 @@ enum BuildHandler: DomainHandler {
         case .buildCancel:
             await host.cancel(request, BuildCancelRequest.self)
         default:
-            request.fail(ApelinError(.badRequest, "\(request.operation.rawValue) is not a build operation"))
+            request.fail(LurosError(.badRequest, "\(request.operation.rawValue) is not a build operation"))
         }
     }
 }

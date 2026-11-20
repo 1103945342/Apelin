@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import SPIndicator
 import Then
 import UIKit
@@ -92,7 +92,7 @@ final class SkillsController: TableController {
         dataSource.beginLoad()
         loader = Task { [weak self] in
             do {
-                let listing = try await ApelinService.app.agentSkillList()
+                let listing = try await LurosService.app.agentSkillList()
                 guard !Task.isCancelled, let self else { return }
                 show(listing)
                 if let check, let problem = listing.problems.first(where: { $0.location == check }) {

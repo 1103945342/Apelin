@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import SPIndicator
 import UIKit
 
@@ -32,7 +32,7 @@ final class DistributionRepositoryFlow {
                 return
             }
             // without the list (no network, say) the account is the owner
-            let answer = try? await ApelinService.app.distributionRepositoryList(repositories: true)
+            let answer = try? await LurosService.app.distributionRepositoryList(repositories: true)
             isPreparingCreation = false
             onLoadingChange(false)
             guard let account = answer?.account, let organizations = answer?.organizations, !organizations.isEmpty else {
@@ -90,7 +90,7 @@ final class DistributionRepositoryFlow {
                 work: .distributionCreate,
                 title: String(localized: "Creating Repository"),
                 doneTitle: String(localized: "Repository Ready"),
-            ) { try await ApelinService.app.distributionRepositoryCreate(name: name, owner: owner) }
+            ) { try await LurosService.app.distributionRepositoryCreate(name: name, owner: owner) }
         })
         presenter?.present(alert, animated: true)
     }
@@ -113,7 +113,7 @@ final class DistributionRepositoryFlow {
                 work: .distributionLink,
                 title: String(localized: "Linking Repository"),
                 doneTitle: String(localized: "Repository Linked"),
-            ) { try await ApelinService.app.distributionRepositoryLink(fullName: candidate.fullName) }
+            ) { try await LurosService.app.distributionRepositoryLink(fullName: candidate.fullName) }
         }
     }
 
@@ -130,7 +130,7 @@ final class DistributionRepositoryFlow {
                 work: .distributionLink,
                 title: String(localized: "Updating Repository"),
                 doneTitle: String(localized: "Repository Updated"),
-            ) { try await ApelinService.app.distributionRepositoryLink(fullName: repository.fullName, overwrite: true) }
+            ) { try await LurosService.app.distributionRepositoryLink(fullName: repository.fullName, overwrite: true) }
         }
     }
 
@@ -143,7 +143,7 @@ final class DistributionRepositoryFlow {
         ) { [weak self] in
             Task { [weak self] in
                 do {
-                    try await ApelinService.app.distributionRepositoryUnlink()
+                    try await LurosService.app.distributionRepositoryUnlink()
                     SPIndicator.present(title: String(localized: "Unlinked"), preset: .done, haptic: .success)
                 } catch {
                     self?.presenter?.presentNotice(title: "Unable to Unlink", message: error.readableMessage)

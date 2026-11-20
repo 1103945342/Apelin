@@ -9,13 +9,13 @@ page and it disagree.
 
 ## What the UI calls
 
-**`ApelinService`** (`Packages/ApelinKit/Sources/ApelinProtocol/Service/`)
+**`LurosService`** (`Packages/LurosKit/Sources/LurosProtocol/Service/`)
 is the only surface: one typed `async throws` method per `AppOperation`,
 defined beside its request and response types in `Operations/<Domain>.swift`.
-The app's binding is `ApelinService.app` (`Luros/Service/ApelinService.swift`,
+The app's binding is `LurosService.app` (`Luros/Service/LurosService.swift`,
 over `DaemonClient`); the console and the agent's tools call the same
 methods, so whatever the console scripts do, the UI can do the same way.
-Failures are `ApelinError` {code, message, reason?}: show `message` to
+Failures are `LurosError` {code, message, reason?}: show `message` to
 people, branch on `code` and `reason`, never on the text.
 
 Operations by area (the full list is `AGENTS.md` ▸ The wire):
@@ -121,7 +121,7 @@ host owns the task: it outlives the app, a respring and a host restart
 Lifecycle). Read it with the kind's attach operation, or simply:
 
 ```swift
-for try await event in ApelinService.app.events(of: handle, afterSeq: lastSeen) { … }
+for try await event in LurosService.app.events(of: handle, afterSeq: lastSeen) { … }
 ```
 
 Events are numbered from 1 with no gaps. Keep the last `seq` per task;
@@ -172,11 +172,11 @@ New since the last UI-facing change:
 
 A vphone or device without the package has no lurosd, so every screen
 above would show only *Connecting…* and then the unprivileged fallback.
-**`ApelinReplay`** (`Packages/ApelinKit/Sources/ApelinReplay`) fills that
-gap: `ReplayTransport` is an `ApelinTransport` that answers from real event
+**`LurosReplay`** (`Packages/LurosKit/Sources/LurosReplay`) fills that
+gap: `ReplayTransport` is an `LurosTransport` that answers from real event
 streams captured by the console on the iOS 26.4 roothide vphone, and
-`ApelinService.replay(try ReplayFixtures.bundled())` is an `ApelinService`
-over it. It depends on ApelinCore and ApelinProtocol only and is linked into
+`LurosService.replay(try ReplayFixtures.bundled())` is an `LurosService`
+over it. It depends on LurosCore and LurosProtocol only and is linked into
 nothing yet.
 
 What it holds (`Fixtures/`, about 110 KB; `replies.json` and one
@@ -212,13 +212,13 @@ returned.
 **Selecting it at runtime** — left for the UI phase, and never by build
 flag (`AGENTS.md` ▸ Hard rules: the backend is resolved at runtime):
 
-1. Link `ApelinReplay` into the app target in every configuration; Xcode
-   embeds its resource bundle (`ApelinKit_ApelinReplay.bundle`) beside the
+1. Link `LurosReplay` into the app target in every configuration; Xcode
+   embeds its resource bundle (`LurosKit_LurosReplay.bundle`) beside the
    other package bundles. The fixtures then ship in the app; check that
    `make deb` still passes the packager's repository-path grep.
-2. Where the app binds `ApelinService.app`, check one launch argument before
+2. Where the app binds `LurosService.app`, check one launch argument before
    the first `hello`: with `-luros-replay` (or `-luros-replay immediate`),
-   bind `ApelinService.replay(try ReplayFixtures.bundled(), pacing: …)`
+   bind `LurosService.replay(try ReplayFixtures.bundled(), pacing: …)`
    instead of `DaemonClient`. Its `hello` answers at once with the recorded
    install root, so the app takes the privileged path.
 3. Show that it is a replay (a badge in the connection state), so a
@@ -231,7 +231,7 @@ flag (`AGENTS.md` ▸ Hard rules: the backend is resolved at runtime):
 (`Documents/Console.md` ▸ Demo captures), copy `console/out/*.jsonl` into
 `<folder>/out/` and the scripts into `<folder>/scripts/`, run
 `Documents/Console/demo/make-replay-fixtures.py <folder>`, then `make
-harness`: `ApelinReplayTests` reads every fixture strictly through the
+harness`: `LurosReplayTests` reads every fixture strictly through the
 protocol types, so a fixture and the protocol cannot drift apart unnoticed.
 Read the diff before committing it.
 

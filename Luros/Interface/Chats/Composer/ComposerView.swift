@@ -1,7 +1,7 @@
 // Lakr233's Inhouse Code, from FlowDown.
 // I CAN DO WHAT THE FUCK I WANT.
 
-import ApelinProtocol
+import LurosProtocol
 import Combine
 import UIKit
 

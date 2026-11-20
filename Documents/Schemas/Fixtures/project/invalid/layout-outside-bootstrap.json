@@ -46,7 +46,7 @@
     {
       "id": "tweak",
       "type": "dylib",
-      "name": "ApelinTweak",
+      "name": "LurosTweak",
       "sources": [
         "Sources/*.m"
       ],

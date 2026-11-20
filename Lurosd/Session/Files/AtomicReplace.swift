@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Darwin
 import Foundation
 
@@ -30,7 +30,7 @@ enum AtomicReplace {
         var original = stat()
         guard fstat(existing, &original) == 0 else { throw failure("reading \(path)") }
         guard original.st_mode & S_IFMT == S_IFREG else {
-            throw ApelinError(.conflict, "\(path) is no longer a regular file")
+            throw LurosError(.conflict, "\(path) is no longer a regular file")
         }
         try requireUnchanged(original, expected, path)
 
@@ -81,7 +81,7 @@ enum AtomicReplace {
         var current = stat()
         guard fstatat(directory, name, &current, AT_SYMLINK_NOFOLLOW) == 0 else { throw failure("checking \(path)") }
         guard current.st_mode & S_IFMT == S_IFREG else {
-            throw ApelinError(.conflict, "\(path) is no longer a regular file")
+            throw LurosError(.conflict, "\(path) is no longer a regular file")
         }
         try requireUnchanged(current, expected, path)
 
@@ -101,11 +101,11 @@ enum AtomicReplace {
         guard now.device == expected.device, now.inode == expected.inode, now.size == expected.size,
               abs(now.modified - expected.modified) < 0.000_001
         else {
-            throw ApelinError(.conflict, "\(path) changed after it was opened; open it again")
+            throw LurosError(.conflict, "\(path) changed after it was opened; open it again")
         }
     }
 
-    private static func failure(_ step: String) -> ApelinError {
-        ApelinError(.internal, "\(step): \(String(cString: strerror(errno)))")
+    private static func failure(_ step: String) -> LurosError {
+        LurosError(.internal, "\(step): \(String(cString: strerror(errno)))")
     }
 }

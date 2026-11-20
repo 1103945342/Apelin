@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// An agent's forced push (git_push with force_with_lease, owner,
@@ -36,20 +36,20 @@ enum AgentForcePushRules {
     /// Nil when the session may push it, after spending the approval that
     /// covers it; else why not. A push without a lease passes: it is never
     /// forced.
-    static func authorize(_ push: GitPushRequest, session: String?, registry: TaskRegistry) async -> ApelinError? {
+    static func authorize(_ push: GitPushRequest, session: String?, registry: TaskRegistry) async -> LurosError? {
         guard let lease = push.forceWithLease else { return nil }
         guard let session, let entry = await AgentSessionTable.shared.entry(session) else {
-            return ApelinError(.denied, "no agent session for this worker")
+            return LurosError(.denied, "no agent session for this worker")
         }
         guard push.branch != nil, lease.localCommit != nil else {
-            return ApelinError(.badRequest, "an agent's forced push names its branch and the local commit it sends")
+            return LurosError(.badRequest, "an agent's forced push names its branch and the local commit it sends")
         }
         let covered = await AgentApprovals.spend(entry: entry, registry: registry) { asked in
             covers(push, lease: lease, project: entry.project.id, asked: asked)
         }
         guard covered else {
             let remote = push.remote ?? "origin"
-            return ApelinError(
+            return LurosError(
                 .denied,
                 "approval required, in every mode: the user has not approved overwriting \(remote)'s \(push.branch ?? "") at \(lease.expectedCommit) with \(lease.localCommit ?? "")",
             )

@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import Foundation
 
 /// Every terminal this app has opened, live or ended, and the records that let

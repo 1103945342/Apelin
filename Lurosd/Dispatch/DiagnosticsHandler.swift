@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 
 /// Load confirmation and UI verification, served by luros-diagnostics.
 /// A load check is a task the host owns, so the respring it may trigger —
@@ -17,7 +17,7 @@ enum DiagnosticsHandler: DomainHandler {
         case .uiAction:
             await forwardAction(request, host: host)
         default:
-            request.fail(ApelinError(
+            request.fail(LurosError(
                 .badRequest,
                 "\(request.operation.rawValue) is not a diagnostics operation",
             ))

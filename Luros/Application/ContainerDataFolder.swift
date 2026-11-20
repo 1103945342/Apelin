@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import Foundation
 
 /// The data folder 0.3.5 and earlier kept in the app's data container on

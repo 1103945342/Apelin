@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// Settings ▸ Plugins: the WeChat ClawBot channel. The host holds it
@@ -41,7 +41,7 @@ enum ChannelHandler: DomainHandler {
                 await host.channels.signOut()
             }
         default:
-            return request.fail(ApelinError(.badRequest, "\(request.operation.rawValue) is not a channel operation"))
+            return request.fail(LurosError(.badRequest, "\(request.operation.rawValue) is not a channel operation"))
         }
     }
 }
@@ -53,11 +53,11 @@ enum ChannelProjects {
     static func resolve(home: String, name: String?) throws -> String? {
         guard let name else { return nil }
         guard ProjectName.validate(name) == nil, let url = DataFolder(home: home).project(named: name) else {
-            throw ApelinError(.badRequest, "“\(name)” is not a project name.")
+            throw LurosError(.badRequest, "“\(name)” is not a project name.")
         }
         var isDirectory: ObjCBool = false
         guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory), isDirectory.boolValue else {
-            throw ApelinError(.notFound, "There is no project named “\(name)”.")
+            throw LurosError(.notFound, "There is no project named “\(name)”.")
         }
         return name
     }

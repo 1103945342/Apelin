@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Darwin
 import Foundation
 
@@ -30,11 +30,11 @@ final class SessionLink: @unchecked Sendable {
         do {
             let channel = try running()
             return try await channel.call(request, descriptors: descriptors)
-        } catch let error as ApelinError {
+        } catch let error as LurosError {
             return (.failure(request.requestID, error), [])
         } catch {
             return (
-                .failure(request.requestID, ApelinError(
+                .failure(request.requestID, LurosError(
                     .unavailable,
                     "Luros's background service is unavailable. \(error)",
                 )),
@@ -51,7 +51,7 @@ final class SessionLink: @unchecked Sendable {
             }
             // A host that keeps dying is not restarted in a tight loop.
             if let lastStart, Date().timeIntervalSince(lastStart) < 1 {
-                throw ApelinError(.unavailable, "Luros's background service stopped. Try again in a moment.")
+                throw LurosError(.unavailable, "Luros's background service stopped. Try again in a moment.")
             }
             lastStart = Date()
             let (local, remote) = try WorkerChannel.makePair()

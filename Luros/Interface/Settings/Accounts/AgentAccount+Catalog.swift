@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 
 /// How a model is written on screen.
 ///

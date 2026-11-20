@@ -114,7 +114,7 @@ final class AckProbe: @unchecked Sendable {
     func acknowledge(_ opener: String, _ event: String) async throws {
         let failing = recordAttempt()
         if failing {
-            throw ApelinError(.unavailable, "injected acknowledgement failure")
+            throw LurosError(.unavailable, "injected acknowledgement failure")
         }
     }
 

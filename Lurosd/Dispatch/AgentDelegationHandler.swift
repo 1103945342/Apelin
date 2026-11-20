@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 /// No worker-supplied plan is installed here. Only the verified opener can
@@ -9,7 +9,7 @@ enum AgentDelegationHandler {
             let action = try request.decode(AgentDelegationRequest.self)
             if request.caller == .app {
                 guard action.action == .read else {
-                    throw ApelinError(.denied, "Plan changes require the assignment's authenticated opener.")
+                    throw LurosError(.denied, "Plan changes require the assignment's authenticated opener.")
                 }
                 let record = try await host.delegations.record(action.sessionID)
                 return (.success(request.requestID, AgentDelegationResponse(
@@ -20,11 +20,11 @@ enum AgentDelegationHandler {
             guard case let .worker(.agent, caller?) = request.caller,
                   let entry = await AgentSessionTable.shared.entry(caller),
                   let task = await host.registry.record(entry.task.taskID), !task.state.isTerminal else {
-                throw ApelinError(.denied, "Only an agent session may update a delegation.")
+                throw LurosError(.denied, "Only an agent session may update a delegation.")
             }
             if action.action == .seal {
                 guard action.sessionID == caller, let revision = action.expectedRevision else {
-                    throw ApelinError(.denied, "Seal your own group using its current group revision.")
+                    throw LurosError(.denied, "Seal your own group using its current group revision.")
                 }
                 _ = try await host.assignments.seal(opener: caller, expectedRevision: revision)
                 await AgentReportRelay.shared.accountChanged(caller)
@@ -35,7 +35,7 @@ enum AgentDelegationHandler {
             if [.acceptAssignment, .cancelAssignment, .failAssignment].contains(action.action) {
                 guard let saved = try await host.delegations.record(action.sessionID),
                       saved.opener == caller, let revision = action.expectedRevision else {
-                    throw ApelinError(.denied, "Only the authenticated opener may dispose of this assignment, using its member revision.")
+                    throw LurosError(.denied, "Only the authenticated opener may dispose of this assignment, using its member revision.")
                 }
                 switch action.action {
                 case .acceptAssignment:
@@ -59,11 +59,11 @@ enum AgentDelegationHandler {
             if action.action != .read,
                let saved = try await host.delegations.record(action.sessionID) {
                 guard let member = try await host.assignments.assignment(child: saved.child, opener: saved.opener) else {
-                    throw ApelinError(.denied, "This brief has no assignment record. Repair the account before continuing.")
+                    throw LurosError(.denied, "This brief has no assignment record. Repair the account before continuing.")
                 }
                 if member.state.isTerminal,
                    action.action != .admit || action.tool.map({ AgentDelegationToolPolicy.effect(of: $0) == .fileWrite }) != false {
-                    throw ApelinError(.denied, "The assignment is \(member.state.rawValue); it authorises no further mutation.")
+                    throw LurosError(.denied, "The assignment is \(member.state.rawValue); it authorises no further mutation.")
                 }
             }
             if action.action == .admit,
@@ -71,7 +71,7 @@ enum AgentDelegationHandler {
                AgentDelegationToolPolicy.effect(of: tool) == .fileWrite {
                 guard caller == action.sessionID,
                       let record = try await host.delegations.record(caller), let path = action.path else {
-                    throw ApelinError(.denied, "File admission requires this child's brief and relative path.")
+                    throw LurosError(.denied, "File admission requires this child's brief and relative path.")
                 }
                 let project = try AgentProjects.resolve(home: host.home, projectID: record.projectID, projectName: nil)
                 do { try AgentDelegationPath.validate(path, projectRoot: project.path) }
@@ -105,7 +105,7 @@ enum AgentDelegationHandler {
             }
             return (.success(request.requestID, result), [])
         } catch let violation as AgentDelegationViolation {
-            return request.fail(ApelinError(.denied, violation.localizedDescription))
+            return request.fail(LurosError(.denied, violation.localizedDescription))
         } catch {
             return request.fail(error)
         }

@@ -1,6 +1,6 @@
 import AlertController
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import UIKit
 
 /// Actions for the project behind the current chat. Folder names are stable
@@ -75,7 +75,7 @@ enum ProjectActions {
     /// Both pages are Luros's own — the terminal (`TerminalPresenter`) and
     /// the file browser (`FileBrowserPresenter`) — so neither action needs
     /// another app installed. `UIKit.UIAction` is spelled out in types here:
-    /// ApelinProtocol has a `UIAction` of its own, the wire's.
+    /// LurosProtocol has a `UIAction` of its own, the wire's.
     static func folderActions(
         from presenter: UIViewController,
         failureTitle: String.LocalizationValue,
@@ -121,7 +121,7 @@ enum ProjectActions {
                 onConfirm: { [weak presenter] name in
                     Task { [weak presenter] in
                         do {
-                            _ = try await ApelinService.app.projectRename(.init(
+                            _ = try await LurosService.app.projectRename(.init(
                                 projectID: current?.projectID ?? projectName,
                                 displayName: name,
                             ))
@@ -141,11 +141,11 @@ enum ProjectActions {
               let path = CanonicalPath.resolve(folder.path),
               path == projects + "/" + name
         else {
-            throw ApelinError(.notFound, String(localized: "The project folder is no longer available."))
+            throw LurosError(.notFound, String(localized: "The project folder is no longer available."))
         }
         var isDirectory: ObjCBool = false
         guard FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory), isDirectory.boolValue else {
-            throw ApelinError(.notFound, String(localized: "The project folder is no longer available."))
+            throw LurosError(.notFound, String(localized: "The project folder is no longer available."))
         }
         return path
     }
@@ -163,7 +163,7 @@ enum ProjectActions {
               let path = CanonicalPath.resolve(folder.path),
               path == root + "/Temporary/" + id.uuidString
         else {
-            throw ApelinError(.notFound, String(localized: "The chat’s folder is not available."))
+            throw LurosError(.notFound, String(localized: "The chat’s folder is not available."))
         }
         return path
     }

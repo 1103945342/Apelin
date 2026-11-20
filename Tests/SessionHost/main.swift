@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Darwin
 import Foundation
 
@@ -32,13 +32,13 @@ func check(_ condition: @autoclosure () -> Bool, _ what: String, line: UInt = #l
     }
 }
 
-func expectError(_ what: String, code: ApelinError.Code? = nil, line: UInt = #line, _ body: () throws -> Void) {
+func expectError(_ what: String, code: LurosError.Code? = nil, line: UInt = #line, _ body: () throws -> Void) {
     checks += 1
     do {
         try body()
         failures += 1
         print("FAIL \(what): no error (line \(line))")
-    } catch let error as ApelinError {
+    } catch let error as LurosError {
         if let code, error.code != code {
             failures += 1
             print("FAIL \(what): \(error) (line \(line))")
@@ -54,7 +54,7 @@ func expectError(_ what: String, code: ApelinError.Code? = nil, line: UInt = #li
 @MainActor
 func expectErrorAsync(
     _ what: String,
-    code: ApelinError.Code? = nil,
+    code: LurosError.Code? = nil,
     line: UInt = #line,
     _ body: () async throws -> Void,
 ) async {
@@ -63,7 +63,7 @@ func expectErrorAsync(
         try await body()
         failures += 1
         print("FAIL \(what): no error (line \(line))")
-    } catch let error as ApelinError {
+    } catch let error as LurosError {
         if let code, error.code != code {
             failures += 1
             print("FAIL \(what): \(error) (line \(line))")
@@ -321,7 +321,7 @@ final class FakeTaskWorker: @unchecked Sendable {
                 try await host.call(request, taskID: record.id, resumed: true).0
             },
             recheck: { caller, _ in
-                refuse && caller.isAgent ? ApelinError(.denied, "approval required") : nil
+                refuse && caller.isAgent ? LurosError(.denied, "approval required") : nil
             },
         )
     }
@@ -2249,7 +2249,7 @@ do {
     do {
         _ = try await install.remove(RemovePackageRequest(installationID: older?.installationID ?? "-"), caller: .app)
         check(false, "a superseded installation is not removed")
-    } catch let error as ApelinError {
+    } catch let error as LurosError {
         check(error.code == .conflict && error.message.contains(newer?.installationID ?? "-"), "the refusal of a superseded installation names the newer one")
     }
     let everything = try await install.list(InstallationListRequest(), caller: lister)
@@ -2739,12 +2739,12 @@ do {
     func invocation(_ argv: [String], as identity: AgentRunCode.Identity = ordinary) throws -> (executable: String, argv: [String]) {
         try AgentRunCode.invocation(.argv(argv), as: identity, environment: environment, installRoot: "/", directory: lookupProject)
     }
-    func refusal(_ argv: [String], as identity: AgentRunCode.Identity = ordinary) -> ApelinError? {
+    func refusal(_ argv: [String], as identity: AgentRunCode.Identity = ordinary) -> LurosError? {
         do {
             _ = try invocation(argv, as: identity)
             return nil
         } catch {
-            return error as? ApelinError
+            return error as? LurosError
         }
     }
 
@@ -2858,7 +2858,7 @@ do {
         await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object(payload))
     }
     // What luros-agent puts in a shell_run request's `detail`: the command,
-    // as ApelinAgent's RunCodeInvocation encodes it (ApelinAgentWorker's
+    // as LurosAgent's RunCodeInvocation encodes it (LurosAgentWorker's
     // tests hold that shape).
     func command(_ invocation: String, _ value: JSONValue) -> JSONValue {
         .object(["command": .object([invocation: value])])
@@ -3002,7 +3002,7 @@ do {
         return entry
     }
     // What luros-agent writes into apelin_toolchain_setup's and apelin_sdk_import's
-    // approvalRequested `detail` (ApelinAgentWorker's tests hold that shape).
+    // approvalRequested `detail` (LurosAgentWorker's tests hold that shape).
     func ask(_ entry: AgentSessionTable.Entry, _ approvalID: String, tool: String, detail: JSONValue) async {
         await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object([
             "approvalID": .string(approvalID), "tool": .string(tool), "detail": detail,
@@ -3104,7 +3104,7 @@ do {
     )
     await sessions.add(entry)
     // What luros-agent writes into a workspace build's approvalRequested
-    // `detail` (ApelinAgentWorker's tests hold that shape): no bootstrap
+    // `detail` (LurosAgentWorker's tests hold that shape): no bootstrap
     // when the build names none.
     func ask(_ approvalID: String, configuration: String, bootstrap: String? = nil) async {
         var detail: [String: JSONValue] = [
@@ -3233,12 +3233,12 @@ do {
     project(data.root.appendingPathComponent("Temporary/\(temporary)", isDirectory: true), id: "temporary:\(temporary)")
     let homePath = CanonicalPath.resolve(home.path)!
 
-    func code(_ delete: ProjectDeleteRequest) -> ApelinError.Code? {
+    func code(_ delete: ProjectDeleteRequest) -> LurosError.Code? {
         do {
             _ = try AgentProjectDeleteRules.target(delete, home: homePath)
             return nil
         } catch {
-            return (error as? ApelinError)?.code ?? .internal
+            return (error as? LurosError)?.code ?? .internal
         }
     }
     let theirs = try? AgentProjectDeleteRules.target(ProjectDeleteRequest(projectID: "p-delete-theirs"), home: homePath)
@@ -3265,11 +3265,11 @@ do {
     }
     guard let target = theirs else { fatalError("no project to delete") }
     let strict = await session("delete-strict", mode: .confirm)
-    func authorized(_ entry: AgentSessionTable.Entry?, _ project: ResolvedProject = target) async -> ApelinError? {
+    func authorized(_ entry: AgentSessionTable.Entry?, _ project: ResolvedProject = target) async -> LurosError? {
         await AgentProjectDeleteRules.authorize(project, session: entry?.sessionID, registry: registry)
     }
     // What luros-agent writes into apelin_project_delete's approvalRequested
-    // (ApelinAgentWorker's tests hold that shape).
+    // (LurosAgentWorker's tests hold that shape).
     func ask(_ approvalID: String, tool: String = "apelin_project_delete", projectID: String = "p-delete-theirs", folder: String = "Theirs") async {
         await registry.append(strict.task.taskID, kind: "approvalRequested", payload: .object([
             "approvalID": .string(approvalID), "tool": .string(tool),
@@ -3352,7 +3352,7 @@ do {
     let strict = await session("feedback-strict", mode: .confirm)
     let feedback = FeedbackSendRequest(title: "The build log stops early", body: "It ends before the link step.")
     // What luros-agent writes into apelin_feedback_send's approvalRequested
-    // (ApelinAgentWorker's tests hold that shape).
+    // (LurosAgentWorker's tests hold that shape).
     func ask(_ approvalID: String, body: String, repository: String = FeedbackRules.repository) async {
         await registry.append(strict.task.taskID, kind: "approvalRequested", payload: .object([
             "approvalID": .string(approvalID), "tool": .string("apelin_feedback_send"),
@@ -3361,7 +3361,7 @@ do {
             ])]),
         ]))
     }
-    func authorized(_ entry: AgentSessionTable.Entry?) async -> ApelinError? {
+    func authorized(_ entry: AgentSessionTable.Entry?) async -> LurosError? {
         await AgentFeedbackRules.authorize(feedback, session: entry?.sessionID, registry: registry)
     }
     let unasked = await authorized(strict)
@@ -3421,7 +3421,7 @@ do {
         expectedBody: "It ends before the link step.",
     )
     // What luros-agent writes into apelin_feedback_edit's approvalRequested
-    // (ApelinAgentWorker's tests hold that shape): no title, since it stays.
+    // (LurosAgentWorker's tests hold that shape): no title, since it stays.
     func ask(
         _ approvalID: String,
         tool: String = "apelin_feedback_edit",
@@ -3444,7 +3444,7 @@ do {
         ]))
         await sessions.record(strict.sessionID, approvalID: approvalID, decision: .approve)
     }
-    func authorized(_ entry: AgentSessionTable.Entry?) async -> ApelinError? {
+    func authorized(_ entry: AgentSessionTable.Entry?) async -> LurosError? {
         await AgentFeedbackRules.authorize(edit, session: entry?.sessionID, registry: registry)
     }
     let unasked = await authorized(strict)
@@ -3501,7 +3501,7 @@ do {
     let strict = await session("repository-strict", mode: .confirm)
     let create = GitRepositoryCreateRequest(name: "clock-tweak", visibility: .private, description: "A clock in the status bar")
     // What luros-agent writes into apelin_git_create_repository's
-    // approvalRequested (ApelinAgentWorker's tests hold that shape).
+    // approvalRequested (LurosAgentWorker's tests hold that shape).
     func ask(_ approvalID: String, owner: String? = nil, visibility: String = "private") async {
         var detail: [String: JSONValue] = [
             "name": .string(create.name), "visibility": .string(visibility), "description": .string("A clock in the status bar"),
@@ -3514,7 +3514,7 @@ do {
             "detail": .object([AgentRepositoryCreateRules.detailKey: .object(detail)]),
         ]))
     }
-    func authorized(_ entry: AgentSessionTable.Entry?) async -> ApelinError? {
+    func authorized(_ entry: AgentSessionTable.Entry?) async -> LurosError? {
         await AgentRepositoryCreateRules.authorize(create, session: entry?.sessionID, registry: registry)
     }
     let unasked = await authorized(strict)
@@ -3570,7 +3570,7 @@ do {
         body: "Installing a package from the inbox stops at 90%.",
     )
     // What luros-agent writes into apelin_git_create_issue's
-    // approvalRequested (ApelinAgentWorker's tests hold that shape).
+    // approvalRequested (LurosAgentWorker's tests hold that shape).
     func ask(
         _ approvalID: String,
         tool: String = "apelin_git_create_issue",
@@ -3585,7 +3585,7 @@ do {
         ]))
         await sessions.record(strict.sessionID, approvalID: approvalID, decision: .approve)
     }
-    func authorized(_ entry: AgentSessionTable.Entry?) async -> ApelinError? {
+    func authorized(_ entry: AgentSessionTable.Entry?) async -> LurosError? {
         await AgentIssueCreateRules.authorize(issue, session: entry?.sessionID, registry: registry)
     }
     let unasked = await authorized(strict)
@@ -3639,7 +3639,7 @@ do {
     let lease = GitPushLease(expectedCommit: theirs, localCommit: mine)
     let push = GitPushRequest(projectID: "p-force", branch: "main", forceWithLease: lease)
     // What luros-agent writes into a forced git_push's approvalRequested
-    // (ApelinAgentWorker's tests hold that shape).
+    // (LurosAgentWorker's tests hold that shape).
     func ask(
         _ entry: AgentSessionTable.Entry,
         _ approvalID: String,
@@ -3661,7 +3661,7 @@ do {
         ]))
         await sessions.record(entry.sessionID, approvalID: approvalID, decision: .approve)
     }
-    func authorized(_ entry: AgentSessionTable.Entry?, _ request: GitPushRequest = push) async -> ApelinError? {
+    func authorized(_ entry: AgentSessionTable.Entry?, _ request: GitPushRequest = push) async -> LurosError? {
         await AgentForcePushRules.authorize(request, session: entry?.sessionID, registry: registry)
     }
     for mode in [ApprovalMode.confirm, .relaxed, .full] {
@@ -3727,7 +3727,7 @@ do {
     let squash = GitSquashRequest(projectID: "p-squash", base: base, message: "Add the clock", expectedHead: head)
     let strict = await session("squash-strict", mode: .confirm)
     // What luros-agent writes into git_squash's approvalRequested
-    // (ApelinAgentWorker's tests hold that shape).
+    // (LurosAgentWorker's tests hold that shape).
     func ask(
         _ approvalID: String,
         tool: String = "git_squash",
@@ -3746,7 +3746,7 @@ do {
         ]))
         await sessions.record(strict.sessionID, approvalID: approvalID, decision: .approve)
     }
-    func authorized(_ entry: AgentSessionTable.Entry?, _ request: GitSquashRequest = squash) async -> ApelinError? {
+    func authorized(_ entry: AgentSessionTable.Entry?, _ request: GitSquashRequest = squash) async -> LurosError? {
         await AgentSquashRules.authorize(request, session: entry?.sessionID, registry: registry)
     }
     let unasked = await authorized(strict)
@@ -3807,7 +3807,7 @@ do {
     let publish = DistributionPublishRequest(files: files, digests: digests, repository: "someone/packages")
     let strict = await session("publish-strict", mode: .confirm)
     // What luros-agent writes into apelin_package_publish's
-    // approvalRequested (ApelinAgentWorker's tests hold that shape).
+    // approvalRequested (LurosAgentWorker's tests hold that shape).
     func ask(_ approvalID: String, _ asked: DistributionPublishRequest) async {
         let packages: [JSONValue] = zip(asked.files, asked.digests ?? []).map { file, digest in
             .object(["file": .string(file), "digest": .string(digest), "packageID": .string("com.example.clock")])
@@ -3819,7 +3819,7 @@ do {
             ])]),
         ]))
     }
-    func authorized(_ entry: AgentSessionTable.Entry?, _ request: DistributionPublishRequest) async -> ApelinError? {
+    func authorized(_ entry: AgentSessionTable.Entry?, _ request: DistributionPublishRequest) async -> LurosError? {
         await AgentPublishRules.authorize(request, session: entry?.sessionID, registry: registry, artifacts: artifacts)
     }
     let unasked = await authorized(strict, publish)

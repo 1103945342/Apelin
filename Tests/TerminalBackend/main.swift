@@ -6,8 +6,8 @@
 // single module (see Scripts/test-terminal.sh, which strips the package
 // imports from every file it copies).
 
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Darwin
 import Foundation
 
@@ -30,7 +30,7 @@ func check(_ condition: @autoclosure () -> Bool, _ what: String, line: UInt = #l
 
 func expectErrorAsync(
     _ what: String,
-    code: ApelinError.Code? = nil,
+    code: LurosError.Code? = nil,
     line: UInt = #line,
     _ body: () async throws -> Void,
 ) async {
@@ -39,7 +39,7 @@ func expectErrorAsync(
         try await body()
         tally.failures += 1
         print("FAIL \(what): no error (line \(line))")
-    } catch let error as ApelinError {
+    } catch let error as LurosError {
         if let code, error.code != code {
             tally.failures += 1
             print("FAIL \(what): \(error) (line \(line))")

@@ -25,7 +25,7 @@ final class RootInterfaceController: UIViewController {
     @objc private dynamic var opensChatAfterWelcome = false
     /// An `lurosdev://` link that came before the conversations were read,
     /// or an import that came during the welcome.
-    private var pendingLink: ApelinLink?
+    private var pendingLink: LurosLink?
     /// A link is being looked up: the launch's own restore waits for it.
     @objc private dynamic var isResolvingLink = false
     @objc private dynamic lazy var sidebarNavigation = UINavigationController(rootViewController: sidebar)
@@ -532,7 +532,7 @@ final class RootInterfaceController: UIViewController {
     /// General Chat's composer with the keyboard up, and waits there for the
     /// reader's Send. An import is a sheet over the page
     /// (`RepositoryImportFlow`).
-    func open(_ link: ApelinLink) {
+    func open(_ link: LurosLink) {
         guard link != .app else { return }
         guard !WelcomeFlow.shouldPresent else {
             pendingLink = link
@@ -576,7 +576,7 @@ final class RootInterfaceController: UIViewController {
         }
     }
 
-    private static func isImport(_ link: ApelinLink) -> Bool {
+    private static func isImport(_ link: LurosLink) -> Bool {
         switch link {
         case .importRepository, .invalidImport: true
         default: false
@@ -586,7 +586,7 @@ final class RootInterfaceController: UIViewController {
     /// The import's confirmation; the project it opens, an imported one on
     /// a new conversation that sends nothing, or one that had the
     /// repository already as its link would open it.
-    private func openImport(_ link: ApelinLink) {
+    private func openImport(_ link: LurosLink) {
         guard case let .importRepository(address, branch) = link else {
             RepositoryImportFlow.reportUnreadableLink()
             return

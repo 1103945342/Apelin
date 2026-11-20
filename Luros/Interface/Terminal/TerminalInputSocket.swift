@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Darwin
 import Foundation
 
@@ -161,13 +161,13 @@ struct TerminalGridSize: Equatable, Sendable {
 /// drag settles on its final size instead of queueing every step.
 final class TerminalResizeRelay: @unchecked Sendable {
     private let lock = NSLock()
-    private var service: ApelinService?
+    private var service: LurosService?
     private var sessionID: String?
     private var lastSent: TerminalGridSize?
     private var pending: TerminalGridSize?
     private var inFlight = false
 
-    func configure(service: ApelinService, sessionID: String) {
+    func configure(service: LurosService, sessionID: String) {
         lock.lock()
         self.service = service
         self.sessionID = sessionID

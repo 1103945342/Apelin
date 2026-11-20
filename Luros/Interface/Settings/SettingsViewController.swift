@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Then
 import UIKit
 
@@ -119,7 +119,7 @@ final class SettingsViewController: TableController {
     /// that changes it is the one that knows, and this row follows.
     private func loadChannelSummary() {
         Task { [weak self] in
-            let state = try? await ApelinService.app.channelStatus()
+            let state = try? await LurosService.app.channelStatus()
             guard let self, let state else { return }
             channelSummary = state.enabled ? String(localized: "On") : String(localized: "Off")
             updateRows()

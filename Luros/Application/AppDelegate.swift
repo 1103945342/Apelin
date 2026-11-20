@@ -1,5 +1,5 @@
 import AlertController
-import ApelinCore
+import LurosCore
 import UIKit
 
 /// Not `@main`: `main.swift` clears saved scenes before `UIApplicationMain`.
@@ -119,11 +119,11 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     /// An `lurosdev://` link goes to its conversation or project
-    /// (`ApelinLinkRouter`); anything else is a transfer file, and the
+    /// (`LurosLinkRouter`); anything else is a transfer file, and the
     /// opener refuses what is not one with a notice. One at a time: a
     /// second sheet could not be presented over the first.
     @objc private dynamic func openURLs(_ contexts: Set<UIOpenURLContext>, in scene: UIWindowScene) {
-        guard let context = contexts.first, !ApelinLinkRouter.open(context.url, in: scene) else { return }
+        guard let context = contexts.first, !LurosLinkRouter.open(context.url, in: scene) else { return }
         TransferOpener.open(context.url, in: scene)
     }
 }

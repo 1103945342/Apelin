@@ -1,11 +1,11 @@
 import Foundation
 
-/// What Open in Luros for a repository (`ApelinLink.importRepository`)
+/// What Open in Luros for a repository (`LurosLink.importRepository`)
 /// decides before anything is asked of the host: the project name it
 /// suggests, whether a project on the device already has the repository,
 /// and what a second link does while an import is shown or running.
 enum RepositoryImportPlan {
-    /// The repository a link names: an address `ApelinLink` took, and a
+    /// The repository a link names: an address `LurosLink` took, and a
     /// branch, or nil for the default one.
     struct Request: Equatable {
         let address: String

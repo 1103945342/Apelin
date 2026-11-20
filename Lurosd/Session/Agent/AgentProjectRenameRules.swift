@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// An agent's `projectRename` (apelin_project_rename, owner, 2026-10-24):
@@ -26,26 +26,26 @@ enum AgentProjectRenameRules {
     /// Nil when the session may rename the project as asked, else why not.
     /// The project is resolved by id alone, so the build worker renames the
     /// project decided on here, never a folder that happens to be named so.
-    static func authorize(_ rename: ProjectRenameRequest, session: String?, home: String, registry: TaskRegistry) async -> ApelinError? {
+    static func authorize(_ rename: ProjectRenameRequest, session: String?, home: String, registry: TaskRegistry) async -> LurosError? {
         guard let session, let entry = await AgentSessionTable.shared.entry(session) else {
-            return ApelinError(.denied, "no agent session for this worker")
+            return LurosError(.denied, "no agent session for this worker")
         }
         let target: ResolvedProject
         do {
             target = try AgentProjects.resolve(home: home, projectID: rename.projectID, projectName: nil)
         } catch {
-            return error as? ApelinError ?? ApelinError(.notFound, "no project has the id \(rename.projectID)")
+            return error as? LurosError ?? LurosError(.notFound, "no project has the id \(rename.projectID)")
         }
         if target.id == entry.project.id {
             return nil
         }
         if rename.onlyIfAutomatic {
-            return ApelinError(.badRequest, "an automatic rename is for the session's own project")
+            return LurosError(.badRequest, "an automatic rename is for the session's own project")
         }
         guard entry.mode.asks else { return nil }
         let approved = await AgentApprovals.spend(entry: entry, registry: registry) { covers(rename, target: target, asked: $0) }
         guard approved else {
-            return ApelinError(
+            return LurosError(
                 .denied,
                 "approval required: the user has not approved renaming the project \(target.name) to “\(rename.displayName)”",
             )

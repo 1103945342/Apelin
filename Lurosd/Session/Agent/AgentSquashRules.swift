@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// An agent's `gitSquash` (git_squash, owner, 2026-10-31): it replaces the
@@ -31,16 +31,16 @@ enum AgentSquashRules {
 
     /// Nil when the session may squash, after spending the approval that
     /// covers it under Confirm; else why not.
-    static func authorize(_ squash: GitSquashRequest, session: String?, registry: TaskRegistry) async -> ApelinError? {
+    static func authorize(_ squash: GitSquashRequest, session: String?, registry: TaskRegistry) async -> LurosError? {
         guard let session, let entry = await AgentSessionTable.shared.entry(session) else {
-            return ApelinError(.denied, "no agent session for this worker")
+            return LurosError(.denied, "no agent session for this worker")
         }
         guard squash.preview != true, entry.mode.asks else { return nil }
         let covered = await AgentApprovals.spend(entry: entry, registry: registry) { asked in
             covers(squash, project: entry.project.id, asked: asked)
         }
         guard covered else {
-            return ApelinError(
+            return LurosError(
                 .denied,
                 "approval required: the user has not approved squashing these commits after \(squash.base ?? "the base") into one with this message",
             )

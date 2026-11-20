@@ -46,7 +46,7 @@
     {
       "id": "app",
       "type": "app",
-      "name": "ApelinApp",
+      "name": "LurosApp",
       "sources": [
         "Sources/*.m"
       ],

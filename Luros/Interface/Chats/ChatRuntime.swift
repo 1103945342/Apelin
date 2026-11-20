@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Darwin
 import Foundation
 import UniformTypeIdentifiers
@@ -220,7 +220,7 @@ final class ChatRuntime {
             if records[id]?.run != nil { records[id]?.run = nil }
             if records[id]?.summary.isWorking == true { records[id]?.summary.isWorking = false }
         }
-        let live = await (try? ApelinService.app.agentList().sessions) ?? []
+        let live = await (try? LurosService.app.agentList().sessions) ?? []
         reconcile(with: live)
         // What agents opened while the app was not following their openers.
         // Resolve parents before children without relying on the host's order.
@@ -249,7 +249,7 @@ final class ChatRuntime {
     /// Run whenever the app comes back in front, so a row that lost its run
     /// stops saying it is without a relaunch.
     func reconcileRuns() async {
-        reconcile(with: await (try? ApelinService.app.agentList().sessions) ?? [])
+        reconcile(with: await (try? LurosService.app.agentList().sessions) ?? [])
     }
 
     private func reconcile(with live: [AgentSessionSummary]) {
@@ -427,7 +427,7 @@ final class ChatRuntime {
             let session = records[id]?.sessionID
             ConversationNotices.shared.withdraw(session: session)
             if let session {
-                Task { try? await ApelinService.app.agentClose(sessionID: session, deleted: true) }
+                Task { try? await LurosService.app.agentClose(sessionID: session, deleted: true) }
             }
             try? await removeRecord(id)
         }
@@ -441,8 +441,8 @@ final class ChatRuntime {
             sessionID = opened.sessionID
         }
         guard let sessionID else { return }
-        do { try await ApelinService.app.agentClose(sessionID: sessionID, deleted: true) }
-        catch let error as ApelinError where error.code == .notFound {
+        do { try await LurosService.app.agentClose(sessionID: sessionID, deleted: true) }
+        catch let error as LurosError where error.code == .notFound {
             // A finished session or one lost with the host is already closed.
         }
     }
@@ -724,7 +724,7 @@ final class ChatRuntime {
         defer { try? FileManager.default.removeItem(at: staging) }
         for file in draft.attachments {
             guard descriptors.count < 8, file.data.count <= 32 * 1024 * 1024 else {
-                throw ApelinError(.badRequest, String(localized: "Send up to 8 files, each no larger than 32 MB."))
+                throw LurosError(.badRequest, String(localized: "Send up to 8 files, each no larger than 32 MB."))
             }
             let url = staging.appendingPathComponent(file.id.uuidString)
             try file.data.write(to: url, options: .atomic)
@@ -741,7 +741,7 @@ final class ChatRuntime {
             descriptors.append(OwnedDescriptor(adopting: fd))
         }
         let selected = selection ?? ComposerModelSelection.selection(for: id)
-        _ = try await ApelinService.app.send(
+        _ = try await LurosService.app.send(
             AgentPromptRequest(
                 sessionID: opened.sessionID,
                 text: draft.text,
@@ -764,7 +764,7 @@ final class ChatRuntime {
             // Stopped while the host was taking it. The host has it now,
             // and its run has started by the time the send answers: an
             // earlier stop found no run to stop.
-            try? await ApelinService.app.agentAbort(sessionID: opened.sessionID)
+            try? await LurosService.app.agentAbort(sessionID: opened.sessionID)
             throw CancellationError()
         }
         records[id]?.summary.nameAfterFirstMessage(text: draft.text, attachmentName: draft.attachments.first?.name)
@@ -774,7 +774,7 @@ final class ChatRuntime {
     func manageQueue(in id: UUID, action: AgentQueueAction, messageID: UUID? = nil,
                      text: String? = nil, order: [UUID]? = nil) async throws {
         let opened = try await open(id)
-        _ = try await ApelinService.app.agentQueue(AgentQueueRequest(
+        _ = try await LurosService.app.agentQueue(AgentQueueRequest(
             sessionID: opened.sessionID, action: action, messageID: messageID, text: text, order: order
         ))
     }
@@ -792,7 +792,7 @@ final class ChatRuntime {
         guard let sessionID = records[id]?.sessionID,
               let approvalID = transcript(id).approvalIDs[messageID]
         else { return }
-        try await ApelinService.app.agentApprove(
+        try await LurosService.app.agentApprove(
             sessionID: sessionID,
             approvalID: approvalID,
             decision: decision,
@@ -820,7 +820,7 @@ final class ChatRuntime {
             if stopContinuations[id] == continuation { stopContinuations[id] = nil }
         }
         do {
-            try await ApelinService.app.agentAbort(sessionID: sessionID)
+            try await LurosService.app.agentAbort(sessionID: sessionID)
             guard stopContinuations[id] == continuation,
                   records[id]?.sessionID == sessionID else { return }
             // The host has now cancelled the old run's shell calls. Only
@@ -830,9 +830,9 @@ final class ChatRuntime {
                 changed(id)
             }
             if continueQueue {
-                _ = try await ApelinService.app.agentQueue(AgentQueueRequest(sessionID: sessionID, action: .resume))
+                _ = try await LurosService.app.agentQueue(AgentQueueRequest(sessionID: sessionID, action: .resume))
             }
-        } catch let error as ApelinError where error.code == .notFound {
+        } catch let error as LurosError where error.code == .notFound {
             guard stopContinuations[id] == continuation else { return }
             // The session ended with the process that ran it (the app was
             // quit, or the host restarted): there is no run left to stop, and
@@ -858,26 +858,26 @@ final class ChatRuntime {
     func rewind(_ messageID: UUID, in id: UUID, truncate: Bool) async throws {
         stopContinuations[id] = nil
         let opened = try await open(id)
-        try await ApelinService.app.agentRewind(sessionID: opened.sessionID, messageID: messageID, truncate: truncate)
+        try await LurosService.app.agentRewind(sessionID: opened.sessionID, messageID: messageID, truncate: truncate)
     }
 
     /// Puts the project's code back as it was before message `messageID`'s
     /// run. A run going is stopped first; the conversation stays.
     func restoreCode(before messageID: UUID, in id: UUID) async throws -> GitCheckpointRestoreResponse {
         guard let project = records[id]?.summary.projectName else {
-            throw ApelinError(.notFound, String(localized: "No code was saved before this message."))
+            throw LurosError(.notFound, String(localized: "No code was saved before this message."))
         }
         if records[id]?.summary.isWorking == true {
             try await rewind(messageID, in: id, truncate: false)
         }
-        return try await ApelinService.app.gitCheckpointRestore(projectID: project, messageID: messageID)
+        return try await LurosService.app.gitCheckpointRestore(projectID: project, messageID: messageID)
     }
 
     /// Gives message `messageID`, or with `reply` the reply that ends its
     /// turn, the text `text`; `expected` is the reply's text as shown.
     func edit(_ messageID: UUID, in id: UUID, reply: Bool, text: String, expected: String?) async throws {
         let opened = try await open(id)
-        try await ApelinService.app.agentEditMessage(
+        try await LurosService.app.agentEditMessage(
             sessionID: opened.sessionID,
             messageID: messageID,
             reply: reply,
@@ -889,7 +889,7 @@ final class ChatRuntime {
     /// Deletes the reply that ends message `messageID`'s turn.
     func deleteReply(of messageID: UUID, in id: UUID, expected: String?) async throws {
         let opened = try await open(id)
-        try await ApelinService.app.agentDeleteReply(sessionID: opened.sessionID, messageID: messageID, expected: expected)
+        try await LurosService.app.agentDeleteReply(sessionID: opened.sessionID, messageID: messageID, expected: expected)
     }
 
     /// A project's conversation can be forked; a temporary one, whose
@@ -909,7 +909,7 @@ final class ChatRuntime {
         let opened = try await open(id)
         guard let number = try await reserveBranchNumber(id), records[id] != nil else { return nil }
         let newSessionID = UUID().uuidString.lowercased()
-        try await ApelinService.app.agentFork(sessionID: opened.sessionID, newSessionID: newSessionID, messageID: messageID)
+        try await LurosService.app.agentFork(sessionID: opened.sessionID, newSessionID: newSessionID, messageID: messageID)
         guard let current = summary(id) else { return nil }
         var summary = ChatSummary.untitled(lastInteraction: Date(), projectName: current.projectName)
         summary.title = current.title
@@ -971,7 +971,7 @@ final class ChatRuntime {
         let opened = try await open(id)
         // what the reader takes from here on, which may answer before the request does
         let seen = records[id]?.events.count ?? 0
-        try await ApelinService.app.agentCompact(
+        try await LurosService.app.agentCompact(
             sessionID: opened.sessionID,
             modelDefaults: Preferences.DefaultModels.wire,
         )
@@ -989,7 +989,7 @@ final class ChatRuntime {
         } onCancel: {
             Task { @MainActor in
                 self.endCompaction(id, with: .failure(CancellationError()))
-                try? await ApelinService.app.agentAbort(sessionID: opened.sessionID)
+                try? await LurosService.app.agentAbort(sessionID: opened.sessionID)
             }
         }
     }
@@ -1013,7 +1013,7 @@ final class ChatRuntime {
     ) async -> (tokens: Int, window: Int)? {
         guard let sessionID = records[id]?.sessionID else { return nil }
         do {
-            let answer = try await ApelinService.app.agentConfigure(AgentConfigureRequest(
+            let answer = try await LurosService.app.agentConfigure(AgentConfigureRequest(
                 sessionID: sessionID,
                 provider: selection.provider,
                 model: selection.model,
@@ -1068,12 +1068,12 @@ final class ChatRuntime {
         if request.temporaryID != nil {
             try DataFolder.app.makeLevels(to: DataFolder.app.root.appendingPathComponent("Temporary/" + id.uuidString))
         }
-        let pending = Task { try await ApelinService.app.agentOpen(request) }
+        let pending = Task { try await LurosService.app.agentOpen(request) }
         opening[id] = pending
         defer { opening[id] = nil }
         let result = try await pending.value
         guard records[id] != nil else {
-            try? await ApelinService.app.agentClose(sessionID: result.sessionID, deleted: true)
+            try? await LurosService.app.agentClose(sessionID: result.sessionID, deleted: true)
             throw CancellationError()
         }
         records[id]?.sessionID = result.sessionID
@@ -1091,7 +1091,7 @@ final class ChatRuntime {
         readers[id] = Task { [weak self] in
             defer {
                 self?.readers[id] = nil
-                self?.endCompaction(id, with: .failure(ApelinError(
+                self?.endCompaction(id, with: .failure(LurosError(
                     .notFound,
                     String(localized: "This chat is no longer running."),
                 )))
@@ -1101,7 +1101,7 @@ final class ChatRuntime {
                 // would make the next batch copy every event to add to them.
                 guard let self, records[id]?.task == task, let cursor = records[id]?.cursor else { return }
                 do {
-                    let batch = try await ApelinService.app.attach(task, afterSeq: cursor)
+                    let batch = try await LurosService.app.attach(task, afterSeq: cursor)
                     guard !Task.isCancelled, records[id]?.task == task else { return }
                     let fresh = records[id]?.take(batch.events) ?? []
                     if !fresh.isEmpty { eventCounts[id] = records[id]?.events.count ?? 0 }
@@ -1144,7 +1144,7 @@ final class ChatRuntime {
                        let name = ProjectDisplayName.candidate(proposed)
                     {
                         Task {
-                            if let response = try? await ApelinService.app.projectRename(
+                            if let response = try? await LurosService.app.projectRename(
                                 .init(projectID: project, displayName: name, onlyIfAutomatic: true),
                             ), response.changed {
                                 NotificationCenter.default.post(name: .apelinProjectsChanged, object: nil)
@@ -1185,7 +1185,7 @@ final class ChatRuntime {
                         changed(id)
                         return
                     }
-                } catch let error as ApelinError where error.code == .notFound {
+                } catch let error as LurosError where error.code == .notFound {
                     // only a message on its way to a new session still works
                     let isSending = records[id]?.isSending == true
                     records[id]?.summary.isWorking = isSending
@@ -1206,7 +1206,7 @@ final class ChatRuntime {
     private func takeMissedEnd(at end: EventSeq, of task: TaskHandle, from batch: TaskEventBatch, in id: UUID) async {
         var event = batch.events.last { $0.seq == end }
         if event == nil {
-            event = try? await ApelinService.app.attach(task, afterSeq: EventSeq(end.rawValue - 1), waitMilliseconds: 0)
+            event = try? await LurosService.app.attach(task, afterSeq: EventSeq(end.rawValue - 1), waitMilliseconds: 0)
                 .events.first
         }
         guard records[id]?.task == task else { return }

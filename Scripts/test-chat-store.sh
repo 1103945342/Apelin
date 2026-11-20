@@ -4,8 +4,8 @@
 # one-time move out of a record that still carries them, and what a launch cut
 # off between the two reads.
 #
-# The app's store is compiled with the packages it reads (ApelinCore,
-# ApelinProtocol) and the two app types it needs, into one program, because the
+# The app's store is compiled with the packages it reads (LurosCore,
+# LurosProtocol) and the two app types it needs, into one program, because the
 # app target itself needs xcodebuild. Imports between them are dropped for that
 # one module, and the Swift 6 spellings a 5.10 toolchain lacks are rewritten.
 #
@@ -38,8 +38,8 @@ source = os.path.join(work, "src")
 os.makedirs(source)
 
 files = []
-for package in ("ApelinProtocol", "ApelinCore"):
-    files += glob.glob(f"Packages/ApelinKit/Sources/{package}/**/*.swift", recursive=True)
+for package in ("LurosProtocol", "LurosCore"):
+    files += glob.glob(f"Packages/LurosKit/Sources/{package}/**/*.swift", recursive=True)
 files += [
     "Luros/Interface/Chats/ChatSummary.swift",
     "Luros/Interface/Chats/Composer/ComposerDraft.swift",
@@ -53,7 +53,7 @@ for number, path in enumerate(sorted(files)):
     text = open(path).read()
     # One module: the imports between these files point at modules that are
     # not built here.
-    text = re.sub(r"^import (ApelinCore|ApelinProtocol)\n", "", text, flags=re.M)
+    text = re.sub(r"^import (LurosCore|LurosProtocol)\n", "", text, flags=re.M)
     # A 5.10 toolchain: no trailing commas in collections, no `count(where:)`,
     # no bare `\.self` transforms.
     text = re.sub(r",(\s*[)\]])", r"\1", text)

@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import UIKit
 
 /// The approval mode, and below it Ask Before Using the Screen, which holds

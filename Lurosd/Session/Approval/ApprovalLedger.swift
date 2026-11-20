@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// The host's private record of Confirm-mode approvals (Milestone 1 §7,
@@ -232,7 +232,7 @@ actor ApprovalLedger {
     static func normalized(_ digest: String) throws -> String {
         let hex = digest.hasPrefix("sha256:") ? String(digest.dropFirst(7)) : digest
         guard hex.count == 64, hex.utf8.allSatisfy({ (48 ... 57).contains($0) || (97 ... 102).contains($0) }) else {
-            throw ApelinError(
+            throw LurosError(
                 .badRequest,
                 "a description digest is 64 lowercase hex digits, optionally prefixed with sha256:",
             )
@@ -250,7 +250,7 @@ actor ApprovalLedger {
     }
 
     private func url(_ project: String) throws -> URL {
-        guard Self.validProjectID(project) else { throw ApelinError(.badRequest, "not a project ID: \(project)") }
+        guard Self.validProjectID(project) else { throw LurosError(.badRequest, "not a project ID: \(project)") }
         return directory.appendingPathComponent(project + ".json")
     }
 

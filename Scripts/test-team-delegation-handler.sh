@@ -1,7 +1,7 @@
 #!/bin/bash
 # Type-checks and runs the session host's delegation authority: the real
 # AgentDelegationStore and AgentDelegationAdmission, against the real
-# ApelinCore and ApelinProtocol modules, with lightweight host stubs.
+# LurosCore and LurosProtocol modules, with lightweight host stubs.
 # Mac: no arguments. Device: --device <entitlements>.
 #
 # The sources are copied into the work directory with the repository's
@@ -43,10 +43,10 @@ def copy(source: str, into: str) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(text)
 
-for path in (root / "Packages/ApelinKit/Sources/ApelinCore").rglob("*.swift"):
-    copy(str(path.relative_to(root)), str(pathlib.Path("Core") / "ApelinCore" / path.relative_to(root / "Packages/ApelinKit/Sources/ApelinCore")))
-for path in (root / "Packages/ApelinKit/Sources/ApelinProtocol").rglob("*.swift"):
-    copy(str(path.relative_to(root)), str(pathlib.Path("Protocol") / path.relative_to(root / "Packages/ApelinKit/Sources/ApelinProtocol")))
+for path in (root / "Packages/LurosKit/Sources/LurosCore").rglob("*.swift"):
+    copy(str(path.relative_to(root)), str(pathlib.Path("Core") / "LurosCore" / path.relative_to(root / "Packages/LurosKit/Sources/LurosCore")))
+for path in (root / "Packages/LurosKit/Sources/LurosProtocol").rglob("*.swift"):
+    copy(str(path.relative_to(root)), str(pathlib.Path("Protocol") / path.relative_to(root / "Packages/LurosKit/Sources/LurosProtocol")))
 copy("Lurosd/Session/Agent/AgentDelegationStore.swift", "Host/AgentDelegationStore.swift")
 copy("Lurosd/Session/Agent/AgentDelegationAdmission.swift", "Host/AgentDelegationAdmission.swift")
 copy("Lurosd/Session/Agent/AgentDelegatedMarker.swift", "Host/AgentDelegatedMarker.swift")

@@ -127,7 +127,7 @@ def read(url):
         headers={
             "Accept": "application/json",
             "Accept-Encoding": "identity",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) ApelinModelCatalog/1.0",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) LurosModelCatalog/1.0",
         },
     )
     with urllib.request.urlopen(request, timeout=120) as response:

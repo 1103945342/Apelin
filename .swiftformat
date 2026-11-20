@@ -7,6 +7,6 @@
 
 # vendored code keeps its upstream form; templates ship with pinned digests
 # (Extensions/Development/*/manifest.json); generated code is written by its
-# script (Packages/ApelinKit/Scripts/embed-schemas.py,
-# Packages/ApelinAgent/Scripts/embed-prompts.py), not by hand
---exclude Packages/Runestone,Extensions/Development,Lurosd/Vendor,Packages/ApelinKit/Sources/ApelinProject/JSON/EmbeddedSchemas.swift,Packages/ApelinAgent/Sources/ApelinAgent/Session/SystemPromptText.swift,**/.build,build
+# script (Packages/LurosKit/Scripts/embed-schemas.py,
+# Packages/LurosAgent/Scripts/embed-prompts.py), not by hand
+--exclude Packages/Runestone,Extensions/Development,Lurosd/Vendor,Packages/LurosKit/Sources/LurosProject/JSON/EmbeddedSchemas.swift,Packages/LurosAgent/Sources/LurosAgent/Session/SystemPromptText.swift,**/.build,build

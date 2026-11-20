@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 /// Checked before approval handling. The socket's worker identity, not a
@@ -23,7 +23,7 @@ enum AgentDelegationAdmission {
                       saved: saved)
             return nil
         } catch {
-            return request.fail(ApelinError(.denied, error.localizedDescription))
+            return request.fail(LurosError(.denied, error.localizedDescription))
         }
     }
 

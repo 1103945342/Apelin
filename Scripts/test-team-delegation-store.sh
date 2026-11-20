@@ -17,21 +17,21 @@ python3 - "$work" <<'PY'
 import pathlib, re, sys
 work = pathlib.Path(sys.argv[1])
 files = [
-    'Packages/ApelinKit/Sources/ApelinProtocol/Operations/AgentDelegationBrief.swift',
-    'Packages/ApelinKit/Sources/ApelinProtocol/Operations/AgentDelegation.swift',
-    'Packages/ApelinKit/Sources/ApelinProtocol/Operations/AgentAssignmentLedger.swift',
-    'Packages/ApelinKit/Sources/ApelinCore/CanonicalPath.swift',
+    'Packages/LurosKit/Sources/LurosProtocol/Operations/AgentDelegationBrief.swift',
+    'Packages/LurosKit/Sources/LurosProtocol/Operations/AgentDelegation.swift',
+    'Packages/LurosKit/Sources/LurosProtocol/Operations/AgentAssignmentLedger.swift',
+    'Packages/LurosKit/Sources/LurosCore/CanonicalPath.swift',
     'Lurosd/Session/Agent/AgentDelegationStore.swift',
     'Tests/TeamCollaboration/DelegationStoreChecks.swift',
 ]
 for name in files:
     source = pathlib.Path(name)
     text = source.read_text()
-    text = re.sub(r'^import (ApelinCore|ApelinProtocol)\n', '', text, flags=re.M)
+    text = re.sub(r'^import (LurosCore|LurosProtocol)\n', '', text, flags=re.M)
     if source.name == 'AgentDelegation.swift':
         text = text.replace(': OperationRequest {', ': Codable, Sendable {')
         text = re.sub(r'^    public static let operation = .*\n', '', text, flags=re.M)
-        start = text.index('public extension ApelinService {')
+        start = text.index('public extension LurosService {')
         end = text.index('/// A deliberately closed', start)
         text = text[:start] + text[end:]
     text = re.sub(r',(\s*)([)\]])', r'\1\2', text)

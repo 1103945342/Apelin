@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 
 /// Environment tasks, read and cancelled in the registry. An agent reads
 /// only the ones its own session started (its setups, imports, self-tests
@@ -11,7 +11,7 @@ enum EnvironmentHandler: DomainHandler {
                 guard let instance, let attach = try? request.decode(EnvironmentAttachRequest.self),
                       await AgentSessionTable.shared.started(attach.taskID, session: instance)
                 else {
-                    return request.fail(ApelinError(.denied, "an agent reads only the environment tasks it started"))
+                    return request.fail(LurosError(.denied, "an agent reads only the environment tasks it started"))
                 }
             }
             return await host.attach(request, EnvironmentAttachRequest.self)
@@ -20,7 +20,7 @@ enum EnvironmentHandler: DomainHandler {
         case .developmentTools:
             return await developmentTools(request, host: host)
         default:
-            return request.fail(ApelinError(
+            return request.fail(LurosError(
                 .badRequest,
                 "\(request.operation.rawValue) is not an environment operation",
             ))
@@ -31,7 +31,7 @@ enum EnvironmentHandler: DomainHandler {
     /// Reading only: installing one is the user's package manager's.
     static func developmentTools(_ request: HostRequest, host: SessionHost) async -> HostReply {
         guard (try? request.decode(DevelopmentToolsRequest.self)) != nil else {
-            return request.fail(ApelinError(.badRequest, "the development tools request does not read"))
+            return request.fail(LurosError(.badRequest, "the development tools request does not read"))
         }
         let rows = DevelopmentToolStatus.rows(installRoot: host.installRoot)
         return (.success(request.requestID, DevelopmentToolsResponse(tools: rows)), [])

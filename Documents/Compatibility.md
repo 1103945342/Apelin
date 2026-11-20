@@ -141,7 +141,7 @@ end-to-end device run and an iOS 16 physical host remain untested.
 ## Where the data lives and how to update it
 
 `CommandLineToolsSupport.releases` in
-[`Support.swift`](../Packages/ApelinToolchain/Sources/ApelinToolchain/Support.swift)
+[`Support.swift`](../Packages/LurosToolchain/Sources/LurosToolchain/Support.swift)
 is the single maintained release table. It records Apple product IDs and
 whole-package SHA-256 values,
 recommended and verified SDKs, component CPU requirements and Swift host
@@ -150,7 +150,7 @@ A newly published product with an old version number is not silently treated
 as the reviewed binary. After download, a changed package digest is refused
 before extraction.
 
-[`Compatibility.swift`](../Packages/ApelinToolchain/Sources/ApelinToolchain/Compatibility.swift)
+[`Compatibility.swift`](../Packages/LurosToolchain/Sources/LurosToolchain/Compatibility.swift)
 turns that table into versioned data. The `compatibility` member is returned
 by `toolchainCatalog`, saved in the generated toolchain `manifest.json` and
 in the registered `ToolchainRecord`, and preserved when the build worker

@@ -17,7 +17,7 @@ cache=${APELIN_OLD_RUNTIME_CACHE:-$HOME/Library/Caches/luros-old-runtime}
 image=https://devimages-cdn.apple.com/downloads/xcode/simulators/com.apple.pkg.iPhoneSimulatorSDK15_5-15.5.1.1653527639.dmg
 target=arm64-apple-ios15.5-simulator
 runtime=$cache/iOS-15.5
-sources=$repository/Packages/ApelinToolchain/Sources
+sources=$repository/Packages/LurosToolchain/Sources
 build=$(mktemp -d "${TMPDIR:-/tmp}/luros-old-runtime.XXXXXX")
 home=$build/home
 mount=$build/image
@@ -41,7 +41,7 @@ if [[ ! -e $runtime/usr/lib/dyld_sim ]]; then
 fi
 
 # The newest reviewed package, the smallest of them to unpack.
-address=$(sed -n 's/.*url: "\(https:[^"]*\)".*/\1/p' "$sources/ApelinToolchain/Support.swift" | head -1)
+address=$(sed -n 's/.*url: "\(https:[^"]*\)".*/\1/p' "$sources/LurosToolchain/Support.swift" | head -1)
 package=$cache/${${address:h:h:t}%%-A_*}.pkg
 if [[ ! -s $package ]]; then
   print "Fetching $address"
@@ -60,12 +60,12 @@ mkdir "$build/modules"
 cp "$sources/CToolchainSystem/include/CToolchainSystem.h" "$build/modules/"
 print 'module CToolchainSystem { header "CToolchainSystem.h" export * }' > "$build/modules/module.modulemap"
 "${swiftc[@]}" "$build/main.swift" -o "$build/bridge-check"
-"${swiftc[@]}" -module-name ApelinCodeSign -parse-as-library -emit-library -static -emit-module \
-  -emit-module-path "$build/modules/ApelinCodeSign.swiftmodule" -o "$build/libApelinCodeSign.a" \
-  "$repository"/Packages/ApelinFormats/Sources/ApelinCodeSign/*.swift
-"${swiftc[@]}" -module-name ApelinToolchain -I "$build/modules" -Xcc "-I$build/modules" \
-  "$sources"/ApelinToolchain/*.swift "$build/extract/main.swift" "$build/system.o" \
-  "$build/libApelinCodeSign.a" -lz -o "$build/extract-check"
+"${swiftc[@]}" -module-name LurosCodeSign -parse-as-library -emit-library -static -emit-module \
+  -emit-module-path "$build/modules/LurosCodeSign.swiftmodule" -o "$build/libLurosCodeSign.a" \
+  "$repository"/Packages/LurosFormats/Sources/LurosCodeSign/*.swift
+"${swiftc[@]}" -module-name LurosToolchain -I "$build/modules" -Xcc "-I$build/modules" \
+  "$sources"/LurosToolchain/*.swift "$build/extract/main.swift" "$build/system.o" \
+  "$build/libLurosCodeSign.a" -lz -o "$build/extract-check"
 
 # What launchd_sim gives a process; libsystem_trace stops without them.
 simulated=(

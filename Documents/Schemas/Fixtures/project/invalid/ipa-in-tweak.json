@@ -46,7 +46,7 @@
     {
       "id": "app",
       "type": "dylib",
-      "name": "ApelinApp",
+      "name": "LurosApp",
       "sources": [
         "Sources/*.m"
       ],
@@ -58,7 +58,7 @@
         "Foundation",
         "UIKit"
       ],
-      "installName": "@rpath/ApelinApp.dylib"
+      "installName": "@rpath/LurosApp.dylib"
     }
   ],
   "build": {
@@ -109,7 +109,7 @@
     "layout": [],
     "format": "ipa",
     "tweakFilter": {
-      "dylib": "ApelinApp.dylib",
+      "dylib": "LurosApp.dylib",
       "bundles": [
         "com.apple.springboard"
       ]

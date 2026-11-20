@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import Foundation
 
 /// Where the Locations menu leads: the bootstrap root is read off the running

@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Then
 import UIKit
 
@@ -55,7 +55,7 @@ final class DistributionRepositoryPickerController: TableController {
         loader = Task { [weak self] in
             let rows: [Row]
             do {
-                let list = try await ApelinService.app.distributionRepositoryList(repositories: true)
+                let list = try await LurosService.app.distributionRepositoryList(repositories: true)
                 rows = list.repositories.isEmpty ? [.empty] : list.repositories.map(Row.repository)
             } catch {
                 rows = [.unavailable(error.readableMessage)]

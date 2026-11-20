@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// An agent's `feedbackSend` (apelin_feedback_send, owner, 2026-10-29): a
@@ -57,7 +57,7 @@ enum AgentFeedbackRules {
 
     /// Nil when the session may send it, else why not; under Confirm the
     /// approval that covers it is spent.
-    static func authorize(_ feedback: FeedbackSendRequest, session: String?, registry: TaskRegistry) async -> ApelinError? {
+    static func authorize(_ feedback: FeedbackSendRequest, session: String?, registry: TaskRegistry) async -> LurosError? {
         await authorize(
             session: session,
             registry: registry,
@@ -68,7 +68,7 @@ enum AgentFeedbackRules {
 
     /// Nil when the session may make this edit, else why not; under Confirm
     /// the approval that covers it is spent.
-    static func authorize(_ edit: FeedbackEditRequest, session: String?, registry: TaskRegistry) async -> ApelinError? {
+    static func authorize(_ edit: FeedbackEditRequest, session: String?, registry: TaskRegistry) async -> LurosError? {
         await authorize(
             session: session,
             registry: registry,
@@ -82,13 +82,13 @@ enum AgentFeedbackRules {
         registry: TaskRegistry,
         covers: (JSONValue) -> Bool,
         refusal: String,
-    ) async -> ApelinError? {
+    ) async -> LurosError? {
         guard let session, let entry = await AgentSessionTable.shared.entry(session) else {
-            return ApelinError(.denied, "no agent session for this worker")
+            return LurosError(.denied, "no agent session for this worker")
         }
         guard entry.mode.asks else { return nil }
         guard await AgentApprovals.spend(entry: entry, registry: registry, covers: covers) else {
-            return ApelinError(.denied, refusal)
+            return LurosError(.denied, refusal)
         }
         return nil
     }

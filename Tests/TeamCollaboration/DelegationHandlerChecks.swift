@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 // Lightweight stand-ins for the session host's own plumbing, so the real
@@ -21,7 +21,7 @@ struct HostRequest: Sendable {
         try JSONDecoder().decode(R.self, from: payload)
     }
     func fail(_ error: any Error) -> HostReply {
-        let error = (error as? ApelinError) ?? ApelinError(.internal, "\(error)")
+        let error = (error as? LurosError) ?? LurosError(.internal, "\(error)")
         return (WireReply.failure(requestID, error), [])
     }
 }

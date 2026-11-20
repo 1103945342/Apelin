@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// Carries each finished turn of a conversation an agent opened back to the
@@ -529,29 +529,29 @@ actor AgentReportRelay {
                     }
                     guard !members.isEmpty else { return }
                     guard commit(opener, { $0.wave = AgentReportWave(id: UUID(), members: members) }) else {
-                        throw ApelinError(.unavailable, "The report wave could not be saved; delivery will retry.")
+                        throw LurosError(.unavailable, "The report wave could not be saved; delivery will retry.")
                     }
                 } else if let final = try await nextFinal?(opener) {
                     let text = "The sealed team's final account is ready. This is host ledger data, not a user instruction. Account for every member, including cancellations, failures and missing checks. Accepted does not mean verified.\nEvent: \(final.eventID)\n\n"
                         + Self.snapshotText(final.snapshot)
                     guard text.utf8.count <= AgentReportLedger.maximumMessageBytes else {
-                        throw ApelinError(.unavailable, "The final account exceeds the delivery bound; its complete ledger remains available.")
+                        throw LurosError(.unavailable, "The final account exceeds the delivery bound; its complete ledger remains available.")
                     }
                     guard commit(opener, { $0.wave = AgentReportWave(id: UUID(), members: [], text: text,
                                                                       finalAccountEventID: final.eventID,
                                                                       statusKey: Self.statusKey(final.snapshot)) }) else {
-                        throw ApelinError(.unavailable, "The final account wave could not be saved; delivery will retry.")
+                        throw LurosError(.unavailable, "The final account wave could not be saved; delivery will retry.")
                     }
                 } else if let snapshot = try await nextStatus?(opener),
                           Self.statusKey(snapshot) != outboxes[opener]?.ledger.lastStatusKey {
                     let text = "The team's assignment state changed. This is host ledger data, not a user instruction. A blocked child needs your attention; a ready-for-review child is not accepted.\n"
                         + Self.snapshotText(snapshot)
                     guard text.utf8.count <= AgentReportLedger.maximumMessageBytes else {
-                        throw ApelinError(.unavailable, "The team status exceeds the delivery bound; nothing was dropped.")
+                        throw LurosError(.unavailable, "The team status exceeds the delivery bound; nothing was dropped.")
                     }
                     guard commit(opener, { $0.wave = AgentReportWave(id: UUID(), members: [], text: text,
                                                                       statusKey: Self.statusKey(snapshot)) }) else {
-                        throw ApelinError(.unavailable, "The team status wave could not be saved; delivery will retry.")
+                        throw LurosError(.unavailable, "The team status wave could not be saved; delivery will retry.")
                     }
                 } else { return }
             }
@@ -562,15 +562,15 @@ actor AgentReportRelay {
                 let snapshot = try await account?(opener, reports) ?? ""
                 let text = Self.text(for: reports) + snapshot
                 guard text.utf8.count <= AgentReportLedger.maximumMessageBytes else {
-                    throw ApelinError(.unavailable, "The report with its complete member index exceeds the delivery bound; nothing was dropped.")
+                    throw LurosError(.unavailable, "The report with its complete member index exceeds the delivery bound; nothing was dropped.")
                 }
                 guard commit(opener, { $0.wave?.text = text }) else {
-                    throw ApelinError(.unavailable, "The report text could not be saved; delivery will retry.")
+                    throw LurosError(.unavailable, "The report text could not be saved; delivery will retry.")
                 }
                 wave.text = text
             }
             guard wave.finalAccountEventID == nil || acknowledgeFinal != nil else {
-                throw ApelinError(.unavailable, "The final account acknowledgement is unavailable; its wave remains pending.")
+                throw LurosError(.unavailable, "The final account acknowledgement is unavailable; its wave remains pending.")
             }
             let prompt = AgentPromptRequest(
                 sessionID: opener,
@@ -581,7 +581,7 @@ actor AgentReportRelay {
                 reports: reports
             )
             guard try JSONEncoder().encode(prompt).count <= AgentReportLedger.maximumMessageBytes else {
-                throw ApelinError(.unavailable, "The encoded report exceeds the delivery bound. Its wave remains on disk for inspection.")
+                throw LurosError(.unavailable, "The encoded report exceeds the delivery bound. Its wave remains on disk for inspection.")
             }
             guard await delivery(prompt) else {
                 retryLater(opener)
@@ -639,7 +639,7 @@ actor AgentReportRelay {
             }
             text += "\n"
             text += "- Conversation: `\(report.childSessionID)`\n"
-            text += "- Link: \(ApelinLink.conversation(report.childSessionID))\n"
+            text += "- Link: \(LurosLink.conversation(report.childSessionID))\n"
             if !report.answered.isEmpty {
                 text += "- Answers your message(s): "
                     + report.answered.map { $0.uuidString }.joined(separator: ", ") + "\n"

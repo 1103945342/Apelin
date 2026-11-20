@@ -21,8 +21,8 @@ if [[ "${1:-}" == --device ]]; then
     compiler=(swiftc -target arm64-apple-ios16.0)
 fi
 "${compiler[@]}" -swift-version 5 -parse-as-library \
-    Packages/ApelinKit/Sources/ApelinProtocol/Operations/AgentDelegationBrief.swift \
-    Packages/ApelinKit/Sources/ApelinProtocol/Operations/AgentAssignmentLedger.swift \
+    Packages/LurosKit/Sources/LurosProtocol/Operations/AgentDelegationBrief.swift \
+    Packages/LurosKit/Sources/LurosProtocol/Operations/AgentAssignmentLedger.swift \
     Tests/TeamCollaboration/LedgerChecks.swift -o "$work/ledger-checks"
 if [[ -n "$entitlements" ]]; then
     ldid "-S$entitlements" "$work/ledger-checks"

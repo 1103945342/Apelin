@@ -34,7 +34,7 @@
       "toolchainComponents": ["c-family"],
       "project": "luros-project.json",
       "parameters": [
-        { "name": "productName", "type": "identifier", "label": "Product Name", "help": "The executable and bundle name.", "required": true, "default": "ApelinApp" },
+        { "name": "productName", "type": "identifier", "label": "Product Name", "help": "The executable and bundle name.", "required": true, "default": "LurosApp" },
         { "name": "displayName", "type": "string", "label": "Display Name", "default": "Luros App", "maxLength": 64 },
         { "name": "summary", "type": "string", "label": "Description", "default": "Built on this device with Luros.", "maxLength": 200 },
         { "name": "author", "type": "string", "label": "Author", "default": "Luros User", "maxLength": 64 }
@@ -62,7 +62,7 @@
       "toolchainComponents": ["c-family", "swift"],
       "project": "luros-project.json",
       "parameters": [
-        { "name": "productName", "type": "identifier", "label": "Product Name", "help": "The executable and bundle name.", "required": true, "default": "ApelinApp" },
+        { "name": "productName", "type": "identifier", "label": "Product Name", "help": "The executable and bundle name.", "required": true, "default": "LurosApp" },
         { "name": "displayName", "type": "string", "label": "Display Name", "default": "Luros App", "maxLength": 64 },
         { "name": "summary", "type": "string", "label": "Description", "default": "Built on this device with Luros.", "maxLength": 200 },
         { "name": "author", "type": "string", "label": "Author", "default": "Luros User", "maxLength": 64 }

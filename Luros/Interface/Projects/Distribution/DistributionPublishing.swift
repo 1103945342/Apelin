@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import SPIndicator
 import UIKit
 
@@ -56,7 +56,7 @@ enum DistributionPublishing {
     /// Settings ▸ Git instead.
     static func publish(_ items: [Item], from presenter: UIViewController) async {
         do {
-            guard let linked = try await ApelinService.app.distributionRepositoryList(repositories: false).linked else {
+            guard let linked = try await LurosService.app.distributionRepositoryList(repositories: false).linked else {
                 openRepositorySetup(from: presenter)
                 return
             }
@@ -91,7 +91,7 @@ enum DistributionPublishing {
     ) {
         Task { [weak presenter] in
             do {
-                let handle = try await ApelinService.app.distributionPublish(
+                let handle = try await LurosService.app.distributionPublish(
                     files: files.map(\.path),
                     digests: files.map(\.digest),
                     repository: repository,

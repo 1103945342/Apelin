@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Then
 import UIKit
 
@@ -82,7 +82,7 @@ final class SDKListController: TableController {
         dataSource.beginLoad()
         loader = Task { [weak self] in
             do {
-                let local = try await ApelinService.app.sdkList()
+                let local = try await LurosService.app.sdkList()
                 guard !Task.isCancelled else { return }
                 self?.show(local)
             } catch {

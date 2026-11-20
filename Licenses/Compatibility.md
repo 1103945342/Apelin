@@ -6,7 +6,7 @@ source and notice audit, not legal certification.
 lurosd and luros-log-reader are libSystem and Foundation
 (`Scripts/check-system-only.py`). The app links the UI packages below
 (owner, 2026-10-17), all statically; the other third-party code reaches
-only the mobile workers, through `Packages/ApelinKit`.
+only the mobile workers, through `Packages/LurosKit`.
 Of them, luros-diagnostics links icli (and through it
 libarchive.xcframework), luros-agent links kwwk and its tree, and
 luros-environment libgit2 and libarchive. The app ships every notice in
@@ -38,8 +38,8 @@ Rules for what comes next:
 | --- | --- |
 | Luros | MIT, `LICENSE`. |
 | IrisinExternalClient | MIT (OwnGoal Studio), Irisin 4.7.0's client for irisind, vendored as source in `Lurosd/Vendor/IrisinExternalClient/` with its `LICENSE` beside it. System libraries only (XPC, CryptoKit); the one outside source lurosd compiles, for the session host's install bridge. |
-| Irisin signing (`Licenses/IrisinCodeSign`) | MIT (OwnGoal Studio), Irisin's `LdidStyleSignature` and `LdidEntitlements` (revision `a0bd81d5`), vendored as source in `Packages/ApelinFormats/Sources/ApelinCodeSign/` with its `LICENSE` beside it. CryptoKit only. The one signer: linked into luros-build (product signing) and, through ApelinToolchain, into luros-environment (the toolchain retarget). |
-| libarchive.xcframework 1.0.0 (`ArchiveKit`) | MIT packaging; the static archive holds libarchive (BSD-2-Clause), xz/liblzma (0BSD), zstd's library (BSD-3-Clause) and lz4's library (BSD-2-Clause), all four notices in the package `LICENSE`; zlib, bzip2, iconv and libxml2 come from the SDK. Linked into luros-environment (SDK archives) through ApelinEnvironment and ApelinFormats, and into luros-build (the deb writer) through ApelinBuild and ApelinFormats' ApelinDebArchive. The same pin ApelinFormats resolves. |
+| Irisin signing (`Licenses/IrisinCodeSign`) | MIT (OwnGoal Studio), Irisin's `LdidStyleSignature` and `LdidEntitlements` (revision `a0bd81d5`), vendored as source in `Packages/LurosFormats/Sources/LurosCodeSign/` with its `LICENSE` beside it. CryptoKit only. The one signer: linked into luros-build (product signing) and, through LurosToolchain, into luros-environment (the toolchain retarget). |
+| libarchive.xcframework 1.0.0 (`ArchiveKit`) | MIT packaging; the static archive holds libarchive (BSD-2-Clause), xz/liblzma (0BSD), zstd's library (BSD-3-Clause) and lz4's library (BSD-2-Clause), all four notices in the package `LICENSE`; zlib, bzip2, iconv and libxml2 come from the SDK. Linked into luros-environment (SDK archives) through LurosEnvironment and LurosFormats, and into luros-build (the deb writer) through LurosBuild and LurosFormats' LurosDebArchive. The same pin LurosFormats resolves. |
 | libgit2.xcframework 1.0.0 (`GitKit`) | MIT packaging; the static archive is libgit2 1.9.7 (`49e408b3`), **GPLv2 with the linking exception**, with its bundled xdiff (**LGPL-2.1-or-later**), llhttp and sha1dc (MIT) and the rest of libgit2's `COPYING`. HTTPS through the SDK's SecureTransport; SSH runs an `ssh` binary (none is spawned on the device, so HTTPS is the path). **Owner decision 2026-10-17: accepted as a reviewed exception** (`gplExceptions`): the linking exception permits linking the unmodified library into a program distributed under its own terms, and xdiff is recorded as a known, accepted item. Linked only into luros-environment, a separate mobile process, never into the app or lurosd. The notice ships whole twice: the package `LICENSE` and `Licenses/libgit2/` (upstream `COPYING` at the pinned commit). Distributing libgit2 modified, or on its own, would follow the GPLv2 — Luros does neither. |
 | icli 1.0.0 | MIT. Linked into luros-diagnostics only, with libarchive.xcframework (row above) statically inside IcliKit. Carries the ios-mcp MIT notice (`Licenses/ios-mcp`). |
 | kwwk (e01122a) | MIT. Linked into luros-agent only. |

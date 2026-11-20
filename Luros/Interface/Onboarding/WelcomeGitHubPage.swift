@@ -1,6 +1,6 @@
 // Copyright (c) 2026 OwnGoal Studio. MIT; see LICENSE beside this file.
 // Table/action-bar layout copied from Irisin's WelcomeRepositoriesController.
-import ApelinProtocol
+import LurosProtocol
 import UIKit
 
 /// The GitHub account, signed in with a code (`GitHubLoginController`), and
@@ -52,8 +52,8 @@ final class WelcomeGitHubPage: WelcomeListPage {
         loader?.cancel()
         dataSource.beginLoad()
         loader = Task { [weak self] in
-            let settings = try? await ApelinService.app.gitSettings()
-            let linked = try? await ApelinService.app.distributionRepositoryList(repositories: false).linked
+            let settings = try? await LurosService.app.gitSettings()
+            let linked = try? await LurosService.app.distributionRepositoryList(repositories: false).linked
             guard !Task.isCancelled, let self else { return }
             login = settings?.credentials.first { $0.host == GitHubDeviceFlow.host }?.username
             updateRows(linked: linked)

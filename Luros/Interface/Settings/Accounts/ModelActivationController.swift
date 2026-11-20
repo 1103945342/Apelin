@@ -1,5 +1,5 @@
 import AlertController
-import ApelinProtocol
+import LurosProtocol
 import UIKit
 
 /// Saves one provider's enabled models only when the user confirms.
@@ -99,7 +99,7 @@ final class ModelActivationController: TableController, UISearchResultsUpdating 
             guard let self else { return }
             do {
                 let fetched = try await ProviderProgress.run(title: "Fetching Models", from: self) {
-                    try await ApelinService.app.agentModelList(provider: self.account.provider).models
+                    try await LurosService.app.agentModelList(provider: self.account.provider).models
                 }
                 models = Array(Set(fetched).union(custom).union(selected).subtracting(hidden)).sorted()
                 updateSearchResults(for: search)
@@ -215,20 +215,20 @@ final class ModelActivationController: TableController, UISearchResultsUpdating 
                     from: self,
                     cancel: { [weak self] in
                         if let handle = self?.verification {
-                            try? await ApelinService.app.agentSignInCancel(taskID: handle.taskID)
+                            try? await LurosService.app.agentSignInCancel(taskID: handle.taskID)
                         }
                     },
                 ) {
-                    let handle = try await ApelinService.app.agentModelActivate(
+                    let handle = try await LurosService.app.agentModelActivate(
                         provider: self.account.provider,
                         models: self.selected.sorted(),
                     )
                     self.verification = handle
                     if Task.isCancelled {
-                        try? await ApelinService.app.agentSignInCancel(taskID: handle.taskID)
+                        try? await LurosService.app.agentSignInCancel(taskID: handle.taskID)
                         throw CancellationError()
                     }
-                    for try await event in ApelinService.app.events(of: handle) {
+                    for try await event in LurosService.app.events(of: handle) {
                         guard event.kind == TaskEvent.stateKind,
                               let state = event.payload?["state"]?.stringValue.flatMap(TaskState.init(rawValue:)),
                               state.isTerminal
@@ -237,7 +237,7 @@ final class ModelActivationController: TableController, UISearchResultsUpdating 
                             throw CancellationError()
                         }
                         guard state == .succeeded else {
-                            throw ApelinError(
+                            throw LurosError(
                                 .unavailable,
                                 event.payload?["message"]?.stringValue
                                     ?? String(localized: "Model verification failed."),
@@ -245,7 +245,7 @@ final class ModelActivationController: TableController, UISearchResultsUpdating 
                         }
                         return
                     }
-                    throw ApelinError(.unavailable, String(localized: "Model verification did not finish."))
+                    throw LurosError(.unavailable, String(localized: "Model verification did not finish."))
                 }
                 finishSaving()
             } catch {

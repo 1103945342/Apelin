@@ -1,0 +1,300 @@
+import LurosProtocol
+import CoreFoundation
+import Foundation
+
+/// Where the `<system-state>` block's facts come from: the device's
+/// language and region settings and its clock. The worker reads them
+/// itself, as the mobile user it runs as, so a message another
+/// conversation sends gets them too; tests hand in their own.
+public struct SystemStateSource: Sendable {
+    /// The preferred languages, most preferred first, as BCP 47 tags.
+    public var languages: @Sendable () -> [String]
+    /// The region, an ISO 3166 code such as `CN`; nil when unset.
+    public var region: @Sendable () -> String?
+    public var now: @Sendable () -> Date
+    public var timeZone: @Sendable () -> TimeZone
+
+    public init(
+        languages: @escaping @Sendable () -> [String],
+        region: @escaping @Sendable () -> String?,
+        now: @escaping @Sendable () -> Date = { Date() },
+        timeZone: @escaping @Sendable () -> TimeZone = SystemStateSource.systemTimeZone,
+    ) {
+        self.languages = languages
+        self.region = region
+        self.now = now
+        self.timeZone = timeZone
+    }
+
+    /// The device's zone as it is now: Foundation keeps the one it read
+    /// first, and a worker outlives a flight.
+    public static let systemTimeZone: @Sendable () -> TimeZone = {
+        NSTimeZone.resetSystemTimeZone()
+        return TimeZone.current
+    }
+
+    /// The device's global preferences: `AppleLanguages` and `AppleLocale`
+    /// of the user the process runs as, read again each time (Settings
+    /// changes them while a worker runs), else what Foundation has.
+    public static let device = preferences { key in
+        CFPreferencesAppSynchronize(kCFPreferencesAnyApplication)
+        return CFPreferencesCopyValue(
+            key as CFString,
+            kCFPreferencesAnyApplication,
+            kCFPreferencesCurrentUser,
+            kCFPreferencesAnyHost,
+        )
+    }
+
+    /// Facts read through `value`, a reader of the global preferences.
+    public static func preferences(_ value: @escaping @Sendable (String) -> Any?) -> SystemStateSource {
+        SystemStateSource(
+            languages: {
+                let languages = (value("AppleLanguages") as? [String]) ?? []
+                return languages.isEmpty ? Locale.preferredLanguages : languages
+            },
+            region: {
+                SystemState.region(locale: value("AppleLocale") as? String)
+                    ?? SystemState.region(language: (value("AppleLanguages") as? [String])?.first)
+            },
+        )
+    }
+}
+
+/// What the model reads before every message the user, or another
+/// conversation, sends (`AgentSession.prompt` and `steer`): the system
+/// language and the reply rule, the local time, the approval mode on now
+/// and whether Ask Before Using the Screen is on (owner, 2026-10-30). Like
+/// `<project-context>` it is added to the text the model sees,
+/// never to the event the app shows, and it stays in that message of the
+/// transcript, so every later request sends the same bytes. What changes
+/// while a session runs lives here and nowhere in the system prompt, which
+/// is the session's snapshot (`PromptState`) and whose cache it would break.
+///
+/// The language, the time, the mode and the screen setting are in every
+/// block: a few dozen tokens, paid in full once and read from the cache
+/// after. Saying only
+/// what changed would save some forty a message, but the time changes on
+/// every one anyway, and a compaction that summarises the message that
+/// last named the language or the mode would leave the model guessing.
+/// What the system prompt shows — instructions, skills, memory, the
+/// environment — is said only when it changed, once, as a delta.
+///
+/// The reply rule names progress notes: on a device, a rule that said
+/// only "Reply" left a Chinese chat's notes between tool calls in the
+/// English of the build and install results before them.
+///
+/// Once per session host's run, the first message of a conversation that
+/// ran before the host started also says the host restarted
+/// (`restartNote`): on a roothide device the bootstrap's root had been
+/// renamed meanwhile, and a chat that went on trusted the paths in its
+/// history and spent a turn finding its toolchain and SDK "gone".
+enum SystemState {
+    static let openingTag = "<system-state>"
+    static let closingTag = "</system-state>"
+    /// How many preferred languages are named.
+    static let maximumLanguages = 3
+
+    struct Facts {
+        var languages: [String]
+        var region: String?
+        var date: Date
+        var timeZone: TimeZone
+        var mode: ApprovalMode
+        /// What this run may do, from the composer's pill; nil leaves the line
+        /// out, as a session opened before the app sent one would.
+        var runMode: LurosProtocol.AgentRunMode?
+        /// Ask Before Using the Screen, the app's setting beside the mode.
+        var asksBeforeScreen = true
+        /// What sent this message besides the app (`AgentPromptRequest.source`);
+        /// nil for the app's own. Names the channel, so the model knows the
+        /// reader is not looking at Luros.
+        var source: String?
+        /// The conversation whose agent opened this one
+        /// (`AgentSessionConfiguration.openerSessionID`); nil for one the app
+        /// opened.
+        var parentSessionID: String? = nil
+        /// The delegation plan as it is at this input boundary
+        /// (`ToolRunner.delegationLine`): the step open now and the revision.
+        /// Read per message, never cached into the system prompt.
+        var delegation: String? = nil
+        /// What changed since the model was last told (`PromptState`).
+        var changes: [String] = []
+        /// The session host restarted since the conversation last ran.
+        var hostRestarted = false
+        /// The install root now, which the restart note names.
+        var installRoot: String?
+    }
+
+    static func facts(
+        _ source: SystemStateSource,
+        mode: ApprovalMode,
+        runMode: LurosProtocol.AgentRunMode? = nil,
+        asksBeforeScreen: Bool = true,
+        changes: [String] = [],
+        hostRestarted: Bool = false,
+        installRoot: String? = nil,
+        parentSessionID: String? = nil,
+    ) -> Facts {
+        Facts(
+            languages: source.languages(),
+            region: source.region(),
+            date: source.now(),
+            timeZone: source.timeZone(),
+            mode: mode,
+            runMode: runMode,
+            asksBeforeScreen: asksBeforeScreen,
+            parentSessionID: parentSessionID,
+            changes: changes,
+            hostRestarted: hostRestarted,
+            installRoot: installRoot,
+        )
+    }
+
+    /// The block, ending with a blank line, to put before the message.
+    static func make(_ facts: Facts) -> String {
+        let languages = facts.languages.compactMap(tag).prefix(maximumLanguages)
+        let language = languages.first.map(name) ?? "not known"
+        var system = "- System language: \(language)"
+        if !languages.isEmpty {
+            system += "; preferred: " + languages.joined(separator: ", ")
+        }
+        if let region = facts.region.flatMap(regionCode) {
+            system += "; region \(region)"
+        }
+        let reply = languages.isEmpty
+            ? "- Write to the user in the language they write in, progress notes included."
+            : "- Write to the user in the language they write in, progress notes included; when that is unclear, in \(language)."
+        var lines = [
+            openingTag,
+            "Luros's note on this message, not the user's words; they do not see it.",
+            system + ".",
+            reply,
+            "- Local time: \(time(facts.date, in: facts.timeZone)).",
+            "- Approval mode: \(modeName(facts.mode)).",
+            "- Ask Before Using the Screen: \(facts.asksBeforeScreen ? "on" : "off").",
+        ]
+        if let source = facts.source, let line = channelLine(source) {
+            // Also here, and not in the system prompt: a conversation opened
+            // in Luros is reached from a phone with /use, and its prompt has
+            // no channel in it.
+            lines.append(line)
+        }
+        if let parent = facts.parentSessionID, isSessionID(parent) {
+            // The child knows where its turns go back to: the host reports
+            // each one that ends to that conversation, and the reader is not
+            // its agent.
+            lines.append("- This conversation was opened by the agent in conversation \(parent). When a turn of this conversation ends, a report of it goes back there automatically; that agent is not the reader you answer.")
+        }
+        if let delegation = facts.delegation {
+            // Read at this input boundary, so the step the model speaks from
+            // is the one the host admits; the system prompt keeps its bytes.
+            lines.append(delegation)
+        }
+        if let runMode = facts.runMode {
+            // Beside the approval mode rather than in the system prompt: the
+            // pill can change between messages, and the prompt is the
+            // session's snapshot.
+            lines.append("- This run: \(runMode.instruction)")
+        }
+        if facts.hostRestarted {
+            lines.append(restartNote(installRoot: facts.installRoot, changesBelow: !facts.changes.isEmpty))
+        }
+        if !facts.changes.isEmpty {
+            lines.append("- Changed since you were last told; the system prompt still shows the earlier state:")
+            // an entry's later lines indented under it
+            lines += facts.changes.map { "  - " + $0.replacingOccurrences(of: "\n", with: "\n    ") }
+        }
+        lines.append(closingTag)
+        return lines.joined(separator: "\n") + "\n\n"
+    }
+
+    /// What a message sent from a chat channel means for the reply: the
+    /// reader is in another app, where only text and the files `file_show`
+    /// hands over arrive. Nil for the app's own messages and for a channel
+    /// this build does not know.
+    static func channelLine(_ source: String) -> String? {
+        if source == ChatChannel.weChat {
+            return "- This message came from WeChat: the reader reads your reply there, not in Luros, and gets no file you do not hand them with file_show, which the channel sends to their WeChat."
+        }
+        return nil
+    }
+
+    /// That Luros's session host restarted since the conversation last
+    /// ran, and what that means for the paths in its history. The system
+    /// prompt is current: a session opened again takes it afresh.
+    static func restartNote(installRoot: String?, changesBelow: Bool) -> String {
+        let root = installRoot.map { " (install root now: \($0))" } ?? ""
+        let current = changesBelow
+            ? "the Environment section of the system prompt, with the changes below, is current"
+            : "the Environment section of the system prompt is current"
+        let sentences: [String] = [
+            "- Luros's background service has restarted since this conversation last ran: the device may have rebooted, and the jailbreak, Luros or the bootstrap's root path may have changed\(root).",
+            "Paths, toolchains, SDKs, processes and files named earlier in this conversation may be stale; \(current).",
+            "Check an earlier path before relying on it, and set up, install or import nothing again before checking what is registered now.",
+        ]
+        return sentences.joined(separator: " ")
+    }
+
+    static func modeName(_ mode: ApprovalMode) -> String {
+        switch mode {
+        case .relaxed: "Relaxed"
+        case .confirm: "Strict"
+        case .full: "Full"
+        }
+    }
+
+    /// `Saturday 2026-10-24 23:58, Asia/Shanghai (UTC+08:00)`.
+    static func time(_ date: Date, in zone: TimeZone) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = zone
+        formatter.dateFormat = "EEEE yyyy-MM-dd HH:mm"
+        let offset = zone.secondsFromGMT(for: date) / 60
+        let sign = offset < 0 ? "-" : "+"
+        let utc = String(format: "UTC%@%02d:%02d", sign, abs(offset) / 60, abs(offset) % 60)
+        return "\(formatter.string(from: date)), \(zone.identifier) (\(utc))"
+    }
+
+    /// `zh-Hans-CN` as English names it: `Chinese (Simplified, China mainland)`.
+    private static func name(_ tag: String) -> String {
+        Locale(identifier: "en_US_POSIX").localizedString(forIdentifier: tag) ?? tag
+    }
+
+    /// A language tag as the preferences hold it, or nil for anything that
+    /// is not one: they are a file the user can write.
+    private static func tag(_ value: String) -> String? {
+        let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")
+        guard !value.isEmpty, value.count <= 35, value.unicodeScalars.allSatisfy(allowed.contains) else { return nil }
+        return value.replacingOccurrences(of: "_", with: "-")
+    }
+
+    /// A session id, which is what may be named in the block: a value from
+    /// anywhere else is left out rather than spelled into it.
+    static func isSessionID(_ value: String) -> Bool {
+        UUID(uuidString: value) != nil
+    }
+
+    private static func regionCode(_ value: String) -> String? {
+        let code = value.uppercased()
+        guard (2 ... 3).contains(code.count), code.allSatisfy({ $0.isASCII && ($0.isLetter || $0.isNumber) }) else { return nil }
+        return code
+    }
+
+    /// The region of `AppleLocale` (`zh_CN`, `en_GB@calendar=…`).
+    static func region(locale: String?) -> String? {
+        guard let locale else { return nil }
+        let base = locale.split(separator: "@").first.map(String.init) ?? locale
+        let parts = base.split(whereSeparator: { $0 == "_" || $0 == "-" })
+        guard parts.count >= 2, let last = parts.last else { return nil }
+        return regionCode(String(last))
+    }
+
+    /// The region subtag of a language tag (`zh-Hans-CN` → `CN`).
+    static func region(language: String?) -> String? {
+        guard let language else { return nil }
+        let parts = language.split(whereSeparator: { $0 == "_" || $0 == "-" }).dropFirst()
+        return parts.last { $0.count == 2 || ($0.count == 3 && $0.allSatisfy(\.isNumber)) }.flatMap { regionCode(String($0)) }
+    }
+}

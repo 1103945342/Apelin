@@ -18,7 +18,7 @@ other.
 
 ## Rules (the host enforces every one)
 
-Written down in `Packages/ApelinKit/Sources/ApelinProtocol/Operations/Agent.swift`
+Written down in `Packages/LurosKit/Sources/LurosProtocol/Operations/Agent.swift`
 (`AgentConversations`) and in `AGENTS.md` ▸ Agent sessions ▸ Conversations.
 
 - An agent may call `agentOpen`, `agentPrompt`, `agentList`, `agentAttach`,
@@ -63,14 +63,14 @@ Done already (in the branch commit): `AgentConversations`,
   events (`resumed` in `Session/TaskResume.swift`, the registry's append).
 - Tests in `Tests/SessionHost/`: CallerPolicy and each rule.
 
-## Work package 2 — agent tools (`Packages/ApelinAgent/`)
+## Work package 2 — agent tools (`Packages/LurosAgent/`)
 
 Follow how the git tools were added (`Tools/ToolCatalog.swift`,
 `Tools/ToolRunner.swift`, `Backend/AgentHostBackend.swift`,
-`ApelinAgentWorker/ChannelHostBackend.swift`,
-`Tests/ApelinAgentTests/GitToolTests.swift`, the mocks in
-`Tests/ApelinAgentTests/Support.swift` and
-`Tests/ApelinAgentLiveTests/CopilotLiveTests.swift`).
+`LurosAgentWorker/ChannelHostBackend.swift`,
+`Tests/LurosAgentTests/GitToolTests.swift`, the mocks in
+`Tests/LurosAgentTests/Support.swift` and
+`Tests/LurosAgentLiveTests/CopilotLiveTests.swift`).
 
 Project chats only (`isProjectOnly`), not General Chat:
 
@@ -87,7 +87,7 @@ still ask the user.
 
 - Worker: when `AgentPromptRequest.fromSessionID` is set, the `prompt` event
   payload gains `from: <sessionID>` (EventRelay in
-  `ApelinAgentWorker/AgentWorker.swift`), and the model sees one short
+  `LurosAgentWorker/AgentWorker.swift`), and the model sees one short
   prefix line saying the message came from conversation <title or id>,
   not from the user.
 - `Session/SystemPrompt.swift`, a short Conversations section: delegate an

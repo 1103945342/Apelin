@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// An agent's build of a workspace, which runs the workspace's own script
@@ -23,12 +23,12 @@ enum AgentExternalBuildRules {
     }
 
     /// Spends that approval, or the refusal when the session has none.
-    static func authorize(_ build: BuildStartRequest, session: String?, registry: TaskRegistry) async -> ApelinError? {
+    static func authorize(_ build: BuildStartRequest, session: String?, registry: TaskRegistry) async -> LurosError? {
         guard let session, let entry = await AgentSessionTable.shared.entry(session) else {
-            return ApelinError(.denied, "no agent session for this worker")
+            return LurosError(.denied, "no agent session for this worker")
         }
         guard await AgentApprovals.spend(entry: entry, registry: registry, covers: { covers(build, asked: $0) }) else {
-            return ApelinError(
+            return LurosError(
                 .denied,
                 "approval required: the user has not approved this build of the workspace \(build.projectID), which runs its own build script",
             )

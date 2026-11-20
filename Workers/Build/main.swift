@@ -1,13 +1,13 @@
-import ApelinBuild
-import ApelinProtocol
+import LurosBuild
+import LurosProtocol
 
 // luros-build: Extensions, templates, projects and builds.
 //
 // Runs as mobile, spawned by lurosd's session host with its socketpair as
 // descriptor 3; WorkerMain does the assignment and the privilege check.
-// Links ApelinCore, ApelinProtocol, ApelinProject, ApelinBuild — see AGENTS.md ▸ Decisions ▸ Process layout.
+// Links LurosCore, LurosProtocol, LurosProject, LurosBuild — see AGENTS.md ▸ Decisions ▸ Process layout.
 //
-// Everything is ApelinBuild's BuildWorker; its doc comment is the contract.
+// Everything is LurosBuild's BuildWorker; its doc comment is the contract.
 
 /// The one BuildWorker, made from the assignment on the first request.
 private final class WorkerBox: @unchecked Sendable {

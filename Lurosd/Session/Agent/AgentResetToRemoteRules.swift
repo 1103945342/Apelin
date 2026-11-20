@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// An agent's `gitResetToRemote` (git_reset_to_remote, issue #32): the
@@ -31,16 +31,16 @@ enum AgentResetToRemoteRules {
 
     /// Nil once the approval that covers it is spent, else why not. In
     /// every mode.
-    static func authorize(_ reset: GitResetToRemoteRequest, session: String?, registry: TaskRegistry) async -> ApelinError? {
+    static func authorize(_ reset: GitResetToRemoteRequest, session: String?, registry: TaskRegistry) async -> LurosError? {
         guard let session, let entry = await AgentSessionTable.shared.entry(session) else {
-            return ApelinError(.denied, "no agent session for this worker")
+            return LurosError(.denied, "no agent session for this worker")
         }
         guard reset.expectedURL != nil,
               await AgentApprovals.spend(entry: entry, registry: registry, covers: {
                   covers(reset, project: entry.project.id, asked: $0)
               })
         else {
-            return ApelinError(
+            return LurosError(
                 .denied,
                 "approval required: the user has not approved making this project exactly \(reset.remote)/\(reset.branch) at \(reset.expectedRemoteCommit.prefix(7)); a reset discards local work and asks in every mode",
             )

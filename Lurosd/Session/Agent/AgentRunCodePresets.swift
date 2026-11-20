@@ -1,14 +1,14 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Darwin
 import Foundation
 
 /// What Confirm lets through on the host's own reading, with no user
-/// approval: the read-only commands ApelinAgent's default presets name (ls,
+/// approval: the read-only commands LurosAgent's default presets name (ls,
 /// cat, head, tail, wc, file, stat, `plutil -p`, `git status|diff|log`),
 /// and only when they stay read-only and in the project. Anything else is
 /// not a preset and needs an approval the app gave. Which words make a
-/// preset is `RunCodePresetRule` (ApelinProtocol), the rule the agent reads
+/// preset is `RunCodePresetRule` (LurosProtocol), the rule the agent reads
 /// too; the paths and the repository are checked here.
 ///
 /// A file tool's every path argument (and every `--option=value` value)
@@ -115,7 +115,7 @@ extension AgentRunCode {
     /// The keys a repository's own config may hold for a git preset to run
     /// without asking, as `git config --list` names them (section and key
     /// lowercased): what `git init` and a clone write, the author, and the
-    /// task a clone was made by (`apelin.cloneTask`, ApelinEnvironment's
+    /// task a clone was made by (`apelin.cloneTask`, LurosEnvironment's
     /// GitService). Anything else — a filter, a textconv or external diff
     /// driver, an fsmonitor, a pager, an include — is something git might
     /// run.

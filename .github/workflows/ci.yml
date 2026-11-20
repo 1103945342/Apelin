@@ -98,7 +98,7 @@ jobs:
 
       - name: Regenerate the system prompt
         shell: bash
-        run: Packages/ApelinAgent/Scripts/sync-prompts.sh
+        run: Packages/LurosAgent/Scripts/sync-prompts.sh
 
       - name: Run host tests
         run: make harness SWIFTPM_SCRATCH="$RUNNER_TEMP/luros-spm"
@@ -141,7 +141,7 @@ jobs:
 
       - name: Regenerate the system prompt
         shell: bash
-        run: Packages/ApelinAgent/Scripts/sync-prompts.sh
+        run: Packages/LurosAgent/Scripts/sync-prompts.sh
 
       # The harness runs in the job beside this one. deb-all packages the IDE
       # for both flavours, then every extension: the development extensions
@@ -158,7 +158,7 @@ jobs:
           set -euo pipefail
           version="$(make --no-print-directory print-version)"
           cd "$DERIVED_DATA/Build/Products/Release-iphoneos"
-          zip -qry "$GITHUB_WORKSPACE/build/Packages/Apelin_${version}_dSYMs.zip" ./*.dSYM
+          zip -qry "$GITHUB_WORKSPACE/build/Packages/Luros_${version}_dSYMs.zip" ./*.dSYM
 
       - name: Write checksums
         shell: bash

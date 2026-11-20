@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 /// What the package database says is installed, read from the file, never
@@ -30,7 +30,7 @@ struct DpkgStatusDatabase: InstalledPackageSource {
 
     func installedPackages() throws -> [String: InstalledPackage] {
         guard let data = FileManager.default.contents(atPath: path) else {
-            throw ApelinError(.unavailable, "The list of installed packages could not be read. Try again.")
+            throw LurosError(.unavailable, "The list of installed packages could not be read. Try again.")
         }
         return Self.parse(String(decoding: data, as: UTF8.self))
     }
@@ -147,11 +147,11 @@ enum ManagedPackagePolicy {
         records: [InstallationRecord],
     ) throws {
         guard isValidPackageID(packageID) else {
-            throw ApelinError(.badRequest, "\(packageID) is not a valid package ID")
+            throw LurosError(.badRequest, "\(packageID) is not a valid package ID")
         }
         let current = installed[packageID]
         guard !isReserved(packageID, installed: current, origin: origin) else {
-            throw ApelinError(
+            throw LurosError(
                 .denied,
                 origin == .environment
                     ? "a toolchain package is \(toolchainPrefix)<id>, not \(packageID)"
@@ -163,7 +163,7 @@ enum ManagedPackagePolicy {
             $0.packageID == packageID && $0.status == .installed && $0.version == current.version
         }
         guard ours else {
-            throw ApelinError(
+            throw LurosError(
                 .conflict,
                 "\(packageID) \(current.version) is already installed from another source. Remove it with your preferred package manager, then try again.",
             )
@@ -177,20 +177,20 @@ enum ManagedPackagePolicy {
         records: [InstallationRecord],
     ) throws {
         guard let record else {
-            throw ApelinError(
+            throw LurosError(
                 .notFound,
                 "Luros did not install this package. Remove it with your preferred package manager.",
             )
         }
         guard record.status == .installed, record.receipt?.isInstalled == true else {
-            throw ApelinError(
+            throw LurosError(
                 .denied,
                 "This package is not installed, or it is still being installed or removed.",
             )
         }
         let current = installed[record.packageID]
         guard !isReserved(record.packageID, installed: current, origin: record.origin) else {
-            throw ApelinError(
+            throw LurosError(
                 .denied,
                 record.origin == .environment
                     ? "\(record.packageID) is not a toolchain package, so the environment cannot remove it."
@@ -198,10 +198,10 @@ enum ManagedPackagePolicy {
             )
         }
         guard let current, current.isInstalled else {
-            throw ApelinError(.conflict, "\(record.packageID) is no longer installed.")
+            throw LurosError(.conflict, "\(record.packageID) is no longer installed.")
         }
         guard current.version == record.version else {
-            throw ApelinError(
+            throw LurosError(
                 .conflict,
                 "\(record.packageID) is now version \(current.version), not version \(record.version) that Luros installed. Remove it with your preferred package manager.",
             )
@@ -210,7 +210,7 @@ enum ManagedPackagePolicy {
         if let newer = records.filter({
             $0.packageID == record.packageID && $0.status == .installed && $0.createdAt > record.createdAt
         }).max(by: { $0.createdAt < $1.createdAt }) {
-            throw ApelinError(
+            throw LurosError(
                 .conflict,
                 "A newer installation of \(record.packageID) exists: \(newer.installationID). Remove that installation instead.",
             )

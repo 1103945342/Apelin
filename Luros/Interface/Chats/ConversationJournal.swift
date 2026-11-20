@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Dog
 import Foundation
 
@@ -40,7 +40,7 @@ enum ConversationJournal {
     /// Compact… could not be asked for, or its answer never came.
     static func compactFailed(_ error: any Error, session: String?) {
         // the code and the host's words, which an alert puts in the reader's
-        let description = (error as? ApelinError)?.description ?? error.localizedDescription
+        let description = (error as? LurosError)?.description ?? error.localizedDescription
         write("Compact could not run in session=\(session ?? "-"): \(description)")
     }
 

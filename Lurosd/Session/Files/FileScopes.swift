@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Darwin
 import Foundation
 
@@ -29,11 +29,11 @@ struct FileScopes: Sendable {
 
     func resolve(_ scopeID: String, caller: Caller) throws -> Scope {
         guard !CanonicalPath.containsNUL(scopeID), !scopeID.isEmpty else {
-            throw ApelinError(.badRequest, "the scope is empty or contains a NUL byte")
+            throw LurosError(.badRequest, "the scope is empty or contains a NUL byte")
         }
         let root = installRoot == "/" ? "" : installRoot
         if let id = Self.suffix(scopeID, "grant:") {
-            guard caller == .app else { throw ApelinError(.denied, "only the app can use a protected-edit grant") }
+            guard caller == .app else { throw LurosError(.denied, "only the app can use a protected-edit grant") }
             return .grant(id)
         }
         if let id = Self.suffix(scopeID, "sdk:") {
@@ -63,12 +63,12 @@ struct FileScopes: Sendable {
         }
         if let name = Self.suffix(scopeID, "project:") {
             guard ProjectName.validate(name) == nil else {
-                throw ApelinError(.badRequest, "not a project name: \(name)")
+                throw LurosError(.badRequest, "not a project name: \(name)")
             }
             return .directory(dataFolder.projects.appendingPathComponent(name).path)
         }
         guard let directory = projectDirectory(id: scopeID) else {
-            throw ApelinError(.notFound, "no project with ID \(scopeID)")
+            throw LurosError(.notFound, "no project with ID \(scopeID)")
         }
         return .directory(directory)
     }
@@ -90,17 +90,17 @@ struct FileScopes: Sendable {
     /// Opens `relativePath` inside `directory`, read-only.
     static func open(_ relativePath: String, inside directory: String) throws -> (OwnedDescriptor, String) {
         guard let root = CanonicalPath.resolve(directory) else {
-            throw ApelinError(.notFound, "the scope's folder does not exist")
+            throw LurosError(.notFound, "the scope's folder does not exist")
         }
         guard !relativePath.isEmpty, relativePath != "." else {
-            throw ApelinError(.badRequest, "name a file inside the scope")
+            throw LurosError(.badRequest, "name a file inside the scope")
         }
         guard CanonicalPath.isPlainRelative(relativePath) else {
-            throw ApelinError(.badRequest, "\(relativePath) is not a plain relative path")
+            throw LurosError(.badRequest, "\(relativePath) is not a plain relative path")
         }
         let joined = root + "/" + relativePath
         guard let canonical = CanonicalPath.resolve(joined), CanonicalPath.isCanonical(canonical, inside: root) else {
-            throw ApelinError(.denied, "\(relativePath) leads outside the scope")
+            throw LurosError(.denied, "\(relativePath) leads outside the scope")
         }
         return try openRegular(canonical, inside: root)
     }
@@ -108,15 +108,15 @@ struct FileScopes: Sendable {
     static func openRegular(_ canonical: String, inside root: String) throws -> (OwnedDescriptor, String) {
         let descriptor = Darwin.open(canonical, O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC)
         guard descriptor >= 0 else {
-            throw ApelinError(.notFound, "\(canonical): \(String(cString: strerror(errno)))")
+            throw LurosError(.notFound, "\(canonical): \(String(cString: strerror(errno)))")
         }
         let owned = OwnedDescriptor(adopting: descriptor)
         guard let opened = Self.descriptorPath(descriptor), CanonicalPath.isCanonical(opened, inside: root) else {
-            throw ApelinError(.denied, "the file moved outside the scope while it was opened")
+            throw LurosError(.denied, "the file moved outside the scope while it was opened")
         }
         var metadata = stat()
         guard fstat(descriptor, &metadata) == 0, metadata.st_mode & S_IFMT == S_IFREG else {
-            throw ApelinError(.badRequest, "\(canonical) is not a regular file")
+            throw LurosError(.badRequest, "\(canonical) is not a regular file")
         }
         return (owned, opened)
     }
@@ -138,7 +138,7 @@ struct FileScopes: Sendable {
 
     private func component(_ base: String, _ id: String) throws -> String {
         guard !id.isEmpty, !id.contains("/"), id != ".", id != "..", !id.hasPrefix(".") else {
-            throw ApelinError(.badRequest, "not an ID: \(id)")
+            throw LurosError(.badRequest, "not an ID: \(id)")
         }
         return base + "/" + id
     }

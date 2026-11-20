@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 
 /// An environment task as the progress page shows it, folded from its
@@ -282,7 +282,7 @@ extension EnvironmentTaskProgress {
         var text = message.trimmingCharacters(in: .whitespacesAndNewlines)
         while !text.isEmpty {
             if let colon = text.firstIndex(of: ":"),
-               ApelinError.Code(rawValue: String(text[..<colon])) != nil
+               LurosError.Code(rawValue: String(text[..<colon])) != nil
             {
                 text = String(text[text.index(after: colon)...]).trimmingCharacters(in: .whitespacesAndNewlines)
             } else if let prefix = ["install bridge:", "[!!]"].first(where: { text.hasPrefix($0) }) {

@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Then
 import UIKit
 
@@ -174,7 +174,7 @@ final class SDKDetailController: TableController {
                     cancellable: false,
                     from: self,
                 ) { _ in
-                    try await ApelinService.app.sdkRemove(id: record.id)
+                    try await LurosService.app.sdkRemove(id: record.id)
                 }
                 onRemove?()
                 navigationController?.popViewController(animated: true)

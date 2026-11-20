@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import Foundation
 import GhosttyTerminal
 
@@ -233,7 +233,7 @@ final class TerminalSession {
         finish(ending: .stopped)
         if let closing {
             Task.detached {
-                try? await ApelinService.app.ptyClose(sessionID: closing)
+                try? await LurosService.app.ptyClose(sessionID: closing)
             }
         }
     }
@@ -323,7 +323,7 @@ final class TerminalSession {
         var batch: TaskEventBatch
         var descriptors: [OwnedDescriptor] = []
         do {
-            (batch, descriptors) = try await ApelinService.app.sendReturningDescriptors(
+            (batch, descriptors) = try await LurosService.app.sendReturningDescriptors(
                 PtyAttachRequest(
                     taskID: taskID,
                     afterSeq: EventSeq(attachment.cursor),
@@ -334,7 +334,7 @@ final class TerminalSession {
             )
         } catch {
             guard token == attachToken else { return }
-            batch = try await ApelinService.app.ptyAttach(
+            batch = try await LurosService.app.ptyAttach(
                 taskID: taskID,
                 afterSeq: EventSeq(attachment.cursor),
                 waitMilliseconds: 0
@@ -418,7 +418,7 @@ final class TerminalSession {
                 // as live input. The attempt fails, and the page may rebuild.
                 throw TerminalReplayError.catchUpTimedOut
             }
-            let more = try await ApelinService.app.ptyAttach(
+            let more = try await LurosService.app.ptyAttach(
                 taskID: taskID,
                 afterSeq: EventSeq(attachment.cursor),
                 waitMilliseconds: 0
@@ -453,7 +453,7 @@ final class TerminalSession {
     /// the attach loop, which retries from the same cursor.
     private func follow(token: Int, taskID: TaskID) async throws {
         while !Task.isCancelled, token == attachToken, !isFinished {
-            let batch = try await ApelinService.app.ptyAttach(
+            let batch = try await LurosService.app.ptyAttach(
                 taskID: taskID,
                 afterSeq: EventSeq(attachment.cursor)
             )
@@ -735,14 +735,14 @@ final class TerminalSession {
     private func performOpen(columns: Int, rows: Int) async throws {
         phase = .opening
         onChange?()
-        let opened = try await ApelinService.app.ptyOpen(openRequest(columns: columns, rows: rows))
+        let opened = try await LurosService.app.ptyOpen(openRequest(columns: columns, rows: rows))
         sessionID = opened.sessionID
         taskID = opened.task.taskID
         resize.configure(service: .app, sessionID: opened.sessionID)
         if attachment.shellOpened() == .close {
             // The reader ended the terminal while its shell was starting: the
             // shell exists now, so it is closed here rather than left behind.
-            try? await ApelinService.app.ptyClose(sessionID: opened.sessionID)
+            try? await LurosService.app.ptyClose(sessionID: opened.sessionID)
             sessionID = nil
             taskID = nil
             finish(ending: .stopped)
@@ -756,7 +756,7 @@ final class TerminalSession {
     // MARK: - Ending
 
     private func isHostLost(_ error: Error) -> Bool {
-        guard let apelin = error as? ApelinError else { return false }
+        guard let apelin = error as? LurosError else { return false }
         return apelin.code == .notFound
     }
 

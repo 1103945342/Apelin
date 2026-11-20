@@ -46,7 +46,7 @@
     {
       "id": "tool",
       "type": "executable",
-      "name": "apelinhello",
+      "name": "luroshello",
       "sources": [
         "Sources/*.c"
       ],
@@ -103,7 +103,7 @@
     ]
   },
   "package": {
-    "id": "com.example.apelinhello",
+    "id": "com.example.luroshello",
     "name": "Luros Hello",
     "version": "0.0.1",
     "description": "Built on this device with Luros.",
@@ -111,13 +111,13 @@
     "section": "Utilities",
     "layout": [
       {
-        "path": "/usr/bin/apelinhello",
+        "path": "/usr/bin/luroshello",
         "product": "tool",
         "mode": "0755"
       },
       {
-        "path": "/etc/apelinhello.conf",
-        "file": "Packaging/apelinhello.conf",
+        "path": "/etc/luroshello.conf",
+        "file": "Packaging/luroshello.conf",
         "substitutePrefix": true
       }
     ],

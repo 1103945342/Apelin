@@ -1,5 +1,5 @@
 import AlertController
-import ApelinProtocol
+import LurosProtocol
 import SPIndicator
 import UIKit
 
@@ -44,7 +44,7 @@ enum StarPrompt {
             isChecking = true
             defer { isChecking = false }
             state.recordCheck(at: now)
-            guard let starred = try? await ApelinService.app.feedbackStarState().starred else { return }
+            guard let starred = try? await LurosService.app.feedbackStarState().starred else { return }
             guard !starred else {
                 state.finish()
                 return
@@ -67,14 +67,14 @@ enum StarPrompt {
     }
 
     private static func isSignedInWithGitHub() async -> Bool {
-        guard let settings = try? await ApelinService.app.gitSettings() else { return false }
+        guard let settings = try? await LurosService.app.gitSettings() else { return false }
         return settings.credentials.contains { $0.host == GitHubDeviceFlow.host }
     }
 
     private static func star(from page: UIViewController) {
         Task {
             do {
-                _ = try await ApelinService.app.feedbackStar()
+                _ = try await LurosService.app.feedbackStar()
                 let star = UIImage(systemName: "star.fill")?.withTintColor(.systemYellow, renderingMode: .alwaysOriginal)
                 SPIndicator.present(
                     title: String(localized: "Thank You"),

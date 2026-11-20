@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import Foundation
 
 /// `Terminals/sessions.json`: what survives a relaunch, what one unreadable

@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import Foundation
 
 /// A name the user touched is theirs, even when they type the suggestion again.

@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import UIKit
 
 /// A single, bounded account-worker request, never a chat or a model selection.
@@ -77,9 +77,9 @@ final class ModelConnectivityController: UITableViewController {
         work = Task { [weak self] in
             guard let self else { return }
             do {
-                let handle = try await ApelinService.app.agentModelTest(request)
+                let handle = try await LurosService.app.agentModelTest(request)
                 if Task.isCancelled { return }
-                for try await event in ApelinService.app.events(of: handle) {
+                for try await event in LurosService.app.events(of: handle) {
                     if Task.isCancelled { return }
                     if apply(event) { break }
                 }

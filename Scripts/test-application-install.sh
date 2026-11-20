@@ -9,7 +9,7 @@ cd "$(dirname "$0")/.."
 mkdir -p build
 work="$(mktemp -d build/application-install.XXXXXX)"
 trap 'rm -rf -- "${work:?}"' EXIT
-core=Packages/ApelinKit/Sources/ApelinCore
+core=Packages/LurosKit/Sources/LurosCore
 compiler=(xcrun --sdk macosx swiftc -target arm64-apple-macos13.0)
 live=()
 if [[ "${1:-}" == --device ]]; then
@@ -28,9 +28,9 @@ if [[ "${1:-}" == --device ]]; then
     live=("$install_root" "$install_root/usr/bin/ldid" "$APELIN_PROJECT_ROOT/$work/fixture" "$APELIN_PROJECT_ROOT/$work/sleeper")
 fi
 "${compiler[@]}" -swift-version 5 -parse-as-library -whole-module-optimization \
-    -module-name ApelinCore -emit-module -emit-module-path "$work/ApelinCore.swiftmodule" \
-    -emit-object "$core/CanonicalPath.swift" "$core/BootstrapRootPath.swift" -o "$work/ApelinCore.o"
-"${compiler[@]}" -swift-version 5 -I "$work" "$work/ApelinCore.o" \
+    -module-name LurosCore -emit-module -emit-module-path "$work/LurosCore.swiftmodule" \
+    -emit-object "$core/CanonicalPath.swift" "$core/BootstrapRootPath.swift" -o "$work/LurosCore.o"
+"${compiler[@]}" -swift-version 5 -I "$work" "$work/LurosCore.o" \
     Lurosd/ProcessList.swift Lurosd/Session/Install/AppBundle.swift \
     Lurosd/Session/Install/ApplicationInstall.swift Tests/ApplicationInstall/main.swift \
     -o "$work/check"

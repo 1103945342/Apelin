@@ -10,7 +10,7 @@ Two documents, both JSON, both versioned, both read and never executed:
 The schemas are JSON Schema draft 2020-12. This file is the specification:
 where it says more than a schema can, it wins, and the rules marked
 **beyond the schema** are checked by `projectCheck` and the extension scanner.
-`Tools/apelin_schema.py` is the reference implementation (standard library
+`Tools/luros_schema.py` is the reference implementation (standard library
 only); the Swift side is tested against the same fixtures.
 
 ```
@@ -220,7 +220,7 @@ product's own and is not given to a module.
 A build's work directory is wiped when the build starts (`BuildService`), so
 nothing in it survives to the next one. What a compile made is kept beside
 the builds instead, content addressed:
-`Builds/.build-cache/<projectID>/` (`BuildCache` in `ApelinBuild`). A unit —
+`Builds/.build-cache/<projectID>/` (`BuildCache` in `LurosBuild`). A unit —
 one Swift module for one architecture, a product's own Swift compile, or one
 C-family file — is compiled again only when its key differs from the one an
 entry was stored with. The key covers the toolchain's and the SDK's digests,
@@ -581,5 +581,5 @@ digest covers; a build leaves such a manifest as it is. A file that breaks a rul
 **JSON** above is left as it is. A file already in the form is the same
 bytes and is not written again. The template files themselves are not JSON
 before substitution and keep their own layout. The reference
-implementation's `manifest_text` and ApelinProject's `ProjectManifestFormat`
+implementation's `manifest_text` and LurosProject's `ProjectManifestFormat`
 write it; `Fixtures/manifest-format.json` holds both to it.

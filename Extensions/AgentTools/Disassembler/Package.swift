@@ -13,7 +13,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "ApelinAgentToolsDisassembler",
+    name: "LurosAgentToolsDisassembler",
     platforms: [
         .iOS(.v16),
         .macOS(.v13),
@@ -23,7 +23,7 @@ let package = Package(
         .executable(name: "luros-assembler", targets: ["luros-assembler"]),
     ],
     dependencies: [
-        .package(path: "../../../Packages/ApelinToolHost"),
+        .package(path: "../../../Packages/LurosToolHost"),
         .package(url: "https://github.com/Lakr233/libcapstone-spm.git", exact: "0.1.3"),
         // Tag 0.1.2, pinned by revision: CoreKeystone carries `unsafeFlags`,
         // which SwiftPM refuses in a dependency required by version.
@@ -36,7 +36,7 @@ let package = Package(
             dependencies: [
                 "MachOReader",
                 .product(name: "Capstone", package: "libcapstone-spm"),
-                .product(name: "ApelinToolExtension", package: "ApelinToolHost"),
+                .product(name: "LurosToolExtension", package: "LurosToolHost"),
             ],
         ),
         .executableTarget(name: "luros-disassembler", dependencies: ["DisassemblerTools"]),
@@ -44,7 +44,7 @@ let package = Package(
             name: "AssemblerTools",
             dependencies: [
                 .product(name: "Keystone", package: "libkeystone-spm"),
-                .product(name: "ApelinToolExtension", package: "ApelinToolHost"),
+                .product(name: "LurosToolExtension", package: "LurosToolHost"),
             ],
         ),
         .executableTarget(name: "luros-assembler", dependencies: ["AssemblerTools"]),
@@ -54,7 +54,7 @@ let package = Package(
                 "MachOReader",
                 "luros-disassembler",
                 "luros-assembler",
-                .product(name: "ApelinToolHost", package: "ApelinToolHost"),
+                .product(name: "LurosToolHost", package: "LurosToolHost"),
             ],
         ),
     ],

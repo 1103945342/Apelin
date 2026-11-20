@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import SnapKit
 import Then
 import UIKit
@@ -251,7 +251,7 @@ final class ToolchainDetailController: TableController {
                 moreItem.isEnabled = true
             }
             do {
-                try await ApelinService.app.toolchainSetDefault(id: record.id)
+                try await LurosService.app.toolchainSetDefault(id: record.id)
                 isDefault = true
                 updateRows()
                 onChange?()
@@ -294,9 +294,9 @@ final class ToolchainDetailController: TableController {
                     cancellable: false,
                     from: self,
                 ) { update in
-                    let handle = try await ApelinService.app.toolchainRemove(id: record.id)
+                    let handle = try await LurosService.app.toolchainRemove(id: record.id)
                     var progress = EnvironmentTaskProgress(work: .toolchainRemoval)
-                    for try await event in ApelinService.app.events(of: handle) {
+                    for try await event in LurosService.app.events(of: handle) {
                         progress.apply(event)
                         if let detail = progress.detail, !detail.isEmpty {
                             update(ProgressCard.Status(subtitle: detail))
@@ -400,7 +400,7 @@ private final class SelfTestsController: TableController {
     @objc private dynamic func runAgain() {
         Task { [weak self, record] in
             do {
-                let handle = try await ApelinService.app.toolchainSelfTest(id: record.id)
+                let handle = try await LurosService.app.toolchainSelfTest(id: record.id)
                 guard let self else { return }
                 let page = EnvironmentTaskController(
                     handle: handle,
@@ -419,7 +419,7 @@ private final class SelfTestsController: TableController {
     @objc private dynamic func reload() {
         dataSource.beginLoad()
         Task { [weak self, record] in
-            guard let status = try? await ApelinService.app.toolchainStatus(),
+            guard let status = try? await LurosService.app.toolchainStatus(),
                   let fresh = status.toolchains.first(where: { $0.id == record.id })?.selfTests,
                   let self
             else { return }

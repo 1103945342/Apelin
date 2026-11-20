@@ -1,6 +1,6 @@
 # Device-side CLT retarget validation — 2026-10-17
 
-The standalone `Packages/ApelinToolchain` base pipeline downloaded Apple's CLT,
+The standalone `Packages/LurosToolchain` base pipeline downloaded Apple's CLT,
 extracted it, adapted and signed it **on both devices as uid/gid 501**. C, C++
 and Objective-C compiled, linked and ran for arm64 and arm64e; every executable's
 UUID matched its dSYM. This is the package on its own, driven by its probe;
@@ -136,7 +136,7 @@ shipped with. The same setups on the Mac produced byte-identical manifests
 under retarget scheme 2 (▸ Retarget scheme 2), whose C case also calls
 `__builtin_available`; the first, under scheme 1, passed the same way with
 one file fewer per tree and other IDs. The reviewed list is
-`CommandLineToolsSupport.releases` in `Packages/ApelinToolchain`; anything
+`CommandLineToolsSupport.releases` in `Packages/LurosToolchain`; anything
 else is refused with a sentence naming the version and the reason.
 
 | CLT | Product | Toolchain ID | Files | Setup on the vphone | Self-test SDK | Six cases | Weak-loaded system library |
@@ -383,7 +383,7 @@ the same way.
 
 Supporting these CPUs would mean rewriting machine code (each `udot` has an
 equal-length `uaddlp` pair; each `eor3` needs a branch out), which the
-retarget does not do. Instead `HostCPU` (ApelinCore) reads the kernel's
+retarget does not do. Instead `HostCPU` (LurosCore) reads the kernel's
 `hw.optional.arm.FEAT_*`: without FEAT_LRCPC no toolchain is set up or
 offered; without FEAT_SHA3 and FEAT_DotProd the catalog offers no Swift,
 setup refuses it, and `projectCheck` reports `environment.device.swift` for
@@ -451,7 +451,7 @@ the resulting tree, but never installs it. The research helper and compiler bina
 
 `ToolchainCatalog.list`, `ToolchainSetup.run`, `ToolchainSetup.verify`,
 `ToolchainSetup.installAndValidate` and `ToolchainSelfTest.run` are documented in
-[the package README](../../Packages/ApelinToolchain/README.md). Progress stages
+[the package README](../../Packages/LurosToolchain/README.md). Progress stages
 are downloading → extracting → adapting → packaging → installing → validating
 → ready. Setup returns a signed installable tree at packaging. The authenticated
 Irisin transaction is supplied by the environment host; this package adds no
@@ -534,7 +534,7 @@ remain local, outside version control.
 
 These 12 exact source packages were inspected on the Mac without executing
 their host tools. The compact, hashed record is
-[`compatibility-audit.json`](../../Packages/ApelinToolchain/Tests/ApelinToolchainTests/Fixtures/compatibility-audit.json).
+[`compatibility-audit.json`](../../Packages/LurosToolchain/Tests/LurosToolchainTests/Fixtures/compatibility-audit.json).
 Counts include repeated files when the installed tree contains aliases.
 
 | CLT | Apple product | Host images | LRCPC words | SHA3 words | DotProd words | Unclassified words |

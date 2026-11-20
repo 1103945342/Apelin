@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import UIKit
 
 /// Says once that conversations are not being saved, while they go on in

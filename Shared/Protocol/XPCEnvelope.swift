@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 import XPC
 
@@ -24,21 +24,21 @@ enum XPCEnvelope {
 
     /// Reads a request. The operation is checked against the closed list and
     /// the version against ours before anything else is read.
-    static func request(from message: xpc_object_t) -> Result<(WireRequest, [OwnedDescriptor]), ApelinError> {
+    static func request(from message: xpc_object_t) -> Result<(WireRequest, [OwnedDescriptor]), LurosError> {
         guard xpc_get_type(message) == AppXPC.typeDictionary else {
-            return .failure(ApelinError(.badRequest, "not a dictionary"))
+            return .failure(LurosError(.badRequest, "not a dictionary"))
         }
         let version = xpc_dictionary_get_int64(message, Wire.protocolVersionKey)
         guard version == Wire.protocolVersion else {
             NSLog("lurosd: refused protocol version %lld; this build speaks %lld", version, Wire.protocolVersion)
-            return .failure(ApelinError(.unsupportedVersion, ""))
+            return .failure(LurosError(.unsupportedVersion, ""))
         }
         guard let name = string(Wire.operationKey, in: message) else {
-            return .failure(ApelinError(.badRequest, "no operation"))
+            return .failure(LurosError(.badRequest, "no operation"))
         }
         guard let operation = AppOperation(rawValue: name) else {
             NSLog("lurosd: refused unknown operation %@", name)
-            return .failure(ApelinError(.unknownOperation, ""))
+            return .failure(LurosError(.unknownOperation, ""))
         }
         let request = WireRequest(
             operation: operation,
@@ -74,7 +74,7 @@ enum XPCEnvelope {
             return (
                 .failure(
                     requestID,
-                    ApelinError(
+                    LurosError(
                         .unavailable,
                         String(localized: "The connection to Luros’s background service closed. Try again."),
                     ),
@@ -89,7 +89,7 @@ enum XPCEnvelope {
             return (
                 .failure(
                     requestID,
-                    ApelinError(
+                    LurosError(
                         .internal,
                         String(localized: "Luros’s background service returned an incomplete response. Try again."),
                     ),
@@ -97,10 +97,10 @@ enum XPCEnvelope {
                 [],
             )
         }
-        let code = string(Wire.errorCodeKey, in: detail).flatMap(ApelinError.Code.init(rawValue:)) ?? .internal
+        let code = string(Wire.errorCodeKey, in: detail).flatMap(LurosError.Code.init(rawValue:)) ?? .internal
         let message = string(Wire.errorMessageKey, in: detail) ?? ""
-        let reason = string(Wire.errorReasonKey, in: detail).map(ApelinError.Reason.init(rawValue:))
-        return (.failure(requestID, ApelinError(code, message, reason: reason)), [])
+        let reason = string(Wire.errorReasonKey, in: detail).map(LurosError.Reason.init(rawValue:))
+        return (.failure(requestID, LurosError(code, message, reason: reason)), [])
     }
 
     private static func string(_ key: String, in dictionary: xpc_object_t) -> String? {

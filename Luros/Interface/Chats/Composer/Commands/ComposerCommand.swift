@@ -1,4 +1,4 @@
-import ApelinProtocol
+import LurosProtocol
 import Foundation
 
 /// The placeholder a prompt-shaped command writes its arguments into.

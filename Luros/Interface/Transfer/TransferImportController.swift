@@ -1,5 +1,5 @@
-import ApelinCore
-import ApelinProtocol
+import LurosCore
+import LurosProtocol
 import SnapKit
 import Then
 import UIKit
@@ -145,7 +145,7 @@ final class TransferImportController: TableController {
                 return
             }
             do {
-                let inspection = try await ApelinService.app.transferInspect(
+                let inspection = try await LurosService.app.transferInspect(
                     .file(DescriptorSlot(index: 0)),
                     fileName: file.fileName,
                     descriptors: [descriptor],
@@ -363,7 +363,7 @@ final class TransferImportController: TableController {
         updateImportItem()
         Task { [weak self, file] in
             do {
-                let handle = try await ApelinService.app.transferImport(
+                let handle = try await LurosService.app.transferImport(
                     TransferImportRequest(
                         source: .file(DescriptorSlot(index: 0)),
                         fileName: file.fileName,
@@ -377,7 +377,7 @@ final class TransferImportController: TableController {
                 guard let self else { return }
                 isStarting = false
                 updateImportItem()
-                if kind == .project, (error as? ApelinError)?.code == .conflict {
+                if kind == .project, (error as? LurosError)?.code == .conflict {
                     presentNotice(title: "Name Already Used", message: error.readableMessage) { [weak self] in
                         self?.nameField.becomeFirstResponder()
                         self?.nameField.selectAll(nil)

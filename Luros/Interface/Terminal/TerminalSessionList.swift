@@ -1,4 +1,4 @@
-import ApelinCore
+import LurosCore
 import Foundation
 
 /// One row of the terminal page's sessions list, and the rules the list obeys,
