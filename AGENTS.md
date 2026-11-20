@@ -416,6 +416,9 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `toolchainStatus`, `toolchainCatalog`, `toolchainSetup`, `toolchainRemove`,
   `toolchainSelfTest`, `toolchainSetDefault`; `sdkList`,
   `sdkImport`, `sdkRemove`; `environmentAttach`, `environmentCancel`;
+  `developmentTools` (Settings ▸ Environment ▸ Third-Party Tools: `ldid`,
+  `git`, `dpkg-deb` and `uicache`, read and installed from the repositories
+  the device already has, no repository signature checked);
   `extensionList`, `projectCreate`, `projectCheck`, `projectRename`,
   `projectDelete`; `buildStart`,
   `buildAttach`, `buildCancel`; `installPackage`, `removePackage`,

@@ -23,6 +23,9 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
 
     case environmentAttach
     case environmentCancel
+    /// Settings ▸ Environment ▸ Third-Party Tools: the device tools Apelin's
+    /// own work needs, read and installed from the repositories on the device.
+    case developmentTools
 
     case extensionList
     case projectCreate
@@ -183,7 +186,7 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .hello: .hello
         case .toolchainStatus, .toolchainCatalog, .toolchainSetup, .toolchainRemove, .toolchainSelfTest, .toolchainSetDefault: .toolchain
         case .sdkList, .sdkImport, .sdkRemove: .sdk
-        case .environmentAttach, .environmentCancel: .environment
+        case .environmentAttach, .environmentCancel, .developmentTools: .environment
         case .extensionList, .projectCreate, .projectCheck, .projectRename, .projectDelete: .project
         case .buildStart, .buildAttach, .buildCancel: .build
         case .installPackage, .removePackage, .installationList, .applicationList, .applicationRemove,
@@ -235,6 +238,7 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .sdkRemove: SDKRemoveRequest.self
         case .environmentAttach: EnvironmentAttachRequest.self
         case .environmentCancel: EnvironmentCancelRequest.self
+        case .developmentTools: DevelopmentToolsRequest.self
         case .extensionList: ExtensionListRequest.self
         case .projectCreate: ProjectCreateRequest.self
         case .projectCheck: ProjectCheckRequest.self

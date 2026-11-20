@@ -41,6 +41,35 @@ actor DevelopmentToolInstaller {
     /// The architecture the packages for this device are built for.
     static let deviceArchitecture = "iphoneos-arm64"
 
+    /// The four tools this offers: the program's name in `usr/bin`, and the
+    /// package that carries it.
+    static let definitions: [(id: String, package: String)] = [
+        ("ldid", "ldid"),
+        ("git", "git"),
+        ("dpkg-deb", "dpkg"),
+        ("uicache", "uikittools"),
+    ]
+
+    static func package(for id: String) -> String? {
+        definitions.first { $0.id == id }?.package
+    }
+
+    /// Each tool, as the device has it: the program must be an executable and
+    /// the package that carries it must be installed.
+    func rows() -> [DevelopmentToolRow] {
+        let status = installed()
+        return Self.definitions.map { definition in
+            let path = installRoot + "/usr/bin/" + definition.id
+            let present = FileManager.default.isExecutableFile(atPath: path)
+            return DevelopmentToolRow(
+                id: definition.id,
+                packageID: definition.package,
+                path: present ? path : nil,
+                version: present ? status.versions[definition.package] : nil,
+            )
+        }
+    }
+
     // MARK: - Reading the device
 
     private var listsFolder: String { installRoot + "/var/lib/apt/lists" }

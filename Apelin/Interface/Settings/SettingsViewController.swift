@@ -27,6 +27,9 @@ final class SettingsViewController: TableController {
         case skills
         case toolchain
         case sdks
+        /// Settings ▸ Environment ▸ Third-Party Tools: the device programs
+        /// Apelin's own work needs, and installing a missing one.
+        case developmentTools
         /// Settings ▸ Apps: the apps under the bootstrap's `Applications`.
         case apps
         case templates
@@ -127,7 +130,7 @@ final class SettingsViewController: TableController {
         switch section {
         case .chat: [.preferences]
         case .agent: [.modelProviders, .defaultModels, .permissionMode, .promptInjection, .memories, .skills]
-        case .environment: [.toolchain, .sdks, .apps, .templates]
+        case .environment: [.toolchain, .sdks, .developmentTools, .apps, .templates]
         case .git: [.git]
         case .plugins: [.weChat]
         case .about: [.version, .licenses, .logs]
@@ -196,6 +199,8 @@ final class SettingsViewController: TableController {
             content.text = String(localized: "Toolchains")
         case .sdks:
             content.text = String(localized: "SDKs")
+        case .developmentTools:
+            content.text = String(localized: "Third-Party Tools")
         case .apps:
             content.text = String(localized: "Apps")
         case .templates:
@@ -242,6 +247,7 @@ final class SettingsViewController: TableController {
         case .skills: page = SkillsController()
         case .toolchain: page = ToolchainController()
         case .sdks: page = SDKListController()
+        case .developmentTools: page = DevelopmentToolController()
         case .apps: page = AppsController()
         case .templates: page = TemplatesController()
         case .weChat: page = ChannelController()

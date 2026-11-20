@@ -54,6 +54,8 @@ final class ServiceTableTests: XCTestCase {
             return Row(reply: batch) { _ = try await $0.environmentAttach(EnvironmentAttachRequest(taskID: id)) }
         case .environmentCancel:
             return Row(reply: ack) { try await $0.environmentCancel(taskID: id) }
+        case .developmentTools:
+            return Row(reply: DevelopmentToolsResponse()) { _ = try await $0.developmentTools(DevelopmentToolsRequest()) }
         case .extensionList:
             return Row(reply: ExtensionListResponse()) { _ = try await $0.extensionList() }
         case .projectCreate:
