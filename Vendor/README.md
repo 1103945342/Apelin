@@ -1,12 +1,21 @@
 # Bundled tools
 
-Luros carries the two device tools it cannot work without, so its package
-depends on no package for them:
+Luros carries the device tools it cannot work without, so its package depends
+on no package for them:
 
 | File | From | Version | SHA-256 |
 |---|---|---|---|
 | `bin/icli` | `com.icli.icli` | 0.11.0 | `728f350e54a0101793506e4771342dc68cde2ee5e4f6cb9579b5293d20b87cfb` |
-| `libexec/irisind` | `wiki.qaq.irisin` | 5.1.6 | `8228a31fa520b6b54aa737a8408968c1ce03200ccfbd82380b8b965310dd9e91` |
+| `libexec/irisind` | `wiki.qaq.irisin` | 5.1.8 | `b42392b8709831e6846342ae4dc0b49633757fb39b56d0ab604910f5b087d293` |
+| `libexec/irisin-install` | `wiki.qaq.irisin` | 5.1.8 | `1fd12cc983903ebb7dded8dd0cb448da9d127a2607740a4bd3efd7ad67ede5f9` |
+
+`irisind` is only the front: it takes a transaction and runs the install
+through `/usr/libexec/irisin-install`, the helper at that exact path. A daemon
+without it answers every transaction with `helperUnreachable` and exit 69, and
+the client asking about the transaction afterwards is told Irisin does not
+know it — the install fails without ever naming the helper. A device that had
+Irisin and lost it keeps a working `irisind` only if this second file is
+carried and put back beside it.
 
 `Scripts/package-deb.sh` copies them into `Luros.app/Vendor/`, so the
 installed app finds them beside itself:

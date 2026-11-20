@@ -238,16 +238,18 @@ for extension in "$repository_root"/Extensions/Development/com.fluoxetine.luros.
 done
 find "$installed_development" -type d -exec chmod 0755 {} +
 find "$installed_development" -type f -exec chmod 0644 {} +
-# The two device tools Luros cannot work without ride inside the app as well:
-# icli goes on the PATH every run gets, and the copy of irisind is the daemon
-# postinst registers when the device has no Irisin of its own. Both are
-# committed under Vendor/ with their digests: the package is built on macOS,
-# where neither package is installed.
+# The device tools Luros cannot work without ride inside the app as well:
+# icli goes on the PATH every run gets, and the two copies from Irisin are the
+# daemon postinst registers when the device has no Irisin of its own, and the
+# helper that daemon runs to install anything. They are committed under
+# Vendor/ with their digests: the package is built on macOS, where neither
+# package is installed.
 installed_vendor="$installed_app/Vendor"
 mkdir -p "$installed_vendor/bin" "$installed_vendor/libexec"
-for tool in bin/icli libexec/irisind; do
-    /usr/bin/ditto "$repository_root/Vendor/$tool" "$installed_vendor/$tool"
-    chmod 0755 "$installed_vendor/$tool"
+for tool in Vendor/bin/icli Vendor/libexec/irisind Vendor/libexec/irisin-install; do
+    destination="$installed_vendor/${tool#Vendor/}"
+    /usr/bin/ditto "$repository_root/$tool" "$destination"
+    chmod 0755 "$destination"
 done
 # The two agent tool extensions ride inside the app too. Their packages put an
 # executable under usr/libexec/luros/agent-tools and a manifest with its

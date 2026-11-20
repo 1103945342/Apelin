@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """Fail when the tools Luros carries beside it drift from what says so.
 
-`Vendor/` holds the `icli` and `irisind` binaries the package no longer
-depends on. Three things have to agree with it, and a change to one that
-leaves the others behind is the bug this checks for:
+`Vendor/` holds the `icli` and the two Irisin binaries the package no longer
+depends on: the daemon and the helper it runs to install anything. Three things
+have to agree with it, and a change to one that leaves the others behind is the
+bug this checks for:
 
 - `Vendor/README.md` names each file's version and SHA-256, and the file on
   disk matches its digest and carries an execute bit.
-- `Scripts/package-deb.sh` stages both into `Luros.app/Vendor/` and proves
+- `Scripts/package-deb.sh` stages each into `Luros.app/Vendor/` and proves
   the packaged deb holds them.
 - `Packaging/DEBIAN/control` depends on neither package, and the maintainer
-  scripts register the bundled daemon under Luros's own label and remove
-  that label's file, never Irisin's.
+  scripts register the bundled daemon under Luros's own label, put its helper
+  at the path it looks for, and remove both, never Irisin's.
 
 Usage: check-vendored-tools.py <root>
 
@@ -27,6 +28,7 @@ import sys
 TOOLS = {
     "bin/icli": "com.icli.icli",
     "libexec/irisind": "wiki.qaq.irisin",
+    "libexec/irisin-install": "wiki.qaq.irisin",
 }
 LABEL = "com.fluoxetine.luros.irisind"
 
@@ -83,6 +85,8 @@ def main():
         problems.append("postinst does not register the bundled daemon under " + LABEL)
     if "Vendor/libexec/irisind" not in postinst:
         problems.append("postinst does not launch the bundled irisind")
+    if "Vendor/libexec/irisin-install" not in postinst or "@PREFIX@/usr/libexec/irisin-install" not in postinst:
+        problems.append("postinst does not put Irisin's install helper beside the bundled daemon")
     if "wiki.qaq.irisind.plist" not in postinst:
         problems.append("postinst registers the bundled daemon without checking for Irisin's own")
 

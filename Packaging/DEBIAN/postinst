@@ -69,10 +69,22 @@ iris_plist="@PREFIX@/Library/LaunchDaemons/$iris_label.plist"
 # made here, owned by no package, only while Irisin's own job is absent.
 iris_bundled="@PREFIX@/Applications/Luros.app/Vendor/libexec/irisind"
 iris_daemon="@PREFIX@/usr/libexec/irisind"
+# irisind does nothing by itself: it runs /usr/libexec/irisin-install, at that
+# exact path, and a transaction that cannot reach it fails with
+# `helperUnreachable` and exit 69. The helper goes beside the daemon, and only
+# then: a device with Irisin's own package has both already.
+iris_helper_bundled="@PREFIX@/Applications/Luros.app/Vendor/libexec/irisin-install"
+iris_helper="@PREFIX@/usr/libexec/irisin-install"
 if [ -x "$iris_bundled" ] && [ ! -e "@PREFIX@/Library/LaunchDaemons/wiki.qaq.irisind.plist" ]; then
     mkdir -p "@PREFIX@/usr/libexec"
     cp "$iris_bundled" "$iris_daemon"
     chmod 0755 "$iris_daemon"
+    if [ -x "$iris_helper_bundled" ]; then
+        cp "$iris_helper_bundled" "$iris_helper"
+        chmod 0755 "$iris_helper"
+    else
+        echo "warning: Luros carries no irisin-install helper; installing a package will fail until Irisin is installed. Reinstall Luros." >&2
+    fi
     cat >"$iris_plist.new" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

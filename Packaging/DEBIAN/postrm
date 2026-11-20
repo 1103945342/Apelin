@@ -36,10 +36,11 @@ if [ "${1:-}" = remove ] || [ "${1:-}" = purge ]; then
         "$launchctl" bootout "gui/501/$iris_label" 2>/dev/null || true
     fi
     rm -f "${iris_plist:?}"
-    # The copy postinst made is no package's; one Irisin's package owns is
-    # left where it is.
+    # The copies postinst made are no package's; the ones an Irisin package
+    # owns are left where they are. irisind alone is useless anyway: its
+    # helper is the half that installs.
     if [ ! -f "@PREFIX@/var/lib/dpkg/info/wiki.qaq.irisind.list" ]; then
-        rm -f "@PREFIX@/usr/libexec/irisind"
+        rm -f "@PREFIX@/usr/libexec/irisind" "@PREFIX@/usr/libexec/irisin-install"
     fi
 fi
 
