@@ -121,15 +121,39 @@ public enum ToolManifestValidator {
     /// Where manifests live, relative to the install root.
     public static let relativeDirectory = "usr/share/apelin/agent-tools"
 
-    /// One result per directory under the agent-tools folder. A bad manifest
-    /// is isolated to its own entry; it never hides the others.
+    /// Where the app carries a tool of its own beside itself, relative to the
+    /// install root. Read for the ids the installed folder has none of: an
+    /// installed tool of the same id wins, so one is updated without the IDE.
+    public static let bundledRelativeDirectory = "Applications/Apelin.app/AgentTools"
+
+    /// The folder holding `id`'s files, relative to the install root: the
+    /// installed one when a package put it there, else the copy the app
+    /// carries. Nil when neither has a folder of that name.
+    public static func directory(installRoot: String, id: String) -> String? {
+        for base in [relativeDirectory, bundledRelativeDirectory] {
+            var info = stat()
+            let path = join(installRoot, base, id)
+            if stat(path, &info) == 0, info.st_mode & S_IFMT == S_IFDIR {
+                return base
+            }
+        }
+        return nil
+    }
+
+    /// One result per id under either folder. A bad manifest is isolated to
+    /// its own entry; it never hides the others.
     public static func discover(
         installRoot: String,
         policy: ToolManifestPolicy = .init(),
     ) -> [Result<ValidatedToolManifest, ToolManifestError>] {
-        let folder = join(installRoot, relativeDirectory)
-        guard let names = try? FileManager.default.contentsOfDirectory(atPath: folder) else { return [] }
-        return names.filter { !$0.hasPrefix(".") }.sorted().map { name in
+        func names(in relative: String) -> [String] {
+            let folder = join(installRoot, relative)
+            guard let names = try? FileManager.default.contentsOfDirectory(atPath: folder) else { return [] }
+            return names.filter { !$0.hasPrefix(".") }
+        }
+        let installed = names(in: relativeDirectory)
+        let carried = names(in: bundledRelativeDirectory).filter { !installed.contains($0) }
+        return (installed + carried).sorted().map { name in
             Result { try validate(installRoot: installRoot, id: name, policy: policy) }
                 .mapError { $0 as? ToolManifestError ?? ToolManifestError(id: name, reason: "\($0)") }
         }
@@ -153,7 +177,10 @@ public enum ToolManifestValidator {
             throw fail("the install root cannot be resolved: \(error)")
         }
 
-        let directory = try canonical(join(root, relativeDirectory, id), inside: root, fail)
+        guard let carriedIn = Self.directory(installRoot: root, id: id) else {
+            throw fail("no folder of this id: neither an installed one nor one the app carries")
+        }
+        let directory = try canonical(join(root, carriedIn, id), inside: root, fail)
         try checkOwnership(directory, policy: policy, directory: true, fail)
         let manifestPath = try canonical(join(directory, "manifest.json"), inside: directory, fail)
         try checkOwnership(manifestPath, policy: policy, directory: false, fail)

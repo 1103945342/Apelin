@@ -15,7 +15,8 @@ import Foundation
 /// | `sdk:<id>` | `~/Documents/wiki.qaq.apelin/SDKs/<id>/` |
 /// | `extension:<id>` | `<install root>/usr/share/apelin/development/<id>/`, then
 ///   `<install root>/Applications/Apelin.app/Development/<id>/` |
-/// | `agent-tools:<id>` | `<install root>/usr/share/apelin/agent-tools/<id>/` |
+/// | `agent-tools:<id>` | `<install root>/usr/share/apelin/agent-tools/<id>/`, then
+///   `<install root>/Applications/Apelin.app/AgentTools/<id>/` |
 /// | `grant:<grantID>` | the one file a protected-edit grant names (app only) |
 struct FileScopes: Sendable {
     let installRoot: String
@@ -50,7 +51,15 @@ struct FileScopes: Sendable {
             return try .directory(component(root + "/Applications/Apelin.app/Development", id))
         }
         if let id = Self.suffix(scopeID, "agent-tools:") {
-            return try .directory(component(root + "/usr/share/apelin/agent-tools", id))
+            let installed = try component(root + "/usr/share/apelin/agent-tools", id)
+            // The same rule as an extension's: a tool an installed package put
+            // there wins, and the copy the app carries stands in for an id no
+            // package provides.
+            var info = stat()
+            if stat(installed, &info) == 0, info.st_mode & S_IFMT == S_IFDIR {
+                return .directory(installed)
+            }
+            return try .directory(component(root + "/Applications/Apelin.app/AgentTools", id))
         }
         if let name = Self.suffix(scopeID, "project:") {
             guard ProjectName.validate(name) == nil else {

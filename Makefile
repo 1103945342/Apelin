@@ -628,7 +628,7 @@ _package:
 		echo "error: Apelin.app is linked against the iOS $${sdk:-unknown} SDK, older than $(IOS_SDK_TIER); build it again with Xcode $(IOS_SDK_TIER) or later" >&2; \
 		exit 65; \
 	fi
-	CONFIGURATION="$(CONFIGURATION)" "$(DEB_PACKAGER)" \
+	APELIN_AGENT_TOOLS="$(PACKAGES_DIR)" CONFIGURATION="$(CONFIGURATION)" "$(DEB_PACKAGER)" \
 		"$(APP_BUNDLE)" \
 		"$(DAEMON_BINARY)" \
 		"$(CONTROL_TEMPLATE)" \
@@ -644,6 +644,7 @@ _package:
 		"$(PRODUCTS_DIR)"
 
 deb: build
+	@$(MAKE) --no-print-directory deb-agent-tools
 	@$(MAKE) --no-print-directory _package FLAVOR="$(FLAVOR)" BUILD_NUMBER="$(BUILD_NUMBER)"
 
 # The fastest way from a source change to an installable package: build and
@@ -666,10 +667,13 @@ deb-rootless:
 
 # Both layouts share the build; only the packaging step differs. Then every
 # extension package, each with its own id and version, into the same folder.
+# The two agent tool packages are built first: the IDE's own package carries
+# both tools inside the app, so they have to exist before it is packaged.
 deb-all: build
+	@$(MAKE) --no-print-directory deb-agent-tools
 	@$(MAKE) --no-print-directory _package FLAVOR=roothide BUILD_NUMBER="$(BUILD_NUMBER)"
 	@$(MAKE) --no-print-directory _package FLAVOR=rootless BUILD_NUMBER="$(BUILD_NUMBER)"
-	@$(MAKE) --no-print-directory deb-extensions deb-agent-tools template-archive
+	@$(MAKE) --no-print-directory deb-extensions template-archive
 
 # The four development extensions, roothide and rootless: data only, each
 # template built on the Mac with the iPhoneOS SDK first, and every package

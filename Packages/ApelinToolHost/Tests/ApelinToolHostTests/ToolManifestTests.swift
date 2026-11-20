@@ -124,6 +124,32 @@ final class ToolManifestTests: XCTestCase {
         ["wiki.qaq.apelin.agent-tools.broken"])
     }
 
+    func testABundledToolStandsInForAnUninstalledOne() throws {
+        let bundleRoot = root + "/Applications/Apelin.app/AgentTools"
+        let directory = bundleRoot + "/wiki.qaq.apelin.agent-tools.carried"
+        try FileManager.default.createDirectory(atPath: directory + "/licenses", withIntermediateDirectories: true)
+        FileManager.default.createFile(atPath: bundleRoot + "/carried", contents: nil)
+        chmod(bundleRoot + "/carried", 0o755)
+        FileManager.default.createFile(atPath: directory + "/licenses/LICENSE", contents: Data("MIT".utf8))
+        var carried = manifest(executable: "Applications/Apelin.app/AgentTools/carried")
+        carried.id = "wiki.qaq.apelin.agent-tools.carried"
+        try JSONEncoder().encode(carried).write(to: URL(fileURLWithPath: directory + "/manifest.json"))
+        chmod(directory + "/manifest.json", 0o644)
+
+        let found = ToolManifestValidator.discover(installRoot: root, policy: policy)
+        XCTAssertEqual(found.compactMap { try? $0.get().manifest.id }, [carried.id, id])
+        let validated = try ToolManifestValidator.validate(installRoot: root, id: carried.id, policy: policy)
+        XCTAssertEqual(validated.executablePath, try CanonicalPath.resolve(bundleRoot + "/carried"))
+
+        // A tool an installed package put there wins over the copy the app carries.
+        carried.version = "9.9.9"
+        let installed = root + "/usr/share/apelin/agent-tools/" + carried.id
+        try FileManager.default.createDirectory(atPath: installed, withIntermediateDirectories: true)
+        try JSONEncoder().encode(carried).write(to: URL(fileURLWithPath: installed + "/manifest.json"))
+        chmod(installed + "/manifest.json", 0o644)
+        XCTAssertEqual(try ToolManifestValidator.validate(installRoot: root, id: carried.id, policy: policy).manifest.version, "9.9.9")
+    }
+
     func testClientStartsFromAValidatedManifest() async throws {
         var fake = manifest()
         fake.id = "wiki.qaq.apelin.agent-tools.fake"

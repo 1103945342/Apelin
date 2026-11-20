@@ -4083,6 +4083,14 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   the packaging script, the control file or the maintainer scripts stop
   agreeing. Neither copy reads a resource from the rest of its original
   package, and both link only system libraries.
+- **The two agent tool extensions ride inside the app as well**: `assembler`
+  and `disassembler` are built by `deb-agent-tools`, and the package carries
+  each one's executable and manifest under
+  `Applications/Apelin.app/AgentTools` with the manifest's `executable`
+  rewritten to that path; the host reads an installed folder first, so a tool
+  installed on its own still wins. The assembler contains GPL-2.0-only
+  Keystone, so the IDE's package is published only beside that extension's
+  corresponding-source archive (`deb-agent-tools` writes it beside its debs).
 - **Not in v1**: source packages (later, when a user links their GitHub, the
   app manages the repository instead), and DCRM in any form.
 - **Milestone 1 is the whole chain end to end**: the toolchain set up on the

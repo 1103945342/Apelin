@@ -38,8 +38,9 @@ public struct ExtensionTool: Sendable, Hashable {
     var required: Set<String>
 }
 
-/// What a session offers of the installed agent tool extensions, read from
-/// `<install root>/usr/share/apelin/agent-tools/` as the host reads it.
+/// What a session offers of the agent tool extensions, read from
+/// `<install root>/usr/share/apelin/agent-tools/` and from the copies the app
+/// carries under `Applications/Apelin.app/AgentTools/`, as the host reads them.
 ///
 /// A tool keeps its manifest's name when that name is one every provider
 /// takes (`AgentToolName`'s rule), is no built-in's, today's or an earlier

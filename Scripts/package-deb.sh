@@ -249,6 +249,48 @@ for tool in bin/icli libexec/irisind; do
     /usr/bin/ditto "$repository_root/Vendor/$tool" "$installed_vendor/$tool"
     chmod 0755 "$installed_vendor/$tool"
 done
+# The two agent tool extensions ride inside the app too. Their packages put an
+# executable under usr/libexec/apelin/agent-tools and a manifest with its
+# notices under usr/share/apelin/agent-tools/<id>; here both go under
+# Apelin.app/AgentTools, and each manifest's `executable` — a path relative to
+# the install root — is rewritten to the copy that is there. The host reads an
+# installed folder first, so a tool package installed on its own still wins.
+agent_tools_source="${APELIN_AGENT_TOOLS:?APELIN_AGENT_TOOLS must name the folder holding the built agent tool packages}"
+installed_agent_tools="$installed_app/AgentTools"
+mkdir -p "$installed_agent_tools"
+for tool in assembler disassembler; do
+    agent_tool_id="wiki.qaq.apelin.agent-tools.$tool"
+    agent_tool_package=""
+    for candidate in "$agent_tools_source/$agent_tool_id"_*"_$architecture.deb"; do
+        [[ -f "$candidate" ]] && { agent_tool_package="$candidate"; break; }
+    done
+    [[ -n "$agent_tool_package" ]] || {
+        echo "error: no $agent_tool_id package for $architecture in $agent_tools_source" >&2
+        exit 66
+    }
+    agent_tool_tree="$scratch/agent-tool-$tool"
+    dpkg-deb -x "$agent_tool_package" "$agent_tool_tree"
+    for executable in "$agent_tool_tree$install_prefix/usr/libexec/apelin/agent-tools/"*; do
+        /usr/bin/ditto "$executable" "$installed_agent_tools/$(basename "$executable")"
+    done
+    /usr/bin/ditto --norsrc --noextattr "$agent_tool_tree$install_prefix/usr/share/apelin/agent-tools/$agent_tool_id" \
+        "$installed_agent_tools/$agent_tool_id"
+    python3 - "$installed_agent_tools/$agent_tool_id/manifest.json" <<'PY'
+import json, sys
+path = sys.argv[1]
+with open(path, encoding="utf-8") as handle:
+    manifest = json.load(handle)
+manifest["executable"] = "Applications/Apelin.app/AgentTools/" + manifest["executable"].rsplit("/", 1)[-1]
+with open(path, "w", encoding="utf-8") as handle:
+    json.dump(manifest, handle, indent=2, ensure_ascii=False)
+    handle.write("\n")
+PY
+done
+find "$installed_agent_tools" -type d -exec chmod 0755 {} +
+find "$installed_agent_tools" -type f -exec chmod 0644 {} +
+for executable in "$installed_agent_tools"/apelin-*; do
+    [[ -f "$executable" ]] && chmod 0755 "$executable"
+done
 /usr/bin/ditto "$daemon_binary" "$installed_daemon"
 sed -e "s|@PREFIX@|$install_prefix|g" -e "s|@ROOTFS@|$rootfs|g" "$launch_plist" >"$installed_plist"
 # The daemon recovers its install root by stripping this suffix off its own
@@ -509,10 +551,12 @@ dpkg-deb --root-owner-group -Zzstd -b "$staging" "$temporary_deb"
 [[ "$(dpkg-deb -f "$temporary_deb" Package)" == "$package_id" ]]
 [[ "$(dpkg-deb -f "$temporary_deb" Version)" == "$version" ]]
 [[ "$(dpkg-deb -f "$temporary_deb" Architecture)" == "$architecture" ]]
-# The four development extensions ride inside the app bundle, so the IDE
-# recommends none of them and depends on none; it never depends on,
-# recommends or suggests an agent tool extension either (some are GPL, and the
-# user installs them on purpose).
+# The four development extensions and the two agent tool extensions ride
+# inside the app bundle, so the IDE recommends none of them and depends on none
+# of them: a package manager installs the IDE alone, and a package installed on
+# its own only updates the copy the bundle carries. The assembler contains
+# GPL-2.0 Keystone, so wherever this package is published its corresponding
+# source archive ships with it (deb-agent-tools writes that beside its debs).
 if dpkg-deb -f "$temporary_deb" Depends Pre-Depends Recommends Suggests | grep -qE 'wiki\.qaq\.apelin\.(dev|agent-tools)\.'; then
     echo "error: the IDE must not depend on, recommend or suggest an extension" >&2
     exit 65
@@ -538,6 +582,19 @@ grep -F ".$install_prefix/Applications/Apelin.app/Licenses.json" <<<"$contents" 
 for tool in Vendor/bin/icli Vendor/libexec/irisind; do
     grep -F ".$install_prefix/Applications/Apelin.app/$tool" <<<"$contents" >/dev/null || {
         echo "error: the app bundle does not carry $tool" >&2
+        exit 65
+    }
+done
+# The same for the two agent tool extensions: a bundle without them is an
+# agent that cannot assemble or disassemble, and no package supplies them now.
+for tool in assembler disassembler; do
+    agent_tool_id="wiki.qaq.apelin.agent-tools.$tool"
+    grep -F ".$install_prefix/Applications/Apelin.app/AgentTools/$agent_tool_id/manifest.json" <<<"$contents" >/dev/null || {
+        echo "error: the app bundle does not carry the $agent_tool_id tool" >&2
+        exit 65
+    }
+    grep -F ".$install_prefix/Applications/Apelin.app/AgentTools/apelin-$tool" <<<"$contents" >/dev/null || {
+        echo "error: the app bundle does not carry apelin-$tool" >&2
         exit 65
     }
 done
