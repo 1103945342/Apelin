@@ -226,6 +226,18 @@ mkdir -p "$debian" "$(dirname "$installed_app")" "$(dirname "$installed_daemon")
 cp "$login_profile" "$installed_profile"
 chmod 0644 "$installed_profile"
 /usr/bin/ditto "$app_bundle" "$installed_app"
+# The four development extensions ride inside the app bundle, so a device that
+# installs no extension package can still make a project of every kind: the
+# catalog reads them under <app>/Development, and an installed package of the
+# same id wins over the copy.
+installed_development="$installed_app/Development"
+mkdir -p "$installed_development"
+for extension in "$repository_root"/Extensions/Development/wiki.qaq.apelin.dev.*; do
+    [[ -d "$extension" ]] || continue
+    /usr/bin/ditto --norsrc --noextattr "$extension" "$installed_development/$(basename "$extension")"
+done
+find "$installed_development" -type d -exec chmod 0755 {} +
+find "$installed_development" -type f -exec chmod 0644 {} +
 /usr/bin/ditto "$daemon_binary" "$installed_daemon"
 sed -e "s|@PREFIX@|$install_prefix|g" -e "s|@ROOTFS@|$rootfs|g" "$launch_plist" >"$installed_plist"
 # The daemon recovers its install root by stripping this suffix off its own
@@ -486,24 +498,22 @@ dpkg-deb --root-owner-group -Zzstd -b "$staging" "$temporary_deb"
 [[ "$(dpkg-deb -f "$temporary_deb" Package)" == "$package_id" ]]
 [[ "$(dpkg-deb -f "$temporary_deb" Version)" == "$version" ]]
 [[ "$(dpkg-deb -f "$temporary_deb" Architecture)" == "$architecture" ]]
-# The IDE recommends the four development extensions, so they come by
-# default and removing one is not an error; it never depends on one, and
-# never depends on, recommends or suggests an agent tool extension (some
-# are GPL, and the user installs them on purpose).
-[[ "$(dpkg-deb -f "$temporary_deb" Recommends)" == "wiki.qaq.apelin.dev.app, wiki.qaq.apelin.dev.tweak, wiki.qaq.apelin.dev.cli, wiki.qaq.apelin.dev.preferences" ]] || {
-    echo "error: Recommends must name exactly the four development extensions" >&2
-    exit 65
-}
-if dpkg-deb -f "$temporary_deb" Depends Pre-Depends | grep -qE 'wiki\.qaq\.apelin\.(dev|agent-tools)\.'; then
-    echo "error: the IDE must not depend on an extension; list development extensions under Recommends and leave agent tools out" >&2
-    exit 65
-fi
-if dpkg-deb -f "$temporary_deb" Recommends Suggests | grep -qF 'wiki.qaq.apelin.agent-tools.'; then
-    echo "error: the IDE recommends or suggests an agent tool extension" >&2
+# The four development extensions ride inside the app bundle, so the IDE
+# recommends none of them and depends on none; it never depends on,
+# recommends or suggests an agent tool extension either (some are GPL, and the
+# user installs them on purpose).
+if dpkg-deb -f "$temporary_deb" Depends Pre-Depends Recommends Suggests | grep -qE 'wiki\.qaq\.apelin\.(dev|agent-tools)\.'; then
+    echo "error: the IDE must not depend on, recommend or suggest an extension" >&2
     exit 65
 fi
 contents="$(dpkg-deb --contents "$temporary_deb")"
 grep -F ".$install_prefix/Applications/Apelin.app/$app_executable" <<<"$contents" >/dev/null
+for extension in wiki.qaq.apelin.dev.app wiki.qaq.apelin.dev.tweak wiki.qaq.apelin.dev.cli wiki.qaq.apelin.dev.preferences; do
+    grep -F ".$install_prefix/Applications/Apelin.app/Development/$extension/manifest.json" <<<"$contents" >/dev/null || {
+        echo "error: the app bundle does not carry the $extension extension" >&2
+        exit 65
+    }
+done
 grep -F ".$install_prefix/Applications/Apelin.app/Licenses.json" <<<"$contents" >/dev/null
 grep -F ".$install_prefix/Applications/Apelin.app/PlugIns/$widget_appex/$widget_executable" <<<"$contents" >/dev/null
 for resource in "${app_resources[@]}"; do

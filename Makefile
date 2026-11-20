@@ -129,10 +129,11 @@ TEMPLATES_CHECK     := $(ROOT_DIR)/Extensions/Development/check-templates.py
 EXTENSIONS_PACKAGER := $(ROOT_DIR)/Extensions/Development/package-extensions.sh
 AGENT_TOOLS_BUILDER := $(ROOT_DIR)/Extensions/AgentTools/Disassembler/Scripts/build-agent-tools.sh
 AGENT_TOOLS_SCRATCH ?= $(DERIVED_DATA)/AgentToolsSPM
-# What the IDE's control recommends, in this order. Agent tool extensions
-# are never recommended (some are GPL; the user installs them on purpose).
+# The four development extensions, which ride inside the app bundle so the IDE
+# installs alone. Their own packages remain, to update one without the IDE.
+# Agent tool extensions are never recommended (some are GPL; the user installs
+# them on purpose).
 DEV_EXTENSIONS      := wiki.qaq.apelin.dev.app wiki.qaq.apelin.dev.tweak wiki.qaq.apelin.dev.cli wiki.qaq.apelin.dev.preferences
-DEV_RECOMMENDS      := wiki.qaq.apelin.dev.app, wiki.qaq.apelin.dev.tweak, wiki.qaq.apelin.dev.cli, wiki.qaq.apelin.dev.preferences
 # The worker packages' scratch paths, which the worker typechecks read.
 APELIN_DIAGNOSTICS  := $(ROOT_DIR)/Packages/ApelinDiagnostics
 DIAGNOSTICS_SCRATCH := $(call package_scratch,ApelinDiagnostics)
@@ -303,19 +304,19 @@ check:
 		|| { echo "error: a maintainer hook calls uicache — uikittools' triggers register the app" >&2; exit 65; }
 	@grep -qE '^Depends:.*firmware \(>= $(IOS_DEPLOYMENT_FLOOR)\).*uikittools.*launchctl' "$(CONTROL_TEMPLATE)" \
 		|| { echo "error: control must depend on firmware (>= $(IOS_DEPLOYMENT_FLOOR)), uikittools and launchctl" >&2; exit 65; }
-	@# The development extensions are recommended, never depended on, so a
-	@# package manager that skips recommendations installs the IDE alone.
-	@[[ "$$(sed -n 's/^Recommends: //p' "$(CONTROL_TEMPLATE)")" == "$(DEV_RECOMMENDS)" ]] \
-		|| { echo "error: control must recommend exactly: $(DEV_RECOMMENDS)" >&2; exit 65; }
-	@! grep -nE '^(Pre-Depends|Depends):.*wiki\.qaq\.apelin\.|^(Recommends|Suggests):.*agent-tools' "$(CONTROL_TEMPLATE)" \
-		|| { echo "error: the IDE depends on an extension or recommends an agent tool (above)" >&2; exit 65; }
+	@# The four development extensions ride inside the app bundle, so the IDE
+	@# depends on none of them and recommends none of them: a package manager
+	@# installs the IDE alone, and one of the four installed on its own only
+	@# updates the copy the bundle carries.
+	@! grep -nE '^(Pre-Depends|Depends|Recommends|Suggests):.*wiki\.qaq\.apelin\.(dev|agent-tools)\.' "$(CONTROL_TEMPLATE)" \
+		|| { echo "error: the IDE depends on, recommends or suggests an extension (above)" >&2; exit 65; }
 	@# The terminal and the file browser are the app's own pages: no source
 	@# opens a Fila or iGhostVT URL or queries one, and the package depends on
 	@# neither. Attribution in a comment names no URL and passes.
 	@python3 "$(RETIRED_APPS_CHECK)" "$(ROOT_DIR)"
 	@for extension in $(DEV_EXTENSIONS); do \
 		test -f "$(ROOT_DIR)/Extensions/Development/$$extension/manifest.json" \
-			|| { echo "error: control recommends $$extension, which Extensions/Development does not have" >&2; exit 66; }; \
+			|| { echo "error: the app bundle carries $$extension, which Extensions/Development does not have" >&2; exit 66; }; \
 	done
 	@# Every deb names its package manager icon, one Pages serves from
 	@# Documents/Site (Scripts/render-package-icons.py draws the extensions').

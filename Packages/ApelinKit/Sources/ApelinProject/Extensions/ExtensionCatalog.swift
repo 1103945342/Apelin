@@ -19,24 +19,38 @@ public struct DiscoveredExtension: Sendable, Equatable {
 }
 
 /// Development extensions installed at
-/// `<install-root>/usr/share/apelin/development/<id>/` (Milestone 1 §5.2):
-/// each manifest is validated on its own, and a bad manifest, an unknown
+/// `<install-root>/usr/share/apelin/development/<id>/` (Milestone 1 §5.2) or
+/// carried inside Apelin's own app bundle at
+/// `<install-root>/Applications/Apelin.app/Development/<id>/`, the four the
+/// package ships so a device needs no extension package to make a project.
+/// Each manifest is validated on its own, and a bad manifest, an unknown
 /// schema version, a path escaping the extension, an undeclared or
 /// symlinked template file, a stale template digest or a duplicate id
 /// isolates that extension alone. A duplicate isolates both: nothing found
-/// later overrides what was found first. Nothing named in a manifest runs.
+/// later overrides what was found first. An installed extension of an id
+/// the bundle also carries wins, so a package can update one the IDE ships.
+/// Nothing named in a manifest runs.
 public struct ExtensionCatalog: Sendable {
     public static func directory(installRoot: String) -> URL {
         let base = installRoot == "/" ? "" : installRoot
         return URL(fileURLWithPath: base + "/usr/share/apelin/development", isDirectory: true)
     }
 
+    /// The copy Apelin's own package carries inside its app bundle.
+    public static func bundledDirectory(installRoot: String) -> URL {
+        let base = installRoot == "/" ? "" : installRoot
+        return URL(fileURLWithPath: base + "/Applications/Apelin.app/Development", isDirectory: true)
+    }
+
     public let directory: URL
+    /// Scanned after `directory`, for the ids it has none of.
+    public let bundled: URL?
     public let extensions: [DiscoveredExtension]
 
-    public init(directory: URL) {
+    public init(directory: URL, bundled: URL? = nil) {
         self.directory = directory
-        extensions = Self.scan(directory)
+        self.bundled = bundled
+        extensions = Self.scan(directory, bundled: bundled)
     }
 
     public var usable: [DiscoveredExtension] {
@@ -57,7 +71,21 @@ public struct ExtensionCatalog: Sendable {
         return (found, manifest, template)
     }
 
-    private static func scan(_ directory: URL) -> [DiscoveredExtension] {
+    /// The installed directory first, then the bundle's copy of every id the
+    /// installed one has no usable extension for. Both roots are scanned the
+    /// same way, so a bad folder in either is listed with what is wrong.
+    private static func scan(_ directory: URL, bundled: URL?) -> [DiscoveredExtension] {
+        let installed = scanOne(directory)
+        guard let bundled, bundled.standardizedFileURL != directory.standardizedFileURL else { return installed }
+        let served = Set(installed.filter(\.isUsable).compactMap { $0.manifest?.id })
+        let carried = scanOne(bundled).filter { item in
+            guard let id = item.manifest?.id else { return true }
+            return !served.contains(id)
+        }
+        return installed + carried
+    }
+
+    private static func scanOne(_ directory: URL) -> [DiscoveredExtension] {
         let names = ((try? FileManager.default.contentsOfDirectory(atPath: directory.path)) ?? [])
             .filter { !$0.hasPrefix(".") }
             .sorted()

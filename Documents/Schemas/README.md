@@ -5,7 +5,7 @@ Two documents, both JSON, both versioned, both read and never executed:
 | File | Lives at | Schema |
 |---|---|---|
 | `apelin-project.json` | `~/Documents/wiki.qaq.apelin/Projects/<name>/` | [`apelin-project.schema.json`](apelin-project.schema.json) |
-| development extension `manifest.json` | `<install-root>/usr/share/apelin/development/<id>/` | [`extension-manifest.schema.json`](extension-manifest.schema.json) |
+| development extension `manifest.json` | `<install-root>/usr/share/apelin/development/<id>/`, or the copy Apelin's package carries at `<install-root>/Applications/Apelin.app/Development/<id>/` | [`extension-manifest.schema.json`](extension-manifest.schema.json) |
 
 The schemas are JSON Schema draft 2020-12. This file is the specification:
 where it says more than a schema can, it wins, and the rules marked

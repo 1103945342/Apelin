@@ -1981,8 +1981,9 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   other binary now says. The read tools
   (file_read, file_list, file_grep, file_find) also read, never write, an
   absolute path whose realpath lies in Apelin's development extensions
-  (`<install root>/usr/share/apelin/development`, where a template's
-  support headers are) or the data folder's `SDKs/`, as the read presets
+  (`<install root>/usr/share/apelin/development`, or the copy the package
+  carries at `<app>/Development`, where a template's support headers are) or
+  the data folder's `SDKs/`, as the read presets
   they are in every mode (`Paths/ReadOnlyRoots.swift`); a relative path,
   a link in the project included, is the project's, and a read tool's
   refusal of any other path names both folders. Every system tool is one
@@ -3521,8 +3522,10 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   substitution and keep their layout; the file tools write what the model
   writes, and the next build tidies it.
 - **Extensions** are scanned from `<install root>/usr/share/apelin/development/`
-  on every `extensionList`; each is checked alone and a bad one, or both of
-  a duplicate id, is listed with its problems and never offered.
+  and then from the copy Apelin's own package carries at
+  `<install root>/Applications/Apelin.app/Development/` (an installed one of
+  the same id wins), on every `extensionList`; each is checked alone and a bad
+  one, or both of a duplicate id, is listed with its problems and never offered.
 - **projectCreate** stages beside `Projects/<name>/` (`.<name>.creating-…`)
   and moves in with `renamex_np(RENAME_EXCL)`. Apelin supplies `projectName`,
   `projectID` and the `template*` values; `bundleID` and `packageID` default
@@ -4055,12 +4058,16 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   extension — ships as a rootless and a roothide deb in our repository
   index.
 - **Packages**: the IDE is one package and depends on no injection framework.
-  The development environment ships as extensions — app, tweak, command-line
-  tool and preference bundle support — that the IDE package recommends, so
-  they come by default and removing one is not an error. The tweak extension
-  depends on an injection framework. Templates from OwnGoal's open-source
-  template repositories reach the extensions by a file convention, and the
-  app discovers extensions and templates at launch.
+  The development environment ships as four extensions — app, tweak,
+  command-line tool and preference bundle support — that the IDE's own package
+  carries inside its app bundle (`Applications/Apelin.app/Development`), so it
+  depends on none of them and recommends none: a package manager installs the
+  IDE alone and every kind of project can be made. An extension installed on
+  its own wins over the copy, which is how one is updated without the IDE, and
+  removing one is never an error. The tweak extension depends on an injection
+  framework. Templates from OwnGoal's open-source template repositories reach
+  the extensions by a file convention, and the app discovers extensions and
+  templates at launch.
 - **Not in v1**: source packages (later, when a user links their GitHub, the
   app manages the repository instead), and DCRM in any form.
 - **Milestone 1 is the whole chain end to end**: the toolchain set up on the

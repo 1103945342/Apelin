@@ -49,6 +49,43 @@ final class ExtensionAndProjectTests: XCTestCase {
         XCTAssertTrue(catalog.usable.isEmpty)
     }
 
+    /// The copy Apelin's own package carries stands in for an extension no
+    /// package installs, and an installed one of the same id wins over it.
+    func testBundledCopyStandsInAndInstalledWins() throws {
+        let installed = try scratchDirectory()
+        let bundled = try scratchDirectory()
+        defer {
+            try? FileManager.default.removeItem(at: installed)
+            try? FileManager.default.removeItem(at: bundled)
+        }
+        let tweak = Repository.extensions.appendingPathComponent("wiki.qaq.apelin.dev.tweak")
+        let cli = Repository.extensions.appendingPathComponent("wiki.qaq.apelin.dev.cli")
+        try FileManager.default.copyItem(at: tweak, to: bundled.appendingPathComponent("wiki.qaq.apelin.dev.tweak"))
+        try FileManager.default.copyItem(at: cli, to: bundled.appendingPathComponent("wiki.qaq.apelin.dev.cli"))
+
+        // Nothing installed: both come from the copy, and a template of one is
+        // found through it.
+        let carried = ExtensionCatalog(directory: installed, bundled: bundled)
+        XCTAssertEqual(carried.usable.compactMap { $0.manifest?.id }.sorted(), ["wiki.qaq.apelin.dev.cli", "wiki.qaq.apelin.dev.tweak"])
+        for item in carried.usable {
+            XCTAssertEqual(item.root.deletingLastPathComponent().standardizedFileURL, bundled.standardizedFileURL)
+        }
+        XCTAssertNotNil(carried.template("wiki.qaq.apelin.dev.tweak/objc-hook"))
+
+        // An installed tweak wins over the copy; the cli still comes from it.
+        try FileManager.default.copyItem(at: tweak, to: installed.appendingPathComponent("wiki.qaq.apelin.dev.tweak"))
+        let both = ExtensionCatalog(directory: installed, bundled: bundled)
+        XCTAssertEqual(both.usable.count, 2)
+        XCTAssertEqual(
+            try XCTUnwrap(both.usableExtension("wiki.qaq.apelin.dev.tweak")).root.standardizedFileURL,
+            installed.appendingPathComponent("wiki.qaq.apelin.dev.tweak").standardizedFileURL,
+        )
+        XCTAssertEqual(
+            try XCTUnwrap(both.usableExtension("wiki.qaq.apelin.dev.cli")).root.standardizedFileURL,
+            bundled.appendingPathComponent("wiki.qaq.apelin.dev.cli").standardizedFileURL,
+        )
+    }
+
     func testStaleDigestAndSymlinkIsolate() throws {
         let scratch = try scratchDirectory()
         defer { try? FileManager.default.removeItem(at: scratch) }

@@ -12,5 +12,4 @@ Author: OwnGoal Studio <not-gonna-reply@owngoal.dev>
 Section: Utilities
 Priority: optional
 Depends: firmware (>= 16.0), uikittools, launchctl, wiki.qaq.irisin (>= 4.7.3), com.icli.icli (>= 0.10.0)
-Recommends: wiki.qaq.apelin.dev.app, wiki.qaq.apelin.dev.tweak, wiki.qaq.apelin.dev.cli, wiki.qaq.apelin.dev.preferences
 Installed-Size: @INSTALLED_SIZE@

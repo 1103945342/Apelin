@@ -5,7 +5,11 @@ exactly what its package installs at
 `<install-root>/usr/share/apelin/development/<id>/` — `manifest.json`,
 `templates/`, `support/`, `LICENSE` — and nothing in it is executed: the app
 reads the manifest and copies template files, the build reads headers and
-link stubs. The formats are specified in
+link stubs. Apelin's own package also carries all four inside its app bundle,
+at `<install-root>/Applications/Apelin.app/Development/<id>/`, so the IDE can
+make every kind of project with no extension package installed; an installed
+package of the same id wins over the copy, which is how one is updated alone.
+The formats are specified in
 [`Documents/Schemas/README.md`](../../Documents/Schemas/README.md).
 
 | Package | Templates | Support | Depends (beyond `wiki.qaq.apelin (>= 0.1.0)`) |
@@ -127,17 +131,18 @@ is executable, nothing lies outside the data folder, and that the extracted
 copy passes the manifest, template and digest checks. Output is
 `<id>_<version>_<arch>.deb` and a SHA-256 list.
 
-## Proposed changes outside this folder (not made here)
+## How the IDE ships them
 
-**`Packaging/DEBIAN/control`** — add, after `Depends:`:
+**`Packaging/DEBIAN/control`** — the IDE depends on and recommends no
+extension: `Scripts/package-deb.sh` copies all four folders into the app
+bundle at `Applications/Apelin.app/Development/`, and the catalog reads them
+under `<app>/Development/<id>/`. A package manager installs the IDE alone, and
+a device can make every kind of project with no extension package at all.
 
-```
-Recommends: wiki.qaq.apelin.dev.app, wiki.qaq.apelin.dev.tweak, wiki.qaq.apelin.dev.cli, wiki.qaq.apelin.dev.preferences
-```
-
-The IDE stays free of any injection framework: only the tweak extension
-depends on one, and a package manager that skips recommendations installs
-the IDE alone. Removing an extension is never an error.
+An extension package installed on top still wins over the copy, which is how
+one is updated without the IDE. The IDE stays free of any injection framework:
+only the tweak extension depends on one, and its link stub is what the build
+links against. Removing an extension is never an error.
 
 **`Makefile`** — a `deb-extensions` target running
 `Extensions/Development/package-extensions.sh $(ROOT_DIR)/build/Packages`,

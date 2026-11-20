@@ -21,20 +21,27 @@ struct ReadOnlyRoots: Sendable {
     /// `<install root>/usr/share/apelin/development`; nil without an
     /// install root.
     let developmentExtensions: String?
+    /// The copy Apelin's own package carries inside its app bundle, when it is
+    /// there; nil without an install root or with the IDE installed without it.
+    let bundledExtensions: String?
     /// The data folder's `SDKs`.
     let sdks: String?
 
-    static let none = ReadOnlyRoots(developmentExtensions: nil, sdks: nil)
+    static let none = ReadOnlyRoots(developmentExtensions: nil, bundledExtensions: nil, sdks: nil)
 
-    private init(developmentExtensions: String?, sdks: String?) {
+    private init(developmentExtensions: String?, bundledExtensions: String?, sdks: String?) {
         self.developmentExtensions = developmentExtensions
+        self.bundledExtensions = bundledExtensions
         self.sdks = sdks
     }
 
-    /// The extensions under `installRoot`, when the session has one, and the
-    /// data folder's SDKs.
+    /// The extensions under `installRoot`, when the session has one, the copy
+    /// the package carries, and the data folder's SDKs.
     init(installRoot: String?, dataRoot: ApelinDataRoot) {
         developmentExtensions = installRoot.map { ExtensionCatalog.directory(installRoot: $0).path }
+        bundledExtensions = installRoot
+            .map { ExtensionCatalog.bundledDirectory(installRoot: $0).path }
+            .flatMap { FileManager.default.fileExists(atPath: $0) ? $0 : nil }
         sdks = DataFolder(root: dataRoot.url).sdks.path
     }
 
@@ -44,7 +51,7 @@ struct ReadOnlyRoots: Sendable {
     func root(containing path: String) -> (root: ScopedRoot, shownAs: String)? {
         let trimmed = path.trimmingCharacters(in: .whitespaces)
         guard trimmed.hasPrefix("/"), let real = CanonicalPath.resolve(trimmed) else { return nil }
-        for folder in [developmentExtensions, sdks].compactMap(\.self) {
+        for folder in [developmentExtensions, bundledExtensions, sdks].compactMap(\.self) {
             guard let root = try? ScopedRoot(URL(fileURLWithPath: folder, isDirectory: true)) else { continue }
             if root.contains(real) {
                 return (root, folder)
@@ -58,6 +65,7 @@ struct ReadOnlyRoots: Sendable {
     var described: String? {
         let named = [
             developmentExtensions.map { "Apelin's development extensions (\($0))" },
+            bundledExtensions.map { "the copy in Apelin's app bundle (\($0))" },
             sdks.map { "the registered SDKs (\($0))" },
         ].compactMap(\.self)
         return named.isEmpty ? nil : named.joined(separator: " or ")

@@ -24,14 +24,23 @@ public final class BuildWorker: @unchecked Sendable {
 
     /// Where extensions are scanned; the install root's development folder unless a test says otherwise.
     public let extensionDirectory: URL
+    /// The four the package carries inside the app bundle, scanned for the ids
+    /// the installed folder has none of. Nil where a test names its own folder.
+    public let bundledExtensionDirectory: URL?
 
     public init(
         installRoot: String,
         home: String,
         registry: EnvironmentRegistry? = nil,
         extensionDirectory: URL? = nil,
+        bundledExtensionDirectory: URL? = nil,
     ) {
         self.extensionDirectory = extensionDirectory ?? ExtensionCatalog.directory(installRoot: installRoot)
+        // A test that names its own folder sees only that folder unless it
+        // names a bundled one too: the app bundle's copy is a device's.
+        self.bundledExtensionDirectory =
+            bundledExtensionDirectory
+            ?? (extensionDirectory == nil ? ExtensionCatalog.bundledDirectory(installRoot: installRoot) : nil)
         self.installRoot = installRoot
         self.home = home
         self.registry = registry ?? EnvironmentStores(dataFolder: DataFolder(home: home))
@@ -50,7 +59,7 @@ public final class BuildWorker: @unchecked Sendable {
     }
 
     public var catalog: ExtensionCatalog {
-        ExtensionCatalog(directory: extensionDirectory)
+        ExtensionCatalog(directory: extensionDirectory, bundled: bundledExtensionDirectory)
     }
 
     /// Emits one event of a task.
