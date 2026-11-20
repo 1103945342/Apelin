@@ -2,7 +2,7 @@ import AlertController
 import SPIndicator
 import UIKit
 
-/// Open in Apelin for a Git repository (`apelin://import`): the link's
+/// Open in Apelin for a Git repository (`lurosdev://import`): the link's
 /// confirmation (`RepositoryImportController`), one at a time whatever
 /// number of links come in. A link for the repository already shown or
 /// importing starts nothing again; a link for another says an import is

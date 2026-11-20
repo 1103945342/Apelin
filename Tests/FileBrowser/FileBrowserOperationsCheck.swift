@@ -63,7 +63,7 @@ func checkFileBrowserOperations() throws {
     } catch let failure as FileBrowserFailure {
         precondition(failure == .record(.sdks), "\(failure)")
     }
-    let manifest = project.appendingPathComponent("apelin-project.json")
+    let manifest = project.appendingPathComponent("luros-project.json")
     try Data("{}".utf8).write(to: manifest)
     do {
         try FileBrowserOperations.remove(manifest, policy: policy)

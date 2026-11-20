@@ -1,8 +1,8 @@
 {
-  "name": "tool-host: needs the disassembler agent tool extension (wiki.qaq.apelin.agent-tools.disassembler) installed; opens it, lists some of dyld's symbols through it, closes it, and refuses an undeclared tool, a closed session and an extension that is not installed",
+  "name": "tool-host: needs the disassembler agent tool extension (com.fluoxetine.luros.agent-tools.disassembler) installed; opens it, lists some of dyld's symbols through it, closes it, and refuses an undeclared tool, a closed session and an extension that is not installed",
   "steps": [
     {"op": "hello"},
-    {"op": "toolHostOpen", "label": "open", "request": {"id": "wiki.qaq.apelin.agent-tools.disassembler"}},
+    {"op": "toolHostOpen", "label": "open", "request": {"id": "com.fluoxetine.luros.agent-tools.disassembler"}},
     {"op": "expect", "request": {"step": "open", "path": "response.tools.0.name", "exists": true}},
 
     {"op": "toolHostCall", "label": "symbols", "request": {
@@ -21,7 +21,7 @@
     {"op": "toolHostClose", "label": "closed", "allowError": true, "request": {"sessionID": "${open.response.sessionID}"}},
     {"op": "expect", "request": {"step": "closed", "errorCode": "notFound"}},
 
-    {"op": "toolHostOpen", "label": "missing", "allowError": true, "request": {"id": "wiki.qaq.apelin.agent-tools.missing"}},
+    {"op": "toolHostOpen", "label": "missing", "allowError": true, "request": {"id": "com.fluoxetine.luros.agent-tools.missing"}},
     {"op": "expect", "request": {"step": "missing", "ok": false}}
   ]
 }

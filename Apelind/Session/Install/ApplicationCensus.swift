@@ -13,7 +13,7 @@ import Foundation
 /// copied in was never Apelin's. Nothing here changes anything.
 enum ApplicationCensus {
     /// Apelin's own bundle, never removed from this screen.
-    static let ownBundleID = "wiki.qaq.apelin"
+    static let ownBundleID = "com.fluoxetine.luros"
 
     /// `<install root>/Applications`.
     static func applicationsFolder(installRoot: String) -> String {

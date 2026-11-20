@@ -2,7 +2,7 @@ import ApelinProtocol
 import Foundation
 import SPIndicator
 
-/// Where an `apelin://` link leads among the conversations the app has.
+/// Where an `lurosdev://` link leads among the conversations the app has.
 @MainActor
 enum ChatLinkTarget {
     enum Destination {

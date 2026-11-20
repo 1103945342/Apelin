@@ -8,15 +8,15 @@ depends on no package for them:
 | `bin/icli` | `com.icli.icli` | 0.11.0 | `728f350e54a0101793506e4771342dc68cde2ee5e4f6cb9579b5293d20b87cfb` |
 | `libexec/irisind` | `wiki.qaq.irisin` | 5.1.6 | `8228a31fa520b6b54aa737a8408968c1ce03200ccfbd82380b8b965310dd9e91` |
 
-`Scripts/package-deb.sh` copies them into `Apelin.app/Vendor/`, so the
+`Scripts/package-deb.sh` copies them into `Luros.app/Vendor/`, so the
 installed app finds them beside itself:
 
-- `Apelin.app/Vendor/bin` goes on the `PATH` every run gets
+- `Luros.app/Vendor/bin` goes on the `PATH` every run gets
   (`DevelopmentEnvironment.searchPath`), behind the bootstrap's own
   directories, so an `icli` the device installed still wins.
-- `Apelin.app/Vendor/libexec/irisind` is the daemon the app needs to install a
+- `Luros.app/Vendor/libexec/irisind` is the daemon the app needs to install a
   package, register an app or remove either. `postinst` registers it under
-  the label `wiki.qaq.apelin.irisind` with the Mach service name `irisind`
+  the label `com.fluoxetine.luros.irisind` with the Mach service name `irisind`
   serves, and only when no Irisin of its own is installed: a device that has
   the real package keeps its daemon, and this copy is never started beside it.
 

@@ -43,7 +43,7 @@ public struct GitResetToolResponse: Sendable, Hashable, Codable {
     public var previousHead: String?
     /// Where what was there before is kept, which the user is told.
     public var backupBranch: String?
-    /// What became of apelin-project.json, in words.
+    /// What became of luros-project.json, in words.
     public var projectFile: String?
     public init(
         remote: String,

@@ -19,14 +19,14 @@ public protocol GitCredentialStore: Sendable {
 }
 
 /// The credentials in the keychain: generic-password items under service
-/// `wiki.qaq.apelin.git` in access group `wiki.qaq.apelin.git`, which only
+/// `com.fluoxetine.luros.git` in access group `com.fluoxetine.luros.git`, which only
 /// apelin-environment carries (Packaging/Workers/apelin-environment.entitlements),
 /// account the host, data the JSON `{"username", "token"}`. Readable after
 /// the first unlock, so a push runs with the screen locked; this device
 /// only, never synchronised.
 public struct KeychainGitCredentialStore: GitCredentialStore {
-    public static let service = "wiki.qaq.apelin.git"
-    public static let accessGroup = "wiki.qaq.apelin.git"
+    public static let service = "com.fluoxetine.luros.git"
+    public static let accessGroup = "com.fluoxetine.luros.git"
 
     public init() {}
 

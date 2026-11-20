@@ -35,7 +35,7 @@ def main():
                 files[file.relative_to(source).as_posix()] = file.read_bytes()
     files['catalog.json'] = (json.dumps({
         'formatVersion': 1, 'appVersion': args.version,
-        'builtinTemplates': [{'id': 'wiki.qaq.apelin.workspace/empty', 'displayName': 'Empty'}],
+        'builtinTemplates': [{'id': 'com.fluoxetine.luros.workspace/empty', 'displayName': 'Empty'}],
         'extensions': extensions,
     }, ensure_ascii=False, sort_keys=True, indent=2) + '\n').encode()
     args.output.mkdir(parents=True, exist_ok=True)

@@ -1,7 +1,7 @@
 import ApelinCore
 import Foundation
 
-/// The identity in an `apelin-project.json`, read and given another without
+/// The identity in an `luros-project.json`, read and given another without
 /// touching any other byte of the file: how a transferred project gets an ID
 /// of its own here, and how a repository's file that comes into a project
 /// folder keeps the project's.

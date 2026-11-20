@@ -20,7 +20,7 @@ struct PlaceholderIdentifierBackendTests {
         let folder = fixture.dataFolder.appendingPathComponent(name, isDirectory: true)
         try FileManager.default.createDirectory(at: folder.appendingPathComponent("Resources"), withIntermediateDirectories: true)
         if let manifest {
-            try manifest.write(to: folder.appendingPathComponent("apelin-project.json"), atomically: true, encoding: .utf8)
+            try manifest.write(to: folder.appendingPathComponent("luros-project.json"), atomically: true, encoding: .utf8)
         }
         if let bundleID {
             let plist = try PropertyListSerialization.data(fromPropertyList: ["CFBundleIdentifier": bundleID], format: .xml, options: 0)
@@ -29,7 +29,7 @@ struct PlaceholderIdentifierBackendTests {
         fixture.host.on(.projectCreate, reply: ProjectCreateResponse(projectID: "p-1", name: name, path: folder.path))
         return try await fixture.backend.createProject(ProjectCreateToolRequest(
             context: fixture.context(),
-            templateID: "wiki.qaq.apelin.dev.app/uikit-objc",
+            templateID: "com.fluoxetine.luros.dev.app/uikit-objc",
             name: name,
         ))
     }
@@ -68,7 +68,7 @@ struct PlaceholderIdentifierBackendTests {
         let outside = FileManager.default.temporaryDirectory.appendingPathComponent("apelin-outside-\(UUID().uuidString)", isDirectory: true)
         defer { try? FileManager.default.removeItem(at: outside) }
         try FileManager.default.createDirectory(at: outside, withIntermediateDirectories: true)
-        try Self.manifest(packageID: "local.apelin.banana").write(to: outside.appendingPathComponent("apelin-project.json"), atomically: true, encoding: .utf8)
+        try Self.manifest(packageID: "local.apelin.banana").write(to: outside.appendingPathComponent("luros-project.json"), atomically: true, encoding: .utf8)
         try FileManager.default.createSymbolicLink(at: fixture.dataFolder.appendingPathComponent("Linked"), withDestinationURL: outside)
 
         fixture.host.on(.projectCreate, reply: ProjectCreateResponse(projectID: "p-4", name: "Linked", path: outside.path))

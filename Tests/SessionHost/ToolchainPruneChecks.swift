@@ -82,7 +82,7 @@ func toolchainPruneChecks() async throws {
     }
     check(entryExists(root + "/usr/lib/apelin") && entryExists(toolchains + "/sibling"), "prune: nothing above the toolchains folder is reached")
     check(ToolchainTreePruner.toolchainID(packageID: ManagedPackagePolicy.toolchainPrefix + "a1b2") == "a1b2", "prune: a toolchain package names its folder")
-    for package in ["com.example.hello", ManagedPackagePolicy.toolchainPrefix, ManagedPackagePolicy.toolchainPrefix + ".", ManagedPackagePolicy.toolchainPrefix + "..", "wiki.qaq.apelin"] {
+    for package in ["com.example.hello", ManagedPackagePolicy.toolchainPrefix, ManagedPackagePolicy.toolchainPrefix + ".", ManagedPackagePolicy.toolchainPrefix + "..", "com.fluoxetine.luros"] {
         check(ToolchainTreePruner.toolchainID(packageID: package) == nil, "prune: \(package) names no toolchain folder")
     }
 

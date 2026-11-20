@@ -4,13 +4,13 @@ A project made from a template in Apelin also carries an Xcode project:
 
 ```
 My Project/
-  apelin-project.json      the description Apelin builds from
+  luros-project.json      the description Apelin builds from
   Sources/  Resources/  Packaging/
   My Project.xcodeproj/    for a Mac
   Xcode/Support/           the extension's headers and link stubs
 ```
 
-The `.xcodeproj` is written from `apelin-project.json` when the project is
+The `.xcodeproj` is written from `luros-project.json` when the project is
 made. Every product becomes a native target of the kind Xcode has for it —
 an application, an app extension, a dynamic library, a bundle, a command line
 tool — with the project's deployment target, architectures, optimisation,
@@ -53,7 +53,7 @@ never runs again, because a second run would throw away what Xcode wrote.
 
 ## When the description changes
 
-Changing a product's name, its sources, or its type in `apelin-project.json`
+Changing a product's name, its sources, or its type in `luros-project.json`
 does not change the Xcode project. Make the same change in Xcode, or generate
 a fresh project beside the old one and compare.
 

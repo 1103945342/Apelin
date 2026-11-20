@@ -32,7 +32,7 @@ platformize-app-ios's; the quoted name is its section.
       **Done:** Empty outside `AGENTS.md`'s credits once the untracked `IrisinIDE/` leftover is deleted.
 - [x] The bundle id, daemon id, Mach service and client entitlement are all named after this app and shared with no other.
       SKILL.md "The contract", peer authentication.
-      **Done:** `wiki.qaq.apelin`, `wiki.qaq.apelind`, `wiki.qaq.apelin.service`, `wiki.qaq.apelin.client`.
+      **Done:** `com.fluoxetine.luros`, `com.fluoxetine.lurosd`, `com.fluoxetine.luros.service`, `com.fluoxetine.luros.client`.
 - [x] The hooks survived the rename: `grep -nE '[A-Za-z0-9_@]2>' Packaging/DEBIAN/*` prints nothing and the daemon id appears once in each hook.
       SKILL.md "Template": replace the token and nothing around it.
       **Done:** Both greps clean; `make check` now enforces the once-per-hook count.
@@ -80,7 +80,7 @@ platformize-app-ios's; the quoted name is its section.
 
 - [x] The entitlement files and the launchd plist carry this app's names; `HELPER.entitlements` is renamed for a helper-per-job daemon and deleted otherwise.
       SKILL.md "Template".
-      **Done:** `Apelin.entitlements`, `Apelind.entitlements`, `wiki.qaq.apelind.plist`; no helper, so no `HELPER.entitlements`.
+      **Done:** `Apelin.entitlements`, `Apelind.entitlements`, `com.fluoxetine.lurosd.plist`; no helper, so no `HELPER.entitlements`.
 - [x] The App Group key is kept only if an extension shares a container and the packager substitutes `$(APP_GROUP_IDENTIFIER)`.
       `Packaging/<App>.entitlements`.
       **Done:** No extension: the App Group key and `APP_GROUP_IDENTIFIER` are gone, and `make check` refuses them.
@@ -94,7 +94,7 @@ platformize-app-ios's; the quoted name is its section.
       **Done:** `firmware (>= 16.0), uikittools, launchctl`; no `uicache` in hooks; three bootouts. All enforced by `make check`.
 - [x] `postinst` makes `/var/mobile/Documents/<bundle id>` level by level for mobile (no `mkdir -p` as root, no symlink followed), and the app keeps its files in that folder, never loose in `Documents`.
       `Packaging/DEBIAN/`; SKILL.md "The contract".
-      **Done:** Template postinst unchanged; verified on the vphone (mobile owns `Documents` and `wiki.qaq.apelin`).
+      **Done:** Template postinst unchanged; verified on the vphone (mobile owns `Documents` and `com.fluoxetine.luros`).
 - [x] Versions and the deployment target live in `Configuration/*.xcconfig` only, `objectVersion` is pinned, `make check` rejects both, and one build-number style is chosen.
       SKILL.md "The contract".
       **Done:** Versions and floor in xcconfig only (`make check`); objectVersion 77; build number passed on the xcodebuild line (Irisin style).

@@ -150,7 +150,7 @@ actor ProtectedEditor {
     }
 }
 
-/// `~/Documents/wiki.qaq.apelin/backups/`: the old contents of every file a
+/// `~/Documents/com.fluoxetine.luros/backups/`: the old contents of every file a
 /// protected edit replaced, named by time and the canonical path, the newest
 /// `keep` per file. The folder is mobile's, so the host writes as root into
 /// a place mobile controls: every level is opened with `O_NOFOLLOW`, the

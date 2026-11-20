@@ -2,7 +2,7 @@ import ApelinCore
 import ApelinProtocol
 import Foundation
 
-/// How Apelin writes `apelin-project.json` (Documents/Schemas/README.md ▸
+/// How Apelin writes `luros-project.json` (Documents/Schemas/README.md ▸
 /// Written form): two spaces a level, one member or element a line,
 /// members in the order they were written, strings with only the escapes
 /// JSON requires, `\n` line ends and one after the document. Every writer
@@ -54,7 +54,7 @@ public enum ProjectManifestFormat {
         guard file.original.count <= maximumBytes,
               let text = formatted(file.original), text != file.original else { return false }
         guard try file.replace(with: text, ownerRequired: true) else {
-            throw ApelinError(.conflict, "apelin-project.json changed while it was being formatted.")
+            throw ApelinError(.conflict, "luros-project.json changed while it was being formatted.")
         }
         return true
     }

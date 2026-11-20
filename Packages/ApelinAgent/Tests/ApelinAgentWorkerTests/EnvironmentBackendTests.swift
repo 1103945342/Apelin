@@ -173,8 +173,8 @@ struct EnvironmentBackendTests {
     func `a switch on a description apelin_project_create never wrote says it is none, and what builds a workspace`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.projectCheck, reply: ProjectCheckResponse(passed: false, diagnostics: [
-            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "missing template", file: "apelin-project.json", field: "/"),
-            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "missing environment", file: "apelin-project.json", field: "/"),
+            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "missing template", file: "luros-project.json", field: "/"),
+            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "missing environment", file: "luros-project.json", field: "/"),
         ]))
         let request = EnvironmentCheckToolRequest(context: fixture.context(), toolchainID: nil, sdkID: "iPhoneOS27.0-cccccccc")
         let failure = await #expect(throws: EnvironmentToolFailure.self) { _ = try await fixture.backend.checkEnvironment(request) }
@@ -183,7 +183,7 @@ struct EnvironmentBackendTests {
         #expect(message.contains("not an Apelin build description") && message.contains("apelin-external-build"), "\(message)")
 
         fixture.host.on(.projectCheck, reply: ProjectCheckResponse(passed: false, diagnostics: [
-            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "unknown member", file: "apelin-project.json", field: "/configurations/Debug/linkerFlags"),
+            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "unknown member", file: "luros-project.json", field: "/configurations/Debug/linkerFlags"),
         ]))
         let misspelled = await #expect(throws: EnvironmentToolFailure.self) { _ = try await fixture.backend.checkEnvironment(request) }
         #expect(misspelled?.message.contains("(/configurations/Debug/linkerFlags: unknown member)") == true)
@@ -196,7 +196,7 @@ struct EnvironmentBackendTests {
         let fixture = try Fixture()
         let far = fixture.projectURL.deletingLastPathComponent().appendingPathComponent("Far", isDirectory: true)
         try FileManager.default.createDirectory(at: far, withIntermediateDirectories: true)
-        try #"{"projectID": "far-id"}"#.write(to: far.appendingPathComponent("apelin-project.json"), atomically: true, encoding: .utf8)
+        try #"{"projectID": "far-id"}"#.write(to: far.appendingPathComponent("luros-project.json"), atomically: true, encoding: .utf8)
         let byName = try await fixture.backend.resolveProject("Far")
         let byID = try await fixture.backend.resolveProject("far-id")
         #expect(byName == byID && byName.id == "far-id" && byName.name.rawValue == "Far")
@@ -207,7 +207,7 @@ struct EnvironmentBackendTests {
         let opened = try await fixture.backend.conversationCreate(ConversationCreateToolRequest(context: fixture.context(), prompt: "Build it", target: byName))
         let open = try #require(fixture.host.requests(AgentOpenRequest.self).first)
         #expect(open.projectID == "far-id" && open.projectName == "Far")
-        #expect(opened.link == "apelin://conversation/child" && opened.projectLink == "apelin://project/far-id" && opened.project == "Far")
+        #expect(opened.link == "lurosdev://conversation/child" && opened.projectLink == "lurosdev://project/far-id" && opened.project == "Far")
         fixture.host.on(.agentList, reply: AgentListResponse(sessions: []))
         _ = try await fixture.backend.conversationList(ConversationListToolRequest(context: fixture.context(), target: byName))
         #expect(fixture.host.requests(AgentListRequest.self).last?.projectID == "far-id")

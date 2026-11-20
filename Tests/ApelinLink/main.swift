@@ -11,25 +11,25 @@ func link(_ text: String) -> ApelinLink? {
 // MARK: - Parsing
 
 let session = "3F2504E0-4F89-11D3-9A0C-0305E82C3301"
-require(link("apelin://conversation/\(session)") == .conversation(session), "A conversation by its session ID")
+require(link("lurosdev://conversation/\(session)") == .conversation(session), "A conversation by its session ID")
 require(link("APELIN://Conversation/\(session)/") == .conversation(session), "Scheme and kind ignore case; a trailing slash is fine")
 require(link("apelin:conversation/\(session)") == .conversation(session), "The kind may be the first path component")
-require(link("apelin://conversation/\(session)?from=widget#top") == .conversation(session), "Query and fragment are ignored")
-require(link("apelin://project/I3%20Chain%20Tweak") == .project("I3 Chain Tweak"), "A folder name is percent-decoded")
-require(link("apelin://project/\(session)") == .project(session), "A project by its projectID")
-require(link("apelin://chat?prompt=Hello%20there") == .chat(prompt: "Hello there"), "A prompt for a new General Chat")
-require(link("apelin://Chat/?prompt=a%26b%3Dc%2B%0Anext") == .chat(prompt: "a&b=c+\nnext"), "Escaped text, a line break")
-require(link("apelin://chat?prompt=%E7%9B%B8%E6%9C%BA&other=1") == .chat(prompt: "相机"), "Other query items are ignored")
-require(link("apelin://chat") == .chat(prompt: ""), "No prompt: an empty composer")
-require(link("apelin://") == .app, "The bare scheme opens the app")
+require(link("lurosdev://conversation/\(session)?from=widget#top") == .conversation(session), "Query and fragment are ignored")
+require(link("lurosdev://project/I3%20Chain%20Tweak") == .project("I3 Chain Tweak"), "A folder name is percent-decoded")
+require(link("lurosdev://project/\(session)") == .project(session), "A project by its projectID")
+require(link("lurosdev://chat?prompt=Hello%20there") == .chat(prompt: "Hello there"), "A prompt for a new General Chat")
+require(link("lurosdev://Chat/?prompt=a%26b%3Dc%2B%0Anext") == .chat(prompt: "a&b=c+\nnext"), "Escaped text, a line break")
+require(link("lurosdev://chat?prompt=%E7%9B%B8%E6%9C%BA&other=1") == .chat(prompt: "相机"), "Other query items are ignored")
+require(link("lurosdev://chat") == .chat(prompt: ""), "No prompt: an empty composer")
+require(link("lurosdev://") == .app, "The bare scheme opens the app")
 require(link("apelin:") == .app, "So does the scheme alone")
 for unknown in [
-    "apelin://conversation", "apelin://conversation/", "apelin://project",
-    "apelin://conversation/a/b", "apelin://settings/x", "apelin://chat/\(session)",
-    "apelin://conversation/..", "apelin://project/.", "apelin://conversation/a%00b",
-    "apelin://conversation/a%2Fb", "apelin://project/" + String(repeating: "x", count: 256),
-    "apelin://chat?prompt=a%00b", "apelin://chat?prompt=a%1Bb", "apelin://chat/x?prompt=a",
-    "apelin://chat?prompt=" + String(repeating: "x", count: ApelinLink.maximumPromptLength + 1),
+    "lurosdev://conversation", "lurosdev://conversation/", "lurosdev://project",
+    "lurosdev://conversation/a/b", "lurosdev://settings/x", "lurosdev://chat/\(session)",
+    "lurosdev://conversation/..", "lurosdev://project/.", "lurosdev://conversation/a%00b",
+    "lurosdev://conversation/a%2Fb", "lurosdev://project/" + String(repeating: "x", count: 256),
+    "lurosdev://chat?prompt=a%00b", "lurosdev://chat?prompt=a%1Bb", "lurosdev://chat/x?prompt=a",
+    "lurosdev://chat?prompt=" + String(repeating: "x", count: ApelinLink.maximumPromptLength + 1),
 ] {
     require(link(unknown) == .unknown, "Unknown or malformed: \(unknown)")
 }
@@ -40,11 +40,11 @@ for other in ["https://example.com/conversation/x", "file:///tmp/a.apeproj", "ig
 
 // MARK: - Building, and reading back what was built
 
-require(ApelinLink.conversation(session).url.absoluteString == "apelin://conversation/\(session)", "The documented form")
-require(ApelinLink.project("I3 Chain Tweak").url.absoluteString == "apelin://project/I3%20Chain%20Tweak", "Spaces escaped")
-require(ApelinLink.app.url.absoluteString == "apelin://", "The app")
-require(ApelinLink.chat(prompt: "Fix the build").url.absoluteString == "apelin://chat?prompt=Fix%20the%20build", "A prompt")
-require(ApelinLink.chat(prompt: "").url.absoluteString == "apelin://chat", "No prompt")
+require(ApelinLink.conversation(session).url.absoluteString == "lurosdev://conversation/\(session)", "The documented form")
+require(ApelinLink.project("I3 Chain Tweak").url.absoluteString == "lurosdev://project/I3%20Chain%20Tweak", "Spaces escaped")
+require(ApelinLink.app.url.absoluteString == "lurosdev://", "The app")
+require(ApelinLink.chat(prompt: "Fix the build").url.absoluteString == "lurosdev://chat?prompt=Fix%20the%20build", "A prompt")
+require(ApelinLink.chat(prompt: "").url.absoluteString == "lurosdev://chat", "No prompt")
 for prompt in ["a&b=c+d", "line one\nline two\ttab", "100% 相机 #tag ?q", ""] {
     require(ApelinLink(url: ApelinLink.chat(prompt: prompt).url) == .chat(prompt: prompt), "Round trip: \(prompt)")
 }
@@ -59,15 +59,15 @@ for name in ["I3 Chain Tweak", "相机翻译", "a?b#c;d", "100% done", session] 
 
 let repository = "https://github.com/owner/repo"
 let escapedRepository = "https%3A%2F%2Fgithub.com%2Fowner%2Frepo"
-require(link("apelin://import?url=\(escapedRepository)") == .importRepository(url: repository, branch: nil),
+require(link("lurosdev://import?url=\(escapedRepository)") == .importRepository(url: repository, branch: nil),
         "An escaped address, the default branch")
-require(link("apelin://import?url=\(repository)") == .importRepository(url: repository, branch: nil),
+require(link("lurosdev://import?url=\(repository)") == .importRepository(url: repository, branch: nil),
         "An address left unescaped reads the same")
-require(link("apelin://Import/?url=\(escapedRepository)&branch=release%2F1.0") ==
+require(link("lurosdev://Import/?url=\(escapedRepository)&branch=release%2F1.0") ==
     .importRepository(url: repository, branch: "release/1.0"), "A branch with a slash")
 require(link("apelin:import?url=\(escapedRepository)&branch=") == .importRepository(url: repository, branch: nil),
         "An empty branch is the default one")
-require(link("apelin://import?prompt=Run%20it&url=\(escapedRepository)&token=x&command=rm") ==
+require(link("lurosdev://import?prompt=Run%20it&url=\(escapedRepository)&token=x&command=rm") ==
     .importRepository(url: repository, branch: nil), "A prompt, a token or a command beside it is ignored")
 for address in [
     "https://gitlab.example.com:8443/group/sub/project.git", "https://GitHub.com/Owner/Repo/",
@@ -80,7 +80,7 @@ for address in [
 }
 
 require(ApelinLink.importRepository(url: repository, branch: nil).url.absoluteString ==
-    "apelin://import?url=https://github.com/owner/repo", "The documented form")
+    "lurosdev://import?url=https://github.com/owner/repo", "The documented form")
 require(ApelinLink(url: ApelinLink.invalidImport.url) == .invalidImport, "An import that names nothing reads back so")
 
 for refused in [
@@ -120,27 +120,27 @@ for branch in [
 }
 
 for invalid in [
-    "apelin://import", "apelin://import?branch=main", "apelin://import?url=",
-    "apelin://import?url=http%3A%2F%2Fgithub.com%2Fowner%2Frepo",
-    "apelin://import?url=https%3A%2F%2Fuser%3Atoken%40github.com%2Fowner%2Frepo",
-    "apelin://import?url=https%3A%2F%2Fgithub.com%2Fowner%2Frepo%3Ftoken%3Dx",
-    "apelin://import?url=\(escapedRepository)&branch=a..b",
-    "apelin://import?url=\(escapedRepository)&branch=-x",
-    "apelin://import?url=\(escapedRepository)&branch=x.lock",
-    "apelin://import?url=\(escapedRepository)&branch=%40%7B",
-    "apelin://import?url=\(escapedRepository)&url=https%3A%2F%2Fevil.example%2Frepo",
-    "apelin://import?url=\(escapedRepository)&branch=main&branch=evil",
-    "apelin://import?url=\(escapedRepository)%0A",
+    "lurosdev://import", "lurosdev://import?branch=main", "lurosdev://import?url=",
+    "lurosdev://import?url=http%3A%2F%2Fgithub.com%2Fowner%2Frepo",
+    "lurosdev://import?url=https%3A%2F%2Fuser%3Atoken%40github.com%2Fowner%2Frepo",
+    "lurosdev://import?url=https%3A%2F%2Fgithub.com%2Fowner%2Frepo%3Ftoken%3Dx",
+    "lurosdev://import?url=\(escapedRepository)&branch=a..b",
+    "lurosdev://import?url=\(escapedRepository)&branch=-x",
+    "lurosdev://import?url=\(escapedRepository)&branch=x.lock",
+    "lurosdev://import?url=\(escapedRepository)&branch=%40%7B",
+    "lurosdev://import?url=\(escapedRepository)&url=https%3A%2F%2Fevil.example%2Frepo",
+    "lurosdev://import?url=\(escapedRepository)&branch=main&branch=evil",
+    "lurosdev://import?url=\(escapedRepository)%0A",
     // escapes that decode to no text are no value, not the default branch
-    "apelin://import?url=\(escapedRepository)&branch=%FF",
-    "apelin://import?url=https%3A%2F%2Fgithub.com%2Fowner%2Frepo%FF",
+    "lurosdev://import?url=\(escapedRepository)&branch=%FF",
+    "lurosdev://import?url=https%3A%2F%2Fgithub.com%2Fowner%2Frepo%FF",
 ] {
     require(link(invalid) == .invalidImport, "An import naming nothing Apelin imports: \(invalid)")
 }
 
-require(link("apelin://import/x?url=\(escapedRepository)") == .unknown, "An import has no path of its own")
-require(link("apelin://import?URL=\(escapedRepository)") == .invalidImport, "Parameter names keep their case")
-require(link("apelin://import?url=javascript%3Aalert(1)") == .invalidImport, "Another scheme, however it is spelt")
+require(link("lurosdev://import/x?url=\(escapedRepository)") == .unknown, "An import has no path of its own")
+require(link("lurosdev://import?URL=\(escapedRepository)") == .invalidImport, "Parameter names keep their case")
+require(link("lurosdev://import?url=javascript%3Aalert(1)") == .invalidImport, "Another scheme, however it is spelt")
 
 // MARK: - The import's own decisions
 

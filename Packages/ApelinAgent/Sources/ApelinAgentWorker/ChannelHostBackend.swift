@@ -224,7 +224,7 @@ public struct ChannelHostBackend: AgentHostBackend {
         guard let check = try? await service.projectCheck(projectID: project.id) else { return nil }
         let unread = check.diagnostics.filter { Self.unreadProjectCodes.contains($0.code) }
         guard !unread.isEmpty else { return nil }
-        var message = "apelin-project.json does not read, so the build did not start: "
+        var message = "luros-project.json does not read, so the build did not start: "
             + unread.map(Self.fieldAndMessage).joined(separator: "; ")
         if unread.contains(where: { $0.code == Self.schemaErrorCode }) {
             message += ". " + Self.schemaPointer
@@ -383,19 +383,19 @@ public struct ChannelHostBackend: AgentHostBackend {
     static func diagnostics(_ found: [ProjectDiagnostic]) -> [BuildDiagnostic] {
         var diagnostics = found.map(diagnostic)
         if found.contains(where: { $0.code == schemaErrorCode }) {
-            diagnostics.append(BuildDiagnostic(severity: .note, file: "apelin-project.json", message: schemaPointer))
+            diagnostics.append(BuildDiagnostic(severity: .note, file: "luros-project.json", message: schemaPointer))
         }
         return diagnostics
     }
 
-    /// What apelin-build's check reports when `apelin-project.json` did not
+    /// What apelin-build's check reports when `luros-project.json` did not
     /// read: the file itself, its JSON, or its schema.
     static let unreadProjectCodes: Set = ["project.unreadable", "project.json", schemaErrorCode]
     /// A member the schema does not allow, lacks or types wrongly; its field
     /// says which.
     static let schemaErrorCode = "project.invalid"
 
-    static let schemaPointer = "apelin-project.json does not match its schema; each error's field is the member to fix. Read the apelin-project-description skill and its file apelin-project.schema.json (apelin_skill_read) before editing it."
+    static let schemaPointer = "luros-project.json does not match its schema; each error's field is the member to fix. Read the apelin-project-description skill and its file apelin-project.schema.json (apelin_skill_read) before editing it."
 
     /// A finding as the check first wrote it, its field in front:
     /// `/configurations/Debug/linkerFlags: unknown member`.
@@ -521,9 +521,9 @@ public struct ChannelHostBackend: AgentHostBackend {
         )
     }
 
-    /// `environment.sdk.id` in the project's `apelin-project.json`.
+    /// `environment.sdk.id` in the project's `luros-project.json`.
     static func pinnedSDK(projectURL: URL) -> String? {
-        let url = projectURL.appendingPathComponent("apelin-project.json")
+        let url = projectURL.appendingPathComponent("luros-project.json")
         guard let data = try? Data(contentsOf: url), data.count <= 1 << 20,
               let json = try? JSONCoding.decode(ApelinCore.JSONValue.self, from: data)
         else { return nil }
@@ -879,14 +879,14 @@ public struct ChannelHostBackend: AgentHostBackend {
         )
     }
 
-    /// What an import or a reset did to apelin-project.json, for the model;
+    /// What an import or a reset did to luros-project.json, for the model;
     /// nil when the project's own stayed.
     static func projectFileNote(_ file: GitProjectFile) -> String? {
         switch file {
         case .repository:
-            "apelin-project.json is now the repository's, as it is: the project is what it describes, with its projectID. A build of that description asks the user first in Strict mode."
+            "luros-project.json is now the repository's, as it is: the project is what it describes, with its projectID. A build of that description asks the user first in Strict mode."
         case .repositoryWithProjectID:
-            "apelin-project.json is now the repository's, with this project's own projectID in place of the one it carried, so git_status shows it changed: commit it with your next change. The project is what it describes; a build of that description asks the user first in Strict mode."
+            "luros-project.json is now the repository's, with this project's own projectID in place of the one it carried, so git_status shows it changed: commit it with your next change. The project is what it describes; a build of that description asks the user first in Strict mode."
         case .project:
             nil
         }

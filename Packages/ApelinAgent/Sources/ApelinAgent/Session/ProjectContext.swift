@@ -204,7 +204,7 @@ enum ProjectContext {
         return "a repository; git_status has its state."
     }
 
-    /// `apelin-project.json` when it is a regular file inside the project
+    /// `luros-project.json` when it is a regular file inside the project
     /// that reads as JSON.
     private static func manifest(in root: ScopedRoot) -> JSONValue? {
         guard let path = try? root.resolveExisting(ProjectBuildSystem.manifestFile),

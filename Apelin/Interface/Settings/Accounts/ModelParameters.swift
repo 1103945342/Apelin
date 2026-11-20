@@ -4,7 +4,7 @@ import Foundation
 extension Notification.Name {
     /// A model's figures were saved; an open conversation reads them with
     /// its next message.
-    static let modelParametersChanged = Notification.Name("wiki.qaq.apelin.modelParametersChanged")
+    static let modelParametersChanged = Notification.Name("com.fluoxetine.luros.modelParametersChanged")
 }
 
 /// What one model is read as, as the user set it in Settings ▸ Models: a

@@ -1,6 +1,6 @@
 import Foundation
 
-/// Who builds the project, read from its `apelin-project.json`: Apelin's
+/// Who builds the project, read from its `luros-project.json`: Apelin's
 /// build tool from the build description, or the project's own tools.
 enum ProjectBuildSystem: Equatable {
     /// `buildStart` from the manifest's configurations and products.
@@ -10,7 +10,7 @@ enum ProjectBuildSystem: Equatable {
     /// field, so it is external too.
     case external
 
-    static let manifestFile = "apelin-project.json"
+    static let manifestFile = "luros-project.json"
     static let maxManifestBytes = 1 << 20
 
     /// Read again on every call, so a manifest the agent or the user edits
@@ -48,5 +48,5 @@ enum ProjectBuildSystem: Equatable {
     /// What apelin_project_build answers on a workspace that declares no build,
     /// instead of the build worker's error about a description the
     /// workspace never had.
-    static let externalBuildRefusal = "This workspace declares no build yet. Write a script in the project that builds the package with the repository's own tools and writes one .deb into $APELIN_PACKAGE_DIR, then declare it in apelin-project.json as \"external\": {\"script\": \"<its path>\"}; read the apelin-external-build skill first."
+    static let externalBuildRefusal = "This workspace declares no build yet. Write a script in the project that builds the package with the repository's own tools and writes one .deb into $APELIN_PACKAGE_DIR, then declare it in luros-project.json as \"external\": {\"script\": \"<its path>\"}; read the apelin-external-build skill first."
 }

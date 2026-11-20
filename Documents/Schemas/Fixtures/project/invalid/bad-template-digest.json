@@ -3,7 +3,7 @@
   "projectID": "b9f769c1-39ae-52d4-a8fe-1b3f002b3470",
   "kind": "tweak",
   "template": {
-    "extensionID": "wiki.qaq.apelin.dev.tweak",
+    "extensionID": "com.fluoxetine.luros.dev.tweak",
     "templateID": "objc-hook",
     "version": "0.1.0",
     "digest": "sha1:abc"
@@ -63,7 +63,7 @@
       ],
       "extensionSupport": [
         {
-          "extension": "wiki.qaq.apelin.dev.tweak",
+          "extension": "com.fluoxetine.luros.dev.tweak",
           "component": "substrate"
         }
       ]

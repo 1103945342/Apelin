@@ -21,11 +21,11 @@ final class ManifestFormattingTests: XCTestCase {
 
         for checked in [[ProjectStore.projectFileName: "sha256:x"], ["self.json": "sha256:x"]] {
             let line = ManifestFormatting.run(projectRoot: root, checkedFiles: checked)
-            XCTAssertEqual(line, "apelin-project.json was left as it is: the build or the package takes it as a file")
+            XCTAssertEqual(line, "luros-project.json was left as it is: the build or the package takes it as a file")
             XCTAssertEqual(try Data(contentsOf: manifest), oneLine)
         }
         let line = ManifestFormatting.run(projectRoot: root, checkedFiles: ["Sources/Tweak.m": "sha256:x"])
-        XCTAssertEqual(line?.hasPrefix("formatted apelin-project.json"), true)
+        XCTAssertEqual(line?.hasPrefix("formatted luros-project.json"), true)
         XCTAssertEqual(try Data(contentsOf: manifest), ProjectManifestFormat.formatted(oneLine))
     }
 }

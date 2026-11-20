@@ -6,7 +6,7 @@ import Foundation
 
 /// "Remote wins" (issue #32): what a reset of a project to a remote's branch
 /// would lose, read after a fetch, and the reset itself, held to exactly
-/// the state that was shown. Apelin's own files (`apelin-project.json`, the
+/// the state that was shown. Apelin's own files (`luros-project.json`, the
 /// icon) are settled as an import settles them: the remote's when it has
 /// them, the project's identity kept in the manifest; the project's own,
 /// kept out of the repository, when it has not.

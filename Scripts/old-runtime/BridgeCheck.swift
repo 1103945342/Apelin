@@ -19,8 +19,8 @@ func footprint() -> Int {
 }
 
 final class Calls: NSObject {
-    let url = URL(fileURLWithPath: "/var/mobile/Documents/wiki.qaq.apelin/Environment/Toolchains")
-    let text = "/var/mobile/Documents/wiki.qaq.apelin/Environment/Toolchains"
+    let url = URL(fileURLWithPath: "/var/mobile/Documents/com.fluoxetine.luros/Environment/Toolchains")
+    let text = "/var/mobile/Documents/com.fluoxetine.luros/Environment/Toolchains"
     let table = ["alpha": "one", "beta": "two"]
     let names: Set<String> = ["alpha", "beta"]
     let list = ["alpha", "beta"]

@@ -5,7 +5,7 @@ full text a push away. Apelin's own code is MIT; third-party code keeps its
 own license.
 
 `Scripts/collect-licenses.py` runs offline as the app target's last build
-phase, Collect Licenses, and writes `Apelin.app/Licenses.json` from:
+phase, Collect Licenses, and writes `Luros.app/Licenses.json` from:
 
 1. the repository `LICENSE`;
 2. the folders here, one per component that ships inside a prebuilt binary

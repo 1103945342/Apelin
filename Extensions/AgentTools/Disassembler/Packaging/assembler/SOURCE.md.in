@@ -1,4 +1,4 @@
-# Corresponding source: wiki.qaq.apelin.agent-tools.assembler @VERSION@
+# Corresponding source: com.fluoxetine.luros.agent-tools.assembler @VERSION@
 
 The `apelin-assembler` executable in this package contains Keystone, which
 is licensed under the GNU General Public License version 2 only (`COPYING`

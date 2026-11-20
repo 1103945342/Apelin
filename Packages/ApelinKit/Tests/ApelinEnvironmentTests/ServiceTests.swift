@@ -10,7 +10,7 @@ final class GitServiceTests: XCTestCase {
         let root = home.layout.data.projects.appendingPathComponent(name, isDirectory: true)
         _ = try GitRepository.create(at: root)
         if let projectID {
-            try Data(#"{"projectID": "\#(projectID)"}"#.utf8).write(to: root.appendingPathComponent("apelin-project.json"))
+            try Data(#"{"projectID": "\#(projectID)"}"#.utf8).write(to: root.appendingPathComponent("luros-project.json"))
         }
         return root
     }
@@ -24,12 +24,12 @@ final class GitServiceTests: XCTestCase {
 
         let status = try git.status(GitStatusRequest(projectID: id))
         XCTAssertEqual(status.branch, "main")
-        XCTAssertEqual(Set(status.entries.map(\.path)), ["apelin-project.json", "main.c"])
+        XCTAssertEqual(Set(status.entries.map(\.path)), ["luros-project.json", "main.c"])
         XCTAssertEqual(try git.status(GitStatusRequest(projectID: "Hello")), status)
 
-        _ = try git.stage(GitStageRequest(projectID: id, paths: ["main.c", "apelin-project.json"]))
+        _ = try git.stage(GitStageRequest(projectID: id, paths: ["main.c", "luros-project.json"]))
         XCTAssertTrue(try git.diff(GitDiffRequest(projectID: id, staged: true)).diff.contains("+int x;"))
-        _ = try git.unstage(GitUnstageRequest(projectID: id, paths: ["apelin-project.json"]))
+        _ = try git.unstage(GitUnstageRequest(projectID: id, paths: ["luros-project.json"]))
         let commit = try git.commit(GitCommitRequest(projectID: id, message: "Start", authorName: "A", authorEmail: "a@apelin.invalid"))
         XCTAssertEqual(commit.commitID.count, 40)
         XCTAssertEqual(try git.status(GitStatusRequest(projectID: id)).head, commit.commitID)

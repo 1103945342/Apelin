@@ -11,7 +11,7 @@ extension BuiltInSkills {
         package for it.
 
         ## Declare the script
-        In `apelin-project.json` (Apelin's file, which git ignores), beside
+        In `luros-project.json` (Apelin's file, which git ignores), beside
         what is already there:
         ```json
         "external": {"script": "apelin/build.sh", "interpreter": "sh", "arguments": []}

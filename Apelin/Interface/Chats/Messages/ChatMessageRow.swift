@@ -127,7 +127,7 @@ final class ChatMessageRow: ListRowView {
             case let .string(value): URL(string: value)
             }
             guard let url else { return }
-            // an apelin:// link opens its conversation in place
+            // an lurosdev:// link opens its conversation in place
             if ApelinLinkRouter.open(url, in: self?.window?.windowScene) {
                 return
             }

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Where a skill comes from: built into Apelin, or the skills folder,
-/// `~/Documents/wiki.qaq.apelin/skills`.
+/// `~/Documents/com.fluoxetine.luros/skills`.
 public enum AgentSkillSource: String, Codable, Sendable {
     case builtIn
     case user

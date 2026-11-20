@@ -4,7 +4,7 @@
 import Foundation
 
 extension Notification.Name {
-    static let composerBehaviorChanged = Notification.Name("wiki.qaq.apelin.composerBehaviorChanged")
+    static let composerBehaviorChanged = Notification.Name("com.fluoxetine.luros.composerBehaviorChanged")
 }
 
 /// How the composer treats return and a long paste. Every composer follows

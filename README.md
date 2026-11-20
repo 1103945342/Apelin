@@ -39,12 +39,12 @@ The development extensions add the project templates and come with Apelin by def
 
 | Extension | Adds |
 | --- | --- |
-| `wiki.qaq.apelin.dev.app` | UIKit apps in Objective-C or Swift |
-| `wiki.qaq.apelin.dev.tweak` | Tweaks |
-| `wiki.qaq.apelin.dev.cli` | Command-line tools in C or Objective-C |
-| `wiki.qaq.apelin.dev.preferences` | Preference bundles |
-| `wiki.qaq.apelin.agent-tools.disassembler` | A disassembler for the agent, on Capstone |
-| `wiki.qaq.apelin.agent-tools.assembler` | An assembler for the agent, on Keystone (GPL-2.0; its source is published with each release) |
+| `com.fluoxetine.luros.dev.app` | UIKit apps in Objective-C or Swift |
+| `com.fluoxetine.luros.dev.tweak` | Tweaks |
+| `com.fluoxetine.luros.dev.cli` | Command-line tools in C or Objective-C |
+| `com.fluoxetine.luros.dev.preferences` | Preference bundles |
+| `com.fluoxetine.luros.agent-tools.disassembler` | A disassembler for the agent, on Capstone |
+| `com.fluoxetine.luros.agent-tools.assembler` | An assembler for the agent, on Keystone (GPL-2.0; its source is published with each release) |
 
 ## Open in Apelin
 

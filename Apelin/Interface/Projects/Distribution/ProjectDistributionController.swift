@@ -532,8 +532,8 @@ enum DistributionProject {
             guard let root = DataFolder.app.project(named: name), let canonical = CanonicalPath.resolve(root.path),
                   let projects = CanonicalPath.resolve(DataFolder.app.projects.path),
                   canonical == projects + "/" + name,
-                  let manifest = CanonicalPath.resolve(root.appendingPathComponent("apelin-project.json").path),
-                  manifest == canonical + "/apelin-project.json"
+                  let manifest = CanonicalPath.resolve(root.appendingPathComponent("luros-project.json").path),
+                  manifest == canonical + "/luros-project.json"
             else {
                 throw ApelinError(.notFound, String(localized: "This project is no longer available."))
             }

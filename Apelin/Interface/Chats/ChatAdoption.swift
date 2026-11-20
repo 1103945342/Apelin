@@ -70,7 +70,7 @@ enum ChatAdoption {
         )
     }
 
-    /// The record for a session an `apelin://conversation/` link names that
+    /// The record for a session an `lurosdev://conversation/` link names that
     /// has no opener to take the project from, in `projectName`, the
     /// project the host names for it; nil when a record has it already.
     /// Ended or not: the link asked for it, and its log still reads.

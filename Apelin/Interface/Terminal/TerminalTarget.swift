@@ -14,7 +14,7 @@ struct TerminalTarget: Codable, Hashable, Sendable {
         /// `relativePath` is that folder itself, and anything else is a plain
         /// relative path inside it, as the wire's `relativePath` takes.
         case project(folder: String, relativePath: String?)
-        /// A folder inside `~/Documents/wiki.qaq.apelin` — General Chat's
+        /// A folder inside `~/Documents/com.fluoxetine.luros` — General Chat's
         /// `Temporary/<id>`, say — kept relative to that folder.
         case data(relativePath: String)
         /// Neither: a folder the caller had this run only. Nothing about it is

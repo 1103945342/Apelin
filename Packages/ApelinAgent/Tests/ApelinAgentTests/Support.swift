@@ -6,7 +6,7 @@ import struct ApelinProtocol.GitPushLease
 import struct ApelinProtocol.GitSquashResponse
 import Foundation
 
-/// A throwaway home with `Documents/wiki.qaq.apelin/Projects/<name>/`.
+/// A throwaway home with `Documents/com.fluoxetine.luros/Projects/<name>/`.
 struct TemporaryHome {
     let home: URL
     let dataRoot: ApelinDataRoot
@@ -415,7 +415,7 @@ actor MockBackend: AgentHostBackend {
 
     func projectTemplates() -> ProjectTemplateListResponse {
         ProjectTemplateListResponse(templates: [
-            ProjectTemplate(id: "wiki.qaq.apelin.dev.tweak/tweak", name: "Tweak", kind: "tweak", parameters: [
+            ProjectTemplate(id: "com.fluoxetine.luros.dev.tweak/tweak", name: "Tweak", kind: "tweak", parameters: [
                 ProjectTemplate.Parameter(name: "filter", kind: "string", defaultValue: .string("com.apple.springboard")),
             ]),
         ])

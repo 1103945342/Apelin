@@ -68,7 +68,7 @@ final class ProjectSymbolicationTests: XCTestCase {
 
     func testTheTweakIsBlamedWithItsRecordedOwner() throws {
         let crash = try crash()
-        var owner = PackageOwner(identifier: "wiki.qaq.apelin.hello")
+        var owner = PackageOwner(identifier: "com.fluoxetine.luros.hello")
         owner.version = "0.0.1"
         let owners = StaticPackageOwners(
             ownerByPath: ["/usr/lib/TweakInject/ApelinHello.dylib": owner],
@@ -78,7 +78,7 @@ final class ProjectSymbolicationTests: XCTestCase {
         let first = try XCTUnwrap(suspects.first)
         XCTAssertEqual(first.id, tweakPath)
         XCTAssertEqual(first.reasons, [.onFaultingStack, .injectedTweak])
-        XCTAssertEqual(first.owner?.identifier, "wiki.qaq.apelin.hello")
+        XCTAssertEqual(first.owner?.identifier, "com.fluoxetine.luros.hello")
         XCTAssertEqual(suspects.count, 1, "SpringBoard and UIKitCore are Apple's")
     }
 

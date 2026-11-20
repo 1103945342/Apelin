@@ -16,7 +16,7 @@ import subprocess
 REPO = Path(__file__).resolve().parent.parent
 OUT = REPO / ".build/mixed-device"
 KIT = REPO / "Packages/ApelinKit/Sources"
-ENTITLEMENTS = "Extensions/Development/wiki.qaq.apelin.dev.cli/templates/c/Packaging/Tool.entitlements"
+ENTITLEMENTS = "Extensions/Development/com.fluoxetine.luros.dev.cli/templates/c/Packaging/Tool.entitlements"
 
 
 def write(relative, text):

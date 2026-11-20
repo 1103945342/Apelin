@@ -10,7 +10,7 @@
 # manifest, template and digest checks always run.
 #
 # An extension is data only — manifest.json, templates/, support/, LICENSE —
-# installed at <prefix>/usr/share/apelin/development/<id>/, where @PREFIX@ is
+# installed at <prefix>/usr/share/luros/development/<id>/, where @PREFIX@ is
 # empty for roothide and /var/jb for rootless, as in Scripts/package-deb.sh.
 # It ships no maintainer scripts and nothing executable: the app reads it,
 # never runs it.
@@ -55,7 +55,7 @@ manifest = apelin_schema.load_json(sys.argv[2])
 field = sys.argv[3]
 if field == "depends":
     flavor = sys.argv[4]
-    relations = [f"wiki.qaq.apelin (>= {manifest['apelinCompatibility']['minimumAppVersion']})"]
+    relations = [f"com.fluoxetine.luros (>= {manifest['apelinCompatibility']['minimumAppVersion']})"]
     relations += manifest["requirements"].get("runtimeDependencies", {}).get(flavor, [])
     for component in manifest.get("support", {}).values():
         for relation in component.get("runtimeDependencies", {}).get(flavor, []):
@@ -114,7 +114,7 @@ for extension in "$here"/*/; do
         [[ "$bootstraps" == *" $flavor "* ]] || { echo "skip $package_id ($flavor): not a supported bootstrap"; continue; }
 
         staging="$scratch/$package_id-$flavor"
-        data_path="$install_prefix/usr/share/apelin/development/$package_id"
+        data_path="$install_prefix/usr/share/luros/development/$package_id"
         mkdir -p "$staging/DEBIAN" "$staging$data_path"
         chmod 0755 "$staging"
         /usr/bin/ditto --norsrc --noextattr "$extension" "$staging$data_path"

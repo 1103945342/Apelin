@@ -37,7 +37,7 @@ enum NativeBuild {
     /// `cxxFlags`, `cxxStandard` and `bridgingHeader` are the project
     /// description's own fields; a document that names them still validates.
     static func describe(_ product: [String: Any], cxxFlags: [String]? = nil, in root: URL) throws {
-        let manifest = root.appendingPathComponent("apelin-project.json")
+        let manifest = root.appendingPathComponent("luros-project.json")
         var document = try XCTUnwrap(
             JSONSerialization.jsonObject(with: Data(contentsOf: manifest)) as? [String: Any],
             "\(manifest.path) is not a JSON object"

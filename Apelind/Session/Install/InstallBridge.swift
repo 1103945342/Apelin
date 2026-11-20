@@ -24,7 +24,7 @@ import Foundation
 actor InstallBridge {
     struct Paths: Sendable {
         var installRoot: String
-        /// `~/Documents/wiki.qaq.apelin`, canonical: where artifacts may live.
+        /// `~/Documents/com.fluoxetine.luros`, canonical: where artifacts may live.
         var dataFolder: String
         /// Root's, 0700.
         var staging: URL
@@ -95,7 +95,7 @@ actor InstallBridge {
             }
             let relative = String(request.artifactID.dropFirst(5))
             guard CanonicalPath.isPlainRelative(relative) else {
-                throw ApelinError(.badRequest, "file: takes a path inside ~/Documents/wiki.qaq.apelin")
+                throw ApelinError(.badRequest, "file: takes a path inside ~/Documents/com.fluoxetine.luros")
             }
             origin = .file
             source = paths.dataFolder + "/" + relative
@@ -1276,7 +1276,7 @@ actor InstallBridge {
         guard let opened = FileScopes.descriptorPath(input), let folder = CanonicalPath.resolve(paths.dataFolder),
               CanonicalPath.isCanonical(opened, inside: folder)
         else {
-            throw ApelinError(.denied, "an artifact lives inside ~/Documents/wiki.qaq.apelin")
+            throw ApelinError(.denied, "an artifact lives inside ~/Documents/com.fluoxetine.luros")
         }
         var metadata = stat()
         guard fstat(input, &metadata) == 0, metadata.st_mode & S_IFMT == S_IFREG else {

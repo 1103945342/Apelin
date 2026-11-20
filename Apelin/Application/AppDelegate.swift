@@ -106,19 +106,19 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.rootViewController = RootInterfaceController()
         window.makeKeyAndVisible()
         self.window = window
-        // A cold launch by Open in Apelin or an `apelin://` link: the URL
+        // A cold launch by Open in Apelin or an `lurosdev://` link: the URL
         // comes with the scene. Opened on the next turn, once the root is on
         // screen to present from.
         DispatchQueue.main.async { [weak self] in self?.openURLs(connectionOptions.urlContexts, in: scene) }
     }
 
-    /// Open in Apelin, or an `apelin://` link, while the app runs.
+    /// Open in Apelin, or an `lurosdev://` link, while the app runs.
     @objc dynamic func scene(_ scene: UIScene, openURLContexts contexts: Set<UIOpenURLContext>) {
         guard let scene = scene as? UIWindowScene else { return }
         openURLs(contexts, in: scene)
     }
 
-    /// An `apelin://` link goes to its conversation or project
+    /// An `lurosdev://` link goes to its conversation or project
     /// (`ApelinLinkRouter`); anything else is a transfer file, and the
     /// opener refuses what is not one with a notice. One at a time: a
     /// second sheet could not be presented over the first.

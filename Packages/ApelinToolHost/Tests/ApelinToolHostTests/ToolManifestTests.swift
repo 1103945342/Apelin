@@ -7,18 +7,18 @@ import XCTest
 /// the test's user, so the policy asks for that owner instead of root.
 final class ToolManifestTests: XCTestCase {
     private var root = ""
-    private let id = "wiki.qaq.apelin.agent-tools.sample"
+    private let id = "com.fluoxetine.luros.agent-tools.sample"
     private var policy: ToolManifestPolicy {
         ToolManifestPolicy(requiredOwner: getuid())
     }
 
     override func setUpWithError() throws {
         root = NSTemporaryDirectory() + "apelin-tool-manifest-\(UUID().uuidString)"
-        try FileManager.default.createDirectory(atPath: root + "/usr/libexec/apelin/agent-tools", withIntermediateDirectories: true)
-        try FileManager.default.createDirectory(atPath: root + "/usr/share/apelin/agent-tools/\(id)/licenses", withIntermediateDirectories: true)
-        try FileManager.default.copyItem(atPath: ToolHostClientTests.fakeExecutable, toPath: root + "/usr/libexec/apelin/agent-tools/sample")
-        chmod(root + "/usr/libexec/apelin/agent-tools/sample", 0o755)
-        FileManager.default.createFile(atPath: root + "/usr/share/apelin/agent-tools/\(id)/licenses/LICENSE", contents: Data("MIT".utf8))
+        try FileManager.default.createDirectory(atPath: root + "/usr/libexec/luros/agent-tools", withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(atPath: root + "/usr/share/luros/agent-tools/\(id)/licenses", withIntermediateDirectories: true)
+        try FileManager.default.copyItem(atPath: ToolHostClientTests.fakeExecutable, toPath: root + "/usr/libexec/luros/agent-tools/sample")
+        chmod(root + "/usr/libexec/luros/agent-tools/sample", 0o755)
+        FileManager.default.createFile(atPath: root + "/usr/share/luros/agent-tools/\(id)/licenses/LICENSE", contents: Data("MIT".utf8))
         try writeManifest(manifest())
     }
 
@@ -34,7 +34,7 @@ final class ToolManifestTests: XCTestCase {
 
     private func writeManifest(_ manifest: ToolManifest, id: String? = nil) throws {
         let data = try JSONEncoder().encode(manifest)
-        let directory = root + "/usr/share/apelin/agent-tools/\(id ?? self.id)"
+        let directory = root + "/usr/share/luros/agent-tools/\(id ?? self.id)"
         try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
         try data.write(to: URL(fileURLWithPath: directory + "/manifest.json"))
         chmod(directory + "/manifest.json", 0o644)
@@ -43,7 +43,7 @@ final class ToolManifestTests: XCTestCase {
     func testValidManifest() throws {
         let validated = try ToolManifestValidator.validate(installRoot: root, id: id, policy: policy)
         XCTAssertEqual(validated.manifest.tools.map(\.name), ["echo"])
-        XCTAssertEqual(validated.executablePath, try CanonicalPath.resolve(root + "/usr/libexec/apelin/agent-tools/sample"))
+        XCTAssertEqual(validated.executablePath, try CanonicalPath.resolve(root + "/usr/libexec/luros/agent-tools/sample"))
         XCTAssertEqual(validated.licensePaths.count, 1)
         XCTAssertNoThrow(try ToolManifestValidator.recheckExecutable(validated, policy: policy))
     }
@@ -58,7 +58,7 @@ final class ToolManifestTests: XCTestCase {
         try writeManifest(manifest(executable: "../../bin/ls"))
         XCTAssertThrowsError(try ToolManifestValidator.validate(installRoot: root, id: id, policy: policy))
 
-        symlink("/bin/ls", root + "/usr/libexec/apelin/agent-tools/escape")
+        symlink("/bin/ls", root + "/usr/libexec/luros/agent-tools/escape")
         try writeManifest(manifest(executable: "usr/libexec/apelin/agent-tools/escape"))
         XCTAssertThrowsError(try ToolManifestValidator.validate(installRoot: root, id: id, policy: policy)) { error in
             XCTAssertTrue("\(error)".contains("resolves outside"), "\(error)")
@@ -69,7 +69,7 @@ final class ToolManifestTests: XCTestCase {
     }
 
     func testWritableExecutableIsRefused() throws {
-        chmod(root + "/usr/libexec/apelin/agent-tools/sample", 0o775)
+        chmod(root + "/usr/libexec/luros/agent-tools/sample", 0o775)
         XCTAssertThrowsError(try ToolManifestValidator.validate(installRoot: root, id: id, policy: policy)) { error in
             XCTAssertTrue("\(error)".contains("writable by group or others"), "\(error)")
         }
@@ -77,7 +77,7 @@ final class ToolManifestTests: XCTestCase {
 
     func testRecheckCatchesAChangeAfterValidation() throws {
         let validated = try ToolManifestValidator.validate(installRoot: root, id: id, policy: policy)
-        chmod(root + "/usr/libexec/apelin/agent-tools/sample", 0o777)
+        chmod(root + "/usr/libexec/luros/agent-tools/sample", 0o777)
         XCTAssertThrowsError(try ToolManifestValidator.recheckExecutable(validated, policy: policy))
     }
 
@@ -108,9 +108,9 @@ final class ToolManifestTests: XCTestCase {
 
     func testDiscoveryIsolatesABadManifest() throws {
         var broken = manifest()
-        broken.id = "wiki.qaq.apelin.agent-tools.broken"
+        broken.id = "com.fluoxetine.luros.agent-tools.broken"
         broken.executable = "usr/libexec/missing"
-        try writeManifest(broken, id: "wiki.qaq.apelin.agent-tools.broken")
+        try writeManifest(broken, id: "com.fluoxetine.luros.agent-tools.broken")
         let found = ToolManifestValidator.discover(installRoot: root, policy: policy)
         XCTAssertEqual(found.count, 2)
         XCTAssertEqual(found.compactMap { try? $0.get().manifest.id }, [id])
@@ -121,18 +121,18 @@ final class ToolManifestTests: XCTestCase {
                 nil
             }
         },
-        ["wiki.qaq.apelin.agent-tools.broken"])
+        ["com.fluoxetine.luros.agent-tools.broken"])
     }
 
     func testABundledToolStandsInForAnUninstalledOne() throws {
-        let bundleRoot = root + "/Applications/Apelin.app/AgentTools"
-        let directory = bundleRoot + "/wiki.qaq.apelin.agent-tools.carried"
+        let bundleRoot = root + "/Applications/Luros.app/AgentTools"
+        let directory = bundleRoot + "/com.fluoxetine.luros.agent-tools.carried"
         try FileManager.default.createDirectory(atPath: directory + "/licenses", withIntermediateDirectories: true)
         FileManager.default.createFile(atPath: bundleRoot + "/carried", contents: nil)
         chmod(bundleRoot + "/carried", 0o755)
         FileManager.default.createFile(atPath: directory + "/licenses/LICENSE", contents: Data("MIT".utf8))
-        var carried = manifest(executable: "Applications/Apelin.app/AgentTools/carried")
-        carried.id = "wiki.qaq.apelin.agent-tools.carried"
+        var carried = manifest(executable: "Applications/Luros.app/AgentTools/carried")
+        carried.id = "com.fluoxetine.luros.agent-tools.carried"
         try JSONEncoder().encode(carried).write(to: URL(fileURLWithPath: directory + "/manifest.json"))
         chmod(directory + "/manifest.json", 0o644)
 
@@ -143,7 +143,7 @@ final class ToolManifestTests: XCTestCase {
 
         // A tool an installed package put there wins over the copy the app carries.
         carried.version = "9.9.9"
-        let installed = root + "/usr/share/apelin/agent-tools/" + carried.id
+        let installed = root + "/usr/share/luros/agent-tools/" + carried.id
         try FileManager.default.createDirectory(atPath: installed, withIntermediateDirectories: true)
         try JSONEncoder().encode(carried).write(to: URL(fileURLWithPath: installed + "/manifest.json"))
         chmod(installed + "/manifest.json", 0o644)
@@ -152,7 +152,7 @@ final class ToolManifestTests: XCTestCase {
 
     func testClientStartsFromAValidatedManifest() async throws {
         var fake = manifest()
-        fake.id = "wiki.qaq.apelin.agent-tools.fake"
+        fake.id = "com.fluoxetine.luros.agent-tools.fake"
         fake.licenseFiles = nil
         try writeManifest(fake, id: fake.id)
         let validated = try ToolManifestValidator.validate(installRoot: root, id: fake.id, policy: policy)

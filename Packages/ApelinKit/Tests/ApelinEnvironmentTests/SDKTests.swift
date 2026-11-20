@@ -312,7 +312,7 @@ final class SDKImportTests: XCTestCase {
         let project = home.layout.data.projects.appendingPathComponent("Hello")
         try FileManager.default.createDirectory(at: project, withIntermediateDirectories: true)
         let description = try #"{"projectID": "8a6f3c1e-0000-4000-8000-000000000001", "environment": {"toolchain": {"id": "t", "digest": "d"}, "sdk": {"id": "\#(record.id)", "digest": "\#(XCTUnwrap(record.digest))"}}}"#
-        try Data(description.utf8).write(to: project.appendingPathComponent("apelin-project.json"))
+        try Data(description.utf8).write(to: project.appendingPathComponent("luros-project.json"))
         XCTAssertThrowsError(try manager.remove(SDKRemoveRequest(id: record.id))) { error in
             XCTAssertEqual((error as? ApelinError)?.code, .conflict)
             XCTAssertTrue(String(describing: error).contains("Hello"))

@@ -6,7 +6,7 @@
     {"op": "expect", "request": {"step": "extensions", "path": "response.extensions.0.id", "exists": true}},
 
     {"op": "projectCreate", "label": "project", "request": {
-      "templateID": "wiki.qaq.apelin.dev.tweak/objc-hook",
+      "templateID": "com.fluoxetine.luros.dev.tweak/objc-hook",
       "name": "Console Build Check",
       "values": {"packageID": "local.apelin.console-build-check", "displayName": "Console Build Check"}
     }},

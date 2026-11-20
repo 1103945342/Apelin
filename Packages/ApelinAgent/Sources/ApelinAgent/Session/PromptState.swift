@@ -83,7 +83,7 @@ struct PromptState: Equatable {
 
         var whereToRead: String {
             switch self {
-            case .buildSystem: "apelin-project.json says how it builds"
+            case .buildSystem: "luros-project.json says how it builds"
             case .instructions: "read AGENTS.md or CLAUDE.md with file_read"
             case .skills: "apelin_skill_list answers them"
             case .memory: "apelin_memory_list answers it"
@@ -101,7 +101,7 @@ struct PromptState: Equatable {
         if buildSystem != old.buildSystem {
             changes.append((.buildSystem, buildSystem == .external
                     ? "build system: this project is now a workspace with its own build script (the apelin-external-build skill)."
-                    : "build system: this project now builds from its apelin-project.json description."))
+                    : "build system: this project now builds from its luros-project.json description."))
         }
         changes += instructionChanges(since: old.instructions).map { (.instructions, $0) }
         changes += skillChanges(since: old.skills).map { (.skills, $0) }

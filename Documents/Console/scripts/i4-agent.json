@@ -10,7 +10,7 @@
     {
       "op": "projectCreate",
       "label": "project",
-      "request": {"templateID": "wiki.qaq.apelin.dev.tweak/objc-hook", "name": "Hello", "values": {}},
+      "request": {"templateID": "com.fluoxetine.luros.dev.tweak/objc-hook", "name": "Hello", "values": {}},
       "allowError": true
     },
     {

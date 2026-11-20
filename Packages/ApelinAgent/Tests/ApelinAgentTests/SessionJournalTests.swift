@@ -99,7 +99,7 @@ struct SessionJournalTests {
         let key = "ghp_" + String(repeating: "a1", count: 18)
         journal.toolStarted(id: "call-1", name: "shell_run", arguments: .object([
             "command": .string("curl -H 'Authorization: Bearer \(key)' https://api.github.com"),
-            "cwd": .string("/var/mobile/Documents/wiki.qaq.apelin/Projects/Hello"),
+            "cwd": .string("/var/mobile/Documents/com.fluoxetine.luros/Projects/Hello"),
         ]))
         journal.toolEnded(
             id: "call-1",
@@ -114,7 +114,7 @@ struct SessionJournalTests {
         for secret in [key, "hunter22", "someone@example.com", "/var/mobile"] {
             #expect(!text.contains(secret), "\(secret) survived:\n\(text)")
         }
-        #expect(text.contains("~/Documents/wiki.qaq.apelin/Projects/Hello"), "\(text)")
+        #expect(text.contains("~/Documents/com.fluoxetine.luros/Projects/Hello"), "\(text)")
         #expect(text.contains(#"result=token=<redacted>\nmail me at <email>"#), "\(text)")
     }
 
@@ -122,14 +122,14 @@ struct SessionJournalTests {
     func `arguments keep their shape, each string bounded and a secret field masked`() {
         let redaction = JournalRedaction(home: "/var/mobile", installRoot: "/var/jb")
         let arguments: KWWKAI.JSONValue = .object([
-            "path": .string("/var/mobile/Documents/wiki.qaq.apelin/Projects/Hello/Sources/Tweak.m"),
+            "path": .string("/var/mobile/Documents/com.fluoxetine.luros/Projects/Hello/Sources/Tweak.m"),
             "content": .string(String(repeating: "x", count: 5000)),
             "headers": .object(["Authorization": .string("Bearer something"), "Accept": .string("text/html")]),
             "max_tokens": .int(4000),
         ])
         let summary = redaction.arguments(arguments, tool: AgentToolName.fileWrite.rawValue)
         #expect(summary.utf8.count < 1024)
-        #expect(summary.contains(#""path":"~/Documents/wiki.qaq.apelin/Projects/Hello/Sources/Tweak.m""#), "\(summary)")
+        #expect(summary.contains(#""path":"~/Documents/com.fluoxetine.luros/Projects/Hello/Sources/Tweak.m""#), "\(summary)")
         #expect(summary.contains("[truncated from 5,000 bytes]"))
         #expect(summary.contains(#""Authorization":"<redacted>""#) && summary.contains(#""Accept":"text/html""#))
         #expect(summary.contains(#""max_tokens":4000"#))

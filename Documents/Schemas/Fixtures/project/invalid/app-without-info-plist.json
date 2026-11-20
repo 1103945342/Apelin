@@ -3,7 +3,7 @@
   "projectID": "28d52b40-b86a-56a1-b2af-c173b8e1f4dc",
   "kind": "app",
   "template": {
-    "extensionID": "wiki.qaq.apelin.dev.app",
+    "extensionID": "com.fluoxetine.luros.dev.app",
     "templateID": "uikit-objc",
     "version": "0.1.1",
     "digest": "sha256:e9addbec114a1e796527c0d5734b42100a5ea286af32be617ee8da406e718c1b"

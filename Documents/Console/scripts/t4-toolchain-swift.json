@@ -24,7 +24,7 @@
     {"op": "expect", "request": {"step": "after", "path": "response.toolchains.1.selfTests.9.language", "equals": "Swift macro"}},
     {"op": "expect", "request": {"step": "after", "path": "response.toolchains.1.selfTests.9.passed", "equals": true}},
     {"op": "projectCreate", "label": "project", "request": {
-      "templateID": "wiki.qaq.apelin.dev.app/uikit-swift",
+      "templateID": "com.fluoxetine.luros.dev.app/uikit-swift",
       "name": "T4 Swift App",
       "values": {"toolchainID": "${after.response.toolchains.1.id}", "packageID": "local.apelin.t4-swift-app", "displayName": "T4 Swift App"}
     }},

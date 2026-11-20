@@ -10,7 +10,7 @@ import Foundation
 func checkFileBrowserPolicy() throws {
     let work = try temporaryFolder("policy")
     defer { try? FileManager.default.removeItem(at: work) }
-    let data = work.appendingPathComponent("Documents/wiki.qaq.apelin", isDirectory: true)
+    let data = work.appendingPathComponent("Documents/com.fluoxetine.luros", isDirectory: true)
     let projects = data.appendingPathComponent("Projects", isDirectory: true)
     let project = projects.appendingPathComponent("Demo", isDirectory: true)
     let sources = project.appendingPathComponent("Sources", isDirectory: true)
@@ -30,7 +30,7 @@ func checkFileBrowserPolicy() throws {
     try Data("[]".utf8).write(to: sessionsFile)
     let workspaceFile = workspace.appendingPathComponent("notes.md")
     try Data("notes".utf8).write(to: workspaceFile)
-    let manifest = project.appendingPathComponent("apelin-project.json")
+    let manifest = project.appendingPathComponent("luros-project.json")
     try Data("{}".utf8).write(to: manifest)
     let source = sources.appendingPathComponent("App.swift")
     try Data("let a = 1\n".utf8).write(to: source)

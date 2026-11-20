@@ -131,17 +131,17 @@ public enum AgentConversations {
     public static let openedEventKind = "conversationOpened"
 }
 
-/// Links the app opens (`apelin://`), which an agent hands the user beside
+/// Links the app opens (`lurosdev://`), which an agent hands the user beside
 /// a conversation or project it opened or points to.
 public enum ApelinLink {
-    public static let scheme = "apelin"
+    public static let scheme = "lurosdev"
 
-    /// `apelin://conversation/<session ID>`: that conversation, its project selected.
+    /// `lurosdev://conversation/<session ID>`: that conversation, its project selected.
     public static func conversation(_ sessionID: String) -> String {
         "\(scheme)://conversation/\(sessionID)"
     }
 
-    /// `apelin://project/<projectID>`: that project.
+    /// `lurosdev://project/<projectID>`: that project.
     public static func project(_ projectID: String) -> String {
         "\(scheme)://project/\(projectID)"
     }

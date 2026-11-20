@@ -10,7 +10,7 @@ import UserNotifications
 /// shows until the reader has allowed Apelin's notifications, which the app
 /// asks for when they send their first message.
 struct NoticePoster: @unchecked Sendable {
-    private static let appBundleIdentifier = "wiki.qaq.apelin"
+    private static let appBundleIdentifier = "com.fluoxetine.luros"
     /// The key the app reads a tapped banner's link from:
     /// `ConversationNotices.linkKey`.
     private static let linkKey = "link"

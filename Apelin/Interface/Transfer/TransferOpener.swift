@@ -35,7 +35,7 @@ final class TransferFile {
 @MainActor
 enum TransferOpener {
     /// Posted once an import ended, so the Settings lists read themselves again.
-    static let environmentChanged = Notification.Name("wiki.qaq.apelin.transferImported")
+    static let environmentChanged = Notification.Name("com.fluoxetine.luros.transferImported")
 
     static func contentType(_ kind: TransferKind) -> UTType {
         UTType(kind.typeIdentifier) ?? UTType(filenameExtension: kind.fileExtension) ?? .data

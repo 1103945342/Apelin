@@ -138,7 +138,7 @@ public struct ApprovalDigests: Codable, Sendable, Equatable {
         )
     }
 
-    /// Reads, validates and digests `<root>/apelin-project.json`.
+    /// Reads, validates and digests `<root>/luros-project.json`.
     public static func compute(projectAt root: URL) throws -> ApprovalDigests {
         let (document, _) = try ProjectValidation.load(
             Data(contentsOf: root.appendingPathComponent(ProjectStore.projectFileName)),

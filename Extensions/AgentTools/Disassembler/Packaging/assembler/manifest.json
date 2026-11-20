@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "wiki.qaq.apelin.agent-tools.assembler",
+  "id": "com.fluoxetine.luros.agent-tools.assembler",
   "name": "Assembler",
   "version": "1.0.0",
   "license": "GPL-2.0-only AND MIT AND NCSA",

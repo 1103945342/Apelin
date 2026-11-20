@@ -5,7 +5,7 @@ import Foundation
 /// A project deleted for good (`projectDelete`; apelin_project_delete,
 /// owner, 2026-10-29): its folder under `Projects/` with every file in it,
 /// and the conversations of it, which the host closes first. The project
-/// is the one whose `apelin-project.json` carries the id asked for, in a
+/// is the one whose `luros-project.json` carries the id asked for, in a
 /// real folder directly under `Projects/` (`AgentProjects.resolve`: a link
 /// out, or a folder holding another id, is refused), never a temporary
 /// chat's. An agent never deletes its own session's project, the

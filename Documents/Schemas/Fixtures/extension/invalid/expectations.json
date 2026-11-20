@@ -9,5 +9,5 @@
   "executable-path.json": "unknown member",
   "builtin-parameter-redeclared.json": "is a built-in parameter",
   "enum-without-values.json": "missing values",
-  "project-not-listed.json": "apelin-project.json is not listed"
+  "project-not-listed.json": "luros-project.json is not listed"
 }

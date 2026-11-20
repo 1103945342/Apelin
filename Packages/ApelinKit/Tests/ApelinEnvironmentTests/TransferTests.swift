@@ -222,7 +222,7 @@ final class TransferTests: XCTestCase {
         XCTAssertEqual(imported.installationID, "inst-1")
         XCTAssertEqual(imported.path, second.layout.installRoot + "/usr/lib/apelin/toolchains/" + FakeBackend.id)
         XCTAssertEqual(imported.components, [ToolchainComponent(kind: .c, selfCheckPassed: true)])
-        XCTAssertEqual(installer.installed.map(\.packageID), ["wiki.qaq.apelin.toolchain.\(FakeBackend.id)"])
+        XCTAssertEqual(installer.installed.map(\.packageID), ["com.fluoxetine.luros.toolchain.\(FakeBackend.id)"])
         let stages = log.events.filter { $0.0 == "stage" }.compactMap { $0.1?["stage"]?.stringValue }
         XCTAssertEqual(stages, ["reading", "packaging", "installing", "validating"])
         XCTAssertEqual(ToolchainService(layout: second.layout, backend: FakeBackend()).status(activeTasks: []).toolchains.map(\.id), [record.id])
@@ -296,7 +296,7 @@ final class TransferTests: XCTestCase {
         _ = try await transfers.runImport(prepared, staging: layout.makeStaging("i"), taskID: TaskID("i"), installer: installer, reporter: log.reporter)
         XCTAssertEqual(installer.installed.count, 1)
         // The deb this device built: roothide's architecture.
-        XCTAssertEqual(log.last("artifact")?["packageID"]?.stringValue, "wiki.qaq.apelin.toolchain.\(FakeBackend.id)")
+        XCTAssertEqual(log.last("artifact")?["packageID"]?.stringValue, "com.fluoxetine.luros.toolchain.\(FakeBackend.id)")
     }
 
     /// A toolchain brought to roothide Bootstrap would fail its self-test
@@ -455,10 +455,10 @@ final class TransferTests: XCTestCase {
           "environment": {"toolchain": {"id": "missing-toolchain", "digest": "sha256:0"}, "sdk": {"id": "missing-sdk", "digest": "sha256:0"}}
         }
         """
-        try Data(description.utf8).write(to: root.appendingPathComponent("apelin-project.json"))
+        try Data(description.utf8).write(to: root.appendingPathComponent("luros-project.json"))
         try Data("int main(void) { return 0; }\n".utf8).write(to: root.appendingPathComponent("main.c"))
         try Data("build/\n*.o\n".utf8).write(to: root.appendingPathComponent(".gitignore"))
-        try repository.stage(["apelin-project.json", "main.c", ".gitignore"])
+        try repository.stage(["luros-project.json", "main.c", ".gitignore"])
         _ = try repository.commit(message: "Start", author: GitSignature(name: "A", email: "a@apelin.invalid"))
         // Work in progress, and what the ignore rules name.
         try Data("// new\n".utf8).write(to: root.appendingPathComponent("new.c"))
@@ -504,8 +504,8 @@ final class TransferTests: XCTestCase {
         XCTAssertNotEqual(imported.projectID, oldID)
         XCTAssertTrue(imported.includesRepository)
         let placed = second.layout.data.projects.appendingPathComponent("Hello Tweak")
-        let description = try Data(contentsOf: placed.appendingPathComponent("apelin-project.json"))
-        let sent = try String(contentsOf: root.appendingPathComponent("apelin-project.json"), encoding: .utf8)
+        let description = try Data(contentsOf: placed.appendingPathComponent("luros-project.json"))
+        let sent = try String(contentsOf: root.appendingPathComponent("luros-project.json"), encoding: .utf8)
         XCTAssertEqual(
             description,
             ProjectManifestFormat.formatted(Data(sent.replacingOccurrences(of: oldID, with: imported.projectID).utf8)),
@@ -588,7 +588,7 @@ final class TransferTests: XCTestCase {
         try Data("drop".utf8).write(to: sources.appendingPathComponent("drop.cache"))
         let exported = try await export(home, .project, "Hello Tweak")
         let paths = try Set(TransferArchiveReader().manifest(.path(exported.path)).members.map(\.path))
-        XCTAssertTrue(paths.contains("apelin-project.json"))
+        XCTAssertTrue(paths.contains("luros-project.json"))
         XCTAssertTrue(paths.contains("main.c"))
         XCTAssertTrue(paths.contains("Sources/keep.cache"))
         for excluded in ["junk.json", "main.o", "build", "new.c", ".git", "Sources/drop.cache"] {
@@ -696,7 +696,7 @@ final class TransferTests: XCTestCase {
         let manifest = TransferManifest(
             kind: .project, id: "p-1", name: "Nested", createdBy: "test",
             members: [
-                TransferMember(path: "apelin-project.json", kind: .file, size: Int64(description.count), sha256: Self.sha(description)),
+                TransferMember(path: "luros-project.json", kind: .file, size: Int64(description.count), sha256: Self.sha(description)),
                 TransferMember(path: "vendor", kind: .directory),
                 TransferMember(path: "vendor/.GIT", kind: .directory),
                 TransferMember(path: "vendor/.GIT/config", kind: .file, size: Int64(config.count), sha256: Self.sha(config)),
@@ -704,7 +704,7 @@ final class TransferTests: XCTestCase {
             project: TransferProject(projectID: "p-1", name: "Nested"),
         )
         let file = try craft(manifest, payload: [
-            ("payload/apelin-project.json", description), ("payload/vendor", nil), ("payload/vendor/.GIT", nil), ("payload/vendor/.GIT/config", config),
+            ("payload/luros-project.json", description), ("payload/vendor", nil), ("payload/vendor/.GIT", nil), ("payload/vendor/.GIT/config", config),
         ], on: home, named: "Nested.apeproj")
         let refusal = await code { _ = try await self.importFile(file.path, on: home) }
         XCTAssertEqual(refusal, .badRequest)

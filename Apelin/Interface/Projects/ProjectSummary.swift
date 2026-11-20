@@ -17,8 +17,8 @@ struct ProjectSummary: Hashable, Sendable {
             ).sorted().compactMap { name in
                 guard let url = folder.project(named: name), let root = CanonicalPath.resolve(url.path),
                       root == projectsPath + "/" + name,
-                      let manifest = CanonicalPath.resolve(root + "/apelin-project.json"),
-                      manifest == root + "/apelin-project.json",
+                      let manifest = CanonicalPath.resolve(root + "/luros-project.json"),
+                      manifest == root + "/luros-project.json",
                       let data = try? Data(contentsOf: URL(fileURLWithPath: manifest)),
                       let document = try? JSONCoding.decode(JSONValue.self, from: data),
                       document["projectID"]?.stringValue != nil

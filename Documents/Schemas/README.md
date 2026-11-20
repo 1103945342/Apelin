@@ -4,8 +4,8 @@ Two documents, both JSON, both versioned, both read and never executed:
 
 | File | Lives at | Schema |
 |---|---|---|
-| `apelin-project.json` | `~/Documents/wiki.qaq.apelin/Projects/<name>/` | [`apelin-project.schema.json`](apelin-project.schema.json) |
-| development extension `manifest.json` | `<install-root>/usr/share/apelin/development/<id>/`, or the copy Apelin's package carries at `<install-root>/Applications/Apelin.app/Development/<id>/` | [`extension-manifest.schema.json`](extension-manifest.schema.json) |
+| `luros-project.json` | `~/Documents/com.fluoxetine.luros/Projects/<name>/` | [`apelin-project.schema.json`](apelin-project.schema.json) |
+| development extension `manifest.json` | `<install-root>/usr/share/luros/development/<id>/`, or the copy Apelin's package carries at `<install-root>/Applications/Luros.app/Development/<id>/` | [`extension-manifest.schema.json`](extension-manifest.schema.json) |
 
 The schemas are JSON Schema draft 2020-12. This file is the specification:
 where it says more than a schema can, it wins, and the rules marked
@@ -40,7 +40,7 @@ Extensions/Development/check-templates.py   every shipped extension, instantiate
   bootstrap.
 - **Digests** are `sha256:` followed by 64 lowercase hex digits.
 
-## `apelin-project.json`, version 1
+## `luros-project.json`, version 1
 
 The build entry the UI, the agent and `apelin-build` all read. There is no
 other hidden configuration.
@@ -343,7 +343,7 @@ the digests, and the description documents themselves to render a diff.
 }
 ```
 
-`project` holds exactly these members of `apelin-project.json`, each only if
+`project` holds exactly these members of `luros-project.json`, each only if
 present: `kind`, `language`, `deploymentTarget`, `architectures`,
 `configurations`, `swiftModules`, `products` (every product, every member
 **except** `sources`, `headerSearchPaths` and `resources`), and `build`.
@@ -431,10 +431,10 @@ Members, after Milestone 1 §5.2:
 |---|---|
 | `schemaVersion`, `id`, `version`, `kind` | `1`; reverse-DNS id equal to the package id and the folder name; `x.y.z` version equal to the package version; one of the four kinds. |
 | `displayName`, `summary` | English source text, resolved against the app's catalogue. |
-| `apelinCompatibility` | `{minimumAppVersion, projectSchemaVersions, manifestSchemaVersion: 1}`. The packager turns `minimumAppVersion` into `Depends: wiki.qaq.apelin (>= …)`. |
+| `apelinCompatibility` | `{minimumAppVersion, projectSchemaVersions, manifestSchemaVersion: 1}`. The packager turns `minimumAppVersion` into `Depends: com.fluoxetine.luros (>= …)`. |
 | `requirements` | `{toolchainComponents, languages, sdkFrameworks?, bootstraps, architectures, runtimeDependencies?}`. `architectures` has exactly the `bootstraps` (beyond the schema). `runtimeDependencies` are what packages built from the templates need on the device, per bootstrap, as virtual package names; the extension package depends on them too, so a template that builds also runs. |
 | `support` | Named components: `{summary, includeDirectories?, linkStubDirectories?, libraries?, frameworks?, rpaths?, installNames?, symbols?, architectures, runtimeDependencies?, spdx, license}`. Stubs are hand-written `.tbd` link inputs, never loaded. `rpaths` may start with `@PREFIX@`, which the build replaces. `symbols` is the declared compatible set; the stubs declare exactly those and the install names in `installNames`. |
-| `templates` | `{id, directory: "templates/<id>", displayName, summary, language, toolchainComponents?, project: "apelin-project.json", parameters, files, digest}`. |
+| `templates` | `{id, directory: "templates/<id>", displayName, summary, language, toolchainComponents?, project: "luros-project.json", parameters, files, digest}`. |
 | `provenance` | Per scope (`template:<id>`, `support:<name>`, `manifest`): `origin` `imported` (with `repository`, 40-hex `commit`, upstream `paths`) or `written`, and the `adaptations` made. |
 | `licenses` | `{path, spdx, covers}`, MIT / BSD / Apache / 0BSD / MIT-0 only. Every template and support scope is covered (beyond the schema). |
 
@@ -502,7 +502,7 @@ In a file **path**, only `identifier`, `identifierDashed`, `bundleID`,
 have no empty, `.`-leading or `..` component.
 
 Creation writes into a sibling staging folder on the same file system,
-validates the generated `apelin-project.json`, then renames into
+validates the generated `luros-project.json`, then renames into
 `Projects/<name>/`, which must not exist. A failure removes only the staging
 folder. No template script runs at creation.
 
@@ -542,7 +542,7 @@ An empty workspace uses these same optional fields in its minimal manifest.
 
 ### Workspace manifest
 
-A workspace's `apelin-project.json` is not a version 1 description: it has
+A workspace's `luros-project.json` is not a version 1 description: it has
 `schemaVersion`, `projectID`, `kind: workspace`, `buildSystem: external` and
 the display fields above, and may declare the build Apelin runs for it:
 
@@ -559,7 +559,7 @@ build of a workspace asks.
 
 ### Written form
 
-Apelin writes `apelin-project.json` one way, whatever writes it: creating a
+Apelin writes `luros-project.json` one way, whatever writes it: creating a
 project (the template's file after substitution, or an empty workspace's),
 renaming it, switching its toolchain or SDK, importing a transfer file under
 a new ID, and every build, which puts a file written otherwise into this

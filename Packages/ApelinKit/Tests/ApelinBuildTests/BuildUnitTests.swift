@@ -98,7 +98,7 @@ final class PackagerControlTests: XCTestCase {
         )
         let catalog = ExtensionCatalog(directory: Repository.extensions)
         let created = try store.create(
-            templateID: "wiki.qaq.apelin.dev.tweak/objc-hook",
+            templateID: "com.fluoxetine.luros.dev.tweak/objc-hook",
             name: "Icon Tweak",
             values: [:],
             catalog: catalog,
@@ -118,7 +118,7 @@ final class PackagerControlTests: XCTestCase {
             home: home.path,
         )
         let products = try JSONDecoder().decode(BuildProducts.self, from: Data(#"{"products": [], "dsyms": [], "log": ""}"#.utf8))
-        let icon = "https://owngoal-dev.github.io/Apelin/icons/wiki.qaq.apelin.dev.tweak.png"
+        let icon = "https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.dev.tweak.png"
 
         let control = try Packager(inputs: inputs, products: products, shell: "/bin/sh").control()
         XCTAssertEqual(control["Icon"], icon, "the template's icon")

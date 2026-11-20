@@ -9,8 +9,8 @@ import Foundation
 // module wherever both could be meant.
 
 /// Agent tool extensions (Milestone 1 §6) run by the session host: the
-/// manifest under `<install root>/usr/share/apelin/agent-tools/<id>/` — or
-/// the copy the app carries under `Applications/Apelin.app/AgentTools/<id>/`
+/// manifest under `<install root>/usr/share/luros/agent-tools/<id>/` — or
+/// the copy the app carries under `Applications/Luros.app/AgentTools/<id>/`
 /// for an id no package provides — is
 /// validated (root-owned, inside the install root, executable checked again
 /// right before the spawn), the extension is spawned as mobile with only the

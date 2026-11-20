@@ -9,11 +9,11 @@ import Foundation
 /// `didFinishLaunching` (Apelin/Console/ConsoleLaunch.swift).
 ///
 /// Scripts come from the launch argument `-apelin-console <path>` and from
-/// `~/Documents/wiki.qaq.apelin/console/inbox/*.json`, checked at launch and
+/// `~/Documents/com.fluoxetine.luros/console/inbox/*.json`, checked at launch and
 /// whenever the app comes to the foreground. An inbox script is claimed into
 /// `running/`, run, and moved to `done/`. Every run writes JSON lines to
 /// `console/out/<runID>.jsonl` and to the log sink (on a device the unified
-/// log, subsystem `wiki.qaq.apelin`, category `console`).
+/// log, subsystem `com.fluoxetine.luros`, category `console`).
 /// Documents/Console.md has the format.
 public actor ConsoleRunner {
     public static let launchArgument = "-apelin-console"

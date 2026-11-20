@@ -21,7 +21,7 @@ struct PublishBackendTests {
             let repository = projects.appendingPathComponent("packages", isDirectory: true)
             try FileManager.default.createDirectory(at: repository, withIntermediateDirectories: true)
             try #"{"projectID": "p-repo", "kind": "workspace"}"#.write(
-                to: repository.appendingPathComponent("apelin-project.json"), atomically: true, encoding: .utf8,
+                to: repository.appendingPathComponent("luros-project.json"), atomically: true, encoding: .utf8,
             )
             let settings = root.appendingPathComponent("Settings", isDirectory: true)
             try FileManager.default.createDirectory(at: settings, withIntermediateDirectories: true)

@@ -27,7 +27,7 @@ func checkWebAddress() {
         "", "   ", "https://", "apelin", "two words", "example.com/a b",
         "ftp://example.com/file", "file:///etc/passwd", "javascript:alert(1)",
         "mailto:someone@example.com", "user:secret@example.com", "https://user:secret@example.com/",
-        "tel:+123456", "apelin://chat?prompt=hi",
+        "tel:+123456", "lurosdev://chat?prompt=hi",
     ] {
         precondition(address(refused) == nil, "\(refused) names no page: \(address(refused) ?? "")")
     }

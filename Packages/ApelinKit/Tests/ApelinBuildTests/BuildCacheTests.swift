@@ -172,7 +172,7 @@ final class IncrementalBuildTests: XCTestCase {
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
         let created = try store.create(
-            templateID: "wiki.qaq.apelin.dev.app/uikit-swift",
+            templateID: "com.fluoxetine.luros.dev.app/uikit-swift",
             name: "Cached App",
             values: [:],
             catalog: catalog,

@@ -37,7 +37,7 @@ enum ToolchainTreePruner {
         (installRoot == "/" ? "" : installRoot) + "/usr/lib/apelin/toolchains"
     }
 
-    /// `wiki.qaq.apelin.toolchain.<id>` → `<id>`; nil for any other package.
+    /// `com.fluoxetine.luros.toolchain.<id>` → `<id>`; nil for any other package.
     static func toolchainID(packageID: String) -> String? {
         guard packageID.hasPrefix(ManagedPackagePolicy.toolchainPrefix) else { return nil }
         let id = String(packageID.dropFirst(ManagedPackagePolicy.toolchainPrefix.count))

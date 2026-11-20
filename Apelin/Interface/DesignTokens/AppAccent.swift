@@ -8,7 +8,7 @@ import UIKit
 /// tint follows it; what names a colour instead asks here.
 enum AppAccent {
     /// Black and white: before iOS 26, or, to look at it on a later system,
-    /// with `debug.monochromeAccent` set (`defaults write wiki.qaq.apelin
+    /// with `debug.monochromeAccent` set (`defaults write com.fluoxetine.luros
     /// debug.monochromeAccent -bool true` as mobile, then a relaunch).
     static let isMonochrome: Bool = if #available(iOS 26, *) {
         UserDefaults.standard.bool(forKey: "debug.monochromeAccent")

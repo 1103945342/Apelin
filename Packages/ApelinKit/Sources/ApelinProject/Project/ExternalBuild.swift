@@ -3,7 +3,7 @@ import ApelinProtocol
 import Darwin
 import Foundation
 
-/// Whether an `apelin-project.json` is a workspace's: `kind` `workspace` or
+/// Whether an `luros-project.json` is a workspace's: `kind` `workspace` or
 /// `buildSystem` `external`. A workspace has an identity and no description
 /// apelin-build builds from; the agent reads the same rule
 /// (`ProjectBuildSystem`).
@@ -25,7 +25,7 @@ public enum Workspace {
 }
 
 /// A workspace's own build (owner, 2026-10-23): the script apelin-build runs
-/// for it, declared under `external` in its `apelin-project.json`. The
+/// for it, declared under `external` in its `luros-project.json`. The
 /// repository keeps its own way of building — a Makefile, a shell script —
 /// and Apelin takes from there the one `.deb` the script writes into
 /// `APELIN_PACKAGE_DIR`: checked, registered as the build's artifact, and
@@ -110,6 +110,6 @@ public struct ExternalBuildDeclaration: Sendable, Equatable {
     }
 
     private static func invalid(_ field: String, _ problem: String) -> ApelinError {
-        ApelinError(.badRequest, "apelin-project.json: \(field) \(problem)")
+        ApelinError(.badRequest, "luros-project.json: \(field) \(problem)")
     }
 }

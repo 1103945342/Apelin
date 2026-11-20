@@ -21,7 +21,7 @@ final class ToolHostClientTests: XCTestCase {
     func testGoodCall() async throws {
         let client = makeClient()
         let hello = try await client.start()
-        XCTAssertEqual(hello.peer.name, "wiki.qaq.apelin.agent-tools.fake")
+        XCTAssertEqual(hello.peer.name, "com.fluoxetine.luros.agent-tools.fake")
         XCTAssertEqual(hello.protocolVersion, ToolProtocol.version)
         XCTAssertTrue(hello.tools.contains("echo"))
         XCTAssertEqual(hello.maxConcurrentCalls, 2, "the extension lowers the host's limit")
@@ -182,7 +182,7 @@ final class ToolHostClientTests: XCTestCase {
 
     func testManifestIsTheAuthorityOnTools() async throws {
         let echo = ToolDescriptor(name: "echo", description: "Echo.", parameters: ["type": "object"], risk: .readOnly)
-        let manifest = ToolManifest(id: "wiki.qaq.apelin.agent-tools.fake", name: "Fake", version: "1.0", license: "MIT",
+        let manifest = ToolManifest(id: "com.fluoxetine.luros.agent-tools.fake", name: "Fake", version: "1.0", license: "MIT",
                                     executable: "fake", tools: [echo])
         let client = makeClient(manifest: manifest)
         try await client.start()

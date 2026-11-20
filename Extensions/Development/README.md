@@ -2,22 +2,22 @@
 
 The four packages that teach Apelin to make something. Each folder here is
 exactly what its package installs at
-`<install-root>/usr/share/apelin/development/<id>/` — `manifest.json`,
+`<install-root>/usr/share/luros/development/<id>/` — `manifest.json`,
 `templates/`, `support/`, `LICENSE` — and nothing in it is executed: the app
 reads the manifest and copies template files, the build reads headers and
 link stubs. Apelin's own package also carries all four inside its app bundle,
-at `<install-root>/Applications/Apelin.app/Development/<id>/`, so the IDE can
+at `<install-root>/Applications/Luros.app/Development/<id>/`, so the IDE can
 make every kind of project with no extension package installed; an installed
 package of the same id wins over the copy, which is how one is updated alone.
 The formats are specified in
 [`Documents/Schemas/README.md`](../../Documents/Schemas/README.md).
 
-| Package | Templates | Support | Depends (beyond `wiki.qaq.apelin (>= 0.1.0)`) |
+| Package | Templates | Support | Depends (beyond `com.fluoxetine.luros (>= 0.1.0)`) |
 |---|---|---|---|
-| `wiki.qaq.apelin.dev.app` | `uikit-objc`, `uikit-swift` (Swift component required) | — | `uikittools` |
-| `wiki.qaq.apelin.dev.tweak` | `objc-hook` | `substrate`: `substrate.h`, `libsubstrate.tbd` per bootstrap | `mobilesubstrate` |
-| `wiki.qaq.apelin.dev.cli` | `c`, `objc` | — | — |
-| `wiki.qaq.apelin.dev.preferences` | `objc-bundle` | `preferences`: `Preferences/PSListController.h`, `Preferences.framework/Preferences.tbd` | `preferenceloader` |
+| `com.fluoxetine.luros.dev.app` | `uikit-objc`, `uikit-swift` (Swift component required) | — | `uikittools` |
+| `com.fluoxetine.luros.dev.tweak` | `objc-hook` | `substrate`: `substrate.h`, `libsubstrate.tbd` per bootstrap | `mobilesubstrate` |
+| `com.fluoxetine.luros.dev.cli` | `c`, `objc` | — | — |
+| `com.fluoxetine.luros.dev.preferences` | `objc-bundle` | `preferences`: `Preferences/PSListController.h`, `Preferences.framework/Preferences.tbd` | `preferenceloader` |
 
 An extension depends on what the packages built from its templates need at
 run time (`requirements.runtimeDependencies` and its support components'),
@@ -58,7 +58,7 @@ as the app's `ProjectIconPreferences` image set draws it, which the entry's
 
 ## The hook API
 
-`wiki.qaq.apelin.dev.tweak` ships its own header and stubs; it does not
+`com.fluoxetine.luros.dev.tweak` ships its own header and stubs; it does not
 assume the SDK has substrate interfaces.
 
 - `support/include/substrate.h` — MIT, written for Apelin from the published
@@ -82,7 +82,7 @@ rootless and roothide stubs link against (read from
 was copied). They are checked on the Mac by linking; on a device only
 by the D-stage acceptance run.
 
-`wiki.qaq.apelin.dev.preferences` does the same for the private Preferences
+`com.fluoxetine.luros.dev.preferences` does the same for the private Preferences
 framework: its own declarations and a stub with the install name
 `/System/Library/PrivateFrameworks/Preferences.framework/Preferences`
 exporting `PSListController` (and its `_specifiers` ivar), `PSSpecifier` and
@@ -123,7 +123,7 @@ template's digest after a template edit.
 
 `package-extensions.sh` runs the check (set `APELIN_EXTENSIONS_NO_BUILD=1` to
 skip the build half), then for each extension and flavor stages the folder
-at `@PREFIX@/usr/share/apelin/development/<id>/` (`@PREFIX@` empty for
+at `@PREFIX@/usr/share/luros/development/<id>/` (`@PREFIX@` empty for
 roothide, `/var/jb` for rootless), fills `Packaging/<id>/control`, builds
 with `dpkg-deb --root-owner-group -Zzstd`, and verifies Package, Version,
 Architecture and Depends, that every entry is root-owned 0755/0644, nothing
@@ -135,7 +135,7 @@ copy passes the manifest, template and digest checks. Output is
 
 **`Packaging/DEBIAN/control`** — the IDE depends on and recommends no
 extension: `Scripts/package-deb.sh` copies all four folders into the app
-bundle at `Applications/Apelin.app/Development/`, and the catalog reads them
+bundle at `Applications/Luros.app/Development/`, and the catalog reads them
 under `<app>/Development/<id>/`. A package manager installs the IDE alone, and
 a device can make every kind of project with no extension package at all.
 

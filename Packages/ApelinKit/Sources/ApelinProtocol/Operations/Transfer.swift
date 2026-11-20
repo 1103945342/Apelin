@@ -42,9 +42,9 @@ public enum TransferKind: String, Codable, Sendable, CaseIterable {
     /// The exported type the app declares (`UTExportedTypeDeclarations`).
     public var typeIdentifier: String {
         switch self {
-        case .toolchain: "wiki.qaq.apelin.toolchain-package"
-        case .sdk: "wiki.qaq.apelin.sdk-package"
-        case .project: "wiki.qaq.apelin.project-package"
+        case .toolchain: "com.fluoxetine.luros.toolchain-package"
+        case .sdk: "com.fluoxetine.luros.sdk-package"
+        case .project: "com.fluoxetine.luros.project-package"
         }
     }
 
@@ -306,10 +306,10 @@ public enum TransferSource: Codable, Sendable, Equatable {
     /// The file, passed as a read-only descriptor. The app's choice: what it
     /// was handed by Open in Apelin or picked in Files.
     case file(DescriptorSlot)
-    /// A file in `~/Documents/wiki.qaq.apelin/inbox/`, named relative to it.
+    /// A file in `~/Documents/com.fluoxetine.luros/inbox/`, named relative to it.
     case inbox(path: String)
     /// A file an export wrote, named relative to
-    /// `~/Documents/wiki.qaq.apelin/Exports/`: `TransferExport.exportedPath`,
+    /// `~/Documents/com.fluoxetine.luros/Exports/`: `TransferExport.exportedPath`,
     /// or the export's folder (`sdk-<id>`), which holds that one file.
     case exported(path: String)
 }
@@ -317,7 +317,7 @@ public enum TransferSource: Codable, Sendable, Equatable {
 // MARK: Export
 
 /// Writes a transfer file of a registered toolchain, a registered SDK or a
-/// project into `~/Documents/wiki.qaq.apelin/Exports/<kind>-<id>/`, replacing
+/// project into `~/Documents/com.fluoxetine.luros/Exports/<kind>-<id>/`, replacing
 /// an earlier export of the same item.
 public struct TransferExportRequest: OperationRequest {
     public typealias Response = TaskHandle

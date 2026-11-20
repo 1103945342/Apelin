@@ -94,7 +94,7 @@ enum EnvironmentPrompt {
     }
 
     /// Read from the registries in the data folder and, in a project, its
-    /// `apelin-project.json`; the extensions are the session's offer.
+    /// `luros-project.json`; the extensions are the session's offer.
     static func inputs(
         _ configuration: AgentSessionConfiguration,
         root: ScopedRoot,

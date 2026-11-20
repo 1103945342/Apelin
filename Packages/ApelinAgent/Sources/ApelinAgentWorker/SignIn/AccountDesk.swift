@@ -78,7 +78,7 @@ public actor AccountDesk {
     /// Says in the device log what an account list cost, per account and in
     /// all. Store ids, counts and milliseconds only: never a credential, never
     /// an endpoint's key.
-    private static let log = Logger(subsystem: "wiki.qaq.apelin", category: "Accounts")
+    private static let log = Logger(subsystem: "com.fluoxetine.luros", category: "Accounts")
 
     /// Whole milliseconds since a `DispatchTime.now().uptimeNanoseconds` stamp.
     static func milliseconds(since start: UInt64) -> Int {

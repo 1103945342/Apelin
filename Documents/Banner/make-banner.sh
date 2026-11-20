@@ -13,7 +13,7 @@ ROOT=${HERE:h:h}
 WORK=$ROOT/build/Banner
 DERIVED=/private/tmp/apelin-banner-deriveddata
 SIMULATOR=${SIMULATOR:-iPhone 18 Pro}
-BUNDLE=wiki.qaq.apelin
+BUNDLE=com.fluoxetine.luros
 # One screenshot per slot, in slot order: Screenshot 1 is the largest.
 CHATS=("Frosted Dock" "Choosing a Toolchain" "Battery Health" "Heart Rate Chart"
     "Why Did SpringBoard Crash?" "Publish to My Repository")
@@ -33,7 +33,7 @@ xcodebuild -project "$ROOT/Apelin.xcodeproj" -scheme Apelin -configuration Debug
     -skipMacroValidation -skipPackagePluginValidation \
     CODE_SIGNING_ALLOWED=NO SUPPORTED_PLATFORMS="iphoneos iphonesimulator" ARCHS=arm64 ONLY_ACTIVE_ARCH=YES \
     build >"$WORK/xcodebuild.log" 2>&1 || { tail -20 "$WORK/xcodebuild.log"; exit 1; }
-APP=$DERIVED/Build/Products/Debug-iphonesimulator/Apelin.app
+APP=$DERIVED/Build/Products/Debug-iphonesimulator/Luros.app
 
 # --- The simulator -------------------------------------------------------------
 UDID=$(xcrun simctl list devices available -j | python3 -c '

@@ -11,7 +11,7 @@ public protocol ConsoleLogSink: Sendable {
     func problem(_ text: String)
 }
 
-/// The unified log: subsystem `wiki.qaq.apelin`, category `console`. The
+/// The unified log: subsystem `com.fluoxetine.luros`, category `console`. The
 /// app's sink.
 public struct UnifiedLogSink: ConsoleLogSink {
     private let log = Logger(subsystem: DataFolder.bundleIdentifier, category: "console")

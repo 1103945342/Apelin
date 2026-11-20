@@ -19,9 +19,9 @@ fake transport. The app keeps only the binding — `ApelinService.app`,
 ## Start a Run
 
 - **Launch argument**: `-apelin-console <path>`. An absolute path is read in
-  place; a relative one is under `~/Documents/wiki.qaq.apelin/console/`.
+  place; a relative one is under `~/Documents/com.fluoxetine.luros/console/`.
   The file is left where it is.
-- **Inbox**: drop `*.json` into `~/Documents/wiki.qaq.apelin/console/inbox/`.
+- **Inbox**: drop `*.json` into `~/Documents/com.fluoxetine.luros/console/inbox/`.
   The app checks the inbox at launch and every time it comes to the
   foreground, runs the scripts one at a time in name order, claims each into
   `console/running/<runID>-<name>` while it runs and moves it to
@@ -132,7 +132,7 @@ architecture; a deb whose `Depends` the device lacks is skipped and named),
 ## Output
 
 Each run writes JSON lines to `console/out/<runID>.jsonl` and logs every line
-to the unified log (subsystem `wiki.qaq.apelin`, category `console`). Every
+to the unified log (subsystem `com.fluoxetine.luros`, category `console`). Every
 line has `type`, `runID` and `time`:
 
 | type | fields |
@@ -163,7 +163,7 @@ A script is an array of steps, or `{"name": "…", "steps": [ … ]}`.
     {"op": "hello"},
     {"op": "toolchainSetup", "request": {"source": {"appleCatalog": {}}, "components": ["c"]}, "label": "toolchain"},
     {"op": "expect", "request": {"step": "toolchain", "state": "succeeded"}},
-    {"op": "projectCreate", "request": {"templateID": "wiki.qaq.apelin.dev.tweak/objc", "name": "Hello", "values": {}}, "label": "project"},
+    {"op": "projectCreate", "request": {"templateID": "com.fluoxetine.luros.dev.tweak/objc", "name": "Hello", "values": {}}, "label": "project"},
     {"op": "projectCheck", "request": {"projectID": "${project.response.projectID}"}, "label": "check"},
     {"op": "expect", "request": {"step": "check", "path": "response.passed", "equals": true}},
     {"op": "buildStart", "request": {"projectID": "${project.response.projectID}", "configuration": "debug"}, "label": "build"},
@@ -245,15 +245,15 @@ no `resumed` event. By hand, on the device:
 
 1. For the build, delete `Projects/R1 Resume Tweak` if a previous run left
    it; for the import, put an `iPhoneOS.sdk` folder in
-   `~/Documents/wiki.qaq.apelin/inbox/`; for the toolchain, remove the
+   `~/Documents/com.fluoxetine.luros/inbox/`; for the toolchain, remove the
    registered one first (`t2-toolchain-remove.json`, after deleting the
    projects bound to it), so its install through irisind happens in this
    run.
-2. Copy the script into `~/Documents/wiki.qaq.apelin/console/inbox/` and
+2. Copy the script into `~/Documents/com.fluoxetine.luros/console/inbox/` and
    open the app.
 3. When `console/out/<runID>.jsonl` shows the `buildStart` (or `sdkImport`,
    `toolchainSetup`) step, and within the wait, kill the session host as
-   root: `kill -9 $(cat <install root>/var/lib/apelin/session.pid)`. Its
+   root: `kill -9 $(cat <install root>/var/lib/luros/session.pid)`. Its
    process name is apelind's — the kernel takes it from the executable,
    and `apelind-session` is only its `argv[0]` — so `killall` cannot pick it
    out: `killall apelind-session` finds nothing and `killall apelind` kills
@@ -294,7 +294,7 @@ An agent session's task runs until it is closed; `agentOpen` with
 The agent signs in from the keychain. To provision a provider with no UI,
 put `<store id>.json` (kwwk's credential shape: `access`, `refresh`,
 `expires`, optional `extras`) or a kwwk `auth.json` map in
-`~/Documents/wiki.qaq.apelin/console/inbox/credentials/`, then run
+`~/Documents/com.fluoxetine.luros/console/inbox/credentials/`, then run
 `{"op": "agentCredentialImport"}` — or just open a session, which imports
 first. Store ids are kwwk's, one per provider Settings signs in to:
 `github-copilot`, `anthropic`, `anthropic-api-key`, `openai-compatible`,
@@ -378,7 +378,7 @@ error, or on `ok: false` where the exact refusal is the worker's to choose.
   project after.
 - `files.json` — makes the `Hello` tweak project if it is missing, which
   takes the tweak extension and a registered toolchain and SDK.
-  `fileRead` of `apelin-project.json` by descriptor; a path out of the
+  `fileRead` of `luros-project.json` by descriptor; a path out of the
   project, `protectedEditOpen` of dpkg's status file and
   `protectedEditCommit` with a grant never given are refused.
 - `terminal.json` — `ptyOpen` unfollowed, `ptyResize`, `ptyAttach` (the
@@ -459,7 +459,7 @@ error, or on `ok: false` where the exact refusal is the worker's to choose.
   protected edit end to end with its refusals, install and removal of the
   fixture deb through irisind. Its `setup` lists what to do as root first.
 - `i2-sdk-import.json` — push an SDK folder to
-  `~/Documents/wiki.qaq.apelin/inbox/iPhoneOS.sdk` first. Imports it
+  `~/Documents/com.fluoxetine.luros/inbox/iPhoneOS.sdk` first. Imports it
   (`{"inbox": {"path": …}}`), lists it, and checks that an inbox path
   climbing out and a plain-HTTP URL are refused.
 - `i2-git.json` — needs github.com. Clones one branch of

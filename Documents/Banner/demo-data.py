@@ -2,7 +2,7 @@
 """Writes demo projects and conversations into an Apelin data folder."""
 import json, os, sys, uuid, datetime
 
-root = sys.argv[1]  # .../Documents/wiki.qaq.apelin
+root = sys.argv[1]  # .../Documents/com.fluoxetine.luros
 REF = datetime.datetime(2001, 1, 1, tzinfo=datetime.timezone.utc)
 IDS = {}
 NOW = datetime.datetime.now(datetime.timezone.utc)
@@ -16,7 +16,7 @@ def project(folder, kind, display, pid):
     d = os.path.join(root, "Projects", folder)
     os.makedirs(os.path.join(d, "Sources"), exist_ok=True)
     m = {"schemaVersion": 1, "projectID": pid, "kind": kind, "displayName": display}
-    json.dump(m, open(os.path.join(d, "apelin-project.json"), "w"), indent=2)
+    json.dump(m, open(os.path.join(d, "luros-project.json"), "w"), indent=2)
 
 
 class Chat:

@@ -16,7 +16,7 @@ import KWWKAI
 /// The session's events go to the host as the events of its `agent` task.
 public enum AgentWorker {
     /// Apelin's own keychain items, shared by nothing else.
-    public static let keychainAccessGroup = "wiki.qaq.apelin.agent"
+    public static let keychainAccessGroup = "com.fluoxetine.luros.agent"
     public static let defaultCopilotModel = "claude-sonnet-5.5"
 
     /// Sign-ins and the accounts list, against the keychain the sessions read.

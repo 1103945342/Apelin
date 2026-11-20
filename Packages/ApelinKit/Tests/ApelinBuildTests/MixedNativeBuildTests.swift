@@ -22,7 +22,7 @@ final class MixedNativeBuildTests: XCTestCase {
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
         let created = try store.create(
-            templateID: "wiki.qaq.apelin.dev.cli/c",
+            templateID: "com.fluoxetine.luros.dev.cli/c",
             name: "MixedNative",
             values: [:],
             catalog: catalog,

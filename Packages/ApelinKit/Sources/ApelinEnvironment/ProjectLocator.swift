@@ -2,11 +2,11 @@ import ApelinCore
 import ApelinProtocol
 import Foundation
 
-/// Finds projects in `~/Documents/wiki.qaq.apelin/Projects/<name>/`, the only
+/// Finds projects in `~/Documents/com.fluoxetine.luros/Projects/<name>/`, the only
 /// place one lives, and reads what they are bound to.
 ///
 /// A project is named on the wire by the `projectID` in its
-/// `apelin-project.json`; a folder with no description yet (a fresh clone)
+/// `luros-project.json`; a folder with no description yet (a fresh clone)
 /// is named by its folder name. Either way the answer is a folder whose
 /// realpath is exactly one component below the realpath of `Projects/`.
 public struct ProjectLocator: Sendable {
@@ -128,7 +128,7 @@ public struct ProjectLocator: Sendable {
             return nil
         }
         var project = Project(name: name, root: URL(fileURLWithPath: resolved, isDirectory: true))
-        let description = URL(fileURLWithPath: resolved).appendingPathComponent("apelin-project.json")
+        let description = URL(fileURLWithPath: resolved).appendingPathComponent("luros-project.json")
         if let data = FileManager.default.contents(atPath: description.path),
            let json = try? JSONCoding.decode(JSONValue.self, from: data)
         {

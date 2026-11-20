@@ -1,6 +1,6 @@
 import Foundation
 
-/// `~/Documents/wiki.qaq.apelin`, the app's data folder, and everything
+/// `~/Documents/com.fluoxetine.luros`, the app's data folder, and everything
 /// Apelin keeps inside it. The package's postinst makes the folder for
 /// mobile; whatever runs as mobile makes the levels below it.
 ///
@@ -9,7 +9,7 @@ import Foundation
 /// sets it at spawn). On roothide that is `<jbroot>/var/mobile`, on rootless
 /// `/var/mobile`.
 public struct DataFolder: Sendable, Equatable {
-    public static let bundleIdentifier = "wiki.qaq.apelin"
+    public static let bundleIdentifier = "com.fluoxetine.luros"
 
     public let root: URL
 

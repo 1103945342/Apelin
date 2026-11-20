@@ -15,7 +15,7 @@ import Foundation
 //    short-lived `grantID` bound to that file and that version.
 // 2. `protectedEditCommit{grantID, contents, expectedVersion}` — the save.
 //    The host checks the file is still the one it granted, backs the old
-//    contents up to `~/Documents/wiki.qaq.apelin/backups/`, and replaces the
+//    contents up to `~/Documents/com.fluoxetine.luros/backups/`, and replaces the
 //    contents atomically, keeping owner, group and mode. The grant is spent
 //    whatever the outcome. A LaunchDaemons plist needs `confirmed: true`.
 
@@ -148,7 +148,7 @@ public struct ProtectedEditCommitRequest: OperationRequest {
 
 public struct ProtectedEditCommitResponse: Codable, Sendable, Equatable {
     public var version: FileVersion
-    /// The backup under `~/Documents/wiki.qaq.apelin/backups/`.
+    /// The backup under `~/Documents/com.fluoxetine.luros/backups/`.
     public var backupID: String
 
     public init(version: FileVersion, backupID: String) {

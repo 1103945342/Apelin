@@ -6,7 +6,7 @@ import MachOReader
 
 /// The disassembler extension's tools: `disassemble` and `symbols`.
 public enum DisassemblerTools {
-    static let id = "wiki.qaq.apelin.agent-tools.disassembler"
+    static let id = "com.fluoxetine.luros.agent-tools.disassembler"
     /// The package version. Packaging/disassembler/manifest.json says the
     /// same, and a test holds the two together.
     static let version = "1.1.0"

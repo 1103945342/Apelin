@@ -11,7 +11,7 @@ import Foundation
 //   session host it starts as its child, which owns tasks and workers
 //   (SessionHost).
 
-private let executableSuffix = "/usr/libexec/apelind"
+private let executableSuffix = "/usr/libexec/lurosd"
 
 // No install prefix is written in Swift: the root is whatever this executable
 // was started from, and an unrecognised path refuses to start.

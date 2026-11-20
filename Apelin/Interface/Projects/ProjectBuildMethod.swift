@@ -1,7 +1,7 @@
 import ApelinCore
 import Foundation
 
-/// How a project's package is built, read off its `apelin-project.json`:
+/// How a project's package is built, read off its `luros-project.json`:
 /// apelin-build from the project's build description, or a workspace's own
 /// script (`external`, apelin-build's `ExternalBuildDeclaration`). A
 /// workspace — `kind: workspace`, or `buildSystem: external`, as the

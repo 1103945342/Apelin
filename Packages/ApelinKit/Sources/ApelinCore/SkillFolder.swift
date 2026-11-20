@@ -1,6 +1,6 @@
 import Foundation
 
-/// The skills folder, `~/Documents/wiki.qaq.apelin/skills`, as Settings ▸
+/// The skills folder, `~/Documents/com.fluoxetine.luros/skills`, as Settings ▸
 /// Skills changes it. A skill comes in as a copy of a folder with a
 /// `SKILL.md` at its top, or of one Markdown file, which becomes the
 /// `SKILL.md` of a folder named for it; it goes out by its place in the

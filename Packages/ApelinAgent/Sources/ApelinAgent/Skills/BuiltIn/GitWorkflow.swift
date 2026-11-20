@@ -93,7 +93,7 @@ extension BuiltInSkills {
         ## Remotes
         - `git_clone` imports a repository into a workspace, also one that has
           only the empty repository it was made with. When the repository
-          has its own `apelin-project.json`, it becomes the project's; the
+          has its own `luros-project.json`, it becomes the project's; the
           answer says whether its projectID was kept or this one's put in.
         - A remote is a name and an HTTPS address: `git_remote_list` lists
           them, `git_remote_set` adds one to a project that has none (or
@@ -110,7 +110,7 @@ extension BuiltInSkills {
           refused pull or push on your own: say what is in the way and ask.
         - From any other chat, a repository goes into a new workspace, whatever
           it holds: `apelin_project_create` with
-          `wiki.qaq.apelin.workspace/empty`, then `apelin_conversation_create`
+          `com.fluoxetine.luros.workspace/empty`, then `apelin_conversation_create`
           naming it, the URL and branch in its prompt; that conversation runs
           `git_clone`. New Project does the same with a repository address.
         - Push only when asked: `git_status` and `git_diff` first, then

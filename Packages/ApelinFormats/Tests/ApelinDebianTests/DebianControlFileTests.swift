@@ -40,7 +40,7 @@ struct DebianControlFileTests {
 
     @Test func `parses A template and round trips`() throws {
         let template = """
-        Package: wiki.qaq.apelin
+        Package: com.fluoxetine.luros
         Name: Apelin
         Version: 1.0
         Architecture: iphoneos-arm64e
@@ -145,11 +145,11 @@ struct PackageLayoutTests {
     }
 
     @Test func placeholders() {
-        let plist = "<string>@PREFIX@/usr/libexec/apelind</string><string>@ROOTFS@/usr/lib</string>"
+        let plist = "<string>@PREFIX@/usr/libexec/lurosd</string><string>@ROOTFS@/usr/lib</string>"
         #expect(PackageLayout.rootless.substitutingPlaceholders(in: plist)
-            == "<string>/var/jb/usr/libexec/apelind</string><string>/usr/lib</string>")
+            == "<string>/var/jb/usr/libexec/lurosd</string><string>/usr/lib</string>")
         #expect(PackageLayout.roothide.substitutingPlaceholders(in: plist)
-            == "<string>/usr/libexec/apelind</string><string>/rootfs/usr/lib</string>")
+            == "<string>/usr/libexec/lurosd</string><string>/rootfs/usr/lib</string>")
     }
 
     @Test func `relative member names`() throws {

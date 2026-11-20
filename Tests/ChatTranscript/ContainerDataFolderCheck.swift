@@ -117,8 +117,8 @@ func checkContainerDataFolder() {
     let memories = (try? MemoryStore(root: folder.root).read().records) ?? []
     precondition(memories == [kept, added], "mobile's text wins for its ID: \(memories)")
 
-    precondition(recovery.setAside == "wiki.qaq.apelin.migrated", "renamed aside: \(String(describing: recovery.setAside))")
-    let aside = stray.root.deletingLastPathComponent().appendingPathComponent("wiki.qaq.apelin.migrated")
+    precondition(recovery.setAside == "com.fluoxetine.luros.migrated", "renamed aside: \(String(describing: recovery.setAside))")
+    let aside = stray.root.deletingLastPathComponent().appendingPathComponent("com.fluoxetine.luros.migrated")
     precondition(!manager.fileExists(atPath: stray.root.path), "the container's folder is gone from where the app looked")
     precondition(text("Chats/" + newer, in: aside) == "mobile's, earlier", "mobile's older copy is kept aside")
     precondition(text("Chats/" + older, in: aside) == "container's, earlier", "and so is the container's")
@@ -131,6 +131,6 @@ func checkContainerDataFolder() {
     write("again", "Chats/" + UUID().uuidString + ".json", in: stray.root)
     let second = ContainerDataFolder.recover(from: stray, into: folder, now: later)
     precondition(second?.moved.count == 1, "what the older build wrote moves too")
-    precondition(second?.setAside == "wiki.qaq.apelin.migrated-20260921-141420", "beside the first: \(String(describing: second?.setAside))")
+    precondition(second?.setAside == "com.fluoxetine.luros.migrated-20260921-141420", "beside the first: \(String(describing: second?.setAside))")
     print("ok: a rootless app's data container moves into mobile's data folder, keeping the newer of two")
 }

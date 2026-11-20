@@ -228,7 +228,7 @@ public extension ChannelHostBackend {
     ) -> (identity: ApelinAgent.ProjectIdentity, manifest: ApelinCore.JSONValue)? {
         guard let folder = try? ApelinAgent.ProjectName(name) else { return nil }
         let url = root.appendingPathComponent(name, isDirectory: true)
-        let manifest = url.appendingPathComponent("apelin-project.json")
+        let manifest = url.appendingPathComponent("luros-project.json")
         guard url.resolvingSymlinksInPath().deletingLastPathComponent().path == root.path,
               let attributes = try? FileManager.default.attributesOfItem(atPath: manifest.path),
               attributes[.type] as? FileAttributeType == .typeRegular,

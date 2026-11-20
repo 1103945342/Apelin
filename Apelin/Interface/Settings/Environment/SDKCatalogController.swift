@@ -221,7 +221,7 @@ final class SDKCatalogController: TableController {
             .sorted() ?? []
         guard !names.isEmpty else {
             // Explanatory copy belongs in the section header; action titles truncate.
-            let folder = "Documents/wiki.qaq.apelin/inbox"
+            let folder = "Documents/com.fluoxetine.luros/inbox"
             return [UIMenu(
                 title: String(localized: "Put an SDK in \(folder), then reopen this menu."),
                 options: .displayInline,

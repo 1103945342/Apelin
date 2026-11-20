@@ -503,7 +503,7 @@ public struct ApprovalPolicy: Sendable, Hashable {
             }
             return .ask(reason: Self.skillReason(change), detail: .skillChange(change))
 
-        // A field of the project's own apelin-project.json, which the file
+        // A field of the project's own luros-project.json, which the file
         // tools edit as well: only a registered, checked, compatible
         // toolchain or SDK goes in. The binding is not part of the build
         // description digest, so the next build does not ask for it.

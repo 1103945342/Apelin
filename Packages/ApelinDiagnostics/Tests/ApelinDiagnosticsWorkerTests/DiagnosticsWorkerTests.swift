@@ -241,7 +241,7 @@ final class DiagnosticsWorkerTests: XCTestCase {
     /// dylib under a fake install root.
     private func makeProject() throws -> (home: URL, root: URL, dylib: URL) {
         let home = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("apelin-diag-\(UUID().uuidString)")
-        let project = home.appendingPathComponent("Documents/wiki.qaq.apelin/Projects/Hello")
+        let project = home.appendingPathComponent("Documents/com.fluoxetine.luros/Projects/Hello")
         try FileManager.default.createDirectory(at: project, withIntermediateDirectories: true)
         let root = home.appendingPathComponent("jb")
         let dylibFolder = root.appendingPathComponent("Library/MobileSubstrate/DynamicLibraries")
@@ -252,7 +252,7 @@ final class DiagnosticsWorkerTests: XCTestCase {
         {"projectID": "proj-1", "package": {"id": "wiki.qaq.hello",
           "layout": [{"path": "/Library/MobileSubstrate/DynamicLibraries/Hello.dylib", "product": "tweak"}],
           "tweakFilter": {"dylib": "tweak", "bundles": ["com.apple.springboard"]}}}
-        """.write(to: project.appendingPathComponent("apelin-project.json"), atomically: true, encoding: .utf8)
+        """.write(to: project.appendingPathComponent("luros-project.json"), atomically: true, encoding: .utf8)
         addTeardownBlock { try? FileManager.default.removeItem(at: home) }
         return (home, root, dylib)
     }
@@ -391,7 +391,7 @@ final class DiagnosticsWorkerTests: XCTestCase {
     /// bound to the app it is switching to: the target is waited for.
     func testATargetIsWaitedForWhileTheAppItLeavesIsStillInFront() throws {
         let icli = FakeIcli()
-        let apelin: [String: Any] = ["bundle_id": "wiki.qaq.apelin", "verified": true, "source": "runningboard"]
+        let apelin: [String: Any] = ["bundle_id": "com.fluoxetine.luros", "verified": true, "source": "runningboard"]
         icli.fronts = [apelin, apelin]
         icli.front = ["bundle_id": "wiki.qaq.fila", "verified": true, "source": "runningboard"]
         var diagnostics = Diagnostics(icli: icli)
@@ -475,7 +475,7 @@ final class DiagnosticsWorkerTests: XCTestCase {
     /// the same tap goes through.
     func testARefusedAppIsNeverReachedByAUIAction() async throws {
         let icli = FakeIcli()
-        let apelin: [String: Any] = ["bundle_id": "wiki.qaq.apelin", "verified": true, "source": "runningboard"]
+        let apelin: [String: Any] = ["bundle_id": "com.fluoxetine.luros", "verified": true, "source": "runningboard"]
         icli.front = apelin
         var diagnostics = Diagnostics(icli: icli)
         diagnostics.settleInterval = 0.01
@@ -486,7 +486,7 @@ final class DiagnosticsWorkerTests: XCTestCase {
             home: "/nonexistent",
             installRoot: "/",
         )
-        let refused = ["wiki.qaq.apelin"]
+        let refused = ["com.fluoxetine.luros"]
         func expectRefused(_ request: ApelinProtocol.UIActionRequest, _ what: String) async {
             do {
                 _ = try await service.uiAction(request)
@@ -508,9 +508,9 @@ final class DiagnosticsWorkerTests: XCTestCase {
             await expectRefused(.init(action: action, refusedBundleIDs: refused), "Apelin in front, \(action)")
         }
         icli.lock.withLock { icli.frontQueues = [] }
-        await expectRefused(.init(targetID: "wiki.qaq.apelin", action: .tap(x: 200, y: 4), refusedBundleIDs: refused), "Apelin as the target")
+        await expectRefused(.init(targetID: "com.fluoxetine.luros", action: .tap(x: 200, y: 4), refusedBundleIDs: refused), "Apelin as the target")
         XCTAssertTrue(icli.lock.withLock { icli.frontQueues.isEmpty }, "a refused target is refused before the foreground is read")
-        icli.front = ["bundle_id": "wiki.qaq.apelin", "verified": false, "source": "springboard_query"]
+        icli.front = ["bundle_id": "com.fluoxetine.luros", "verified": false, "source": "springboard_query"]
         await expectRefused(.init(action: .tap(x: 200, y: 4), refusedBundleIDs: refused), "Apelin in front, unverified")
         XCTAssertTrue(icli.taps.isEmpty && icli.elementTaps.isEmpty, "nothing reached the screen")
 

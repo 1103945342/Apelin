@@ -45,7 +45,7 @@ enum Preferences {
     /// The model defaults used by agent operations. An unset value means that
     /// operation follows the conversation's selected model.
     enum DefaultModels {
-        static let changed = Notification.Name("wiki.qaq.apelin.defaultModelsChanged")
+        static let changed = Notification.Name("com.fluoxetine.luros.defaultModelsChanged")
 
         static func selection(for kind: DefaultModelKind, defaults: UserDefaults = .standard) -> DefaultModelSelection? {
             guard let provider = defaults.string(forKey: providerKey(kind)).flatMap(AgentProvider.init(rawValue:)),

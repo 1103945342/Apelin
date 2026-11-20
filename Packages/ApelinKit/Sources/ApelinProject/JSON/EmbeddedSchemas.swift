@@ -8,7 +8,7 @@ enum EmbeddedSchemas {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://owngoal-dev.github.io/Apelin/schemas/apelin-project-1.json",
   "title": "Apelin project description, version 1",
-  "description": "apelin-project.json at the root of ~/Documents/wiki.qaq.apelin/Projects/<name>/. The one build entry the UI, the agent and apelin-build all read. Documents/Schemas/README.md is the prose specification; it also fixes which members form the build and packaging descriptions whose digests drive Confirm-mode approval.",
+  "description": "luros-project.json at the root of ~/Documents/com.fluoxetine.luros/Projects/<name>/. The one build entry the UI, the agent and apelin-build all read. Documents/Schemas/README.md is the prose specification; it also fixes which members form the build and packaging descriptions whose digests drive Confirm-mode approval.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -769,7 +769,7 @@ enum EmbeddedSchemas {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://owngoal-dev.github.io/Apelin/schemas/extension-manifest-1.json",
   "title": "Apelin development extension manifest, version 1",
-  "description": "<install-root>/usr/share/apelin/development/<id>/manifest.json. Read, never executed: nothing here names a program the app or host runs. Each manifest is validated on its own; a bad one isolates that extension only. Documents/Schemas/README.md is the prose specification.",
+  "description": "<install-root>/usr/share/luros/development/<id>/manifest.json. Read, never executed: nothing here names a program the app or host runs. Each manifest is validated on its own; a bad one isolates that extension only. Documents/Schemas/README.md is the prose specification.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -805,7 +805,7 @@ enum EmbeddedSchemas {
       "properties": {
         "minimumAppVersion": { "$ref": "#/$defs/version" },
         "projectSchemaVersions": {
-          "description": "apelin-project.json schema versions the templates produce.",
+          "description": "luros-project.json schema versions the templates produce.",
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
@@ -1103,8 +1103,8 @@ enum EmbeddedSchemas {
           "items": { "enum": ["c-family", "swift"] }
         },
         "project": {
-          "description": "The project description template inside the directory; after substitution it must validate as apelin-project.json.",
-          "const": "apelin-project.json"
+          "description": "The project description template inside the directory; after substitution it must validate as luros-project.json.",
+          "const": "luros-project.json"
         },
         "parameters": {
           "type": "array",

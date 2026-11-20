@@ -189,7 +189,7 @@ struct ConversationBackendTests {
         func project(_ name: String, _ manifest: String, in folder: URL? = nil) throws {
             let url = (folder ?? projects).appendingPathComponent(name, isDirectory: true)
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
-            try manifest.write(to: url.appendingPathComponent("apelin-project.json"), atomically: true, encoding: .utf8)
+            try manifest.write(to: url.appendingPathComponent("luros-project.json"), atomically: true, encoding: .utf8)
         }
         try project("Workspace", #"{"projectID":"w-1","kind":"workspace"}"#)
         try project("Broken", "not json")
@@ -205,7 +205,7 @@ struct ConversationBackendTests {
             folder: "Hello", projectID: "6f1c5b0e-0000-4000-8000-000000000001", displayName: "Hello Tweak", buildSystem: "apelin", isThisProject: true,
         ))
         #expect(listed.projects.last == ListedProject(folder: "Workspace", projectID: "w-1", displayName: "Workspace", buildSystem: "external", isThisProject: false))
-        #expect(listed.projects.last?.link == "apelin://project/w-1")
+        #expect(listed.projects.last?.link == "lurosdev://project/w-1")
         #expect(!listed.truncated)
         #expect(try await fixture.backend.resolveProject("w-1").name.rawValue == "Workspace", "the list's ids resolve")
     }

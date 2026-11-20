@@ -6,8 +6,8 @@ deb:
 
 | Package | Executable | Tools | Links | License |
 |---|---|---|---|---|
-| `wiki.qaq.apelin.agent-tools.disassembler` | `apelin-disassembler` | `disassemble{binary, address, count, arch?}`, `symbols{binary, filter?, kind?, limit?, offset?, arch?, output?}` (`output: file` sends the whole listing as an attachment) | Capstone, MachOReader | MIT, BSD-3-Clause, NCSA |
-| `wiki.qaq.apelin.agent-tools.assembler` | `apelin-assembler` | `assemble{arch, source, address?, syntax?}` | Keystone | GPL-2.0-only, MIT, NCSA |
+| `com.fluoxetine.luros.agent-tools.disassembler` | `apelin-disassembler` | `disassemble{binary, address, count, arch?}`, `symbols{binary, filter?, kind?, limit?, offset?, arch?, output?}` (`output: file` sends the whole listing as an attachment) | Capstone, MachOReader | MIT, BSD-3-Clause, NCSA |
+| `com.fluoxetine.luros.agent-tools.assembler` | `apelin-assembler` | `assemble{arch, source, address?, syntax?}` | Keystone | GPL-2.0-only, MIT, NCSA |
 
 Keystone is GPLv2, so it links into `apelin-assembler` alone: the
 disassembler package carries no GPL code (the packager refuses a disassembler
@@ -65,7 +65,7 @@ what ships.
 - The assembler ships Apelin's MIT license, Keystone's `COPYING` (GPLv2),
   `EXCEPTIONS-CLIENT` and LLVM license, libkeystone-spm's license, and
   `SOURCE.md`, which names the corresponding-source archive the build writes
-  beside the debs (`wiki.qaq.apelin.agent-tools.assembler_<version>_source.tar.xz`:
+  beside the debs (`com.fluoxetine.luros.agent-tools.assembler_<version>_source.tar.xz`:
   this folder, `Packages/ApelinToolHost`, and both dependency checkouts) with
   its SHA-256, and the public repositories and revisions it was made from.
   Publish that archive wherever the assembler debs are published.

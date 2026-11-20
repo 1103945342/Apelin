@@ -53,7 +53,7 @@ final class GitResetServiceTests: XCTestCase {
     private func project(_ home: TemporaryHome) throws -> URL {
         let root = home.layout.data.projects.appendingPathComponent("Pineora", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
-        try Data(manifest(id: localID).utf8).write(to: root.appendingPathComponent("apelin-project.json"))
+        try Data(manifest(id: localID).utf8).write(to: root.appendingPathComponent("luros-project.json"))
         try Data("// mine\n".utf8).write(to: root.appendingPathComponent("Mine.m"))
         let repository = try GitRepository.create(at: root)
         try repository.stageAll()
@@ -80,7 +80,7 @@ final class GitResetServiceTests: XCTestCase {
 
     func testAProjectWithNoRemoteIsMadeTheRemotesWithItsIdentityKept() throws {
         let home = try TemporaryHome(self)
-        let (url, seed) = try remote(home, ["apelin-project.json": manifest(id: theirID), "Sources/Tweak.m": "// theirs\n"])
+        let (url, seed) = try remote(home, ["luros-project.json": manifest(id: theirID), "Sources/Tweak.m": "// theirs\n"])
         let root = try project(home)
         let git = service(home)
         XCTAssertThrowsError(try git.prepareResetPreview(GitResetPreviewRequest(projectID: localID, remote: "origin"))) {
@@ -101,13 +101,13 @@ final class GitResetServiceTests: XCTestCase {
         XCTAssertEqual(result["commit"]?.stringValue, shown.remoteCommit)
         XCTAssertEqual(result["projectFile"]?.stringValue, "repositoryWithProjectID")
         XCTAssertTrue(result["backupBranch"]?.stringValue?.hasPrefix("apelin-backup/") == true)
-        XCTAssertEqual(try String(contentsOf: root.appendingPathComponent("apelin-project.json"), encoding: .utf8), manifest(id: localID))
+        XCTAssertEqual(try String(contentsOf: root.appendingPathComponent("luros-project.json"), encoding: .utf8), manifest(id: localID))
         XCTAssertEqual(try ProjectLocator(layout: home.layout).locate(localID).root.path, root.path, "the project is still itself")
         XCTAssertNil(FileManager.default.contents(atPath: root.appendingPathComponent("Mine.m").path))
         XCTAssertEqual(try String(contentsOf: root.appendingPathComponent("Sources/Tweak.m"), encoding: .utf8), "// theirs\n")
         let status = try git.status(GitStatusRequest(projectID: localID))
         XCTAssertEqual(status.branch, "main")
-        XCTAssertEqual(status.entries, [GitStatusEntry(path: "apelin-project.json", index: " ", worktree: "M")], "only the ID it kept")
+        XCTAssertEqual(status.entries, [GitStatusEntry(path: "luros-project.json", index: " ", worktree: "M")], "only the ID it kept")
     }
 
     func testARemoteWithoutAManifestLeavesTheProjectsOwnOutOfIt() throws {
@@ -119,7 +119,7 @@ final class GitResetServiceTests: XCTestCase {
         let shown = try preview(git)
         XCTAssertEqual(shown.projectFile, .project)
         _ = try reset(git, shown)
-        XCTAssertEqual(try String(contentsOf: root.appendingPathComponent("apelin-project.json"), encoding: .utf8), manifest(id: localID))
+        XCTAssertEqual(try String(contentsOf: root.appendingPathComponent("luros-project.json"), encoding: .utf8), manifest(id: localID))
         XCTAssertEqual(try git.status(GitStatusRequest(projectID: localID)).entries, [], "kept out of the repository")
     }
 
@@ -155,7 +155,7 @@ final class GitResetServiceTests: XCTestCase {
 
     func testARemoteManifestThatDoesNotReadIsRefusedBeforeAnythingChanges() throws {
         let home = try TemporaryHome(self)
-        let (url, _) = try remote(home, ["apelin-project.json": "[]"])
+        let (url, _) = try remote(home, ["luros-project.json": "[]"])
         let root = try project(home)
         let git = service(home)
         _ = try git.setRemote(GitRemoteSetRequest(projectID: localID, name: "origin", url: url))

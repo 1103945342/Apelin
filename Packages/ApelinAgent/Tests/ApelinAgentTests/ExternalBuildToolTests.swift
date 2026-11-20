@@ -14,7 +14,7 @@ struct ExternalBuildToolTests {
     func `a workspace's build asks every time, naming its script, and is never granted for the session`() async throws {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }
-        try harness.home.write("apelin-project.json", Self.manifest)
+        try harness.home.write("luros-project.json", Self.manifest)
         let asked = ExternalBuildApproval(projectID: harness.home.project.id, script: "apelin/build.sh", configuration: "debug", bootstrap: nil)
 
         let (_, first) = try await harness.run(.projectBuild, [:], answering: .approve(.session))
@@ -40,7 +40,7 @@ struct ExternalBuildToolTests {
     func `in Relaxed mode a workspace builds without asking`() async throws {
         let harness = try DigestApprovalTests.Harness(mode: .relaxed)
         defer { harness.home.remove() }
-        try harness.home.write("apelin-project.json", Self.manifest)
+        try harness.home.write("luros-project.json", Self.manifest)
         let (_, asked) = try await harness.run(.projectBuild, [:])
         #expect(asked.isEmpty)
         #expect(await harness.backend.calls == [.build(digest: "", evidence: .relaxed)])
@@ -50,7 +50,7 @@ struct ExternalBuildToolTests {
     func `a workspace's install is judged by the package it built`() async throws {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }
-        try harness.home.write("apelin-project.json", Self.manifest)
+        try harness.home.write("luros-project.json", Self.manifest)
         await harness.ledger.addArtifact("a1", packaging: "sha256:package-1")
 
         let (_, first) = try await harness.run(.packageInstall, ["artifact_id": "a1", "artifact_digest": "d1"])

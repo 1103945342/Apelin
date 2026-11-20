@@ -1,15 +1,15 @@
 import ApelinCore
 import Foundation
 
-/// `~/Documents/wiki.qaq.apelin` and the folders the agent uses inside it.
+/// `~/Documents/com.fluoxetine.luros` and the folders the agent uses inside it.
 ///
 /// The home directory is mobile's (the app and `apelin-agent` have no
 /// container). Nothing here writes an install prefix: the home comes from the
 /// process, and tests pass their own.
 public struct ApelinDataRoot: Sendable, Hashable {
-    public static let bundleIdentifier = "wiki.qaq.apelin"
+    public static let bundleIdentifier = "com.fluoxetine.luros"
 
-    /// `<home>/Documents/wiki.qaq.apelin`.
+    /// `<home>/Documents/com.fluoxetine.luros`.
     public let url: URL
 
     public init(home: URL) {
@@ -101,7 +101,7 @@ public struct ProjectName: Sendable, Hashable, Codable, CustomStringConvertible 
 }
 
 /// The project a session is bound to. The id is the one in
-/// `apelin-project.json`; the host supplies both.
+/// `luros-project.json`; the host supplies both.
 public struct ProjectIdentity: Sendable, Hashable, Codable {
     /// A temporary conversation's id is this prefix and its folder's UUID.
     static let temporaryIDPrefix = "temporary:"

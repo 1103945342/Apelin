@@ -12,7 +12,7 @@ import Foundation
 ///
 /// The event's payload is a `BuildArtifact` (`artifactID`, `digest`,
 /// `packageID`, `version`) plus what the host needs to find and judge it:
-/// `path` — the `.deb`, absolute, inside `~/Documents/wiki.qaq.apelin/` —,
+/// `path` — the `.deb`, absolute, inside `~/Documents/com.fluoxetine.luros/` —,
 /// `projectID`, `packagingDigest` (`sha256:…`, the packaging description
 /// the deb was made from) and `packageFiles`, what the deb installs.
 actor ArtifactRegistry {

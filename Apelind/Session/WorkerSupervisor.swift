@@ -63,7 +63,7 @@ final class WorkerProcess: @unchecked Sendable {
     }
 }
 
-/// Starts workers on demand from `<install root>/usr/libexec/apelin/`,
+/// Starts workers on demand from `<install root>/usr/libexec/luros/`,
 /// mobile roles as uid/gid 501 set before exec, each with its own
 /// socketpair; records the role at spawn and never asks the worker; stops a
 /// worker idle with no task for `idleTimeout`.
@@ -78,7 +78,7 @@ actor WorkerSupervisor {
 
     private let installRoot: String
     private let home: String
-    private let queue = DispatchQueue(label: "wiki.qaq.apelind.workers")
+    private let queue = DispatchQueue(label: "com.fluoxetine.lurosd.workers")
     private var workers: [Key: WorkerProcess] = [:]
     private var starting: [Key: Task<WorkerProcess, Error>] = [:]
 

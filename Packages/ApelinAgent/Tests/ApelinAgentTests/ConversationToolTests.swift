@@ -123,7 +123,7 @@ struct ConversationToolTests {
                 nil
             }
         }.joined()
-        #expect(createdText.contains("apelin://conversation/child-session") && createdText.contains("apelin://project/\(Self.far.id)"))
+        #expect(createdText.contains("lurosdev://conversation/child-session") && createdText.contains("lurosdev://project/\(Self.far.id)"))
         let (_, sendAsked) = try await harness.run(.conversationSend, ["session_id": "far-chat", "text": "Also push", "project": .string(Self.far.id)])
         #expect(sendAsked.first?.detail == .otherProject(OtherProjectApproval(
             action: "send",
@@ -376,7 +376,7 @@ struct ConversationToolTests {
         )
         #expect(general.contains("# Conversations") && general.contains("apelin_conversation_create with project set to the new project"))
         for prompt in [project, general] {
-            #expect(prompt.contains("apelin://conversation/<session id>") && prompt.contains("apelin://project/<projectID>"))
+            #expect(prompt.contains("lurosdev://conversation/<session id>") && prompt.contains("lurosdev://project/<projectID>"))
             #expect(!prompt.contains("there is no Apelin URL scheme"))
         }
     }

@@ -4,7 +4,7 @@ import ApelinProject
 import ApelinProtocol
 import Foundation
 
-/// A repository's `apelin-project.json` coming into a project folder that
+/// A repository's `luros-project.json` coming into a project folder that
 /// has one of its own (issue #32). The repository's is the project's
 /// description and wins; what is settled is the identity in it, so a
 /// project never takes an ID another project, conversation, build or

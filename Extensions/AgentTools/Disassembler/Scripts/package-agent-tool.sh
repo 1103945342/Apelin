@@ -104,7 +104,7 @@ chmod 0755 "$staging"
 
 root="$staging$install_prefix"
 installed_executable="$root/$executable_path"
-data_directory="$root/usr/share/apelin/agent-tools/$package_id"
+data_directory="$root/usr/share/luros/agent-tools/$package_id"
 mkdir -p "$staging/DEBIAN" "$(dirname "$installed_executable")" "$data_directory/licenses"
 /usr/bin/ditto "$executable" "$installed_executable"
 cp "$manifest" "$data_directory/manifest.json"
@@ -211,7 +211,7 @@ if [[ -f "$entitlements" ]]; then
             exit 65
         }
     done
-    for key in wiki.qaq.apelin.client com.apple.private.security.storage.AppDataContainers \
+    for key in com.fluoxetine.luros.client com.apple.private.security.storage.AppDataContainers \
         com.apple.security.get-task-allow task_for_pid-allow; do
         [[ -z "$(/usr/libexec/PlistBuddy -c "Print :$key" "$signed_entitlements" 2>/dev/null || true)" ]] || {
             echo "error: an agent tool must not carry $key" >&2
@@ -252,9 +252,9 @@ grep -F ".$install_prefix/$executable_path" <<<"$contents" | grep -q '^-rwxr-xr-
     echo "error: the executable is not root-owned 0755 in the package" >&2
     exit 65
 }
-grep -F ".$install_prefix/usr/share/apelin/agent-tools/$package_id/manifest.json" <<<"$contents" | grep -q '^-rw-r--r-- root/root'
+grep -F ".$install_prefix/usr/share/luros/agent-tools/$package_id/manifest.json" <<<"$contents" | grep -q '^-rw-r--r-- root/root'
 for ((index = 0; index < license_count; index++)); do
-    grep -qF ".$install_prefix/usr/share/apelin/agent-tools/$package_id/${license_entries[index]}" <<<"$contents"
+    grep -qF ".$install_prefix/usr/share/luros/agent-tools/$package_id/${license_entries[index]}" <<<"$contents"
 done
 if awk '{print $1}' <<<"$contents" | grep -qE '^.{5}w|^.{8}w'; then
     echo "error: something in the package is group- or world-writable" >&2

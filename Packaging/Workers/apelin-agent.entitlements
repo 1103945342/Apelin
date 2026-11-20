@@ -6,7 +6,7 @@
 	targets, as the app does, so it carries the same storage pair.
 
 	keychain-access-groups: the provider credentials, Apelin's own items
-	(service wiki.qaq.apelin.agent) in its own group, this device only and
+	(service com.fluoxetine.luros.agent) in its own group, this device only and
 	never synchronised. Nothing else shares the group; the credential inbox
 	is read by this executable, so the item is written and read by the same
 	signing identity. Unverified on a device (A2's keychain spike).
@@ -14,8 +14,8 @@
 	Every system capability goes to the session host as a request; no UI,
 	IOKit, logging or task-port key here.
 
-	Never `wiki.qaq.apelin.client` and never the Mach-lookup of
-	`wiki.qaq.apelin.service`: a worker reaches the session host only
+	Never `com.fluoxetine.luros.client` and never the Mach-lookup of
+	`com.fluoxetine.luros.service`: a worker reaches the session host only
 	through the socketpair it was spawned with, and the packager refuses
 	either key here. Add what the domain needs, with the reason, in this
 	file only.
@@ -32,7 +32,7 @@
 	<true/>
 	<key>keychain-access-groups</key>
 	<array>
-		<string>wiki.qaq.apelin.agent</string>
+		<string>com.fluoxetine.luros.agent</string>
 	</array>
 </dict>
 </plist>

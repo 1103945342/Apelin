@@ -193,7 +193,7 @@ final class FeedbackEditTests: XCTestCase {
     func testAnEditSendsOnlyWhatChangesAndKeepsTheFooterAsItWas() async throws {
         let home = try TemporaryHome(self)
         // This device runs a later Apelin: the footer stays the one written.
-        let app = URL(fileURLWithPath: home.layout.installRoot).appendingPathComponent("Applications/Apelin.app")
+        let app = URL(fileURLWithPath: home.layout.installRoot).appendingPathComponent("Applications/Luros.app")
         try FileManager.default.createDirectory(at: app, withIntermediateDirectories: true)
         try PropertyListSerialization.data(
             fromPropertyList: ["CFBundleShortVersionString": "0.3.0", "CFBundleVersion": "23"],

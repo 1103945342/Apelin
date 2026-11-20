@@ -7,7 +7,7 @@ leaves the others behind is the bug this checks for:
 
 - `Vendor/README.md` names each file's version and SHA-256, and the file on
   disk matches its digest and carries an execute bit.
-- `Scripts/package-deb.sh` stages both into `Apelin.app/Vendor/` and proves
+- `Scripts/package-deb.sh` stages both into `Luros.app/Vendor/` and proves
   the packaged deb holds them.
 - `Packaging/DEBIAN/control` depends on neither package, and the maintainer
   scripts register the bundled daemon under Apelin's own label and remove
@@ -28,7 +28,7 @@ TOOLS = {
     "bin/icli": "com.icli.icli",
     "libexec/irisind": "wiki.qaq.irisin",
 }
-LABEL = "wiki.qaq.apelin.irisind"
+LABEL = "com.fluoxetine.luros.irisind"
 
 
 def read(path):

@@ -21,7 +21,7 @@ import Foundation
 //   host recorded from the build worker itself (its path, digest, package ID,
 //   project and build); or
 // - `file:<path>`, from the app only: a `.deb` inside
-//   `~/Documents/wiki.qaq.apelin/` (the path relative to that folder), which
+//   `~/Documents/com.fluoxetine.luros/` (the path relative to that folder), which
 //   the user picked.
 
 public struct InstallResult: Codable, Sendable, Equatable {

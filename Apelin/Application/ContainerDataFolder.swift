@@ -6,7 +6,7 @@ import Foundation
 ///
 /// rootless uicache registers an app without `no-container` with a data
 /// container and makes that its home, and the app took its data folder
-/// from its home there. The console made `<container>/Documents/wiki.qaq.apelin`
+/// from its home there. The console made `<container>/Documents/com.fluoxetine.luros`
 /// at the first launch, and the app kept its conversations, drafts and
 /// uploads, the memories and skills added in Settings and its journal in
 /// it, while the package, the session host and the agent used mobile's.
@@ -20,7 +20,7 @@ import Foundation
 /// winning. A link, a special file, a file where mobile's has a folder or a
 /// link, and the console's `running/` (a script left there would run again)
 /// stay where they are. The container's folder is then renamed aside,
-/// `wiki.qaq.apelin.migrated`, which holds whatever stayed, so the next
+/// `com.fluoxetine.luros.migrated`, which holds whatever stayed, so the next
 /// launch finds nothing to do. The app's preferences are not here: they
 /// stay in the container, where the app still reads them.
 enum ContainerDataFolder {

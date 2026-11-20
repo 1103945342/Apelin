@@ -5,7 +5,7 @@
   project/invalid, extension/invalid  must fail, with the error named in
                                       their expectations.json
   canonical-json.json                 RFC 8785 vectors, byte for byte
-  manifest-format.json                apelin-project.json's written form, byte
+  manifest-format.json                luros-project.json's written form, byte
                                       for byte, and what is left as it is
   digest/<case>/                      the build and packaging digests of
                                       project/ equal expected.json, and the
@@ -193,24 +193,24 @@ def append(path: Path, text: str) -> None:
 EDITS = [
     ("source code edited", lambda r: append(r / "Sources/main.c", "/* edited */\n"), False, False),
     ("new source file under an existing glob", lambda r: (r / "Sources/extra.c").write_text("int extra;\n"), False, False),
-    ("package version bumped", lambda r: edit_json(r / "apelin-project.json", lambda d: d["package"].__setitem__("version", "9.9.9")), False, False),
-    ("members reordered and reindented", lambda r: edit_json(r / "apelin-project.json", lambda d: None), False, False),
-    ("written on one line", lambda r: write_compact(r / "apelin-project.json"), False, False),
-    ("formatted from one line", lambda r: write_formatted(r / "apelin-project.json"), False, False),
-    ("toolchain rebound", lambda r: edit_json(r / "apelin-project.json", lambda d: d["environment"]["toolchain"].__setitem__("id", "clt-28.0")), False, False),
-    ("compile flag added", lambda r: edit_json(r / "apelin-project.json", lambda d: d["build"]["steps"][1].__setitem__("flags", ["-DEXTRA=1"])), True, False),
+    ("package version bumped", lambda r: edit_json(r / "luros-project.json", lambda d: d["package"].__setitem__("version", "9.9.9")), False, False),
+    ("members reordered and reindented", lambda r: edit_json(r / "luros-project.json", lambda d: None), False, False),
+    ("written on one line", lambda r: write_compact(r / "luros-project.json"), False, False),
+    ("formatted from one line", lambda r: write_formatted(r / "luros-project.json"), False, False),
+    ("toolchain rebound", lambda r: edit_json(r / "luros-project.json", lambda d: d["environment"]["toolchain"].__setitem__("id", "clt-28.0")), False, False),
+    ("compile flag added", lambda r: edit_json(r / "luros-project.json", lambda d: d["build"]["steps"][1].__setitem__("flags", ["-DEXTRA=1"])), True, False),
     ("build script edited", lambda r: append(r / "Scripts/generate-version.sh", "# edited\n"), True, False),
     ("entitlements edited", lambda r: append(r / "Packaging/Tool.entitlements", "\n"), True, False),
-    ("bridging header set", lambda r: edit_json(r / "apelin-project.json", lambda d: d["products"][0].__setitem__("bridgingHeader", "Sources/Bridge.h")), True, False),
+    ("bridging header set", lambda r: edit_json(r / "luros-project.json", lambda d: d["products"][0].__setitem__("bridgingHeader", "Sources/Bridge.h")), True, False),
     ("bridging header content edited", lambda r: append(r / "Sources/Bridge.h", "/* edited */\n"), False, False),
-    ("deployment target raised", lambda r: edit_json(r / "apelin-project.json", lambda d: d.__setitem__("deploymentTarget", "17.0")), True, False),
+    ("deployment target raised", lambda r: edit_json(r / "luros-project.json", lambda d: d.__setitem__("deploymentTarget", "17.0")), True, False),
     ("postinst edited", lambda r: append(r / "Packaging/postinst", "# edited\n"), False, True),
     ("installed data file edited", lambda r: append(r / "Packaging/apelinhello.conf", "x=1\n"), False, True),
-    ("dependency added", lambda r: edit_json(r / "apelin-project.json", lambda d: d["package"].__setitem__("depends", ["coreutils"])), False, True),
-    ("icon set", lambda r: edit_json(r / "apelin-project.json", lambda d: d["package"].__setitem__("icon", "https://example.com/icon.png")), False, True),
-    ("depiction set", lambda r: edit_json(r / "apelin-project.json", lambda d: d["package"].__setitem__("depiction", "https://example.com/depictions/apelinhello/")), False, True),
-    ("native depiction set", lambda r: edit_json(r / "apelin-project.json", lambda d: d["package"].__setitem__("sileoDepiction", "https://example.com/depictions/apelinhello/depiction.json")), False, True),
-    ("install path changed", lambda r: edit_json(r / "apelin-project.json", lambda d: d["package"]["layout"][0].__setitem__("path", "/usr/local/bin/apelinhello")), False, True),
+    ("dependency added", lambda r: edit_json(r / "luros-project.json", lambda d: d["package"].__setitem__("depends", ["coreutils"])), False, True),
+    ("icon set", lambda r: edit_json(r / "luros-project.json", lambda d: d["package"].__setitem__("icon", "https://example.com/icon.png")), False, True),
+    ("depiction set", lambda r: edit_json(r / "luros-project.json", lambda d: d["package"].__setitem__("depiction", "https://example.com/depictions/apelinhello/")), False, True),
+    ("native depiction set", lambda r: edit_json(r / "luros-project.json", lambda d: d["package"].__setitem__("sileoDepiction", "https://example.com/depictions/apelinhello/depiction.json")), False, True),
+    ("install path changed", lambda r: edit_json(r / "luros-project.json", lambda d: d["package"]["layout"][0].__setitem__("path", "/usr/local/bin/apelinhello")), False, True),
 ]
 
 

@@ -25,7 +25,7 @@ extension MockBackend {
             lostCommitCount: 7,
             lostCommits: (1 ... 7).map { .init(commit: String(repeating: "\($0)", count: 40), subject: "Local change \($0)") },
             changedFileCount: 2,
-            changedFiles: ["Sources/Tweak.m", "apelin-project.json"],
+            changedFiles: ["Sources/Tweak.m", "luros-project.json"],
             overwrittenFileCount: 1,
             overwrittenFiles: ["notes.txt"],
             projectFile: "repositoryWithProjectID",

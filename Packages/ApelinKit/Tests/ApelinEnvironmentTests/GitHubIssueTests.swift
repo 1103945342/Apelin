@@ -55,7 +55,7 @@ final class GitHubIssueTests: XCTestCase {
     }
 
     private func installApp(_ installRoot: String) throws {
-        let app = URL(fileURLWithPath: installRoot).appendingPathComponent("Applications/Apelin.app", isDirectory: true)
+        let app = URL(fileURLWithPath: installRoot).appendingPathComponent("Applications/Luros.app", isDirectory: true)
         try FileManager.default.createDirectory(at: app, withIntermediateDirectories: true)
         let plist: [String: Any] = ["CFBundleShortVersionString": "0.3.0", "CFBundleVersion": "23"]
         try PropertyListSerialization.data(fromPropertyList: plist, format: .binary, options: 0)

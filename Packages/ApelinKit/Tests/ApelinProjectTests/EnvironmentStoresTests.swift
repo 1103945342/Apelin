@@ -104,7 +104,7 @@ final class EnvironmentStoresTests: XCTestCase {
         try JSONEncoder().encode(Registry(toolchains: [toolchain])).write(to: data.toolchainRegistry)
         let sdk = SDKRecord(
             id: sdkID, canonicalName: "iphoneos27.0", version: "27.0",
-            path: old + "/var/mobile/Documents/wiki.qaq.apelin/SDKs/" + sdkID,
+            path: old + "/var/mobile/Documents/com.fluoxetine.luros/SDKs/" + sdkID,
             targets: ["arm64e-ios"], digest: String(repeating: "e", count: 64),
         )
         try JSONCoding.encode(sdk).write(to: data.sdkRegistry.appendingPathComponent(sdkID + ".json"))

@@ -193,7 +193,7 @@ public struct GitService: Sendable {
     /// through `.git/info/exclude`: the description and the icon beside it,
     /// and what every repository Apelin makes keeps out
     /// (`ProjectExcludes.apelinFiles`).
-    static let apelinFiles = ["/apelin-project.json", "/apelin-icon.png"] + ProjectExcludes.apelinFiles
+    static let apelinFiles = ["/luros-project.json", "/apelin-icon.png"] + ProjectExcludes.apelinFiles
 
     /// Validates a clone-into request before the task is accepted: the
     /// project is an empty workspace's kind, has no repository yet, or only
@@ -224,7 +224,7 @@ public struct GitService: Sendable {
     /// fetches, then `{branch, commit, projectID, projectFile}`. A failure
     /// leaves the folder as it was.
     ///
-    /// The repository's own `apelin-project.json` wins over a new
+    /// The repository's own `luros-project.json` wins over a new
     /// workspace's, which holds nothing but the workspace's identity
     /// (`RepositoryManifest`); the workspace's stays, kept out of the
     /// repository, when the repository has none. A workspace whose

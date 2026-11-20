@@ -74,7 +74,7 @@ func agentNoticeChecks() async {
         ),
         "an approval is named by the first message until the session has a title, and says the call's reason: \(String(describing: approval))",
     )
-    check(approval?.link == "apelin://conversation/\(session)", "a tap opens the conversation")
+    check(approval?.link == "lurosdev://conversation/\(session)", "a tap opens the conversation")
     _ = track.take("message", payload: object(["text": .string("I will build it.")]), title: nil, posted: none)
     _ = track.take("message", payload: object(["text": .string("```\nlog\n```")]), title: nil, posted: none)
     let finished = track.take("finished", payload: object(["reason": .string("completed")]), title: "Dock Hider", posted: none)
@@ -142,7 +142,7 @@ func agentNoticeChecks() async {
         ),
         "a notice is headed by the conversation, its title the subtitle, its body one plain line: \(String(describing: notice))",
     )
-    check(notice?.link == "apelin://conversation/\(session)", "a notice's tap opens the conversation")
+    check(notice?.link == "lurosdev://conversation/\(session)", "a notice's tap opens the conversation")
     let untitledNotice = notifying.take("notice", payload: object(["body": .string(String(repeating: "x", count: 400))]), title: nil, posted: none)
     check(
         untitledNotice?.subtitle == nil && untitledNotice?.title == .verbatim("Set up the toolchain")

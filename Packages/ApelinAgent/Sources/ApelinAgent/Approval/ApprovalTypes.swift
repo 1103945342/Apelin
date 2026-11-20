@@ -434,7 +434,7 @@ public enum ApprovalDecision: Sendable, Hashable, Codable {
 // MARK: - Descriptions and their digests
 
 public enum DescriptionKind: String, Sendable, Hashable, Codable {
-    /// `apelin-project.json`'s build steps, compile/link flags and the
+    /// `luros-project.json`'s build steps, compile/link flags and the
     /// build scripts the project carries.
     case build
     /// Control fields, maintainer scripts, install layout and dependencies.

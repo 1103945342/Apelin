@@ -55,7 +55,7 @@ let package = Package(
                 .product(name: "ApelinProtocol", package: "ApelinKit"),
                 // CanonicalPath: the path rules the rest of Apelin decides by.
                 .product(name: "ApelinCore", package: "ApelinKit"),
-                // The apelin-project.json schema the apelin-project-description skill serves.
+                // The luros-project.json schema the apelin-project-description skill serves.
                 .product(name: "ApelinProject", package: "ApelinKit"),
                 // ToolManifestValidator: the installed agent tool extensions
                 // whose tools a session offers.

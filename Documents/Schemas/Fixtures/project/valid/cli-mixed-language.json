@@ -3,7 +3,7 @@
   "projectID": "bac78ee8-eb34-559c-9db9-c5f880280aa1",
   "kind": "cli",
   "template": {
-    "extensionID": "wiki.qaq.apelin.dev.cli",
+    "extensionID": "com.fluoxetine.luros.dev.cli",
     "templateID": "c",
     "version": "0.1.2",
     "digest": "sha256:ba1812f5d18b75f193dde0277db553e147c1f01e2f0e7f14fe1eb43907dc59ff"
@@ -99,7 +99,7 @@
     "name": "Apelin Hello",
     "version": "0.0.1",
     "description": "Built on this device with Apelin.",
-    "icon": "https://owngoal-dev.github.io/Apelin/icons/wiki.qaq.apelin.dev.cli.png",
+    "icon": "https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.dev.cli.png",
     "author": "Apelin User",
     "section": "Utilities",
     "layout": [

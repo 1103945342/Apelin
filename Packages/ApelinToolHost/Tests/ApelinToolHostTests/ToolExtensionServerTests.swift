@@ -141,7 +141,7 @@ final class ToolExtensionServerTests: XCTestCase {
         let data = output.fileHandleForReading.readDataToEndOfFile()
         process.waitUntilExit()
         let description = try JSONDecoder().decode(JSONValue.self, from: data)
-        XCTAssertEqual(description["id"], "wiki.qaq.apelin.agent-tools.fake")
+        XCTAssertEqual(description["id"], "com.fluoxetine.luros.agent-tools.fake")
         XCTAssertTrue(description["tools"]?.arrayValue?.contains { $0["name"] == "echo" } == true)
     }
 }

@@ -38,7 +38,7 @@ public struct ConversationCreateToolRequest: Sendable, Hashable, Codable {
 public struct ConversationCreateToolResponse: Sendable, Hashable, Codable {
     public var sessionID: String
     public var taskID: String
-    /// `apelin://conversation/<session id>`, which opens it in the app.
+    /// `lurosdev://conversation/<session id>`, which opens it in the app.
     public var link: String
     /// The project it opened in, when not the session's own, and its link.
     public var project: String?
@@ -103,7 +103,7 @@ public struct ConversationActionToolResponse: Sendable, Hashable, Codable {
 
 public struct ConversationSummary: Sendable, Hashable, Codable {
     public var sessionID: String
-    /// `apelin://conversation/<session id>`.
+    /// `lurosdev://conversation/<session id>`.
     public var link: String
     public var title: String?
     /// The project's folder, when not the session's own.
@@ -213,7 +213,7 @@ public struct ConversationApproval: Sendable, Hashable, Codable {
 
 public struct ConversationReadToolResponse: Sendable, Hashable, Codable {
     public var sessionID: String
-    /// `apelin://conversation/<session id>`.
+    /// `lurosdev://conversation/<session id>`.
     public var link: String
     public var title: String?
     public var state: ConversationState

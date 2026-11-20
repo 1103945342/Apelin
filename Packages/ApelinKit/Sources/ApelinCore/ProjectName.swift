@@ -1,6 +1,6 @@
 /// A project's name is its directory under `Projects/`: one path component.
 /// Renaming moves the directory; the project's ID lives in
-/// `apelin-project.json` and does not change.
+/// `luros-project.json` and does not change.
 public enum ProjectName {
     public enum Problem: String, Codable, Sendable, Equatable {
         case empty

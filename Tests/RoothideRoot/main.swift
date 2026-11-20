@@ -34,14 +34,14 @@ let container = "/private/var/mobile/Containers/Data/Application/0F1E2D3C-0000-4
 setenv("CFFIXED_USER_HOME", container, 1)
 setenv("HOME", container, 1)
 require(NSHomeDirectory() == container)
-require(RoothideRoot.mobileHome(for: parent + "/.jbroot-0123456789ABCDEF/Applications/Apelin.app")
+require(RoothideRoot.mobileHome(for: parent + "/.jbroot-0123456789ABCDEF/Applications/Luros.app")
     == parent + "/.jbroot-0123456789ABCDEF/var/mobile")
-require(RoothideRoot.mobileHome(for: "/private" + parent + "/.jbroot-0123456789abcdef/usr/libexec/apelind")
+require(RoothideRoot.mobileHome(for: "/private" + parent + "/.jbroot-0123456789abcdef/usr/libexec/lurosd")
     == "/private" + parent + "/.jbroot-0123456789abcdef/var/mobile")
 for path in [
-    "/var/jb/Applications/Apelin.app",
-    "/private/preboot/hash/dopamine/procursus/Applications/Apelin.app",
-    "/private/preboot/hash/dopamine/procursus/usr/libexec/apelind",
+    "/var/jb/Applications/Luros.app",
+    "/private/preboot/hash/dopamine/procursus/Applications/Luros.app",
+    "/private/preboot/hash/dopamine/procursus/usr/libexec/lurosd",
 ] {
     require(RoothideRoot.mobileHome(for: path) == "/var/mobile")
 }

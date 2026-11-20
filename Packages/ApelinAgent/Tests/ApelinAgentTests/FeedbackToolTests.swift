@@ -119,7 +119,7 @@ struct FeedbackToolTests {
             ["title": "", "body": "Body"],
             ["title": "Two\nlines", "body": "Body"],
             ["title": "Title", "body": "From 192.168.1.20"],
-            ["title": "Title", "body": "Saved in /var/mobile/Documents/wiki.qaq.apelin/Projects/Secret"],
+            ["title": "Title", "body": "Saved in /var/mobile/Documents/com.fluoxetine.luros/Projects/Secret"],
             ["title": "Title", "body": .string("token ghp_" + String(repeating: "A1b2", count: 9))],
         ]
         for arguments in refused {

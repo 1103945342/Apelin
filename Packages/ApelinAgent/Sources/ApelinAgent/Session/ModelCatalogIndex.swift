@@ -308,7 +308,7 @@ public struct ModelCatalogIndex: Sendable {
 private final class SharedIndex: @unchecked Sendable {
     /// Says in the device log how long a catalogue costs to build. The names
     /// are the whole content: no model, no account, no secret.
-    private static let log = Logger(subsystem: "wiki.qaq.apelin", category: "ModelCatalog")
+    private static let log = Logger(subsystem: "com.fluoxetine.luros", category: "ModelCatalog")
 
     /// kwwk's catalog: a constant of the build, read once.
     let bundled: ModelCatalogIndex.Table

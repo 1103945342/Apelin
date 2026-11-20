@@ -79,6 +79,6 @@ final class Collector: BuildReporter, @unchecked Sendable {
 /// A home with the data folder made, as the package's postinst makes it.
 func makeHome(in scratch: URL) throws -> (home: URL, store: ProjectStore) {
     let home = scratch.appendingPathComponent("home")
-    try FileManager.default.createDirectory(at: home.appendingPathComponent("Documents/wiki.qaq.apelin"), withIntermediateDirectories: true)
+    try FileManager.default.createDirectory(at: home.appendingPathComponent("Documents/com.fluoxetine.luros"), withIntermediateDirectories: true)
     return (home, ProjectStore(dataFolder: DataFolder(home: home.path)))
 }

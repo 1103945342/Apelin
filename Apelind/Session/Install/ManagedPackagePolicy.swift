@@ -83,7 +83,7 @@ enum ManagedPackagePolicy {
     /// Package ID prefixes that are never a project's: Apelin and its
     /// extensions, Irisin (irisind refuses its own too), the system's
     /// virtual packages.
-    static let reservedPrefixes = ["wiki.qaq.apelin", "wiki.qaq.irisin", "gsc.", "cy+"]
+    static let reservedPrefixes = ["com.fluoxetine.luros", "wiki.qaq.irisin", "gsc.", "cy+"]
 
     /// Bootstrap core and the package managers, by exact ID.
     static let reservedIDs: Set<String> = [
@@ -103,7 +103,7 @@ enum ManagedPackagePolicy {
     /// The one family under Apelin's own prefix a source other than the
     /// IDE's package may install: apelin-environment's local toolchains, and
     /// only from that source.
-    static let toolchainPrefix = "wiki.qaq.apelin.toolchain."
+    static let toolchainPrefix = "com.fluoxetine.luros.toolchain."
 
     static func isReserved(
         _ packageID: String,

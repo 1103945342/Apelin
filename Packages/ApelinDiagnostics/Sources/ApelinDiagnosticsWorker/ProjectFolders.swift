@@ -4,7 +4,7 @@ import Darwin
 import Foundation
 
 /// A project's folder, found as mobile by the `projectID` in its
-/// `apelin-project.json`, under `~/Documents/wiki.qaq.apelin/Projects/` and
+/// `luros-project.json`, under `~/Documents/com.fluoxetine.luros/Projects/` and
 /// nowhere else. Canonical paths, compared by component.
 enum ProjectFolders {
     /// Where a project's dSYMs are: apelin-build keeps each build's outputs in
@@ -54,7 +54,7 @@ enum ProjectFolders {
             guard let path = CanonicalPath.resolve(root + "/" + name),
                   CanonicalPath.isCanonical(path, inside: root),
                   CanonicalPath.components(path).count == CanonicalPath.components(root).count + 1,
-                  let manifest = read(path + "/apelin-project.json"),
+                  let manifest = read(path + "/luros-project.json"),
                   manifest["projectID"]?.stringValue == projectID
             else { continue }
             return (URL(fileURLWithPath: path, isDirectory: true), manifest)
@@ -72,7 +72,7 @@ enum ProjectFolders {
     }
 }
 
-/// What `confirmLoaded` looks for, read from `apelin-project.json`: the
+/// What `confirmLoaded` looks for, read from `luros-project.json`: the
 /// marker the template logs (`ApelinLoaded <APELIN_BUILD_ID>` under the
 /// package id's subsystem), where the package installs the tweak's dylib on
 /// this bootstrap, and the filter plist the packager writes beside it.

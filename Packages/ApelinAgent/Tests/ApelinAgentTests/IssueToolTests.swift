@@ -132,7 +132,7 @@ struct IssueToolTests {
             (["repository": "Lakr233/Irisin", "title": "", "body": "Body"], "title is empty"),
             (["repository": "Lakr233/Irisin", "title": "Two\nlines", "body": "Body"], "one line"),
             (["repository": "Lakr233/Irisin", "title": "Title", "body": "From 192.168.1.20"], "local network"),
-            (["repository": "Lakr233/Irisin", "title": "Title", "body": "Saved in /var/mobile/Documents/wiki.qaq.apelin/Projects/Secret"], "home or install path"),
+            (["repository": "Lakr233/Irisin", "title": "Title", "body": "Saved in /var/mobile/Documents/com.fluoxetine.luros/Projects/Secret"], "home or install path"),
             (["repository": "Lakr233/Irisin", "title": "Title", "body": .string("token ghp_" + String(repeating: "A1b2", count: 9))], "token or key"),
         ]
         for (arguments, words) in refused {

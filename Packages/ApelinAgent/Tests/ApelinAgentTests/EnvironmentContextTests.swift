@@ -49,10 +49,10 @@ struct EnvironmentContextTests {
             "targets":["arm64e-ios"],"warnings":[],"digest":"1a2b"}
             """.write(to: registry.appendingPathComponent("\(id).json"), atomically: true, encoding: .utf8)
         }
-        try home.write("apelin-project.json", """
+        try home.write("luros-project.json", """
         {"schemaVersion":1,"projectID":"\(home.project.id)","kind":"tweak","language":"objc",
         "deploymentTarget":"\(deploymentTarget)",
-        "template":{"extensionID":"wiki.qaq.apelin.dev.tweak","templateID":"tweak","version":"1.0.0","digest":"x"},
+        "template":{"extensionID":"com.fluoxetine.luros.dev.tweak","templateID":"tweak","version":"1.0.0","digest":"x"},
         "environment":{"toolchain":{"id":"\(toolchainID)","digest":"sha256:abc"},
         "sdk":{"id":"\(sdkID)","digest":"sha256:1a2b"}},
         "architectures":{"rootless":["arm64","arm64e"],"roothide":["arm64e"]},
@@ -203,12 +203,12 @@ struct EnvironmentContextTests {
         #expect(first.hasSuffix("</system-state>\n\nhello"), "the user's words follow both")
         #expect(first.contains("Project Hello (id \(home.project.id))"))
         #expect(first.contains("- Kind: tweak; Objective-C; deployment target 15.0; architectures roothide arm64e, rootless arm64 arm64e"))
-        #expect(first.contains("- Template: wiki.qaq.apelin.dev.tweak tweak 1.0.0"))
+        #expect(first.contains("- Template: com.fluoxetine.luros.dev.tweak tweak 1.0.0"))
         #expect(first.contains("- Build: Apelin's build tool, 2 steps; products Tweak (dylib)"))
         #expect(first.contains("- Package: local.apelin.hello 0.0.1"))
         #expect(first.contains("- Git: on branch main at abc123; nothing to commit."), "as the host's git status answered")
         let tree = first.components(separatedBy: "\n")
-        for line in ["Sources/", "  Tweak.x", "Resources/", "  Info.plist", "apelin-project.json", ".gitignore", "keep.log", "outside@"] {
+        for line in ["Sources/", "  Tweak.x", "Resources/", "  Info.plist", "luros-project.json", ".gitignore", "keep.log", "outside@"] {
             #expect(tree.contains(line), "the tree lists \(line)")
         }
         for name in ["out.o", "debug.log", "generated.m", "stale.deb", "HEAD", "hosts"] {

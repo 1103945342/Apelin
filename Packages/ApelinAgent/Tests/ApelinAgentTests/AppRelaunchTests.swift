@@ -46,7 +46,7 @@ struct AppRelaunchTests {
     func `an app's install says a running copy keeps the previous build and how to restart it`() async throws {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }
-        try harness.home.write("apelin-project.json", Self.manifest(kind: "app"))
+        try harness.home.write("luros-project.json", Self.manifest(kind: "app"))
         try harness.home.write("Resources/Info.plist", Self.infoPlist)
 
         let result = try await install(harness)
@@ -61,7 +61,7 @@ struct AppRelaunchTests {
     func `an app whose Info.plist does not read inside the project names the app's bundle id`() async throws {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }
-        try harness.home.write("apelin-project.json", Self.manifest(kind: "app"))
+        try harness.home.write("luros-project.json", Self.manifest(kind: "app"))
 
         var result = try await install(harness)
         var hint = try #require(result["relaunchHint"] as? String)
@@ -90,13 +90,13 @@ struct AppRelaunchTests {
     func `a tweak's install and a failed install carry no hint`() async throws {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }
-        try harness.home.write("apelin-project.json", Self.manifest(kind: "tweak"))
+        try harness.home.write("luros-project.json", Self.manifest(kind: "tweak"))
         try harness.home.write("Resources/Info.plist", Self.infoPlist)
         let tweak = try await install(harness)
         #expect(tweak["succeeded"] as? Bool == true)
         #expect(tweak["relaunchHint"] == nil)
 
-        try harness.home.write("apelin-project.json", Self.manifest(kind: "app"))
+        try harness.home.write("luros-project.json", Self.manifest(kind: "app"))
         await harness.backend.setInstallSucceeds(false)
         let failed = try await install(harness)
         #expect(failed["succeeded"] as? Bool == false)

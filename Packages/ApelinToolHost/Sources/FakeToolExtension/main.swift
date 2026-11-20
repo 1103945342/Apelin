@@ -9,7 +9,7 @@ import Foundation
 let environment = ProcessInfo.processInfo.environment
 let versions = environment["FAKE_PROTOCOL_VERSIONS"].map { $0.split(separator: ",").compactMap { Int($0) } }
     ?? ToolProtocol.supportedVersions
-let identity = environment["FAKE_EXTENSION_ID"] ?? "wiki.qaq.apelin.agent-tools.fake"
+let identity = environment["FAKE_EXTENSION_ID"] ?? "com.fluoxetine.luros.agent-tools.fake"
 
 let object: (_ properties: [String: JSONValue], _ required: [String]) -> JSONValue = { properties, required in
     ["type": "object", "properties": .object(properties), "required": .array(required.map { .string($0) }),

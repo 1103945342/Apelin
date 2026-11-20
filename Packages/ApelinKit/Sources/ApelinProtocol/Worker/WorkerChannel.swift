@@ -144,7 +144,7 @@ public final class WorkerChannel: @unchecked Sendable {
 
     @objc public dynamic func start() {
         let thread = Thread { [self] in readLoop() }
-        thread.name = "wiki.qaq.apelin.channel"
+        thread.name = "com.fluoxetine.luros.channel"
         thread.start()
     }
 

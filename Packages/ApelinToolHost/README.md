@@ -15,12 +15,12 @@ misbehaves on request.
 
 ## Manifest
 
-`<install root>/usr/share/apelin/agent-tools/<id>/manifest.json`:
+`<install root>/usr/share/luros/agent-tools/<id>/manifest.json`:
 
 ```json
 {
   "schemaVersion": 1,
-  "id": "wiki.qaq.apelin.agent-tools.example",
+  "id": "com.fluoxetine.luros.agent-tools.example",
   "name": "Example",
   "version": "1.0.0",
   "license": "MIT",
@@ -77,7 +77,7 @@ printable ASCII bytes).
 
 ```
 → {"protocolVersion":1,"type":"hello","requestID":"hello","supportedVersions":[1],"peer":{"name":"apelin","version":"1.0"},"maxConcurrentCalls":4,"maxFrameBytes":1048576}
-← {"protocolVersion":1,"type":"hello","requestID":"hello","peer":{"name":"wiki.qaq.apelin.agent-tools.example","version":"1.0.0"},"tools":["example"],"maxConcurrentCalls":4,"maxFrameBytes":1048576,"supportedVersions":[1]}
+← {"protocolVersion":1,"type":"hello","requestID":"hello","peer":{"name":"com.fluoxetine.luros.agent-tools.example","version":"1.0.0"},"tools":["example"],"maxConcurrentCalls":4,"maxFrameBytes":1048576,"supportedVersions":[1]}
 → {"protocolVersion":1,"type":"call","requestID":"c1","tool":"example","args":{}}
 ← {"protocolVersion":1,"type":"result","requestID":"c1","content":[{"type":"text","text":"done"}]}
 ```
@@ -152,7 +152,7 @@ as JSON, which lets a test hold the shipped manifest to the code.
 import ApelinToolExtension
 
 let server = ToolExtensionServer(
-    peer: ToolPeer(name: "wiki.qaq.apelin.agent-tools.example", version: "1.0.0"),
+    peer: ToolPeer(name: "com.fluoxetine.luros.agent-tools.example", version: "1.0.0"),
     tools: [
         ToolHandler(ToolDescriptor(name: "example", description: "…",
                                    parameters: ["type": "object"], risk: .readOnly)) { call in

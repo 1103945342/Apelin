@@ -19,7 +19,7 @@ enum PromptRewriter {
     static let instructionsFileName = "PromptOptimization.md"
 
     /// The instructions as they stand now: the reader's copy in
-    /// `~/Documents/wiki.qaq.apelin/` first, then the one the package puts in
+    /// `~/Documents/com.fluoxetine.luros/` first, then the one the package puts in
     /// `usr/share/apelin/`. A missing or emptied file is passed over, so a copy
     /// cleared by accident falls back to the shipped words instead of failing.
     static func instructions(home: URL, installRoot: String) throws -> String {

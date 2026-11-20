@@ -33,7 +33,7 @@ private final class PathMonitor: @unchecked Sendable {
         monitor.pathUpdateHandler = { [weak self] path in
             self?.update(unsatisfied: path.status == .unsatisfied)
         }
-        monitor.start(queue: DispatchQueue(label: "wiki.qaq.apelin.agent.network-path"))
+        monitor.start(queue: DispatchQueue(label: "com.fluoxetine.luros.agent.network-path"))
     }
 
     /// A path that needs a connection counts: the request may bring it up.

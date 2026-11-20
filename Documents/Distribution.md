@@ -86,7 +86,7 @@ what it lists and report back without building. The agent's
 diagnostics, and its system prompt tells it to check before a distribution
 build.
 
-The project must have a valid `apelin-project.json`, an SDK and toolchain binding,
+The project must have a valid `luros-project.json`, an SDK and toolchain binding,
 and architectures for the chosen bootstrap — or be a workspace that declares its
 own build script (`external`; see the agent's apelin-external-build skill). A manifest
 with no `build`, and a workspace with no script, have nothing to package:

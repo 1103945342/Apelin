@@ -19,7 +19,7 @@ enum TerminalTargetCheck {
         failures = 0
         let base = FileManager.default.temporaryDirectory
             .appendingPathComponent("apelin-terminal-target-\(UUID().uuidString)", isDirectory: true)
-        let dataRoot = base.appendingPathComponent("wiki.qaq.apelin", isDirectory: true)
+        let dataRoot = base.appendingPathComponent("com.fluoxetine.luros", isDirectory: true)
         let project = dataRoot.appendingPathComponent("Projects/Project", isDirectory: true)
         let nested = project.appendingPathComponent("Sources/App", isDirectory: true)
         let sibling = base.appendingPathComponent("ProjectsOutside/Project 2", isDirectory: true)

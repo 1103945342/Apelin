@@ -34,10 +34,10 @@ ASSET_POINTS = 40
 
 # Each project kind's image set, and the extension whose mark it takes.
 PROJECT_ICONS = {
-    "ProjectIconApp": ("wiki.qaq.apelin.dev.app", "app"),
-    "ProjectIconTweak": ("wiki.qaq.apelin.dev.tweak", "tweak"),
-    "ProjectIconTool": ("wiki.qaq.apelin.dev.cli", "tool"),
-    "ProjectIconPreferences": ("wiki.qaq.apelin.dev.preferences", "preferences"),
+    "ProjectIconApp": ("com.fluoxetine.luros.dev.app", "app"),
+    "ProjectIconTweak": ("com.fluoxetine.luros.dev.tweak", "tweak"),
+    "ProjectIconTool": ("com.fluoxetine.luros.dev.cli", "tool"),
+    "ProjectIconPreferences": ("com.fluoxetine.luros.dev.preferences", "preferences"),
 }
 
 # The braces, as in Documents/Icon/AppIcon.icon/Assets/braces-light.svg.
@@ -51,7 +51,7 @@ BRACES = """
 # `stroke` of "url(#green)" take the leaf's colour with its light from above.
 MARKS = {
     # A home screen's worth of apps.
-    "wiki.qaq.apelin.dev.app": """
+    "com.fluoxetine.luros.dev.app": """
   <g fill="url(#green)">
    <rect x="376" y="376" width="122" height="122" rx="34"/>
    <rect x="526" y="376" width="122" height="122" rx="34"/>
@@ -59,29 +59,29 @@ MARKS = {
    <rect x="526" y="526" width="122" height="122" rx="34"/>
   </g>""",
     # A hook: what a tweak does to a method.
-    "wiki.qaq.apelin.dev.tweak": """
+    "com.fluoxetine.luros.dev.tweak": """
   <g fill="none" stroke="url(#green)" stroke-width="44" stroke-linecap="round" stroke-linejoin="round">
    <circle cx="560" cy="398" r="28"/>
    <path d="M 560 426 L 560 566 C 560 626 524 656 480 656 C 436 656 408 626 408 584 L 408 556 L 454 596"/>
   </g>""",
     # A shell prompt.
-    "wiki.qaq.apelin.dev.cli": """
+    "com.fluoxetine.luros.dev.cli": """
   <g fill="none" stroke="url(#green)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
    <path d="M 392 418 L 482 512 L 392 606"/>
    <path d="M 528 606 L 636 606"/>
   </g>""",
     # A switch, turned on, as in Settings.
-    "wiki.qaq.apelin.dev.preferences": """
+    "com.fluoxetine.luros.dev.preferences": """
   <rect x="364" y="438" width="296" height="148" rx="74" fill="url(#green)"/>
   <circle cx="586" cy="512" r="58" fill="#FFFFFF" filter="url(#lift)"/>""",
     # Assembly in, machine code out: a 1 and a 0.
-    "wiki.qaq.apelin.agent-tools.assembler": """
+    "com.fluoxetine.luros.agent-tools.assembler": """
   <g fill="none" stroke="url(#green)" stroke-width="44" stroke-linecap="round" stroke-linejoin="round">
    <path d="M 396 420 L 438 392 L 438 632"/>
    <rect x="514" y="392" width="122" height="240" rx="61"/>
   </g>""",
     # Machine code read back as a listing.
-    "wiki.qaq.apelin.agent-tools.disassembler": """
+    "com.fluoxetine.luros.agent-tools.disassembler": """
   <g fill="none" stroke="url(#green)" stroke-width="44" stroke-linecap="round">
    <path d="M 390 414 L 634 414"/>
    <path d="M 438 488 L 594 488"/>
@@ -89,7 +89,7 @@ MARKS = {
    <path d="M 390 636 L 540 636"/>
   </g>""",
     # A hammer: the compilers set up on the device.
-    "wiki.qaq.apelin.toolchain": """
+    "com.fluoxetine.luros.toolchain": """
   <g transform="rotate(-45 512 512)">
    <path d="M 512 470 L 512 660" fill="none" stroke="url(#green)" stroke-width="48" stroke-linecap="round"/>
    <path d="M 420 400 C 420 384 432 372 448 372 L 592 372 C 616 372 640 388 652 410 L 662 430 C 666 438 660 448 650 448 L 448 448 C 432 448 420 436 420 420 Z" fill="url(#green)"/>

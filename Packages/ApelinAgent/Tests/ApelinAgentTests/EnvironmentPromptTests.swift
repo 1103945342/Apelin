@@ -29,7 +29,7 @@ struct EnvironmentPromptTests {
     func `without a toolchain the prompt says so, and a binding to one that is gone is named`() throws {
         let home = try TemporaryHome()
         defer { home.remove() }
-        try home.write("apelin-project.json", #"{"environment":{"toolchain":{"id":"gone"},"sdk":{"id":"gone-too"}}}"#)
+        try home.write("luros-project.json", #"{"environment":{"toolchain":{"id":"gone"},"sdk":{"id":"gone-too"}}}"#)
         let configuration = AgentSessionConfiguration(project: home.project, provider: .githubCopilot(model: "m"), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot, installRoot: home.home.path + "/jb")
         let root = try ScopedRoot(home.projectURL)
         let device = DeviceFacts(osVersion: "17.3.1", machine: "iPhone16,1", arm64e: true, cpuFeatures: ["FEAT_LRCPC": true, "FEAT_SHA3": false, "FEAT_DotProd": true])
@@ -53,7 +53,7 @@ struct EnvironmentPromptTests {
         let sdks = home.dataRoot.url.appendingPathComponent("SDKs").path
         let configuration = AgentSessionConfiguration(project: home.project, provider: .githubCopilot(model: "m"), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot, installRoot: home.home.path + "/jb")
         let prompt = try AgentSession.systemPrompt(configuration, root: ScopedRoot(home.projectURL), skills: [])
-        #expect(prompt.contains("- file_read, file_list, file_grep and file_find also read, never write, an absolute path inside Apelin's development extensions (\(home.home.path)/jb/usr/share/apelin/development) or the registered SDKs (\(sdks)). The headers a template's support component adds, such as the Preferences framework's, are in `<extension id>/support/include` there."))
+        #expect(prompt.contains("- file_read, file_list, file_grep and file_find also read, never write, an absolute path inside Apelin's development extensions (\(home.home.path)/jb/usr/share/luros/development) or the registered SDKs (\(sdks)). The headers a template's support component adds, such as the Preferences framework's, are in `<extension id>/support/include` there."))
 
         // Without an install root (no session host) only the SDKs are named.
         let unhosted = AgentSessionConfiguration(project: home.project, provider: .githubCopilot(model: "m"), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot)

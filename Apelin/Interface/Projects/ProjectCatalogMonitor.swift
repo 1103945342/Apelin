@@ -26,8 +26,8 @@ final class ProjectCatalogMonitor {
                       let folder = CanonicalPath.resolve(projects + "/" + name), folder == projects + "/" + name
                 else { continue }
                 paths.append(folder)
-                if let manifest = CanonicalPath.resolve(folder + "/apelin-project.json"),
-                   manifest == folder + "/apelin-project.json"
+                if let manifest = CanonicalPath.resolve(folder + "/luros-project.json"),
+                   manifest == folder + "/luros-project.json"
                 {
                     paths.append(manifest)
                 }

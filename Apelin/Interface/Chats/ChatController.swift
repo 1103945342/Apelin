@@ -112,7 +112,7 @@ final class ChatController: UIViewController {
     private var modelLoader: Task<Void, Never>?
     private let modelAccounts = SharedModelLoad<[String: [String]], [AgentAccount]>()
     @objc private dynamic weak var modelSheet: ComposerChoiceSheet?
-    private static let modelLogger = Logger(subsystem: "wiki.qaq.apelin", category: "ModelPicker")
+    private static let modelLogger = Logger(subsystem: "com.fluoxetine.luros", category: "ModelPicker")
     private var selectionCheck: Task<Void, Never>?
     private var attachmentImport: ComposerAttachmentImport?
     private var skillsLoaded = false

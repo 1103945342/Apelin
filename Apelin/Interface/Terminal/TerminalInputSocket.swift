@@ -16,7 +16,7 @@ final class TerminalInputSocket: @unchecked Sendable {
     /// and a queue with no bound is a leak wearing a keyboard.
     static let maximumPendingBytes = 4 << 20
 
-    private let queue = DispatchQueue(label: "wiki.qaq.apelin.terminal.input")
+    private let queue = DispatchQueue(label: "com.fluoxetine.luros.terminal.input")
     private let lock = NSLock()
     private var descriptor: Int32 = -1
     private var closed = false

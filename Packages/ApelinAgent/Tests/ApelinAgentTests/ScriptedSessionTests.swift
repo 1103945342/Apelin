@@ -12,7 +12,7 @@ struct ScriptedSessionTests {
         let home = try TemporaryHome()
         defer { home.remove() }
         let metadata = #"{"displayName":"\#(home.project.name.rawValue)","autoName":true}"#
-        try home.write("apelin-project.json", metadata)
+        try home.write("luros-project.json", metadata)
         let provider = await registerFauxProvider()
         defer { provider.unregister() }
         provider.setResponses([.message(fauxAssistantMessage(#"{"title":"Greeting","projectName":null}"#))])

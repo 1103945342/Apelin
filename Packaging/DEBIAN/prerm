@@ -14,7 +14,7 @@ find_tool() {
 
 # Named once, alone on its line: see postinst for why the id never sits next
 # to a redirect.
-label=wiki.qaq.apelind
+label=com.fluoxetine.lurosd
 launch_plist="@PREFIX@/Library/LaunchDaemons/$label.plist"
 if [ "${1:-}" = remove ] || [ "${1:-}" = deconfigure ]; then
     if launchctl="$(find_tool launchctl)"; then
@@ -28,7 +28,7 @@ fi
 # The copy of the package daemon Apelin carries is registered under its own
 # label and file, never Irisin's: this stops only Apelin's, and postrm removes
 # the file, which no package owns.
-iris_label=wiki.qaq.apelin.irisind
+iris_label=com.fluoxetine.luros.irisind
 iris_plist="@PREFIX@/Library/LaunchDaemons/$iris_label.plist"
 if [ "${1:-}" = remove ] || [ "${1:-}" = deconfigure ]; then
     if launchctl="$(find_tool launchctl)"; then

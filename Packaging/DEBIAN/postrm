@@ -15,7 +15,7 @@ find_tool() {
 
 # Named once, alone on its line: see postinst for why the id never sits next
 # to a redirect.
-label=wiki.qaq.apelind
+label=com.fluoxetine.lurosd
 if [ "${1:-}" = remove ] || [ "${1:-}" = purge ]; then
     if launchctl="$(find_tool launchctl)"; then
         "$launchctl" bootout "system/$label" 2>/dev/null || true
@@ -27,7 +27,7 @@ fi
 # Apelin wrote this job file itself in postinst, so no package removes it:
 # dpkg does not know it, and postrm is the last chance to take it away. A file
 # Irisin's own package wrote is a different name and is never touched.
-iris_label=wiki.qaq.apelin.irisind
+iris_label=com.fluoxetine.luros.irisind
 iris_plist="@PREFIX@/Library/LaunchDaemons/$iris_label.plist"
 if [ "${1:-}" = remove ] || [ "${1:-}" = purge ]; then
     if launchctl="$(find_tool launchctl)"; then

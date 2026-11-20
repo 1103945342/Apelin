@@ -1,6 +1,6 @@
 # Dependency license review
 
-Scope: everything `Apelin.app`, `apelind` and the workers link. This is a
+Scope: everything `Luros.app`, `apelind` and the workers link. This is a
 source and notice audit, not legal certification.
 
 apelind and apelin-log-reader are libSystem and Foundation

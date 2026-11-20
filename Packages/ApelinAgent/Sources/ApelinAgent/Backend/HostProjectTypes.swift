@@ -106,7 +106,7 @@ public struct ProjectCreateToolRequest: Sendable, Hashable, Codable {
 public struct ProjectCreateToolResponse: Sendable, Hashable, Codable {
     public var projectID: String
     public var name: String
-    /// `apelin://project/<projectID>`, which opens it in the app.
+    /// `lurosdev://project/<projectID>`, which opens it in the app.
     public var link: String
     /// The identifiers Apelin made up for it, to ask the user about
     /// (`PlaceholderIdentifiers`); the agent adds it, the host never does.
@@ -141,7 +141,7 @@ public struct ListedProject: Sendable, Hashable, Codable {
     public var buildSystem: String
     /// The project this conversation works in.
     public var isThisProject: Bool
-    /// `apelin://project/<projectID>`, which opens it in the app.
+    /// `lurosdev://project/<projectID>`, which opens it in the app.
     public var link: String
 
     public init(folder: String, projectID: String, displayName: String, buildSystem: String, isThisProject: Bool) {
@@ -203,7 +203,7 @@ public struct ProjectRenameToolResponse: Sendable, Hashable, Codable {
     /// automatic rename left in place.
     public var displayName: String
     public var changed: Bool
-    /// `apelin://project/<projectID>`, which opens it in the app.
+    /// `lurosdev://project/<projectID>`, which opens it in the app.
     public var link: String
     /// After an automatic rename, the identifiers Apelin made up for the
     /// project (`PlaceholderIdentifiers`); the agent adds it.

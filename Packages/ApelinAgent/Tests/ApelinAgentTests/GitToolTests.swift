@@ -232,7 +232,7 @@ struct GitToolTests {
     func `a workspace that declares no build is told how to declare one, before asking`() async throws {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }
-        try harness.home.write("apelin-project.json", #"{"schemaVersion":1,"projectID":"x","kind":"workspace","displayName":"Hello"}"#)
+        try harness.home.write("luros-project.json", #"{"schemaVersion":1,"projectID":"x","kind":"workspace","displayName":"Hello"}"#)
         await #expect(throws: ToolDeniedError.self) { _ = try await harness.run(.projectBuild, [:]) }
         do {
             _ = try await harness.run(.projectBuild, [:])
@@ -251,15 +251,15 @@ struct GitToolTests {
         defer { home.remove() }
         let root = try ScopedRoot(home.projectURL)
         #expect(ProjectBuildSystem.read(in: root) == .apelin, "no manifest")
-        try home.write("apelin-project.json", #"{"kind":"workspace"}"#)
+        try home.write("luros-project.json", #"{"kind":"workspace"}"#)
         #expect(ProjectBuildSystem.read(in: root) == .external)
-        try home.write("apelin-project.json", #"{"kind":"workspace","buildSystem":"external"}"#)
+        try home.write("luros-project.json", #"{"kind":"workspace","buildSystem":"external"}"#)
         #expect(ProjectBuildSystem.read(in: root) == .external)
-        try home.write("apelin-project.json", #"{"kind":"tweak","buildSystem":"external"}"#)
+        try home.write("luros-project.json", #"{"kind":"tweak","buildSystem":"external"}"#)
         #expect(ProjectBuildSystem.read(in: root) == .external)
-        try home.write("apelin-project.json", #"{"kind":"tweak","configurations":{}}"#)
+        try home.write("luros-project.json", #"{"kind":"tweak","configurations":{}}"#)
         #expect(ProjectBuildSystem.read(in: root) == .apelin)
-        try home.write("apelin-project.json", "not json")
+        try home.write("luros-project.json", "not json")
         #expect(ProjectBuildSystem.read(in: root) == .apelin)
     }
 

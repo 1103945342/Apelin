@@ -64,7 +64,7 @@ Apelin 环境任务 ID：
 设备 bootstrap 内的任务日志：
 
 ```text
-/var/lib/apelin/tasks/0f9a054c-9bbf-49f2-bb21-a3d3676b0c3a.events.jsonl
+/var/lib/luros/tasks/0f9a054c-9bbf-49f2-bb21-a3d3676b0c3a.events.jsonl
 ```
 
 该目录需要 root 权限。路径指设备 bootstrap 视图；从系统根访问时应按实际安装根解析，不能硬编码复用。
@@ -86,7 +86,7 @@ Apelin 环境任务 ID：
 
 Apelin installation ID：`80cc46ea-15a6-454d-982d-f15f7473939b`
 
-目标包：`wiki.qaq.apelin.toolchain.b7c9ecde91f0cca89ea0594f`
+目标包：`com.fluoxetine.luros.toolchain.b7c9ecde91f0cca89ea0594f`
 
 版本：`27.0+b7c9ecde`
 

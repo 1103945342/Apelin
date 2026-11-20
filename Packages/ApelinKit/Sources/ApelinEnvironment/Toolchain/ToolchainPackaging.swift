@@ -111,7 +111,7 @@ public struct ToolchainPackager: Sendable {
     }
 
     public static func packageID(for id: String) -> String {
-        "wiki.qaq.apelin.toolchain." + id.lowercased()
+        "com.fluoxetine.luros.toolchain." + id.lowercased()
     }
 
     /// What a package manager lists it as, beside the ID that keeps side-by-side
@@ -123,7 +123,7 @@ public struct ToolchainPackager: Sendable {
 
     /// Every toolchain's package manager icon: one for all of them, drawn
     /// by Scripts/render-package-icons.py and served by the project's Pages.
-    static let icon = "https://owngoal-dev.github.io/Apelin/icons/wiki.qaq.apelin.toolchain.png"
+    static let icon = "https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.toolchain.png"
 
     public func package(_ prepared: PreparedToolchain) throws -> LocalArtifact {
         let packageLayout: PackageLayout = layout.isRoothide ? .roothide : .rootless

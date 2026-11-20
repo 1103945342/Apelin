@@ -72,7 +72,7 @@ struct ToolNameReferenceTests {
         for skill in BuiltInSkills.all {
             var text = ([skill.description, skill.body] + skill.files.values).joined(separator: "\n")
             if skill.name == "apelin-project-description" {
-                // `build` there is the member of apelin-project.json.
+                // `build` there is the member of luros-project.json.
                 text = text.replacingOccurrences(of: "`build`", with: "")
             }
             #expect(Self.legacyNames(in: text).isEmpty, "\(skill.name): \(Self.legacyNames(in: text))")

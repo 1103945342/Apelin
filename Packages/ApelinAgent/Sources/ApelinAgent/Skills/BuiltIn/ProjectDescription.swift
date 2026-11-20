@@ -3,11 +3,11 @@ import enum ApelinProject.ProjectValidation
 extension BuiltInSkills {
     static let projectDescription = SkillDocument(
         name: "apelin-project-description",
-        description: "Every member of apelin-project.json, the build description Apelin's build reads: products, flags, steps, package, layout, tweak filter, the macros the build defines, and what asks the user.",
+        description: "Every member of luros-project.json, the build description Apelin's build reads: products, flags, steps, package, layout, tweak filter, the macros the build defines, and what asks the user.",
         body: """
         # The project description
 
-        `apelin-project.json` at the project root is the one thing Apelin's
+        `luros-project.json` at the project root is the one thing Apelin's
         build reads. It is checked strictly: an unknown member, a duplicate
         key or a wrong type is an error naming its field, such as
         `/products/0/sources`. The complete schema is this skill's file
@@ -102,10 +102,10 @@ extension BuiltInSkills {
         - `extensionSupport`: `[{extension, component}]`, the headers, link
           stubs and rpaths an installed development extension provides, the
           build picking each bootstrap's own. A tweak hooking with substrate
-          has `{"extension": "wiki.qaq.apelin.dev.tweak", "component":
+          has `{"extension": "com.fluoxetine.luros.dev.tweak", "component":
           "substrate"}`, `libraries: ["substrate"]` and depends on
           `mobilesubstrate`; a preference bundle has
-          `{"extension": "wiki.qaq.apelin.dev.preferences", "component":
+          `{"extension": "com.fluoxetine.luros.dev.preferences", "component":
           "preferences"}`, `frameworks` with `Preferences`, and depends on
           `preferenceloader`.
 
@@ -236,7 +236,7 @@ extension BuiltInSkills {
           control `Icon`: an `https://` URL in printable ASCII, at most 2048
           bytes. Every template writes its extension's icon on Apelin's
           Pages, such as
-          `https://owngoal-dev.github.io/Apelin/icons/wiki.qaq.apelin.dev.tweak.png`.
+          `https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.dev.tweak.png`.
           Keep it, or put in an https image the user gives as their own. It
           is not an app's own icon, which its Info.plist names.
         - `depiction` and `sileoDepiction`: optional, the package's page in a
@@ -299,7 +299,7 @@ extension BuiltInSkills {
           "id": "tweak", "type": "dylib", "name": "MyTweak",
           "sources": ["Sources/*.m"], "objcARC": true,
           "frameworks": ["Foundation", "UIKit"], "libraries": ["substrate"],
-          "extensionSupport": [{"extension": "wiki.qaq.apelin.dev.tweak", "component": "substrate"}]
+          "extensionSupport": [{"extension": "com.fluoxetine.luros.dev.tweak", "component": "substrate"}]
         }],
         "build": {"steps": [
           {"type": "compile", "product": "tweak"}, {"type": "link", "product": "tweak"},

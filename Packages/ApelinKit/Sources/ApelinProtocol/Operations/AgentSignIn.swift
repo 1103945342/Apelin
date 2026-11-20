@@ -1,7 +1,7 @@
 import Foundation
 
 /// Reads every credential file in `console/inbox/credentials/` once, stores
-/// each in the keychain (service `wiki.qaq.apelin.agent`) and deletes the
+/// each in the keychain (service `com.fluoxetine.luros.agent`) and deletes the
 /// file. A file is `<provider-store-id>.json` holding kwwk's credential
 /// shape, or a kwwk `auth.json` map of store id to credential. Contents are
 /// never logged or answered.

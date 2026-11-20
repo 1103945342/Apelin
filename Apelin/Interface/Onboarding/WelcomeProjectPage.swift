@@ -145,11 +145,11 @@ private extension DevelopmentExtension {
     /// What the page offers until the catalog is read, or when it cannot be:
     /// the build worker's built-in workspace, which needs no SDK or toolchain.
     static let emptyWorkspace = DevelopmentExtension(
-        id: "wiki.qaq.apelin.workspace",
+        id: "com.fluoxetine.luros.workspace",
         version: "1",
         kind: .workspace,
         displayName: String(localized: "Workspace"),
-        templates: [TemplateSummary(id: "wiki.qaq.apelin.workspace/empty", displayName: String(localized: "Empty"))],
+        templates: [TemplateSummary(id: "com.fluoxetine.luros.workspace/empty", displayName: String(localized: "Empty"))],
     )
 }
 

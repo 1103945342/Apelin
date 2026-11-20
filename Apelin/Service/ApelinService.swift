@@ -21,7 +21,7 @@ extension ApelinService {
 }
 
 extension DataFolder {
-    /// `~/Documents/wiki.qaq.apelin` as the package made it and the workers
+    /// `~/Documents/com.fluoxetine.luros` as the package made it and the workers
     /// keep it: in mobile's home as the session host reckons it, off the
     /// bundle's own path (`RoothideRoot.mobileHome`). Never in
     /// `NSHomeDirectory()`: on roothide that is the system's `/var/mobile`,

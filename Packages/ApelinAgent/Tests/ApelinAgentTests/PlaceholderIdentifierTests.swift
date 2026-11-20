@@ -59,7 +59,7 @@ struct PlaceholderIdentifierTests {
     func `an automatic rename names the placeholders and what to agree with the user`() async throws {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }
-        try harness.home.write("apelin-project.json", Self.manifest(kind: "app"))
+        try harness.home.write("luros-project.json", Self.manifest(kind: "app"))
         try harness.home.write("Resources/Info.plist", Self.infoPlist)
 
         let renamed = try await run(harness, .projectRename, ["display_name": "Lock Screen Clock", "automatic": true])
@@ -68,7 +68,7 @@ struct PlaceholderIdentifierTests {
         #expect(hint.contains("file_grep for local.apelin."))
         #expect(hint.contains("a new identifier makes another package: agree a migration with the user first, as the apelin-packaging-and-install skill says."))
 
-        try harness.home.write("apelin-project.json", Self.manifest())
+        try harness.home.write("luros-project.json", Self.manifest())
         let tweak = try await run(harness, .projectRename, ["display_name": "Clock", "automatic": true])
         #expect((tweak["identifierHint"] as? String)?.hasPrefix("This project's package ID local.apelin.banana is a placeholder Apelin made up: ask the user for a permanent one before the first install and keep it the same") == true)
     }
@@ -77,11 +77,11 @@ struct PlaceholderIdentifierTests {
     func `a rename the user asked for, or of a project with real identifiers, carries no note`() async throws {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }
-        try harness.home.write("apelin-project.json", Self.manifest())
+        try harness.home.write("luros-project.json", Self.manifest())
         let asked = try await run(harness, .projectRename, ["display_name": "Clock"])
         #expect(asked["identifierHint"] == nil, "only the name a new project's goal gives it")
 
-        try harness.home.write("apelin-project.json", Self.manifest(kind: "app", packageID: "com.example.clock"))
+        try harness.home.write("luros-project.json", Self.manifest(kind: "app", packageID: "com.example.clock"))
         try harness.home.write("Resources/Info.plist", Self.infoPlist.replacingOccurrences(of: "local.apelin.banana", with: "com.example.clock"))
         let real = try await run(harness, .projectRename, ["display_name": "Clock", "automatic": true])
         #expect(real["identifierHint"] == nil)
@@ -96,7 +96,7 @@ struct PlaceholderIdentifierTests {
     func `a Debug build says to ask before installing while nothing of the project is installed`() async throws {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }
-        try harness.home.write("apelin-project.json", Self.manifest())
+        try harness.home.write("luros-project.json", Self.manifest())
         await harness.backend.setInstallations([])
 
         let built = try await run(harness, .projectBuild)
@@ -113,7 +113,7 @@ struct PlaceholderIdentifierTests {
     func `a build carries no note once the project's package is installed, when that does not read, or with real identifiers`() async throws {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }
-        try harness.home.write("apelin-project.json", Self.manifest())
+        try harness.home.write("luros-project.json", Self.manifest())
 
         let unread = try await run(harness, .projectBuild)
         #expect(unread["identifierHint"] == nil, "nothing says the first install is still ahead")
@@ -125,14 +125,14 @@ struct PlaceholderIdentifierTests {
         #expect(after["identifierHint"] == nil, "an installed package's identity is the user's to change")
 
         await harness.backend.setInstallations([])
-        try harness.home.write("apelin-project.json", Self.manifest(packageID: "com.example.clock"))
+        try harness.home.write("luros-project.json", Self.manifest(packageID: "com.example.clock"))
         let queries = await harness.backend.installationQueries.count
         let real = try await run(harness, .projectBuild)
         #expect(real["identifierHint"] == nil)
         #expect(await harness.backend.installationQueries.count == queries, "nothing to ask the host about")
 
         // A placeholder spelled as no package ID is not quoted.
-        try harness.home.write("apelin-project.json", Self.manifest(packageID: "local.apelin.Banana; rm -rf ~"))
+        try harness.home.write("luros-project.json", Self.manifest(packageID: "local.apelin.Banana; rm -rf ~"))
         let odd = try await run(harness, .projectBuild)
         #expect(odd["identifierHint"] == nil)
     }
@@ -162,7 +162,7 @@ struct PlaceholderIdentifierTests {
         let harness = try DigestApprovalTests.Harness(mode: .relaxed)
         defer { harness.home.remove() }
         try harness.home.write(
-            "apelin-project.json",
+            "luros-project.json",
             #"{"schemaVersion":1,"projectID":"x","kind":"workspace","buildSystem":"external","external":{"script":"apelin/build.sh"},"package":{"id":"local.apelin.banana"}}"#,
         )
         await harness.backend.setInstallations([])

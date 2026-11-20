@@ -27,7 +27,7 @@ extension BuiltInSkills {
           (apelin-package-repository).
 
         ## Package identity
-        - A new project's `package.id` in apelin-project.json, and an app's
+        - A new project's `package.id` in luros-project.json, and an app's
           `CFBundleIdentifier` in its Info.plist, start as `local.apelin.…`
           placeholders Apelin made up from the folder name. Before the first
           install, ask the user for permanent reverse-DNS identifiers, or

@@ -35,7 +35,7 @@ public struct ResetToRemoteApproval: Sendable, Hashable, Codable {
     public var changedFiles: [String]
     public var overwrittenFileCount: Int
     public var overwrittenFiles: [String]
-    /// What `apelin-project.json` becomes: `repository`,
+    /// What `luros-project.json` becomes: `repository`,
     /// `repositoryWithProjectID` or `project` (ApelinProtocol's
     /// `GitProjectFile`).
     public var projectFile: String
@@ -115,9 +115,9 @@ public struct ResetToRemoteApproval: Sendable, Hashable, Codable {
         }
         switch projectFile {
         case "repositoryWithProjectID":
-            parts.append("apelin-project.json becomes the remote's, with this project's own projectID.")
+            parts.append("luros-project.json becomes the remote's, with this project's own projectID.")
         case "project":
-            parts.append("apelin-project.json stays this project's, since the remote has none.")
+            parts.append("luros-project.json stays this project's, since the remote has none.")
         default:
             break
         }

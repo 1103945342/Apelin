@@ -4,7 +4,7 @@
     {"op": "hello", "label": "hello"},
     {"op": "extensionList", "label": "extensions"},
     {"op": "projectCreate", "label": "project", "request": {
-      "templateID": "wiki.qaq.apelin.dev.tweak/objc-hook",
+      "templateID": "com.fluoxetine.luros.dev.tweak/objc-hook",
       "name": "I3 Chain Tweak",
       "values": {"packageID": "local.apelin.i3-chain", "displayName": "I3 Chain Tweak"}
     }},

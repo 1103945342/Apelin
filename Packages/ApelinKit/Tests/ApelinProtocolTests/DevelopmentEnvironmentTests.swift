@@ -58,7 +58,7 @@ final class DevelopmentEnvironmentTests: XCTestCase {
     private func project(_ manifest: String) throws -> String {
         let project = folder.projects.appendingPathComponent("Hello")
         try FileManager.default.createDirectory(at: project, withIntermediateDirectories: true)
-        try Data(manifest.utf8).write(to: project.appendingPathComponent("apelin-project.json"))
+        try Data(manifest.utf8).write(to: project.appendingPathComponent("luros-project.json"))
         return project.path
     }
 

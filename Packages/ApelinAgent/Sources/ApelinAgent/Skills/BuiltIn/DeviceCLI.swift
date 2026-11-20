@@ -147,7 +147,7 @@ extension BuiltInSkills {
 
         ## When icli is missing
         icli ships with Apelin, in the app bundle at
-        `Applications/Apelin.app/Vendor/bin` — the last directory on every
+        `Applications/Luros.app/Vendor/bin` — the last directory on every
         run's `PATH`. If shell_run cannot find it, say so: Apelin's copy is
         missing from the installation, so the fix is to reinstall Apelin,
         never to add a repository or install another copy. A newer icli of

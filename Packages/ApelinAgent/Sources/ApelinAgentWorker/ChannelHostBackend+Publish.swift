@@ -11,7 +11,7 @@ import Foundation
 /// is there) and each build's record (`Builds/artifacts/<id>.json`) — and
 /// whether a github.com sign-in is saved, from the host's git settings.
 extension ChannelHostBackend {
-    /// `~/Documents/wiki.qaq.apelin`, where `Projects/` is.
+    /// `~/Documents/com.fluoxetine.luros`, where `Projects/` is.
     var dataFolder: URL {
         projectsURL.deletingLastPathComponent()
     }

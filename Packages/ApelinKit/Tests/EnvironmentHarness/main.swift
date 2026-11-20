@@ -143,7 +143,7 @@ struct HarnessBackend: ToolchainBackend {
         try verify(prepared, at: destination)
 
         progress(ToolchainBackendProgress(stage: "validating"))
-        let failing = FileManager.default.fileExists(atPath: (ProcessInfo.processInfo.environment["HOME"] ?? "") + "/Documents/wiki.qaq.apelin/Environment/harness-fail-self-test")
+        let failing = FileManager.default.fileExists(atPath: (ProcessInfo.processInfo.environment["HOME"] ?? "") + "/Documents/com.fluoxetine.luros/Environment/harness-fail-self-test")
         let output = try run(destination.appendingPathComponent("usr/bin/clang"))
         let passed = output.contains("apelin-ok")
         return ["C", "C++", "ObjC"].map { language in

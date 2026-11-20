@@ -505,8 +505,8 @@ def manifest_semantic_errors(manifest: dict) -> list[str]:
         paths = [f["path"] for f in template["files"]]
         if len(set(paths)) != len(paths):
             errors.append(f"/templates/{index}/files: a path is listed twice")
-        if "apelin-project.json" not in paths:
-            errors.append(f"/templates/{index}/files: apelin-project.json is not listed")
+        if "luros-project.json" not in paths:
+            errors.append(f"/templates/{index}/files: luros-project.json is not listed")
         if template["language"] not in manifest["requirements"]["languages"]:
             errors.append(f"/templates/{index}/language: not in requirements.languages")
     scopes = {f"template:{t}" for t in ids} | {f"support:{s}" for s in manifest.get("support", {})} | {"manifest"}
@@ -596,12 +596,12 @@ def digest_of(document: Any) -> str:
 
 
 # --------------------------------------------------------------------------
-# Written form of apelin-project.json
+# Written form of luros-project.json
 # --------------------------------------------------------------------------
 
 
 def manifest_text(document: Any) -> bytes:
-    """apelin-project.json as Apelin writes it (README ▸ Written form)."""
+    """luros-project.json as Apelin writes it (README ▸ Written form)."""
     return (json.dumps(document, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
 
 
@@ -666,7 +666,7 @@ def packaging_description(project: dict, root: Path) -> dict:
 
 
 def project_digests(project_root: Path) -> dict:
-    project = load_json(project_root / "apelin-project.json")
+    project = load_json(project_root / "luros-project.json")
     errors = validate_project(project)
     if errors:
         raise ValueError("; ".join(errors))
@@ -964,7 +964,7 @@ def check_template(extension_root: Path, template: dict) -> list[str]:
 
 
 def instantiate(extension_root: Path, manifest: dict, template: dict, values: dict[str, Any], destination: Path) -> None:
-    """Write the template into destination, which must not exist yet, apelin-project.json in its written form."""
+    """Write the template into destination, which must not exist yet, luros-project.json in its written form."""
     if destination.exists():
         raise TemplateError(f"{destination} already exists")
     types = _parameter_types(template)
@@ -996,11 +996,11 @@ def instantiate(extension_root: Path, manifest: dict, template: dict, values: di
             with open(target, "xb") as handle:
                 handle.write(data)
             os.chmod(target, 0o755 if entry.get("mode") == "0755" else 0o644)
-        project = load_json(staging / "apelin-project.json")
+        project = load_json(staging / "luros-project.json")
         errors = validate_project(project)
         if errors:
-            raise TemplateError("generated apelin-project.json: " + "; ".join(errors))
-        (staging / "apelin-project.json").write_bytes(manifest_text(project))
+            raise TemplateError("generated luros-project.json: " + "; ".join(errors))
+        (staging / "luros-project.json").write_bytes(manifest_text(project))
         # Claim the name first: rename replaces an empty directory made since the check above.
         try:
             destination.mkdir()

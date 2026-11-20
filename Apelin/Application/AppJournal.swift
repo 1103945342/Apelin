@@ -2,7 +2,7 @@ import ApelinCore
 import Dog
 import UIKit
 
-/// Dog's journal, `~/Documents/wiki.qaq.apelin/Journal/Dog_<date>_<id>.log`:
+/// Dog's journal, `~/Documents/com.fluoxetine.luros/Journal/Dog_<date>_<id>.log`:
 /// one file a launch, the 100 newest kept, every line mirrored to the
 /// unified log under `com.lakr233.dog`. The app's alone — apelind and the
 /// workers keep their own logging — and read back by Settings ▸ Logs.

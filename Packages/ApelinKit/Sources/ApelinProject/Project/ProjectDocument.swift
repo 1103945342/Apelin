@@ -34,7 +34,7 @@ public enum Architecture: String, Codable, Sendable, CaseIterable {
     case arm64, arm64e
 }
 
-/// `apelin-project.json`, version 1, typed. Read only after the document
+/// `luros-project.json`, version 1, typed. Read only after the document
 /// passed `ProjectValidation`; the digests are cut from the parsed document
 /// instead, so formatting and omitted defaults stay as written.
 public struct ProjectDocument: Codable, Sendable, Equatable {

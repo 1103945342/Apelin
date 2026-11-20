@@ -11,12 +11,12 @@ import Foundation
 ///
 /// | scope | root |
 /// |---|---|
-/// | a project ID, or `project:<name>` | `~/Documents/wiki.qaq.apelin/Projects/<name>/` |
-/// | `sdk:<id>` | `~/Documents/wiki.qaq.apelin/SDKs/<id>/` |
-/// | `extension:<id>` | `<install root>/usr/share/apelin/development/<id>/`, then
-///   `<install root>/Applications/Apelin.app/Development/<id>/` |
-/// | `agent-tools:<id>` | `<install root>/usr/share/apelin/agent-tools/<id>/`, then
-///   `<install root>/Applications/Apelin.app/AgentTools/<id>/` |
+/// | a project ID, or `project:<name>` | `~/Documents/com.fluoxetine.luros/Projects/<name>/` |
+/// | `sdk:<id>` | `~/Documents/com.fluoxetine.luros/SDKs/<id>/` |
+/// | `extension:<id>` | `<install root>/usr/share/luros/development/<id>/`, then
+///   `<install root>/Applications/Luros.app/Development/<id>/` |
+/// | `agent-tools:<id>` | `<install root>/usr/share/luros/agent-tools/<id>/`, then
+///   `<install root>/Applications/Luros.app/AgentTools/<id>/` |
 /// | `grant:<grantID>` | the one file a protected-edit grant names (app only) |
 struct FileScopes: Sendable {
     let installRoot: String
@@ -40,7 +40,7 @@ struct FileScopes: Sendable {
             return try .directory(component(dataFolder.sdks.path, id))
         }
         if let id = Self.suffix(scopeID, "extension:") {
-            let installed = try component(root + "/usr/share/apelin/development", id)
+            let installed = try component(root + "/usr/share/luros/development", id)
             // An installed copy wins over the one Apelin's own package carries,
             // as the catalog's does; the bundle's stands in for an id no
             // extension package provides.
@@ -48,10 +48,10 @@ struct FileScopes: Sendable {
             if stat(installed, &info) == 0, info.st_mode & S_IFMT == S_IFDIR {
                 return .directory(installed)
             }
-            return try .directory(component(root + "/Applications/Apelin.app/Development", id))
+            return try .directory(component(root + "/Applications/Luros.app/Development", id))
         }
         if let id = Self.suffix(scopeID, "agent-tools:") {
-            let installed = try component(root + "/usr/share/apelin/agent-tools", id)
+            let installed = try component(root + "/usr/share/luros/agent-tools", id)
             // The same rule as an extension's: a tool an installed package put
             // there wins, and the copy the app carries stands in for an id no
             // package provides.
@@ -59,7 +59,7 @@ struct FileScopes: Sendable {
             if stat(installed, &info) == 0, info.st_mode & S_IFMT == S_IFDIR {
                 return .directory(installed)
             }
-            return try .directory(component(root + "/Applications/Apelin.app/AgentTools", id))
+            return try .directory(component(root + "/Applications/Luros.app/AgentTools", id))
         }
         if let name = Self.suffix(scopeID, "project:") {
             guard ProjectName.validate(name) == nil else {
@@ -73,12 +73,12 @@ struct FileScopes: Sendable {
         return .directory(directory)
     }
 
-    /// The project whose `apelin-project.json` carries this `projectID`.
+    /// The project whose `luros-project.json` carries this `projectID`.
     func projectDirectory(id: String) -> String? {
         let projects = dataFolder.projects
         let names = (try? FileManager.default.contentsOfDirectory(atPath: projects.path)) ?? []
         for name in names.sorted() where ProjectName.validate(name) == nil {
-            let manifest = projects.appendingPathComponent(name).appendingPathComponent("apelin-project.json")
+            let manifest = projects.appendingPathComponent(name).appendingPathComponent("luros-project.json")
             guard let data = try? Data(contentsOf: manifest), data.count < 1 << 20,
                   let json = try? JSONCoding.decode(JSONValue.self, from: data),
                   json["projectID"]?.stringValue == id else { continue }

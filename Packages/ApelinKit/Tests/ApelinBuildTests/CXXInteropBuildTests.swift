@@ -26,7 +26,7 @@ final class CXXInteropBuildTests: XCTestCase {
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
         let created = try store.create(
-            templateID: "wiki.qaq.apelin.dev.cli/c",
+            templateID: "com.fluoxetine.luros.dev.cli/c",
             name: "InteropNative",
             values: [:],
             catalog: catalog,
@@ -112,7 +112,7 @@ final class CXXInteropBuildTests: XCTestCase {
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
         let created = try store.create(
-            templateID: "wiki.qaq.apelin.dev.cli/c",
+            templateID: "com.fluoxetine.luros.dev.cli/c",
             name: "InteropHeaderOnly",
             values: [:],
             catalog: catalog,
@@ -182,7 +182,7 @@ final class CXXInteropBuildTests: XCTestCase {
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
         let created = try store.create(
-            templateID: "wiki.qaq.apelin.dev.cli/c",
+            templateID: "com.fluoxetine.luros.dev.cli/c",
             name: "InteropChain",
             values: [:],
             catalog: catalog,
@@ -250,7 +250,7 @@ final class CXXInteropBuildTests: XCTestCase {
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
         let created = try store.create(
-            templateID: "wiki.qaq.apelin.dev.cli/c",
+            templateID: "com.fluoxetine.luros.dev.cli/c",
             name: "InteropConflict",
             values: [:],
             catalog: catalog,
@@ -302,7 +302,7 @@ final class CXXInteropBuildTests: XCTestCase {
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
         let created = try store.create(
-            templateID: "wiki.qaq.apelin.dev.cli/c",
+            templateID: "com.fluoxetine.luros.dev.cli/c",
             name: "InteropBoth",
             values: [:],
             catalog: catalog,
@@ -371,7 +371,7 @@ final class CXXInteropBuildTests: XCTestCase {
         let (home, store) = try makeHome(in: scratch)
         let catalog = ExtensionCatalog(directory: Repository.extensions)
         let created = try store.create(
-            templateID: "wiki.qaq.apelin.dev.cli/c",
+            templateID: "com.fluoxetine.luros.dev.cli/c",
             name: "InteropBridge",
             values: [:],
             catalog: catalog,
@@ -411,7 +411,7 @@ final class CXXInteropBuildTests: XCTestCase {
             projectRoot: root,
             project: try JSONDecoder().decode(
                 ProjectDocument.self,
-                from: Data(contentsOf: root.appendingPathComponent("apelin-project.json"))
+                from: Data(contentsOf: root.appendingPathComponent("luros-project.json"))
             ),
             configuration: .debug,
             bootstrap: .roothide,
@@ -619,7 +619,7 @@ final class CXXInteropBuildTests: XCTestCase {
     /// project's.
     private func describe(_ product: [String: Any], modules: [[String: Any]], in root: URL) throws {
         try NativeBuild.describe(product, in: root)
-        let manifest = root.appendingPathComponent("apelin-project.json")
+        let manifest = root.appendingPathComponent("luros-project.json")
         var document = try XCTUnwrap(
             JSONSerialization.jsonObject(with: Data(contentsOf: manifest)) as? [String: Any],
             "the description is not a JSON object"

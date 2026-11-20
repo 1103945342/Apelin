@@ -51,12 +51,12 @@ struct IssueReport: Sendable {
     }
 
     /// The marketing version and build of the app apelind authenticates,
-    /// `<install root>/Applications/Apelin.app`, read only from inside the
+    /// `<install root>/Applications/Luros.app`, read only from inside the
     /// install root; nil for one that does not read.
     func appVersion() -> (short: String?, build: String?) {
         guard let root = CanonicalPath.resolve(layout.installRoot),
               let data = BoundedFile.read(
-                  layout.installRoot + "/Applications/Apelin.app/Info.plist",
+                  layout.installRoot + "/Applications/Luros.app/Info.plist",
                   inside: root,
                   limit: Self.maximumInfoPlistBytes,
               ),

@@ -49,7 +49,7 @@ final class NewProjectController: TableController, UITextFieldDelegate {
     /// Its words are the worker's, looked up in the catalogue when drawn.
     private static let emptyWorkspace = Choice(
         template: TemplateSummary(
-            id: "wiki.qaq.apelin.workspace/empty",
+            id: "com.fluoxetine.luros.workspace/empty",
             displayName: "Empty",
             summary: "An empty workspace. No SDK or toolchain is required.",
         ),
@@ -410,5 +410,5 @@ final class NewProjectController: TableController, UITextFieldDelegate {
 }
 
 extension Notification.Name {
-    static let apelinProjectsChanged = Notification.Name("wiki.qaq.apelin.projectsChanged")
+    static let apelinProjectsChanged = Notification.Name("com.fluoxetine.luros.projectsChanged")
 }

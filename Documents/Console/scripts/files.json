@@ -3,9 +3,9 @@
   "steps": [
     {"op": "hello", "label": "hello"},
     {"op": "projectCreate", "label": "project", "allowError": true,
-     "request": {"templateID": "wiki.qaq.apelin.dev.tweak/objc-hook", "name": "Hello", "values": {}}},
+     "request": {"templateID": "com.fluoxetine.luros.dev.tweak/objc-hook", "name": "Hello", "values": {}}},
 
-    {"op": "fileRead", "label": "read", "request": {"scopeID": "project:Hello", "relativePath": "apelin-project.json"}},
+    {"op": "fileRead", "label": "read", "request": {"scopeID": "project:Hello", "relativePath": "luros-project.json"}},
     {"op": "expect", "request": {"step": "read", "path": "response.version.size", "exists": true}},
     {"op": "expect", "request": {"step": "read", "path": "response.descriptor.index", "equals": 0}},
 

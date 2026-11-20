@@ -46,7 +46,7 @@ public final class SessionJournal: @unchecked Sendable {
     let redaction: JournalRedaction
     private let file: DiagnosticJournal?
     /// Where everything below is read and written, in the order asked.
-    private let queue = DispatchQueue(label: "wiki.qaq.apelin.agent.journal", qos: .utility)
+    private let queue = DispatchQueue(label: "com.fluoxetine.luros.agent.journal", qos: .utility)
     /// The time of a call's start and end to the millisecond, which Dog's
     /// line has only to the second.
     private let clock = DiagnosticJournal.formatter("HH:mm:ss.SSS")

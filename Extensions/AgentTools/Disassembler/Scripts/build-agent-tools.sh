@@ -58,7 +58,7 @@ binaries="$(swift build "${swift_args[@]}" --show-bin-path)"
 # The corresponding-source archive is made once per run, for both flavors
 # of the assembler; an older one would describe other bytes.
 mkdir -p "$output_directory"
-rm -f "$output_directory"/wiki.qaq.apelin.agent-tools.*_source.tar.xz
+rm -f "$output_directory"/com.fluoxetine.luros.agent-tools.*_source.tar.xz
 
 for flavor in roothide rootless; do
     for tool in disassembler assembler; do

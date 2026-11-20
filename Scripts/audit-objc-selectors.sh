@@ -5,7 +5,7 @@
 # `@objc dynamic` (AGENTS.md ▸ Hard rules), so a tweak can hook it. Run this
 # after adding classes or members, on the iPhoneOS products a build left
 # (`$(DERIVED_DATA)/Build/Products/Release-iphoneos`): it reads the Objective-C
-# metadata of Apelin.app, its extensions, apelind and the workers, and reports
+# metadata of Luros.app, its extensions, apelind and the workers, and reports
 # each selector of ours that an Apple superclass already answers (an override
 # the source never declared), the selectors the runtime, ARC or UIKit's edit
 # menu call by name, the optional delegate or data source selectors answered
@@ -15,7 +15,7 @@
 # build, a finding the class did not have there is marked NEW.
 #
 # A packaged binary is stripped: put its dSYM beside it (`apelind.dSYM`,
-# `Apelin.app.dSYM`, as the products folder and CI's `*_dSYMs.zip` hold them),
+# `Luros.app.dSYM`, as the products folder and CI's `*_dSYMs.zip` hold them),
 # which is used only when its UUID is the binary's. Without one the audit
 # stops, since an override cannot be told from a collision by name alone.
 #

@@ -1,6 +1,6 @@
 import Foundation
 
-/// `apelin-project.json` against its schema, then the rules the schema
+/// `luros-project.json` against its schema, then the rules the schema
 /// cannot say (Documents/Schemas/README.md, "beyond the schema"). Ported
 /// from the reference implementation's `validate_project` and
 /// `project_semantic_errors`, messages included.

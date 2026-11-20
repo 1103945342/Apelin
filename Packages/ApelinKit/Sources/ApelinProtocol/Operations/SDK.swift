@@ -115,7 +115,7 @@ public enum SDKSource: Codable, Sendable, Equatable {
     case url(String)
     /// An archive passed as a descriptor.
     case file(DescriptorSlot)
-    /// A folder or an archive already in `~/Documents/wiki.qaq.apelin/inbox/`,
+    /// A folder or an archive already in `~/Documents/com.fluoxetine.luros/inbox/`,
     /// named relative to it (or absolute, and inside it).
     case inbox(path: String)
 }

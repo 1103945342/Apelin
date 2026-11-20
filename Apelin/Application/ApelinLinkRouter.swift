@@ -1,6 +1,6 @@
 import UIKit
 
-/// Hands an `apelin://` link (`ApelinLink`) to the window that shows the
+/// Hands an `lurosdev://` link (`ApelinLink`) to the window that shows the
 /// conversations: from the scene's URL contexts (a widget, the Live
 /// Activity, another app, `uiopen`), and from a link tapped in a
 /// conversation, which opens in place rather than through the system.

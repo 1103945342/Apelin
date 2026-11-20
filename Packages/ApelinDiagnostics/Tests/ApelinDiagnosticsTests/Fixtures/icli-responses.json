@@ -3,10 +3,10 @@
     "entries": [
       {"process": "SpringBoard", "pid": 800, "message": "ApelinHello: loaded into SpringBoard", "subsystem": "", "category": "", "level": "notice", "date": "2026-10-17T02:15:00Z"},
       {"process": "SpringBoard", "pid": 800, "message": "scene update", "subsystem": "com.apple.FrontBoard", "category": "Scene", "level": "info", "date": "2026-10-17T02:15:00Z"},
-      {"process": "SpringBoard", "pid": 800, "message": "ApelinHello: alert shown", "subsystem": "wiki.qaq.apelin.hello", "category": "ui", "level": "notice", "date": "2026-10-17T02:15:03Z"},
+      {"process": "SpringBoard", "pid": 800, "message": "ApelinHello: alert shown", "subsystem": "com.fluoxetine.luros.hello", "category": "ui", "level": "notice", "date": "2026-10-17T02:15:03Z"},
       {"process": "SpringBoardHelper", "pid": 801, "message": "ApelinHello: loaded into SpringBoardHelper", "subsystem": "", "category": "", "level": "notice", "date": "2026-10-17T02:15:01Z"},
       {"process": "backboardd", "pid": 70, "message": "display on", "subsystem": "com.apple.backboard", "category": "", "level": "error", "date": "2026-10-17T02:15:02Z"},
-      {"process": "SpringBoard", "pid": 800, "message": "ApelinHello: second line", "subsystem": "wiki.qaq.apelin.hello.sub", "category": "ui", "level": "fault", "date": "2026-10-17T02:15:04Z"}
+      {"process": "SpringBoard", "pid": 800, "message": "ApelinHello: second line", "subsystem": "com.fluoxetine.luros.hello.sub", "category": "ui", "level": "fault", "date": "2026-10-17T02:15:04Z"}
     ],
     "count": 6,
     "truncated": false,
@@ -26,7 +26,7 @@
   },
   "frontmostApp": {"bundle_id": "com.apple.springboard", "verified": true, "source": "runningboard"},
   "runningApps": {
-    "apps": [{"bundle_id": "wiki.qaq.apelin", "name": "Apelin", "pid": 900, "executable": "/var/jb/Applications/Apelin.app/Apelin"}],
+    "apps": [{"bundle_id": "com.fluoxetine.luros", "name": "Apelin", "pid": 900, "executable": "/var/jb/Applications/Luros.app/Apelin"}],
     "count": 1,
     "source": "runningboard"
   },

@@ -13,7 +13,7 @@ public enum WorkerRole: String, Codable, CaseIterable, Sendable {
     /// System log reading that needs root. System libraries only.
     case logReader
 
-    /// The executable's name under `<install root>/usr/libexec/apelin/`.
+    /// The executable's name under `<install root>/usr/libexec/luros/`.
     public var executableName: String {
         switch self {
         case .environment: "apelin-environment"
@@ -26,7 +26,7 @@ public enum WorkerRole: String, Codable, CaseIterable, Sendable {
 
     /// Relative to the install root `hello` answers.
     public var relativePath: String {
-        "/usr/libexec/apelin/" + executableName
+        "/usr/libexec/luros/" + executableName
     }
 
     /// Every role but the log reader runs as mobile (uid and gid 501).

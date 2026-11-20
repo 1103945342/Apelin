@@ -119,7 +119,7 @@ enum ProviderModels {
         // model with no entry and a page that has not reloaded look the same on
         // screen, and this tells the two apart. The timing is the whole read:
         // the bundled rows and the batched lookup, never a credential.
-        Logger(subsystem: "wiki.qaq.apelin", category: "ModelCatalog")
+        Logger(subsystem: "com.fluoxetine.luros", category: "ModelCatalog")
             .notice("named \(capabilities.count, privacy: .public) of \(models.count, privacy: .public) \(provider.storeID, privacy: .public) models, key \(catalog ?? "-", privacy: .public), \(Int((DispatchTime.now().uptimeNanoseconds &- started) / 1_000_000), privacy: .public) ms")
         return CatalogFacts(reasoningEfforts: levels, capabilities: capabilities)
     }

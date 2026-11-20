@@ -1,4 +1,4 @@
-/// What became of a project's `apelin-project.json` when a repository's tree
+/// What became of a project's `luros-project.json` when a repository's tree
 /// came into its folder (issue #32): a clone into a new workspace, or a
 /// reset to a remote. The repository's file is the project's description;
 /// the identity in it is settled so a project never takes another's.

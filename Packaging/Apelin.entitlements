@@ -5,15 +5,15 @@
 	Scripts/package-deb.sh signs with this file and reads every key below back
 	out of the signed binary.
 
-	`wiki.qaq.apelin.client` is the private key the daemon's authenticator
+	`com.fluoxetine.luros.client` is the private key the daemon's authenticator
 	looks for on a peer. It is Apelin's alone; never grant it to anything you
 	would not hand a root descriptor to.
 
-	Mach-lookup of `wiki.qaq.apelin.service` is not optional: without it the app
+	Mach-lookup of `com.fluoxetine.luros.service` is not optional: without it the app
 	cannot find the daemon.
 
 	`com.apple.security.application-groups` names the one App Group the
-	widget extension shares (`group.wiki.qaq.apelin`): the app writes the
+	widget extension shares (`group.com.fluoxetine.luros`): the app writes the
 	widgets' snapshot there, because the sandboxed extension cannot read
 	mobile's Documents (Packaging/ApelinWidgets.entitlements). Nothing else
 	goes in it.
@@ -73,7 +73,7 @@
 <plist version="1.0">
 <dict>
 	<key>application-identifier</key>
-	<string>wiki.qaq.apelin</string>
+	<string>com.fluoxetine.luros</string>
 	<key>com.apple.CommCenter.fine-grained</key>
 	<array>
 		<string>spi</string>
@@ -81,7 +81,7 @@
 	</array>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.wiki.qaq.apelin</string>
+		<string>group.com.fluoxetine.luros</string>
 	</array>
 	<key>com.apple.security.iokit-user-client-class</key>
 	<array>
@@ -137,11 +137,11 @@
 		<string>IOHIDLibUserClient</string>
 		<string>IOHIDEventServiceFastPathUserClient</string>
 	</array>
-	<key>wiki.qaq.apelin.client</key>
+	<key>com.fluoxetine.luros.client</key>
 	<true/>
 	<key>com.apple.security.exception.mach-lookup.global-name</key>
 	<array>
-		<string>wiki.qaq.apelin.service</string>
+		<string>com.fluoxetine.luros.service</string>
 	</array>
 	<key>com.apple.private.security.no-sandbox</key>
 	<true/>
@@ -151,7 +151,7 @@
 	<true/>
 	<key>com.apple.private.usernotifications.bundle-identifiers</key>
 	<array>
-		<string>wiki.qaq.apelin</string>
+		<string>com.fluoxetine.luros</string>
 	</array>
 	<key>platform-application</key>
 	<true/>

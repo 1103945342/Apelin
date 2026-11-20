@@ -48,7 +48,7 @@ final class DaemonClient: ApelinTransport, @unchecked Sendable {
         case unprivileged
     }
 
-    private let queue = DispatchQueue(label: "wiki.qaq.apelin.client")
+    private let queue = DispatchQueue(label: "com.fluoxetine.luros.client")
     @objc private dynamic var firstMiss: Date?
     private var state = State.unknown
     private var helloWaiters: [(xpc_connection_t?) -> Void] = []

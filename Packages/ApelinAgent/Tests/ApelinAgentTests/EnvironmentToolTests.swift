@@ -221,11 +221,11 @@ struct EnvironmentToolTests {
     func `a switch is checked, then written with the registry's digests and nothing else changed`() async throws {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }
-        try harness.home.write("apelin-project.json", Self.manifest)
+        try harness.home.write("luros-project.json", Self.manifest)
         let (result, asked) = try await harness.run(.projectSetEnvironment, ["sdk_id": "iPhoneOS17.5-bbbbbbbb"])
         #expect(asked.isEmpty, "a switch is a project edit")
         #expect(await harness.backend.calls == [.checkEnvironment(toolchainID: nil, sdkID: "iPhoneOS17.5-bbbbbbbb")])
-        let written = try harness.home.read("apelin-project.json")
+        let written = try harness.home.read("luros-project.json")
         #expect(written == """
         {
           "schemaVersion": 1,
@@ -255,7 +255,7 @@ struct EnvironmentToolTests {
     func `an SDK newer than the toolchain reads is refused with the check's reason, and nothing is written`() async throws {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }
-        try harness.home.write("apelin-project.json", Self.manifest)
+        try harness.home.write("luros-project.json", Self.manifest)
         let reason = "toolchain clt-16.4-c (Command Line Tools 16.4) supports iPhoneOS SDKs up to 18.5; SDK 27.0 is outside that supported range"
         await harness.backend.setFindings([
             EnvironmentDiagnostic(code: "environment.sdk.tooNewForToolchain", severity: "error", message: reason),
@@ -266,7 +266,7 @@ struct EnvironmentToolTests {
         } catch let refusal as ToolDeniedError {
             #expect(refusal.message.contains(reason))
         }
-        #expect(try harness.home.read("apelin-project.json") == Self.manifest)
+        #expect(try harness.home.read("luros-project.json") == Self.manifest)
         await #expect(throws: ToolArgumentError.self) { _ = try await harness.run(.projectSetEnvironment, [:]) }
     }
 

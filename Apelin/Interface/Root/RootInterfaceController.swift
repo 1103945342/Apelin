@@ -23,7 +23,7 @@ final class RootInterfaceController: UIViewController {
     private let chatRuntime = ChatRuntime()
     @objc private dynamic var restoredChat = false
     @objc private dynamic var opensChatAfterWelcome = false
-    /// An `apelin://` link that came before the conversations were read,
+    /// An `lurosdev://` link that came before the conversations were read,
     /// or an import that came during the welcome.
     private var pendingLink: ApelinLink?
     /// A link is being looked up: the launch's own restore waits for it.
@@ -470,7 +470,7 @@ final class RootInterfaceController: UIViewController {
     /// unless a drawer is out over it (`syncViewedChat`).
     ///
     /// Every way to a conversation goes through here — a row, New Chat, the
-    /// launch, a fork, an `apelin://` link — so the page and the highlight
+    /// launch, a fork, an `lurosdev://` link — so the page and the highlight
     /// cannot end up naming different conversations.
     private func open(_ chat: ChatSummary?, picked: Bool) {
         defer { syncViewedChat() }
@@ -519,7 +519,7 @@ final class RootInterfaceController: UIViewController {
         }
     }
 
-    /// Opens an `apelin://` link: its conversation, in its project, as if
+    /// Opens an `lurosdev://` link: its conversation, in its project, as if
     /// picked, which on an iPhone puts the drawer away. It is opened the one
     /// way a conversation is (`open(_:picked:)`), so the page leaves the one
     /// it showed rather than the sidebar's highlight moving alone. One that

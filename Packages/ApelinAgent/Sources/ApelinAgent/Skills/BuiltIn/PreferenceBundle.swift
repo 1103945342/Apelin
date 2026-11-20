@@ -34,11 +34,11 @@ extension BuiltInSkills {
           component (apelin-project-description), which supplies the declarations and
           a link stub — do not expect SDK headers for it.
         - **The declarations** are one header,
-          `<install root>/usr/share/apelin/development/wiki.qaq.apelin.dev.preferences/support/include/Preferences/PSListController.h`
+          `<install root>/usr/share/luros/development/com.fluoxetine.luros.dev.preferences/support/include/Preferences/PSListController.h`
           (the install root # Environment names), which
           `#import <Preferences/PSListController.h>` finds. With no extension
           package installed it is the copy inside Apelin's app bundle, at
-          `<install root>/Applications/Apelin.app/Development/` under the same
+          `<install root>/Applications/Luros.app/Development/` under the same
           path below that folder. Read it with
           file_read before calling the framework from code: it is what the
           compiler knows of `PSListController` and `PSSpecifier`. A method

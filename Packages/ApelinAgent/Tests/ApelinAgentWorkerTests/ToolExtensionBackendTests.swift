@@ -27,7 +27,7 @@ struct ToolExtensionBackendTests {
         }
         fixture.host.on(.toolHostClose, reply: Acknowledged())
 
-        #expect(try await fixture.backend.openToolExtension(id: "wiki.qaq.apelin.agent-tools.disassembler") == "tool-session")
+        #expect(try await fixture.backend.openToolExtension(id: "com.fluoxetine.luros.agent-tools.disassembler") == "tool-session")
         let response = try await fixture.backend.callToolExtension(ToolExtensionCallRequest(
             sessionID: "tool-session",
             tool: "symbols",
@@ -36,7 +36,7 @@ struct ToolExtensionBackendTests {
         ))
         try await fixture.backend.closeToolExtension(sessionID: "tool-session")
 
-        #expect(fixture.host.requests(ToolHostOpenRequest.self).map(\.id) == ["wiki.qaq.apelin.agent-tools.disassembler"])
+        #expect(fixture.host.requests(ToolHostOpenRequest.self).map(\.id) == ["com.fluoxetine.luros.agent-tools.disassembler"])
         let call = try #require(fixture.host.requests(ToolHostCallRequest.self).first)
         #expect(call.sessionID == "tool-session" && call.tool == "symbols" && call.timeoutSeconds == 30)
         #expect(call.arguments == .object(["binary": .string("/usr/lib/dyld"), "limit": .number(10)]))

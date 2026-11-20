@@ -2,7 +2,7 @@ import ApelinProtocol
 import Darwin
 import Foundation
 
-/// A project's `apelin-project.json`, opened through its folder without
+/// A project's `luros-project.json`, opened through its folder without
 /// following a link and replaced relative to that folder: a temporary file
 /// beside it with its mode and owner, synced, then renamed over it only
 /// while the manifest is still the file that was read, byte for byte. A

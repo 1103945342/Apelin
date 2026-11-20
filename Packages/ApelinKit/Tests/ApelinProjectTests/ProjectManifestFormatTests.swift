@@ -4,7 +4,7 @@ import ApelinProtocol
 import Foundation
 import XCTest
 
-/// `apelin-project.json`'s written form (Documents/Schemas/README.md ▸
+/// `luros-project.json`'s written form (Documents/Schemas/README.md ▸
 /// Written form): the vectors both implementations are held to, the
 /// digests it cannot move, every writer writing it, and the build's
 /// rewrite of a file written otherwise.

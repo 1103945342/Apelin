@@ -24,7 +24,7 @@ find_tool() {
 # can then make nothing beside it. A level that exists is left as it is, and
 # a symlink is never followed: mobile could plant one to have root hand it
 # some other directory.
-app_data=/var/mobile/Documents/wiki.qaq.apelin
+app_data=/var/mobile/Documents/com.fluoxetine.luros
 mobile_dir() {
     if [ -L "$1" ]; then
         return 1
@@ -45,7 +45,7 @@ done
 # space before a redirect turns `system/<id> 2>/dev/null` into
 # `system/<id>2>/dev/null`: still valid sh, so `sh -n` passes, but launchctl is
 # handed the wrong label and its errors are no longer silenced.
-label=wiki.qaq.apelind
+label=com.fluoxetine.lurosd
 launch_plist="@PREFIX@/Library/LaunchDaemons/$label.plist"
 # A successful bootstrap reply alone does not prove a job was registered.
 loaded() {
@@ -62,9 +62,9 @@ loaded() {
 # Irisin keeps its own daemon: the copy is registered only when no Irisin job
 # is on disk, and then under Apelin's own label and file, so removing the IDE
 # removes exactly what it added and never Irisin's.
-iris_label=wiki.qaq.apelin.irisind
+iris_label=com.fluoxetine.luros.irisind
 iris_plist="@PREFIX@/Library/LaunchDaemons/$iris_label.plist"
-iris_daemon="@PREFIX@/Applications/Apelin.app/Vendor/libexec/irisind"
+iris_daemon="@PREFIX@/Applications/Luros.app/Vendor/libexec/irisind"
 if [ -x "$iris_daemon" ] && [ ! -e "@PREFIX@/Library/LaunchDaemons/wiki.qaq.irisind.plist" ]; then
     cat >"$iris_plist.new" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>

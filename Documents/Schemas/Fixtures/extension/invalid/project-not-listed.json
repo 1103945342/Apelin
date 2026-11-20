@@ -35,7 +35,7 @@
       "displayName": "Hello",
       "summary": "Says hello.",
       "language": "c",
-      "project": "apelin-project.json",
+      "project": "luros-project.json",
       "parameters": [],
       "files": [
         {

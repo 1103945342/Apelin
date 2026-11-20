@@ -6,14 +6,14 @@
 	git service, all inside mobile's own folders.
 
 	keychain-access-groups: the git service's HTTPS credentials, one per
-	host (service wiki.qaq.apelin.git), in a group of their own that only
+	host (service com.fluoxetine.luros.git), in a group of their own that only
 	this executable carries, this device only and never synchronised. The
 	app sets and lists them through gitCredentialSet and gitSettings, so the
 	item is written and read by the same signing identity, and no reply
 	carries the token.
 
-	Never `wiki.qaq.apelin.client` and never the Mach-lookup of
-	`wiki.qaq.apelin.service`: a worker reaches the session host only
+	Never `com.fluoxetine.luros.client` and never the Mach-lookup of
+	`com.fluoxetine.luros.service`: a worker reaches the session host only
 	through the socketpair it was spawned with, and the packager refuses
 	either key here. Add what the domain needs, with the reason, in this
 	file only.
@@ -26,7 +26,7 @@
 	<true/>
 	<key>keychain-access-groups</key>
 	<array>
-		<string>wiki.qaq.apelin.git</string>
+		<string>com.fluoxetine.luros.git</string>
 	</array>
 </dict>
 </plist>

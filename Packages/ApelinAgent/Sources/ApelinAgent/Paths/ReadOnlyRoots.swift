@@ -18,7 +18,7 @@ struct ReadOnlyRoots: Sendable {
     /// The tools that read these folders as well as the project.
     static let tools: Set<AgentToolName> = [.fileRead, .fileList, .fileGrep, .fileFind]
 
-    /// `<install root>/usr/share/apelin/development`; nil without an
+    /// `<install root>/usr/share/luros/development`; nil without an
     /// install root.
     let developmentExtensions: String?
     /// The copy Apelin's own package carries inside its app bundle, when it is

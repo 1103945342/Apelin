@@ -39,8 +39,8 @@ public struct ExtensionTool: Sendable, Hashable {
 }
 
 /// What a session offers of the agent tool extensions, read from
-/// `<install root>/usr/share/apelin/agent-tools/` and from the copies the app
-/// carries under `Applications/Apelin.app/AgentTools/`, as the host reads them.
+/// `<install root>/usr/share/luros/agent-tools/` and from the copies the app
+/// carries under `Applications/Luros.app/AgentTools/`, as the host reads them.
 ///
 /// A tool keeps its manifest's name when that name is one every provider
 /// takes (`AgentToolName`'s rule), is no built-in's, today's or an earlier

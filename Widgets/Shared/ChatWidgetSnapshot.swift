@@ -21,7 +21,7 @@ struct ChatWidgetSnapshot: Codable, Hashable, Sendable {
             case failed
         }
 
-        /// The app's chat ID, which `apelin://conversation/<id>` opens.
+        /// The app's chat ID, which `lurosdev://conversation/<id>` opens.
         var id: String
         var title: String
         /// The project's display name; nil for General Chat.
@@ -106,9 +106,9 @@ struct ChatWidgetSnapshot: Codable, Hashable, Sendable {
 /// is sandboxed and cannot read mobile's Documents, and the app has no
 /// container of its own to share.
 enum ChatWidgetStore {
-    static let appGroup = "group.wiki.qaq.apelin"
+    static let appGroup = "group.com.fluoxetine.luros"
     /// The kind WidgetKit reloads after a write.
-    static let widgetKind = "wiki.qaq.apelin.chats"
+    static let widgetKind = "com.fluoxetine.luros.chats"
 
     static var fileURL: URL? {
         FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup)?

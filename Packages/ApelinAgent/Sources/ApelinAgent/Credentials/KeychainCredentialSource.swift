@@ -15,14 +15,14 @@ public enum KeychainCredentialError: Error, Equatable, LocalizedError {
 }
 
 /// Provider credentials in the keychain: Apelin's own generic-password
-/// items under service `wiki.qaq.apelin.agent`, one per kwwk store id,
+/// items under service `com.fluoxetine.luros.agent`, one per kwwk store id,
 /// readable after first unlock on this device only and never synchronised.
 ///
 /// Nothing is shared with kk or `~/.kwwk`. `accessGroup` names the keychain
 /// access group the app and `apelin-agent` share, once A2's spike confirms
 /// one works on the supported bootstraps; nil uses the process's default.
 public struct KeychainCredentialSource: CredentialSource {
-    public static let service = "wiki.qaq.apelin.agent"
+    public static let service = "com.fluoxetine.luros.agent"
 
     public let accessGroup: String?
 

@@ -10,8 +10,8 @@
 	(Packages/ApelinDiagnostics/README.md, "Root log read"; unverified on
 	iOS). Nothing else — no UI, IOKit, task-port or storage key.
 
-	Never `wiki.qaq.apelin.client` and never the Mach-lookup of
-	`wiki.qaq.apelin.service`: a worker reaches the session host only
+	Never `com.fluoxetine.luros.client` and never the Mach-lookup of
+	`com.fluoxetine.luros.service`: a worker reaches the session host only
 	through the socketpair it was spawned with, and the packager refuses
 	either key here. Add what the domain needs, with the reason, in this
 	file only.

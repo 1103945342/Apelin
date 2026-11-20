@@ -21,7 +21,7 @@ struct RepositoryImportFailure: Error {
 /// asked: nothing builds, runs or goes to the agent.
 @MainActor
 enum RepositoryImporter {
-    static let workspaceTemplate = "wiki.qaq.apelin.workspace/empty"
+    static let workspaceTemplate = "com.fluoxetine.luros.workspace/empty"
 
     /// The project imported. A failure or a cancel after the workspace was
     /// made takes that workspace away (`projectDelete`, only that project)
@@ -53,7 +53,7 @@ enum RepositoryImporter {
                 ))
             }.value
             clone = handle
-            // the repository's own apelin-project.json may bring its own ID
+            // the repository's own luros-project.json may bring its own ID
             projectID = try await follow(handle, update: update) ?? created.projectID
         } catch {
             // a task of its own: the cancel that ended the import must not
@@ -79,7 +79,7 @@ enum RepositoryImporter {
 
     /// The clone's events on the card, to its final `state`: the project's
     /// ID the clone reported, which is the repository's own when its
-    /// `apelin-project.json` came with it.
+    /// `luros-project.json` came with it.
     private static func follow(
         _ handle: TaskHandle,
         update: @escaping @MainActor (ProgressCard.Status) -> Void,

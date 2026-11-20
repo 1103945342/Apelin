@@ -11,7 +11,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = (ROOT / "Packaging/DEBIAN/postinst").read_text()
-LIFECYCLE = "label=wiki.qaq.apelind" + SCRIPT.split("label=wiki.qaq.apelind", 1)[1]
+LIFECYCLE = "label=com.fluoxetine.lurosd" + SCRIPT.split("label=com.fluoxetine.lurosd", 1)[1]
 MOCK = r'''#!/usr/bin/env python3
 import json, os, sys
 from pathlib import Path
@@ -55,7 +55,7 @@ class DaemonRegistrationTests(unittest.TestCase):
         result, state = self.run_lifecycle("delayed")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(state["attempts"], 4)
-        self.assertIn(["bootout", "system", "@PREFIX@/Library/LaunchDaemons/wiki.qaq.apelind.plist"], state["calls"])
+        self.assertIn(["bootout", "system", "@PREFIX@/Library/LaunchDaemons/com.fluoxetine.lurosd.plist"], state["calls"])
 
     def test_nonzero_bootstrap_with_a_registered_job_is_accepted(self):
         result, state = self.run_lifecycle("registered-with-error")

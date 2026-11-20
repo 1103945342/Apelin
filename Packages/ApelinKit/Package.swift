@@ -83,7 +83,7 @@ let package = Package(
             ],
             swiftSettings: swiftSettings,
         ),
-        // apelin-project.json, extension manifests, templates, project checks.
+        // luros-project.json, extension manifests, templates, project checks.
         .target(name: "ApelinProject", dependencies: ["ApelinCore", "ApelinProtocol"], swiftSettings: swiftSettings),
         // libgit2 behind typed calls: a shallow clone of one branch, status,
         // diff, stage, unstage, a local commit. No libgit2 type is public.

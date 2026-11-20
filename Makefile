@@ -23,9 +23,9 @@ DAEMON_BINARY       := $(PRODUCTS_DIR)/apelind
 # Packaging/Workers/<name>.entitlements.
 WORKERS             := apelin-environment apelin-build apelin-agent apelin-diagnostics apelin-log-reader
 WORKER_ENTITLEMENTS := $(addprefix $(ROOT_DIR)/Packaging/Workers/,$(addsuffix .entitlements,$(WORKERS)))
-PACKAGE_ID          := wiki.qaq.apelin
-BUNDLE_ID           := wiki.qaq.apelin
-DAEMON_ID           := wiki.qaq.apelind
+PACKAGE_ID          := com.fluoxetine.luros
+BUNDLE_ID           := com.fluoxetine.luros
+DAEMON_ID           := com.fluoxetine.lurosd
 PROJECT_OBJECT_VERSION := 77
 
 # Which jailbreak layout the .deb is built for. roothide relocates the package
@@ -90,11 +90,11 @@ WIDGET_ENTITLEMENTS := $(ROOT_DIR)/Packaging/ApelinWidgets.entitlements
 # own entitlements, an app or a command-line tool: both carry the app's GPU
 # list. A tweak or a preference bundle is a library and runs with the
 # entitlements of the process that loads it.
-TEMPLATE_ENTITLEMENTS := $(wildcard $(ROOT_DIR)/Extensions/Development/wiki.qaq.apelin.dev.app/templates/*/Packaging/*.entitlements) \
-	$(wildcard $(ROOT_DIR)/Extensions/Development/wiki.qaq.apelin.dev.cli/templates/*/Packaging/*.entitlements)
+TEMPLATE_ENTITLEMENTS := $(wildcard $(ROOT_DIR)/Extensions/Development/com.fluoxetine.luros.dev.app/templates/*/Packaging/*.entitlements) \
+	$(wildcard $(ROOT_DIR)/Extensions/Development/com.fluoxetine.luros.dev.cli/templates/*/Packaging/*.entitlements)
 # The one App Group the app and the widget extension share; the snapshot's
 # store names it too (Widgets/Shared/ChatWidgetSnapshot.swift).
-APP_GROUP           := group.wiki.qaq.apelin
+APP_GROUP           := group.com.fluoxetine.luros
 LAUNCH_DAEMON       := $(ROOT_DIR)/Packaging/$(DAEMON_ID).plist
 # Every Swift source root, for the greps and the gates that read source.
 SOURCE_ROOTS        := $(ROOT_DIR)/Apelin $(ROOT_DIR)/Apelind $(ROOT_DIR)/Shared $(ROOT_DIR)/Widgets $(ROOT_DIR)/Workers $(ROOT_DIR)/Packages/ApelinKit/Sources
@@ -133,7 +133,7 @@ AGENT_TOOLS_SCRATCH ?= $(DERIVED_DATA)/AgentToolsSPM
 # installs alone. Their own packages remain, to update one without the IDE.
 # Agent tool extensions are never recommended (some are GPL; the user installs
 # them on purpose).
-DEV_EXTENSIONS      := wiki.qaq.apelin.dev.app wiki.qaq.apelin.dev.tweak wiki.qaq.apelin.dev.cli wiki.qaq.apelin.dev.preferences
+DEV_EXTENSIONS      := com.fluoxetine.luros.dev.app com.fluoxetine.luros.dev.tweak com.fluoxetine.luros.dev.cli com.fluoxetine.luros.dev.preferences
 # The worker packages' scratch paths, which the worker typechecks read.
 APELIN_DIAGNOSTICS  := $(ROOT_DIR)/Packages/ApelinDiagnostics
 DIAGNOSTICS_SCRATCH := $(call package_scratch,ApelinDiagnostics)
@@ -342,7 +342,7 @@ check:
 	@python3 -I -B "$(DEVICE_TOOL)" lint
 	@plutil -lint "$(ENTITLEMENTS)" "$(DAEMON_ENTITLEMENTS)" "$(WIDGET_ENTITLEMENTS)" "$(LAUNCH_DAEMON)" $(WORKER_ENTITLEMENTS)
 	@for entitlements in $(WORKER_ENTITLEMENTS); do \
-		! /usr/libexec/PlistBuddy -c 'Print :wiki.qaq.apelin.client' "$$entitlements" >/dev/null 2>&1 \
+		! /usr/libexec/PlistBuddy -c 'Print :com.fluoxetine.luros.client' "$$entitlements" >/dev/null 2>&1 \
 			|| { echo "error: $${entitlements#$(ROOT_DIR)/} carries the client entitlement; workers reach the session host by socketpair only" >&2; exit 65; }; \
 	done
 	@"$(ROOT_DIR)/Scripts/check-gpu-entitlements.py" "$(ENTITLEMENTS)" $(TEMPLATE_ENTITLEMENTS)
@@ -355,12 +355,12 @@ check:
 		! /usr/libexec/PlistBuddy -c "Print :$$key" "$(LAUNCH_DAEMON)" >/dev/null 2>&1 \
 			|| { echo "error: apelind is on demand; its launchd plist must not set $$key" >&2; exit 65; }; \
 	done
-	@[[ "$$(/usr/libexec/PlistBuddy -c 'Print :MachServices:wiki.qaq.apelin.service' "$(LAUNCH_DAEMON)")" == true ]] \
-		|| { echo "error: the launchd plist must advertise wiki.qaq.apelin.service, which is what starts apelind" >&2; exit 65; }
+	@[[ "$$(/usr/libexec/PlistBuddy -c 'Print :MachServices:com.fluoxetine.luros.service' "$(LAUNCH_DAEMON)")" == true ]] \
+		|| { echo "error: the launchd plist must advertise com.fluoxetine.luros.service, which is what starts apelind" >&2; exit 65; }
 	@[[ "$$(/usr/libexec/PlistBuddy -c 'Print :SoftResourceLimits:NumberOfFiles' "$(LAUNCH_DAEMON)")" == "10240" ]] \
 		|| { echo "error: the daemon and its sessions require a 10240 soft file-descriptor limit" >&2; exit 65; }
-	@[[ "$$(/usr/libexec/PlistBuddy -c 'Print :ProgramArguments:0' "$(LAUNCH_DAEMON)")" == "@PREFIX@/usr/libexec/apelind" ]] \
-		|| { echo "error: the launchd plist must start @PREFIX@/usr/libexec/apelind" >&2; exit 65; }
+	@[[ "$$(/usr/libexec/PlistBuddy -c 'Print :ProgramArguments:0' "$(LAUNCH_DAEMON)")" == "@PREFIX@/usr/libexec/lurosd" ]] \
+		|| { echo "error: the launchd plist must start @PREFIX@/usr/libexec/lurosd" >&2; exit 65; }
 	@# One App Group, the same on the app and the widget extension and in the
 	@# snapshot's store; the packager reads both back out of the signed binaries.
 	@for entitlements in "$(ENTITLEMENTS)" "$(WIDGET_ENTITLEMENTS)"; do \
@@ -369,7 +369,7 @@ check:
 	done
 	@grep -qF 'appGroup = "$(APP_GROUP)"' "$(ROOT_DIR)/Widgets/Shared/ChatWidgetSnapshot.swift" \
 		|| { echo "error: ChatWidgetStore.appGroup must be $(APP_GROUP), the App Group both targets carry" >&2; exit 65; }
-	@for key in wiki.qaq.apelin.client com.apple.private.security.no-sandbox platform-application com.apple.security.exception.mach-lookup.global-name; do \
+	@for key in com.fluoxetine.luros.client com.apple.private.security.no-sandbox platform-application com.apple.security.exception.mach-lookup.global-name; do \
 		! /usr/libexec/PlistBuddy -c "Print :$$key" "$(WIDGET_ENTITLEMENTS)" >/dev/null 2>&1 \
 			|| { echo "error: Packaging/ApelinWidgets.entitlements carries $$key; the widget extension stays sandboxed and unprivileged" >&2; exit 65; }; \
 	done

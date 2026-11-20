@@ -4,7 +4,7 @@ import ApelinProtocol
 import Foundation
 import XCTest
 
-/// Swift's C++ interop as `apelin-project.json` describes it: which member
+/// Swift's C++ interop as `luros-project.json` describes it: which member
 /// turns it on, what a product inherits from the modules it builds against,
 /// the one standard the importer and native C++ must share, and the checks
 /// that refuse a contradiction before a compiler sees it.
@@ -367,7 +367,7 @@ final class CXXInteropTests: XCTestCase {
             projectID: "00000000-0000-4000-8000-00000000a09b"
         )
         let root = try scratchDirectory()
-        try Data(text.utf8).write(to: root.appendingPathComponent("apelin-project.json"))
+        try Data(text.utf8).write(to: root.appendingPathComponent("luros-project.json"))
         var paths = files.isEmpty ? ["Sources/Probe.swift"] : files
         paths.append("Vendor/CxxKit/Sources/CxxKit.swift")
         for path in paths {
@@ -394,7 +394,7 @@ final class CXXInteropTests: XCTestCase {
           "projectID": "\(projectID)",
           "kind": "cli",
           "template": {
-            "extensionID": "wiki.qaq.apelin.dev.cli",
+            "extensionID": "com.fluoxetine.luros.dev.cli",
             "templateID": "swift",
             "version": "0.1.2",
             "digest": "sha256:\(String(repeating: "a", count: 64))"
@@ -433,7 +433,7 @@ final class CXXInteropTests: XCTestCase {
     }
 
     private func edit(_ root: URL, _ change: (inout JSONObject) -> Void) throws {
-        let url = root.appendingPathComponent("apelin-project.json")
+        let url = root.appendingPathComponent("luros-project.json")
         guard case var .object(document) = try StrictJSON.parse(contentsOf: url) else {
             return XCTFail("the project file is not an object")
         }

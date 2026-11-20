@@ -27,7 +27,7 @@ final class LogRedactionTests: XCTestCase {
         GITHUB_TOKEN=\(keys[0]) and \(keys[1]), \(keys[2]), \(keys[4]), \(keys[5]) (\(keys[6]))
         https://user:hunter22@example.com/repo.git
         author someone@example.com wrote icon@2x.png
-        /private/var/containers/Bundle/Application/.jbroot-1A2B3C4D5E6F/var/mobile/Documents/wiki.qaq.apelin
+        /private/var/containers/Bundle/Application/.jbroot-1A2B3C4D5E6F/var/mobile/Documents/com.fluoxetine.luros
         /private/var/containers/Bundle/Application/.jbroot-1A2B3C4D5E6F/usr/bin/clang
         /var/mobile/Library and /var/root/.ssh and /var/containers/Bundle/.jbroot-FFFF0000/x
         /Users/someone/Documents/build.log, max_tokens: 4000 tokens≈12,000
@@ -41,7 +41,7 @@ final class LogRedactionTests: XCTestCase {
             XCTAssertFalse(redacted.contains(secret), "\(secret) survived:\n\(redacted)")
         }
         XCTAssertFalse(redacted.contains(".jbroot-1A2B") || redacted.contains("FFFF0000"), redacted)
-        XCTAssertTrue(redacted.contains("~/Documents/wiki.qaq.apelin"), redacted)
+        XCTAssertTrue(redacted.contains("~/Documents/com.fluoxetine.luros"), redacted)
         XCTAssertTrue(redacted.contains("<install root>/usr/bin/clang"), redacted)
         XCTAssertTrue(redacted.contains("~/Library and <root home>/.ssh"), redacted)
         XCTAssertTrue(redacted.contains("<email> wrote icon@2x.png"), redacted)

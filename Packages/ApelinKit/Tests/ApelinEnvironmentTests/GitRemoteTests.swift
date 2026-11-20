@@ -36,7 +36,7 @@ final class GitRemoteServiceTests: XCTestCase {
         let root = home.layout.data.projects.appendingPathComponent(name, isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         let description = #"{"schemaVersion": 1, "projectID": "\#(id)", "kind": "\#(kind)", "buildSystem": "external"}"#
-        try Data(description.utf8).write(to: root.appendingPathComponent("apelin-project.json"))
+        try Data(description.utf8).write(to: root.appendingPathComponent("luros-project.json"))
         return root
     }
 
@@ -157,7 +157,7 @@ final class GitRemoteServiceTests: XCTestCase {
         let git = service(home)
         let status = try git.status(GitStatusRequest(projectID: created.projectID))
         XCTAssertEqual(status.branch, "main")
-        XCTAssertEqual(status.entries.map(\.path), ["apelin-project.json"])
+        XCTAssertEqual(status.entries.map(\.path), ["luros-project.json"])
         XCTAssertNoThrow(try git.checkCloneInto(GitCloneIntoRequest(projectID: created.projectID, url: "/tmp/a.git")))
     }
 
@@ -188,7 +188,7 @@ final class GitRemoteServiceTests: XCTestCase {
         let root = URL(fileURLWithPath: created.path, isDirectory: true)
         try writeApelinFiles(in: root)
         let git = service(home)
-        XCTAssertEqual(try git.status(GitStatusRequest(projectID: created.projectID)).entries.map(\.path), ["apelin-project.json"])
+        XCTAssertEqual(try git.status(GitStatusRequest(projectID: created.projectID)).entries.map(\.path), ["luros-project.json"])
         XCTAssertFalse(try git.diff(GitDiffRequest(projectID: created.projectID)).diff.contains("Attachments"))
 
         _ = try git.commit(GitCommitRequest(
@@ -211,7 +211,7 @@ final class GitRemoteServiceTests: XCTestCase {
             XCTAssertTrue(exclude.contains(pattern + "\n"), pattern)
         }
         try writeApelinFiles(in: root)
-        XCTAssertEqual(try git.status(GitStatusRequest(projectID: id)).entries.map(\.path), ["apelin-project.json"])
+        XCTAssertEqual(try git.status(GitStatusRequest(projectID: id)).entries.map(\.path), ["luros-project.json"])
     }
 
     /// A repository made before Apelin wrote its excludes takes them on its
@@ -223,11 +223,11 @@ final class GitRemoteServiceTests: XCTestCase {
         _ = try GitRepository.create(at: root)
         let exclude = root.appendingPathComponent(".git/info/exclude")
         let git = service(home)
-        XCTAssertEqual(try git.status(GitStatusRequest(projectID: id)).entries.map(\.path), ["apelin-project.json"])
+        XCTAssertEqual(try git.status(GitStatusRequest(projectID: id)).entries.map(\.path), ["luros-project.json"])
         XCTAssertFalse(((try? String(contentsOf: exclude, encoding: .utf8)) ?? "").contains("/Attachments/"), "nothing to keep out yet")
 
         try writeApelinFiles(in: root)
-        XCTAssertEqual(try git.status(GitStatusRequest(projectID: id)).entries.map(\.path), ["apelin-project.json"])
+        XCTAssertEqual(try git.status(GitStatusRequest(projectID: id)).entries.map(\.path), ["luros-project.json"])
         let text = try String(contentsOf: exclude, encoding: .utf8)
         for pattern in ProjectExcludes.apelinFiles {
             XCTAssertEqual(text.components(separatedBy: "\n").count(where: { $0 == pattern }), 1, pattern)
@@ -287,7 +287,7 @@ final class GitRemoteServiceTests: XCTestCase {
         XCTAssertThrowsError(try git.cloneInto(request, into: git.checkCloneInto(request), reporter: .silent)) {
             XCTAssertEqual(($0 as? ApelinError)?.code, .conflict, "\($0)")
         }
-        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: root.path).sorted(), ["README", "apelin-project.json"])
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: root.path).sorted(), ["README", "luros-project.json"])
         XCTAssertEqual(try String(contentsOf: root.appendingPathComponent("README"), encoding: .utf8), "mine\n")
     }
 

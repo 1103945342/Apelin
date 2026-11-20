@@ -50,7 +50,7 @@ extension BuiltInSkills {
         A cli project's tool is signed with the file its product's
         `entitlements` names. The template writes both lists into it from
         version 0.1.1 of the command-line tool extension (the `version`
-        under `template` in `apelin-project.json`). A project keeps the file
+        under `template` in `luros-project.json`). A project keeps the file
         it was made with, so one made from 0.1.0 has neither; if it uses
         these frameworks, copy both lists into that file from this skill's.
         That changes the build description, so Strict mode asks before its
@@ -61,7 +61,7 @@ extension BuiltInSkills {
 
     /// Every key of the cli templates' `Packaging/Tool.entitlements`, the
     /// app template's IOKit user-client lists among them since
-    /// wiki.qaq.apelin.dev.cli 0.1.1; `Scripts/check-gpu-entitlements.py`
+    /// com.fluoxetine.luros.dev.cli 0.1.1; `Scripts/check-gpu-entitlements.py`
     /// holds those lists for the app itself and its app and cli templates.
     /// A test holds the keys to the cli templates and the lists to the app
     /// template; change them there first.

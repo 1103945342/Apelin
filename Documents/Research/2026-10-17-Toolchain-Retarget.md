@@ -196,7 +196,7 @@ scheme 1, so 16.4's ID there is scheme 1's):
 `sdkImport` of the 18.5 SDK from the inbox (3.3 s); `toolchainSetup` of
 12.4 failed at once with that refusal, before any download; 16.4 set up
 through irisind beside the registered 27.0 in 73.6 s with all six cases
-passing against 18.5, as `wiki.qaq.apelin.toolchain.159586e1bcf6f5b76d3272da`
+passing against 18.5, as `com.fluoxetine.luros.toolchain.159586e1bcf6f5b76d3272da`
 under its own path, the default staying 27.0; removing 16.4 left 27.0
 registered and the default, and `project-build-install.json` then built,
 installed and removed a project with 27.0.
@@ -286,7 +286,7 @@ closures and async functions also compiled and ran by hand.
 
 Through Apelin (`t4-toolchain-swift.json`, twice): `toolchainSetup` of 27.0
 with Swift beside the registered scheme 1 27.0 toolchain, installed by
-irisind as `wiki.qaq.apelin.toolchain.b7c9ecde91f0cca89ea0594f` (364 files,
+irisind as `com.fluoxetine.luros.toolchain.b7c9ecde91f0cca89ea0594f` (364 files,
 `newestSDK` 27.0), both components `selfCheckPassed`, self-tested against
 the iOS 27.0 SDK; the `uikit-swift` app template created against it,
 checked, built debug and release, installed through irisind and removed.
@@ -460,7 +460,7 @@ alternate installer or public daemon CLI.
 For this validation only, each device's prepared tree was copied into its
 installation location by hand and made root-owned; it was not an Irisin
 transaction. The product path has since replaced that: apelin-environment
-packages the tree as `wiki.qaq.apelin.toolchain.<id>`, the session host
+packages the tree as `com.fluoxetine.luros.toolchain.<id>`, the session host
 installs it through irisind, and only a tree whose installed bytes pass the
 self-test is registered (`AGENTS.md` ▸ The environment worker).
 

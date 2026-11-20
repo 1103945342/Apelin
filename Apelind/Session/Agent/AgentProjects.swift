@@ -4,7 +4,7 @@ import Darwin
 import Foundation
 
 /// A project as the session host resolved it for an agent session: its id
-/// from `apelin-project.json`, its folder name, and the canonical path of
+/// from `luros-project.json`, its folder name, and the canonical path of
 /// `Projects/<name>` — checked by component, never by string prefix.
 struct ResolvedProject: Sendable, Equatable {
     /// A temporary chat's workspace is this prefix and its UUID.
@@ -86,7 +86,7 @@ enum AgentProjects {
     }
 
     /// `Projects/<name>` whose canonical path is a direct child of the
-    /// canonical `Projects`, with a readable `apelin-project.json`.
+    /// canonical `Projects`, with a readable `luros-project.json`.
     private static func candidate(root: String, name: String) throws -> ResolvedProject {
         guard let path = CanonicalPath.resolve(root + "/" + name),
               CanonicalPath.isCanonical(path, inside: root),
@@ -94,7 +94,7 @@ enum AgentProjects {
         else {
             throw ApelinError(.notFound, "The project “\(name)” is no longer available.")
         }
-        let manifest = try readManifest(path + "/apelin-project.json")
+        let manifest = try readManifest(path + "/luros-project.json")
         guard let id = manifest["projectID"]?.stringValue, !id.isEmpty else {
             throw ApelinError(
                 .badRequest,

@@ -6,7 +6,7 @@ import ApelinProtocol
 import Foundation
 
 /// The record of one build's package, written beside the other builds'
-/// at `~/Documents/wiki.qaq.apelin/Builds/artifacts/<artifactID>.json`.
+/// at `~/Documents/com.fluoxetine.luros/Builds/artifacts/<artifactID>.json`.
 /// `installPackage{artifactID, digest}` resolves it there; the session host
 /// copies `path` to its private staging and checks `digest` before anything
 /// is installed, so a record or deb changed after the build is refused.

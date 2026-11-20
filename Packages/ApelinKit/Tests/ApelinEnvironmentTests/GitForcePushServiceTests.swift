@@ -44,7 +44,7 @@ final class GitForcePushServiceTests: XCTestCase {
         let root = home.layout.data.projects.appendingPathComponent("Space", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         let description = #"{"schemaVersion": 1, "projectID": "\#(id)", "kind": "workspace", "buildSystem": "external"}"#
-        try Data(description.utf8).write(to: root.appendingPathComponent("apelin-project.json"))
+        try Data(description.utf8).write(to: root.appendingPathComponent("luros-project.json"))
         var git = GitService(layout: home.layout)
         git.acceptsLocalRemotes = true
         let clone = GitCloneIntoRequest(projectID: id, url: bare.path)

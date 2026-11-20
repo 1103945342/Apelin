@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Package one build of Apelin.app (its widget extension inside), apelind and
+# Package one build of Luros.app (its widget extension inside), apelind and
 # its workers as a .deb for one bootstrap layout, ad-hoc signed with ldid, and verify what was packaged: the
 # entitlements read back out of the signed binaries, no build path in any of
 # them, no placeholder left in anything shipped.
@@ -30,7 +30,7 @@ architecture="${10}"
 install_prefix="${11}"
 flavor="${12}"
 # Where the worker executables were built; each is installed at
-# <prefix>/usr/libexec/apelin/<name> and signed with
+# <prefix>/usr/libexec/luros/<name> and signed with
 # Packaging/Workers/<name>.entitlements.
 workers_dir="${13}"
 workers=(apelin-environment apelin-build apelin-agent apelin-diagnostics apelin-log-reader)
@@ -50,7 +50,7 @@ worker_runtime_libraries=(libswiftCompatibilitySpan.dylib)
 packaging_root="$(cd "$(dirname "$control_template")/.." && pwd -P)"
 # Sourced by the bootstrap's /etc/profile after it sets PATH anew: puts the
 # toolchain Apelin's terminal named in APELIN_TOOLCHAIN_BIN back in front.
-login_profile="$packaging_root/profile.d/wiki.qaq.apelin.sh"
+login_profile="$packaging_root/profile.d/com.fluoxetine.luros.sh"
 [[ -f "$login_profile" ]] || { echo "error: missing packaging input: $login_profile" >&2; exit 66; }
 /bin/sh -n "$login_profile" || { echo "error: $login_profile is not valid sh" >&2; exit 65; }
 
@@ -58,9 +58,9 @@ login_profile="$packaging_root/profile.d/wiki.qaq.apelin.sh"
 # with Packaging/ApelinWidgets.entitlements, sharing one App Group with the
 # app and nothing else.
 widget_appex=ApelinWidgets.appex
-widget_bundle_identifier=wiki.qaq.apelin.widgets
+widget_bundle_identifier=com.fluoxetine.luros.widgets
 widget_entitlements="$packaging_root/ApelinWidgets.entitlements"
-app_group=group.wiki.qaq.apelin
+app_group=group.com.fluoxetine.luros
 
 [[ -d "$app_bundle" && -f "$app_bundle/Info.plist" ]] || { echo "error: $app_bundle is not a complete app bundle; expected a directory containing Info.plist" >&2; exit 66; }
 [[ -x "$daemon_binary" ]] || { echo "error: daemon binary is missing" >&2; exit 66; }
@@ -143,8 +143,8 @@ for native_binary in "${native_binaries[@]}"; do
 done
 
 bundle_identifier="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_bundle/Info.plist")"
-[[ "$bundle_identifier" == wiki.qaq.apelin && -x "$app_bundle/$app_executable" ]] || {
-    echo "error: $app_bundle is not the Apelin app; expected bundle ID wiki.qaq.apelin and an executable $app_executable" >&2
+[[ "$bundle_identifier" == com.fluoxetine.luros && -x "$app_bundle/$app_executable" ]] || {
+    echo "error: $app_bundle is not the Apelin app; expected bundle ID com.fluoxetine.luros and an executable $app_executable" >&2
     exit 65
 }
 
@@ -215,12 +215,12 @@ chmod 0755 "$staging"
 
 debian="$staging/DEBIAN"
 installed_root="$staging$install_prefix"
-installed_app="$installed_root/Applications/Apelin.app"
-installed_daemon="$installed_root/usr/libexec/apelind"
-installed_plist="$installed_root/Library/LaunchDaemons/wiki.qaq.apelind.plist"
-installed_workers="$installed_root/usr/libexec/apelin"
-installed_share="$installed_root/usr/share/apelin"
-installed_profile="$installed_root/etc/profile.d/wiki.qaq.apelin.sh"
+installed_app="$installed_root/Applications/Luros.app"
+installed_daemon="$installed_root/usr/libexec/lurosd"
+installed_plist="$installed_root/Library/LaunchDaemons/com.fluoxetine.lurosd.plist"
+installed_workers="$installed_root/usr/libexec/luros"
+installed_share="$installed_root/usr/share/luros"
+installed_profile="$installed_root/etc/profile.d/com.fluoxetine.luros.sh"
 mkdir -p "$debian" "$(dirname "$installed_app")" "$(dirname "$installed_daemon")" "$(dirname "$installed_plist")" "$installed_workers" \
     "$installed_share" "$(dirname "$installed_profile")"
 cp "$login_profile" "$installed_profile"
@@ -232,7 +232,7 @@ chmod 0644 "$installed_profile"
 # same id wins over the copy.
 installed_development="$installed_app/Development"
 mkdir -p "$installed_development"
-for extension in "$repository_root"/Extensions/Development/wiki.qaq.apelin.dev.*; do
+for extension in "$repository_root"/Extensions/Development/com.fluoxetine.luros.dev.*; do
     [[ -d "$extension" ]] || continue
     /usr/bin/ditto --norsrc --noextattr "$extension" "$installed_development/$(basename "$extension")"
 done
@@ -252,14 +252,14 @@ done
 # The two agent tool extensions ride inside the app too. Their packages put an
 # executable under usr/libexec/apelin/agent-tools and a manifest with its
 # notices under usr/share/apelin/agent-tools/<id>; here both go under
-# Apelin.app/AgentTools, and each manifest's `executable` — a path relative to
+# Luros.app/AgentTools, and each manifest's `executable` — a path relative to
 # the install root — is rewritten to the copy that is there. The host reads an
 # installed folder first, so a tool package installed on its own still wins.
 agent_tools_source="${APELIN_AGENT_TOOLS:?APELIN_AGENT_TOOLS must name the folder holding the built agent tool packages}"
 installed_agent_tools="$installed_app/AgentTools"
 mkdir -p "$installed_agent_tools"
 for tool in assembler disassembler; do
-    agent_tool_id="wiki.qaq.apelin.agent-tools.$tool"
+    agent_tool_id="com.fluoxetine.luros.agent-tools.$tool"
     agent_tool_package=""
     for candidate in "$agent_tools_source/$agent_tool_id"_*"_$architecture.deb"; do
         [[ -f "$candidate" ]] && { agent_tool_package="$candidate"; break; }
@@ -270,17 +270,17 @@ for tool in assembler disassembler; do
     }
     agent_tool_tree="$scratch/agent-tool-$tool"
     dpkg-deb -x "$agent_tool_package" "$agent_tool_tree"
-    for executable in "$agent_tool_tree$install_prefix/usr/libexec/apelin/agent-tools/"*; do
+    for executable in "$agent_tool_tree$install_prefix/usr/libexec/luros/agent-tools/"*; do
         /usr/bin/ditto "$executable" "$installed_agent_tools/$(basename "$executable")"
     done
-    /usr/bin/ditto --norsrc --noextattr "$agent_tool_tree$install_prefix/usr/share/apelin/agent-tools/$agent_tool_id" \
+    /usr/bin/ditto --norsrc --noextattr "$agent_tool_tree$install_prefix/usr/share/luros/agent-tools/$agent_tool_id" \
         "$installed_agent_tools/$agent_tool_id"
     python3 - "$installed_agent_tools/$agent_tool_id/manifest.json" <<'PY'
 import json, sys
 path = sys.argv[1]
 with open(path, encoding="utf-8") as handle:
     manifest = json.load(handle)
-manifest["executable"] = "Applications/Apelin.app/AgentTools/" + manifest["executable"].rsplit("/", 1)[-1]
+manifest["executable"] = "Applications/Luros.app/AgentTools/" + manifest["executable"].rsplit("/", 1)[-1]
 with open(path, "w", encoding="utf-8") as handle:
     json.dump(manifest, handle, indent=2, ensure_ascii=False)
     handle.write("\n")
@@ -296,7 +296,7 @@ sed -e "s|@PREFIX@|$install_prefix|g" -e "s|@ROOTFS@|$rootfs|g" "$launch_plist" 
 # The daemon recovers its install root by stripping this suffix off its own
 # executable path, so the plist has to launch it by the path it is installed
 # at — a mismatch and every bootstrap path it derives is wrong.
-[[ "$(/usr/libexec/PlistBuddy -c 'Print :ProgramArguments:0' "$installed_plist")" == "$install_prefix/usr/libexec/apelind" ]] || {
+[[ "$(/usr/libexec/PlistBuddy -c 'Print :ProgramArguments:0' "$installed_plist")" == "$install_prefix/usr/libexec/lurosd" ]] || {
     echo "error: the launch daemon does not point at the installed apelind" >&2
     exit 65
 }
@@ -423,7 +423,7 @@ require_app_group() {
 # every ad-hoc signed app needs before system frameworks draw. Spawning is the
 # daemon's alone — the app has no process API.
 ldid -e "$installed_app/$app_executable" >"$app_signed_entitlements"
-for key in wiki.qaq.apelin.client \
+for key in com.fluoxetine.luros.client \
     platform-application \
     com.apple.private.security.no-sandbox \
     com.apple.private.security.storage.AppBundles \
@@ -434,7 +434,7 @@ done
     echo "error: app is missing the GPU iokit-user-client-class list" >&2
     exit 65
 }
-[[ "$(/usr/libexec/PlistBuddy -c 'Print :com.apple.security.exception.mach-lookup.global-name:0' "$app_signed_entitlements")" == wiki.qaq.apelin.service ]] || {
+[[ "$(/usr/libexec/PlistBuddy -c 'Print :com.apple.security.exception.mach-lookup.global-name:0' "$app_signed_entitlements")" == com.fluoxetine.luros.service ]] || {
     echo "error: app is missing the daemon mach lookup entitlement" >&2
     exit 65
 }
@@ -474,7 +474,7 @@ require_app_group "$app_signed_entitlements" "the app"
 widget_signed_entitlements="$scratch/widget-entitlements.plist"
 ldid -e "$installed_widget/$widget_executable" >"$widget_signed_entitlements"
 require_app_group "$widget_signed_entitlements" "$widget_appex"
-for key in wiki.qaq.apelin.client \
+for key in com.fluoxetine.luros.client \
     wiki.qaq.irisin.client \
     platform-application \
     com.apple.private.security.no-sandbox \
@@ -504,7 +504,7 @@ done
     echo "error: apelind is missing the usernotifications bundle-identifiers entitlement for $bundle_identifier" >&2
     exit 65
 }
-require_absent "$daemon_signed_entitlements" wiki.qaq.apelin.client apelind
+require_absent "$daemon_signed_entitlements" com.fluoxetine.luros.client apelind
 require_absent "$daemon_signed_entitlements" com.apple.security.iokit-user-client-class apelind
 
 # The workers: platform and unsandboxed, and never a way into the public
@@ -516,7 +516,7 @@ for worker in "${workers[@]}"; do
     for key in platform-application com.apple.private.security.no-sandbox; do
         require_true "$worker_signed_entitlements" "$key"
     done
-    require_absent "$worker_signed_entitlements" wiki.qaq.apelin.client "$worker"
+    require_absent "$worker_signed_entitlements" com.fluoxetine.luros.client "$worker"
     require_absent "$worker_signed_entitlements" wiki.qaq.irisin.client "$worker"
     require_absent "$worker_signed_entitlements" com.apple.private.usernotifications.bundle-identifiers "$worker"
     require_absent "$worker_signed_entitlements" com.apple.security.exception.mach-lookup.global-name "$worker"
@@ -568,19 +568,19 @@ if dpkg-deb -f "$temporary_deb" Depends Pre-Depends | grep -qE '(^|[ ,|])(wiki\.
     exit 65
 fi
 contents="$(dpkg-deb --contents "$temporary_deb")"
-grep -F ".$install_prefix/Applications/Apelin.app/$app_executable" <<<"$contents" >/dev/null
-for extension in wiki.qaq.apelin.dev.app wiki.qaq.apelin.dev.tweak wiki.qaq.apelin.dev.cli wiki.qaq.apelin.dev.preferences; do
-    grep -F ".$install_prefix/Applications/Apelin.app/Development/$extension/manifest.json" <<<"$contents" >/dev/null || {
+grep -F ".$install_prefix/Applications/Luros.app/$app_executable" <<<"$contents" >/dev/null
+for extension in com.fluoxetine.luros.dev.app com.fluoxetine.luros.dev.tweak com.fluoxetine.luros.dev.cli com.fluoxetine.luros.dev.preferences; do
+    grep -F ".$install_prefix/Applications/Luros.app/Development/$extension/manifest.json" <<<"$contents" >/dev/null || {
         echo "error: the app bundle does not carry the $extension extension" >&2
         exit 65
     }
 done
-grep -F ".$install_prefix/Applications/Apelin.app/Licenses.json" <<<"$contents" >/dev/null
+grep -F ".$install_prefix/Applications/Luros.app/Licenses.json" <<<"$contents" >/dev/null
 # The bundled tools carry no package of their own, so the package that carries
 # them must: a deb without them installs an IDE that can neither drive the
 # device nor install a package.
 for tool in Vendor/bin/icli Vendor/libexec/irisind; do
-    grep -F ".$install_prefix/Applications/Apelin.app/$tool" <<<"$contents" >/dev/null || {
+    grep -F ".$install_prefix/Applications/Luros.app/$tool" <<<"$contents" >/dev/null || {
         echo "error: the app bundle does not carry $tool" >&2
         exit 65
     }
@@ -588,32 +588,32 @@ done
 # The same for the two agent tool extensions: a bundle without them is an
 # agent that cannot assemble or disassemble, and no package supplies them now.
 for tool in assembler disassembler; do
-    agent_tool_id="wiki.qaq.apelin.agent-tools.$tool"
-    grep -F ".$install_prefix/Applications/Apelin.app/AgentTools/$agent_tool_id/manifest.json" <<<"$contents" >/dev/null || {
+    agent_tool_id="com.fluoxetine.luros.agent-tools.$tool"
+    grep -F ".$install_prefix/Applications/Luros.app/AgentTools/$agent_tool_id/manifest.json" <<<"$contents" >/dev/null || {
         echo "error: the app bundle does not carry the $agent_tool_id tool" >&2
         exit 65
     }
-    grep -F ".$install_prefix/Applications/Apelin.app/AgentTools/apelin-$tool" <<<"$contents" >/dev/null || {
+    grep -F ".$install_prefix/Applications/Luros.app/AgentTools/apelin-$tool" <<<"$contents" >/dev/null || {
         echo "error: the app bundle does not carry apelin-$tool" >&2
         exit 65
     }
 done
-grep -F ".$install_prefix/Applications/Apelin.app/PlugIns/$widget_appex/$widget_executable" <<<"$contents" >/dev/null
+grep -F ".$install_prefix/Applications/Luros.app/PlugIns/$widget_appex/$widget_executable" <<<"$contents" >/dev/null
 for resource in "${app_resources[@]}"; do
-    grep -F ".$install_prefix/Applications/Apelin.app/$resource/Info.plist" <<<"$contents" >/dev/null
+    grep -F ".$install_prefix/Applications/Luros.app/$resource/Info.plist" <<<"$contents" >/dev/null
 done
-grep -F ".$install_prefix/usr/libexec/apelind" <<<"$contents" >/dev/null
+grep -F ".$install_prefix/usr/libexec/lurosd" <<<"$contents" >/dev/null
 for worker in "${workers[@]}"; do
-    grep -F ".$install_prefix/usr/libexec/apelin/$worker" <<<"$contents" >/dev/null
+    grep -F ".$install_prefix/usr/libexec/luros/$worker" <<<"$contents" >/dev/null
 done
 for resource in "${worker_resources[@]}"; do
-    grep -F ".$install_prefix/usr/libexec/apelin/$resource/Info.plist" <<<"$contents" >/dev/null
+    grep -F ".$install_prefix/usr/libexec/luros/$resource/Info.plist" <<<"$contents" >/dev/null
 done
 for library in "${worker_runtime_libraries[@]}"; do
-    grep -F ".$install_prefix/usr/libexec/apelin/$library" <<<"$contents" >/dev/null
+    grep -F ".$install_prefix/usr/libexec/luros/$library" <<<"$contents" >/dev/null
 done
-grep -F ".$install_prefix/Library/LaunchDaemons/wiki.qaq.apelind.plist" <<<"$contents" >/dev/null
-grep -F ".$install_prefix/etc/profile.d/wiki.qaq.apelin.sh" <<<"$contents" >/dev/null
+grep -F ".$install_prefix/Library/LaunchDaemons/com.fluoxetine.lurosd.plist" <<<"$contents" >/dev/null
+grep -F ".$install_prefix/etc/profile.d/com.fluoxetine.luros.sh" <<<"$contents" >/dev/null
 
 mv -f "$temporary_deb" "$output_deb"
 echo "Packaged Apelin ($flavor): $output_deb"

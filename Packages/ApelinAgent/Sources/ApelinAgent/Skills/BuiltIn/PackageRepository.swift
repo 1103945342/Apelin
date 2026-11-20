@@ -53,7 +53,7 @@ extension BuiltInSkills {
           `Architecture`, `Description`, `Maintainer`, `Author` and `Section`
           (the package's category: Tweaks, Applications, Utilities, Themes…); the
           workflow fails without `Section`. A project sets them in its
-          apelin-project.json (the apelin-project-description skill), not here.
+          luros-project.json (the apelin-project-description skill), not here.
         - A new version is a new file. Never replace a published file under
           the same name: clients compare it with the index they cached.
 

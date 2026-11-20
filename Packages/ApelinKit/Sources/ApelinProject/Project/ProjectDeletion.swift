@@ -4,7 +4,7 @@ import Darwin
 import Foundation
 
 /// A project deleted for good (`projectDelete`), as mobile: the real
-/// folder directly under `Projects/` whose `apelin-project.json` names the
+/// folder directly under `Projects/` whose `luros-project.json` names the
 /// id asked for, removed by `DataFolder.removeProject`, the app's own
 /// Delete, so a link inside it is removed and never followed. The session
 /// host has closed the project's conversations first; the app takes their

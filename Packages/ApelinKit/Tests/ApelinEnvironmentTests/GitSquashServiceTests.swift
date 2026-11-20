@@ -17,9 +17,9 @@ final class GitSquashServiceTests: XCTestCase {
         let root = home.layout.data.projects.appendingPathComponent("Clock", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         let description = #"{"schemaVersion": 1, "projectID": "\#(id)", "kind": "workspace", "buildSystem": "external"}"#
-        try Data(description.utf8).write(to: root.appendingPathComponent("apelin-project.json"))
+        try Data(description.utf8).write(to: root.appendingPathComponent("luros-project.json"))
         let repository = try GitRepository.create(at: root)
-        try repository.addExcludes(["/apelin-project.json"])
+        try repository.addExcludes(["/luros-project.json"])
         let author = GitSignature(name: "Apelin Test", email: "test@apelin.invalid")
         var commits: [String] = []
         for name in ["First", "Two", "Three", "Four"] {

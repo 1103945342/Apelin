@@ -1,23 +1,23 @@
 import Foundation
 
-/// An `apelin://` link: what a widget, the Live Activity, a link in a
+/// An `lurosdev://` link: what a widget, the Live Activity, a link in a
 /// conversation or another app opens.
 ///
-/// - `apelin://conversation/<id>` opens a conversation: `<id>` is its agent
+/// - `lurosdev://conversation/<id>` opens a conversation: `<id>` is its agent
 ///   session ID (what the agent's conversation tools return), or the app's
 ///   own chat ID.
-/// - `apelin://project/<id>` opens a project, by its manifest `projectID` or
+/// - `lurosdev://project/<id>` opens a project, by its manifest `projectID` or
 ///   its folder name, on its most recent conversation.
-/// - `apelin://chat?prompt=<text>` opens a new General Chat with `<text>`
+/// - `lurosdev://chat?prompt=<text>` opens a new General Chat with `<text>`
 ///   in the composer and the keyboard up. Nothing is sent: the reader reads
 ///   it and taps Send. Without `prompt` the composer is empty.
-/// - `apelin://import?url=<address>&branch=<name>` asks whether to import a
+/// - `lurosdev://import?url=<address>&branch=<name>` asks whether to import a
 ///   Git repository into a new project: Open in Apelin on a README, through
 ///   the page at `https://owngoal-dev.github.io/Apelin/open/`. It carries
 ///   the repository's HTTPS address and, optionally, a branch, each named
 ///   once, and nothing else: any other parameter is ignored. One whose
 ///   address or branch Apelin would not take is `invalidImport`.
-/// - `apelin://` opens the app as it is.
+/// - `lurosdev://` opens the app as it is.
 ///
 /// Anything else with the scheme is `unknown`: the app opens and nothing it
 /// shows changes. The format is fixed — the agent writes these links too.
@@ -35,7 +35,10 @@ enum ApelinLink: Hashable, Sendable {
     case invalidImport
     case unknown
 
-    static let scheme = "apelin"
+    static let scheme = "lurosdev"
+    /// A link the official Apelin writes still opens here: the scheme this
+    /// app registers is its own, but the format is shared.
+    static let previousSchemes: Set<String> = ["apelin"]
 
     /// The longest prompt a link may carry, in UTF-8 bytes.
     static let maximumPromptLength = 32768
@@ -46,8 +49,10 @@ enum ApelinLink: Hashable, Sendable {
 
     /// The link `url` spells, or nil when it is not an `apelin:` URL.
     init?(url: URL) {
-        guard url.scheme?.lowercased() == Self.scheme else { return nil }
-        // `apelin://conversation/x` names the kind as the host; a lenient
+        guard let scheme = url.scheme?.lowercased(),
+              scheme == Self.scheme || Self.previousSchemes.contains(scheme)
+        else { return nil }
+        // `lurosdev://conversation/x` names the kind as the host; a lenient
         // `apelin:conversation/x` has it as the first path component.
         var components = url.pathComponents.filter { $0 != "/" }
         if let host = url.host, !host.isEmpty {

@@ -4,7 +4,7 @@ import SPIndicator
 import Then
 import UIKit
 
-/// Open in Apelin for a Git repository (`apelin://import`), asked before
+/// Open in Apelin for a Git repository (`lurosdev://import`), asked before
 /// anything is made: the address and branch the link names, any project
 /// that already has that repository as its `origin`, to open instead, and
 /// the name of the new project. Import runs `RepositoryImporter` on the

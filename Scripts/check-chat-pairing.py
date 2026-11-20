@@ -10,7 +10,7 @@ nothing putting that conversation on the page.
 There is one way in now: `RootInterfaceController.open(_:picked:)`, which
 moves the highlight (`sidebar.highlight(_:)`) and then the page
 (`chatController.use(_:)`) together. Every other caller — a row, New Chat, the
-launch, a fork, an `apelin://` link, a delete, a recovery — goes through it.
+launch, a fork, an `lurosdev://` link, a delete, a recovery — goes through it.
 So both calls must be inside that one function, and the sidebar's own
 `select` must not be reachable from outside the sidebar.
 

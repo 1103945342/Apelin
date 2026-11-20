@@ -8,7 +8,7 @@ import Testing
 @Suite("ChannelHostBackend's imports")
 struct GitImportBackendTests {
     @Test
-    func `an import says what became of apelin-project.json`() async throws {
+    func `an import says what became of luros-project.json`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.gitCloneInto, reply: TaskHandle(taskID: TaskID("clone-task"), kind: .environment))
         fixture.host.on(.environmentAttach, reply: batch("clone-task", [

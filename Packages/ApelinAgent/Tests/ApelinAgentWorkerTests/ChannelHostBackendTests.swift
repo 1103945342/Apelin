@@ -92,7 +92,7 @@ struct Fixture {
         projectURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("apelin-worker-tests-\(UUID().uuidString)/Hello", isDirectory: true)
         try FileManager.default.createDirectory(at: projectURL, withIntermediateDirectories: true)
         if let manifest {
-            try manifest.write(to: projectURL.appendingPathComponent("apelin-project.json"), atomically: true, encoding: .utf8)
+            try manifest.write(to: projectURL.appendingPathComponent("luros-project.json"), atomically: true, encoding: .utf8)
         }
         backend = ChannelHostBackend(service: ApelinService(transport: host), sessionID: "11111111-2222-4333-8444-555555555555", project: project, projectURL: projectURL)
     }
@@ -101,7 +101,7 @@ struct Fixture {
         HostCallContext(sessionID: backend.sessionID, project: project, toolCallID: "call-1", approval: approval)
     }
 
-    /// Stands in for `~/Documents/wiki.qaq.apelin`: the project's parent.
+    /// Stands in for `~/Documents/com.fluoxetine.luros`: the project's parent.
     var dataFolder: URL {
         projectURL.deletingLastPathComponent()
     }
@@ -144,7 +144,7 @@ struct ChannelHostBackendTests {
                 code: "project.invalid",
                 severity: .error,
                 message: "unknown member",
-                file: "apelin-project.json",
+                file: "luros-project.json",
                 field: "/configurations/Debug/linkerFlags",
             ))),
             stateEvent(.failed, "the project check failed"),
@@ -163,8 +163,8 @@ struct ChannelHostBackendTests {
             throw ApelinError(.denied, "approval required: the host could not compute the build description of x, so it cannot tell it matches the template")
         }
         fixture.host.on(.projectCheck, reply: ProjectCheckResponse(passed: false, diagnostics: [
-            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "unknown member", file: "apelin-project.json", field: "/configurations/Debug/linkerFlags"),
-            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "missing optimization", file: "apelin-project.json", field: "/configurations/Release"),
+            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "unknown member", file: "luros-project.json", field: "/configurations/Debug/linkerFlags"),
+            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "missing optimization", file: "luros-project.json", field: "/configurations/Release"),
         ]))
         let request = BuildRequest(context: fixture.context(), configuration: .debug, buildDescriptionDigest: "d")
         let refusal = await #expect(throws: ApelinError.self) { _ = try await fixture.backend.build(request) }
@@ -211,7 +211,7 @@ struct ChannelHostBackendTests {
     func `apelin_project_check_distribution names each issue's field, and where the schema is`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.projectCheck, reply: ProjectCheckResponse(passed: false, diagnostics: [
-            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "unknown member", file: "apelin-project.json", field: "/configurations/Debug/linkerFlags"),
+            ProjectDiagnostic(code: "project.invalid", severity: .error, message: "unknown member", file: "luros-project.json", field: "/configurations/Debug/linkerFlags"),
         ]))
         let check = try await fixture.backend.checkDistribution(DistributionCheckRequest(project: fixture.project))
         #expect(!check.ready && check.issues.map(\.field) == ["/configurations/Debug/linkerFlags", nil])
@@ -282,8 +282,8 @@ struct ChannelHostBackendTests {
     func `a list template value is listed and sent as a JSON array`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.extensionList, reply: ExtensionListResponse(extensions: [
-            DevelopmentExtension(id: "wiki.qaq.apelin.dev.tweak", version: "0.1.0", kind: .tweak, displayName: "Tweak Development", templates: [
-                TemplateSummary(id: "wiki.qaq.apelin.dev.tweak/objc-hook", displayName: "Objective-C Tweak", parameters: [
+            DevelopmentExtension(id: "com.fluoxetine.luros.dev.tweak", version: "0.1.0", kind: .tweak, displayName: "Tweak Development", templates: [
+                TemplateSummary(id: "com.fluoxetine.luros.dev.tweak/objc-hook", displayName: "Objective-C Tweak", parameters: [
                     TemplateParameter(name: "filterBundles", kind: "bundleIDList", defaultValue: .array([.string("com.apple.springboard")])),
                     TemplateParameter(name: "mixed", kind: "bundleIDList", defaultValue: .array([.string("a.b"), .number(1)])),
                 ]),
@@ -295,7 +295,7 @@ struct ChannelHostBackendTests {
         fixture.host.on(.projectCreate, reply: ProjectCreateResponse(projectID: "p-1", name: "Settings Tweak", path: "/p"))
         _ = try await fixture.backend.createProject(ProjectCreateToolRequest(
             context: fixture.context(),
-            templateID: "wiki.qaq.apelin.dev.tweak/objc-hook",
+            templateID: "com.fluoxetine.luros.dev.tweak/objc-hook",
             name: "Settings Tweak",
             values: ["filterBundles": .list(["com.apple.springboard", "com.apple.Preferences"]), "displayName": .string("X")],
         ))
@@ -700,7 +700,7 @@ struct ChannelHostBackendTests {
             ("artifact", ApelinCore.JSONValue(encoding: ApelinProtocol.BuildArtifact(
                 artifactID: "art-1", digest: "sha256:ab", packageID: "wiki.qaq.hello", version: "0.0.1",
                 buildID: "B-7", bootstrap: "rootless", packagingDigest: "sha256:cd",
-                path: "/var/mobile/Documents/wiki.qaq.apelin/Builds/p/B-7/wiki.qaq.hello_0.0.1_iphoneos-arm64.deb", projectID: "p",
+                path: "/var/mobile/Documents/com.fluoxetine.luros/Builds/p/B-7/wiki.qaq.hello_0.0.1_iphoneos-arm64.deb", projectID: "p",
             ))),
             stateEvent(.succeeded),
         ]))

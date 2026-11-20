@@ -30,7 +30,7 @@ struct MachOImageTests {
         #expect(!slice.isEncrypted)
 
         let entitlements = try #require(try image.entitlementsDictionary(of: slice))
-        #expect(entitlements["wiki.qaq.apelin.fixture"] as? Bool == true)
+        #expect(entitlements["com.fluoxetine.luros.fixture"] as? Bool == true)
 
         let inspection = try image.inspect(slice)
         #expect(inspection.platform == .iOS)
@@ -47,7 +47,7 @@ struct MachOImageTests {
         #expect(inspection.loadCommands.map(\.name).contains("LC_ID_DYLIB"))
         #expect(inspection.loadCommands.map(\.name).contains("LC_LOAD_WEAK_DYLIB"))
         #expect(inspection.loadCommands.allSatisfy { !$0.name.hasPrefix("0x") })
-        #expect(inspection.signingIdentifier == "wiki.qaq.apelin.fixture")
+        #expect(inspection.signingIdentifier == "com.fluoxetine.luros.fixture")
         #expect(inspection.isAdHoc == true)
         #expect(inspection.teamIdentifier == nil)
         #expect(inspection.entryOffset == nil)

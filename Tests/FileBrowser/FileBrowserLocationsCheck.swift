@@ -6,33 +6,33 @@ import Foundation
 /// prefix, and none at all for an app installed at the top level — so no
 /// install root is ever written down and no `/var/jb` is guessed at.
 func checkFileBrowserLocations() throws {
-    precondition(FileBrowserLocations.bootstrapRoot(bundlePath: "/Applications/Apelin.app") == nil,
+    precondition(FileBrowserLocations.bootstrapRoot(bundlePath: "/Applications/Luros.app") == nil,
                  "an app at the top level has no bootstrap to show")
-    precondition(FileBrowserLocations.bootstrapRoot(bundlePath: "/var/jb/Applications/Apelin.app") == "/var/jb",
+    precondition(FileBrowserLocations.bootstrapRoot(bundlePath: "/var/jb/Applications/Luros.app") == "/var/jb",
                  "rootless keeps its one prefix, and the bundle's own path says so")
     let root = "/private/var/containers/Bundle/Application/.jbroot-0000000000000101"
     precondition(
-        FileBrowserLocations.bootstrapRoot(bundlePath: root + "/Applications/Apelin.app") == root,
+        FileBrowserLocations.bootstrapRoot(bundlePath: root + "/Applications/Luros.app") == root,
         "roothide's root is the piece of the bundle's own path"
     )
     // A name that is not a root — the checksum in it is wrong — is not one.
     precondition(
         FileBrowserLocations.bootstrapRoot(
-            bundlePath: "/private/var/containers/Bundle/Application/.jbroot-0000000000000001/Applications/Apelin.app"
+            bundlePath: "/private/var/containers/Bundle/Application/.jbroot-0000000000000001/Applications/Luros.app"
         ) == nil,
         "a name that is not a bootstrap root is not taken for one"
     )
 
     let work = try temporaryFolder("locations")
     defer { try? FileManager.default.removeItem(at: work) }
-    let data = work.appendingPathComponent("Documents/wiki.qaq.apelin", isDirectory: true)
+    let data = work.appendingPathComponent("Documents/com.fluoxetine.luros", isDirectory: true)
     let project = data.appendingPathComponent("Projects/Demo", isDirectory: true)
     try FileManager.default.createDirectory(at: project, withIntermediateDirectories: true)
 
     let places = FileBrowserLocations.all(
         projectRoot: project,
         dataFolder: data,
-        bundlePath: "/Applications/Apelin.app"
+        bundlePath: "/Applications/Luros.app"
     )
     precondition(places.first?.name == .project("Demo"), "the project comes first: \(places.map(\.name))")
     precondition(places.contains { $0.name == .dataFolder })
@@ -49,7 +49,7 @@ func checkFileBrowserLocations() throws {
     // inside a bootstrap is that one.
     let bootstrap = work.appendingPathComponent(".jbroot-0000000000000101", isDirectory: true)
     try FileManager.default.createDirectory(at: bootstrap, withIntermediateDirectories: true)
-    let bundle = bootstrap.appendingPathComponent("Applications/Apelin.app").path
+    let bundle = bootstrap.appendingPathComponent("Applications/Luros.app").path
     guard let root = FileBrowserLocations.bootstrapRoot(bundlePath: bundle) else {
         preconditionFailure("a bundle inside a bootstrap names its root")
     }

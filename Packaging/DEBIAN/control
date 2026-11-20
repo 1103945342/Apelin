@@ -1,9 +1,9 @@
-Package: wiki.qaq.apelin
-Name: Apelin
+Package: com.fluoxetine.luros
+Name: Luros
 Version: @VERSION@
 Architecture: @ARCHITECTURE@
 Description: An on-device IDE where an agent writes, builds and installs tweaks, for @FLAVOR@ jailbreaks
- Apelin is an on-device IDE for jailbroken iOS: an editor, a terminal and an agent that edits, builds, packages, installs and debugs tweaks on the device itself.
+ Luros is an on-device IDE for jailbroken iOS: an editor, a terminal and an agent that edits, builds, packages, installs and debugs tweaks on the device itself.
 Icon: https://owngoal-dev.github.io/Apelin/icon.png
 Depiction: https://owngoal-dev.github.io/Apelin/
 SileoDepiction: https://owngoal-dev.github.io/Apelin/depiction.json

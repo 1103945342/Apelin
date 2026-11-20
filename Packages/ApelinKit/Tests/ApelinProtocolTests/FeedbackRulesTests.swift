@@ -31,7 +31,7 @@ final class FeedbackRulesTests: XCTestCase {
             ("key sk-ant-api03-abcdefghijklmnopqrstuvwxyz", "token"),
             ("-----BEGIN OPENSSH PRIVATE KEY-----", "token"),
             ("Authorization: Bearer abcdefghijklmnopqrstuvwxyz012345", "token"),
-            ("in /var/mobile/Documents/wiki.qaq.apelin/Projects/Secret", "home"),
+            ("in /var/mobile/Documents/com.fluoxetine.luros/Projects/Secret", "home"),
             ("/private/var/mobile/Library/Logs", "home"),
             ("/var/containers/Bundle/Application/.jbroot-1A2B3C4D/usr/lib", "home"),
             ("on the Mac, /Users/someone/Desktop", "home"),
@@ -74,7 +74,7 @@ final class FeedbackRulesTests: XCTestCase {
     func testWhatABadCaseOrdinarilyHoldsGoesThrough() {
         let report = """
         On iOS 17.3.1 (21D61), arm64e, roothide, the build of local.apelin.hello failed.
-        Its log is ~/Documents/wiki.qaq.apelin/Builds/p/9F86D081-884C-4D63-A1B2-0123456789AB/build.log;
+        Its log is ~/Documents/com.fluoxetine.luros/Builds/p/9F86D081-884C-4D63-A1B2-0123456789AB/build.log;
         the artifact's digest is sha256:\(String(repeating: "ab", count: 32)) and the commit 1a2b3c4d.
         IPHONEOS_DEPLOYMENT_TARGET is 16.0; clang listened on 127.0.0.1. CLT 15.3 from /var/jb/usr/lib.
         Crash image UUID 4C4C44A5-5555-3144-A1B2-C3D4E5F60718, build ID BUILD-42.

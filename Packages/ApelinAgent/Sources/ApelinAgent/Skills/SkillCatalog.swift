@@ -51,7 +51,7 @@ public struct SkillProblem: Sendable, Hashable, CustomStringConvertible {
 }
 
 /// The built-in skills plus the user's, from
-/// `~/Documents/wiki.qaq.apelin/skills` (kwwk's skill format: a folder per
+/// `~/Documents/com.fluoxetine.luros/skills` (kwwk's skill format: a folder per
 /// skill with a `SKILL.md`, or a root-level `.md`, with `name` and
 /// `description` frontmatter).
 ///

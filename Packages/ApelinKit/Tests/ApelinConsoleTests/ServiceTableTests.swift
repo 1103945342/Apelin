@@ -60,7 +60,7 @@ final class ServiceTableTests: XCTestCase {
             return Row(reply: ExtensionListResponse()) { _ = try await $0.extensionList() }
         case .projectCreate:
             return Row(reply: ProjectCreateResponse(projectID: "p", name: "Hello", path: "/p")) {
-                _ = try await $0.projectCreate(ProjectCreateRequest(templateID: "wiki.qaq.apelin.dev.tweak/objc-hook", name: "Hello"))
+                _ = try await $0.projectCreate(ProjectCreateRequest(templateID: "com.fluoxetine.luros.dev.tweak/objc-hook", name: "Hello"))
             }
         case .projectCheck:
             return Row(reply: ProjectCheckResponse(passed: true)) { _ = try await $0.projectCheck(projectID: "p") }
@@ -267,7 +267,7 @@ final class ServiceTableTests: XCTestCase {
                 _ = try await $0.transferImport(TransferImportRequest(source: .file(Self.slot), fileName: "x.apesdk"), descriptors: [OwnedDescriptor(adopting: open("/dev/null", O_RDONLY))])
             }, descriptors: 1)
         case .toolHostOpen:
-            return Row(reply: ToolHostOpenResponse(sessionID: "s")) { _ = try await $0.toolHostOpen(id: "wiki.qaq.apelin.tools.disassembler") }
+            return Row(reply: ToolHostOpenResponse(sessionID: "s")) { _ = try await $0.toolHostOpen(id: "com.fluoxetine.luros.tools.disassembler") }
         case .toolHostClose:
             return Row(reply: ack) { try await $0.toolHostClose(sessionID: "s") }
         case .toolHostCall:

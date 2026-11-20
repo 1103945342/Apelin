@@ -53,10 +53,10 @@ final class FeedbackTests: XCTestCase {
     /// The app's Info.plist where the package installs it, binary as Xcode
     /// writes it.
     private func installApp(_ installRoot: String, version: Any = "0.2.7", build: Any = "18") throws {
-        let app = URL(fileURLWithPath: installRoot).appendingPathComponent("Applications/Apelin.app", isDirectory: true)
+        let app = URL(fileURLWithPath: installRoot).appendingPathComponent("Applications/Luros.app", isDirectory: true)
         try FileManager.default.createDirectory(at: app, withIntermediateDirectories: true)
         let plist: [String: Any] = [
-            "CFBundleIdentifier": "wiki.qaq.apelin", "CFBundleShortVersionString": version, "CFBundleVersion": build,
+            "CFBundleIdentifier": "com.fluoxetine.luros", "CFBundleShortVersionString": version, "CFBundleVersion": build,
         ]
         try PropertyListSerialization.data(fromPropertyList: plist, format: .binary, options: 0)
             .write(to: app.appendingPathComponent("Info.plist"))
@@ -151,7 +151,7 @@ final class FeedbackTests: XCTestCase {
             FeedbackSendRequest(title: "Two\nlines", body: "Body"),
             FeedbackSendRequest(title: String(repeating: "a", count: 121), body: "Body"),
             FeedbackSendRequest(title: "Title", body: String(repeating: "a", count: 16 * 1024 + 1)),
-            FeedbackSendRequest(title: "Title", body: "Saved in /var/mobile/Documents/wiki.qaq.apelin/Projects/Secret"),
+            FeedbackSendRequest(title: "Title", body: "Saved in /var/mobile/Documents/com.fluoxetine.luros/Projects/Secret"),
             FeedbackSendRequest(title: "Title", body: "Saved in \(home.home.path)/Projects"),
             FeedbackSendRequest(title: "Title", body: "Built under \(home.layout.installRoot)/usr/lib"),
             FeedbackSendRequest(title: "Title", body: "From 192.168.1.20"),

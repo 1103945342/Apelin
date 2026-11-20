@@ -39,11 +39,11 @@ func check() throws {
     // bootstrap hosting this test (which may itself be roothide).
     let rootless = ApplicationInstall.Layout(installRoot: "/var/jb")
     try require(rootless.ldid == "/var/jb/usr/bin/ldid", "rootless ldid location")
-    for path in ["/var/jb/Applications/Hello World.app/Hello World", "/var/jb/var/lib/apelin/staging/test.plist"] {
+    for path in ["/var/jb/Applications/Hello World.app/Hello World", "/var/jb/var/lib/luros/staging/test.plist"] {
         try require(ApplicationInstall.toolPath(path, installRoot: rootless.installRoot) == path, "rootless path stays absolute")
     }
     let hiddenRoot = "/private/var/containers/Bundle/Application/.jbroot-0102030405060700"
-    try require(ApplicationInstall.toolPath(hiddenRoot + "/var/lib/apelin/staging/test.plist", installRoot: hiddenRoot) == "/var/lib/apelin/staging/test.plist", "roothide strips bootstrap root")
+    try require(ApplicationInstall.toolPath(hiddenRoot + "/var/lib/luros/staging/test.plist", installRoot: hiddenRoot) == "/var/lib/luros/staging/test.plist", "roothide strips bootstrap root")
 
     // Synthetic trees, never installed. The runner must read -S's file while it
     // is called. '/' selects the same identity mapping rootless uses, even when

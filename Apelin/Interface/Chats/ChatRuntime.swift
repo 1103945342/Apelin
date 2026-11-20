@@ -315,7 +315,7 @@ final class ChatRuntime {
         follow(record.summary.id, task: task)
     }
 
-    /// Lists and follows a session an `apelin://` link named that had no
+    /// Lists and follows a session an `lurosdev://` link named that had no
     /// row (`ChatLinkTarget`), and returns its row.
     func adoptLinked(_ record: ChatRecord) -> ChatSummary? {
         guard !records.values.contains(where: { $0.sessionID == record.sessionID }) else { return nil }

@@ -209,7 +209,7 @@ final class SourceLanguageTests: XCTestCase {
           "projectID": "00000000-0000-4000-8000-000000000123",
           "kind": "cli",
           "template": {
-            "extensionID": "wiki.qaq.apelin.dev.cli",
+            "extensionID": "com.fluoxetine.luros.dev.cli",
             "templateID": "c",
             "version": "0.1.2",
             "digest": "sha256:\(String(repeating: "a", count: 64))"
@@ -249,7 +249,7 @@ final class SourceLanguageTests: XCTestCase {
     private func projectRoot(_ text: String, files: [String]) throws -> URL {
         let root = try scratchDirectory()
         addTeardownBlock { try? FileManager.default.removeItem(at: root) }
-        try Data(text.utf8).write(to: root.appendingPathComponent("apelin-project.json"))
+        try Data(text.utf8).write(to: root.appendingPathComponent("luros-project.json"))
         for file in files {
             let url = root.appendingPathComponent(file)
             try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)

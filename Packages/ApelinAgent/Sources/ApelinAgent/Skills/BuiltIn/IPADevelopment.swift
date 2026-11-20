@@ -12,7 +12,7 @@ extension BuiltInSkills {
         configurations, steps — is an app project's (apelin-project-description).
 
         ## Creating one
-        - `apelin_project_create` with an app template (`wiki.qaq.apelin.dev.app/…`)
+        - `apelin_project_create` with an app template (`com.fluoxetine.luros.dev.app/…`)
           and `output_format: "ipa"`. Never the empty workspace, and never a deb
           project whose `format` is edited afterwards: the create path writes the
           whole description in one go, and its packaging baseline is that

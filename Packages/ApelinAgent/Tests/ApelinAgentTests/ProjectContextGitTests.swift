@@ -18,10 +18,10 @@ struct ProjectContextGitTests {
         let root = try folder(config: nil)
         defer { try? FileManager.default.removeItem(atPath: root) }
         let status = GitStatusToolResponse(branch: "main", head: nil, entries: [
-            GitStatusToolEntry(path: "apelin-project.json", index: "", worktree: "?"),
+            GitStatusToolEntry(path: "luros-project.json", index: "", worktree: "?"),
         ])
         #expect(ProjectContext.gitState(status, root: root)
-            == "on branch main, no commits yet; 1 changed:  ? apelin-project.json.")
+            == "on branch main, no commits yet; 1 changed:  ? luros-project.json.")
     }
 
     @Test

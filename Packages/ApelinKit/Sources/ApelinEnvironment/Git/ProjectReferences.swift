@@ -5,7 +5,7 @@ import Foundation
 /// The project IDs something on this device names besides a project's own
 /// folder: a conversation (its `sessions/<id>/session.json`, which a
 /// reopened session must match), a build (`Builds/<id>/`) and a memory
-/// record. A repository's `apelin-project.json` brings an ID of its own into
+/// record. A repository's `luros-project.json` brings an ID of its own into
 /// a new workspace; the workspace takes it only where neither that ID nor
 /// the workspace's is named by any of them, so no conversation, build or
 /// memory ends up belonging to a project it was not made for.

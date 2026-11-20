@@ -15,7 +15,7 @@ final class SessionHost: @unchecked Sendable {
     let stateDirectory: URL
     let registry: TaskRegistry
     let workers: WorkerSupervisor
-    /// `~/Documents/wiki.qaq.apelin`, as mobile's home spells it.
+    /// `~/Documents/com.fluoxetine.luros`, as mobile's home spells it.
     let dataFolder: DataFolder
     /// Confirm-mode digests and agent session modes (host-private).
     let approvals: ApprovalLedger
@@ -64,7 +64,7 @@ final class SessionHost: @unchecked Sendable {
         // system's. The app reckons it the same way, off its own bundle.
         home = RoothideRoot.mobileHome(for: ownPath)
         stateDirectory = URL(
-            fileURLWithPath: installRoot == "/" ? "/var/lib/apelin" : installRoot + "/var/lib/apelin",
+            fileURLWithPath: installRoot == "/" ? "/var/lib/luros" : installRoot + "/var/lib/luros",
             isDirectory: true
         )
         registry = TaskRegistry(directory: stateDirectory.appendingPathComponent("tasks", isDirectory: true))
@@ -320,7 +320,7 @@ final class SessionHost: @unchecked Sendable {
         }
 
         // Report work to apelind as it changes, and stop idle workers.
-        let timer = DispatchSource.makeTimerSource(queue: DispatchQueue(label: "wiki.qaq.apelind.session.report"))
+        let timer = DispatchSource.makeTimerSource(queue: DispatchQueue(label: "com.fluoxetine.lurosd.session.report"))
         timer.schedule(deadline: .now(), repeating: .seconds(2))
         timer.setEventHandler { [self] in
             Task { await reportWork() }

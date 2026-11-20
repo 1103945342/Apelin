@@ -45,7 +45,7 @@ public enum LoadImageCheck: String, Codable, Sendable {
 /// <buildID>`); `targetID` an executable name (`SpringBoard`) or a bundle
 /// id (`com.apple.springboard`). With `projectID`, the marker's subsystem,
 /// the installed dylib and the filter come from the project's
-/// `apelin-project.json`; without it only the marker is checked.
+/// `luros-project.json`; without it only the marker is checked.
 ///
 /// A task (`confirmLoaded` kind) the session host owns: the reply is its
 /// handle, the request checked first — a bad one is the reply, not a failed

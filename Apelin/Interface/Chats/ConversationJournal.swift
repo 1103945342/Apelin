@@ -17,7 +17,7 @@ import Foundation
 enum ConversationJournal {
     private static let category = "Conversation"
     private static let messageBytes = 4096
-    private static let queue = DispatchQueue(label: "wiki.qaq.apelin.conversation-journal", qos: .utility)
+    private static let queue = DispatchQueue(label: "com.fluoxetine.luros.conversation-journal", qos: .utility)
 
     /// Notes the problems among `events`, events the conversation of
     /// `session` had not read before.

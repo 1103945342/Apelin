@@ -1,7 +1,7 @@
 // Open in Apelin: reads `url` and an optional `branch` from this page's
 // address, checks them as Apelin does (ApelinLink.isRepositoryAddress and
 // isBranchName in Widgets/Shared/ApelinLink.swift), and offers the
-// apelin://import link Apelin asks about. Nothing read here is ever put into
+// lurosdev://import link Apelin asks about. Nothing read here is ever put into
 // the page as markup: text goes in as text, and the link is built from the
 // checked values, each URL-encoded.
 "use strict";
@@ -94,7 +94,7 @@ function readRequest(search) {
 }
 
 function importLink(request) {
-  let link = "apelin://import?url=" + encodeURIComponent(request.address);
+  let link = "lurosdev://import?url=" + encodeURIComponent(request.address);
   if (request.branch !== null) link += "&branch=" + encodeURIComponent(request.branch);
   return link;
 }

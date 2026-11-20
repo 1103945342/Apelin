@@ -6,12 +6,12 @@ extension BuiltInSkills {
         # Tweak development on the device
 
         You are on a jailbroken iPhone or iPad (iOS 16 or later, roothide or
-        rootless). The project lives in `~/Documents/wiki.qaq.apelin/Projects/<name>/`
+        rootless). The project lives in `~/Documents/com.fluoxetine.luros/Projects/<name>/`
         and every file tool works relative to that root. Nothing you write can
         leave it.
 
         ## The project
-        - `apelin-project.json` is the build description: sources, compile and
+        - `luros-project.json` is the build description: sources, compile and
           link flags, frameworks, the deployment target (16.0) and build steps.
           Changing it, or a build script it names, makes the next `apelin_project_build` ask the
           user once (Strict mode); editing sources never does. Change it only
@@ -25,7 +25,7 @@ extension BuiltInSkills {
           loads into, by bundle id (`Filter.Bundles`) or executable
           (`Filter.Executables`). SpringBoard is `com.apple.springboard`.
         - Read the template's files before writing new ones; keep its naming.
-        - `apelin-icon.png`, beside `apelin-project.json`, is the project's
+        - `apelin-icon.png`, beside `luros-project.json`, is the project's
           icon in Apelin: a square PNG, 1024 points or less. Write it when the
           user asks for an icon; without it Apelin shows its kind's default.
           It is Apelin's alone and never goes into the package.

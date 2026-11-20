@@ -48,7 +48,7 @@ final class BuildWorkerTests: XCTestCase {
         XCTAssertNil(created.baseline)
         XCTAssertEqual(try worker.store.root(of: created.projectID).name, request.name)
         // its description and the empty repository on main it starts with
-        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: created.path).sorted(), [".git", "apelin-project.json"])
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: created.path).sorted(), [".git", "luros-project.json"])
         XCTAssertEqual(
             try String(contentsOfFile: created.path + "/.git/HEAD", encoding: .utf8),
             "ref: refs/heads/main\n",
@@ -89,9 +89,9 @@ final class BuildWorkerTests: XCTestCase {
         let worker = BuildWorker(installRoot: "/var/jb", home: home.path, registry: registry, extensionDirectory: Repository.extensions)
 
         let list = worker.extensionList()
-        XCTAssertTrue(list.extensions.contains { $0.id == "wiki.qaq.apelin.dev.tweak" && $0.kind == .tweak && $0.problems.isEmpty })
-        let tweak = try XCTUnwrap(list.extensions.first { $0.id == "wiki.qaq.apelin.dev.tweak" }?.templates.first)
-        XCTAssertEqual(tweak.id, "wiki.qaq.apelin.dev.tweak/objc-hook")
+        XCTAssertTrue(list.extensions.contains { $0.id == "com.fluoxetine.luros.dev.tweak" && $0.kind == .tweak && $0.problems.isEmpty })
+        let tweak = try XCTUnwrap(list.extensions.first { $0.id == "com.fluoxetine.luros.dev.tweak" }?.templates.first)
+        XCTAssertEqual(tweak.id, "com.fluoxetine.luros.dev.tweak/objc-hook")
         XCTAssertEqual(tweak.parameters.first { $0.name == "filterBundles" }?.defaultValue, .array([.string("com.apple.springboard")]))
 
         let created = try worker.projectCreate(ProjectCreateRequest(templateID: tweak.id, name: "Worker Tweak", values: ["displayName": .string("Worker Tweak")]))
@@ -101,7 +101,7 @@ final class BuildWorkerTests: XCTestCase {
         // what the host reads off the wire, by name
         let createdJSON = try JSONValue(encoding: created)
         XCTAssertNotNil(createdJSON["descriptionDigests"]?["build"]?.stringValue)
-        XCTAssertEqual(created.path, home.path + "/Documents/wiki.qaq.apelin/Projects/Worker Tweak")
+        XCTAssertEqual(created.path, home.path + "/Documents/com.fluoxetine.luros/Projects/Worker Tweak")
         let check = try worker.projectCheck(ProjectCheckRequest(projectID: created.projectID))
         XCTAssertTrue(check.passed, "\(check.diagnostics)")
         XCTAssertEqual(check.descriptionDigests, created.descriptionDigests)
@@ -118,7 +118,7 @@ final class BuildWorkerTests: XCTestCase {
         XCTAssertTrue(events.kinds.contains("artifact"))
         XCTAssertEqual(events.payloads("stage").compactMap { $0["stage"]?.stringValue }, ["check", "compile", "link", "lipo", "dsym", "strip", "sign", "package", "verify"])
         XCTAssertFalse(
-            events.payloads("log").contains { $0["line"]?.stringValue?.contains("apelin-project.json") == true },
+            events.payloads("log").contains { $0["line"]?.stringValue?.contains("luros-project.json") == true },
             "a manifest already in the written form is left alone",
         )
         let artifact = try XCTUnwrap(events.payloads("artifact").first).decode(BuildArtifact.self)
@@ -126,7 +126,7 @@ final class BuildWorkerTests: XCTestCase {
         XCTAssertEqual(artifact.projectID, created.projectID)
         XCTAssertEqual(artifact.packagingDigest, created.descriptionDigests?.packaging)
         let debPath = try XCTUnwrap(artifact.path)
-        XCTAssertTrue(debPath.hasPrefix(home.path + "/Documents/wiki.qaq.apelin/Builds/"), debPath)
+        XCTAssertTrue(debPath.hasPrefix(home.path + "/Documents/com.fluoxetine.luros/Builds/"), debPath)
         XCTAssertEqual(try CanonicalJSON.sha256Tag(Data(contentsOf: URL(fileURLWithPath: debPath))), artifact.digest)
         let members = try DebArchiveReader.contents(of: .path(debPath), contentsLimit: 0).members
         XCTAssertTrue(members.contains("control.tar.gz"), "\(members)")
@@ -166,11 +166,11 @@ final class BuildWorkerTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, _) = try makeHome(in: scratch)
         let worker = BuildWorker(installRoot: "/var/jb", home: home.path, registry: registry, extensionDirectory: Repository.extensions)
-        let project = try worker.projectCreate(ProjectCreateRequest(templateID: "wiki.qaq.apelin.dev.cli/c", name: "Approved"))
+        let project = try worker.projectCreate(ProjectCreateRequest(templateID: "com.fluoxetine.luros.dev.cli/c", name: "Approved"))
         let approved = try XCTUnwrap(project.descriptionDigests?.build)
         // On one line, as a rename wrote it before: the same descriptions,
         // so the approval still holds and the build formats the file.
-        let manifest = URL(fileURLWithPath: project.path).appendingPathComponent("apelin-project.json")
+        let manifest = URL(fileURLWithPath: project.path).appendingPathComponent("luros-project.json")
         let formatted = try Data(contentsOf: manifest)
         XCTAssertEqual(ProjectManifestFormat.formatted(formatted), formatted, "a new project is in the written form")
         let oneLine = try Data((StrictJSON.parse(formatted).description + "\n").utf8)
@@ -191,7 +191,7 @@ final class BuildWorkerTests: XCTestCase {
         try worker.buildStart(BuildStartRequest(projectID: project.projectID, approvedBuildDigest: approved), taskID: TaskID.make()) { current.append($0, $1, $2) }
         XCTAssertEqual(current.finished.wait(timeout: .now() + 120), .success)
         XCTAssertEqual(current.last?["state"]?.stringValue, "succeeded", "\(current.payloads("log").suffix(20))")
-        XCTAssertTrue(current.payloads("log").contains { $0["line"]?.stringValue?.hasPrefix("formatted apelin-project.json") == true })
+        XCTAssertTrue(current.payloads("log").contains { $0["line"]?.stringValue?.hasPrefix("formatted luros-project.json") == true })
         XCTAssertEqual(try Data(contentsOf: manifest), formatted)
         XCTAssertEqual(try worker.projectCheck(ProjectCheckRequest(projectID: project.projectID)).descriptionDigests, project.descriptionDigests)
     }
@@ -202,7 +202,7 @@ final class BuildWorkerTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, _) = try makeHome(in: scratch)
         let worker = BuildWorker(installRoot: "/var/jb", home: home.path, registry: registry, extensionDirectory: Repository.extensions)
-        let created = try worker.projectCreate(ProjectCreateRequest(templateID: "wiki.qaq.apelin.dev.app/uikit-objc", name: "Shipping"))
+        let created = try worker.projectCreate(ProjectCreateRequest(templateID: "com.fluoxetine.luros.dev.app/uikit-objc", name: "Shipping"))
         func codes() throws -> Set<String> {
             let check = try worker.projectCheck(ProjectCheckRequest(projectID: created.projectID, purpose: .distribution))
             XCTAssertTrue(check.passed, "\(check.diagnostics)")
@@ -220,7 +220,7 @@ final class BuildWorkerTests: XCTestCase {
         )
 
         let root = URL(fileURLWithPath: created.path)
-        let manifest = root.appendingPathComponent("apelin-project.json")
+        let manifest = root.appendingPathComponent("luros-project.json")
         var text = try String(contentsOf: manifest, encoding: .utf8)
         for (old, new) in [
             ("\"Apelin App\"", "\"Shipping Notes\""), ("Built on this device with Apelin.", "Notes that ship."),
@@ -244,7 +244,7 @@ final class BuildWorkerTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: scratch) }
         let (home, _) = try makeHome(in: scratch)
         let worker = BuildWorker(installRoot: "/var/jb", home: home.path, registry: registry, extensionDirectory: Repository.extensions)
-        let project = try worker.projectCreate(ProjectCreateRequest(templateID: "wiki.qaq.apelin.dev.cli/c", name: "Distribution"))
+        let project = try worker.projectCreate(ProjectCreateRequest(templateID: "com.fluoxetine.luros.dev.cli/c", name: "Distribution"))
         var digests = Set<String>()
         for target in BuildBootstrap.allCases {
             let events = Events()

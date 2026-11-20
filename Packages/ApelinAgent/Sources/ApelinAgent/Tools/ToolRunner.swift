@@ -1241,7 +1241,7 @@ actor ToolRunner {
 
     /// Switches the project's toolchain and/or SDK: checked by the host as
     /// a project bound to them would be, refused on any `environment.*`
-    /// error with its reason, then written into apelin-project.json through
+    /// error with its reason, then written into luros-project.json through
     /// the file tools' writer with the registry's digests.
     private func setEnvironment(
         _ arguments: JSONValue,

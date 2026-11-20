@@ -1,7 +1,7 @@
 import enum ApelinProject.ProjectManifestFormat
 import Foundation
 
-/// Rewrites the binding in `apelin-project.json` in place: the four strings
+/// Rewrites the binding in `luros-project.json` in place: the four strings
 /// `environment.toolchain.id`, `.digest`, `environment.sdk.id` and `.digest`
 /// are replaced, and every other byte stays as the user or the template
 /// wrote it. The result is read back and must differ from the original in
@@ -10,7 +10,7 @@ import Foundation
 /// reads back as the same document; one that does not read strictly is
 /// written as the edit left it.
 enum ProjectEnvironmentEdit {
-    static let fileName = "apelin-project.json"
+    static let fileName = "luros-project.json"
 
     struct Result: Equatable {
         var data: Data

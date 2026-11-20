@@ -3,7 +3,7 @@ import ApelinProject
 import ApelinProtocol
 import Foundation
 
-/// Every build puts the project's `apelin-project.json` into its written
+/// Every build puts the project's `luros-project.json` into its written
 /// form before its first step (`ProjectManifestFormat.formatFile`), so a
 /// file written on one line, by Apelin before or by hand, is tidied once and
 /// a formatted one is left alone. Only the text changes, so the digests the
@@ -17,14 +17,14 @@ enum ManifestFormatting {
     /// what the package must carry.
     static func run(projectRoot: URL, checkedFiles: [String: String]? = nil) -> String? {
         if let checkedFiles, digests(manifestOf: projectRoot, among: Array(checkedFiles.keys)) {
-            return "apelin-project.json was left as it is: the build or the package takes it as a file"
+            return "luros-project.json was left as it is: the build or the package takes it as a file"
         }
         do {
             guard try ProjectManifestFormat.formatFile(in: projectRoot) else { return nil }
-            return "formatted apelin-project.json: two spaces a level, one member a line; no value changed"
+            return "formatted luros-project.json: two spaces a level, one member a line; no value changed"
         } catch {
             let reason = (error as? ApelinError)?.message ?? error.localizedDescription
-            return "apelin-project.json was left as it is: \(reason)"
+            return "luros-project.json was left as it is: \(reason)"
         }
     }
 

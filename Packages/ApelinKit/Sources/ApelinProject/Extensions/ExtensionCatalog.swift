@@ -19,9 +19,9 @@ public struct DiscoveredExtension: Sendable, Equatable {
 }
 
 /// Development extensions installed at
-/// `<install-root>/usr/share/apelin/development/<id>/` (Milestone 1 §5.2) or
+/// `<install-root>/usr/share/luros/development/<id>/` (Milestone 1 §5.2) or
 /// carried inside Apelin's own app bundle at
-/// `<install-root>/Applications/Apelin.app/Development/<id>/`, the four the
+/// `<install-root>/Applications/Luros.app/Development/<id>/`, the four the
 /// package ships so a device needs no extension package to make a project.
 /// Each manifest is validated on its own, and a bad manifest, an unknown
 /// schema version, a path escaping the extension, an undeclared or
@@ -33,13 +33,13 @@ public struct DiscoveredExtension: Sendable, Equatable {
 public struct ExtensionCatalog: Sendable {
     public static func directory(installRoot: String) -> URL {
         let base = installRoot == "/" ? "" : installRoot
-        return URL(fileURLWithPath: base + "/usr/share/apelin/development", isDirectory: true)
+        return URL(fileURLWithPath: base + "/usr/share/luros/development", isDirectory: true)
     }
 
     /// The copy Apelin's own package carries inside its app bundle.
     public static func bundledDirectory(installRoot: String) -> URL {
         let base = installRoot == "/" ? "" : installRoot
-        return URL(fileURLWithPath: base + "/Applications/Apelin.app/Development", isDirectory: true)
+        return URL(fileURLWithPath: base + "/Applications/Luros.app/Development", isDirectory: true)
     }
 
     public let directory: URL

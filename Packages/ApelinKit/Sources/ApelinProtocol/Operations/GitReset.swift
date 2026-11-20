@@ -68,7 +68,7 @@ public struct GitResetPreview: Codable, Sendable, Equatable {
     /// Untracked or ignored files the remote's tree replaces.
     public var overwrittenFileCount: Int
     public var overwrittenFiles: [String]
-    /// What `apelin-project.json` becomes.
+    /// What `luros-project.json` becomes.
     public var projectFile: GitProjectFile
     /// The project is that branch already: nothing to do.
     public var upToDate: Bool
@@ -119,7 +119,7 @@ public struct GitResetPreview: Codable, Sendable, Equatable {
 /// have left alone. First it saves what would be lost on a new branch
 /// `apelin-backup/<yyyyMMdd-HHmmss>`: the commit HEAD was at and, with
 /// anything uncommitted or replaced, a commit of it on top. Anything else
-/// is `conflict` with nothing changed. `apelin-project.json` keeps the
+/// is `conflict` with nothing changed. `luros-project.json` keeps the
 /// project's own `projectID` (`GitProjectFile`), and stays as it was when
 /// the remote has none. A task of kind `environment`, not resumed;
 /// `progress` {stage: "fetching" | "saving" | "resetting"}, then `result`

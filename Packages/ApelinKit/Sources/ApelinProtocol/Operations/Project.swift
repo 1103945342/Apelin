@@ -1,7 +1,7 @@
 import ApelinCore
 
 // Development extensions, templates, projects under
-// ~/Documents/wiki.qaq.apelin/Projects/<name>/ and their checks.
+// ~/Documents/com.fluoxetine.luros/Projects/<name>/ and their checks.
 // Served by apelin-build (Workers/Build; ApelinProject).
 
 public enum DevelopmentExtensionKind: String, Codable, Sendable {
@@ -310,7 +310,7 @@ public enum ProjectCheckPurpose: String, Codable, Sendable, CaseIterable {
     case distribution
 }
 
-/// A registered component a project binds: `apelin-project.json` ▸
+/// A registered component a project binds: `luros-project.json` ▸
 /// `environment.toolchain` or `environment.sdk`.
 public struct ProjectComponentBinding: Codable, Sendable, Equatable {
     public var id: String

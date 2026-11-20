@@ -14,12 +14,12 @@ final class SystemLogReaderTests: XCTestCase {
             date: Date(timeIntervalSince1970: 100),
             process: "SpringBoard",
             pid: 800,
-            subsystem: "wiki.qaq.apelin.hello",
+            subsystem: "com.fluoxetine.luros.hello",
             category: "ui",
             level: .default,
             message: "ApelinHello: loaded into SpringBoard",
         )
-        XCTAssertTrue(LogFilter(subsystem: "wiki.qaq.apelin").matches(entry))
+        XCTAssertTrue(LogFilter(subsystem: "com.fluoxetine.luros").matches(entry))
         XCTAssertFalse(LogFilter(subsystem: "wiki.qaq.ape").matches(entry), "dotted children only")
         XCTAssertTrue(LogFilter(process: "springboard").matches(entry))
         XCTAssertFalse(LogFilter(process: "Spring").matches(entry))
@@ -43,7 +43,7 @@ final class SystemLogReaderTests: XCTestCase {
     /// nothing, and the test says so rather than failing.
     func testAReadIsBoundedAndSeesOwnLine() throws {
         let marker = "apelin-log-reader-test-\(UUID().uuidString)"
-        let logger = Logger(subsystem: "wiki.qaq.apelin.tests", category: "reader")
+        let logger = Logger(subsystem: "com.fluoxetine.luros.tests", category: "reader")
         let started = Date()
         let emitter = DispatchWorkItem {
             for _ in 0 ..< 10 {
@@ -55,7 +55,7 @@ final class SystemLogReaderTests: XCTestCase {
         let result: LogReadResult
         do {
             result = try SystemLogReader().readLogs(LogFilter(
-                subsystem: "wiki.qaq.apelin.tests",
+                subsystem: "com.fluoxetine.luros.tests",
                 messageContains: marker,
                 duration: 2,
                 maxEntries: 3,
@@ -78,10 +78,10 @@ final class SystemLogReaderTests: XCTestCase {
     /// dropped some. Skipped when diagnosticd delivers nothing here.
     func testAListenIsOneStreamForItsWholeWindow() throws {
         let marker = "apelin-log-listen-test-\(UUID().uuidString)"
-        let logger = Logger(subsystem: "wiki.qaq.apelin.tests", category: "listen")
+        let logger = Logger(subsystem: "com.fluoxetine.luros.tests", category: "listen")
         let received = Received()
         let listener = try SystemLogReader().listen(
-            LogFilter(subsystem: "wiki.qaq.apelin.tests", messageContains: marker),
+            LogFilter(subsystem: "com.fluoxetine.luros.tests", messageContains: marker),
             until: Date().addingTimeInterval(30),
         ) { entry in
             received.append(entry.message)

@@ -37,13 +37,13 @@ cat >"$scratch/entitlements.plist" <<'PLIST'
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>wiki.qaq.apelin.fixture</key>
+	<key>com.fluoxetine.luros.fixture</key>
 	<true/>
 </dict>
 </plist>
 PLIST
 # ldid, as Scripts/package-deb.sh signs: codesign drops entitlements on a dylib.
-ldid -S"$scratch/entitlements.plist" -Cadhoc -Iwiki.qaq.apelin.fixture "$scratch/ios-arm64.dylib"
+ldid -S"$scratch/entitlements.plist" -Cadhoc -Icom.fluoxetine.luros.fixture "$scratch/ios-arm64.dylib"
 cp "$scratch/ios-arm64.dylib" "$out/ios-arm64.dylib"
 
 for arch in arm64 x86_64; do

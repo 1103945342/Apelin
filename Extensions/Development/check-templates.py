@@ -6,7 +6,7 @@ For each Extensions/Development/<id>/manifest.json:
   2. check each template: every file declared and nothing else, placeholder
      types legal for each file format, defaults valid, digest current;
   3. instantiate each template with its defaults into a scratch project and
-     validate the generated apelin-project.json;
+     validate the generated luros-project.json;
   4. build each generated project on the Mac with Xcode's iPhoneOS SDK,
      following its typed steps for every bootstrap it names (compile, link,
      bundle-resources, lipo, dsym, strip, sign), with the extension's support
@@ -96,7 +96,7 @@ def expand(root: Path, globs: list[str]) -> list[Path]:
 
 
 def reference_build(project_root: Path, extensions: dict[str, tuple[Path, dict]], out: Path) -> list[str]:
-    project = schema.load_json(project_root / "apelin-project.json")
+    project = schema.load_json(project_root / "luros-project.json")
     sdk = subprocess.run(["xcrun", "--sdk", "iphoneos", "--show-sdk-path"], capture_output=True, text=True, check=True).stdout.strip()
     built = []
     configuration_name = "Release"
@@ -319,7 +319,7 @@ def main() -> int:
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 schema.instantiate(extension, manifest, template, sample_values(manifest, template), destination)
                 digests = schema.project_digests(destination)
-                project = schema.load_json(destination / "apelin-project.json")
+                project = schema.load_json(destination / "luros-project.json")
                 # A package manager shows the extension's own icon, one Pages serves.
                 icon = f"icons/{manifest['id']}.png"
                 if project["package"].get("icon") != PAGES + icon or not (SITE / icon).is_file():

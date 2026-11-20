@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "wiki.qaq.apelin.agent-tools.disassembler",
+  "id": "com.fluoxetine.luros.agent-tools.disassembler",
   "name": "Disassembler",
   "version": "1.1.0",
   "license": "MIT AND BSD-3-Clause AND NCSA",

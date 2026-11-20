@@ -527,9 +527,9 @@ func terminalChecks(scratch: URL, scratchPath: String) async throws {
 
     do {
         let home = scratchPath + "/terminal-home"
-        let project = home + "/Documents/wiki.qaq.apelin/Projects/Hello"
+        let project = home + "/Documents/com.fluoxetine.luros/Projects/Hello"
         let data = DataFolder(home: home)
-        write(project + "/apelin-project.json", #"{"projectID": "p-1"}"#)
+        write(project + "/luros-project.json", #"{"projectID": "p-1"}"#)
         try FileManager.default.createDirectory(atPath: project + "/Sources/Deep", withIntermediateDirectories: true)
         write(project + "/README.md", "readme\n")
         try FileManager.default.createDirectory(atPath: scratchPath + "/terminal-outside", withIntermediateDirectories: true)

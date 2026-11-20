@@ -48,16 +48,16 @@ struct ProjectCreationTests {
         let backend = MockBackend()
         let runner = try runner(home, project: generalChat(), backend: backend)
         let list = try await runner.run(.local(.templateList), toolCallID: "call-1", arguments: .object([:]), cancellation: nil, mcp: nil)
-        #expect(text(list).contains("wiki.qaq.apelin.dev.tweak/tweak"))
+        #expect(text(list).contains("com.fluoxetine.luros.dev.tweak/tweak"))
         let arguments: JSONValue = .object([
-            "template": "wiki.qaq.apelin.dev.tweak/tweak",
+            "template": "com.fluoxetine.luros.dev.tweak/tweak",
             "name": "Lock Screen Clock",
             "values": .object(["filter": "com.apple.springboard", "verbose": .bool(true), "count": .int(3)]),
         ])
         let created = try await runner.run(.local(.projectCreate), toolCallID: "call-2", arguments: arguments, cancellation: nil, mcp: nil)
         #expect(text(created).contains("project-1"))
         #expect(await backend.calls == [.createProject(
-            template: "wiki.qaq.apelin.dev.tweak/tweak",
+            template: "com.fluoxetine.luros.dev.tweak/tweak",
             name: "Lock Screen Clock",
             values: ["filter": .string("com.apple.springboard"), "verbose": .boolean(true), "count": .integer(3)],
         )])
@@ -74,7 +74,7 @@ struct ProjectCreationTests {
         let runner = try runner(home, project: generalChat(), backend: backend)
         func create(_ values: JSONValue) async throws {
             _ = try await runner.run(.local(.projectCreate), toolCallID: UUID().uuidString, arguments: .object([
-                "template": "wiki.qaq.apelin.dev.tweak/objc-hook",
+                "template": "com.fluoxetine.luros.dev.tweak/objc-hook",
                 "name": "Settings Tweak",
                 "values": values,
             ]), cancellation: nil, mcp: nil)
@@ -84,11 +84,11 @@ struct ProjectCreationTests {
         try await create(["filterBundles": []])
         #expect(await backend.calls == [
             .createProject(
-                template: "wiki.qaq.apelin.dev.tweak/objc-hook",
+                template: "com.fluoxetine.luros.dev.tweak/objc-hook",
                 name: "Settings Tweak",
                 values: ["filterBundles": .list(["com.apple.springboard", "com.apple.Preferences"]), "displayName": .string("X")],
             ),
-            .createProject(template: "wiki.qaq.apelin.dev.tweak/objc-hook", name: "Settings Tweak", values: ["filterBundles": .list([])]),
+            .createProject(template: "com.fluoxetine.luros.dev.tweak/objc-hook", name: "Settings Tweak", values: ["filterBundles": .list([])]),
         ])
         for (values, expected) in [
             (["filterBundles": [1]], "filterBundles: a list holds strings only"),
@@ -124,7 +124,7 @@ struct ProjectCreationTests {
         #expect(await backend.calls.isEmpty)
         let project = try runner(home, project: home.project, backend: backend)
         let created = try await project.run(.local(.projectCreate), toolCallID: "call-2", arguments: .object(["template": "x/y", "name": "Clock"]), cancellation: nil, mcp: nil)
-        #expect(text(created).contains("apelin://project/"))
+        #expect(text(created).contains("lurosdev://project/"))
         #expect(await backend.calls == [.createProject(template: "x/y", name: "Clock", values: [:])])
     }
 
@@ -146,7 +146,7 @@ struct ProjectCreationTests {
     func `Every chat imports a repository through an Empty workspace's conversation`() throws {
         let home = try TemporaryHome()
         defer { home.remove() }
-        let steps = ["wiki.qaq.apelin.workspace/empty", "apelin_conversation_create", "git_clone"]
+        let steps = ["com.fluoxetine.luros.workspace/empty", "apelin_conversation_create", "git_clone"]
         func namesEveryStep(_ text: String) -> Bool {
             steps.allSatisfy { text.contains($0) }
         }
@@ -164,7 +164,7 @@ struct ProjectCreationTests {
     func `The screen tools leave Apelin's own screen to the user`() throws {
         let home = try TemporaryHome()
         defer { home.remove() }
-        #expect(AgentToolName.screenInteract.summary.contains("Never in Apelin itself (wiki.qaq.apelin)"))
+        #expect(AgentToolName.screenInteract.summary.contains("Never in Apelin itself (com.fluoxetine.luros)"))
         // A project is deleted by its own tool, never by taps through All Projects.
         #expect(AgentToolName.screenInteract.summary.contains("a project is deleted with apelin_project_delete"))
         let prompt = SystemPrompt.make(project: home.project, projectRoot: home.projectURL.path, skills: [], mcpServers: [])

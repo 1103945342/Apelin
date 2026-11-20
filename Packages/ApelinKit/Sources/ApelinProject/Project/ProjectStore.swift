@@ -3,10 +3,10 @@ import ApelinProtocol
 import Darwin
 import Foundation
 
-/// Projects under `~/Documents/wiki.qaq.apelin/Projects/<name>/`, nowhere
+/// Projects under `~/Documents/com.fluoxetine.luros/Projects/<name>/`, nowhere
 /// else: creating one from a template, finding one by its ID.
 public struct ProjectStore: Sendable {
-    public static let projectFileName = "apelin-project.json"
+    public static let projectFileName = "luros-project.json"
     public static let projectSchemaVersion = 1
 
     public let dataFolder: DataFolder
@@ -38,7 +38,7 @@ public struct ProjectStore: Sendable {
         public var project: ProjectDocument
     }
 
-    /// The project folder whose `apelin-project.json` carries `projectID`.
+    /// The project folder whose `luros-project.json` carries `projectID`.
     /// A folder whose file does not parse is skipped here (projectCheck on
     /// its ID cannot find it; the UI lists it by name instead).
     public func root(of projectID: String) throws -> (name: String, root: URL) {
@@ -271,7 +271,7 @@ public struct ProjectStore: Sendable {
             do {
                 (document, typed) = try ProjectValidation.load(generated)
             } catch {
-                throw TemplateError("generated apelin-project.json: \(error)")
+                throw TemplateError("generated luros-project.json: \(error)")
             }
             let digests = try ApprovalDigests.compute(document, root: staging)
             // The same folder opened on a Mac: an Xcode project made from the
@@ -319,7 +319,7 @@ public struct ProjectStore: Sendable {
         do {
             document = try JSONDecoder().decode(ProjectDocument.self, from: data)
         } catch {
-            throw TemplateError("generated apelin-project.json: \(error)")
+            throw TemplateError("generated luros-project.json: \(error)")
         }
         guard document.kind == .app, document.products.filter({ $0.type == .app }).count == 1 else {
             throw TemplateError("only an app template builds an .ipa")
@@ -343,7 +343,7 @@ public struct ProjectStore: Sendable {
         do {
             encoded = try encoder.encode(document)
         } catch {
-            throw TemplateError("apelin-project.json: \(error)")
+            throw TemplateError("luros-project.json: \(error)")
         }
         if let relative = document.products.first(where: { $0.type == .app })?.entitlements {
             try Self.writeContainerEntitlements(relative, in: root)

@@ -88,8 +88,8 @@ struct InstalledToolExtensions {
     }
 
     func installShipped() throws {
-        try install("wiki.qaq.apelin.agent-tools.disassembler", manifest: Self.shipped("disassembler"))
-        try install("wiki.qaq.apelin.agent-tools.assembler", manifest: Self.shipped("assembler"))
+        try install("com.fluoxetine.luros.agent-tools.disassembler", manifest: Self.shipped("disassembler"))
+        try install("com.fluoxetine.luros.agent-tools.assembler", manifest: Self.shipped("assembler"))
     }
 
     func offer() -> ToolExtensionOffer {
@@ -108,7 +108,7 @@ func descriptor(holding data: Data) -> OwnedDescriptor {
 
 @Suite("Agent tool extensions")
 struct ToolExtensionTests {
-    private static let disassembler = "wiki.qaq.apelin.agent-tools.disassembler"
+    private static let disassembler = "com.fluoxetine.luros.agent-tools.disassembler"
 
     private static func text(_ result: AgentToolResult) -> String {
         result.content.compactMap { block -> String? in
@@ -146,7 +146,7 @@ struct ToolExtensionTests {
         try installed.installShipped()
         let offer = installed.offer()
         #expect(offer.leftOut.isEmpty, "\(offer.leftOut)")
-        #expect(offer.extensions.map(\.id) == ["wiki.qaq.apelin.agent-tools.assembler", Self.disassembler])
+        #expect(offer.extensions.map(\.id) == ["com.fluoxetine.luros.agent-tools.assembler", Self.disassembler])
         #expect(offer.tools.map(\.name) == ["assemble", "disassemble", "symbols"])
         #expect(offer.tools.map(\.timeoutSeconds) == [30, 30, 30])
         #expect(offer.tools[1].required == ["binary", "address"])
@@ -234,7 +234,7 @@ struct ToolExtensionTests {
             device: .current,
             toolExtensions: installed.offer().extensions,
         ))
-        #expect(section.contains("\n- Agent tool extensions, packages the user installs and removes with their package manager, whose tools are among yours. Each runs in its own process as mobile, outside the project, so give it absolute paths; their tools ask in Strict mode:\n  - Assembler 1.0.0 (wiki.qaq.apelin.agent-tools.assembler): assemble.\n  - Disassembler 1.1.0 (wiki.qaq.apelin.agent-tools.disassembler): disassemble, symbols."))
+        #expect(section.contains("\n- Agent tool extensions, packages the user installs and removes with their package manager, whose tools are among yours. Each runs in its own process as mobile, outside the project, so give it absolute paths; their tools ask in Strict mode:\n  - Assembler 1.0.0 (com.fluoxetine.luros.agent-tools.assembler): assemble.\n  - Disassembler 1.1.0 (com.fluoxetine.luros.agent-tools.disassembler): disassemble, symbols."))
         let none = EnvironmentPrompt.section(EnvironmentPrompt.inputs(configuration, root: root, device: .current))
         #expect(!none.contains("Agent tool extensions"))
         // The state a session reads finds them itself when given none.
@@ -526,7 +526,7 @@ struct ToolExtensionTests {
         #expect(sent[1].tools == sent[2].tools)
         #expect(sent[1].systemPrompt == sent[0].systemPrompt, "the system prompt stays the session's")
         let told = Self.lastUserText(sent[1].messages)
-        #expect(told.contains("- now: Disassembler 1.1.0 (wiki.qaq.apelin.agent-tools.disassembler): disassemble, symbols."), "\(told)")
+        #expect(told.contains("- now: Disassembler 1.1.0 (com.fluoxetine.luros.agent-tools.disassembler): disassemble, symbols."), "\(told)")
         #expect(!Self.lastUserText(sent[0].messages).contains("Agent tool extensions"))
 
         #expect(await backend.toolSessionsOpened == [Self.disassembler])

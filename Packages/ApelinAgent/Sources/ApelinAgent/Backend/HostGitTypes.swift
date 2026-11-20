@@ -181,7 +181,7 @@ public struct GitTaskToolResponse: Sendable, Hashable, Codable {
     public var forced: Bool?
     /// What the model is told besides, in words.
     public var note: String?
-    /// clone: what became of the project's apelin-project.json, in words.
+    /// clone: what became of the project's luros-project.json, in words.
     public var projectFile: String?
 
     public init(

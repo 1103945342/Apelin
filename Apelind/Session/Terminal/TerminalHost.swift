@@ -24,7 +24,7 @@ actor TerminalHost {
     private let home: String
     private let scopes: FileScopes
     private let registry: TaskRegistry
-    private let queue = DispatchQueue(label: "wiki.qaq.apelind.terminal")
+    private let queue = DispatchQueue(label: "com.fluoxetine.lurosd.terminal")
     private var sessions: [String: TerminalSession] = [:]
     /// Shells spawned whose task is still being created, so not yet in `sessions`.
     private var opening = 0

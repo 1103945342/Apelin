@@ -174,7 +174,7 @@ public enum GitClone {
     }
 
     /// A file of the folder the repository's own copy may replace (an Apelin
-    /// workspace's `apelin-project.json`): `settle` is handed the
+    /// workspace's `luros-project.json`): `settle` is handed the
     /// repository's bytes before anything is checked out, and answers what
     /// the file holds afterwards — those bytes, or others — or throws to
     /// refuse the clone. When the repository has no such file, the folder's

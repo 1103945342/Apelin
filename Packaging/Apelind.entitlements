@@ -40,7 +40,7 @@
 	<true/>
 	<key>com.apple.private.usernotifications.bundle-identifiers</key>
 	<array>
-		<string>wiki.qaq.apelin</string>
+		<string>com.fluoxetine.luros</string>
 	</array>
 	<key>platform-application</key>
 	<true/>

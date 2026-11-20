@@ -10,9 +10,9 @@
 // with reason `notARepository`.
 // Served by apelin-environment (Workers/Environment; ApelinGit, libgit2).
 //
-// `projectID` is the `projectID` in a project's apelin-project.json, or, for
+// `projectID` is the `projectID` in a project's luros-project.json, or, for
 // a folder that has none yet (a fresh clone), the project's folder name.
-// The worker resolves it to `~/Documents/wiki.qaq.apelin/Projects/<name>/`
+// The worker resolves it to `~/Documents/com.fluoxetine.luros/Projects/<name>/`
 // with realpath and a component compare, and every path is relative to it.
 // A workspace may keep a repository in a subdirectory rather than at its
 // root; `projectID` then names it as `<project>/<folder>[/<folder>…]`, and
@@ -226,7 +226,7 @@ public struct GitCloneRequest: OperationRequest {
 /// full, and `branch` (nil: the remote's default) checked out over it
 /// without overwriting anything already there, so a repository that has a
 /// file of the same name as one in the folder fails and leaves the folder
-/// as it was. The one exception is a repository's own `apelin-project.json`
+/// as it was. The one exception is a repository's own `luros-project.json`
 /// coming into a new workspace, whose manifest holds nothing but its
 /// identity: the repository's wins, with its `projectID` as it is when
 /// nothing on the device names that ID or the workspace's yet, else with

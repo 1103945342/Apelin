@@ -37,11 +37,11 @@ public enum BuildService {
                 diagnostics: check.diagnostics.filter { $0.severity == .error },
             )
         }
-        // The check read apelin-project.json again: the digests describe this
+        // The check read luros-project.json again: the digests describe this
         // build only if that was the document the build was resolved from,
         // display name aside (no digest covers it).
         guard check.project.map(described) == described(inputs.project) else {
-            throw BuildFailure("apelin-project.json changed while the build was starting; build again")
+            throw BuildFailure("luros-project.json changed while the build was starting; build again")
         }
         if let approved = inputs.approvedBuildDigest, approved != digests.build.digest {
             throw BuildFailure("the build description changed after it was approved; build again to review it")

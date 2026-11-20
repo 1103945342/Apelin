@@ -16,7 +16,7 @@ final class XcodeProjectTests: XCTestCase {
       "projectID": "3f1c2a44-0d6e-4c31-9a3d-2b1f0e8c7d55",
       "kind": "tweak",
       "template": {
-        "extensionID": "wiki.qaq.apelin.dev.tweak", "templateID": "objc-hook",
+        "extensionID": "com.fluoxetine.luros.dev.tweak", "templateID": "objc-hook",
         "version": "0.1.1",
         "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
       },
@@ -32,7 +32,7 @@ final class XcodeProjectTests: XCTestCase {
         "id": "tweak", "type": "dylib", "name": "SmokeTweak",
         "sources": ["Sources/*.m"], "headerSearchPaths": ["Sources"], "objcARC": true,
         "frameworks": ["Foundation", "UIKit"], "libraries": ["substrate"],
-        "extensionSupport": [{ "extension": "wiki.qaq.apelin.dev.tweak", "component": "substrate" }]
+        "extensionSupport": [{ "extension": "com.fluoxetine.luros.dev.tweak", "component": "substrate" }]
       }],
       "build": { "steps": [{ "type": "compile", "product": "tweak" }, { "type": "link", "product": "tweak" }] },
       "package": {
@@ -50,7 +50,7 @@ final class XcodeProjectTests: XCTestCase {
       "projectID": "3f1c2a44-0d6e-4c31-9a3d-2b1f0e8c7d56",
       "kind": "app",
       "template": {
-        "extensionID": "wiki.qaq.apelin.dev.app", "templateID": "uikit-swift",
+        "extensionID": "com.fluoxetine.luros.dev.app", "templateID": "uikit-swift",
         "version": "0.1.1",
         "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
       },
@@ -261,13 +261,13 @@ final class XcodeProjectTests: XCTestCase {
         let scratch = try scratchDirectory()
         defer { try? FileManager.default.removeItem(at: scratch) }
         try FileManager.default.createDirectory(
-            at: scratch.appendingPathComponent("Documents/wiki.qaq.apelin"),
+            at: scratch.appendingPathComponent("Documents/com.fluoxetine.luros"),
             withIntermediateDirectories: true,
         )
         let store = ProjectStore(dataFolder: DataFolder(home: scratch.path))
         let catalog = ExtensionCatalog(directory: Repository.extensions)
         let created = try store.create(
-            templateID: "wiki.qaq.apelin.dev.tweak/objc-hook",
+            templateID: "com.fluoxetine.luros.dev.tweak/objc-hook",
             name: "Carried",
             values: [:],
             catalog: catalog,

@@ -833,7 +833,7 @@
 					ActivityKit,
 				);
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.apelin;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fluoxetine.luros;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -861,7 +861,7 @@
 					ActivityKit,
 				);
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.apelin;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fluoxetine.luros;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -873,7 +873,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				SWIFT_INCLUDE_PATHS = "$(inherited) $(SRCROOT)/Apelind/Vendor/IrisinExternalClient/CIrisinExternalXPC";
-				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.apelind;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fluoxetine.lurosd;
 				PRODUCT_NAME = apelind;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
@@ -885,7 +885,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				SWIFT_INCLUDE_PATHS = "$(inherited) $(SRCROOT)/Apelind/Vendor/IrisinExternalClient/CIrisinExternalXPC";
-				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.apelind;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fluoxetine.lurosd;
 				PRODUCT_NAME = apelind;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
@@ -896,7 +896,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				PRODUCT_BUNDLE_IDENTIFIER = "wiki.qaq.apelin-environment";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fluoxetine.luros-environment";
 				PRODUCT_NAME = "apelin-environment";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -911,7 +911,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				PRODUCT_BUNDLE_IDENTIFIER = "wiki.qaq.apelin-environment";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fluoxetine.luros-environment";
 				PRODUCT_NAME = "apelin-environment";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -926,7 +926,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				PRODUCT_BUNDLE_IDENTIFIER = "wiki.qaq.apelin-build";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fluoxetine.luros-build";
 				PRODUCT_NAME = "apelin-build";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -941,7 +941,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				PRODUCT_BUNDLE_IDENTIFIER = "wiki.qaq.apelin-build";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fluoxetine.luros-build";
 				PRODUCT_NAME = "apelin-build";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -956,7 +956,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				PRODUCT_BUNDLE_IDENTIFIER = "wiki.qaq.apelin-agent";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fluoxetine.luros-agent";
 				PRODUCT_NAME = "apelin-agent";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -971,7 +971,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				PRODUCT_BUNDLE_IDENTIFIER = "wiki.qaq.apelin-agent";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fluoxetine.luros-agent";
 				PRODUCT_NAME = "apelin-agent";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -986,7 +986,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				PRODUCT_BUNDLE_IDENTIFIER = "wiki.qaq.apelin-diagnostics";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fluoxetine.luros-diagnostics";
 				PRODUCT_NAME = "apelin-diagnostics";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1001,7 +1001,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				PRODUCT_BUNDLE_IDENTIFIER = "wiki.qaq.apelin-diagnostics";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fluoxetine.luros-diagnostics";
 				PRODUCT_NAME = "apelin-diagnostics";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1016,7 +1016,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				PRODUCT_BUNDLE_IDENTIFIER = "wiki.qaq.apelin-log-reader";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fluoxetine.luros-log-reader";
 				PRODUCT_NAME = "apelin-log-reader";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1031,7 +1031,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				PRODUCT_BUNDLE_IDENTIFIER = "wiki.qaq.apelin-log-reader";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fluoxetine.luros-log-reader";
 				PRODUCT_NAME = "apelin-log-reader";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1059,7 +1059,7 @@
 					"-weak_framework",
 					ActivityKit,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.apelin.widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fluoxetine.luros.widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
@@ -1084,7 +1084,7 @@
 					"-weak_framework",
 					ActivityKit,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.apelin.widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fluoxetine.luros.widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;

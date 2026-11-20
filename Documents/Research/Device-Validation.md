@@ -3,7 +3,7 @@
 What the milestone 1 data layer has been proven to do on a device, where,
 and what is still to run. Every Apelin step below ran through the console
 (`Documents/Console.md`): a script dropped into
-`~/Documents/wiki.qaq.apelin/console/inbox/`, the app brought to the front,
+`~/Documents/com.fluoxetine.luros/console/inbox/`, the app brought to the front,
 the result read from `console/out/<runID>.jsonl`. Since 2026-10-18 that is
 `Scripts/device.py` (`make device-test`; `Documents/Console.md` ▸ From the
 Mac), which also does each script's setup, kills and checks, and keeps the
@@ -78,7 +78,7 @@ Times are typical for one step; — is not run there.
 | `Documents/Console/demo/` with an openai-compatible (DeepSeek, `deepseek-chat`) credential | credential imported and unlinked; a Relaxed session edits, builds and reports; Confirm asks for `run_code` `uname -a`, waits, runs once after `agentApprove`; abort ends `aborted`; steer lands mid-run; app and CLI templates build, a failing build reports 2 diagnostics. Captured as the replay fixtures | pass | — | — | — |
 
 The session host was killed with `kill -9 $(cat <install
-root>/var/lib/apelin/session.pid)` from a loop on the device watching the
+root>/var/lib/luros/session.pid)` from a loop on the device watching the
 run's output (the harness's watcher since 2026-10-18); the proxy started a new host 1–2 s later every time. No crash
 report for apelind, its session host, a worker or the app came out of any
 run.
@@ -272,12 +272,12 @@ console now goes on after a restart only past a successful respring.
       says `Failed … status=400` with the provider's words, and the app's
       journal for that launch has the `Conversation` line with the session.
 
-- [ ] `apelin-project.json` in its written form (2026-10-31, issue #30,
+- [ ] `luros-project.json` in its written form (2026-10-31, issue #30,
       AGENTS.md ▸ The written form; only the Mac harness has run). On a
       vphone with the package installed (`make vphone`): a project with a
       one-line manifest (rename one made before this change, or write it
       on one line from the terminal) builds, its build log says
-      "formatted apelin-project.json", the file is two spaces a level,
+      "formatted luros-project.json", the file is two spaces a level,
       every value and its order as before, mobile still owns it, and a second
       build leaves it alone; under Strict that first build asks nothing
       the template's digests did not. A new project, a workspace, a
@@ -333,14 +333,14 @@ console now goes on after a restart only past a successful respring.
       remote with git_remote_set, git_reset_to_remote's card names the
       commits lost, the unrelated histories and the backup branch, and asks
       in Strict, Relaxed and Full alike; after Approve the folder is the
-      repository's, `apelin-project.json` keeps the project's projectID (git
+      repository's, `luros-project.json` keeps the project's projectID (git
       shows it changed), the project and its conversations are still there,
       and the `apelin-backup/…` branch holds the old work. New Project with
       that address: the import succeeds and the sidebar shows the
       repository's name for it.
 
 - [ ] A preference bundle's Settings row with its icon (2026-10-30, issue
-      #19, `wiki.qaq.apelin.dev.preferences` 0.1.3), on a device where
+      #19, `com.fluoxetine.luros.dev.preferences` 0.1.3), on a device where
       PreferenceLoader shows panes (the owner's iOS 17.3.1 iPhone): a new
       project from the template, built and installed, shows the plate
       beside its name in Settings.
@@ -633,7 +633,7 @@ console now goes on after a restart only past a successful respring.
       sessions; none of it has run on a device; needs a model provider).
       With Apelin in front, apelin_screen_interact's tap, swipe and typed
       text are refused, nothing on Apelin's screen changing, in Relaxed,
-      in Full and in Strict after Approve; target_id wiki.qaq.apelin is
+      in Full and in Strict after Approve; target_id com.fluoxetine.luros is
       refused too; with Settings in front the same tap goes through; the
       console's `diagnostics` script, whose tap is the app's, still runs.
       In General Chat and in a tweak project's chat, "import <an HTTPS
@@ -733,7 +733,7 @@ console now goes on after a restart only past a successful respring.
       (2026-10-29, AGENTS.md ▸ Agent sessions; none of it has run on a
       device). Under Strict, in a preference bundle project's chat:
       file_read of
-      `<install root>/usr/share/apelin/development/wiki.qaq.apelin.dev.preferences/support/include/Preferences/PSListController.h`
+      `<install root>/usr/share/luros/development/com.fluoxetine.luros.dev.preferences/support/include/Preferences/PSListController.h`
       and file_grep of an SDK's `usr/include` by the path `# Environment`
       names, each with no card; file_find there naming whole paths that
       file_read takes back; file_edit of the header refused. On both
@@ -771,9 +771,9 @@ console now goes on after a restart only past a successful respring.
       the dark (2026-10-26, build 77). On the iOS 27.0.1 iPad vphone
       (roothide, Irisin 5.0.0, icli 0.9.2), 0.1.8 → 0.2.0 went in through
       irisind with the new `com.icli.icli` dependency satisfied, and the app
-      launched; `icli app network get wiki.qaq.apelin` read both policies
+      launched; `icli app network get com.fluoxetine.luros` read both policies
       allowed and the journal had no `Network` line, as it should when
-      nothing needs opening. `uiopen 'apelin://chat?prompt=…'` with the app
+      nothing needs opening. `uiopen 'lurosdev://chat?prompt=…'` with the app
       running, and again from a cold launch: a new General Chat each time
       (a chat holding a draft is not reused), the text — Chinese too — in
       the composer with the caret in it, nothing sent. Still to run: on an
@@ -845,8 +845,8 @@ console now goes on after a restart only past a successful respring.
       Then over a 0.3.5 install that kept its data folder in the app's data
       container (#37): the projects listed and a project link opening,
       the container's conversations, memories and skills moved into
-      `/var/mobile/Documents/wiki.qaq.apelin`, the container's folder
-      renamed `wiki.qaq.apelin.migrated`, and the journal's list of what
+      `/var/mobile/Documents/com.fluoxetine.luros`, the container's folder
+      renamed `com.fluoxetine.luros.migrated`, and the journal's list of what
       moved. Only `ContainerDataFolderCheck` has run (on the Mac).
 - [ ] Real hardware (not a vphone): the same, plus a real respring and
       confirmLoaded. Toolchain setup and removal, SDK import and builds
@@ -895,7 +895,7 @@ console now goes on after a restart only past a successful respring.
       $IPHONEOS_DEPLOYMENT_TARGET'` answers the prepared ones and
       `clang -arch arm64 hello.c` builds; and the project's terminal, a login
       shell, keeps the toolchain first on `PATH` through
-      `etc/profile.d/wiki.qaq.apelin.sh` on roothide and on rootless.
+      `etc/profile.d/com.fluoxetine.luros.sh` on roothide and on rootless.
 - [ ] Transfer files (`.apetc`, `.apesdk`, `.apeproj`): `transfer` and
       `transfer-project` on both vphones, `transfer-toolchain` by name on a
       roothide one (the export undoes RootHide's runtime brand), then a
@@ -916,7 +916,7 @@ console now goes on after a restart only past a successful respring.
 - [ ] Conversations across projects (2026-10-22): General Chat's
       apelin_project_create, then apelin_conversation_create naming the new project under
       Strict (asks, naming the project and the prompt), the child adopted in
-      that project without the selection moving, its `apelin://` link
+      that project without the selection moving, its `lurosdev://` link
       opening it; apelin_conversation_read of it; a send without approval refused
       by the host.
 - [ ] The agent's apelin_notification_send (notify_user until the rename;
@@ -1098,7 +1098,7 @@ console now goes on after a restart only past a successful respring.
       run (a card for ldid and one for the run) and does not rewrite its
       decoder over -6662.
 - [ ] The cli templates' GPU list (2026-10-29, AGENTS.md ▸ Live chat and
-      project UI ▸ the templates, `wiki.qaq.apelin.dev.cli` 0.1.1; none
+      project UI ▸ the templates, `com.fluoxetine.luros.dev.cli` 0.1.1; none
       has run on a device). With the 0.1.1 extension installed, on the
       iOS 26.4 and iOS 27.0.1 iPhone vphones (roothide) and a rootless
       device: a new project from the C template, `CoreFoundation` and
@@ -1696,7 +1696,7 @@ checks. Both devices passed all seven smoke scripts again on build 64. Its
 nine shipped Mach-O files and the payload paths passed the private-content
 scan. The package SHA-256 is
 `2a2cb7b44560dbe43d736cac256f173d971054aa05d8d75b43c948aa2b0bc142`.
-Its retained app dSYM is `build/dSYMs/0.1.0-64/Apelin.app.dSYM`, arm64 UUID
+Its retained app dSYM is `build/dSYMs/0.1.0-64/Luros.app.dSYM`, arm64 UUID
 `D8BF31B9-0404-3F67-B9CF-C05212A3BD0E`.
 
 Both existing vphones were updated with the signed app-only payload and
@@ -1738,7 +1738,7 @@ app-only payload and verified build 70 in the foreground. Both devices
 passed all seven smoke scripts on this build. The package and its
 nine Mach-O files passed the private-content and dependency scans. SHA-256:
 `9887d571aec4c9487209e7f8effb1d9d70d0ee59bc0f1716cf6746fedf6e2f55`.
-The retained app dSYM is `build/dSYMs/0.1.0-70/Apelin.app.dSYM`, arm64 UUID
+The retained app dSYM is `build/dSYMs/0.1.0-70/Luros.app.dSYM`, arm64 UUID
 `8A044FFF-96BE-3B81-97CA-E894C0045F68`.
 
 An intermediate build 66 regression attempt used a 90-second runner override
@@ -1767,7 +1767,7 @@ updated with the signed app-only payload, reported build 71 and verified
 Apelin in the foreground. The package and its nine Mach-O files passed the
 private-content and dependency checks. SHA-256:
 `6dd2cd9215f0f06f7765b62203b7257fe3ea3038cf1b9fc331c8bc31175860ca`.
-The retained app dSYM is `build/dSYMs/0.1.0-71/Apelin.app.dSYM`, arm64 UUID
+The retained app dSYM is `build/dSYMs/0.1.0-71/Luros.app.dSYM`, arm64 UUID
 `B387FA3B-0A6D-36BE-BBCC-C46A3ABE1713`.
 
 Screenshots and accessibility frames confirmed equal action widths and
@@ -1846,7 +1846,7 @@ its UI showed the workspace, app, command-line and tweak descriptions without
 changing the row layout. Its attachment, bubble and summary spacing also
 reflected the new shared value. Banana stayed on build 88: its SSH endpoint
 refused the existing credentials, so this run did not update that device.
-The app dSYM is retained at `build/dSYMs/0.1.0-90/Apelin.app.dSYM`, UUID
+The app dSYM is retained at `build/dSYMs/0.1.0-90/Luros.app.dSYM`, UUID
 `F719A6A3-428E-3EEF-9D12-4FBB9829EDBC`. Package SHA-256:
 `8712ef7cb6643549804cffbaaf78a4eede16d66ae7c57afe936e369ef1c7a706`.
 
@@ -1880,7 +1880,7 @@ aligned with its bubble. No model request was needed for these layout checks.
 The iOS Release build and `make check` passed. The album geometry tests also
 passed, including height caps for 1–20 attachments and proportion preservation.
 Banana was not updated in this run. The matching app dSYM is retained at
-`build/dSYMs/0.1.0-97/Apelin.app.dSYM`, UUID
+`build/dSYMs/0.1.0-97/Luros.app.dSYM`, UUID
 `1FFA2ADE-8760-3034-A2DD-77F717C46390`. Package SHA-256:
 `365ab1fe33538b1e92f102355aa488661b57f659d16b1970425a1d9418274f1d`.
 
@@ -1896,7 +1896,7 @@ The Release build and repository checks passed, and Date reported build 98 in
 the foreground after installation. Its current chat had no attachment card, so
 this run verifies normalization directly rather than claiming a visual check
 of that card. The matching dSYM is retained at
-`build/dSYMs/0.1.0-98/Apelin.app.dSYM`, UUID
+`build/dSYMs/0.1.0-98/Luros.app.dSYM`, UUID
 `F04F056C-FAB5-3BB5-8C65-023D2C5616BC`. Package SHA-256:
 `9ea97b86276f92a6695579318f1cbf8ab8983501bdaf22756767c46541a758af`.
 
@@ -1919,7 +1919,7 @@ away from the tail. The live test did not establish a reliable button-tap result
 because the device was also navigating between chats during inspection. The
 button's action is wired directly to resume following and scroll to the bottom.
 The iOS Release build and repository checks passed. The installed build 99 dSYM
-is retained at `build/dSYMs/0.1.0-99/Apelin.app.dSYM`, UUID
+is retained at `build/dSYMs/0.1.0-99/Luros.app.dSYM`, UUID
 `79774136-558D-3CC8-8267-1E64A6D92238`. Package SHA-256:
 `0d385cee3ebfa1624ad8f7c81b7d6b9298b34de5bbdd706aa89c746ed63d5235`.
 
@@ -1999,7 +1999,7 @@ Build 109 includes the build-106 selection-menu correction, avoids rebuilding
 unchanged sidebar rows on every streamed token, and includes the final project
 menu, frost and daemon-registration changes. Its iPhoneOS Release build and both
 package flavors were generated. The app dSYM is retained at
-`build/dSYMs/0.1.0-109/Apelin.app.dSYM`, UUID
+`build/dSYMs/0.1.0-109/Luros.app.dSYM`, UUID
 `6E3D9A7F-3D83-3A25-A5ED-CA1719391363`. Package SHA-256:
 
 - roothide: `1afcfc403762f335ebc6d27593f9589bb5e21f9fa67ad0539db45e1f3a7c402c`
@@ -2117,7 +2117,7 @@ The package and dSYM remain the exact build-109 artifacts recorded above.
 
 The project-action integration uses Fila's `open?path=…&tab=new` URL and
 `transferExport(.project)` with the existing `.apeproj` format. Display names
-are persisted in `apelin-project.json`, while folder names and project IDs stay
+are persisted in `luros-project.json`, while folder names and project IDs stay
 stable. ProjectMetadataTests passed 4/4: one automatic name, manual and external
 rename precedence, stable identity, invalid/symlink path refusal, and bounded
 single-line model candidates. The protocol, schema-fixture and service-table
@@ -2243,7 +2243,7 @@ placeholder for this test.
   External Manifest Check; the visible sidebar title refreshed without an app
   restart (the element wait reported 108 ms).
 - Open in iGhostVT used version 1.6.19 (156). The new terminal's actual
-  `pwd -P` was `/var/mobile/Documents/wiki.qaq.apelin/Projects/Distribution UI Check`.
+  `pwd -P` was `/var/mobile/Documents/com.fluoxetine.luros/Projects/Distribution UI Check`.
   Open in Fila showed that directory, its Sources folder and project manifest.
 - Export produced a real `Distribution UI Check.apeproj` (Zstandard archive)
   and reached the native share sheet. No destination was selected and nothing
@@ -2396,7 +2396,7 @@ Apelin, apelind or worker process left a crash report.
 A reply that is only `4.` drew nothing. MarkdownView reads it as an empty
 numbered-list item and draws no marker for an item without a paragraph.
 
-## Widgets, the Live Activity and `apelin://` links (2026-10-22, builds 5 and 6)
+## Widgets, the Live Activity and `lurosdev://` links (2026-10-22, builds 5 and 6)
 
 On the iPadOS 26.4 iPad vphone (roothide, Irisin 4.7.5), over build 4, both
 roothide builds went in through `irisin-cli install --yes`, then
@@ -2405,11 +2405,11 @@ OpenAI-compatible endpoint on the host's bridge answered the turns: one never
 ended (working), one called `run_code`, which Strict mode asks to approve
 (waiting), one answered HTTP 500 (failed), one answered at once (done). The
 account was signed in and the sessions opened through console scripts; every
-session reached the app only through `apelin://conversation/<session ID>`
+session reached the app only through `lurosdev://conversation/<session ID>`
 (`apps.open_url` and `uiopen`), which took each one in (`ChatAdoption`) and
 selected it in its project.
 
-- **App Group**: containermanagerd made `group.wiki.qaq.apelin` for the
+- **App Group**: containermanagerd made `group.com.fluoxetine.luros` for the
   ad hoc signed app and the sandboxed extension; the snapshot the app wrote
   there read back in the order and states the design has (waiting
   `run_code`, working, working, failed, done; 2 working, 1 waiting).
@@ -2425,8 +2425,8 @@ selected it in its project.
   widget opened the waiting one at its approval card; from a killed app the
   small widget cold-launched it at the conversation it shows, over the saved
   selection.
-- **Links**: a transcript link `[…](apelin://conversation/…)` opened that
-  conversation in place, switching project; `apelin://project/Network%20Speed`
+- **Links**: a transcript link `[…](lurosdev://conversation/…)` opened that
+  conversation in place, switching project; `lurosdev://project/Network%20Speed`
   opened that project's most recent conversation; an unknown conversation ID
   showed "Conversation Not Found" and left the page as it was.
 - **Live Activity**: iPadOS 26.4 shows it on the lock screen (with the
@@ -2460,14 +2460,14 @@ session's `run_code` request posted the first message's opening over
 call's own reason. The approved turn's finish and a later turn posted too,
 with Apelin not running. Each banner went into the delivered list as
 `<session>.turn.<n>` or `<session>.approval.<n>`, with the session as its
-thread and `link` = `apelin://conversation/<session>`. With Apelin in front,
+thread and `link` = `lurosdev://conversation/<session>`. With Apelin in front,
 apelind still added the request and the app got `UIWillPresentNotification`;
 nothing showed and nothing was delivered. Opening the conversation emptied
 the delivered list. After the session host was killed and the session opened
 again, the replayed `approvalRequested` and `finished` posted nothing and the
 new turn posted once, from `notices.json` on disk. A `closeWhenFinished` run
 posted nothing. Not run: `make device-test` (the guest is reachable only from
-its host), and the tap, which needs the `apelin://` router.
+its host), and the tap, which needs the `lurosdev://` router.
 
 ## 0.1.1 release smoke (2026-10-22, build 28)
 
@@ -2482,7 +2482,7 @@ menu led with Rename… (a renamed chat kept its name in the title and the
 sidebar), General Chat's offered Rename…, Open in iGhostVT and Open in
 Fila and no Model Providers; Distribute… was greyed on an empty workspace;
 Settings ▸ About listed Logs, which opened this launch's journal, and its
-… menu Open Onboarding and Report a Problem; `apelin://project/<folder>`
+… menu Open Onboarding and Report a Problem; `lurosdev://project/<folder>`
 opened that project's latest chat and an unknown conversation said so.
 On the iPhone, with an OpenAI-compatible account: asked which toolchains
 and SDKs were installed, the agent answered from its prompt with no tool
@@ -2862,7 +2862,7 @@ iPhone vphones and the iOS 26.4 iPad vphone:
 - The smoke suite with `tool-host` and `i2-git-remote` passed on both
   iPhones; on the iPad `files` and `tool-host` were skipped, as it has no
   tweak extension or disassembler installed, and the other seven passed.
-- On the iOS 26.4 iPhone (Strict, deepseek-v4-pro), `apelin://import?url=`
+- On the iOS 26.4 iPhone (Strict, deepseek-v4-pro), `lurosdev://import?url=`
   `https://github.com/octocat/Hello-World` opened Import Repository with the
   address, the default branch and `Hello-World`; Import made the project and
   opened its chat. Asked to commit a `NOTES.md` and then match
@@ -2945,7 +2945,7 @@ on the iPad:
   the fix's one-time move only by `ContainerDataFolderCheck`. On the iPad,
   a conversation with a draft in a project survived a launch that read a
   `Projects/` the app had not read before; on 0.3.5 it was removed.
-- `apelin://project/<folder>` opened the project on both; on the iPad its
+- `lurosdev://project/<folder>` opened the project on both; on the iPad its
   conversation, with a draft, was the one shown after a relaunch.
 - The release commit's package (CI build 116 of `c6a5da9`), whose Settings
   screens gained `@objc dynamic` after the round above, on the iPad: every

@@ -20,7 +20,7 @@ On disk, the same event stream is kept three times:
 | where | size | who loads it |
 |---|---|---|
 | `Chats/*.json` (170 conversations) | 190 MB | the app, at launch, whole |
-| `/var/lib/apelin/tasks/*.events.jsonl` (1748 tasks) | 245 MB | the host, at launch, whole |
+| `/var/lib/luros/tasks/*.events.jsonl` (1748 tasks) | 245 MB | the host, at launch, whole |
 | `sessions/*/events.jsonl` (288 sessions) | 1.8 GB | one worker, on open, only its own |
 
 Composition: `agent` tasks are 237.6 MB of the host's 245 MB (266 tasks) and hold
@@ -109,7 +109,7 @@ unfinished tasks (order 60–80 MB). Disk use is unchanged.
 ## 5. Phase A measured (this branch, on the device)
 
 A harness built from `ApelinProtocol` + `ApelinCore` + `TaskRegistry` and run on the
-device, loading a copy of the real `/var/lib/apelin/tasks` (258 MB, 1748 tasks),
+device, loading a copy of the real `/var/lib/luros/tasks` (258 MB, 1748 tasks),
 reading its own footprint with `proc_pid_rusage` after `load()`:
 
 | implementation | finish | time | footprint | resident |

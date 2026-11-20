@@ -14,7 +14,7 @@ import Foundation
 /// again after it restarted (`resumed`) keeps its build ID and starts over:
 /// the artifact record and folder the lost run left are removed first.
 public final class BuildWorker: @unchecked Sendable {
-    private static let emptyWorkspaceTemplateID = "wiki.qaq.apelin.workspace/empty"
+    private static let emptyWorkspaceTemplateID = "com.fluoxetine.luros.workspace/empty"
 
     public let installRoot: String
     public let home: String
@@ -123,7 +123,7 @@ public final class BuildWorker: @unchecked Sendable {
         ExtensionListResponse(
             extensions: [
                 DevelopmentExtension(
-                    id: "wiki.qaq.apelin.workspace",
+                    id: "com.fluoxetine.luros.workspace",
                     version: "1",
                     kind: .workspace,
                     displayName: "Workspace",
@@ -268,7 +268,7 @@ public final class BuildWorker: @unchecked Sendable {
         let problem: String?
         do {
             problem = try ExternalBuildDeclaration.read(manifest, root: root) == nil
-                ? "This workspace declares no build: add \"external\": {\"script\": \"<a project file>\"} to its apelin-project.json; the script writes one .deb into APELIN_PACKAGE_DIR."
+                ? "This workspace declares no build: add \"external\": {\"script\": \"<a project file>\"} to its luros-project.json; the script writes one .deb into APELIN_PACKAGE_DIR."
                 : nil
         } catch {
             problem = (error as? ApelinError)?.message ?? "\(error)"
@@ -332,7 +332,7 @@ public final class BuildWorker: @unchecked Sendable {
         guard let declaration = try ExternalBuildDeclaration.read(manifest, root: root) else {
             throw ApelinError(
                 .badRequest,
-                "this workspace declares no build: add \"external\": {\"script\": \"<a project file>\"} to its apelin-project.json; the script writes one .deb into APELIN_PACKAGE_DIR",
+                "this workspace declares no build: add \"external\": {\"script\": \"<a project file>\"} to its luros-project.json; the script writes one .deb into APELIN_PACKAGE_DIR",
             )
         }
         let inputs = ExternalBuild.Inputs(

@@ -71,13 +71,13 @@ Also app only, at Irisin's pins (`AGENTS.md` ▸ The sibling wheels, one
 reason each): `SPIndicator`, `AlertController`, `Then`, `SnapKit`,
 `SwifterSwift` and `Dog`. All static, no new dylib; SnapKit, SwifterSwift
 and AlertController add their resource bundles (privacy manifests, the
-alert's strings) to `Apelin.app`. Nothing imports them yet. Not taken:
+alert's strings) to `Luros.app`. Nothing imports them yet. Not taken:
 SDWebImage, ScribbleLetterView and GlyphixTextFx (Litext animates text
 the same way).
 
 - **Dog** is not wired up. When it is: `Dog.shared.initialization(writableDir:
   DataFolder(home: NSHomeDirectory()).root)` once in `didFinishLaunching`,
-  which writes `~/Documents/wiki.qaq.apelin/Journal/`; never the no-argument
+  which writes `~/Documents/com.fluoxetine.luros/Journal/`; never the no-argument
   call, which writes mobile's shared `~/Documents/Journal`.
 - **AlertController** localizes what it is given: pass catalogue keys
   (`String.LocalizationValue`), as Irisin's `UIViewController+Alert` does.
@@ -254,7 +254,7 @@ owner-device checklist is at the end of that record.
 2. **A live agent run** with an `openai-compatible` credential (DeepSeek)
    is what the replay fixtures captured — Relaxed, Confirm with an
    approval, abort and steer; Copilot and Anthropic still need their
-   credential dropped in `~/Documents/wiki.qaq.apelin/console/inbox/credentials/`
+   credential dropped in `~/Documents/com.fluoxetine.luros/console/inbox/credentials/`
    on a device.
 3. **The owner's devices**: rootless, real hardware, iOS 16, iPad, the
    Swift toolchain component (refused today), slow network, HTTPS SDK

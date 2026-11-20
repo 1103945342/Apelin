@@ -19,7 +19,7 @@ final class BootstrapRootPathTests: XCTestCase {
     func testAPathMovesToTheCurrentRoot() {
         let recorded = old + "/usr/lib/apelin/toolchains/clt-27.0-abcdef01"
         XCTAssertEqual(
-            BootstrapRootPath.rebased(recorded, onto: new + "/var/mobile/Documents/wiki.qaq.apelin"),
+            BootstrapRootPath.rebased(recorded, onto: new + "/var/mobile/Documents/com.fluoxetine.luros"),
             new + "/usr/lib/apelin/toolchains/clt-27.0-abcdef01",
         )
         XCTAssertEqual(BootstrapRootPath.rebased(old, onto: new), new)

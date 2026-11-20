@@ -38,7 +38,7 @@ public struct ToolDescriptor: Codable, Hashable, Sendable {
     }
 }
 
-/// `<install root>/usr/share/apelin/agent-tools/<id>/manifest.json`.
+/// `<install root>/usr/share/luros/agent-tools/<id>/manifest.json`.
 public struct ToolManifest: Codable, Hashable, Sendable {
     public static let schemaVersion = 1
 
@@ -124,7 +124,7 @@ public enum ToolManifestValidator {
     /// Where the app carries a tool of its own beside itself, relative to the
     /// install root. Read for the ids the installed folder has none of: an
     /// installed tool of the same id wins, so one is updated without the IDE.
-    public static let bundledRelativeDirectory = "Applications/Apelin.app/AgentTools"
+    public static let bundledRelativeDirectory = "Applications/Luros.app/AgentTools"
 
     /// The folder holding `id`'s files, relative to the install root: the
     /// installed one when a package put it there, else the copy the app
@@ -159,7 +159,7 @@ public enum ToolManifestValidator {
         }
     }
 
-    /// Reads and checks `<installRoot>/usr/share/apelin/agent-tools/<id>/manifest.json`.
+    /// Reads and checks `<installRoot>/usr/share/luros/agent-tools/<id>/manifest.json`.
     public static func validate(
         installRoot: String,
         id: String,

@@ -26,7 +26,7 @@ struct ReadOnlyRootTests {
             try home.write("Sources/Pane.m", "#import <Preferences/PSListController.h>\n")
             let installRoot = home.home.appendingPathComponent("jb").path
             roots = ReadOnlyRoots(installRoot: installRoot, dataRoot: home.dataRoot)
-            development = installRoot + "/usr/share/apelin/development"
+            development = installRoot + "/usr/share/luros/development"
             sdks = home.dataRoot.url.appendingPathComponent("SDKs").path
             outside = home.home.appendingPathComponent("outside/secret.txt")
             try Self.write(development + "/x/support/include/Preferences/PSListController.h", "@interface PSSpecifier : NSObject\n- (void)setProperty:(id)property forKey:(NSString *)key;\n@end\n")
@@ -179,7 +179,7 @@ struct ReadOnlyRootTests {
         // leads out of it.
         try FileManager.default.createSymbolicLink(atPath: fixture.home.projectURL.appendingPathComponent("development").path, withDestinationPath: fixture.development)
         try FileManager.default.createSymbolicLink(atPath: fixture.sdks + "/iPhoneOS18.2-aaaaaaaa/usr/include/escape.txt", withDestinationPath: fixture.outside.path)
-        let relative = "../../../../jb/usr/share/apelin/development/x/support/include/Preferences/PSListController.h"
+        let relative = "../../../../jb/usr/share/luros/development/x/support/include/Preferences/PSListController.h"
         for mode in Self.modes {
             for arguments: JSONValue in [
                 ["path": .string(relative)],

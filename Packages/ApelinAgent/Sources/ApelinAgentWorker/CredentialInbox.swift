@@ -5,7 +5,7 @@ import Darwin
 import Foundation
 import KWWKAI
 
-/// `~/Documents/wiki.qaq.apelin/console/inbox/credentials/`: where the
+/// `~/Documents/com.fluoxetine.luros/console/inbox/credentials/`: where the
 /// device's owner drops a provider credential so a session can sign in with
 /// no UI. Each file is read once, stored in the keychain and deleted —
 /// deleted even when it cannot be used, so a secret never lingers on disk.
@@ -32,7 +32,7 @@ public struct CredentialInbox: Sendable {
         self.directory = directory
     }
 
-    /// `<home>/Documents/wiki.qaq.apelin/console/inbox/credentials`.
+    /// `<home>/Documents/com.fluoxetine.luros/console/inbox/credentials`.
     public init(home: String) {
         self.init(
             directory: ApelinCore.DataFolder(home: home).consoleInbox

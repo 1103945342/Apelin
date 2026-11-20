@@ -11,7 +11,7 @@
     "i3-image-check-refused": {},
     "i5-log-continuity": {"timeout": 300},
     "files": {
-      "needs": ["package:wiki.qaq.apelin.dev.tweak", "toolchain", "sdk"],
+      "needs": ["package:com.fluoxetine.luros.dev.tweak", "toolchain", "sdk"],
       "note": "makes the Hello project when it is missing, which takes a registered toolchain and SDK",
       "after": [{"removeProject": "Hello"}]
     },
@@ -23,7 +23,7 @@
       ],
       "verify": [
         {"root": "grep -qx 'apelin smoke edited' \"$JB/etc/apelin-smoke.conf\""},
-        {"root": "test ! -e \"$JB/usr/share/apelin-smoke\""}
+        {"root": "test ! -e \"$JB/usr/share/luros-smoke\""}
       ],
       "after": [
         {"root": "rm -f \"$JB/etc/apelin-smoke.conf\""},
@@ -31,12 +31,12 @@
       ]
     },
     "tool-host": {
-      "needs": ["package:wiki.qaq.apelin.agent-tools.disassembler"]
+      "needs": ["package:com.fluoxetine.luros.agent-tools.disassembler"]
     },
     "i6-tool-attachments": {
-      "needs": ["package:wiki.qaq.apelin.agent-tools.disassembler>=1.1.0"],
+      "needs": ["package:com.fluoxetine.luros.agent-tools.disassembler>=1.1.0"],
       "verify": [
-        {"root": "test -z \"$(ls -A \"$JB/var/lib/apelin/attachments\" 2>/dev/null)\""},
+        {"root": "test -z \"$(ls -A \"$JB/var/lib/luros/attachments\" 2>/dev/null)\""},
         {"root": "! killall -0 apelin-disassembler 2>/dev/null"}
       ]
     },
@@ -75,18 +75,18 @@
       "timeout": 1800
     },
     "i3-chain": {
-      "needs": ["toolchain", "sdk", "package:wiki.qaq.apelin.dev.tweak", "package:wiki.qaq.irisin>=4.7.3"],
+      "needs": ["toolchain", "sdk", "package:com.fluoxetine.luros.dev.tweak", "package:wiki.qaq.irisin>=4.7.3"],
       "before": [{"removeProject": "I3 Chain Tweak"}],
       "expectOutput": [{"line": "run.resumed", "min": 1}],
       "after": [{"removeProject": "I3 Chain Tweak"}]
     },
     "project-build-install": {
-      "needs": ["toolchain", "sdk", "package:wiki.qaq.apelin.dev.tweak", "package:wiki.qaq.irisin>=4.7.3"],
+      "needs": ["toolchain", "sdk", "package:com.fluoxetine.luros.dev.tweak", "package:wiki.qaq.irisin>=4.7.3"],
       "before": [{"removeProject": "Console Build Check"}],
       "after": [{"removeProject": "Console Build Check"}]
     },
     "r1-resume-build": {
-      "needs": ["toolchain", "sdk", "package:wiki.qaq.apelin.dev.tweak"],
+      "needs": ["toolchain", "sdk", "package:com.fluoxetine.luros.dev.tweak"],
       "before": [{"removeProject": "R1 Resume Tweak"}],
       "during": [{"when": {"result": "build"}, "do": "killSessionHost"}],
       "expectOutput": [{"step": "after-kill", "event": "resumed"}],
@@ -138,7 +138,7 @@
       "manual": "requires no registered SDK at or below 17.4 and an enabled SDK source to exercise download; installs CLT 15.3 and imports SDK 17.4, leaving both for inspection"
     },
     "t4-toolchain-swift": {
-      "needs": ["installed-toolchain", "sdk", "package:wiki.qaq.apelin.dev.app", "package:wiki.qaq.irisin>=4.7.3"],
+      "needs": ["installed-toolchain", "sdk", "package:com.fluoxetine.luros.dev.app", "package:wiki.qaq.irisin>=4.7.3"],
       "before": [{"removeProject": "T4 Swift App"}],
       "after": [{"removeProject": "T4 Swift App"}],
       "timeout": 3600,

@@ -7,7 +7,7 @@ import Foundation
 /// all of it mobile's:
 ///
 /// ```
-/// ~/Documents/wiki.qaq.apelin/
+/// ~/Documents/com.fluoxetine.luros/
 ///   inbox/                      folders and archives pushed for import
 ///   Exports/<kind>-<id>/<name>  a transfer file (.apetc, .apesdk, .apeproj)
 ///                               written for the app to share, then deleted

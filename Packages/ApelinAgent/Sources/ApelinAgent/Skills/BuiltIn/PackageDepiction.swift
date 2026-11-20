@@ -16,7 +16,7 @@ extension BuiltInSkills {
           tab goes here; without it Irisin writes a page from the control
           fields, with no changelog.
 
-        ## In apelin-project.json
+        ## In luros-project.json
         `package.depiction` and `package.sileoDepiction`, both optional, each
         an `https://` URL in printable ASCII of at most 2048 bytes:
 

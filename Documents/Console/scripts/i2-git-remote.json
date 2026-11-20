@@ -11,7 +11,7 @@
     {"op": "expect", "request": {"step": "create-refused", "errorCode": "badRequest"}},
     {"op": "gitIssueCreate", "request": {"repository": "no-owner", "title": "Refused before any sign-in is read", "body": "Nothing reaches GitHub."}, "label": "issue-refused", "allowError": true},
     {"op": "expect", "request": {"step": "issue-refused", "errorCode": "badRequest"}},
-    {"op": "projectCreate", "request": {"templateID": "wiki.qaq.apelin.workspace/empty", "name": "I2GitImport", "values": {}}, "label": "workspace"},
+    {"op": "projectCreate", "request": {"templateID": "com.fluoxetine.luros.workspace/empty", "name": "I2GitImport", "values": {}}, "label": "workspace"},
     {"op": "gitCloneInto", "request": {"projectID": "${workspace.response.projectID}", "url": "https://github.com/libgit2/TestGitRepository.git", "branch": "first-merge"}, "label": "import", "timeoutSeconds": 300},
     {"op": "expect", "request": {"step": "import", "state": "succeeded"}},
     {"op": "gitStatus", "request": {"projectID": "${workspace.response.projectID}"}, "label": "status"},

@@ -178,21 +178,21 @@ final class GitSyncTests: XCTestCase {
     func testCloneIntoAFolderKeepsWhatIsThere() throws {
         let remote = try remote()
         let folder = remote.base.appendingPathComponent("workspace", isDirectory: true)
-        try write(#"{"kind": "workspace"}"#, "apelin-project.json", in: folder)
+        try write(#"{"kind": "workspace"}"#, "luros-project.json", in: folder)
         try write("attachment\n", "Attachments/a", in: folder)
 
-        let result = try GitClone.into(folder, url: remote.url, excluding: ["/apelin-project.json", "/Attachments/"])
+        let result = try GitClone.into(folder, url: remote.url, excluding: ["/luros-project.json", "/Attachments/"])
         let repository = try GitRepository(at: folder)
         XCTAssertEqual(result, try GitCloneIntoResult(branch: "main", commit: XCTUnwrap(remote.seed.head().commit)))
         XCTAssertEqual(repository.head(), GitHead(branch: "main", commit: result.commit))
         XCTAssertEqual(try repository.status(), [], "the description is excluded")
         XCTAssertEqual(read("README", in: folder), "one\n")
-        XCTAssertEqual(read("apelin-project.json", in: folder), #"{"kind": "workspace"}"#)
+        XCTAssertEqual(read("luros-project.json", in: folder), #"{"kind": "workspace"}"#)
         XCTAssertEqual(repository.remoteURL(), remote.url)
         XCTAssertEqual(repository.localConfigValue("branch.main.remote"), "origin")
         XCTAssertEqual(repository.localConfigValue("branch.main.merge"), "refs/heads/main")
         let exclude = try XCTUnwrap(read(".git/info/exclude", in: folder))
-        XCTAssertTrue(exclude.hasSuffix("/apelin-project.json\n/Attachments/\n"), exclude)
+        XCTAssertTrue(exclude.hasSuffix("/luros-project.json\n/Attachments/\n"), exclude)
         XCTAssertFalse(FileManager.default.fileExists(atPath: folder.appendingPathComponent(".git/shallow").path), "a full clone")
     }
 

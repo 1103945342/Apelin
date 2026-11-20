@@ -16,7 +16,7 @@ import Foundation
 public struct DevelopmentEnvironment: Sendable, Equatable {
     /// Why a toolchain or SDK was chosen.
     public enum Source: String, Sendable, Equatable {
-        /// `apelin-project.json` binds it, and it is registered.
+        /// `luros-project.json` binds it, and it is registered.
         case project
         /// The registry's default toolchain, or the newest SDK it reads.
         case fallback
@@ -134,7 +134,7 @@ public struct DevelopmentEnvironment: Sendable, Equatable {
         if !prefix.isEmpty {
             directories += ["/usr/bin", "/bin"]
         }
-        directories.append("\(prefix)/Applications/Apelin.app/Vendor/bin")
+        directories.append("\(prefix)/Applications/Luros.app/Vendor/bin")
         return directories
     }
 
@@ -257,11 +257,11 @@ public struct RegisteredEnvironment: Sendable, Equatable {
     }
 }
 
-/// What `apelin-project.json` binds: the toolchain and SDK by ID, and the
+/// What `luros-project.json` binds: the toolchain and SDK by ID, and the
 /// deployment target. Read loosely, as the session host reads a manifest:
 /// the project checks are apelin-build's.
 public struct ProjectManifestBinding: Sendable, Equatable {
-    public static let manifestFile = "apelin-project.json"
+    public static let manifestFile = "luros-project.json"
     static let maximumManifestBytes = 1 << 20
 
     public var toolchainID: String?

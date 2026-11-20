@@ -14,7 +14,7 @@ import os
 /// and a copy that cannot be fetched is kept as it is: no conversation ever
 /// waits for this.
 enum ModelDataRefresh {
-    private static let logger = Logger(subsystem: "wiki.qaq.apelin", category: "ModelData")
+    private static let logger = Logger(subsystem: "com.fluoxetine.luros", category: "ModelData")
     /// The last attempt, so a device with no network tries once a day rather
     /// than at every launch.
     private static let attemptKey = "ModelData.lastAttempt"

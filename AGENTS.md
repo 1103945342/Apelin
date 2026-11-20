@@ -81,7 +81,7 @@ the same executable in session mode; the workers are its children.
   renamed into the other, and a deb keeps every check it had.
 - **A project made from a template also carries an Xcode project.**
   `ProjectStore.create` writes `<name>.xcodeproj` and `Xcode/` beside
-  `apelin-project.json` (`XcodeProject`, `ApelinProject/Project/XcodeProject.swift`),
+  `luros-project.json` (`XcodeProject`, `ApelinProject/Project/XcodeProject.swift`),
   from that same description: one native target per product, the
   configurations' settings, the sources and resources its globs matched when
   it was written, a shared scheme each, and the extension support's headers
@@ -130,7 +130,7 @@ the same executable in session mode; the workers are its children.
   reads as a crash. Quit, and any other exit the app chooses, is
   `QuietExit.run`: leave for the home screen, wait for the animation, run the
   cleanup `exit` would skip, then exit.
-- **The app's data folder is `~/Documents/wiki.qaq.apelin` in mobile's
+- **The app's data folder is `~/Documents/com.fluoxetine.luros` in mobile's
   home, and the package makes it.** Mobile's home is `<jbroot>/var/mobile`
   on roothide and `/var/mobile` on rootless, shared with every app without
   a container. Anything the app keeps there goes in a folder named
@@ -151,7 +151,7 @@ the same executable in session mode; the workers are its children.
   kept the data folder there on rootless — no project listed, no project
   link opened, every project's conversations taken at each launch for a
   deleted project's (#37) — so at launch, before anything reads the data
-  folder, `ContainerDataFolder` moves `<container>/Documents/wiki.qaq.apelin`
+  folder, `ContainerDataFolder` moves `<container>/Documents/com.fluoxetine.luros`
   into mobile's (rootless only, and only while the two differ). Each
   regular file goes to the same path by a rename, never copied or deleted;
   where mobile's has a file of that name, the newer by modification time
@@ -161,7 +161,7 @@ the same executable in session mode; the workers are its children.
   with a folder or a link, and `console/running/` (it would run again)
   stay put; a folder is made in mobile's only for a file that lands in it,
   never through a link. The container's folder is then renamed
-  `wiki.qaq.apelin.migrated` (a stamp after it when that is taken), keeping
+  `com.fluoxetine.luros.migrated` (a stamp after it when that is taken), keeping
   what stayed and every older copy, so a later launch finds nothing to do;
   the journal lists each path. Preferences need nothing: they stay in the
   container, where the app still reads them. Tested by
@@ -380,7 +380,7 @@ the same executable in session mode; the workers are its children.
   commits `Apelin/Resources/models.dev.json` only when a model's figures
   changed — that commit's `generatedAt` is the stamp the app measures a week
   from. The app ships the file, writes it into
-  `~/Documents/wiki.qaq.apelin/ModelData/models.json` on the first launch (the
+  `~/Documents/com.fluoxetine.luros/ModelData/models.json` on the first launch (the
   one file the agent reads), and replaces it once its copy is a week old
   (`ModelDataRefresh`): this repository's copy through jsDelivr first, which
   answers where models.dev does not, then models.dev itself. There is no page
@@ -570,11 +570,11 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   version; a voice note reads as no message unless WeChat transcribed it.
 - **The authenticator** (`Apelind/PeerAuthenticator.swift`) decides before a
   request field is decoded, in this order: the kernel audit token; pid > 1;
-  euid 0 or 501; the entitlements `wiki.qaq.apelin.client`,
+  euid 0 or 501; the entitlements `com.fluoxetine.luros.client`,
   `com.apple.private.security.no-sandbox` and `platform-application`, each
   strictly true (the app carries `platform-application`, so it is required;
   drop it from both or neither); `proc_pidpath` realpath-equal to
-  `<install root>/Applications/Apelin.app/Apelin`; that file regular,
+  `<install root>/Applications/Luros.app/Apelin`; that file regular,
   root-owned, owner-executable and not group- or world-writable.
 - **No CLI.** The app is the only peer. A CLI would be a second one, added to
   `clientPaths`, signed with its own entitlements, and written down here.
@@ -588,16 +588,16 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `--session` and a socketpair as descriptor 3, the proxy's child — that
   name is only its `argv[0]`: the kernel names both processes `apelind`, so
   `killall` cannot tell them apart, and the host writes its pid to
-  `<install root>/var/lib/apelin/session.pid` for a restart test to kill
+  `<install root>/var/lib/luros/session.pid` for a restart test to kill
   (`Documents/Console.md`). It holds the task
-  registry (records and events in `<install root>/var/lib/apelin/tasks/`, an
+  registry (records and events in `<install root>/var/lib/luros/tasks/`, an
   unfinished task resumed or `interrupted` on relaunch, an event line a crash
   cut short — a last fragment with no newline — cut off the file at load; a
   whole line that does not read stays in the file, is read past, and its
   number is an `unreadable` event, so the events after it and the final
   `state` survive with no gap), the worker supervisor and the
   per-domain dispatch (`Apelind/Dispatch/<Domain>Handler.swift`). Workers are
-  spawned from `<install root>/usr/libexec/apelin/<name>` only if root-owned
+  spawned from `<install root>/usr/libexec/luros/<name>` only if root-owned
   and writable by root alone, with `POSIX_SPAWN_CLOEXEC_DEFAULT`, the channel
   as descriptor 3, and — for mobile roles — uid, gid and groups 501 set by
   `posix_spawnattr_set_*_np` before exec; `WorkerMain` refuses an assignment
@@ -645,7 +645,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   Each worker's entitlements are `Packaging/Workers/<name>.entitlements`,
   never the client key.
 - **The session host's own work** (`Apelind/Session/`), all of it state in
-  `<install root>/var/lib/apelin/`, root's and 0700:
+  `<install root>/var/lib/luros/`, root's and 0700:
   - *Lifecycle.* `TaskRegistry.load` hands back every task the last host left
     running — the event log, not the record, says how far a task got and in
     what state, so one whose last `state` event is final is written back
@@ -703,10 +703,10 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     `packageID`, `version`, `projectID`, `packagingDigest`, `packageFiles`) —, a toolchain
     package `toolchain-<id>` from apelin-environment:
     `Environment/Artifacts/<artifactID>.deb`, which must be
-    `wiki.qaq.apelin.toolchain.<id>` (the one Apelin-prefixed family a
+    `com.fluoxetine.luros.toolchain.<id>` (the one Apelin-prefixed family a
     non-IDE source may install, and only that source; the environment
     worker removes only its own records) — or, from the app only,
-    `file:<path inside ~/Documents/wiki.qaq.apelin>`. A writer for the
+    `file:<path inside ~/Documents/com.fluoxetine.luros>`. A writer for the
     bridge sets `DebPackageWriter.controlCompression = .gzip`: a zstd
     control member is judged by the ID its source promised and failed
     loudly if irisind reports another. The host
@@ -852,7 +852,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     expectedVersion, confirmed}`: existing regular files inside the install
     root only; no symlink, hard link, execute bit, Mach-O, package-manager
     or Apelin record; a LaunchDaemons plist needs `confirmed`; the old
-    contents are backed up to `~/Documents/wiki.qaq.apelin/backups/` (every
+    contents are backed up to `~/Documents/com.fluoxetine.luros/backups/` (every
     level opened `O_NOFOLLOW`, the file handed to mobile, the newest ten
     per file) and replaced through `AtomicReplace` (Fila's AtomicSave:
     temporary beside it, owner, group, mode, ACLs, xattrs and creation time
@@ -868,7 +868,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     the development environment of the terminal's project (none: the
     defaults), the one shell_run gets (Agent sessions ▸ `agentRunCode`). A login
     shell's `/etc/profile` sets `PATH` and the prompt anew, so the package ships
-    `etc/profile.d/wiki.qaq.apelin.sh` (`Packaging/profile.d/`): it puts
+    `etc/profile.d/com.fluoxetine.luros.sh` (`Packaging/profile.d/`): it puts
     `APELIN_TOOLCHAIN_BIN` back in front when it is set, and — for bash only,
     and only when `APELIN_TERMINAL` says the shell is Apelin's own — cuts the
     prompt to the folder and the shell's own `$`/`#`, since that profile's
@@ -923,7 +923,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     lacks is none), and one already counted posts nothing. Identifiers are
     `<session>.turn.<n>`, `<session>.approval.<n>` and
     `<session>.notice.<n>`, the thread is the session, and `userInfo`
-    `link` is `apelin://conversation/<session>`, which a tap hands to
+    `link` is `lurosdev://conversation/<session>`, which a tap hands to
     `UIApplication.open` (`ConversationNotices`). Banners are for a reader
     elsewhere: `willPresent` shows nothing while the app is active, opening
     a conversation (or coming back to it) removes its delivered ones, so
@@ -932,7 +932,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     sends a message.
     Two declarations, or authorization stays false with no error but the
     device log's: `com.apple.private.usernotifications.bundle-identifiers`
-    naming `wiki.qaq.apelin` on apelind and on the app, and
+    naming `com.fluoxetine.luros` on apelind and on the app, and
     `SBAppUsesLocalNotifications` in the app's Info.plist; the packager
     requires all three. A tap in Notification Center or on the Lock Screen
     that only slides the row aside to show Open is SpringBoard's rule for
@@ -969,7 +969,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   not a failed task — then runs in `Environment/staging/<taskID>/` and ends
   with `state`.
   *SDKs*: imported from an HTTPS archive, a descriptor, a folder or archive
-  in `~/Documents/wiki.qaq.apelin/inbox/`, or one branch of a
+  in `~/Documents/com.fluoxetine.luros/inbox/`, or one branch of a
   one-SDK-per-branch repository (shallow clone, HTTPS only); archives are
   unpacked entry by entry through libarchive (no `..`, absolute or repeated
   names, no directory through a link, no special files, bounded); identity
@@ -1102,7 +1102,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   commit, HEAD, whether the histories are unrelated, the commits that
   leave the branch, the tracked files whose uncommitted changes go, the
   untracked or ignored files the remote's tree replaces, each list's count
-  and its first 50, and what `apelin-project.json` becomes);
+  and its first 50, and what `luros-project.json` becomes);
   `gitResetToRemote {projectID, remote, branch, expectedRemoteCommit,
   expectedHead, expectedURL?}` fetches again and, only while the remote is
   at that commit and address and HEAD at that commit (nil: none), else
@@ -1116,12 +1116,12 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   holding the tracked files as they are and the files it replaces when
   anything is uncommitted or replaced. A local branch of that name that is
   not checked out and has commits the remote lacks is `conflict`. The
-  project keeps its identity: the remote's `apelin-project.json` with this
+  project keeps its identity: the remote's `luros-project.json` with this
   project's `projectID` in its one quoted place (`RepositoryManifest`,
   refused when it does not read), or this project's own, kept out through
   `.git/info/exclude`, when the remote has none; the icon likewise. Both
   are tasks that are not resumed.
-  A repository's own `apelin-project.json` coming into a new workspace
+  A repository's own `luros-project.json` coming into a new workspace
   (owner, 2026-10-31, issue #32; `RepositoryManifest`): while the
   workspace's manifest holds nothing but its identity
   (`ProjectManifestIdentity.isBareWorkspace`, what `createEmpty` writes),
@@ -1148,7 +1148,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   build of it asks. Credentials are one per
   host (lowercased, with `:port` when named): a username and a token
   (`GitCredentialStore`, keychain service and access group
-  `wiki.qaq.apelin.git`, `keychain-access-groups` on apelin-environment
+  `com.fluoxetine.luros.git`, `keychain-access-groups` on apelin-environment
   only, after first unlock, this device only, never synchronised), offered
   through libgit2's credential callback only to an HTTPS remote whose host
   is exactly that one, once per operation; an authentication failure is
@@ -1224,7 +1224,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   and the installation ID of an install not yet registered or rolled back)
   per source and components and resumes from it; one setup per key runs at
   a time. The retargeted tree becomes `Environment/Artifacts/toolchain-<id>.deb`
-  (`wiki.qaq.apelin.toolchain.<id>`, the bootstrap's architecture and
+  (`com.fluoxetine.luros.toolchain.<id>`, the bootstrap's architecture and
   layout, no Depends, no maintainer scripts, `control.tar.gz`; every entry
   root's, folders and executables 0755, other files 0644, links relative and
   inside the tree), handed to the host's `installPackage` as artifact
@@ -1377,7 +1377,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   registered SDK (`.apesdk`) or a project (`.apeproj`) goes from one device
   to another as one file, user to own device: nothing is uploaded, and the
   export's confirmation says so in a line. The app declares the exported
-  types `wiki.qaq.apelin.toolchain-package`, `…sdk-package` and
+  types `com.fluoxetine.luros.toolchain-package`, `…sdk-package` and
   `…project-package` (conforming to `public.data` and `public.archive`, by
   extension) and owns them in `CFBundleDocumentTypes`, in the partial
   `Apelin/Resources/Info.plist` merged with the generated one (kept out of
@@ -1406,7 +1406,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `.git/info/exclude` one path at a time; tracked files and their parent
   folders survive later ignore rules. Without a repository, an empty
   temporary repository in task staging reads the same `.gitignore` rules
-  without changing the project. `apelin-project.json` always travels so
+  without changing the project. `luros-project.json` always travels so
   the result remains importable. It carries `.git` without `hooks/`, `config`, `modules/`,
   `worktrees/`, `commondir` or locks; no `.DS_Store`, no repository nested
   inside, nothing from `Builds/`; with its identity (project ID, template,
@@ -1445,7 +1445,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   import, must be the ID and digest the file names, a registered one is
   refused, and it is registered with origin `transfer <file>`. A project:
   no `.git` anywhere but the top (compared without case); a new project ID
-  written into `apelin-project.json` by replacing its one quoted
+  written into `luros-project.json` by replacing its one quoted
   occurrence, nothing else changed (so the Confirm ledger has nothing
   approved under it and two folders never share an ID), the file then in
   its written form (`ProjectManifestFormat`); `.git` given a
@@ -1473,9 +1473,9 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   file).
 - **The console** (format in `Documents/Console.md`) runs the app headless
   from a JSON script: `-apelin-console <path>`, or
-  `~/Documents/wiki.qaq.apelin/console/inbox/*.json` at launch and on every
+  `~/Documents/com.fluoxetine.luros/console/inbox/*.json` at launch and on every
   foreground; results as JSON lines in `console/out/<runID>.jsonl` and the
-  unified log (`wiki.qaq.apelin`, `console`). It calls `ApelinService`, the
+  unified log (`com.fluoxetine.luros`, `console`). It calls `ApelinService`, the
   one typed surface — one async method per operation — that the UI and the
   agent's tools (over `ChannelTransport`) call too; `ApelinService.app`
   (`Apelin/Service/`) binds it to `DaemonClient`. The runner is the
@@ -1531,7 +1531,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `Packages/ApelinAgent/Sources/ApelinAgentWorker`). `agentOpen` comes
   from the app, or from an agent for its own project (Conversations,
   below): the host resolves the project by `projectID` or `projectName`
-  (canonical `Projects/<name>`, its `apelin-project.json` id), makes the
+  (canonical `Projects/<name>`, its `luros-project.json` id), makes the
   `agent` task, spawns `apelin-agent` with the session id as its instance and
   hands it the request with the project filled in — one open of a session
   at a time (`Session/Agent/AgentOpenTurns.swift`): an `agentOpen` of a
@@ -1985,7 +1985,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   other binary now says. The read tools
   (file_read, file_list, file_grep, file_find) also read, never write, an
   absolute path whose realpath lies in Apelin's development extensions
-  (`<install root>/usr/share/apelin/development`, or the copy the package
+  (`<install root>/usr/share/luros/development`, or the copy the package
   carries at `<app>/Development`, where a template's support headers are) or
   the data folder's `SDKs/`, as the read presets
   they are in every mode (`Paths/ReadOnlyRoots.swift`); a relative path,
@@ -1995,7 +1995,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   (`ChannelHostBackend`): apelin_project_build → `buildStart` read to its end (the artifact's `buildID` is what apelin_package_confirm_loaded matches;
   its findings, and apelin_project_check_distribution's, keep their `field`,
   and a schema error adds a note naming the apelin-project-description
-  skill's schema file; a build refused over an `apelin-project.json` that
+  skill's schema file; a build refused over an `luros-project.json` that
   does not read — in Strict mode the host's "approval required" — is
   answered with `projectCheck`'s errors, field by field; a Debug build of a
   project with a description that succeeds while `installationList` shows
@@ -2046,7 +2046,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   they are; a project's chat makes one only for work that is a project of
   its own, when the user asks or agrees. A repository is imported as New
   Project imports one, whatever it holds: an Empty workspace
-  (`wiki.qaq.apelin.workspace/empty`), then its conversation opened with
+  (`com.fluoxetine.luros.workspace/empty`), then its conversation opened with
   the URL and branch in the prompt, whose git_clone takes it in; the
   prompt, apelin_project_create's and git_clone's descriptions and
   `apelin-git-workflow` say so. apelin_project_delete {project} →
@@ -2220,7 +2220,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   only apelin_project_create writes, such as a workspace rewritten by
   hand, is told it is no description and that a workspace builds with a
   script of its own), then the four strings of `environment` rewritten
-  in `apelin-project.json` through the file tools' writer, every other
+  in `luros-project.json` through the file tools' writer, every other
   byte kept and read back to prove it, then written in the manifest's
   written form, which reads back as that same document
   (`ProjectEnvironmentEdit`). It is a
@@ -2300,8 +2300,8 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   card naming the project and the prompt or text, never with a session
   grant, and the host decides again (Approvals above); the worker resolves
   the project from `Projects/` for the card, the host resolves it again.
-  Links (2026-10-22): the app opens `apelin://conversation/<session ID>`
-  (selecting its project) and `apelin://project/<projectID>`
+  Links (2026-10-22): the app opens `lurosdev://conversation/<session ID>`
+  (selecting its project) and `lurosdev://project/<projectID>`
   (`ApelinLink`); apelin_conversation_create, apelin_conversation_list,
   apelin_conversation_read and apelin_project_create answer them beside the IDs, and
   the system prompt tells the model to hand the user a markdown link
@@ -2527,7 +2527,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   binds — with `IPHONEOS_DEPLOYMENT_TARGET` (the project's, else 16.0), so
   clang targets iOS against the SDK without flags; a temporary chat gets
   the defaults. The host reads `Environment/Toolchains/registry.json`,
-  `SDKs/.registry/` and `apelin-project.json` as root only inside the data
+  `SDKs/.registry/` and `luros-project.json` as root only inside the data
   folder or project, by canonical path, without following a link, and checks
   the opened descriptor's path again; only paths, IDs and a version go into
   the environment. A preset keeps its own list and the bare search path.
@@ -2652,10 +2652,10 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   fails on an old name in the prompt, a tool's description, a built-in
   skill or any source of the agent.
 - **Agent credentials** are the keychain's: `KeychainCredentialSource`,
-  service `wiki.qaq.apelin.agent`, access group `wiki.qaq.apelin.agent`
+  service `com.fluoxetine.luros.agent`, access group `com.fluoxetine.luros.agent`
   (`keychain-access-groups` on apelin-agent only), after first unlock, this
   device only, never synchronised. The owner provisions one with no UI by
-  dropping a file in `~/Documents/wiki.qaq.apelin/console/inbox/credentials/`
+  dropping a file in `~/Documents/com.fluoxetine.luros/console/inbox/credentials/`
   — `<store id>.json` in kwwk's credential shape (any store id a provider
   below is kept under: `github-copilot`, `anthropic`, `anthropic-api-key`,
   `openai-compatible`, `openai-codex`, `kimi-coding`, …) or a kwwk `auth.json`
@@ -2950,7 +2950,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   history on iOS (icli and the root reader stream only; `OSLogStore` is
   current-process only; there is no `log` tool), so a marker logged at the
   target's launch is seen only with the trigger, or with the target
-  relaunched during the window. The filter from `apelin-project.json` is
+  relaunched during the window. The filter from `luros-project.json` is
   checked statically. The image list is **never read** (the evidence says
   `notRead`, naming no iOS version, since it holds on every one): reading
   SpringBoard's image list panicked the iOS 27.0.1
@@ -2979,7 +2979,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `unlockDevice` too, never called, so apelin-diagnostics has no
   `com.apple.keystore.device`. An agent's
   action never reaches Apelin itself (`AgentUIActionRules`): the host sets
-  its `refusedBundleIDs` to `wiki.qaq.apelin`, whatever the agent sent, and
+  its `refusedBundleIDs` to `com.fluoxetine.luros`, whatever the agent sent, and
   apelin-diagnostics answers `denied` for a target on that list, before
   reading anything, and for an app on it in front — on the settled read
   the action is then bound to, verified or not, with no target too. It
@@ -3010,7 +3010,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   against 26 it sits centred with empty space around it. The floor stays
   `IPHONEOS_DEPLOYMENT_TARGET`. `make build` and `make install-app` refuse
   an older SDK (`sdk-tier`), `_package` reads the SDK back from the
-  `Apelin.app` it ships (`vtool -show-build`), and CI runs on the
+  `Luros.app` it ships (`vtool -show-build`), and CI runs on the
   `xcode-27` image with Xcode 27.1 selected by name, since that image's
   default may be newer. A layout reads size class and the space it has,
   insets each edge by its own safe-area inset, and leaves bars to the
@@ -3076,7 +3076,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   swift-cmark, LRUCache and swift-collections, still the one pin kwwk
   shares. Everything is static, so nothing new is a dylib. The one
   `@rpath` library the app gains is `libswiftCompatibilitySpan.dylib`,
-  which Xcode embeds in `Apelin.app/Frameworks/`.
+  which Xcode embeds in `Luros.app/Frameworks/`.
 - **Runestone is vendored and trimmed** (owner, 2026-10-17, the way Irisin
   does it): `Packages/Runestone` is simonbs/Runestone 0.5.2 from source,
   from Irisin's copy (the Xcode 27 `TreeSitter.h` fix, typed pointers,
@@ -3156,7 +3156,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   the title is "Apelin" alone, with no subtitle (owner, 2026-10-21) and
   no menu, and New Chat starts a temporary
   conversation, as ChatGPT's temporary chat: it belongs to no project and
-  is kept in `~/Documents/wiki.qaq.apelin/Temporary/<conversation>/`,
+  is kept in `~/Documents/com.fluoxetine.luros/Temporary/<conversation>/`,
   its working folder too. `agentOpen.temporaryID` names that UUID; the host and worker both check the canonical direct child before using it. Below the bar
   the conversations in the system's inset grouped table, cells and
   headers as they come (owner, 2026-10-21: simple and native), a picked
@@ -3446,7 +3446,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   Not taken: SDWebImage and ScribbleLetterView, which nothing needs yet,
   and GlyphixTextFx (owner, 2026-10-17): Litext's animated text covers
   the same `numericText`-style transition.
-  **Dog's journal** is `~/Documents/wiki.qaq.apelin/Journal/Dog_<date>_<id>.log`:
+  **Dog's journal** is `~/Documents/com.fluoxetine.luros/Journal/Dog_<date>_<id>.log`:
   `AppJournal.start()` calls `Dog.shared.initialization(writableDir:
   DataFolder.app.root)` once, early in `didFinishLaunching`, after making
   `Journal/` with `makeLevels` (so a missing data folder is an NSLog line,
@@ -3499,7 +3499,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   by both and compared file by file are in `ApelinProjectTests`.
 - **The written form** (owner, 2026-10-31, issue #30; `ProjectManifestFormat`,
   the reference's `manifest_text`, Documents/Schemas/README.md ▸ Written
-  form): every writer of `apelin-project.json` writes it as
+  form): every writer of `luros-project.json` writes it as
   `json.dumps(document, ensure_ascii=False, indent=2)` and one `\n` —
   two spaces a level, one member or element a line, members in their
   written order, `{}`/`[]` inline, only the escapes JSON needs — so it
@@ -3525,9 +3525,9 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   holds both implementations to it. The template files are not JSON before
   substitution and keep their layout; the file tools write what the model
   writes, and the next build tidies it.
-- **Extensions** are scanned from `<install root>/usr/share/apelin/development/`
+- **Extensions** are scanned from `<install root>/usr/share/luros/development/`
   and then from the copy Apelin's own package carries at
-  `<install root>/Applications/Apelin.app/Development/` (an installed one of
+  `<install root>/Applications/Luros.app/Development/` (an installed one of
   the same id wins), on every `extensionList`; each is checked alone and a bad
   one, or both of a duplicate id, is listed with its problems and never offered.
 - **projectCreate** stages beside `Projects/<name>/` (`.<name>.creating-…`)
@@ -3577,7 +3577,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `APELIN_BUILD_ID`, the artifact ID and what `confirmLoaded` takes. Its
   layout comes from the assignment — mobile's home inside the install root
   is roothide, otherwise rootless — and it builds only that one. Outputs live
-  in `~/Documents/wiki.qaq.apelin/Builds/<projectID>/<buildID>/` (objects,
+  in `~/Documents/com.fluoxetine.luros/Builds/<projectID>/<buildID>/` (objects,
   slices, products, dSYMs, `build.log`, the deb), never in the project. Tools
   are the registered toolchain's `usr/bin/<tool>`, posix_spawn'd by argv,
   stdin `/dev/null`, `POSIX_SPAWN_CLOEXEC_DEFAULT`, a process group each
@@ -3699,11 +3699,11 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
 - **Its task events**: `stage {stage, product?}`, `log {line}`, `diagnostic`
   (a `ProjectDiagnostic`; clang and ld lines parsed to file, line, column,
   severity), `artifact` (a `BuildArtifact` with `path` — the deb, inside
-  `~/Documents/wiki.qaq.apelin/Builds/` —, `projectID` and
+  `~/Documents/com.fluoxetine.luros/Builds/` —, `projectID` and
   `packagingDigest`, which the host's ArtifactRegistry records), and a final `state` that, on
   success, also carries `artifactID`, `digest`, `buildID`, `packageID`,
   `version` and `bootstrap`.
-- **The artifact** is registered at `~/Documents/wiki.qaq.apelin/Builds/artifacts/<artifactID>.json`
+- **The artifact** is registered at `~/Documents/com.fluoxetine.luros/Builds/artifacts/<artifactID>.json`
   (`ArtifactRecord`): the deb's path and `sha256:` digest, both description
   digests as built, the products with their digests and UUIDs, the dSYMs,
   the regular files and links the deb installs as dpkg lists them
@@ -3882,7 +3882,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   reads shapes and proves nothing; Strict showing the whole text is the
   safeguard. Below the body it writes the footer itself, "Sent with
   Apelin <version> (<build>) · iOS <version> · <bootstrap>", the version
-  from `<install root>/Applications/Apelin.app/Info.plist` (`BoundedFile`)
+  from `<install root>/Applications/Luros.app/Info.plist` (`BoundedFile`)
   and no model, name or identifier. Without a sign-in, `denied` with
   reason `authenticationRequired`. The app's and the agent's, as
   `AgentFeedbackRules` lets it through. Tested by `FeedbackTests` and
@@ -4040,7 +4040,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
 - **In v1**: everything that can be wired in, the terminal and git included.
   Not clangd: the editor is basic editing on Runestone (vendored,
   `Packages/Runestone`), with no completion, hints or jump-to-definition.
-- **Projects** live in `~/Documents/wiki.qaq.apelin/Projects/<name>/`, nowhere
+- **Projects** live in `~/Documents/com.fluoxetine.luros/Projects/<name>/`, nowhere
   else.
 - **Diagnostics** use `owngoal-dev/icli` for everything it can do — logs,
   crash reports, screenshots, the UI tree and actions, respring — and gaps are
@@ -4065,7 +4065,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
 - **Packages**: the IDE is one package and depends on no injection framework.
   The development environment ships as four extensions — app, tweak,
   command-line tool and preference bundle support — that the IDE's own package
-  carries inside its app bundle (`Applications/Apelin.app/Development`), so it
+  carries inside its app bundle (`Applications/Luros.app/Development`), so it
   depends on none of them and recommends none: a package manager installs the
   IDE alone and every kind of project can be made. An extension installed on
   its own wins over the copy, which is how one is updated without the IDE, and
@@ -4075,11 +4075,11 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   templates at launch.
 - **The two device tools ride inside the app too**: `icli` and `irisind` are
   committed under `Vendor/` with their digests (`Vendor/README.md`), staged
-  into `Applications/Apelin.app/Vendor/`, and the package depends on neither
+  into `Applications/Luros.app/Vendor/`, and the package depends on neither
   `com.icli.icli` nor `wiki.qaq.irisin`. The bundle's `bin` goes last on every
   run's `PATH`, behind the bootstrap's own directories, so an `icli` the
   device installed still wins. `postinst` registers the bundled `irisind`
-  under the label `wiki.qaq.apelin.irisind` with the Mach service irisind
+  under the label `com.fluoxetine.luros.irisind` with the Mach service irisind
   serves, and only when no Irisin job is on disk: a device with the real
   package keeps its daemon, and `prerm`/`postrm` stop and remove only
   Apelin's. `Scripts/check-vendored-tools.py` fails when a binary, the table,
@@ -4089,7 +4089,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
 - **The two agent tool extensions ride inside the app as well**: `assembler`
   and `disassembler` are built by `deb-agent-tools`, and the package carries
   each one's executable and manifest under
-  `Applications/Apelin.app/AgentTools` with the manifest's `executable`
+  `Applications/Luros.app/AgentTools` with the manifest's `executable`
   rewritten to that path; the host reads an installed folder first, so a tool
   installed on its own still wins. The assembler contains GPL-2.0-only
   Keystone, so the IDE's package is published only beside that extension's
@@ -4213,7 +4213,7 @@ manifest.json            the owngoal-packages entry
   as vphone-launchpad names it (its address is read from the guest),
   `VPHONE_HOST=<address>`, or with neither the one that is running.
 - `make vphone-app` — the inner loop while working on the app: the same
-  build, incremental, and only `Apelin.app` put over the installed one,
+  build, incremental, and only `Luros.app` put over the installed one,
   signed as the packager signs it and root's (`install-device.sh --app`),
   in about ten seconds. No gates, no harness, no package; the daemon,
   workers and dpkg's record stay as the last package left them, so a
@@ -4358,7 +4358,7 @@ adding a dated record beside it.
   for keyboard-interactive, which sshpass answers.
 - **"Unable to register" from uicache is not always a failure.** On the
   iOS 27 iPad vphone, uikittools' trigger and `uicache -p` both print it for
-  `Apelin.app`, and `uicache -i wiki.qaq.apelin` still shows the app
+  `Luros.app`, and `uicache -i com.fluoxetine.luros` still shows the app
   registered at the bundle's path, and it opens. Check the record before
   chasing the message. `install-device.sh` runs `uicache -p` after every
   install anyway, for the install-from-a-file case above.
@@ -4466,9 +4466,9 @@ adding a dated record beside it.
 - The conversation alternates a single thinking summary with response content. Consecutive thinking steps merge across tools and approvals. Tool calls and completed approvals stay out of the main transcript; tapping the summary opens their ordered trace in a form sheet, a list of the steps, provider-supplied thinking included, each opening its own plain text. Headers use body-size 50% primary text aligned to the body margin, with a sentence for duration and tool count. Pending approval still replaces the composer.
 - Every agent tool, MCP tools included, requires a short `reason` (`ToolReason`), stripped from the arguments before the approval gate, the fingerprint, the tool or the host sees them; the `toolCall` event keeps it. The file tools end their result's first line with `+a -b` lines added and removed. While a turn runs, its trailing summary stays unfinished across calls and approvals, the run's received tokens climbing at the trailing end of its title line (and of the summary above the reply while the reply streams). Once the summary has a call, `ToolCallBannerView` shows one line under it, at the reading width, between hairlines on a 5% grey ground drawn out to the row's edges: the newest call in its trace (`ToolCallBanner`), by its reason, or its title for a call made without one, and for a file tool (`ToolCallBanner.fileTools`) the file's name first, then the lines added in green and removed in red once its result is in, read from the result's first line (a failed call has none), so truncation takes the end of the reason, never the numbers. Thinking after a call leaves that call there; nothing of the thinking shows (owner, 2026-10-24: no thinking tail, typing or character fade). On the same summary, a new call, or its counts coming in, fades in over 0.2 s; the line's first call, a row taken over by another summary and everything under Reduce Motion show at once. VoiceOver reads the line after the title: the reason, then the file and its counts in words as its value. Only the running summary in the transcript has it; the trace sheet lists every call and opens each whole. The running summary reads “Waiting for Network…” after a `waitingForNetwork`, until the request is asked again, and “Reconnecting…” after a `reconnecting`, each until the request made again streams or the run moves on, else “Executing N tools…” only while N calls await a result, “Thinking…” otherwise, and its title changes at most once a second: the first change at once, the latest of the rest when the second is up. A running summary stands in under a prompt, or under images a tool returned, until the turn shows something, with the id its next thought takes, and `toolCallPreparing` starts one while the model writes a call's arguments, so a turn never shows a gap. One stands in under a message on its way too (owner, 2026-11-14): the first of `sending` when no turn runs starts the next one, and `ChatTranscript.show` puts the summary its echo will have under it, under the same id, so opening the session, a reopened session's replay and the host recording the message all pass with the turn already shown at work, and the echo and the first thought change nothing on screen; any other message on its way waits, faded, for that turn. One stands in under the turn's last reply (or error) too once the running turn has gone `ChatTranscript.quietInterval` (1.5 s) without an event — the model may be writing a call it has not announced, or the provider has stalled —, never under a running summary or a waiting approval. The transcript is given the time (`now`) and answers `quietDeadline`; the page builds its rows again once, then (`ChatQuietWatch`), and nothing polls. The reply's next thought, call or message start takes the stand-in's id, so it becomes that row with no flash, and more of the reply ends it. A `messageDiscarded` takes back the rows its message made, while it was still streaming, and leaves unanswered again what it answered, so the stand-in comes back under the same id and the retried reply is drawn once, never under the partial one. An `error` is a row of its own kind (owner, 2026-11-14; `ChatFailure`, `ChatFailureRow`), never drawn as a reply: one line in red naming what went wrong by the event's `reason` (“No Internet Connection”, “Unable to Reach Model Provider”, “Request Timed Out”, “Sign-In Not Accepted”, “Usage Limit Reached”, “Too Many Requests”, “Model Provider Error”, “Chat Too Long”, and “Something Went Wrong” for an error with no reason or one this version does not know), and under it, in the secondary colour, what to do where the reason says it (connect, check the network or proxy, send again, check the sign-in in Settings ▸ Model Providers, compact the context) and otherwise the provider's own words; plain selectable text, one VoiceOver element reading both lines. The row's `text` stays the recorded message, so following, unread and the journal read it as before. Transcript content is centred in at most 730 pt, the composer card's widest, so the two edges line up; the list itself spans the page's safe area side to side, so its margins scroll, and stops at a vertical bar's strip, which is the bar's (iPhone Duo at the 27.1 SDK tier: a trailing safe-area inset on one side only).
 - **An opened thought the model is still writing** (`ChatStreamPacing`, tested in `Tests/ChatTranscript/StreamPacingCheck.swift`; owner, 2026-11-15: "展开还在流式输出的长思考，界面很卡"). An opened thought is one label holding all of it, and the model writes it a token at a time: drawing and measuring the whole of a long run on every event is what made the transcript stutter, and it grew with the run. The row now takes its text from a clock keyed by the step — advanced at most every 0.3 s while the thought runs — and, while it runs, draws only its newest 6,000 characters behind an ellipsis; the whole of it is drawn the moment it has stopped. `ChatTraceSteps` takes the same paced steps for what it draws and for what it measures, so the height the list gives a row is the height of the text the row shows: measured ahead of the row, it would clip it. A step that is not a thought, and every thought that has stopped, is untouched.
-- `ProjectPickerController` lists real projects; `NewProjectController` chooses a catalog template, using its default parameters and calls `projectCreate`. Settings includes a read-only Templates catalog with single-line names with source-file byte counts at the trailing edge, no subtitles and no disclosure navigation. The built-in `wiki.qaq.apelin.workspace/empty` template creates only a workspace identity manifest, atomically and without SDK/toolchain requirements. It supplies no build or install baseline; a build requires a real build description.
+- `ProjectPickerController` lists real projects; `NewProjectController` chooses a catalog template, using its default parameters and calls `projectCreate`. Settings includes a read-only Templates catalog with single-line names with source-file byte counts at the trailing edge, no subtitles and no disclosure navigation. The built-in `com.fluoxetine.luros.workspace/empty` template creates only a workspace identity manifest, atomically and without SDK/toolchain requirements. It supplies no build or install baseline; a build requires a real build description.
 
-- Templates are a single read-only release catalog, with additions and corrections submitted as repository pull requests. There is no create/delete action or separate user template library. `make template-archive` validates and reproducibly packs sources, support files and licenses as `Apelin_<version>_Templates.tar.zst`; CI records its checksum and Release publishes that exact artifact without rebuilding. The command-line tool templates' `Tool.entitlements` carry the app templates' GPU and IOSurface IOKit user-client list under both keys from `wiki.qaq.apelin.dev.cli` 0.1.1 (owner, 2026-10-29; `make check` holds the app's entitlements and every app and cli template's to `Scripts/check-gpu-entitlements.py`, while a tweak or preference bundle, a library, runs with its host process's), and a project keeps the entitlements its template wrote, so a cli project made from 0.1.0 has no list until one is added, a build description change Strict reviews. Every template writes its extension's package manager icon on Pages, `https://owngoal-dev.github.io/Apelin/icons/<extension id>.png`, as `package.icon` (owner, 2026-10-29; app and tweak 0.1.1, cli and preferences 0.1.2), which the build writes as the deb's `Icon`, so a package manager shows it beside the installed package and in the user's package repository; the user keeps it or names their own https image, a packaging description change Strict reviews. It is not an app's own icon, nor a Settings row's: the preference bundle template carries that one in its bundle from `wiki.qaq.apelin.dev.preferences` 0.1.3 (owner, 2026-10-30, issue #19), `Resources/icon.png` with its @2x and @3x at 29 points, the extension's plate scaled from the `ProjectIconPreferences` image set, named by the PreferenceLoader entry's `icon`, for the developer to replace. A project made before has none and keeps its digests.
+- Templates are a single read-only release catalog, with additions and corrections submitted as repository pull requests. There is no create/delete action or separate user template library. `make template-archive` validates and reproducibly packs sources, support files and licenses as `Apelin_<version>_Templates.tar.zst`; CI records its checksum and Release publishes that exact artifact without rebuilding. The command-line tool templates' `Tool.entitlements` carry the app templates' GPU and IOSurface IOKit user-client list under both keys from `com.fluoxetine.luros.dev.cli` 0.1.1 (owner, 2026-10-29; `make check` holds the app's entitlements and every app and cli template's to `Scripts/check-gpu-entitlements.py`, while a tweak or preference bundle, a library, runs with its host process's), and a project keeps the entitlements its template wrote, so a cli project made from 0.1.0 has no list until one is added, a build description change Strict reviews. Every template writes its extension's package manager icon on Pages, `https://owngoal-dev.github.io/Apelin/icons/<extension id>.png`, as `package.icon` (owner, 2026-10-29; app and tweak 0.1.1, cli and preferences 0.1.2), which the build writes as the deb's `Icon`, so a package manager shows it beside the installed package and in the user's package repository; the user keeps it or names their own https image, a packaging description change Strict reviews. It is not an app's own icon, nor a Settings row's: the preference bundle template carries that one in its bundle from `com.fluoxetine.luros.dev.preferences` 0.1.3 (owner, 2026-10-30, issue #19), `Resources/icon.png` with its @2x and @3x at 29 points, the extension's plate scaled from the `ProjectIconPreferences` image set, named by the PreferenceLoader entry's `icon`, for the developer to replace. A project made before has none and keeps its digests.
 
 
 ## Project display names and external project actions
@@ -4511,7 +4511,7 @@ and the agent may do it, under the modes as they are) is `projectDelete`
 it was, and the agent's apelin_project_delete reaches the same end. The
 session host resolves the project (`AgentProjectDeleteRules.target`,
 through `AgentProjects.resolve`: the folder directly under `Projects/`
-whose `apelin-project.json` carries that id, by canonical path, no link
+whose `luros-project.json` carries that id, by canonical path, no link
 followed, and the folder named when one is; a `temporary:` id is
 refused, a temporary chat's folder being no project), refuses an agent
 its own session's project and under Confirm spends the approval naming
@@ -4778,7 +4778,7 @@ enforcement of the mode is unchanged; the block only tells the model. The
 project's `AGENTS.md`, else `CLAUDE.md` — a regular file inside the project, at most
 16 KB — is added as project instructions that never override the prompt or the
 approval mode. Skills are pi's progressive disclosure: the prompt lists each
-built-in and user skill (`~/Documents/wiki.qaq.apelin/skills`) by name and
+built-in and user skill (`~/Documents/com.fluoxetine.luros/skills`) by name and
 description only, and `apelin_skill_read{name, file?}` reads the body, or a file in a
 user skill's own folder (no link out of it), on demand; it is a read preset.
 The built-ins are one Swift file each under `ApelinAgent/Skills/BuiltIn/`,
@@ -4787,7 +4787,7 @@ Apelin's own templates and pipeline, the sibling apps (Irisin's installer,
 icli, Xrash, iGhostVT, Fila, LookInside's tweak) and roothide's developer
 notes, and a claim nobody has seen hold on a device stays out.
 A built-in skill may carry files of its own (`SkillDocument.files`):
-`apelin-project-description` is every member of `apelin-project.json`, the macros the
+`apelin-project-description` is every member of `luros-project.json`, the macros the
 build defines and what asks the user, with the embedded schema as its file
 `apelin-project.schema.json` (`ProjectValidation.schemaText`); a test fails
 when the schema gains a member the guide never names. `apelin-tweak-development`
@@ -4834,7 +4834,7 @@ package is installed. `apelin-device-executables` (2026-10-29) is a program
 the agent compiles and runs itself through shell_run: `ldid -S` with the
 skill's `Tool.entitlements` after every link (unsigned, it exits 137), the
 file the cli templates' keys, which carry the app template's IOKit
-user-client lists from `wiki.qaq.apelin.dev.cli` 0.1.1 (a test holds the keys
+user-client lists from `com.fluoxetine.luros.dev.cli` 0.1.1 (a test holds the keys
 to the cli templates and the lists to the app template), since a VideoToolbox
 tool signed without them failed `CVPixelBufferCreate` with -6662 on a device;
 it says a cli project made from 0.1.0 needs both lists copied into its own.
@@ -5114,18 +5114,18 @@ both. Form fields and task-stage cells keep their existing views. The sidebar
 updates for changed titles, activity or order, rather than each streamed text
 fragment. The chat's ListViewKit keeps its own update mechanism.
 
-## Widgets, the Live Activity and `apelin://` links (2026-10-22)
+## Widgets, the Live Activity and `lurosdev://` links (2026-10-22)
 
-- **Links.** `apelin://conversation/<id>` opens a conversation: `<id>` is its
+- **Links.** `lurosdev://conversation/<id>` opens a conversation: `<id>` is its
   agent session ID (what the conversation tools return), or the app's own
-  chat ID. `apelin://project/<projectID or folder name>` opens a project on
-  its most recent conversation, or a new one. `apelin://chat?prompt=<text>`
+  chat ID. `lurosdev://project/<projectID or folder name>` opens a project on
+  its most recent conversation, or a new one. `lurosdev://chat?prompt=<text>`
   (2026-10-26) opens a new General Chat — the untouched one if there is
   one — with `<text>` in its composer and the keyboard up, and sends
   nothing: the reader reads it and taps Send, so a link from anywhere can
   only suggest a message (≤ 32 KB, no control character but a line break or
   a tab, else `unknown`; without `prompt` the composer is empty).
-  `apelin://import?url=<address>&branch=<name>` (owner, 2026-10-31, issue
+  `lurosdev://import?url=<address>&branch=<name>` (owner, 2026-10-31, issue
   #31) is Open in Apelin for a Git repository: a README's button
   (`Documents/Site/open/badge.svg`) links to
   `https://owngoal-dev.github.io/Apelin/open/?url=…&branch=…`, a static
@@ -5160,7 +5160,7 @@ fragment. The chat's ListViewKit keeps its own update mechanism.
   (`RepositoryImportFlow`): a link for the one open does nothing more,
   another says an import is under way. An import link waits through the
   welcome rather than being dropped.
-  `apelin://` opens the app as it is. The format is fixed — the agent
+  `lurosdev://` opens the app as it is. The format is fixed — the agent
   writes these links. `ApelinLink`
   (`Widgets/Shared/ApelinLink.swift`, Foundation only; `Tests/ApelinLink` in
   `make harness`) parses and builds them; the scheme is declared in the
@@ -5193,7 +5193,7 @@ fragment. The chat's ListViewKit keeps its own update mechanism.
 - **The snapshot.** The extension is sandboxed and cannot read mobile's
   Documents, where the app's data is, so the app writes
   `ChatWidgetSnapshot` to `Widgets/chats.json` in the App Group container
-  `group.wiki.qaq.apelin`, which both targets carry — the way Fila's save
+  `group.com.fluoxetine.luros`, which both targets carry — the way Fila's save
   action shares Fila's. `make check` and the packager require exactly that
   group on both, and nothing privileged on the extension (no `no-sandbox`,
   `platform-application`, storage, container or client keys, no Mach
@@ -5266,7 +5266,7 @@ conversation still deletes only that conversation, never its whole subtree.
 `Scripts/test-chat-transcript.sh` includes `SidebarTreeCheck` and
 `ChatLineageCheck`. The smaller `bash Scripts/test-sidebar-tree.sh` runs the pure
 production tree/title rules on a Mac. On a prepared device use
-`bash Scripts/test-sidebar-tree.sh --device Extensions/Development/wiki.qaq.apelin.dev.cli/templates/objc/Packaging/Tool.entitlements`;
+`bash Scripts/test-sidebar-tree.sh --device Extensions/Development/com.fluoxetine.luros.dev.cli/templates/objc/Packaging/Tool.entitlements`;
 it compiles and signs its project-local harness, also type-checks the UIKit tree
 cell, and installs nothing. It does not replace the full app build, controller
 integration tests, or device UI testing (expansion, guides, Dynamic Type, RTL and

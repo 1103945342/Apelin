@@ -19,7 +19,7 @@ import Foundation
 struct HostDigestLedger: ApprovalDigestStore {
     let service: ApelinService
     let projectURL: URL
-    /// `~/Documents/wiki.qaq.apelin`, whose `Builds/artifacts/` apelin-build
+    /// `~/Documents/com.fluoxetine.luros`, whose `Builds/artifacts/` apelin-build
     /// records each package in.
     let dataFolder: URL
 
@@ -39,7 +39,7 @@ struct HostDigestLedger: ApprovalDigestStore {
             return DescriptionState(
                 digest: digest,
                 baseline: .changed(
-                    diff: "The \(kind.rawValue) description is \(digest), not \(against); review apelin-project.json.",
+                    diff: "The \(kind.rawValue) description is \(digest), not \(against); review luros-project.json.",
                 ),
             )
         }
@@ -82,7 +82,7 @@ struct HostDigestLedger: ApprovalDigestStore {
     }
 
     static func digest(of kind: DescriptionKind, projectURL: URL) throws -> String {
-        let url = projectURL.appendingPathComponent("apelin-project.json")
+        let url = projectURL.appendingPathComponent("luros-project.json")
         let data = try Data(contentsOf: url)
         guard data.count <= 1 << 20 else { throw CocoaError(.fileReadTooLarge) }
         let manifest = try JSONCoding.decode(ApelinCore.JSONValue.self, from: data)

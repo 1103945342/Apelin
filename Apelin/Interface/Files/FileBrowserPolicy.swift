@@ -55,7 +55,7 @@ enum FileBrowserProtectedRecord: Equatable {
     case dataFolder
     /// `Projects/` and each project folder in it.
     case projects
-    /// A project's description, `apelin-project.json`.
+    /// A project's description, `luros-project.json`.
     case projectManifest
     /// `SDKs/`.
     case sdks
@@ -122,9 +122,9 @@ struct FileBrowserRoot: Equatable {
 /// this decides is only which changes the page offers.
 struct FileBrowserPolicy: Equatable {
     /// A project's description, at the root of every project folder.
-    static let projectManifestName = "apelin-project.json"
+    static let projectManifestName = "luros-project.json"
 
-    /// `~/Documents/wiki.qaq.apelin`, as `DataFolder.app` answers it.
+    /// `~/Documents/com.fluoxetine.luros`, as `DataFolder.app` answers it.
     let dataFolder: URL?
     /// `Projects/` inside it.
     let projects: URL?
@@ -169,8 +169,8 @@ struct FileBrowserPolicy: Equatable {
         guard let bootstrapRoot else { return [] }
         let spelled = [
             (bootstrapRoot + "/usr/lib/apelin/toolchains", FileBrowserProtectedRecord.toolchains),
-            (bootstrapRoot + "/usr/share/apelin", .applicationPayload),
-            (bootstrapRoot + "/usr/libexec/apelin", .applicationPayload)
+            (bootstrapRoot + "/usr/share/luros", .applicationPayload),
+            (bootstrapRoot + "/usr/libexec/luros", .applicationPayload)
         ]
         return spelled.compactMap { path, record in
             var metadata = stat()

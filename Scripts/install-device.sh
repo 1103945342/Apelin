@@ -5,16 +5,16 @@
 # local port to its sshd. A vphone VM answers on its own address, port 22
 # (`make vphone`, which finds it). `Scripts/device.py` runs console scripts there.
 #
-#   Scripts/install-device.sh build/Packages/wiki.qaq.apelin_0.1.0_iphoneos-arm64.deb
+#   Scripts/install-device.sh build/Packages/com.fluoxetine.luros_0.1.0_iphoneos-arm64.deb
 #
-# With --app it puts a built Apelin.app over the installed one instead
+# With --app it puts a built Luros.app over the installed one instead
 # (`make vphone-app`, the inner loop while working on the app): signed as
 # the packager signs it, root-owned, so the daemon still takes it as its
 # peer. The daemon, the workers and dpkg's record stay as the last package
 # left them, so a change outside the app, a file added to or removed from
 # the bundle that dpkg should know of, or anything shipped, needs a package.
 #
-#   Scripts/install-device.sh --app build/…/Release-iphoneos/Apelin.app --launch
+#   Scripts/install-device.sh --app build/…/Release-iphoneos/Luros.app --launch
 #
 # Overridable: DEVICE_HOST, DEVICE_PORT, DEVICE_USER, DEVICE_PASSWORD.
 # Without DEVICE_PASSWORD the usual ssh key path is used.
@@ -28,7 +28,7 @@ if [[ "${1:-}" == --app ]]; then
 fi
 if [[ $# -lt 1 || $# -gt 2 || ($# -eq 2 && "$2" != --launch) ]]; then
     echo "usage: install-device.sh <package.deb> [--launch]" >&2
-    echo "       install-device.sh --app <Apelin.app> [--launch]" >&2
+    echo "       install-device.sh --app <Luros.app> [--launch]" >&2
     exit 64
 fi
 package="$1"
@@ -113,9 +113,9 @@ staging=
 cleanup_upload() {
     local status=0
     if [ -n "$remote_directory" ]; then
-        # The new bundle only, never Apelin.app.previous: that is the
+        # The new bundle only, never Luros.app.previous: that is the
         # installed app, left there by a swap that could not be undone.
-        run_sudo "rm -rf $(shell_quote "${remote_directory:?}/Apelin.app") && rm -f $(shell_quote "$remote_directory/package.deb") $(shell_quote "$remote_directory/app.tar") && rmdir $(shell_quote "$remote_directory")" || {
+        run_sudo "rm -rf $(shell_quote "${remote_directory:?}/Luros.app") && rm -f $(shell_quote "$remote_directory/package.deb") $(shell_quote "$remote_directory/app.tar") && rmdir $(shell_quote "$remote_directory")" || {
             echo "error: could not remove installation temporary: $remote_directory" >&2
             status=1
         }
@@ -134,9 +134,9 @@ if [[ $mode == app ]]; then
     # embedded library ad hoc, the widget extension with its entitlements,
     # then the executable with its own.
     staging="$(mktemp -d)"
-    /usr/bin/ditto "$package" "$staging/Apelin.app"
+    /usr/bin/ditto "$package" "$staging/Luros.app"
     shopt -s nullglob
-    embedded=("$staging/Apelin.app/Frameworks"/*.dylib "$staging/Apelin.app/Frameworks"/*.framework)
+    embedded=("$staging/Luros.app/Frameworks"/*.dylib "$staging/Luros.app/Frameworks"/*.framework)
     shopt -u nullglob
     for library in ${embedded[@]+"${embedded[@]}"}; do
         if [[ -d "$library" ]]; then
@@ -146,26 +146,26 @@ if [[ $mode == app ]]; then
         ldid -S -Cadhoc "$library"
     done
     packaging="$(cd "$(dirname "$0")/.." && pwd)/Packaging"
-    widget="$staging/Apelin.app/PlugIns/ApelinWidgets.appex"
+    widget="$staging/Luros.app/PlugIns/ApelinWidgets.appex"
     if [[ -d "$widget" ]]; then
         rm -rf -- "${widget:?}/_CodeSignature"
         ldid -S"$packaging/ApelinWidgets.entitlements" -Cadhoc \
             "$widget/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$widget/Info.plist")"
     fi
-    executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$staging/Apelin.app/Info.plist")"
-    ldid -S"$packaging/Apelin.entitlements" -Cadhoc "$staging/Apelin.app/$executable"
+    executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$staging/Luros.app/Info.plist")"
+    ldid -S"$packaging/Apelin.entitlements" -Cadhoc "$staging/Luros.app/$executable"
 fi
 
 # This installer updates an existing Apelin installation. Derive its actual
 # bootstrap from dpkg instead of guessing a rootless or roothide prefix.
 remote_directory="$(run_sudo '
     set -eu
-    if ! daemon="$(dpkg -L wiki.qaq.apelin | grep "/usr/libexec/apelind$")" || [ ! -f "$daemon" ]; then
+    if ! daemon="$(dpkg -L com.fluoxetine.luros | grep "/usr/libexec/lurosd$")" || [ ! -f "$daemon" ]; then
         echo "error: cannot locate the installed Apelin daemon; install Apelin before using this updater" >&2
         exit 1
     fi
     case "$daemon" in /*) ;; *) echo "error: installed Apelin daemon path is not absolute" >&2; exit 1 ;; esac
-    install_root="${daemon%/usr/libexec/apelind}"
+    install_root="${daemon%/usr/libexec/lurosd}"
     install_root="$(cd -P "${install_root:-/}" && pwd -P)"
     directory="$(mktemp -d "${install_root%/}/.apelin-install.XXXXXXXX")"
     cleanup() { rmdir "$directory"; }
@@ -180,10 +180,10 @@ remote_directory="$(run_sudo '
 # does not look for it. The destination is the temporary this script just made
 # and chowned to this user.
 if [[ $mode == app ]]; then
-    echo "==> copying Apelin.app to $user@$host:$port"
+    echo "==> copying Luros.app to $user@$host:$port"
     # No AppleDouble files, extended attributes or flags: the device's tar
     # would unpack them as files or warn about every header.
-    COPYFILE_DISABLE=1 tar --no-xattrs --no-mac-metadata --no-acls --no-fflags -C "$staging" -cf - Apelin.app |
+    COPYFILE_DISABLE=1 tar --no-xattrs --no-mac-metadata --no-acls --no-fflags -C "$staging" -cf - Luros.app |
         run_remote "cat > $(shell_quote "$remote_directory/app.tar")"
 else
     remote_package="$remote_directory/package.deb"
@@ -212,15 +212,15 @@ if [[ $mode == app ]]; then
     # goes aside by a rename on the same volume and comes back if the new
     # one cannot take its place.
     run_sudo "directory=$(shell_quote "$remote_directory"); "'set -eu
-        app="$(dpkg -L wiki.qaq.apelin | grep "/Applications/Apelin.app$")"
+        app="$(dpkg -L com.fluoxetine.luros | grep "/Applications/Luros.app$")"
         cd "$directory"
         tar -xf app.tar
         rm -f app.tar
-        chown -R 0:0 Apelin.app
-        chmod -R u=rwX,go=rX Apelin.app
-        mv "$app" Apelin.app.previous
-        mv Apelin.app "$app" || { mv Apelin.app.previous "$app"; exit 1; }
-        rm -rf Apelin.app.previous'
+        chown -R 0:0 Luros.app
+        chmod -R u=rwX,go=rX Luros.app
+        mv "$app" Luros.app.previous
+        mv Luros.app "$app" || { mv Luros.app.previous "$app"; exit 1; }
+        rm -rf Luros.app.previous'
 else
     # Irisin's installer (`irisin-cli install`, Irisin's helper underneath),
     # never apt or dpkg: both are on their way out. The package's postinst
@@ -245,9 +245,9 @@ staging=
 # previous build's Info.plist from the record. Register this bundle by its
 # path, which is what uikittools' trigger would not do for an installed app.
 echo "==> registering the app"
-run_sudo 'app="$(dpkg -L wiki.qaq.apelin | grep "/Applications/Apelin.app$")" && uicache -p "$app"'
+run_sudo 'app="$(dpkg -L com.fluoxetine.luros | grep "/Applications/Luros.app$")" && uicache -p "$app"'
 
 if $launch; then
     echo "==> opening Apelin"
-    run_remote "uiopen --bundleid wiki.qaq.apelin"
+    run_remote "uiopen --bundleid com.fluoxetine.luros"
 fi

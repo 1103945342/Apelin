@@ -90,7 +90,7 @@ struct CredentialInboxTests {
 
     @Test
     func `the inbox lives in the console's inbox folder in mobile's data folder`() {
-        #expect(CredentialInbox(home: "/var/mobile").directory.path == "/var/mobile/Documents/wiki.qaq.apelin/console/inbox/credentials")
+        #expect(CredentialInbox(home: "/var/mobile").directory.path == "/var/mobile/Documents/com.fluoxetine.luros/console/inbox/credentials")
     }
 }
 
@@ -228,7 +228,7 @@ struct EventRelayMappingTests {
     func `the fallback digest covers the build description and nothing else`() throws {
         let project = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("apelin-digest-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: project, withIntermediateDirectories: true)
-        let manifest = project.appendingPathComponent("apelin-project.json")
+        let manifest = project.appendingPathComponent("luros-project.json")
         try #"{"products": [1], "build": {"steps": []}, "package": {"id": "a"}}"#.write(to: manifest, atomically: true, encoding: .utf8)
         let first = try HostDigestLedger.digest(of: .build, projectURL: project)
         try #"{"package": {"id": "b"}, "build": {"steps": []}, "products": [1]}"#.write(to: manifest, atomically: true, encoding: .utf8)

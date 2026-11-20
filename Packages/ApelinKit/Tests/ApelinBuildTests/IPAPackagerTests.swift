@@ -27,7 +27,7 @@ final class IPAPackagerTests: XCTestCase {
         )
         let catalog = ExtensionCatalog(directory: Repository.extensions)
         let created = try store.create(
-            templateID: "wiki.qaq.apelin.dev.tweak/objc-hook",
+            templateID: "com.fluoxetine.luros.dev.tweak/objc-hook",
             name: "Hello App",
             values: [:],
             catalog: catalog,

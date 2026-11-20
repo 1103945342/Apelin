@@ -3,7 +3,7 @@
   "projectID": "b9f769c1-39ae-52d4-a8fe-1b3f002b3470",
   "kind": "tweak",
   "template": {
-    "extensionID": "wiki.qaq.apelin.dev.tweak",
+    "extensionID": "com.fluoxetine.luros.dev.tweak",
     "templateID": "objc-hook",
     "version": "0.1.1",
     "digest": "sha256:f7aa0129fcb88ba57ea493d55f34828fd0bc1a435e5a0e3145dedf16118d4dc6"
@@ -63,7 +63,7 @@
       ],
       "extensionSupport": [
         {
-          "extension": "wiki.qaq.apelin.dev.tweak",
+          "extension": "com.fluoxetine.luros.dev.tweak",
           "component": "substrate"
         }
       ]
@@ -104,7 +104,7 @@
     "name": "Apelin Tweak",
     "version": "0.0.1",
     "description": "Built on this device with Apelin.",
-    "icon": "https://owngoal-dev.github.io/Apelin/icons/wiki.qaq.apelin.dev.tweak.png",
+    "icon": "https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.dev.tweak.png",
     "sileoDepiction": "https://example.github.io/repo/depictions/my tweak/depiction.json",
     "author": "Apelin User",
     "section": "Tweaks",

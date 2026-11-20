@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Collect reviewed offline notices into Apelin.app/Licenses.json.
+"""Collect reviewed offline notices into Luros.app/Licenses.json.
 
 Runs as the app target's "Collect Licenses" build phase, so the list is what
 this build links, never a hand-kept copy: the repository LICENSE, the

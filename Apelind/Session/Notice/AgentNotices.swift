@@ -17,7 +17,7 @@ struct AgentNotice: Equatable, Sendable {
 
     /// What a tap hands to the app's own URL handling.
     var link: String {
-        "apelin://conversation/" + sessionID
+        "lurosdev://conversation/" + sessionID
     }
 
     enum Text: Equatable, Sendable {

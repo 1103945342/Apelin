@@ -199,8 +199,8 @@ public enum ManifestValidation {
             if Set(paths).count != paths.count {
                 errors.append("/templates/\(index)/files: a path is listed twice")
             }
-            if !paths.contains("apelin-project.json") {
-                errors.append("/templates/\(index)/files: apelin-project.json is not listed")
+            if !paths.contains("luros-project.json") {
+                errors.append("/templates/\(index)/files: luros-project.json is not listed")
             }
             if !manifest.requirements.languages.contains(template.language) {
                 errors.append("/templates/\(index)/language: not in requirements.languages")

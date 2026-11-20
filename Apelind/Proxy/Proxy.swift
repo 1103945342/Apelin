@@ -10,7 +10,7 @@ import Foundation
 /// nothing third-party and holds no work of its own.
 final class Proxy {
     private let installRoot: String
-    private let queue = DispatchQueue(label: "wiki.qaq.apelind")
+    private let queue = DispatchQueue(label: "com.fluoxetine.lurosd")
     private let authenticator: PeerAuthenticator
     private lazy var ledger = WorkLedger(queue: queue) { [weak self] in self?.exitIdle() }
     private lazy var session = SessionLink(executable: ownExecutable, queue: queue, ledger: ledger)

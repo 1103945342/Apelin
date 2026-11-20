@@ -169,7 +169,7 @@ final class SchemaFixtureTests: XCTestCase {
         }
         func editJSON(_ change: @escaping (inout JSONObject) -> Void) -> Edit {
             { root in
-                let url = root.appendingPathComponent("apelin-project.json")
+                let url = root.appendingPathComponent("luros-project.json")
                 guard case var .object(document) = try StrictJSON.parse(contentsOf: url) else { return }
                 change(&document)
                 // Reordered and reindented on every write, as json.dumps(sort_keys) does.
@@ -177,7 +177,7 @@ final class SchemaFixtureTests: XCTestCase {
             }
         }
         let writeOneLine: Edit = { root in
-            let url = root.appendingPathComponent("apelin-project.json")
+            let url = root.appendingPathComponent("luros-project.json")
             let oneLine = try JSONWriter.compact(StrictJSON.parse(contentsOf: url)) + Data("\n".utf8)
             // Afresh, in its folder's group, which formatting keeps.
             try FileManager.default.removeItem(at: url)
@@ -260,7 +260,7 @@ final class SchemaFixtureTests: XCTestCase {
         try FileManager.default.copyItem(at: digestCase.appendingPathComponent("project"), to: root)
         let base = try ApprovalDigests.compute(projectAt: root)
 
-        let projectFile = root.appendingPathComponent("apelin-project.json")
+        let projectFile = root.appendingPathComponent("luros-project.json")
         guard case var .object(object) = try StrictJSON.parse(contentsOf: projectFile),
               case var .array(products)? = object["products"],
               case var .object(tool) = products[0]

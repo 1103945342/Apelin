@@ -8,7 +8,7 @@ import Keystone
 
 /// The assembler extension's one tool: `assemble`.
 public enum AssemblerTools {
-    static let id = "wiki.qaq.apelin.agent-tools.assembler"
+    static let id = "com.fluoxetine.luros.agent-tools.assembler"
     /// The package version. Packaging/assembler/manifest.json says the same,
     /// and a test holds the two together.
     static let version = "1.0.0"

@@ -40,7 +40,7 @@ public struct SessionMetadata: Sendable, Hashable, Codable {
     }
 }
 
-/// `~/Documents/wiki.qaq.apelin/sessions/<id>/`: `session.json`,
+/// `~/Documents/com.fluoxetine.luros/sessions/<id>/`: `session.json`,
 /// `events.jsonl` (one `SessionEventRecord` per line, sequence numbers from
 /// 1, appended before delivery) and `transcript.json` (the model
 /// conversation, rewritten at the end of every run so a restarted
