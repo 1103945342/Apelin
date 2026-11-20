@@ -133785,494 +133785,330 @@
         }
       }
     },
-    "Install %@?" : {
+    "Install %@ from your package manager." : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "هل تريد تثبيت %@؟"
+            "value" : "ثبّت %@ من مدير الحزم لديك."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ installieren?"
+            "value" : "Installiere %@ über deinen Paketmanager."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Install %@?"
+            "value" : "Install %@ from your package manager."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Instalar %@?"
+            "value" : "Instala %@ desde tu gestor de paquetes."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Installer %@ ?"
+            "value" : "Installez %@ depuis votre gestionnaire de paquets."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Installare %@?"
+            "value" : "Installa %@ dal tuo gestore di pacchetti."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@をインストールしますか？"
+            "value" : "%@ はパッケージマネージャからインストールしてください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@을(를) 설치할까요?"
+            "value" : "%@은(는) 패키지 관리자에서 설치하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Instalar %@?"
+            "value" : "Instale %@ pelo seu gerenciador de pacotes."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Установить %@?"
+            "value" : "Установите %@ через менеджер пакетов."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cài đặt %@?"
+            "value" : "Cài đặt %@ từ trình quản lý gói của bạn."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "要安装 %@ 吗？"
+            "value" : "请从包管理器安装 %@。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "要安裝 %@ 嗎？"
+            "value" : "請從套件管理器安裝 %@。"
           }
         }
       }
     },
-    "This adds: %@" : {
+    "Open Sileo" : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "سيتضمن: %@"
+            "value" : "فتح Sileo"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Das fügt hinzu: %@"
+            "value" : "Sileo öffnen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This adds: %@"
+            "value" : "Open Sileo"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esto añade: %@"
+            "value" : "Abrir Sileo"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cela ajoute : %@"
+            "value" : "Ouvrir Sileo"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questo aggiunge: %@"
+            "value" : "Apri Sileo"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "追加されるもの: %@"
+            "value" : "Sileo を開く"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "추가 항목: %@"
+            "value" : "Sileo 열기"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Isso adiciona: %@"
+            "value" : "Abrir o Sileo"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Будет добавлено: %@"
+            "value" : "Открыть Sileo"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Thêm vào: %@"
+            "value" : "Mở Sileo"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "将安装：%@"
+            "value" : "打开 Sileo"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "將安裝：%@"
+            "value" : "開啟 Sileo"
           }
         }
       }
     },
-    "Nothing to install: the device already has %@." : {
+    "No package manager is installed on this device." : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "لا شيء لتثبيته: الجهاز يمتلك %@ بالفعل."
+            "value" : "لا يوجد مدير حزم مثبَّت على هذا الجهاز."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nichts zu installieren: das Gerät hat %@ bereits."
+            "value" : "Auf diesem Gerät ist kein Paketmanager installiert."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nothing to install: the device already has %@."
+            "value" : "No package manager is installed on this device."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nada que instalar: el dispositivo ya tiene %@."
+            "value" : "No hay ningún gestor de paquetes instalado en este dispositivo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rien à installer : l'appareil a déjà %@."
+            "value" : "Aucun gestionnaire de paquets n'est installé sur cet appareil."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Niente da installare: il dispositivo ha già %@."
+            "value" : "Nessun gestore di pacchetti è installato su questo dispositivo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "インストールするものはありません。デバイスには既に %@ があります。"
+            "value" : "このデバイスにはパッケージマネージャがインストールされていません。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "설치할 것이 없습니다. 기기에 이미 %@이(가) 있습니다."
+            "value" : "이 기기에는 패키지 관리자가 설치되어 있지 않습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nada para instalar: o dispositivo já tem %@."
+            "value" : "Nenhum gerenciador de pacotes está instalado neste dispositivo."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Нечего устанавливать: на устройстве уже есть %@."
+            "value" : "На этом устройстве не установлен менеджер пакетов."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Không có gì để cài đặt: thiết bị đã có %@."
+            "value" : "Thiết bị này không có trình quản lý gói nào."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "无需安装：设备上已有 %@。"
+            "value" : "这台设备上没有安装包管理器。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "無需安裝：裝置上已有 %@。"
+            "value" : "這台裝置上沒有安裝套件管理器。"
           }
         }
       }
     },
-    "The repositories on this device could not say what %@ needs." : {
+    "A missing tool is installed from your package manager." : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "لم تتمكن المستودعات على هذا الجهاز من تحديد ما يحتاجه %@."
+            "value" : "تُثبَّت الأداة الناقصة من مدير الحزم لديك."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Die Repositories auf diesem Gerät konnten nicht sagen, was %@ braucht."
+            "value" : "Ein fehlendes Werkzeug wird über deinen Paketmanager installiert."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The repositories on this device could not say what %@ needs."
+            "value" : "A missing tool is installed from your package manager."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Los repositorios de este dispositivo no pudieron decir qué necesita %@."
+            "value" : "Una herramienta ausente se instala desde tu gestor de paquetes."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les dépôts de cet appareil n'ont pas pu dire de quoi %@ a besoin."
+            "value" : "Un outil manquant s'installe depuis votre gestionnaire de paquets."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I repository di questo dispositivo non sanno cosa serve a %@."
+            "value" : "Uno strumento mancante si installa dal tuo gestore di pacchetti."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "このデバイスのリポジトリは %@ に必要なものを示せませんでした。"
+            "value" : "不足しているツールはパッケージマネージャからインストールします。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 기기의 저장소가 %@에 필요한 것을 알려주지 못했습니다."
+            "value" : "없는 도구는 패키지 관리자에서 설치합니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Os repositórios deste dispositivo não souberam dizer o que %@ precisa."
+            "value" : "Uma ferramenta ausente é instalada pelo seu gerenciador de pacotes."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Репозитории на этом устройстве не смогли определить, что нужно для %@."
+            "value" : "Недостающий инструмент устанавливается через менеджер пакетов."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Các kho trên thiết bị này không cho biết %@ cần gì."
+            "value" : "Công cụ còn thiếu được cài từ trình quản lý gói của bạn."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这台设备上的软件源无法确定 %@ 需要什么。"
+            "value" : "缺少的工具请从包管理器安装。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "這台裝置上的軟體源無法確定 %@ 需要什麼。"
-          }
-        }
-      }
-    },
-    "A missing tool installs from the repositories already on the device, with everything it needs." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "تُثبَّت الأداة الناقصة من المستودعات الموجودة على الجهاز، مع كل ما تحتاجه."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ein fehlendes Werkzeug wird aus den Repositories installiert, die das Gerät bereits hat — mit allem, was es braucht."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A missing tool installs from the repositories already on the device, with everything it needs."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Una herramienta ausente se instala desde los repositorios que ya tiene el dispositivo, con todo lo que necesita."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Un outil manquant s'installe depuis les dépôts déjà présents sur l'appareil, avec tout ce dont il a besoin."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uno strumento mancante si installa dai repository già presenti sul dispositivo, con tutto ciò che serve."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "不足しているツールは、デバイスにあるリポジトリから必要なものすべてと一緒にインストールされます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "없는 도구는 기기에 이미 있는 저장소에서 필요한 것들과 함께 설치됩니다."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uma ferramenta ausente é instalada a partir dos repositórios que o dispositivo já tem, com tudo o que precisa."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Недостающий инструмент устанавливается из репозиториев, уже настроенных на устройстве, вместе со всем необходимым."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Công cụ còn thiếu được cài từ các kho đã có trên thiết bị, cùng mọi thứ nó cần."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "缺少的工具会从设备已有的软件源安装，连同它需要的一切。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "缺少的工具會從裝置已有的軟體源安裝，連同它需要的一切。"
-          }
-        }
-      }
-    },
-    "OK" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "حسنًا"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "확인"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "好"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "好"
+            "value" : "缺少的工具請從套件管理器安裝。"
           }
         }
       }

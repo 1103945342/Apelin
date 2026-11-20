@@ -1,16 +1,21 @@
 import ApelinProtocol
 import UIKit
 
-/// Settings ▸ Environment ▸ Third-Party Tools: the four programs Apelin's own
-/// work needs — `ldid`, `git`, `dpkg-deb`, `uicache` — whether the device has
-/// each one, and a way to install a missing one from the repositories it
-/// already has. Nothing here parses a repository signature: the index is
-/// trusted as the last `apt update` left it.
+/// Settings ▸ Environment ▸ Third-Party Tools: the four packages Apelin's own
+/// work needs — `ldid`, `git`, `dpkg-deb` and `uikittools` (whose `uicache`
+/// registers a built app) — and whether this device has each one.
+///
+/// Nothing installs from here: a missing package is the user's package
+/// manager's, so the row offers to open that package's page and leaves the
+/// decision there.
 final class DevelopmentToolController: UITableViewController {
     private var rows: [DevelopmentToolRow] = []
     private var reading = true
-    private var installing: String?
     private var task: Task<Void, Never>?
+
+    /// Tried in order: Sileo on most devices, Irisin where that is the
+    /// bootstrap's own manager.
+    private static let openers = ["sileo", "irisin"]
 
     init() {
         super.init(style: .insetGrouped)
@@ -38,7 +43,7 @@ final class DevelopmentToolController: UITableViewController {
         reading = true
         tableView.reloadData()
         task = Task { [weak self] in
-            let response = try? await ApelinService.app.developmentTools(DevelopmentToolsRequest())
+            let response = try? await ApelinService.app.developmentTools()
             guard !Task.isCancelled else { return }
             await MainActor.run {
                 guard let self else { return }
@@ -58,105 +63,63 @@ final class DevelopmentToolController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        String(localized: "A missing tool installs from the repositories already on the device, with everything it needs.")
+        String(localized: "A missing tool is installed from your package manager.")
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "tool", for: indexPath)
         let row = rows[indexPath.row]
         var content = cell.defaultContentConfiguration()
-        content.text = row.id
+        content.text = row.packageID
         if let version = row.version {
             content.secondaryText = String(localized: "Installed") + " · " + version
         } else {
             content.secondaryText = reading ? nil : String(localized: "Not Installed")
         }
         cell.contentConfiguration = content
-        if installing == row.id {
-            let spinner = UIActivityIndicatorView(style: .medium)
-            spinner.startAnimating()
-            cell.accessoryView = spinner
-        } else {
-            cell.accessoryView = nil
-            cell.accessoryType = row.present ? .none : .disclosureIndicator
-        }
-        cell.selectionStyle = row.present || installing != nil ? .none : .default
+        cell.accessoryType = row.present ? .none : .disclosureIndicator
+        cell.selectionStyle = row.present ? .none : .default
         return cell
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let row = rows[indexPath.row]
-        guard !row.present, installing == nil else { return }
-        confirm(row)
+        guard !row.present else { return }
+        ask(row)
     }
 
-    // MARK: - Installing
+    // MARK: - Opening the package's page
 
-    /// What installing would add, then a question, then the install itself.
-    private func confirm(_ row: DevelopmentToolRow) {
-        installing = row.id
-        tableView.reloadData()
-        task = Task { [weak self] in
-            let plan = try? await ApelinService.app.developmentTools(
-                DevelopmentToolsRequest(install: row.id, dryRun: true),
-            )
-            guard !Task.isCancelled else { return }
-            await MainActor.run {
-                guard let self else { return }
-                installing = nil
-                tableView.reloadData()
-                guard let plan else {
-                    presentFailure(String(localized: "The repositories on this device could not say what \(row.id) needs."), title: row.id)
-                    return
-                }
-                if let failure = plan.failure {
-                    presentFailure(failure, title: row.id)
-                    return
-                }
-                guard !plan.packages.isEmpty else {
-                    presentFailure(String(localized: "Nothing to install: the device already has \(row.id)."), title: row.id)
-                    return
-                }
-                ask(row, adding: plan.packages)
-            }
-        }
-    }
-
-    private func ask(_ row: DevelopmentToolRow, adding packages: [String]) {
-        let title = String(format: String(localized: "Install %@?"), row.id)
-        let message = String(format: String(localized: "This adds: %@"), packages.joined(separator: ", "))
+    private func ask(_ row: DevelopmentToolRow) {
+        let title = row.packageID
+        let message = String(format: String(localized: "Install %@ from your package manager."), row.packageID)
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: String(localized: "Cancel"), style: .cancel))
-        alert.addAction(UIAlertAction(title: String(localized: "Install"), style: .default) { [weak self] _ in
-            self?.install(row)
+        alert.addAction(UIAlertAction(title: String(localized: "Open Sileo"), style: .default) { [weak self] _ in
+            self?.open(package: row.packageID, trying: Self.openers)
         })
         present(alert, animated: true)
     }
 
-    private func install(_ row: DevelopmentToolRow) {
-        installing = row.id
-        tableView.reloadData()
-        task = Task { [weak self] in
-            let response = try? await ApelinService.app.developmentTools(DevelopmentToolsRequest(install: row.id))
-            guard !Task.isCancelled else { return }
-            await MainActor.run {
-                guard let self else { return }
-                installing = nil
-                if let response {
-                    rows = response.tools
-                }
-                tableView.reloadData()
-                if let failure = response?.failure {
-                    presentFailure(failure, title: row.id)
-                }
-            }
+    private func open(package id: String, trying schemes: [String]) {
+        guard let scheme = schemes.first, let url = URL(string: "\(scheme)://package/\(id)") else {
+            reportNoManager()
+            return
+        }
+        UIApplication.shared.open(url, options: [:]) { [weak self] opened in
+            guard !opened else { return }
+            Task { @MainActor in self?.open(package: id, trying: Array(schemes.dropFirst())) }
         }
     }
 
-    private func presentFailure(_ message: String, title: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: String(localized: "OK"), style: .default))
+    private func reportNoManager() {
+        let alert = UIAlertController(
+            title: String(localized: "Third-Party Tools"),
+            message: String(localized: "No package manager is installed on this device."),
+            preferredStyle: .alert,
+        )
+        alert.addAction(UIAlertAction(title: String(localized: "Close"), style: .default))
         present(alert, animated: true)
     }
 }

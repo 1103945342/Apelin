@@ -417,8 +417,8 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `toolchainSelfTest`, `toolchainSetDefault`; `sdkList`,
   `sdkImport`, `sdkRemove`; `environmentAttach`, `environmentCancel`;
   `developmentTools` (Settings ▸ Environment ▸ Third-Party Tools: `ldid`,
-  `git`, `dpkg-deb` and `uicache`, read and installed from the repositories
-  the device already has, no repository signature checked);
+  `git`, `dpkg-deb` and `uikittools`, read only — a missing one is the user's
+  package manager's, which the row opens at that package's page);
   `extensionList`, `projectCreate`, `projectCheck`, `projectRename`,
   `projectDelete`; `buildStart`,
   `buildAttach`, `buildCancel`; `installPackage`, `removePackage`,
