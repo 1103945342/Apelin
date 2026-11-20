@@ -84,7 +84,7 @@ extension BuiltInSkills {
 
         ## Never store a resolved path
         On roothide everything under the jbroot moves when it is renamed:
-        Apelin's data folder (in the jbroot's own `var/mobile`), the
+        Luros's data folder (in the jbroot's own `var/mobile`), the
         project's real path, `$APELIN_PROJECT_ROOT`, `$APELIN_TOOLCHAIN_BIN`,
         `SDKROOT`, every toolchain's and SDK's folder. A path read today (in
         a tool's result, the environment section or a variable's value) may
@@ -97,7 +97,7 @@ extension BuiltInSkills {
           roothide's `jbroot("/Library/…")` does; never its result as a
           literal.
         - a plist or maintainer script: `@PREFIX@/…`, `@ROOTFS@/…`.
-        - a build script or Makefile: the variables Apelin sets when it runs
+        - a build script or Makefile: the variables Luros sets when it runs
           (`$APELIN_PROJECT_ROOT`, `$SDKROOT`, `$APELIN_TOOLCHAIN_BIN`, and
           for a workspace build `$APELIN_PREFIX` and `$APELIN_PACKAGE_DIR`),
           or paths relative to the project. Each is checked before it is

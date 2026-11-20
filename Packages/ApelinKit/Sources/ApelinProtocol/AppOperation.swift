@@ -23,7 +23,7 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
 
     case environmentAttach
     case environmentCancel
-    /// Settings ▸ Environment ▸ Third-Party Tools: the device tools Apelin's
+    /// Settings ▸ Environment ▸ Third-Party Tools: the device tools Luros's
     /// own work needs, read and installed from the repositories on the device.
     case developmentTools
 

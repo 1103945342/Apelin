@@ -25,7 +25,7 @@ enum StorageWarning {
         } else {
             warn(
                 title: "Unable to Save Chats",
-                message: String(localized: "\(error.readableMessage) Your chats keep working, and Apelin tries again with the next change."),
+                message: String(localized: "\(error.readableMessage) Your chats keep working, and Luros tries again with the next change."),
                 from: controller,
             )
         }
@@ -39,7 +39,7 @@ enum StorageWarning {
     private static func warn(from controller: UIViewController) {
         warn(
             title: "Storage Almost Full",
-            message: String(localized: "Your chats keep working, but Apelin can’t save them on this device until you free up space."),
+            message: String(localized: "Your chats keep working, but Luros can’t save them on this device until you free up space."),
             from: controller,
         )
     }

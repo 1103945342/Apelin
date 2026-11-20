@@ -37,7 +37,7 @@ public struct GitHead: Sendable, Equatable {
     public var commit: String?
 }
 
-/// A repository whose work tree is a folder Apelin already decided it may
+/// A repository whose work tree is a folder Luros already decided it may
 /// touch. The caller resolves and checks that folder; this type only refuses
 /// to search upwards from it, so a project without a repository of its own
 /// never reaches one in a folder above.

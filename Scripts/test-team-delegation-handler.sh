@@ -31,7 +31,7 @@ root = pathlib.Path(sys.argv[1])
 work = pathlib.Path(sys.argv[2])
 trailing = re.compile(r",(\s*)([\)\]])")
 
-SELF_IMPORT = __import__("re").compile(r"^import (?:struct |enum |class |protocol )?Apelin(?:Core|Protocol)(?:\.[^\n]*)?\n", __import__("re").M)
+SELF_IMPORT = __import__("re").compile(r"^import (?:struct |enum |class |protocol )?Luros(?:Core|Protocol)(?:\.[^\n]*)?\n", __import__("re").M)
 
 def copy(source: str, into: str) -> None:
     text = (root / source).read_text()

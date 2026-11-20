@@ -59,7 +59,7 @@ public struct InstalledToolchain: Sendable, Hashable, Codable {
     }
 }
 
-/// A Command Line Tools release Apelin sets up, from Apple's catalog, with
+/// A Command Line Tools release Luros sets up, from Apple's catalog, with
 /// what it needs of this device: the fields the app's picker shows.
 public struct AvailableToolchain: Sendable, Hashable, Codable {
     public var productID: String

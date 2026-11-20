@@ -30,7 +30,7 @@ struct PackageListToolTests {
         project: "Nailong",
         installedAt: Date(timeIntervalSince1970: 1_780_000_000),
         removable: false,
-        reason: "local.apelin.nailong is now version 2.0, not version 1.0 that Apelin installed. Remove it with your preferred package manager.",
+        reason: "local.apelin.nailong is now version 2.0, not version 1.0 that Luros installed. Remove it with your preferred package manager.",
     )
 
     private func text(_ result: AgentToolResult) -> String {
@@ -91,20 +91,20 @@ struct PackageListToolTests {
     }
 
     @Test
-    func `a package id with nothing Apelin can remove is refused before asking, with why`() async throws {
+    func `a package id with nothing Luros can remove is refused before asking, with why`() async throws {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }
         await harness.backend.setInstallations([Self.changedElsewhere])
         do {
             _ = try await harness.run(.packageRemove, ["package_id": "local.apelin.nailong"])
-            Issue.record("a package Apelin cannot remove is refused")
+            Issue.record("a package Luros cannot remove is refused")
         } catch {
             #expect(message(error).contains(Self.changedElsewhere.installationID))
             #expect(message(error).contains("now version 2.0"))
         }
         do {
             _ = try await harness.run(.packageRemove, ["package_id": "com.example.foreign"])
-            Issue.record("a package Apelin never installed is refused")
+            Issue.record("a package Luros never installed is refused")
         } catch {
             #expect(message(error).contains("package manager") && message(error).contains("apelin_package_list"))
         }
@@ -145,16 +145,16 @@ struct PackageListToolTests {
     }
 
     @Test
-    func `an installation id the list does not show is refused before asking, with what Apelin can remove`() async throws {
+    func `an installation id the list does not show is refused before asking, with what Luros can remove`() async throws {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }
         await harness.backend.setInstallations([Self.removable, Self.changedElsewhere])
         do {
             _ = try await harness.run(.packageRemove, ["installation_id": "33333333-3333-4333-8333-333333333333"])
-            Issue.record("an id Apelin does not list is refused")
+            Issue.record("an id Luros does not list is refused")
         } catch {
             let text = message(error)
-            #expect(text.hasPrefix("Apelin has no installation 33333333-3333-4333-8333-333333333333 it can remove"))
+            #expect(text.hasPrefix("Luros has no installation 33333333-3333-4333-8333-333333333333 it can remove"))
             #expect(text.contains("\(Self.removable.installationID) (local.apelin.dockflip 1.2, project DockFlip)"))
             #expect(!text.contains(Self.changedElsewhere.installationID), "only what can be removed is offered")
         }
@@ -163,20 +163,20 @@ struct PackageListToolTests {
     }
 
     @Test
-    func `without the whole list the host decides, and its refusal names what Apelin can remove instead`() async throws {
+    func `without the whole list the host decides, and its refusal names what Luros can remove instead`() async throws {
         let harness = try DigestApprovalTests.Harness(mode: .relaxed)
         defer { harness.home.remove() }
         await harness.backend.setInstallations([Self.removable, Self.changedElsewhere], truncated: true)
         await harness.backend.setRemovalRefusal(ApelinError(
             .notFound,
-            "Apelin did not install this package. Remove it with your preferred package manager.",
+            "Luros did not install this package. Remove it with your preferred package manager.",
         ))
         do {
             _ = try await harness.run(.packageRemove, ["installation_id": "33333333-3333-4333-8333-333333333333"])
             Issue.record("the host's refusal reaches the model")
         } catch {
             let text = message(error)
-            #expect(text.hasPrefix("Apelin did not install this package."))
+            #expect(text.hasPrefix("Luros did not install this package."))
             #expect(text.contains("\(Self.removable.installationID) (local.apelin.dockflip 1.2, project DockFlip)"))
             #expect(!text.contains(Self.changedElsewhere.installationID), "only what can be removed is offered")
         }

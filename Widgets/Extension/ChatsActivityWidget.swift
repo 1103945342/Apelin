@@ -17,7 +17,7 @@ struct ChatsActivityWidget: Widget {
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     // inset as the summary below is, so the name sits over it
-                    Text(verbatim: "Apelin")
+                    Text(verbatim: "Luros")
                         .font(.rounded(.subheadline, .bold))
                         .padding(.leading, WidgetSpacing.line)
                 }

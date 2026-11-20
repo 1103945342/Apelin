@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - feedback
 
-/// An issue apelin_feedback_send files on Apelin's own repository: the title
+/// An issue apelin_feedback_send files on Luros's own repository: the title
 /// and body its card showed, nothing else. The repository is the host's
 /// constant, and the footer apelin-environment's.
 public struct FeedbackToolRequest: Sendable, Hashable, Codable {
@@ -53,7 +53,7 @@ public struct FeedbackReadToolResponse: Sendable, Hashable, Codable {
     /// Whether the user's GitHub account opened it: only then can it be
     /// edited.
     public var openedByUser: Bool
-    /// The body without the line Apelin added below it.
+    /// The body without the line Luros added below it.
     public var body: String
     /// That line, nil when the body does not end with one.
     public var footer: String?

@@ -210,7 +210,7 @@ final class XcodeProjectTests: XCTestCase {
         XCTAssertEqual(values["CODE_SIGN_ENTITLEMENTS"] as? String, "Packaging/App.entitlements")
         XCTAssertEqual(values["PRODUCT_BUNDLE_IDENTIFIER"] as? String, "local.apelin.smoke")
 
-        // Nothing is signed here: the device's package comes from Apelin.
+        // Nothing is signed here: the device's package comes from Luros.
         let project = try XCTUnwrap(
             body(objects, isa: "XCBuildConfiguration").first { $0["buildSettings"] is [String: Any] },
         )

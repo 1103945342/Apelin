@@ -1,7 +1,7 @@
 import Foundation
 
 extension DistributionTemplate {
-    /// `CydiaIcon.png`, the source's icon a package manager shows: Apelin's
+    /// `CydiaIcon.png`, the source's icon a package manager shows: Luros's
     /// own, `Documents/Site/icon.png` scaled to 120 px (`sips -Z 120`).
     static let icon = Data(base64Encoded: iconBase64, options: .ignoreUnknownCharacters) ?? Data()
 

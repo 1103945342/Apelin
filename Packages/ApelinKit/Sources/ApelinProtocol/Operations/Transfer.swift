@@ -3,7 +3,7 @@ import Foundation
 
 // Transfer files: a toolchain (`.apetc`), an iPhoneOS SDK (`.apesdk`) or a
 // project (`.apeproj`) written on one device, sent anywhere, and opened in
-// Apelin on another. Served by apelin-environment (Workers/Environment;
+// Luros on another. Served by apelin-environment (Workers/Environment;
 // ApelinEnvironment ▸ Transfer).
 //
 // A transfer file is a tar compressed with zstd. Its first member is
@@ -205,7 +205,7 @@ public struct TransferManifest: Codable, Sendable, Equatable {
     /// What a person calls it: `Command Line Tools 27.0`, `iPhoneOS 27.0`,
     /// the project's folder name.
     public var name: String
-    /// `Apelin <version> (<build>)` of the exporting app.
+    /// `Luros <version> (<build>)` of the exporting app.
     public var createdBy: String
     public var created: Date
     public var members: [TransferMember]
@@ -304,7 +304,7 @@ public struct TransferSummary: Codable, Sendable, Equatable {
 /// Where a transfer file to read is.
 public enum TransferSource: Codable, Sendable, Equatable {
     /// The file, passed as a read-only descriptor. The app's choice: what it
-    /// was handed by Open in Apelin or picked in Files.
+    /// was handed by Open in Luros or picked in Files.
     case file(DescriptorSlot)
     /// A file in `~/Documents/com.fluoxetine.luros/inbox/`, named relative to it.
     case inbox(path: String)
@@ -325,7 +325,7 @@ public struct TransferExportRequest: OperationRequest {
     public var kind: TransferKind
     /// The toolchain's or SDK's ID; a project's ID or folder name.
     public var id: String
-    /// `Apelin <version> (<build>)`, written into the manifest.
+    /// `Luros <version> (<build>)`, written into the manifest.
     public var createdBy: String?
 
     public init(kind: TransferKind, id: String, createdBy: String? = nil) {

@@ -5,8 +5,8 @@ import ApelinGit
 import Foundation
 import XCTest
 
-/// Feedback filed on Apelin's own repository: GitHub's API answered by a
-/// fake, the github.com sign-in in memory, Apelin's Info.plist a file under
+/// Feedback filed on Luros's own repository: GitHub's API answered by a
+/// fake, the github.com sign-in in memory, Luros's Info.plist a file under
 /// the install root as the package leaves it.
 final class FeedbackTests: XCTestCase {
     /// GitHub's issues endpoint, noting each request.
@@ -78,7 +78,7 @@ final class FeedbackTests: XCTestCase {
         let body = try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(sent.httpBody)) as? [String: String])
         XCTAssertEqual(Set(body.keys), ["title", "body"], "nothing but the issue")
         XCTAssertEqual(body["title"], "The build log stops early")
-        XCTAssertEqual(body["body"], "It ends before the link step.\n\n---\nSent with Apelin 0.2.7 (18) · iOS 17.3.1 · rootless")
+        XCTAssertEqual(body["body"], "It ends before the link step.\n\n---\nSent with Luros 0.2.7 (18) · iOS 17.3.1 · rootless")
     }
 
     func testTheFooterNamesTheBootstrapAndNoDevice() throws {
@@ -90,12 +90,12 @@ final class FeedbackTests: XCTestCase {
         let layout = EnvironmentLayout(data: DataFolder(home: mobile), installRoot: installRoot, home: mobile)
         var service = FeedbackService(layout: layout, credentials: MemoryGitCredentialStore())
         service.report.osVersion = "26.0"
-        XCTAssertEqual(service.report.footer(), "Sent with Apelin (version unknown) · iOS 26.0 · roothide", "no app installed")
+        XCTAssertEqual(service.report.footer(), "Sent with Luros (version unknown) · iOS 26.0 · roothide", "no app installed")
         try installApp(installRoot, version: "0.2.7 on Adas-iPhone", build: 18)
-        XCTAssertEqual(service.report.footer(), "Sent with Apelin (version unknown) · iOS 26.0 · roothide", "only a version as Apelin spells one is read")
+        XCTAssertEqual(service.report.footer(), "Sent with Luros (version unknown) · iOS 26.0 · roothide", "only a version as Luros spells one is read")
         try installApp(installRoot, version: "0.2.8", build: "19")
         let footer = service.report.footer()
-        XCTAssertEqual(footer, "Sent with Apelin 0.2.8 (19) · iOS 26.0 · roothide")
+        XCTAssertEqual(footer, "Sent with Luros 0.2.8 (19) · iOS 26.0 · roothide")
         var machine = [CChar](repeating: 0, count: 256)
         var size = machine.count
         if sysctlbyname("hw.machine", &machine, &size, nil, 0) == 0 {

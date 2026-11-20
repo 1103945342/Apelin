@@ -424,7 +424,7 @@ final class CXXInteropTests: XCTestCase {
             "name": "Tool",
             "version": "0.0.1",
             "description": "A tool.",
-            "author": "Apelin User",
+            "author": "Luros User",
             "section": "Development",
             "layout": [{"path": "/usr/bin/tool", "product": "tool"}]
           }

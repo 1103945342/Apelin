@@ -58,7 +58,7 @@ final class SidebarController: UIViewController {
     private let projectMonitor = ProjectCatalogMonitor()
 
     /// The open workspace. Nil is General Chat, the conversations no project
-    /// holds — aimini has no such workspace, Apelin keeps them reachable.
+    /// holds — aimini has no such workspace, Luros keeps them reachable.
     private var project: ProjectSummary? {
         didSet {
             UserDefaults.standard.set(project?.name, forKey: "chat.selectedProject")

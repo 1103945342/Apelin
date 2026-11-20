@@ -3,13 +3,13 @@ import ApelinProtocol
 import Darwin
 import Foundation
 
-/// What a public issue Apelin files says about the device it came from —
-/// feedback on Apelin's own repository (`FeedbackService`) and an issue on
+/// What a public issue Luros files says about the device it came from —
+/// feedback on Luros's own repository (`FeedbackService`) and an issue on
 /// a repository the user chose (`GitHubIssueService`) alike. The title and
 /// body are checked by `FeedbackRules`, against this device's own home,
 /// install root and host name too, which both services do before the
 /// sign-in is read; below the body goes the footer written here, from
-/// Apelin's own Info.plist, the iOS version and the bootstrap, and nothing
+/// Luros's own Info.plist, the iOS version and the bootstrap, and nothing
 /// the caller sent goes into it.
 struct IssueReport: Sendable {
     let layout: EnvironmentLayout
@@ -65,7 +65,7 @@ struct IssueReport: Sendable {
         return (Self.versionText(plist["CFBundleShortVersionString"]), Self.versionText(plist["CFBundleVersion"]))
     }
 
-    /// A version as Apelin spells one, else nil: nothing else reaches the
+    /// A version as Luros spells one, else nil: nothing else reaches the
     /// issue from the file.
     static func versionText(_ value: Any?) -> String? {
         guard let text = value as? String, (1 ... 32).contains(text.count),

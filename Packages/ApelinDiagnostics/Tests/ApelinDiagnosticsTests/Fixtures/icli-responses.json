@@ -26,7 +26,7 @@
   },
   "frontmostApp": {"bundle_id": "com.apple.springboard", "verified": true, "source": "runningboard"},
   "runningApps": {
-    "apps": [{"bundle_id": "com.fluoxetine.luros", "name": "Apelin", "pid": 900, "executable": "/var/jb/Applications/Luros.app/Apelin"}],
+    "apps": [{"bundle_id": "com.fluoxetine.luros", "name": "Luros", "pid": 900, "executable": "/var/jb/Applications/Luros.app/Luros"}],
     "count": 1,
     "source": "runningboard"
   },
@@ -34,7 +34,7 @@
   "crashLogs": {
     "crashes": [
       "/var/mobile/Library/Logs/CrashReporter/SpringBoard-2026-10-17-101500.ips",
-      "/var/mobile/Library/Logs/CrashReporter/Apelin-2026-10-16-090000.ips",
+      "/var/mobile/Library/Logs/CrashReporter/Luros-2026-10-16-090000.ips",
       "/var/mobile/Library/Logs/CrashReporter/SpringBoard-2026-10-16-080000.ips"
     ],
     "count": 3

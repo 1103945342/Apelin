@@ -7,7 +7,7 @@ import XCTest
 /// remote's branch, after what is lost is saved on a branch of its own,
 /// against a bare repository on disk.
 final class GitResetTests: XCTestCase {
-    private let author = GitSignature(name: "Apelin Test", email: "test@apelin.invalid")
+    private let author = GitSignature(name: "Luros Test", email: "test@apelin.invalid")
     private let stamp = Date(timeIntervalSince1970: 1_793_448_000)
 
     private func scratch() -> URL {

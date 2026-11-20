@@ -34,7 +34,7 @@ let package = Package(
         // asks for 2.65.0, swift-nio-ssl for 2.98.0. Raise the ceiling only
         // once NIO's noncopyable conformances work on the deployment floor.
         .package(url: "https://github.com/apple/swift-nio.git", "2.98.0" ..< "2.104.0"),
-        // Apelin's own wire and worker channel. System code only.
+        // Luros's own wire and worker channel. System code only.
         .package(path: "../ApelinKit"),
         // The agent tool extensions' manifests and their validation, read
         // to offer their tools. System code only.
@@ -53,7 +53,7 @@ let package = Package(
                 // RunCodePresetRule: the words of a preset, as the host reads them;
                 // TokenEstimate: the output a run receives, as the app counts a reply.
                 .product(name: "ApelinProtocol", package: "ApelinKit"),
-                // CanonicalPath: the path rules the rest of Apelin decides by.
+                // CanonicalPath: the path rules the rest of Luros decides by.
                 .product(name: "ApelinCore", package: "ApelinKit"),
                 // The luros-project.json schema the apelin-project-description skill serves.
                 .product(name: "ApelinProject", package: "ApelinKit"),

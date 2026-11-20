@@ -78,7 +78,7 @@ final class IrisinInstallService: InstallService, @unchecked Sendable {
         } catch let error as IrisinClientError {
             switch error.code {
             case .serviceUnavailable:
-                throw InstallServiceError(.unavailable, "Irisin's service is not running, or it did not allow Apelin to connect. Try again.")
+                throw InstallServiceError(.unavailable, "Irisin's service is not running, or it did not allow Luros to connect. Try again.")
             case .connectionInterrupted:
                 throw InstallServiceError(.interrupted, "The connection to Irisin was lost. Try again.")
             case .serviceTooOld:

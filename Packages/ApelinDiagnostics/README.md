@@ -121,26 +121,26 @@ and checked again against
 [1.0.0's](https://github.com/owngoal-dev/icli/blob/1.0.0/docs/entitlements.md):
 the keys 0.9.1 through 1.0.0 added (`com.apple.private.xpc.service-attach`,
 `IOHIDResourceDeviceUserClient`, `com.apple.keystore.device`) belong to
-calls Apelin does not make — kickstart, the virtual pointer and the keybag
+calls Luros does not make — kickstart, the virtual pointer and the keybag
 unlock — so no row changed.
 icli has verified its complete profile together, never one key at a time;
 its acceptance runs are the signed CLI on the rootless vphone.
-**No row has been run from an Apelin process on a device.** "Verified"
+**No row has been run from an Luros process on a device.** "Verified"
 below means verified by icli's own acceptance or by this package's Mac tests,
 as stated.
 
 | Capability | Call | uid | Entitlements | Status |
 | --- | --- | --- | --- | --- |
-| Live log | `SyslogStream`, `captureSyslog` → `OSLogEventLiveStream` | mobile | `com.apple.private.logging.stream`, `com.apple.diagnosticd.stream`, `com.apple.private.logging.diagnostic` | Unverified in Apelin. icli acceptance `unified_log_events` passes with the full profile |
-| Crash list / read | `crashLogs`, `readCrashLog` (plain file reads) | mobile | `com.apple.private.security.no-sandbox`; `com.apple.private.security.storage.DiagnosticReports.read-write` is in icli's profile | Unverified in Apelin; icli acceptance `crash_report_roundtrip` passes. Root-only reports go through the host's report-id fd |
-| Screenshot | `takeScreenshot` | mobile | `com.apple.QuartzCore.global-capture`, `.displayable-context`, `.secure-mode`, `com.apple.private.allow-explicit-graphics-priority`, `com.apple.private.IOSurface.protected-access`, `com.apple.security.iokit-user-client-class` with `IOSurfaceRootUserClient`, `IOSurfaceAcceleratorClient`, `IOMobileFramebufferUserClient`, `AppleJPEGDriverUserClient` | Unverified in Apelin; icli acceptance `screenshot_coordinates` passes |
-| UI tree | `uiElements` | mobile | `com.apple.private.accessibility.inspection`, `com.apple.accessibility.api`; frontmost pid needs `no-sandbox` | Unverified in Apelin; icli acceptance `ax_tree_and_tap` passes. Turns the system accessibility switches on; icli turns them back when the worker exits |
-| Tap / swipe / type | `tap`, `swipe`, `typeText` | mobile | `com.apple.private.hid.client.event-dispatch`, `com.apple.hid.manager.user-access-device`, `com.apple.backboard.client`, iokit classes `IOHIDLibUserClient`, `IOHIDEventServiceFastPathUserClient` | Unverified in Apelin; icli acceptance `touch_tap`, `touch_swipe`, `unicode_input` pass |
-| Tap element | `tapElement` | mobile | UI tree's plus tap's | Unverified in Apelin |
+| Live log | `SyslogStream`, `captureSyslog` → `OSLogEventLiveStream` | mobile | `com.apple.private.logging.stream`, `com.apple.diagnosticd.stream`, `com.apple.private.logging.diagnostic` | Unverified in Luros. icli acceptance `unified_log_events` passes with the full profile |
+| Crash list / read | `crashLogs`, `readCrashLog` (plain file reads) | mobile | `com.apple.private.security.no-sandbox`; `com.apple.private.security.storage.DiagnosticReports.read-write` is in icli's profile | Unverified in Luros; icli acceptance `crash_report_roundtrip` passes. Root-only reports go through the host's report-id fd |
+| Screenshot | `takeScreenshot` | mobile | `com.apple.QuartzCore.global-capture`, `.displayable-context`, `.secure-mode`, `com.apple.private.allow-explicit-graphics-priority`, `com.apple.private.IOSurface.protected-access`, `com.apple.security.iokit-user-client-class` with `IOSurfaceRootUserClient`, `IOSurfaceAcceleratorClient`, `IOMobileFramebufferUserClient`, `AppleJPEGDriverUserClient` | Unverified in Luros; icli acceptance `screenshot_coordinates` passes |
+| UI tree | `uiElements` | mobile | `com.apple.private.accessibility.inspection`, `com.apple.accessibility.api`; frontmost pid needs `no-sandbox` | Unverified in Luros; icli acceptance `ax_tree_and_tap` passes. Turns the system accessibility switches on; icli turns them back when the worker exits |
+| Tap / swipe / type | `tap`, `swipe`, `typeText` | mobile | `com.apple.private.hid.client.event-dispatch`, `com.apple.hid.manager.user-access-device`, `com.apple.backboard.client`, iokit classes `IOHIDLibUserClient`, `IOHIDEventServiceFastPathUserClient` | Unverified in Luros; icli acceptance `touch_tap`, `touch_swipe`, `unicode_input` pass |
+| Tap element | `tapElement` | mobile | UI tree's plus tap's | Unverified in Luros |
 | Foreground app | `frontmostApp` | mobile or root | `com.apple.private.security.no-sandbox` | Verified by icli on the iOS 26.4 roothide vphone (mobile and root); without it `source` is `unavailable` |
 | Lock state | `lockState` | any | none | Verified by icli on iOS 26.4 |
 | Running apps | `runningApps` | mobile | `no-sandbox` (RunningBoard); `com.apple.private.coreservices.canmaplsdatabase`, `.lsaw` for app metadata | Unverified separately |
-| Respring fallback | `respring` | root for the launchd half | FrontBoard relaunch: `com.apple.frontboard.shutdown` (with the `launchapplications` keys); launchd stop: `com.apple.private.xpc.service-configure`, and launchd's own caller checks | Unverified in Apelin; icli acceptance `springboard_restart` passes. The normal respring is apelind's closed operation |
+| Respring fallback | `respring` | root for the launchd half | FrontBoard relaunch: `com.apple.frontboard.shutdown` (with the `launchapplications` keys); launchd stop: `com.apple.private.xpc.service-configure`, and launchd's own caller checks | Unverified in Luros; icli acceptance `springboard_restart` passes. The normal respring is apelind's closed operation |
 | Root log read | `SystemLogReader` | root | diagnosticd may still want `com.apple.private.logging.stream` / `com.apple.diagnosticd.stream` from root | Unverified on iOS. On macOS 27 an unentitled user process receives its own lines (test passes) |
 | Filter match, symbolication, blame | pure | any | none — reads the project's own dSYMs | Verified by tests |
 
@@ -172,7 +172,7 @@ rather than claim it is complete.
 
 ## icli
 
-Depends on `from: "1.0.0"`; `Package.resolved` records 1.0.0. 0.9.1 through 1.0.0 added calls Apelin does not
+Depends on `from: "1.0.0"`; `Package.resolved` records 1.0.0. 0.9.1 through 1.0.0 added calls Luros does not
 make (`kickstartService`, the `pointer` calls, the probe, `unlockDevice`,
 `withInterfaceGeometry`) and left the ones it makes as they were on iOS.
 Gaps found and filled in icli 0.9.0:

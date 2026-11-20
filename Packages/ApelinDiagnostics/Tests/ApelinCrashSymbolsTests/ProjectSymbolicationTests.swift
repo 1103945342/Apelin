@@ -3,7 +3,7 @@ import ApelinCrashReport
 @testable import ApelinCrashSymbols
 import XCTest
 
-/// The milestone 1 path end to end: a SpringBoard crash in a tweak Apelin
+/// The milestone 1 path end to end: a SpringBoard crash in a tweak Luros
 /// built, symbolicated from the dSYM the build kept (matched by image UUID,
 /// read in place), then blamed with the owner the session host recorded.
 final class ProjectSymbolicationTests: XCTestCase {

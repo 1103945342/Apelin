@@ -11,7 +11,7 @@ import Foundation
 /// skipped rather than deleted.
 ///
 /// Sessions are matched by `TerminalIdentity` — the record's target *and* the
-/// canonical folder — so two folders outside Apelin's own storage, which both
+/// canonical folder — so two folders outside Luros's own storage, which both
 /// record as `.elsewhere`, never share a shell.
 ///
 /// Nothing here ends a shell or drops its record to make room. A record is a

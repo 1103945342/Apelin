@@ -10,7 +10,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     ) -> Bool {
         ExecutableWatch.start {
             let alert = UIAlertController(
-                title: String(localized: "Apelin Updated or Removed"),
+                title: String(localized: "Luros Updated or Removed"),
                 message: String(localized: "Quit to apply the change, or keep using this version for now."),
                 preferredStyle: .alert,
             )
@@ -106,13 +106,13 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.rootViewController = RootInterfaceController()
         window.makeKeyAndVisible()
         self.window = window
-        // A cold launch by Open in Apelin or an `lurosdev://` link: the URL
+        // A cold launch by Open in Luros or an `lurosdev://` link: the URL
         // comes with the scene. Opened on the next turn, once the root is on
         // screen to present from.
         DispatchQueue.main.async { [weak self] in self?.openURLs(connectionOptions.urlContexts, in: scene) }
     }
 
-    /// Open in Apelin, or an `lurosdev://` link, while the app runs.
+    /// Open in Luros, or an `lurosdev://` link, while the app runs.
     @objc dynamic func scene(_ scene: UIScene, openURLContexts contexts: Set<UIOpenURLContext>) {
         guard let scene = scene as? UIWindowScene else { return }
         openURLs(contexts, in: scene)

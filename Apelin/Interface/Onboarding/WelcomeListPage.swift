@@ -4,7 +4,7 @@ import SnapKit
 import UIKit
 
 /// The original repository page's table over its fixed action bar. Subclasses
-/// supply only the rows and the action for this step of Apelin's welcome.
+/// supply only the rows and the action for this step of Luros's welcome.
 class WelcomeListPage: UIViewController, UITableViewDelegate {
     let tableView = FirstFillTableView(frame: .zero, style: .insetGrouped)
     let flow: WelcomeFlow

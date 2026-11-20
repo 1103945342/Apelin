@@ -139,7 +139,7 @@ public struct ProjectStore: Sendable {
         let types = TemplateParameters.types(for: template)
         for key in values.keys.sorted() {
             if Self.reservedValues.contains(key) {
-                throw ApelinError(.badRequest, "\(key) is supplied by Apelin")
+                throw ApelinError(.badRequest, "\(key) is supplied by Luros")
             }
             if types[key] == nil {
                 throw ApelinError(.badRequest, "unknown parameter \(key)")
@@ -275,9 +275,9 @@ public struct ProjectStore: Sendable {
             }
             let digests = try ApprovalDigests.compute(document, root: staging)
             // The same folder opened on a Mac: an Xcode project made from the
-            // description beside it, which nothing in Apelin reads and which
+            // description beside it, which nothing in Luros reads and which
             // Xcode owns afterwards (`XcodeProject`). A failure here leaves a
-            // project Apelin still builds, so it never refuses one.
+            // project Luros still builds, so it never refuses one.
             _ = try? XcodeProject.write(typed, name: name, root: staging, catalog: catalog)
             try EmptyRepository.make(in: staging)
             guard renamex_np(staging.path, destination.path, UInt32(RENAME_EXCL)) == 0 else {

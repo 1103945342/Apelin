@@ -1,5 +1,5 @@
 Package: com.fluoxetine.luros.hello
-Name: Apelin Hello
+Name: Luros Hello
 Version: 0.0.1
 Architecture: iphoneos-arm64e
 Description: Says Hello World when SpringBoard finishes launching. Built on the device.

@@ -2,10 +2,10 @@ import Foundation
 
 /// Where the star prompt stands (owner, 2026-10-29): the builds counted
 /// since it last asked, how many times it has asked, when it last asked
-/// GitHub whether the account has starred Apelin, and whether it is done.
+/// GitHub whether the account has starred Luros, and whether it is done.
 /// It asks after ten builds, and after ten more each time the reader
 /// answers Maybe Later, three times at most; it asks GitHub at most once a
-/// day. Star Now, or an account that has starred Apelin already, ends it
+/// day. Star Now, or an account that has starred Luros already, ends it
 /// for good.
 struct StarPromptState: Codable, Equatable {
     static let buildsBetweenAsks = 10
@@ -46,7 +46,7 @@ struct StarPromptState: Codable, Equatable {
         builds = 0
     }
 
-    /// Star Now was tapped, or the account had starred Apelin already.
+    /// Star Now was tapped, or the account had starred Luros already.
     mutating func finish() {
         isDone = true
     }

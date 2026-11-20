@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
     @autoreleasepool {
         printedClasses = [NSMutableSet set];
         printedProtocols = [NSMutableSet set];
-        // Swift's root class, for Apelin's classes that inherit from no NSObject.
+        // Swift's root class, for Luros's classes that inherit from no NSObject.
         dlopen("/usr/lib/swift/libswiftCore.dylib", RTLD_NOW);
         for (int index = 1; index < argc; index++) {
             if (argv[index][0] != '+') continue;

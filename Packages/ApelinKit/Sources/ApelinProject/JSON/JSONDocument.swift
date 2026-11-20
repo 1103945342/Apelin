@@ -1,6 +1,6 @@
 import Foundation
 
-/// A JSON value exactly as an Apelin document may hold it
+/// A JSON value exactly as an Luros document may hold it
 /// (Documents/Schemas/README.md ▸ Common rules): integers only, within
 /// ±(2^53−1), and object members kept in the order they were written with
 /// their names compared as Unicode scalars — `JSONValue` keeps numbers as
@@ -156,7 +156,7 @@ public struct JSONDocumentError: Error, Equatable, CustomStringConvertible, Send
     }
 }
 
-/// The strict reader every Apelin document goes through before any schema:
+/// The strict reader every Luros document goes through before any schema:
 /// UTF-8 without a byte order mark, no duplicate member names, no
 /// non-integer number (`1.0`, `1e3`, `NaN` all refused), integers within
 /// ±(2^53−1), no raw control character in a string, no lone surrogate.

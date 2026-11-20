@@ -140,7 +140,7 @@ actor ToolRunner {
     /// which the composer shows above the message box as the plan, and the
     /// shell_run presets that only read (`ls`, `cat`, `git log`, …). MCP and
     /// extension tools have no risk of their own, so they are refused as a
-    /// whole — a plan reads what Apelin itself keeps.
+    /// whole — a plan reads what Luros itself keeps.
     private func planVerdict(for tool: InvocationFacts.Tool, arguments: JSONValue) -> String? {
         switch tool {
         case let .mcp(name):
@@ -388,7 +388,7 @@ actor ToolRunner {
                 cancellation: cancellation,
             )
         }
-        let hostRefusal = "Apelin could not confirm that this command is one of your approved presets. Review it before running."
+        let hostRefusal = "Luros could not confirm that this command is one of your approved presets. Review it before running."
         let evidence: ApprovalEvidence
         var asked = false
         switch policy.evaluate(facts, root: root) {
@@ -669,7 +669,7 @@ actor ToolRunner {
                 automatic: automatic,
             ))
             // A new project named for its goal: the moment to settle the
-            // identifiers Apelin made up for it.
+            // identifiers Luros made up for it.
             if automatic, target.id == project.id {
                 renamed.identifierHint = PlaceholderIdentifiers.renameHint(in: root)
             }
@@ -1253,7 +1253,7 @@ actor ToolRunner {
             throw ToolArgumentError("name toolchain_id, sdk_id or both")
         }
         guard ProjectBuildSystem.read(in: root) != .external else {
-            throw ToolDeniedError(message: "this workspace builds with its own tools through shell_run; it binds no Apelin toolchain or SDK")
+            throw ToolDeniedError(message: "this workspace builds with its own tools through shell_run; it binds no Luros toolchain or SDK")
         }
         let checked = try await backend.checkEnvironment(EnvironmentCheckToolRequest(
             context: context,
@@ -1279,7 +1279,7 @@ actor ToolRunner {
         )
     }
 
-    /// A Debug build's note on the identifiers Apelin made up, while
+    /// A Debug build's note on the identifiers Luros made up, while
     /// nothing this project built is installed; nil too when that list does
     /// not read, since then nothing says the first install is still ahead.
     private func firstInstallIdentifierHint() async -> String? {

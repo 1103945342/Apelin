@@ -125,7 +125,7 @@ public struct AgentAccount: Codable, Sendable, Equatable {
     }
 }
 
-/// Every provider Apelin's sessions can use, signed in or not, in the
+/// Every provider Luros's sessions can use, signed in or not, in the
 /// order kwwk lists its logins: subscriptions, then keys.
 public struct AgentAccountListRequest: OperationRequest {
     public typealias Response = AgentAccountListResponse

@@ -156,15 +156,15 @@ if [[ $mode == app ]]; then
     ldid -S"$packaging/Apelin.entitlements" -Cadhoc "$staging/Luros.app/$executable"
 fi
 
-# This installer updates an existing Apelin installation. Derive its actual
+# This installer updates an existing Luros installation. Derive its actual
 # bootstrap from dpkg instead of guessing a rootless or roothide prefix.
 remote_directory="$(run_sudo '
     set -eu
     if ! daemon="$(dpkg -L com.fluoxetine.luros | grep "/usr/libexec/lurosd$")" || [ ! -f "$daemon" ]; then
-        echo "error: cannot locate the installed Apelin daemon; install Apelin before using this updater" >&2
+        echo "error: cannot locate the installed Luros daemon; install Luros before using this updater" >&2
         exit 1
     fi
-    case "$daemon" in /*) ;; *) echo "error: installed Apelin daemon path is not absolute" >&2; exit 1 ;; esac
+    case "$daemon" in /*) ;; *) echo "error: installed Luros daemon path is not absolute" >&2; exit 1 ;; esac
     install_root="${daemon%/usr/libexec/lurosd}"
     install_root="$(cd -P "${install_root:-/}" && pwd -P)"
     directory="$(mktemp -d "${install_root%/}/.apelin-install.XXXXXXXX")"
@@ -194,12 +194,12 @@ fi
 # Let app-owned work finish cleanup before replacing its executable. An app
 # replaced under a running copy would only offer to quit.
 if $launch || [[ $mode == app ]]; then
-    run_remote 'if killall -0 Apelin 2>/dev/null; then
-        killall -TERM Apelin || exit
+    run_remote 'if killall -0 Luros 2>/dev/null; then
+        killall -TERM Luros || exit
         attempts=0
-        while killall -0 Apelin 2>/dev/null; do
+        while killall -0 Luros 2>/dev/null; do
             attempts=$((attempts + 1))
-            if [ "$attempts" -ge 20 ]; then echo "error: Apelin did not quit; close it on the device and try again" >&2; exit 1; fi
+            if [ "$attempts" -ge 20 ]; then echo "error: Luros did not quit; close it on the device and try again" >&2; exit 1; fi
             sleep 0.25
         done
     fi'
@@ -248,6 +248,6 @@ echo "==> registering the app"
 run_sudo 'app="$(dpkg -L com.fluoxetine.luros | grep "/Applications/Luros.app$")" && uicache -p "$app"'
 
 if $launch; then
-    echo "==> opening Apelin"
+    echo "==> opening Luros"
     run_remote "uiopen --bundleid com.fluoxetine.luros"
 fi

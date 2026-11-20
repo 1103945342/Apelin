@@ -83,7 +83,7 @@ public struct ProjectCreateToolRequest: Sendable, Hashable, Codable {
     public var templateID: String
     /// The folder under `Projects/`, which never changes.
     public var name: String
-    /// Parameters the template asks for; Apelin fills the rest.
+    /// Parameters the template asks for; Luros fills the rest.
     public var values: [String: TemplateValue]
     /// `ipa` builds the app template as an `.ipa` the device's installer or
     /// another signing tool takes; `deb`, or nothing, as the template says.
@@ -108,7 +108,7 @@ public struct ProjectCreateToolResponse: Sendable, Hashable, Codable {
     public var name: String
     /// `lurosdev://project/<projectID>`, which opens it in the app.
     public var link: String
-    /// The identifiers Apelin made up for it, to ask the user about
+    /// The identifiers Luros made up for it, to ask the user about
     /// (`PlaceholderIdentifiers`); the agent adds it, the host never does.
     public var identifierHint: String?
     public init(projectID: String, name: String, identifierHint: String? = nil) {
@@ -160,7 +160,7 @@ public struct ProjectRenameToolRequest: Sendable, Hashable, Codable {
     public var projectID: String
     public var folder: String
     public var displayName: String
-    /// Only replace the name Apelin generated (`onlyIfAutomatic`).
+    /// Only replace the name Luros generated (`onlyIfAutomatic`).
     public var automatic: Bool
     public init(context: HostCallContext, projectID: String, folder: String, displayName: String, automatic: Bool) {
         self.context = context
@@ -192,7 +192,7 @@ public struct ProjectDeleteToolResponse: Sendable, Hashable, Codable {
     public init(projectID: String, folder: String) {
         self.projectID = projectID
         self.folder = folder
-        deleted = "The project's folder with every file in it, and its conversations, which were closed first; Apelin no longer lists them."
+        deleted = "The project's folder with every file in it, and its conversations, which were closed first; Luros no longer lists them."
     }
 }
 
@@ -205,7 +205,7 @@ public struct ProjectRenameToolResponse: Sendable, Hashable, Codable {
     public var changed: Bool
     /// `lurosdev://project/<projectID>`, which opens it in the app.
     public var link: String
-    /// After an automatic rename, the identifiers Apelin made up for the
+    /// After an automatic rename, the identifiers Luros made up for the
     /// project (`PlaceholderIdentifiers`); the agent adds it.
     public var identifierHint: String?
     public init(projectID: String, folder: String, displayName: String, changed: Bool) {

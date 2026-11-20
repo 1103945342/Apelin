@@ -32,7 +32,7 @@ enum AppPlacement: Equatable, Sendable {
         case install
         /// A bundle of the same identifier is replaced. `adopt` is true when
         /// no installation record of ours held it: something else put that app
-        /// there, and Apelin takes it over.
+        /// there, and Luros takes it over.
         case replace(adopt: Bool)
         /// The install stops, and this says why.
         case refuse(String)
@@ -58,7 +58,7 @@ enum AppPlacement: Equatable, Sendable {
             return .replace(adopt: !ours)
         case let .otherBundle(other):
             return .refuse(
-                "\(destinationName).app holds \(other), another app. Apelin replaces an app of the same bundle identifier only; "
+                "\(destinationName).app holds \(other), another app. Luros replaces an app of the same bundle identifier only; "
                     + "remove that one first, or give this build its own identifier."
             )
         case .unreadable:

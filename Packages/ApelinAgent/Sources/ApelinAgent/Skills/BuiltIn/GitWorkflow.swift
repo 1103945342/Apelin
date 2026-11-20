@@ -5,11 +5,11 @@ extension BuiltInSkills {
         body: """
         # Keeping the project in git
 
-        Every project Apelin makes starts as a git repository on `main` with no
+        Every project Luros makes starts as a git repository on `main` with no
         commit yet. The history is the user's undo: keep it for them.
 
         ## Who drives
-        - Most people using Apelin do not use git themselves. Unless the user
+        - Most people using Luros do not use git themselves. Unless the user
           shows they do — they talk about commits, branches or a remote, or the
           project's AGENTS.md says how they work — keep the history on your
           own: commit without asking, and never quiz them about git.
@@ -40,11 +40,11 @@ extension BuiltInSkills {
           then a blank line and the reason when it is not obvious. Write it as
           the repository's earlier messages are written, whatever language you
           reply in.
-        - Build output lives outside the project, and Apelin keeps the chat's
+        - Build output lives outside the project, and Luros keeps the chat's
           `Attachments/` out of the repository itself, so neither needs an
           ignore rule. Add a `.gitignore` for anything else generated inside
           the project (a script's `*.o`, a tool's cache) before committing.
-        - A project with no repository, made before Apelin made them: start one
+        - A project with no repository, made before Luros made them: start one
           with `git_init`, which begins `main`, then commit.
         - Never commit a folder that holds a `.git` of its own.
 

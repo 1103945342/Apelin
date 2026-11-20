@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 OwnGoal Studio
 //
-// From Apelin's tweak template. The shape follows platformize-tweak-ios: one
+// From Luros's tweak template. The shape follows platformize-tweak-ios: one
 // constructor, a cheap identity check first, then the hooks. Replace the hook
 // below with the method you are changing, and keep the filter in
 // luros-project.json scoped to the processes that actually need it.
@@ -33,7 +33,7 @@ static void HookedDidFinishLaunching(id self, SEL _cmd, id application) {
 }
 
 __attribute__((constructor)) static void TweakInitialize(void) {
-    // Apelin's confirm_loaded looks for this exact marker and build id under
+    // Luros's confirm_loaded looks for this exact marker and build id under
     // the package id's subsystem. Keep the line, and keep it public.
     os_log(TweakLog(), "ApelinLoaded %{public}s in %{public}s", APELIN_BUILD_ID, getprogname());
 

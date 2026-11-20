@@ -9,7 +9,7 @@ import XCTest
 /// The git service's remote operations and settings: against a bare
 /// repository on disk (`acceptsLocalRemotes`), with credentials in memory.
 final class GitRemoteServiceTests: XCTestCase {
-    private let author = GitSignature(name: "Apelin Test", email: "test@apelin.invalid")
+    private let author = GitSignature(name: "Luros Test", email: "test@apelin.invalid")
 
     private func service(_ home: TemporaryHome, store: any GitCredentialStore = MemoryGitCredentialStore()) -> GitService {
         var git = GitService(layout: home.layout, credentials: store)
@@ -66,7 +66,7 @@ final class GitRemoteServiceTests: XCTestCase {
         }
         let status = try git.status(GitStatusRequest(projectID: id))
         XCTAssertEqual(status.branch, "main")
-        XCTAssertEqual(status.entries, [], "Apelin's own files are excluded")
+        XCTAssertEqual(status.entries, [], "Luros's own files are excluded")
         let exclude = try String(contentsOf: root.appendingPathComponent(".git/info/exclude"), encoding: .utf8)
         for pattern in GitService.apelinFiles {
             XCTAssertTrue(exclude.contains(pattern + "\n"), pattern)
@@ -144,7 +144,7 @@ final class GitRemoteServiceTests: XCTestCase {
 
     // MARK: Init and commit everything
 
-    /// A project Apelin makes is a repository on main from the start, which
+    /// A project Luros makes is a repository on main from the start, which
     /// libgit2 opens as git init would have left it, and a workspace's can
     /// still take an import.
     func testANewProjectStartsAsAnUntouchedRepositoryOnMain() throws {
@@ -178,7 +178,7 @@ final class GitRemoteServiceTests: XCTestCase {
         }
     }
 
-    // MARK: Apelin's own files
+    // MARK: Luros's own files
 
     /// The chat's attachments and the file tools' temporary files sit in the
     /// project folder, but are no change of the project's.
@@ -214,7 +214,7 @@ final class GitRemoteServiceTests: XCTestCase {
         XCTAssertEqual(try git.status(GitStatusRequest(projectID: id)).entries.map(\.path), ["luros-project.json"])
     }
 
-    /// A repository made before Apelin wrote its excludes takes them on its
+    /// A repository made before Luros wrote its excludes takes them on its
     /// next git call, once the project has an attachment, and not before.
     func testAnOlderRepositoryKeepsApelinsOwnFilesOutOnceItHasAttachments() throws {
         let home = try TemporaryHome(self)

@@ -3,7 +3,7 @@ import Then
 import UIKit
 
 /// Settings ▸ Model Providers: every provider apelin-agent can sign in to,
-/// in Apelin's display order. Signed-in ones first, each with who
+/// in Luros's display order. Signed-in ones first, each with who
 /// it is signed in as under its name and a `…` menu (Edit Configuration or Sign In Again, Sign
 /// Out); then the rest, those signed in to with an account apart from those
 /// that take a typed key. A search field narrows the list by name. The

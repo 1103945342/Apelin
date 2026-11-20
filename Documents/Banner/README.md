@@ -1,7 +1,7 @@
 # The banner
 
 `Documents/screenshots.jpg` is the banner the README shows and every
-package manager shows above Apelin's depiction (`Documents/Site/depiction.json`
+package manager shows above Luros's depiction (`Documents/Site/depiction.json`
 ▸ `headerImage`), as Fila's is. It is made from a Figma template, never drawn
 by hand:
 
@@ -9,7 +9,7 @@ by hand:
   its slots' names (`Screenshot 1` … `Screenshot 6`, `Icon`; a slot can
   appear more than once) and the Icon slot's corners, 22.37 % to match the
   iOS icon mask.
-- `Banner.fig` — the template with Apelin's screenshots and icon in its
+- `Banner.fig` — the template with Luros's screenshots and icon in its
   slots, as the last run left it. Open it in Figma to look at it or export
   it there.
 - `demo-data.py` — the projects and conversations the screenshots show,
@@ -17,7 +17,7 @@ by hand:
 - `make-banner.sh` — the whole run:
   1. builds the app for the iOS Simulator into
      `/private/tmp/apelin-banner-deriveddata` (a screenshot build only:
-     Apelin ships no simulator build, and nothing that needs apelind works
+     Luros ships no simulator build, and nothing that needs apelind works
      there);
   2. installs it on an existing iPhone simulator (`SIMULATOR`, default
      "iPhone 18 Pro"), light mode, the status bar at 9:41;

@@ -11,7 +11,7 @@ import Testing
 @Suite("Transcripts recorded under the earlier tool names")
 struct LegacyTranscriptTests {
     /// A turn as 0.1.8 recorded it, with an MCP server's call beside
-    /// Apelin's when `mcp` is set.
+    /// Luros's when `mcp` is set.
     private static func recorded(mcp: Bool = true) -> [Message] {
         let schema: JSONValue = ["type": "object", "properties": [:]]
         let search = "mcp__docs__search"

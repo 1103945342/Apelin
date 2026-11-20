@@ -12,7 +12,7 @@ import KWWKAI
 ///
 /// Credentials never travel in argv, the environment, a log line or a
 /// session file. The two implementations are the keychain (this device only,
-/// never synced, Apelin's own items) and an in-memory source the app fills
+/// never synced, Luros's own items) and an in-memory source the app fills
 /// over the authenticated channel when a shared keychain is not available.
 public protocol CredentialSource: OAuthCredentialSource {
     /// Store or replace the credentials for `providerID`.
@@ -21,7 +21,7 @@ public protocol CredentialSource: OAuthCredentialSource {
     func remove(_ providerID: String) async throws
 }
 
-/// Credential store ids, including Apelin's independent DeepSeek account.
+/// Credential store ids, including Luros's independent DeepSeek account.
 public enum CredentialProviderID {
     public static let anthropicAPIKey = "anthropic-api-key"
     public static let anthropicOAuth = "anthropic"

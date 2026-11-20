@@ -72,7 +72,7 @@ public extension GitRepository {
         }
         var backupID = try commitCheckpointIndex(
             index,
-            message: "Saved by Apelin before restoring a checkpoint\n\nThe work tree as it was, every file the repository does not ignore.\n",
+            message: "Saved by Luros before restoring a checkpoint\n\nThe work tree as it was, every file the repository does not ignore.\n",
             author: author,
         )
         let branch = try makeCheckpointBackupBranch(Self.hex(&backupID), now: now)

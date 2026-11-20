@@ -41,7 +41,7 @@ public struct SDKSourceList: Codable, Sendable, Equatable {
     /// What ships: the known sources.
     public static let `default` = SDKSourceList(sources: knownSources)
 
-    /// The sources Apelin knows. See the type's comment.
+    /// The sources Luros knows. See the type's comment.
     public static let knownSources: [Source] = [
         Source(
             name: "OwnGoal iOS SDKs",

@@ -5,7 +5,7 @@ import Foundation
 
 /// Every build puts the project's `luros-project.json` into its written
 /// form before its first step (`ProjectManifestFormat.formatFile`), so a
-/// file written on one line, by Apelin before or by hand, is tidied once and
+/// file written on one line, by Luros before or by hand, is tidied once and
 /// a formatted one is left alone. Only the text changes, so the digests the
 /// check took and the host approved are the same after it.
 enum ManifestFormatting {

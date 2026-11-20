@@ -31,7 +31,7 @@ extension BuiltInSkills {
         absent. Both are part of the packaging description, so in Strict mode
         the first install after adding or changing one asks the user.
 
-        Apelin only passes the addresses on; nothing is uploaded and nothing
+        Luros only passes the addresses on; nothing is uploaded and nothing
         is checked to be there. Add a member only with an address the user
         gave or agreed to. Never make one up: a package manager shows nothing
         for an address that does not answer.
@@ -84,7 +84,7 @@ extension BuiltInSkills {
     )
 
     /// A native depiction with the views Irisin's renderer draws (its
-    /// PackageDepiction package) and Apelin's own page on Pages uses; a test
+    /// PackageDepiction package) and Luros's own page on Pages uses; a test
     /// holds it to that list and to the shape the skill describes.
     static let sampleDepiction = """
     {

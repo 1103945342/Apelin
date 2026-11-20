@@ -6,7 +6,7 @@ import KWWKAI
 /// How each provider is signed in to, and the store id its credential
 /// is kept under — the one `ProviderConfiguration` reads it back by.
 ///
-/// The list covers every kwwk login plus Apelin's DeepSeek API account.
+/// The list covers every kwwk login plus Luros's DeepSeek API account.
 /// Display order is a product choice, independent of registration priority.
 public extension AgentProvider {
     /// Settings groups signed-in accounts, account sign-ins and API keys,
@@ -104,7 +104,7 @@ struct KeyField: Sendable, Equatable {
 /// KWWKCli's API-key login forms (`loginProviders`, the `.apiKey` entries),
 /// field for field: what each asks for, what it may leave out, and its
 /// defaults. KWWKCli is an executable target, not a library, so this is the
-/// one copy, with Apelin's DeepSeek form added. `extrasKeys` there is every
+/// one copy, with Luros's DeepSeek form added. `extrasKeys` there is every
 /// field but the key, which `AccountDesk.apiKeyCredentials` keeps as extras.
 enum SignInKeyForms {
     struct Form: Sendable {

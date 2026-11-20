@@ -156,7 +156,7 @@ final class MixedNativeBuildTests: XCTestCase {
 
     let names = [c_value(), objc_value(), cpp_value(), objcxx_value()].map { String(cString: $0) }
     print("mixed: " + names.joined(separator: "+") + " fixture=" + String(mixed_fixture_value()))
-    print(Greeter(name: "Apelin").greeting())
+    print(Greeter(name: "Luros").greeting())
     """
 
     private static let greeterSwift = """
@@ -211,7 +211,7 @@ final class MixedNativeBuildTests: XCTestCase {
 
     const char *objc_value(void) {
         static char buffer[64];
-        Greeter *greeter = [[Greeter alloc] initWithName:@"Apelin"];
+        Greeter *greeter = [[Greeter alloc] initWithName:@"Luros"];
         strlcpy(buffer, [[greeter greeting] UTF8String], sizeof(buffer));
         return buffer;
     }

@@ -85,8 +85,8 @@ enum SpawnError: Error, CustomStringConvertible {
     var description: String {
         switch self {
         case let .untrustedExecutable(path):
-            "\(path) is missing or its permissions have changed. Reinstall Apelin with your preferred package manager, then try again."
-        case .failed: "Apelin could not start a background process. Try again."
+            "\(path) is missing or its permissions have changed. Reinstall Luros with your preferred package manager, then try again."
+        case .failed: "Luros could not start a background process. Try again."
         case let .privilegesKept(pid):
             "Process \(pid) kept elevated privileges instead of running as its own user, so it was terminated."
         }

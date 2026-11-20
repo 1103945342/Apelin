@@ -642,7 +642,7 @@ actor MockBackend: AgentHostBackend {
         author: "someone",
         openedByUser: true,
         body: "It ends before the link step.",
-        footer: "Sent with Apelin 0.2.7 (18) · iOS 17.3.1 · rootless",
+        footer: "Sent with Luros 0.2.7 (18) · iOS 17.3.1 · rootless",
     )]
 
     func setFeedbackIssue(_ issue: FeedbackReadToolResponse) {

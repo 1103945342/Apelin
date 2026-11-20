@@ -18,7 +18,7 @@ static void showHello(void) {
     helloWindow.rootViewController = [UIViewController new];
     helloWindow.hidden = NO;
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Hello World"
-                                                                   message:@"Built on this device by Apelin."
+                                                                   message:@"Built on this device by Luros."
                                                             preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"OK"
                                               style:UIAlertActionStyleDefault

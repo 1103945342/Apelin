@@ -24,7 +24,7 @@ enum UserQuestions {
             throw ToolArgumentError("options is a list of \(AgentQuestionRules.minimumOptions) to \(AgentQuestionRules.maximumOptions) objects, each with a label")
         }
         guard (AgentQuestionRules.minimumOptions ... AgentQuestionRules.maximumOptions).contains(entries.count) else {
-            throw ToolArgumentError("options has \(entries.count); give \(AgentQuestionRules.minimumOptions) to \(AgentQuestionRules.maximumOptions). Other is added by Apelin: do not list it. A question with no options to offer goes in your reply.")
+            throw ToolArgumentError("options has \(entries.count); give \(AgentQuestionRules.minimumOptions) to \(AgentQuestionRules.maximumOptions). Other is added by Luros: do not list it. A question with no options to offer goes in your reply.")
         }
         var options: [AgentQuestion.Option] = []
         var seen: Set<String> = []
@@ -116,7 +116,7 @@ extension ToolRunner {
                 projectID: project.id,
                 digest: nil,
             ),
-            // what the host's banner says while Apelin is not in front
+            // what the host's banner says while Luros is not in front
             reason: question.question,
             detail: .question(question),
             allowsSessionScope: false,

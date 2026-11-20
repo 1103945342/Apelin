@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Drive Apelin on a vphone or a jailbroken device from the Mac.
+"""Drive Luros on a vphone or a jailbroken device from the Mac.
 
 The device half of "where things get tested". Everything privileged is
 proven through the console (Documents/Console.md): a script dropped into
@@ -52,8 +52,8 @@ INSTALLER = ROOT / 'Scripts' / 'install-device.sh'
 LAUNCHPAD = Path('/Applications/vphone-launchpad.app/Contents/MacOS/vphone-launchpad-cli')
 
 BUNDLE_ID = 'com.fluoxetine.luros'
-APP_PROCESS = 'Apelin'
-CRASH_PREFIXES = ('Apelin', 'apelind', 'apelin-', 'panic-')
+APP_PROCESS = 'Luros'
+CRASH_PREFIXES = ('Luros', 'apelind', 'apelin-', 'panic-')
 
 # A non-login ssh shell on a guest can start with /usr/bin:/bin only, and a
 # rootless bootstrap's tools are under /var/jb; roothide's shell already
@@ -548,7 +548,7 @@ echo; echo "@@projects"; ls -A "$data/Projects" 2>/dev/null
 echo; echo "@@console"
 for folder in inbox running done out; do printf '%s %s\n' "$folder" "$(ls -A "$data/console/$folder" 2>/dev/null | grep -c '\.json')"; done
 echo; echo "@@running"; ls -A "$data/console/running" 2>/dev/null
-echo; echo "@@running-app"; killall -0 Apelin 2>/dev/null && echo yes
+echo; echo "@@running-app"; killall -0 Luros 2>/dev/null && echo yes
 echo; echo "@@uname"; uname -srm
 echo; echo "@@end"
 ''', timeout=60)
@@ -610,24 +610,24 @@ echo; echo "@@end"
     def require_apelin(self):
         facts = self.facts or self.gather()
         if not facts['root']:
-            raise HarnessError(f'Apelin is not installed on {self.describe()}. Install it once with your preferred '
+            raise HarnessError(f'Luros is not installed on {self.describe()}. Install it once with your preferred '
                                'package manager; `device.py install` updates it from then on')
         return facts
 
     # MARK: The app
 
     def app_running(self):
-        return self.run('killall -0 Apelin 2>/dev/null', check=False).returncode == 0
+        return self.run('killall -0 Luros 2>/dev/null', check=False).returncode == 0
 
     def frontmost(self):
-        """Whether Apelin is the app in front; None where nothing can say."""
+        """Whether Luros is the app in front; None where nothing can say."""
         if not self.machine:
             return None
         result = guest_rpc(self.machine, 'apps.foreground')
         return None if result is None else result.get('bundle_id') == BUNDLE_ID
 
     def open_app(self, fresh=False):
-        """Brings Apelin to the front. With `fresh`, an app already running
+        """Brings Luros to the front. With `fresh`, an app already running
         is quit first, so the launch reads the inbox: one already in front
         never comes to the foreground again, and going through another app
         leaves that app beside it on an iPad, with the focus. Only for an
@@ -635,8 +635,8 @@ echo; echo "@@end"
         if self.machine:
             launchpad('guest', 'unlock', self.machine, timeout=30)
         if fresh and self.app_running():
-            self.run('killall -TERM Apelin 2>/dev/null; for _ in 1 2 3 4 5 6 7 8 9 10; do '
-                     'killall -0 Apelin 2>/dev/null || exit 0; sleep 0.5; done; killall -9 Apelin 2>/dev/null; sleep 0.5',
+            self.run('killall -TERM Luros 2>/dev/null; for _ in 1 2 3 4 5 6 7 8 9 10; do '
+                     'killall -0 Luros 2>/dev/null || exit 0; sleep 0.5; done; killall -9 Luros 2>/dev/null; sleep 0.5',
                      check=False)
         return self.launch(BUNDLE_ID)
 
@@ -749,7 +749,7 @@ mkdir -p inbox && cp -R "$source" inbox/.{action["stageSDK"]}.part && mv inbox/.
                 action = ('pid=$(cat "$JB/var/lib/luros/session.pid") && kill -9 "$pid" '
                           '&& echo "killed the session host, pid $pid"')
             else:
-                action = 'killall -9 Apelin && echo "killed the app"'
+                action = 'killall -9 Luros && echo "killed the app"'
             stem = f'/tmp/.apelin-harness-{tag}-{number}'
             body = f'''
 tag={shlex.quote(tag)}; first={shlex.quote(needles[0])}; second={shlex.quote(needles[1])}
@@ -1094,7 +1094,7 @@ def command_status(target, arguments):
         + (f', iOS {machine.get("ios")}' if machine and machine.get('ios') else '')
         + (f', {facts["arch"]}' if facts['arch'] else '') + Style.dim(f'  {facts["uname"]}'))
     if not facts['root']:
-        say(Style.bad('Apelin    not installed') + ' — install it once with your preferred package manager')
+        say(Style.bad('Luros    not installed') + ' — install it once with your preferred package manager')
         return 1
     jailbreak = (guest_rpc(target.machine, 'device.info') or {}).get('jailbreak') if target.machine else None
     if jailbreak and jailbreak.get('jbroot'):
@@ -1108,12 +1108,12 @@ def command_status(target, arguments):
     version = facts['packages'].get(BUNDLE_ID, '?')
     # A local build's number is the commit count (make print-build-number).
     same = Style.ok('  (this checkout)') if build == local else Style.warn(f'  (this checkout builds {local})')
-    say(f'{Style.bold("Apelin    ")}{version}, build {build or "?"}{same if build and local else ""}; '
+    say(f'{Style.bold("Luros    ")}{version}, build {build or "?"}{same if build and local else ""}; '
         f'app {"running" if facts["appRunning"] else "not running"}')
     interesting = [(package, v) for package, v in sorted(facts['packages'].items())
                    if package.startswith('com.fluoxetine.luros.') or package in ('wiki.qaq.irisin', 'ellekit', 'wiki.qaq.icli')
                    or package.startswith('local.apelin.') or package == 'com.example.apelin-smoke']
-    say(f'{Style.bold("Packages  ")}' + (', '.join(f'{p} {v}' for p, v in interesting) or 'none beside Apelin'))
+    say(f'{Style.bold("Packages  ")}' + (', '.join(f'{p} {v}' for p, v in interesting) or 'none beside Luros'))
     daemon = target.text(r'''
 launchctl print system/com.fluoxetine.lurosd 2>/dev/null | awk -F' = ' '/^\t(state|pid) = /{printf "%s %s ", $1, $2}' | tr -d '\t'
 pid=$(cat "$JB/var/lib/luros/session.pid" 2>/dev/null) && kill -0 "$pid" 2>/dev/null && echo "session-host $pid"
@@ -1298,7 +1298,7 @@ def command_install(target, arguments):
                  '(install it with your preferred package manager)')
         else:
             others.append(deb)
-    # Apelin first: every extension depends on it at its own version.
+    # Luros first: every extension depends on it at its own version.
     for deb in app:
         environment = dict(os.environ, DEVICE_HOST=target.host, DEVICE_PORT=str(target.port),
                            DEVICE_USER=target.user, DEVICE_PASSWORD=target.password)
@@ -1348,7 +1348,7 @@ def command_crashes(target, arguments):
                           root=True, check=False)
     names = listing.split()
     if not names:
-        say('no crash reports from Apelin, apelind, its workers, or the kernel')
+        say('no crash reports from Luros, apelind, its workers, or the kernel')
         return 0
     destination = target.results_folder / 'crashes'
     for name in names:
@@ -1414,7 +1414,7 @@ def command_lint(_, arguments):
 def main():
     parser = argparse.ArgumentParser(
         prog='device.py',
-        description='Drive Apelin on a vphone or a device: run console scripts and suites, install, inspect.',
+        description='Drive Luros on a vphone or a device: run console scripts and suites, install, inspect.',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''examples:
   device.py status                    what is installed, registered and running
@@ -1464,13 +1464,13 @@ def main():
     sub.set_defaults(handler=command_out)
     sub = commands.add_parser('install', help='install the built packages over ssh')
     sub.add_argument('debs', nargs='*')
-    sub.add_argument('--app', action='store_true', help='Apelin too when debs are named')
+    sub.add_argument('--app', action='store_true', help='Luros too when debs are named')
     sub.add_argument('--extensions', action='store_true', help='the development extensions')
     sub.add_argument('--agent-tools', action='store_true', help='the agent tool extensions')
-    sub.add_argument('--all', action='store_true', help='Apelin and every extension')
+    sub.add_argument('--all', action='store_true', help='Luros and every extension')
     sub.add_argument('--no-launch', action='store_true')
     sub.set_defaults(handler=command_install)
-    sub = commands.add_parser('open', help='bring Apelin to the front (it reads its inbox)')
+    sub = commands.add_parser('open', help='bring Luros to the front (it reads its inbox)')
     sub.add_argument('--fresh', action='store_true', help='quit it first, so the launch reads the inbox')
     sub.set_defaults(handler=command_open)
     sub = commands.add_parser('kill-host', help="kill the session host by its pid, as a resume test does")
@@ -1483,7 +1483,7 @@ def main():
     sub = commands.add_parser('shell', help='an interactive shell')
     sub.add_argument('--root', action='store_true')
     sub.set_defaults(handler=command_shell)
-    sub = commands.add_parser('crashes', help="Apelin's crash reports and kernel panics")
+    sub = commands.add_parser('crashes', help="Luros's crash reports and kernel panics")
     sub.add_argument('--pull', action='store_true', help='copy them to build/Device/<target>/crashes/')
     sub.add_argument('--last', type=int, default=10)
     sub.set_defaults(handler=command_crashes)
@@ -1492,7 +1492,7 @@ def main():
     sub.set_defaults(handler=command_screenshot)
     sub = commands.add_parser('logs', help="a bounded capture of the vphone's log")
     sub.add_argument('--seconds', type=int, default=10)
-    sub.add_argument('--process', help='apelind, Apelin, apelin-build, …')
+    sub.add_argument('--process', help='apelind, Luros, apelin-build, …')
     sub.add_argument('--lines', type=int, default=500)
     sub.set_defaults(handler=command_logs)
     sub = commands.add_parser('address', help='print the target\'s address (for make vphone)')

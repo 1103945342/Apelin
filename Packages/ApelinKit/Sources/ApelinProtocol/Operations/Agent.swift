@@ -391,7 +391,7 @@ public enum AgentReasoningEffort: String, Codable, Sendable, CaseIterable {
     case off, minimal, low, medium, high, xhigh, max
 }
 
-/// The processing tiers Apelin offers above the provider's standard one,
+/// The processing tiers Luros offers above the provider's standard one,
 /// by kwwk's `ServiceTier` names: `priority` (Codex's Fast) and
 /// `ultrafast`. A model is offered only those its provider's catalog lists
 /// for it (`AgentAccount.serviceTiers`); absent is the standard tier.

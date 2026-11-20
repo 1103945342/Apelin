@@ -63,7 +63,7 @@ public struct GitBranchComparison: Codable, Sendable, Hashable {
     public var localSubject: String
     /// The remote's branch's commit; nil when the remote has no such branch.
     public var remote: String?
-    /// Where a push to the remote goes, when it is an address Apelin pushes
+    /// Where a push to the remote goes, when it is an address Luros pushes
     /// to.
     public var pushURL: String?
     /// The commits on the remote's branch the local branch does not have,

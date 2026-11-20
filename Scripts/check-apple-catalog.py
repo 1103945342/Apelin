@@ -2,7 +2,7 @@
 """Compare Apple's software update catalog with the reviewed toolchain releases.
 
 Apple's catalog lists only what it offers today. It replaced Command Line
-Tools 27.0 with 27.2 and nothing in Apelin said so: 27.0 went from every
+Tools 27.0 with 27.2 and nothing in Luros said so: 27.0 went from every
 device's list, while its file stayed on Apple's servers. Reviewed packages now
 carry their own address (`CommandLineToolsPackage`), so what this watches for
 is what they cannot answer:
@@ -13,7 +13,7 @@ is what they cannot answer:
   review.
 
 A package marked `withdrawn` there is one Apple is known to have stopped
-serving: Apelin offers it only while the catalog lists it, so its recorded
+serving: Luros offers it only while the catalog lists it, so its recorded
 address is not asked again.
 
 Everything is read from `Packages/ApelinToolchain/.../Support.swift`, so there
@@ -52,7 +52,7 @@ UNREACHABLE = (urllib.error.URLError, http.client.HTTPException, OSError)
 
 
 def fetch(url, headers=None):
-    request = urllib.request.Request(url, headers={"User-Agent": "Apelin catalog check", **(headers or {})})
+    request = urllib.request.Request(url, headers={"User-Agent": "Luros catalog check", **(headers or {})})
     return urllib.request.urlopen(request, timeout=60)
 
 
@@ -85,7 +85,7 @@ def reviewed(text):
 
 
 def refused(text):
-    """The versions Apelin refuses by name."""
+    """The versions Luros refuses by name."""
     names = set(re.findall(r'^\s+"(\d+\.\d+)": "', text, re.M))
     retired = re.search(r"static let retired = \[([^\]]*)\]", text).group(1)
     return names | set(re.findall(r'"([^"]+)"', retired))

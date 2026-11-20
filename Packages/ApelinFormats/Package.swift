@@ -1,7 +1,7 @@
 // swift-tools-version: 6.0
 import PackageDescription
 
-/// The file formats Apelin reads and writes on the device: Mach-O images, and
+/// The file formats Luros reads and writes on the device: Mach-O images, and
 /// Debian packages in both directions. Nothing here imports UIKit, spawns a
 /// process or knows the install prefix; every target builds and tests on a Mac
 /// with plain `swift test`.

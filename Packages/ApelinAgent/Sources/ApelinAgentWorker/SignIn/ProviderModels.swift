@@ -73,7 +73,7 @@ enum ProviderModels {
     ///
     /// An account list asks for both for every signed-in account, so they are
     /// found together: kwwk's rows for the account's key first, then one
-    /// batched lookup over the catalogs Apelin reads for whatever those rows
+    /// batched lookup over the catalogs Luros reads for whatever those rows
     /// did not name — `cn:deepseek-v4.1-flash` reasons, and at the levels
     /// DeepSeek's entry gives it. One read of the two tables and one check of
     /// models.dev's file serve the whole account, where a lookup per model and
@@ -150,7 +150,7 @@ enum ProviderModels {
         catalogFacts(provider, credentials: credentials, models: models).capabilities
     }
 
-    /// The tiers Apelin offers that the catalog lists for each of the
+    /// The tiers Luros offers that the catalog lists for each of the
     /// provider's models (only ChatGPT Codex's, today); a model with none is
     /// left out.
     static func serviceTiers(

@@ -10,7 +10,7 @@ import XCTest
 /// remote, made what a remote holds when the user asks, with its identity
 /// kept and what it loses shown first.
 final class GitResetServiceTests: XCTestCase {
-    private let author = GitSignature(name: "Apelin Test", email: "test@apelin.invalid")
+    private let author = GitSignature(name: "Luros Test", email: "test@apelin.invalid")
     private let localID = "1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f"
     private let theirID = "5f0c2a8e-1b7d-4c39-9e46-0a1b2c3d4e5f"
 

@@ -55,14 +55,14 @@ struct EmptyVariableGuardTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func `the workspace build script's first lines stop before anything when Apelin set nothing`() throws {
+    func `the workspace build script's first lines stop before anything when Luros set nothing`() throws {
         let temporary = FileManager.default.temporaryDirectory
             .appendingPathComponent("apelin-guard-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: temporary, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: temporary) }
         let script = try firstLines() + "echo \"stage=$stage\"\n"
 
-        // A shell_run of the script: none of Apelin's variables.
+        // A shell_run of the script: none of Luros's variables.
         let bare = try run(script, environment: ["PATH": "/usr/bin:/bin"])
         #expect(bare.status != 0)
         #expect(bare.output.contains("run this through apelin_project_build"))

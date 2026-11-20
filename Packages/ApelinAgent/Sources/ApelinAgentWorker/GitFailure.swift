@@ -73,10 +73,10 @@ enum GitFailure {
         }
         if isAuthentication(message, reason: reason) {
             if host == "github.com" {
-                return "The remote wants a credential Apelin does not have for github.com, or refused the saved one: ask the user to sign in with Sign In with GitHub in Settings ▸ Git, then try again."
+                return "The remote wants a credential Luros does not have for github.com, or refused the saved one: ask the user to sign in with Sign In with GitHub in Settings ▸ Git, then try again."
             }
             let place = host.map { "for \($0) " } ?? ""
-            return "The remote wants a credential Apelin does not have, or refused the saved one: ask the user for a token \(place)to save with apelin_git_save_credential, then try again."
+            return "The remote wants a credential Luros does not have, or refused the saved one: ask the user for a token \(place)to save with apelin_git_save_credential, then try again."
         }
         if operation == "git commit", message.lowercased().contains("author") {
             return "Ask the user to set the commit author in Settings ▸ Git."

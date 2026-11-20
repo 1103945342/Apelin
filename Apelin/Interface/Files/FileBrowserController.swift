@@ -12,7 +12,7 @@ import UIKit
 /// It starts where the caller points it and walks anywhere mobile may read —
 /// up to the top of the file system, across to the bootstrap, and back to the
 /// project it was opened from. Ordinary files are made, renamed, copied,
-/// moved, edited, previewed, shared and deleted here; Apelin's own records —
+/// moved, edited, previewed, shared and deleted here; Luros's own records —
 /// its projects, SDKs, toolchains and the rest — are read here and changed on
 /// the page that manages them, which the list says in place of the actions.
 ///

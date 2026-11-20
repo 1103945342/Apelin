@@ -312,7 +312,7 @@ public struct ApprovalPolicy: Sendable, Hashable {
             return .allow(.relaxed)
         }
         guard let command = facts.command else {
-            return .ask(reason: "Apelin could not read this command. Review it before running.", detail: .none)
+            return .ask(reason: "Luros could not read this command. Review it before running.", detail: .none)
         }
         return .ask(
             reason: "Runs as root, with full control of this device. Each command that runs as root needs your approval.",
@@ -479,8 +479,8 @@ public struct ApprovalPolicy: Sendable, Hashable {
         case .fileWrite, .fileEdit, .fileCreate, .memorySave, .memoryDelete, .todoWrite, .conversationPlan:
             return .allow(.notRequired)
 
-        // A banner from Apelin to the user, never a preset to edit away:
-        // it reads, writes and runs nothing, and it shows only while Apelin
+        // A banner from Luros to the user, never a preset to edit away:
+        // it reads, writes and runs nothing, and it shows only while Luros
         // is not in front, plain, bounded and a few per turn
         // (`AgentNoticeRules`). Asking first would defeat it: the user it
         // is for is not looking.
@@ -704,7 +704,7 @@ public struct ApprovalPolicy: Sendable, Hashable {
 
         case .shellRun:
             guard let command = facts.command else {
-                return .ask(reason: "Apelin could not read this command. Review it before running.", detail: .none)
+                return .ask(reason: "Luros could not read this command. Review it before running.", detail: .none)
             }
             if case let .argv(argv) = command,
                let preset = presets.commands.first(where: {
@@ -786,16 +786,16 @@ public struct ApprovalPolicy: Sendable, Hashable {
     }
 
     static func feedbackReason(_ feedback: FeedbackApproval) -> String {
-        "Posts this title and body as a public issue on \(feedback.repository) under your GitHub account, where anyone can read it; Apelin adds its version, the iOS version and the bootstrap below it. Each one needs your approval."
+        "Posts this title and body as a public issue on \(feedback.repository) under your GitHub account, where anyone can read it; Luros adds its version, the iOS version and the bootstrap below it. Each one needs your approval."
     }
 
     static func issueReason(_ issue: IssueCreateApproval) -> String {
-        "Opens this issue on \(issue.repository) under your GitHub account, where everyone who can see that repository can read it; Apelin adds its version, the iOS version and the bootstrap below it. Each one needs your approval."
+        "Opens this issue on \(issue.repository) under your GitHub account, where everyone who can see that repository can read it; Luros adds its version, the iOS version and the bootstrap below it. Each one needs your approval."
     }
 
     static func feedbackEditReason(_ edit: FeedbackEditApproval) -> String {
         let fields: [String] = [edit.title.map { _ in "title" }, edit.body.map { _ in "body" }].compactMap(\.self)
-        return "Replaces the \(fields.joined(separator: " and ")) of issue #\(edit.number) on \(edit.repository), which your GitHub account opened and anyone can read, with the text below; the line Apelin added below the body stays as it is. Each edit needs your approval."
+        return "Replaces the \(fields.joined(separator: " and ")) of issue #\(edit.number) on \(edit.repository), which your GitHub account opened and anyone can read, with the text below; the line Luros added below the body stays as it is. Each edit needs your approval."
     }
 
     static func publishReason(_ publication: PackagePublishApproval) -> String {

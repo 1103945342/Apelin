@@ -5,7 +5,7 @@ import enum ApelinProtocol.AgentToolName
 import Foundation
 
 /// The folders outside the project the read tools reach too, and the write
-/// tools never: Apelin's development extensions, whose support folders hold
+/// tools never: Luros's development extensions, whose support folders hold
 /// the headers and link stubs a template builds with (the Preferences
 /// framework's among them), and the registered SDKs. Both are mobile's to
 /// read: the extensions are the package's, the SDKs apelin-environment's.
@@ -21,7 +21,7 @@ struct ReadOnlyRoots: Sendable {
     /// `<install root>/usr/share/luros/development`; nil without an
     /// install root.
     let developmentExtensions: String?
-    /// The copy Apelin's own package carries inside its app bundle, when it is
+    /// The copy Luros's own package carries inside its app bundle, when it is
     /// there; nil without an install root or with the IDE installed without it.
     let bundledExtensions: String?
     /// The data folder's `SDKs`.
@@ -64,8 +64,8 @@ struct ReadOnlyRoots: Sendable {
     /// neither.
     var described: String? {
         let named = [
-            developmentExtensions.map { "Apelin's development extensions (\($0))" },
-            bundledExtensions.map { "the copy in Apelin's app bundle (\($0))" },
+            developmentExtensions.map { "Luros's development extensions (\($0))" },
+            bundledExtensions.map { "the copy in Luros's app bundle (\($0))" },
             sdks.map { "the registered SDKs (\($0))" },
         ].compactMap(\.self)
         return named.isEmpty ? nil : named.joined(separator: " or ")

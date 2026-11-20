@@ -1,7 +1,7 @@
 import UIKit
 
 extension UIViewController {
-    /// Shows a folder that belongs to Apelin's own storage — an SDK's or a
+    /// Shows a folder that belongs to Luros's own storage — an SDK's or a
     /// toolchain's — in the app's file browser, the page `Browse Files`
     /// opens. Such a folder is under no project, so there is no project root
     /// to hand over: the browser has none to name.

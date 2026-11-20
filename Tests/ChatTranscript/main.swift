@@ -63,7 +63,7 @@ precondition(orphanTool.messages[0].role == .thinking(seconds: 0, tools: 1), "A 
 let notified = ChatTranscript(events: [
     event(1, "toolCall", ["id": .string("n1"), "tool": .string("apelin_notification_send"), "arguments": .string("{\"body\":\"Built.\"}")]),
     event(2, "notice", ["body": .string("Built.")]),
-    event(3, "toolResult", ["id": .string("n1"), "output": .string("Sent to Apelin as a notification.")]),
+    event(3, "toolResult", ["id": .string("n1"), "output": .string("Sent to Luros as a notification.")]),
     event(4, "finished"),
 ]) { _ in nil }.messages
 precondition(notified.count == 1 && notified[0].trace.map(\.text) == ["Send a notification"],

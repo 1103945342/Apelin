@@ -6,7 +6,7 @@ import UIKit
 /// A relay serves names of its own — `cn:deepseek-v4.1-flash`, `claude-opus-5`,
 /// `gpt-6-astra` — and one generic "compatible" mark for every one of them says
 /// nothing about what will answer. The name's words are compared with the
-/// families Apelin draws, so the row shows the model's own mark where the
+/// families Luros draws, so the row shows the model's own mark where the
 /// bundle has one, and the provider's where it does not.
 ///
 /// The art is the official mark of each family, from Simple Icons
@@ -87,7 +87,7 @@ enum ModelBrand: String, CaseIterable {
         UIImage(named: iconName)?.withRenderingMode(.alwaysOriginal)
     }
 
-    /// The family `model` names, nil when its words name none Apelin draws.
+    /// The family `model` names, nil when its words name none Luros draws.
     static func brand(for model: String) -> ModelBrand? {
         let words = model.lowercased().split { !$0.isLetter && !$0.isNumber }.map(String.init)
         guard !words.isEmpty else { return nil }

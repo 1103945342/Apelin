@@ -113,7 +113,7 @@ public struct TransferService: Sendable {
             guard let named = TransferKind(fileName: fileName) else {
                 throw ApelinError(
                     .badRequest,
-                    "Apelin cannot open \(fileName). Choose a toolchain (.apetc), SDK (.apesdk) or project (.apeproj) file.",
+                    "Luros cannot open \(fileName). Choose a toolchain (.apetc), SDK (.apesdk) or project (.apeproj) file.",
                 )
             }
             guard named == manifest.kind else {
@@ -211,7 +211,7 @@ public struct TransferService: Sendable {
     public func prepareExport(_ request: TransferExportRequest) throws -> PreparedExportHandle {
         let createdBy = request.createdBy
             .flatMap { $0.isEmpty || CanonicalPath.containsNUL($0) ? nil : String($0.prefix(120)) }
-            ?? "Apelin (protocol \(Wire.protocolVersion))"
+            ?? "Luros (protocol \(Wire.protocolVersion))"
         var prepared = PreparedExport(kind: request.kind, id: request.id, createdBy: createdBy)
         switch request.kind {
         case .toolchain:
@@ -391,7 +391,7 @@ public struct TransferService: Sendable {
             cleaned.removeFirst()
         }
         cleaned = String(cleaned.prefix(120))
-        return cleaned.isEmpty ? "Apelin" : cleaned
+        return cleaned.isEmpty ? "Luros" : cleaned
     }
 
     // MARK: Import

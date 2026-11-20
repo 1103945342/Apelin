@@ -1,7 +1,7 @@
 import ApelinCore
 import Foundation
 
-// The chat channels Apelin can be reached through: Settings ▸ Plugins signs
+// The chat channels Luros can be reached through: Settings ▸ Plugins signs
 // one in, and its messages run as conversations of a project the reader picks.
 //
 // One channel for now — WeChat, through the ClawBot plugin's iLink bot API
@@ -60,7 +60,7 @@ public struct ChannelState: Codable, Sendable, Equatable {
     /// `Projects/<name>` the conversations live in; nil for a temporary chat.
     public var projectName: String?
     /// What the conversations run under: an approval that is needed is
-    /// answered in Apelin, never in WeChat.
+    /// answered in Luros, never in WeChat.
     public var approvalMode: ApprovalMode
     /// Why the phase is what it is, in words the page can show. Nil when
     /// there is nothing to say.

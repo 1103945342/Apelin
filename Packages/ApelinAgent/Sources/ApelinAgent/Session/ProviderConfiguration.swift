@@ -19,7 +19,7 @@ public enum ProviderConfiguration: Sendable, Hashable, Codable {
     case githubCopilot(model: String)
     /// Any other login kwwk stores, by its store id (`openai-codex`,
     /// `kimi-coding`, `google-api-key`, …), registered by kwwk's own
-    /// `registerStored`, or Apelin's DeepSeek registration. A nil model is
+    /// `registerStored`, or Luros's DeepSeek registration. A nil model is
     /// the provider's own default.
     case stored(storeID: String, model: String?)
     /// A model already registered on kwwk's `APIRegistry` (tests and
@@ -93,7 +93,7 @@ public enum ProviderResolutionError: Error, Equatable, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case let .missingCredentials(id): "No saved sign-in for \(id). Sign in again in Apelin."
+        case let .missingCredentials(id): "No saved sign-in for \(id). Sign in again in Luros."
         case let .unresolved(message, _): message
         }
     }

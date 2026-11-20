@@ -133,7 +133,7 @@ private struct LeafShape: Shape {
     }
 }
 
-/// Apelin's mark, drawn rather than looked up: the widgets carry no image,
+/// Luros's mark, drawn rather than looked up: the widgets carry no image,
 /// and the braces stay crisp at every size. Decorative to VoiceOver.
 struct MarkView: View {
     let size: CGFloat

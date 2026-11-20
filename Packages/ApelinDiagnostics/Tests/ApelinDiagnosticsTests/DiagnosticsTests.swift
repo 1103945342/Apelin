@@ -137,7 +137,7 @@ final class DiagnosticsTests: XCTestCase {
     func testSubsystemGoesToIcliBeforeItsCap() throws {
         let icli = try FakeIcli()
         let result = try Diagnostics(icli: icli).readLogs(LogFilter(subsystem: "com.fluoxetine.luros.hello", duration: 3))
-        // The fixture is icli unfiltered; Apelin's own check still holds.
+        // The fixture is icli unfiltered; Luros's own check still holds.
         XCTAssertEqual(result.entries.map(\.message), ["ApelinHello: alert shown", "ApelinHello: second line"])
         XCTAssertEqual(result.source, .icli)
         XCTAssertFalse(result.truncated)
@@ -295,7 +295,7 @@ final class DiagnosticsTests: XCTestCase {
 
     /// Right after an app switch RunningBoard names no single focal app for
     /// about a second (seen on the iOS 26.4 vphone: readUITree failed at 0
-    /// and 0.5 s after Apelin came to the front, passed from 1 s on). A read
+    /// and 0.5 s after Luros came to the front, passed from 1 s on). A read
     /// waits for the same verified app twice in a row.
     func testTheTreeWaitsForTheForegroundToSettle() throws {
         let icli = try FakeIcli()
@@ -315,8 +315,8 @@ final class DiagnosticsTests: XCTestCase {
     }
 
     /// An action bound to Fila, sent right after Fila was opened, was
-    /// refused while the front went between Fila and Apelin: two reads of
-    /// Apelin settle a plain wait. A settle that expects an app waits for
+    /// refused while the front went between Fila and Luros: two reads of
+    /// Luros settle a plain wait. A settle that expects an app waits for
     /// that one.
     func testASettleThatExpectsAnAppWaitsForIt() throws {
         let icli = try FakeIcli()

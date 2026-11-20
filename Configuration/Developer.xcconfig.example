@@ -6,4 +6,4 @@ CODE_SIGN_STYLE = Automatic
 
 // Set to an App Group provisioned for both app and extension when signing
 // for stock iOS. Jailbreak workflows use the default in Base.
-// APP_GROUP_IDENTIFIER = group.your-team.Apelin
+// APP_GROUP_IDENTIFIER = group.your-team.Luros

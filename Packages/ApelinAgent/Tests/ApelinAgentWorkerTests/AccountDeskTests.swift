@@ -891,7 +891,7 @@ struct AccountDeskTests {
 
     /// The test that fails when kwwk gains a login: every subscription
     /// `OAuthSubscriptions.login` runs has a provider here that signs in by
-    /// a flow (not a typed key). Display order is Apelin's own.
+    /// a flow (not a typed key). Display order is Luros's own.
     @Test
     func `every kwwk subscription has a provider`() {
         for subscription in OAuthSubscriptions.providers {
@@ -906,9 +906,9 @@ struct AccountDeskTests {
 
     /// Every login kwwk can store and register for a session
     /// (`providerDirectory`, the list `registerStored` serves) has a
-    /// provider here; Apelin's own registration adds DeepSeek.
+    /// provider here; Luros's own registration adds DeepSeek.
     @Test
-    func `every stored provider is registered by kwwk or Apelin`() {
+    func `every stored provider is registered by kwwk or Luros`() {
         let kwwk = Set(providerDirectory.map(\.storeId))
         let apelin = Set(AgentProvider.allCases.map(\.storeID))
         #expect(kwwk.subtracting(apelin).isEmpty, "kwwk stores \(kwwk.subtracting(apelin).sorted()) with no provider")

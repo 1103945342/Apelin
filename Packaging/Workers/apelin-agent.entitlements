@@ -5,7 +5,7 @@
 	One agent session. It reads the bundle and container of the app a tweak
 	targets, as the app does, so it carries the same storage pair.
 
-	keychain-access-groups: the provider credentials, Apelin's own items
+	keychain-access-groups: the provider credentials, Luros's own items
 	(service com.fluoxetine.luros.agent) in its own group, this device only and
 	never synchronised. Nothing else shares the group; the credential inbox
 	is read by this executable, so the item is written and read by the same

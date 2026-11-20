@@ -211,7 +211,7 @@ public struct UIActionRequest: OperationRequest {
     public var targetID: String?
     public var action: UIAction
     /// Apps the action may not reach, as a target or in front: the session
-    /// host's to set, never a caller's (Apelin itself for an agent).
+    /// host's to set, never a caller's (Luros itself for an agent).
     /// Absent on the wire when nil.
     public var refusedBundleIDs: [String]?
 

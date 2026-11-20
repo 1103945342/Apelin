@@ -52,13 +52,13 @@ struct FeedbackBackendTests {
         let fixture = try Fixture()
         fixture.host.on(.feedbackRead, reply: FeedbackReadResponse(
             number: 12, url: "https://github.com/owngoal-dev/Apelin/issues/12", title: "T", body: "B",
-            footer: "Sent with Apelin 0.2.7 (18) · iOS 17.3.1 · rootless", author: "someone", state: "open", isAuthor: true,
+            footer: "Sent with Luros 0.2.7 (18) · iOS 17.3.1 · rootless", author: "someone", state: "open", isAuthor: true,
         ))
         let read = try await fixture.backend.readFeedback(FeedbackReadToolRequest(context: fixture.context(), number: 12))
         #expect(fixture.host.requests.map(\.operation) == [.feedbackRead])
         #expect(fixture.host.requests(FeedbackReadRequest.self).first?.number == 12)
         #expect(read.repository == "owngoal-dev/Apelin" && read.issue == 12 && read.openedByUser)
-        #expect(read.body == "B" && read.footer?.hasPrefix("Sent with Apelin") == true)
+        #expect(read.body == "B" && read.footer?.hasPrefix("Sent with Luros") == true)
         func revision(title: String, body: String) -> String {
             FeedbackReadToolResponse(
                 repository: "owngoal-dev/Apelin", issue: 12, url: "", title: title, state: "closed", author: "other",

@@ -256,9 +256,9 @@ final class ServiceTableTests: XCTestCase {
                 _ = try await $0.feedbackStar()
             }
         case .transferExport:
-            return Row(reply: handle) { _ = try await $0.transferExport(kind: .sdk, id: "sdk", createdBy: "Apelin") }
+            return Row(reply: handle) { _ = try await $0.transferExport(kind: .sdk, id: "sdk", createdBy: "Luros") }
         case .transferInspect:
-            let summary = TransferSummary(formatVersion: 1, kind: .sdk, id: "sdk", name: "iPhoneOS 99.0", createdBy: "Apelin", created: Date(timeIntervalSince1970: 0), fileCount: 0, payloadBytes: 0)
+            let summary = TransferSummary(formatVersion: 1, kind: .sdk, id: "sdk", name: "iPhoneOS 99.0", createdBy: "Luros", created: Date(timeIntervalSince1970: 0), fileCount: 0, payloadBytes: 0)
             return Row(reply: TransferInspection(summary: summary, fileSize: 1, importable: true), call: {
                 _ = try await $0.transferInspect(.file(Self.slot), fileName: "x.apesdk", descriptors: [OwnedDescriptor(adopting: open("/dev/null", O_RDONLY))])
             }, descriptors: 1)

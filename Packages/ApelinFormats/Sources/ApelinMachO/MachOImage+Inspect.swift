@@ -4,7 +4,7 @@
 // and minimum versions, rpaths, entry point, symbol table, encryption) are
 // decoded by hand with the same checks, so the module keeps no dependency and
 // may be linked by a privileged process. The bounds checks and the signing
-// identity reader are Fila's; the dyld information is Apelin's own.
+// identity reader are Fila's; the dyld information is Luros's own.
 
 import Foundation
 

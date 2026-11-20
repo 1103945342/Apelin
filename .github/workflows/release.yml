@@ -125,7 +125,7 @@ jobs:
             cp "Documents/Releases/$version.md" "$notes"
           else
             cat > "$notes" <<NOTES
-          Apelin $version, for roothide and for rootless (/var/jb) bootstraps,
+          Luros $version, for roothide and for rootless (/var/jb) bootstraps,
           with its development and agent tool extensions.
 
           SHA-256 sums are in \`SHA256SUMS\`.
@@ -137,5 +137,5 @@ jobs:
             gh release edit "$GITHUB_REF_NAME" --notes-file "$notes"
           else
             gh release create "$GITHUB_REF_NAME" --verify-tag \
-              --title "Apelin $version" --notes-file "$notes" "${files[@]}"
+              --title "Luros $version" --notes-file "$notes" "${files[@]}"
           fi

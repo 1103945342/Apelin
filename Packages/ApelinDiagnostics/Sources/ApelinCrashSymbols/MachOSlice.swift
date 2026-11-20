@@ -16,7 +16,7 @@ public enum MachOReadFailure: Error, Equatable {
 /// out of the bytes with every offset checked against the slice it came from.
 ///
 /// MachOKit parses this shape too, and Xrash uses it for the dyld shared
-/// cache; Apelin does not link it. It would not do here: it takes a URL (we
+/// cache; Luros does not link it. It would not do here: it takes a URL (we
 /// may hold nothing but a descriptor an `ImageOpener` handed over), it maps
 /// the file and trusts it, and its symbol iterator walks the string table by
 /// an index it never bounds-checks. A dSYM arrives from outside; its string

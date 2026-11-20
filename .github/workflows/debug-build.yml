@@ -87,7 +87,7 @@ jobs:
           status=0
           xcodebuild -resolvePackageDependencies \
               -derivedDataPath "$DERIVED_DATA" \
-              -project Apelin.xcodeproj -scheme Apelin >resolve.log 2>&1 || status=$?
+              -project Apelin.xcodeproj -scheme Luros >resolve.log 2>&1 || status=$?
           if [[ "$status" -eq 0 ]]; then
             tail -n 20 resolve.log
             exit 0
@@ -166,7 +166,7 @@ jobs:
             cp "Documents/Releases/$version.md" "$notes"
           else
             {
-              printf 'Apelin %s from commit %s.\n\n' "$version" "$SHA"
+              printf 'Luros %s from commit %s.\n\n' "$version" "$SHA"
               printf 'SHA-256 sums are included in `SHA256SUMS`.\n'
             } > "$notes"
           fi
@@ -204,7 +204,7 @@ jobs:
             created="$(gh api -X POST "$api" \
               -f tag_name="$TAG" \
               -f target_commitish="$SHA" \
-              -f name="Apelin $VERSION" \
+              -f name="Luros $VERSION" \
               -F "body=@$NOTES" \
               -F draft=true 2>&1)" || rc=$?
             if [[ "$rc" != 0 ]]; then
@@ -240,7 +240,7 @@ jobs:
           rc=0
           published="$(gh api -X PATCH "$api/$release_id" \
             -F draft=false \
-            -f name="Apelin $VERSION" \
+            -f name="Luros $VERSION" \
             -F "body=@$NOTES" 2>&1)" || rc=$?
           if [[ "$rc" != 0 ]]; then
             echo "::error::publishing the release was refused (exit $rc): $(printf '%s' "$published" | tr '\n' ' ' | head -c 500)"

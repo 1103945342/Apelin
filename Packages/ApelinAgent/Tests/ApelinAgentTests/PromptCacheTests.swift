@@ -6,7 +6,7 @@ import KWWKAI
 import Testing
 
 /// A provider caches a conversation as a prefix: the tools, then the system
-/// prompt, then the messages. These hold Apelin's half of that: what a
+/// prompt, then the messages. These hold Luros's half of that: what a
 /// session sends stays the same bytes from one request to the next, and
 /// grows only at the end.
 @Suite("Prompt caching")

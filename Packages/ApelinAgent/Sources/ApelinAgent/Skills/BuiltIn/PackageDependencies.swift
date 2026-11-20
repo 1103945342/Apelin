@@ -25,7 +25,7 @@ extension BuiltInSkills {
         `{"argv": ["irisin-cli", "install", "--yes", "<package id>"], "root": true}`.
         `irisin-cli` installs only as root (as mobile it exits 77), and
         `--yes` because nothing can answer a prompt. It comes with the Irisin
-        package, which Apelin does not carry — Apelin brings only `irisind`,
+        package, which Luros does not carry — Luros brings only `irisind`,
         the daemon behind it. When shell_run cannot find `irisin-cli`, the
         device has no Irisin: say so and let the user install Irisin, or that
         dependency through their own package manager, before going on. Never

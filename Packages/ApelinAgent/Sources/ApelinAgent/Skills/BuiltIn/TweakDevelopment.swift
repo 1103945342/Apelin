@@ -1,7 +1,7 @@
 extension BuiltInSkills {
     static let tweakDevelopment = SkillDocument(
         name: "apelin-tweak-development",
-        description: "Writing and changing a tweak in an Apelin project: layout, hooks, filters, the on-device toolchain and SDK, and the edit-build loop.",
+        description: "Writing and changing a tweak in an Luros project: layout, hooks, filters, the on-device toolchain and SDK, and the edit-build loop.",
         body: """
         # Tweak development on the device
 
@@ -26,9 +26,9 @@ extension BuiltInSkills {
           (`Filter.Executables`). SpringBoard is `com.apple.springboard`.
         - Read the template's files before writing new ones; keep its naming.
         - `apelin-icon.png`, beside `luros-project.json`, is the project's
-          icon in Apelin: a square PNG, 1024 points or less. Write it when the
-          user asks for an icon; without it Apelin shows its kind's default.
-          It is Apelin's alone and never goes into the package.
+          icon in Luros: a square PNG, 1024 points or less. Write it when the
+          user asks for an icon; without it Luros shows its kind's default.
+          It is Luros's alone and never goes into the package.
         - A path in code, a maintainer script or a plist is spelled as the
           apelin-bootstrap-paths skill says; logging is the apelin-tweak-runtime skill's.
 
@@ -71,7 +71,7 @@ extension BuiltInSkills {
           never by a string.
 
         ## Theos and Logos
-        Apelin does not build Theos projects: there is no Logos preprocessor
+        Luros does not build Theos projects: there is no Logos preprocessor
         and no Theos makefile system, and an Objective-C product compiles
         only `.m` and `.c` files (no `.x`, `.xm`, `.mm` or C++). Never
         download or vendor Theos. Rewrite a Theos tweak instead, keeping its

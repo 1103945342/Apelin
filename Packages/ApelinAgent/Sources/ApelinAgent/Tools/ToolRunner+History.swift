@@ -44,7 +44,7 @@ extension ToolRunner {
     ) throws -> ForcePushPlan {
         let branch = comparison.branch
         if let url = target.url, url != comparison.pushURL {
-            let actual = comparison.pushURL ?? "an address Apelin does not push to"
+            let actual = comparison.pushURL ?? "an address Luros does not push to"
             throw GitToolFailure(message: "Nothing was pushed: \(target.remote) pushes to \(actual), not \(url). A forced push goes to the remote as the project has it: name the remote that points to \(url), or leave url out.")
         }
         guard let expected = comparison.remote else {
@@ -54,7 +54,7 @@ extension ToolRunner {
             return .unforced("\(target.remote)'s \(branch), at \(ApprovalPolicy.shortCommit(expected)), is already part of this \(branch), so nothing on it is lost: it is pushed without force.")
         }
         guard let pushURL = comparison.pushURL else {
-            throw GitToolFailure(message: "Nothing was pushed: \(target.remote) does not push to an HTTPS address, which is the only kind Apelin pushes to.")
+            throw GitToolFailure(message: "Nothing was pushed: \(target.remote) does not push to an HTTPS address, which is the only kind Luros pushes to.")
         }
         return .force(ForcePushApproval(
             projectID: projectID,

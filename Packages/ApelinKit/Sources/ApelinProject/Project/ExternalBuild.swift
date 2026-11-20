@@ -27,7 +27,7 @@ public enum Workspace {
 /// A workspace's own build (owner, 2026-10-23): the script apelin-build runs
 /// for it, declared under `external` in its `luros-project.json`. The
 /// repository keeps its own way of building — a Makefile, a shell script —
-/// and Apelin takes from there the one `.deb` the script writes into
+/// and Luros takes from there the one `.deb` the script writes into
 /// `APELIN_PACKAGE_DIR`: checked, registered as the build's artifact, and
 /// installed through the session host's bridge like any other.
 ///

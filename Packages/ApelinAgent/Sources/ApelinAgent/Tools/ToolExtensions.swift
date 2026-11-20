@@ -78,7 +78,7 @@ struct ToolExtensionOffer: Sendable, Equatable {
                 return "is not a name every model provider takes: lowercase letters, digits and single underscores, a letter first, at most 64"
             }
             if AgentToolName.canonical(tool.name) != nil {
-                return "is the name of one of Apelin's own tools"
+                return "is the name of one of Luros's own tools"
             }
             if tool.parameters["properties"]?[ToolReason.key] != nil {
                 return "takes an argument named \(ToolReason.key), which every call carries for the user"
@@ -110,7 +110,7 @@ struct ToolExtensionOffer: Sendable, Equatable {
         return ToolExtensionOffer(extensions: extensions, leftOut: leftOut)
     }
 
-    /// `AgentToolNameTests`' rule for Apelin's own tools: `[a-z0-9_]`, a
+    /// `AgentToolNameTests`' rule for Luros's own tools: `[a-z0-9_]`, a
     /// letter first, no `__` (kwwk's MCP spelling) and no `_` at the end,
     /// at most 64.
     static func isProviderSafe(_ name: String) -> Bool {

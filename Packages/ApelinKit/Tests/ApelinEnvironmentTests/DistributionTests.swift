@@ -200,7 +200,7 @@ final class DistributionTests: XCTestCase {
         XCTAssertTrue(FileManager.default.isExecutableFile(atPath: root.appendingPathComponent("scripts/update-repository.sh").path))
         XCTAssertEqual(try commits(in: bare), ["Set up the package repository"])
         let status = try GitService(layout: fixture.home.layout).status(GitStatusRequest(projectID: "packages"))
-        XCTAssertEqual(status.entries, [], "Apelin's own files stay out of the repository")
+        XCTAssertEqual(status.entries, [], "Luros's own files stay out of the repository")
 
         let pages = fixture.github.requests.filter { $0.path == "/repos/someone/packages/pages" && $0.method == "POST" }
         XCTAssertEqual(pages.first?.body?["build_type"] as? String, "workflow")
@@ -339,7 +339,7 @@ final class DistributionTests: XCTestCase {
         XCTAssertEqual(try String(contentsOf: root.appendingPathComponent("sileo-featured.json"), encoding: .utf8), "{\"banners\": []}\n",
                        "the user's banners stay")
         XCTAssertEqual(try String(contentsOf: root.appendingPathComponent("debs/a_1_iphoneos-arm64.deb"), encoding: .utf8), "deb\n")
-        XCTAssertEqual(try commits(in: bare), ["Update the package repository from Apelin's template", "Old template"])
+        XCTAssertEqual(try commits(in: bare), ["Update the package repository from Luros's template", "Old template"])
 
         // already up to date: nothing to commit
         _ = try await fixture.service.link(DistributionRepositoryLinkRequest(fullName: "someone/apt", overwrite: true), reporter: .silent)

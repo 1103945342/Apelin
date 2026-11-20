@@ -10,7 +10,7 @@ enum FileBrowserAccess: Equatable {
     case writable
     /// Readable, and nothing more.
     case readOnly(FileBrowserReadOnly)
-    /// One of Apelin's own records: reading is the point, and its changes
+    /// One of Luros's own records: reading is the point, and its changes
     /// belong to the page that manages it.
     case record(FileBrowserProtectedRecord)
 
@@ -38,13 +38,13 @@ enum FileBrowserReadOnly: Equatable {
 
     var sentence: String {
         switch self {
-        case .denied: return String(localized: "This place is read-only for Apelin.")
+        case .denied: return String(localized: "This place is read-only for Luros.")
         case .brokenLink: return String(localized: "This link leads nowhere.")
         }
     }
 }
 
-/// Apelin's own records, grouped by the page that changes them.
+/// Luros's own records, grouped by the page that changes them.
 ///
 /// Reading one is the point — knowing where a toolchain or an SDK sits is why
 /// a file browser is here at all. Making, renaming and deleting them belongs to
@@ -64,7 +64,7 @@ enum FileBrowserProtectedRecord: Equatable {
     case toolchains
     /// `Environment/`, and the `inbox` the environment tasks stage into.
     case environment
-    /// Apelin's own installed parts: the extensions and agent tools under
+    /// Luros's own installed parts: the extensions and agent tools under
     /// `usr/share/luros`, the runtime under `usr/libexec/luros`.
     case applicationPayload
     case chats
@@ -83,17 +83,17 @@ enum FileBrowserProtectedRecord: Equatable {
     /// What the page shows in place of a file browser's actions.
     var sentence: String {
         switch self {
-        case .dataFolder: return String(localized: "This is Apelin’s data folder; the app keeps its records here.")
+        case .dataFolder: return String(localized: "This is Luros’s data folder; the app keeps its records here.")
         case .projects: return String(localized: "Projects are made, renamed and deleted in Projects.")
         case .projectManifest: return String(localized: "This project’s description is managed by Projects, and is read-only here.")
         case .sdks: return String(localized: "SDKs are managed in Settings ▸ SDKs.")
         case .toolchains: return String(localized: "Toolchains are managed in Settings ▸ Toolchains.")
         case .environment: return String(localized: "The environment’s records are managed in Settings ▸ Toolchains.")
-        case .applicationPayload: return String(localized: "This is part of Apelin itself; it is installed and removed with the app.")
+        case .applicationPayload: return String(localized: "This is part of Luros itself; it is installed and removed with the app.")
         case .chats: return String(localized: "Conversations are managed in their own chats.")
         case .sessions: return String(localized: "Session records are kept by the agent host.")
         case .terminals: return String(localized: "Terminal sessions are listed in the terminal; the app keeps this record.")
-        case .journal: return String(localized: "This is Apelin’s own journal.")
+        case .journal: return String(localized: "This is Luros’s own journal.")
         case .builds: return String(localized: "Builds are managed on the project’s Distribute page.")
         case .skills: return String(localized: "Skills are managed in Settings ▸ Skills.")
         case .console: return String(localized: "Console scripts are run and removed by the console.")
@@ -160,7 +160,7 @@ struct FileBrowserPolicy: Equatable {
         self.roots = roots
     }
 
-    /// The folders Apelin installed inside the bootstrap, each named by the
+    /// The folders Luros installed inside the bootstrap, each named by the
     /// page that manages it. Read at run time off the root the app's own path
     /// carries: the toolchains' payload is under `usr/lib/apelin/toolchains`
     /// (the catalog under the data folder is only the record), and the app's

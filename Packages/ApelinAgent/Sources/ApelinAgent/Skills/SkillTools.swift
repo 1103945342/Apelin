@@ -102,7 +102,7 @@ struct SkillTools {
             throw ToolArgumentError("No skill is named \(name); apelin_skill_list names them.")
         }
         guard skill.isUserSkill, let location = skill.location else {
-            throw ToolArgumentError("\(name) is built into Apelin and cannot be removed.")
+            throw ToolArgumentError("\(name) is built into Luros and cannot be removed.")
         }
         return SkillChangeApproval(action: "remove", name: name, location: location, replacing: false, text: nil)
     }

@@ -1,7 +1,7 @@
 # Bundled notices
 
 Settings → About → Licenses lists every notice the app ships under, with the
-full text a push away. Apelin's own code is MIT; third-party code keeps its
+full text a push away. Luros's own code is MIT; third-party code keeps its
 own license.
 
 `Scripts/collect-licenses.py` runs offline as the app target's last build
@@ -38,7 +38,7 @@ code that does not ship.
 The app's dependencies (owner, 2026-10-17): DisplayLink, ListViewKit,
 Litext, MarkdownView (with SwiftMath, swift-cmark, LRUCache and
 swift-collections), libghostty-spm, and Runestone, vendored from source in
-`Packages/Runestone` with only the grammars Apelin highlights. Runestone's
+`Packages/Runestone` with only the grammars Luros highlights. Runestone's
 notices have folders here, each the same text as the `LICENSE` beside the
 vendored source (`make check` compares them): `Runestone`, `tree-sitter`
 (the runtime), `TreeSitterLanguages` (the queries) and one

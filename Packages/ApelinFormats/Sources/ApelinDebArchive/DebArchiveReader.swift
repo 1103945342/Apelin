@@ -11,7 +11,7 @@ import ApelinDebian
 import ArchiveKit
 import Foundation
 
-/// libarchive over the shapes Apelin reads: the `control` member of a `.deb`,
+/// libarchive over the shapes Luros reads: the `control` member of a `.deb`,
 /// a `.deb`'s full listing, and any compressed stream.
 ///
 /// One library for every filter (gzip, bzip2, xz, lzma, zstd, lz4) and the
@@ -31,7 +31,7 @@ public enum DebArchiveReader {
         case symbolicLink(target: String)
         /// A hard link to another member, by its absolute path.
         case hardLink(target: String)
-        /// A FIFO, device or socket: listed, never something Apelin writes.
+        /// A FIFO, device or socket: listed, never something Luros writes.
         case other(fileType: UInt32)
     }
 

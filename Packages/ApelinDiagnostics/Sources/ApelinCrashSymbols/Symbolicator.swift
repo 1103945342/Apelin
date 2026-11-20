@@ -23,7 +23,7 @@ public struct SymbolicationProgress: Sendable {
 
 /// Fills in the frames of a report. Per image, by UUID, first hit wins:
 /// the project dSYM → the binary on disk → the name Apple already wrote →
-/// left as it is. (Apelin: Xrash's extracted-system-symbols step is not
+/// left as it is. (Luros: Xrash's extracted-system-symbols step is not
 /// ported; see SymbolStores.swift.)
 /// A pure function of (report, stores): the same inputs give the same report.
 public actor Symbolicator {

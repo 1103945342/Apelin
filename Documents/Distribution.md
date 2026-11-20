@@ -28,7 +28,7 @@ the build made it.
 A package repository is an APT source in a GitHub repository of the user's,
 indexed by GitHub Actions and served by GitHub Pages at
 `https://<owner>.github.io/<name>/`. Settings ▸ Git ▸ Publishing (or the
-GitHub welcome page) creates one from Apelin's template, laid out after
+GitHub welcome page) creates one from Luros's template, laid out after
 owngoal-dev/owngoal-packages, or links one the user has, adding what the
 template has and it lacks. Its clone is a workspace project, which its own
 conversation maintains (the agent's `apelin-package-repository` skill).
@@ -99,7 +99,7 @@ the same.
 A workspace keeps its own build: Build runs its script once for the chosen
 target, with `APELIN_CONFIGURATION=release` and that target's
 `APELIN_BOOTSTRAP`, `APELIN_ARCHITECTURE` and `APELIN_PREFIX`, whatever this
-device runs. Its script writes the one `.deb`; Apelin reads its control file,
+device runs. Its script writes the one `.deb`; Luros reads its control file,
 requires the target's architecture and registers it as for any build. There is
 no description to check before, so `apelin_project_check_distribution` and the first page
 only say whether the script is declared. The release build reads the package it

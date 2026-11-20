@@ -4,7 +4,7 @@
 
 ## 要解决的问题
 
-Apelin 安装 Command Line Tools 27.0 时，Irisin 在 preparing 阶段报错：
+Luros 安装 Command Line Tools 27.0 时，Irisin 在 preparing 阶段报错：
 
 ```text
 Installation stopped: Unknown statoverride account
@@ -17,7 +17,7 @@ Installation stopped: Unknown statoverride account
 ## 已确认的证据
 
 - 复现设备：vphone Kiwi。不要将这些观察直接套用到用户的另一台 iPhone。
-- Apelin 的工具链已完成打包，失败发生在 Irisin 的安装准备阶段，不是下载或打包失败。
+- Luros 的工具链已完成打包，失败发生在 Irisin 的安装准备阶段，不是下载或打包失败。
 - 设备全局权限覆盖表 `/Library/dpkg/statoverride` 原有以下两条记录：
 
   ```text
@@ -55,7 +55,7 @@ guard let uid, let gid else {
 
 ## 本次失败日志
 
-Apelin 环境任务 ID：
+Luros 环境任务 ID：
 
 ```text
 0f9a054c-9bbf-49f2-bb21-a3d3676b0c3a
@@ -84,7 +84,7 @@ Apelin 环境任务 ID：
 
 安装事务 ID：`d7af9832-1d16-4f7f-9faa-ac6d1b8b09e1`
 
-Apelin installation ID：`80cc46ea-15a6-454d-982d-f15f7473939b`
+Luros installation ID：`80cc46ea-15a6-454d-982d-f15f7473939b`
 
 目标包：`com.fluoxetine.luros.toolchain.b7c9ecde91f0cca89ea0594f`
 
@@ -129,7 +129,7 @@ Apelin installation ID：`80cc46ea-15a6-454d-982d-f15f7473939b`
 ## 工作约束
 
 - 接手后先读取 Irisin 仓库自身的 AGENTS.md，再决定实现和验证方式。
-- 不需要继续处理本会话的 Apelin UI 排版清单；用户正在逐项决策，那些建议未获批量修改授权。
-- Apelin 工作区有大量尚未提交的 UI 改动，保持原样；本交接没有授权提交或推送。
+- 不需要继续处理本会话的 Luros UI 排版清单；用户正在逐项决策，那些建议未获批量修改授权。
+- Luros 工作区有大量尚未提交的 UI 改动，保持原样；本交接没有授权提交或推送。
 - 用户不希望 UI 小改动运行全量测试；本问题涉及安装器权限处理，应按实际修复范围选择有针对性的验证。
 - 不在交接文档、日志或提交中保存设备凭据。

@@ -2,7 +2,7 @@ import ApelinCore
 import ApelinProtocol
 import Foundation
 
-/// How Apelin writes `luros-project.json` (Documents/Schemas/README.md ▸
+/// How Luros writes `luros-project.json` (Documents/Schemas/README.md ▸
 /// Written form): two spaces a level, one member or element a line,
 /// members in the order they were written, strings with only the escapes
 /// JSON requires, `\n` line ends and one after the document. Every writer

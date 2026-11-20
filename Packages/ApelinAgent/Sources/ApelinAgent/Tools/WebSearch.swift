@@ -23,7 +23,7 @@ struct WebSearch: Sendable {
         configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
         configuration.timeoutIntervalForRequest = TimeInterval(Self.timeoutSeconds)
         configuration.httpAdditionalHeaders = [
-            "User-Agent": "Apelin",
+            "User-Agent": "Luros",
             "Accept": "application/json, text/event-stream",
         ]
         session = URLSession(configuration: configuration, delegate: nil, delegateQueue: nil)

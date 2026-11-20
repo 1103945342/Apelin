@@ -1,7 +1,7 @@
 # Device validation
 
 What the milestone 1 data layer has been proven to do on a device, where,
-and what is still to run. Every Apelin step below ran through the console
+and what is still to run. Every Luros step below ran through the console
 (`Documents/Console.md`): a script dropped into
 `~/Documents/com.fluoxetine.luros/console/inbox/`, the app brought to the front,
 the result read from `console/out/<runID>.jsonl`. Since 2026-10-18 that is
@@ -11,7 +11,7 @@ output in `build/Device/<vphone>/`. Those milestone-1 runs exercised the
 console while the UI was a scaffold; later UI validation is recorded in the
 dated sections below.
 
-"Product path" means the step went through Apelin's own operations end to
+"Product path" means the step went through Luros's own operations end to
 end, with irisind doing every install and removal. Nothing in the current
 results was registered or installed by hand.
 
@@ -23,14 +23,14 @@ iPhone vphone (▸ Other Command Line Tools releases).
 
 ## Devices
 
-| Name | System | Bootstrap | Beside Apelin |
+| Name | System | Bootstrap | Beside Luros |
 |---|---|---|---|
 | iOS 26.4 iPhone vphone | iOS 26.4 | roothide | Irisin 4.7.0, ElleKit 1.2-1, icli 0.9.0, SDK iPhoneOS 26.4 |
 | iOS 27.0.1 iPhone vphone | iOS 27.0.1 | roothide | Irisin 4.7.0, ElleKit 1.2-1, icli 0.9.0, SDK iPhoneOS 27.0 |
 | iOS 27.0.1 iPad vphone | iOS 27.0.1 | roothide | Irisin 4.7.1, ElleKit 1.2-1, SDK iPhoneOS 27.0 |
 | iOS 26.6.2 iPhone vphone | iOS 26.6.2 | roothide | Irisin 4.7.2, ElleKit 1.2-1, SDK iPhoneOS 27.0 and 18.5 |
 
-Packages under test: Apelin (`make deb-roothide`), the app, CLI and tweak
+Packages under test: Luros (`make deb-roothide`), the app, CLI and tweak
 development extensions (`make deb-extensions`) and the agent tools
 (`make deb-agent-tools`). The preference bundle extension depends on
 preferenceloader, which no vphone has. Nothing here is a result for
@@ -118,10 +118,10 @@ Each was fixed with a test before the results above.
    `try? await Task.sleep` and cancelled the finished reader, and the runner
    read `isCancelled` after it had. The watchdog now answers whether it
    fired. It never reproduced on a Mac.
-7. On the iPad, bringing Apelin to the front through Settings left Settings
+7. On the iPad, bringing Luros to the front through Settings left Settings
    beside it with the focus (iPadOS 26 windowing): the UI tree read
    Settings, `diagnostics.json`'s tap at (4, 4) hit Settings' window close
-   control, and Apelin was suspended with its load-check follow stalled.
+   control, and Luros was suspended with its load-check follow stalled.
    The harness now quits an idle app and launches it, brings a stalled app
    back to the front, and the script taps (200, 4).
 8. `r1-resume-sdk-import.json` expected the import to be still `running` 20 s
@@ -129,7 +129,7 @@ Each was fixed with a test before the results above.
    took 4 s. The final `succeeded` and the `resumed` event prove the resume,
    so that expect is gone.
 9. On both real devices every toolchain record outlived its package: all
-   twelve packages had been removed from outside Apelin, and roothide's
+   twelve packages had been removed from outside Luros, and roothide's
    package removal leaves each folder behind with the `.jbroot` link it
    puts there. `toolchainStatus` reported the empty trees as healthy and
    `toolchainRemove` refused them forever ("no longer installed"), since
@@ -185,7 +185,7 @@ console now goes on after a restart only past a successful respring.
 
 - icli's `app frontmost`, `log crashes` and `log crash` answer
   `device_locked` while the screen is locked (icli's own lock policy;
-  `log syslog` still runs). Apelin's worker links IcliKit and does not go
+  `log syslog` still runs). Luros's worker links IcliKit and does not go
   through that gate.
 - An interrupted toolchain setup leaves its job record and
   `Environment/staging/<taskID>/` until the next setup of the same source,
@@ -251,7 +251,7 @@ console now goes on after a restart only past a successful respring.
       written into its root by hand, which runs ad hoc code, showed the
       refusal). On an iPhone running roothide Bootstrap (iOS 15–17.0):
       Settings ▸ Toolchains lists every release struck through, and a
-      tap says Apelin cannot build there; the welcome page's Build Tools
+      tap says Luros cannot build there; the welcome page's Build Tools
       says the same; nothing downloads. Then, as the reporter did, an
       ad hoc-signed copy of a bootstrap binary is killed, so the refusal
       still stands on that Bootstrap version.
@@ -283,11 +283,11 @@ console now goes on after a restart only past a successful respring.
       the template's digests did not. A new project, a workspace, a
       rename and apelin_project_set_environment each write it formatted.
 
-- [ ] Open in Apelin for a repository (2026-10-31, issue #31; only the
+- [ ] Open in Luros for a repository (2026-10-31, issue #31; only the
       Mac harness's `Tests/ApelinLink` and a node run of the landing
       page's checks have run). After `make vphone` (iPhone and iPad):
       from a README, `https://owngoal-dev.github.io/Apelin/open/?url=…`
-      shows the repository and Open in Apelin opens the sheet filled in,
+      shows the repository and Open in Luros opens the sheet filled in,
       with the app cold and running; Import makes the project, clones it
       on the progress card and opens it on a new conversation that sends
       nothing; Cancel on the sheet makes nothing and Cancel on the card
@@ -297,7 +297,7 @@ console now goes on after a restart only past a successful respring.
       second tap of the same link brings nothing new up and another
       link's says an import is under way; a repository imported before
       offers Open; a link during the welcome is shown once it finishes;
-      the page without Apelin installed explains how to get it and copies
+      the page without Luros installed explains how to get it and copies
       the address.
 
 - [ ] A forced push with a lease (2026-10-31, issue #29; the Mac only so
@@ -544,7 +544,7 @@ console now goes on after a restart only past a successful respring.
       Git, and nothing is posted. Signed in, under Strict: the card names
       owngoal-dev/Apelin and shows the whole title and body, offers no
       "for this session", and Approve posts one issue whose footer reads
-      "Sent with Apelin <version> (<build>) · iOS <version> · <bootstrap>"
+      "Sent with Luros <version> (<build>) · iOS <version> · <bootstrap>"
       on a roothide and a rootless device, with the installed version;
       the model hands back the issue's link. In Relaxed too, the agent
       first shows the title and body and asks, and calls
@@ -576,7 +576,7 @@ console now goes on after a restart only past a successful respring.
       apelin_git_create_issue only after 同意 or 确定, in Relaxed too;
       under Strict the card shows the repository, title and body and offers
       no "for this session". The issue opens there, with the footer "Sent
-      with Apelin <version> (<build>) · iOS <version> · <bootstrap>", and
+      with Luros <version> (<build>) · iOS <version> · <bootstrap>", and
       the model hands back its number and link. With issues turned off on
       the repository, and for a repository the account cannot see, the
       agent says what blocks it and posts nothing elsewhere, opens no
@@ -590,7 +590,7 @@ console now goes on after a restart only past a successful respring.
       the first nine builds that succeed after that (agent builds and
       distribution builds alike; failed builds and a reopened
       conversation's replay add none) ask nothing, the tenth asks "Do You
-      Like Apelin?" with Maybe Later on the left and Star Now on the
+      Like Luros?" with Maybe Later on the left and Star Now on the
       right, in Chinese 下次一定 and 立即标记. Maybe Later asks again ten
       builds later, on another day, and after the third time never again;
       Star Now stars the repository on that account, says Thank You and
@@ -628,11 +628,11 @@ console now goes on after a restart only past a successful respring.
       more than a tweak's filter holds: if it does anything but ask, the reply
       says plainly what it did instead (fewer apps, say) and what is left,
       as the prompt's `# Responses` asks.
-- [ ] An agent kept off Apelin's own screen, and a repository imported
+- [ ] An agent kept off Luros's own screen, and a repository imported
       from any chat (2026-10-29, AGENTS.md ▸ Diagnostics and ▸ Agent
       sessions; none of it has run on a device; needs a model provider).
-      With Apelin in front, apelin_screen_interact's tap, swipe and typed
-      text are refused, nothing on Apelin's screen changing, in Relaxed,
+      With Luros in front, apelin_screen_interact's tap, swipe and typed
+      text are refused, nothing on Luros's screen changing, in Relaxed,
       in Full and in Strict after Approve; target_id com.fluoxetine.luros is
       refused too; with Settings in front the same tap goes through; the
       console's `diagnostics` script, whose tap is the app's, still runs.
@@ -665,7 +665,7 @@ console now goes on after a restart only past a successful respring.
       project's chat naming the i3 chain tweak's installation and project;
       apelin_package_remove with only `package_id` there, the Strict card
       naming the package, version and project, then the package gone; a
-      stale installation id refused before asking, with what Apelin can
+      stale installation id refused before asking, with what Luros can
       remove instead; a toolchain listed as not the agent's and its
       removal refused.
 - [ ] A turn the network failed (2026-10-29, AGENTS.md ▸ Agent sessions
@@ -720,7 +720,7 @@ console now goes on after a restart only past a successful respring.
       AGENTS.md ▸ Install bridge; none of it has run on a device). Build
       and install a tweak, change its `package.id`, build and install
       again: the install fails with "<dylib> already belongs to <old id>
-      <version>, which Apelin installed (installation <id>). Remove that
+      <version>, which Luros installed (installation <id>). Remove that
       installation first, then install again." and Irisin's own words
       after it; the agent's apelin_package_install result carries
       `conflicts` with that `installationID`, apelin_package_remove of it
@@ -801,7 +801,7 @@ console now goes on after a restart only past a successful respring.
       `https://<owner>.github.io/<name>/` added in Sileo and Irisin; Link of
       an existing repository; a release build's Publish to Package
       Repository showing the package in the source within ten minutes.
-- [ ] Apelin's own files out of git, and a first push (2026-10-29; the Mac
+- [ ] Luros's own files out of git, and a first push (2026-10-29; the Mac
       only so far: `GitRemoteServiceTests`, `GitBackendTests`,
       `GitToolTests`). On a device: a new project's `.git/info/exclude`; a
       chat that sent an image, in a project made before, whose `git_status`
@@ -865,7 +865,7 @@ console now goes on after a restart only past a successful respring.
       (no iphoneos compatibility libraries). Swift on both vphones is
       covered by the matrix below.
 - [ ] A project packaged and installed with an older toolchain against
-      its SDK. Setup through Apelin and Irisin, plus compiler probes, is
+      its SDK. Setup through Luros and Irisin, plus compiler probes, is
       covered on all four hosts by the matrix below.
 - [ ] A live agent session with a Copilot credential (the agent loop itself
       ran with DeepSeek on the iOS 26.4 vphone): `agent.json` past
@@ -900,7 +900,7 @@ console now goes on after a restart only past a successful respring.
       `transfer-project` on both vphones, `transfer-toolchain` by name on a
       roothide one (the export undoes RootHide's runtime brand), then a
       toolchain and an SDK exported on one device and imported on the other
-      through AirDrop or Files and Open in Apelin (the toolchain installed
+      through AirDrop or Files and Open in Luros (the toolchain installed
       through Irisin and self-tested there), a roothide export imported on a
       rootless bootstrap, and a project's import followed by a build under
       Confirm, which must ask.
@@ -933,8 +933,8 @@ console now goes on after a restart only past a successful respring.
       several checks then Send for a multiple one, Send disabled until one
       is checked; Other… with typed text, and with nothing typed sending
       nothing; Skip; the "Answer Needed" banner with the question while
-      Apelin is in the background, its tap opening the conversation; the
-      card still there after Apelin is closed and opened again; Stop while
+      Luros is in the background, its tap opening the conversation; the
+      card still there after Luros is closed and opened again; Stop while
       it waits; VoiceOver reading each option as one button, checked ones
       selected; Arabic laying the checks out on the right.
 - [ ] The renamed tools (2026-10-24): a conversation recorded on build 37,
@@ -1040,7 +1040,7 @@ console now goes on after a restart only past a successful respring.
       session host by its `session.pid` (`Scripts/device.py kill-host`),
       then send a message in that chat. The last user message of
       `$DATA/sessions/<id>/transcript.json` (fetched as for Prompt
-      caching) has, inside its `<system-state>`, "Apelin's background
+      caching) has, inside its `<system-state>`, "Luros's background
       service has restarted since this conversation last ran" with the
       install root now; the bubble, the title and an
       `apelin_conversation_read` of the chat show none of it, and the agent
@@ -1164,7 +1164,7 @@ Build 27, roothide, using the enabled `owngoal-dev/iOS-SDKs` source. Each
 C-family entry compiles, links, generates a matching dSYM, signs and runs C,
 C++ (`iostream` and `vector`) and Objective-C (`Foundation`) for arm64 and
 arm64e on that device. The deployment target is iOS 16.0. Toolchain entries
-install through Apelin and Irisin, then use their selected compatible SDK;
+install through Luros and Irisin, then use their selected compatible SDK;
 SDK entries import that branch and use one compatible, validated CLT.
 Clang modules are off, as required on the A12Z.
 
@@ -1172,7 +1172,7 @@ Tests run as mobile, one environment task or compiler probe at a time per
 device. They include storage checks and stop on a first failure. No tweak
 injection, respring, reboot, bootstrap-core change or system-configuration
 edit is part of this matrix. Installed environments remain available; the
-raw events, probe results and matching Apelin dSYMs are retained locally
+raw events, probe results and matching Luros dSYMs are retained locally
 under `build/Validation/`. After their first execution, all eleven C-family
 products on every device are checked again against their original manifests
 and repeat all six cases with the runtime-brand-aware verifier. Only the
@@ -1327,7 +1327,7 @@ marks an unrun device checklist item as passed.
 
 ## Real devices: every release and SDK (2026-10-21)
 
-Two of the owner's devices, both roothide, both with Apelin build 29,
+Two of the owner's devices, both roothide, both with Luros build 29,
 Irisin 4.7.2 and icli 0.9.2, neither with the development extensions:
 
 | Device | System | CPU features (`hw.optional.arm`) | `__libcpp_verbose_abort` | Injection |
@@ -1342,7 +1342,7 @@ removed with `toolchainRemove`; both devices end with no toolchain
 package and an empty registry. The extra cases: the CLI template's
 `main.m` (`cli-objc`, arm64 and arm64e, run), a C++ program with
 `<map>`/`<string>` (arm64, arm64e), `@import Foundation` with
-`-fmodules` (clang modules, which Apelin's builds do not use), and the
+`-fmodules` (clang modules, which Luros's builds do not use), and the
 tweak template's `Tweak.m`, unchanged, built into an arm64e dylib against
 the roothide substrate stub with the template's flags and `dlopen`ed by a
 loader (the `@loader_path/.jbroot` link emulated beside it), which must
@@ -1543,7 +1543,7 @@ Which Swift each kept package ships, read from Apple's own payload
 | 14.2 | 5.7.2 (swiftlang-5.7.2.135.5) | macOS 10.14.6, SDK 13.0 | none | none / none |
 
 Each Swift tree was then made on the device by the probe (Swift
-component), packed as a local deb and installed through Apelin's bridge
+component), packed as a local deb and installed through Luros's bridge
 (a tree in the data folder cannot map its own dylibs), self-tested in
 place as mobile, and removed through the bridge. The A12Z ran a research
 build with the Swift CPU gate lowered to LRCPC, to see what the CPU does.
@@ -1556,7 +1556,7 @@ build with the Swift CPU gate lowered to LRCPC, to see what the CPU does.
 
 So 15.3 offers Swift 5.10, and 15.0's and 15.3's Swift no longer require
 SHA3: their two SHA3 sites are BLAKE3's hash_many (compile caching, which
-Apelin does not enable) and the symbol-graph edge set
+Luros does not enable) and the symbol-graph edge set
 (`-emit-symbol-graph`), and the A12Z built the SDK's modules and every
 case without reaching either. 16.4's Swift is not offered and the catalog
 says why: no iOS runtime exports the zippered check, the rename 27.0 uses
@@ -1582,7 +1582,7 @@ measured limit; iOS 16 remains unverified for Swift.
 Commit `35d67e0` was packaged as the roothide build 50 and installed over
 the existing app on the running iOS 27.0.1 and iOS 26.6.2 vphones. Both
 installers completed successfully; `apps.info` reported build 50 and
-`apps.foreground` independently verified Apelin in the foreground on each.
+`apps.foreground` independently verified Luros in the foreground on each.
 The iOS 27.0.1 guest printed the known uicache registration warning; its
 registered build and verified foreground app confirmed the installation.
 
@@ -1598,12 +1598,12 @@ not to live-provider validation.
 
 Build 57 was built for iPhoneOS Release, packaged for roothide and installed
 on both existing vphones (iOS 27.0.1 and iOS 26.6.2). Both report build 57
-and independently verify Apelin in the foreground. Installation preserved
+and independently verify Luros in the foreground. Installation preserved
 the configured accounts. The iOS 27.0.1 guest still prints the known uicache
 registration warning; its registered build and foreground app are verified.
 The final package SHA-256 is
 `1a84f11e6de43cfdb304d4032a8d6e2eaeafdd5e62da51dd297a603b7417b536`.
-Seven dSYMs are retained under `build/dSYMs/0.1.0-57/`; Apelin's arm64 UUID
+Seven dSYMs are retained under `build/dSYMs/0.1.0-57/`; Luros's arm64 UUID
 is `BB62FA66-4AA2-321C-93D1-033DA05D5163`. All nine packaged Mach-O files
 passed the absolute-path and secret-pattern audit. The generated licenses
 include ScrubberKit, SwiftSoup and Turndown.
@@ -1645,7 +1645,7 @@ session. No OAuth login or live Copilot policy activation was exercised.
 
 The app from `b4ce333` was built for iPhoneOS Release, packaged for roothide,
 and updated on the existing iOS 26.6.2 iPhone and iOS 27.0.1 iPad vphones.
-Both report app build 61 and independently verify Apelin in the foreground.
+Both report app build 61 and independently verify Luros in the foreground.
 The app-only update used the guest file API after SSH/PAM authentication
 refused the normal installer: the signed package's app was staged, made
 root-owned and swapped with a rollback copy. App data and provider credentials
@@ -1764,7 +1764,7 @@ is derived from the pending approval and import-panel state in one place.
 
 The iOS Release build and `make check` passed. Both existing vphones were
 updated with the signed app-only payload, reported build 71 and verified
-Apelin in the foreground. The package and its nine Mach-O files passed the
+Luros in the foreground. The package and its nine Mach-O files passed the
 private-content and dependency checks. SHA-256:
 `6dd2cd9215f0f06f7765b62203b7257fe3ea3038cf1b9fc331c8bc31175860ca`.
 The retained app dSYM is `build/dSYMs/0.1.0-71/Luros.app.dSYM`, arm64 UUID
@@ -1963,7 +1963,7 @@ backend:
 
 The test session's own log directory was removed after its session had closed.
 The original Greeting chat, project selection and permission preference were
-restored, and Apelin was verified in the foreground. The receipt and screenshot
+restored, and Luros was verified in the foreground. The receipt and screenshot
 are in `build/Device/Banana/ui-105/chat-verification.json` and
 `build/Device/Banana/ui-105/stop-and-sidebar.jpg`. The screenshot also shows the
 live response, custom top frost, and bottom folder/Settings placement.
@@ -2070,7 +2070,7 @@ menu result is not counted as swipe acceptance. The test receipt is
 The temporary project's Delete confirmation named UI Sidebar Final. Deletion
 removed its project directory and chat JSON. Its three closed session log
 directories were then removed, and the original Greeting chat, UI Empty
-Workspace project and Relaxed preference were restored. Apelin was verified
+Workspace project and Relaxed preference were restored. Luros was verified
 in the foreground before handing Banana back for build 109. Earlier failed
 full-swipe attempts only removed this test's own chats; no existing user chat
 or project was deleted.
@@ -2109,7 +2109,7 @@ UI Empty Workspace project.
 
 After commit `5029efa` was pushed, the frozen build-109 package was installed
 on Date as well. Date passed all seven smoke cases and the corrected targeted
-SDK-import case. Both Date and Banana then launched Apelin with
+SDK-import case. Both Date and Banana then launched Luros with
 `frontmost_verified = true`; neither installation required a manual bootstrap.
 The package and dSYM remain the exact build-109 artifacts recorded above.
 
@@ -2163,7 +2163,7 @@ Build 110 added explicit release targets to the existing build operation, the
 project distribution sheet, per-project display names and the first-run setup
 flow. Its package installed on Banana with all seven smoke cases passing.
 The device already had Fila 0.8.0; iGhostVT was updated normally to 1.6.19 (156),
-whose source commit is `4ea3beb`, before installing Apelin. No dependency check
+whose source commit is `4ea3beb`, before installing Luros. No dependency check
 was bypassed. The companion app and daemon dSYMs are retained in iGhostVT's
 `build/dSYMs/1.6.19-156/`.
 
@@ -2264,7 +2264,7 @@ removed afterward. All PTYs created by this check were closed; the companion
 terminal UI was stopped to prevent its selected closed tab from reopening a
 PTY. No original terminal session existed. Fila's test destination tab was
 left open without editing files. The Distribution project and both release
-artifacts remain for the integration agent's final check, with Apelin on that
+artifacts remain for the integration agent's final check, with Luros on that
 project's empty New Chat. Earlier saved user selections were not written back.
 
 ### Welcome onboarding, build 112 (Banana, 2026-10-22)
@@ -2358,7 +2358,7 @@ failure was observed after the welcome changes.
 After commit `926243f`, the exact frozen build-114 roothide package was
 installed again on both devices. Date first received iGhostVT 1.6.19 normally
 (with Fila 0.8.0 already present); no dependency force flag was used. Both
-Apelin package installations completed and launch reported verified foreground
+Luros package installations completed and launch reported verified foreground
 state: Date PID 36697 and Banana PID 23732. The logs and compact installation
 records are under each device's `ui-114/` evidence folder. Date received no
 additional interactive tests during this final installation because it was
@@ -2391,7 +2391,7 @@ deb's, and LaunchServices' record reads build 1. `i1-smoke` passed all
 26 steps. In General Chat, with an OpenAI-compatible account, a greeting
 was answered and the conversation took a title. A message sent while a
 reply streamed appeared once, was taken by the run and was answered. No
-Apelin, apelind or worker process left a crash report.
+Luros, apelind or worker process left a crash report.
 
 A reply that is only `4.` drew nothing. MarkdownView reads it as an empty
 numbered-list item and draws no marker for an item without a paragraph.
@@ -2413,7 +2413,7 @@ selected it in its project.
   ad hoc signed app and the sandboxed extension; the snapshot the app wrote
   there read back in the order and states the design has (waiting
   `run_code`, working, working, failed, done; 2 working, 1 waiting).
-- **Widgets**: Apelin is in the widget gallery; its previews read the real
+- **Widgets**: Luros is in the widget gallery; its previews read the real
   snapshot. Small and medium went on the home screen and showed, in turn,
   waiting with three in progress, working after the approval was approved
   (the medium list re-ordered, the approved one grey), all finished with the
@@ -2430,7 +2430,7 @@ selected it in its project.
   opened that project's most recent conversation; an unknown conversation ID
   showed "Conversation Not Found" and left the page as it was.
 - **Live Activity**: iPadOS 26.4 shows it on the lock screen (with the
-  system's one-time "Allow Live Activities from Apelin?"): header, counts and
+  system's one-time "Allow Live Activities from Luros?"): header, counts and
   rows, amber with an approval waiting. A tap opened the latest working
   conversation from another one; Stop on the last working conversation ended
   it; one left by `killall -9` was ended by the next launch. The Dynamic
@@ -2452,15 +2452,15 @@ afterwards; build 6 stays installed.
 The roothide build 9 went onto the iOS 26.4 iPhone vphone
 through `irisin-cli install --yes`, followed by `uicache -p` and a respring.
 The first message sent from a chat showed the system's "Would Like to Send
-You Notifications" prompt, and Allow took. With Apelin on the home screen, a
+You Notifications" prompt, and Allow took. With Luros on the home screen, a
 turn that finished posted the chat's title over the reply's first paragraph,
-with Apelin's icon; the banner then stayed in Notification Center. A Strict
+with Luros's icon; the banner then stayed in Notification Center. A Strict
 session's `run_code` request posted the first message's opening over
 "Approval Required" (the catalogue key, resolved by the system) and the
 call's own reason. The approved turn's finish and a later turn posted too,
-with Apelin not running. Each banner went into the delivered list as
+with Luros not running. Each banner went into the delivered list as
 `<session>.turn.<n>` or `<session>.approval.<n>`, with the session as its
-thread and `link` = `lurosdev://conversation/<session>`. With Apelin in front,
+thread and `link` = `lurosdev://conversation/<session>`. With Luros in front,
 apelind still added the request and the app got `UIWillPresentNotification`;
 nothing showed and nothing was delivered. Opening the conversation emptied
 the delivered list. After the session host was killed and the session opened
@@ -2488,15 +2488,15 @@ On the iPhone, with an OpenAI-compatible account: asked which toolchains
 and SDKs were installed, the agent answered from its prompt with no tool
 call (0.1.0 said it did not know); a link it wrote opened its project; a
 turn finished in the background posted its banner, the Live Activity
-showed in the Dynamic Island, and the banner tapped with Apelin killed
+showed in the Dynamic Island, and the banner tapped with Luros killed
 cold-launched it onto that chat; a reply measured above 50 tokens a second
 was followed for a page. On the iPad: a file dragged from Files in
 Windowed Apps tinted the composer and became an attachment card; the
-small and medium widgets were added and opened Apelin; the chat, its menu
-and Settings drew in light and dark. No Apelin, apelind or worker process
+small and medium widgets were added and opened Luros; the chat, its menu
+and Settings drew in light and dark. No Luros, apelind or worker process
 left a crash report.
 
-Found: a banner tapped in Notification Center did not open Apelin, either
+Found: a banner tapped in Notification Center did not open Luros, either
 killed or suspended. SpringBoard hinted a side swipe instead of running
 the default action, while the same banner tapped as it arrived did open
 it. On the iPad, the floating keyboard bar covered the sidebar's toolbar
@@ -2506,16 +2506,16 @@ and after some relaunches the sidebar's list sat about 16 pt lower.
 ## Notification Center taps (2026-10-22, build 28)
 
 The Notification Center tap that only hinted is SpringBoard's, not
-Apelin's. On the iOS 26.4 iPhone vphone, an Xrash crash notification
+Luros's. On the iOS 26.4 iPhone vphone, an Xrash crash notification
 hinted the same way (`shouldHintForDefault hinting notCape -
 doesn'tForceDefault`, then `Hinting side swipe instead of executing
-action`), and the Open revealed beside Apelin's own cold-launched it onto
+action`), and the Open revealed beside Luros's own cold-launched it onto
 the chat. CoverSheet hints on an iPhone with no biometric unlock and
 `SBAlwaysAllowDefaultAction` unset, whatever the notification carries.
 With that key set in `com.apple.springboard`, SpringBoard logged
 `allowsDefault` and one tap opened the chat, killed and suspended; the
 key was removed afterwards. A banner tapped as it arrived opened its
-chat, and with Apelin in front `willPresentNotification` answered 0 and
+chat, and with Luros in front `willPresentNotification` answered 0 and
 nothing showed. A Clock timer is a Live Activity on 26.4 and never
 reaches Notification Center.
 
@@ -2532,13 +2532,13 @@ its first message as its name; French headed the list "Aujourd'hui", "Mardi".
 The 0.1.2 roothide build 19 went onto the iOS 26.4 iPhone vphone (over the
 released 0.1.1, build 28) and the iPadOS 26.4 iPad vphone through
 `irisin-cli install --yes`, the same deb on both; the dSYMs of all eight
-images matched it. `i1-smoke` passed on both (26 steps). With Apelin's own
+images matched it. `i1-smoke` passed on both (26 steps). With Luros's own
 language set to Arabic, 0.1.1 had stayed English and left to right; 0.1.2
 laid the bar, the composer and its model row, the menus and Settings out
 right to left, the iPad's sidebar on the right and the iPhone's drawer out
 from the right. Japanese and English screens were translated and unclipped,
 a chat 0.1.1 had saved as "New Chat" showed in the current language, and on
-the iPhone a message to the model was answered. No Apelin, apelind or worker
+the iPhone a message to the model was answered. No Luros, apelind or worker
 process left a crash report.
 
 ## Agent prompt and skills for imported repositories (2026-10-23, build 23)
@@ -2583,7 +2583,7 @@ checks and `ExternalBuildToolTests`).
 
 ## arm64e constant strings and pointer authentication (2026-10-23)
 
-A report said Apelin's arm64e builds left constant strings without their
+A report said Luros's arm64e builds left constant strings without their
 pointer authentication. On the iOS 26.4 iPhone vphone (CLT 27.0, SDK 26.4,
 roothide), the pipeline's own products with `@"…"` constants — an agent's
 tweak and the UIKit app template — and a test dylib compiled, linked and
@@ -2601,7 +2601,7 @@ plain dyld opcodes, so every signed pointer is bound bare. On the vphone,
 a dylib returning a constant string answered `length` when linked
 normally and was killed (signal 9) on that first message when linked with
 `-undefined dynamic_lookup`; CLT 15.3's threaded binds under the same
-flag ran. apelin-build now refuses such a slice at its link; Apelin's
+flag ran. apelin-build now refuses such a slice at its link; Luros's
 templates and steps never pass the flag, so only a `linkFlags` entry or a
 workspace's own script can.
 
@@ -2612,7 +2612,7 @@ vphone over 0.1.4 through `irisin-cli install --yes` (Irisin 4.7.5). The
 first attempt stopped while unpacking (`irisin-journal/<transaction>/183`
 not found) and left the package `reinstreq half-installed` at 0.1.4; the
 same command again installed, configured and registered it. vphoned's
-`apps.launch` then verified Apelin as the foreground app, and the composer
+`apps.launch` then verified Luros as the foreground app, and the composer
 came back with the saved model and its effort (deepseek-v4-pro, High),
 read through the new per-control keys. No agent session ran, and the
 workspace distribution page was not opened on the device; the Mac covers
@@ -2697,23 +2697,23 @@ about five times a second, screenshots):
   the reply and went when the text came back; stopped before a `run_code`
   call, `Thinking… ⬇142` under the paragraph became `Executing 1 tool…
   ⬇270` in the same place, with no gap or flash at two frames a second.
-- notify_user, with Apelin on the home screen: asked for four notices 31 s
+- notify_user, with Luros on the home screen: asked for four notices 31 s
   apart, three banners came, each headed by the conversation's title, then
   the notice's title as subtitle and its body; after the third the tool
   said `0 more may go this turn` and the model sent no fourth. Notification
-  Center stacked them with the turn's own end banner. A notice while Apelin
-  was in front showed nothing. A banner tapped while Apelin had another
-  conversation open opened Apelin on the notice's conversation. The lock
+  Center stacked them with the turn's own end banner. A notice while Luros
+  was in front showed nothing. A banner tapped while Luros had another
+  conversation open opened Luros on the notice's conversation. The lock
   screen's Live Activity still said 1 working after the turn had ended:
   only the app updates it, and it was suspended.
-- Streaming the 900-word reply took 23–27 % of a core in Apelin
+- Streaming the 900-word reply took 23–27 % of a core in Luros
   (`cpu_seconds` from vphoned's `processes.list`), its footprint 39–72 MB,
   then 0 % at 46 MB once it ended; scrolling that conversation (13 turns,
   six of them essays) drew no blank row at 9–16 %. No 0.1.8 figure from
   this vphone stands beside it.
 - Replies: a greeting got one line, and a reply asked for in one sentence
   was one. "What is a tweak on a jailbroken iPhone, and how would I make
-  one with Apelin?" got 279 words, no tool call, and described the tweak
+  one with Luros?" got 279 words, no tool call, and described the tweak
   template as Logos (`Tweak.x`, `%hook`); the template is plain
   Objective-C (`objc-hook/Sources/Tweak.m`) and Logos is not built. The
   model did not read apelin-tweak-development.
@@ -2721,7 +2721,7 @@ about five times a second, screenshots):
   apelin-preference-bundle and apelin-package-dependencies among the nine built-ins, and
   apelin-bootstrap-paths opens its body.
 
-On the iPad, which has no model account, Apelin launches and Skills lists
+On the iPad, which has no model account, Luros launches and Skills lists
 the same nine with none of the user's. It has no conversation with a trace
 or a run, and no replay is linked into the app, so neither the summary nor
 the trace was seen there.
@@ -2737,7 +2737,7 @@ over 0.1.0. On both 27.0.1 guests `uicache` printed "Unable to register"
 page, and its installed `Info.plist` was the package's byte for byte. The
 smoke suite ran on all four by the shell stand-in and every script ended
 `ok` (`files` skipped on the iPads, which have no tweak extension). No
-crash report for Apelin, apelind or a worker came out of the round on any
+crash report for Luros, apelind or a worker came out of the round on any
 of the four.
 
 On the iPhone, with its deepseek-v4-pro account (an OpenAI-compatible key),
@@ -2781,7 +2781,7 @@ accessibility tree, screenshots):
   title followed, and it renamed it back.
 - Root, in Strict: a shell_run with `root: true` (`id -u`) asked with the
   card's red line "Runs as root, with full control of this device", then
-  `argv` and `root` by name. With Apelin on the home screen the banner's
+  `argv` and `root` by name. With Luros on the home screen the banner's
   subtitle read "Root Approval Required" under the conversation's title,
   and the Dynamic Island's count turned amber. Approve ran it at once —
   this vphone has no passcode, so nothing was asked — and stdout was `0`.
@@ -2790,11 +2790,11 @@ accessibility tree, screenshots):
   Mode?" with its warning and, confirmed, raised no prompt; the same root
   command then ran with no card. Back in Strict the next root call asked
   again, and was denied. The vphone was left in Strict.
-- apelin_notification_send under Strict, with Apelin on the home screen:
+- apelin_notification_send under Strict, with Luros on the home screen:
   the banner came with the conversation's title, the notice's title as
   subtitle and its body, and no approval card; the turn's own end banner
-  followed. A banner tapped while Apelin had another conversation open
-  opened Apelin on the notice's conversation.
+  followed. A banner tapped while Luros had another conversation open
+  opened Luros on the notice's conversation.
 - Prompt caching, in a project's chat, 34 requests over 13 messages
   (`usage` from `transcript.json`; DeepSeek reports no cacheWrite): the
   first request read nothing (15,492 prompt tokens); every later one read
@@ -2805,9 +2805,9 @@ accessibility tree, screenshots):
   (0 % read, then 94 %), the skill saved (13 %, the tools alone) and Strict
   to Full (13 %). Removing the skill and going back to Strict missed
   nothing (98.5 %, 98.8 %): the earlier prefixes were still cached.
-- "What is a tweak, and how would I make one with Apelin?" in a new General
+- "What is a tweak, and how would I make one with Luros?" in a new General
   Chat read apelin-tweak-development first (apelin_skill_read in the trace) and
-  answered that Apelin's tweak is plain Objective-C, no Logos or Theos:
+  answered that Luros's tweak is plain Objective-C, no Logos or Theos:
   hooks installed with MSHookMessageEx in a constructor, the original
   called instead of `%orig`, the filter plist, then template, build,
   install and confirm. The same question in the build-37 conversation,
@@ -2879,7 +2879,7 @@ iPhone vphones and the iOS 26.4 iPad vphone:
   run with its model and host. `git_status`'s 40-digit HEAD was written as
   `<device id>`: the redaction takes a SHA-1 for an old-style UDID.
 - The vphone's leftover test tweaks (`ApelinHello`, `I3ChainTweak`,
-  `DemoTweak`) put their alerts over Apelin at launch; they are not Apelin's.
+  `DemoTweak`) put their alerts over Luros at launch; they are not Luros's.
 
 ## A renamed roothide root and an unreadable chat (2026-11-02, 0.3.4)
 
@@ -2928,13 +2928,13 @@ on the iPad:
   Still seen: the interrupted turn's summary reads "Executing tool…" until
   the next message is sent.
 - Issue #38's restart, reproduced on 0.3.5 on the iPhone in four of six
-  device restarts: the Live Activity launched Apelin in the background and
+  device restarts: the Live Activity launched Luros in the background and
   it opened on a new chat. On the fixed build the conversation open before
   the restart was the one shown, and no new chat was added.
 - Issue #35, on the iPad with a regular file `.thebootstrapped` made at the
-  bootstrap's root: the welcome flow's Build Tools page showed only "Apelin
+  bootstrap's root: the welcome flow's Build Tools page showed only "Luros
   cannot build on roothide Bootstrap. Bootstrap runs only programs it signs
-  itself, and it does not sign Apelin's build tools or the programs they
+  itself, and it does not sign Luros's build tools or the programs they
   build." and Next; Settings ▸ Toolchains ▸ From Apple… struck through every
   release, and picking one said Not Supported and started nothing. With the
   mark removed, the page recommended Command Line Tools 15.3 and iOS SDK
@@ -2956,7 +2956,7 @@ on the iPad:
   crash report was written. Git's Publishing, the repository picker and
   the Repository Card need a GitHub sign-in the vphone does not have.
 - Hooks: the app's executable carries an `objc_msgSend$<selector>` stub for
-  each of Apelin's own methods its Swift code calls (1,243 before the
+  each of Luros's own methods its Swift code calls (1,243 before the
   change, 1,989 in 0.3.6's, `startNewChatWithPicked:` and
   `reloadIfFileGrew` among them), so those calls go through the runtime.
   The selector audit of `c6a5da9`'s packages found nothing but the two

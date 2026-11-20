@@ -1,11 +1,11 @@
-# Apelin schemas
+# Luros schemas
 
 Two documents, both JSON, both versioned, both read and never executed:
 
 | File | Lives at | Schema |
 |---|---|---|
 | `luros-project.json` | `~/Documents/com.fluoxetine.luros/Projects/<name>/` | [`apelin-project.schema.json`](apelin-project.schema.json) |
-| development extension `manifest.json` | `<install-root>/usr/share/luros/development/<id>/`, or the copy Apelin's package carries at `<install-root>/Applications/Luros.app/Development/<id>/` | [`extension-manifest.schema.json`](extension-manifest.schema.json) |
+| development extension `manifest.json` | `<install-root>/usr/share/luros/development/<id>/`, or the copy Luros's package carries at `<install-root>/Applications/Luros.app/Development/<id>/` | [`extension-manifest.schema.json`](extension-manifest.schema.json) |
 
 The schemas are JSON Schema draft 2020-12. This file is the specification:
 where it says more than a schema can, it wins, and the rules marked
@@ -281,7 +281,7 @@ packages whose file still exists.
   without it: an `https://` URL whose host starts with a letter or digit, in
   printable ASCII, so it has no space or control character, and at most
   2048 characters, which are 2048 bytes. Every template writes its
-  extension's icon on Apelin's Pages,
+  extension's icon on Luros's Pages,
   `https://owngoal-dev.github.io/Apelin/icons/<extension id>.png`; a project
   may keep it, name its own or drop it.
 - `depiction` and `sileoDepiction` are written as the control's `Depiction`
@@ -290,7 +290,7 @@ packages whose file still exists.
   package. `SileoDepiction` is the native depiction, a JSON document Sileo
   and Irisin draw themselves: its tabs are where a changelog comes from,
   which `Description` never fills. Each is an `https://` URL of the icon's
-  form. Apelin only passes the addresses on: the author hosts the page and
+  form. Luros only passes the addresses on: the author hosts the page and
   the JSON, for one in their package repository under
   `depictions/<package id>/`. No template writes either.
 - `maintainerScripts` are project files; the packager substitutes `@PREFIX@`
@@ -389,7 +389,7 @@ before handing it over.
 
 `digest = "sha256:" + lowercase hex SHA-256 of the RFC 8785 (JCS)
 serialisation of the description document, as UTF-8.` With no non-integer
-numbers in Apelin documents, JCS here is:
+numbers in Luros documents, JCS here is:
 
 1. No insignificant whitespace.
 2. Object members sorted by their names as UTF-16 code units (not code
@@ -544,7 +544,7 @@ An empty workspace uses these same optional fields in its minimal manifest.
 
 A workspace's `luros-project.json` is not a version 1 description: it has
 `schemaVersion`, `projectID`, `kind: workspace`, `buildSystem: external` and
-the display fields above, and may declare the build Apelin runs for it:
+the display fields above, and may declare the build Luros runs for it:
 
 | Member | Meaning |
 |---|---|
@@ -559,7 +559,7 @@ build of a workspace asks.
 
 ### Written form
 
-Apelin writes `luros-project.json` one way, whatever writes it: creating a
+Luros writes `luros-project.json` one way, whatever writes it: creating a
 project (the template's file after substitution, or an empty workspace's),
 renaming it, switching its toolchain or SDK, importing a transfer file under
 a new ID, and every build, which puts a file written otherwise into this

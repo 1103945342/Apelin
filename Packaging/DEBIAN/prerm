@@ -25,8 +25,8 @@ if [ "${1:-}" = remove ] || [ "${1:-}" = deconfigure ]; then
     fi
 fi
 
-# The copy of the package daemon Apelin carries is registered under its own
-# label and file, never Irisin's: this stops only Apelin's, and postrm removes
+# The copy of the package daemon Luros carries is registered under its own
+# label and file, never Irisin's: this stops only Luros's, and postrm removes
 # the file, which no package owns.
 iris_label=com.fluoxetine.luros.irisind
 iris_plist="@PREFIX@/Library/LaunchDaemons/$iris_label.plist"

@@ -5,7 +5,7 @@ import Foundation
 /// memory only, so the set is empty whenever the host starts. apelind is on
 /// demand and the host its child: a conversation the app continues after a
 /// new host started may have last run before a reboot, a jailbreak, an
-/// update of Apelin or roothide renaming the bootstrap's root, and every
+/// update of Luros or roothide renaming the bootstrap's root, and every
 /// path in its history may name what is gone. Its worker is told so
 /// (`AgentOpenRequest.hostRestarted`) and tells the model once, in the next
 /// message's `<system-state>`.

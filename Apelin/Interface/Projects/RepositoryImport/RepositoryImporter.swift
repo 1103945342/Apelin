@@ -13,7 +13,7 @@ struct RepositoryImportFailure: Error {
     var leftProject: String?
 }
 
-/// The host's half of Open in Apelin for a repository, the same requests
+/// The host's half of Open in Luros for a repository, the same requests
 /// New Project and the agent's git_clone make: an empty workspace
 /// (`projectCreate`), then the repository imported into it
 /// (`gitCloneInto`, with the host's own checks of the address and branch,

@@ -84,7 +84,7 @@
     "name": "C++ Probe",
     "version": "0.0.1",
     "description": "A bridging header beside an interop dependency.",
-    "author": "Apelin User",
+    "author": "Luros User",
     "section": "Development",
     "layout": [
       {

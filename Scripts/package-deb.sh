@@ -49,7 +49,7 @@ worker_resources=(kwwk_KWWKAI.bundle)
 worker_runtime_libraries=(libswiftCompatibilitySpan.dylib)
 packaging_root="$(cd "$(dirname "$control_template")/.." && pwd -P)"
 # Sourced by the bootstrap's /etc/profile after it sets PATH anew: puts the
-# toolchain Apelin's terminal named in APELIN_TOOLCHAIN_BIN back in front.
+# toolchain Luros's terminal named in APELIN_TOOLCHAIN_BIN back in front.
 login_profile="$packaging_root/profile.d/com.fluoxetine.luros.sh"
 [[ -f "$login_profile" ]] || { echo "error: missing packaging input: $login_profile" >&2; exit 66; }
 /bin/sh -n "$login_profile" || { echo "error: $login_profile is not valid sh" >&2; exit 65; }
@@ -144,7 +144,7 @@ done
 
 bundle_identifier="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_bundle/Info.plist")"
 [[ "$bundle_identifier" == com.fluoxetine.luros && -x "$app_bundle/$app_executable" ]] || {
-    echo "error: $app_bundle is not the Apelin app; expected bundle ID com.fluoxetine.luros and an executable $app_executable" >&2
+    echo "error: $app_bundle is not the Luros app; expected bundle ID com.fluoxetine.luros and an executable $app_executable" >&2
     exit 65
 }
 
@@ -238,7 +238,7 @@ for extension in "$repository_root"/Extensions/Development/com.fluoxetine.luros.
 done
 find "$installed_development" -type d -exec chmod 0755 {} +
 find "$installed_development" -type f -exec chmod 0644 {} +
-# The two device tools Apelin cannot work without ride inside the app as well:
+# The two device tools Luros cannot work without ride inside the app as well:
 # icli goes on the PATH every run gets, and the copy of irisind is the daemon
 # postinst registers when the device has no Irisin of its own. Both are
 # committed under Vendor/ with their digests: the package is built on macOS,
@@ -489,7 +489,7 @@ for key in com.fluoxetine.luros.client \
 done
 
 # The daemon: platform, unsandboxed, the two storage classes, irisind's
-# client key (its session host installs through Irisin), and never Apelin's
+# client key (its session host installs through Irisin), and never Luros's
 # client marker — a daemon that could pass for its own client is an entrance
 # nobody designed.
 ldid -e "$installed_daemon" >"$daemon_signed_entitlements"
@@ -616,5 +616,5 @@ grep -F ".$install_prefix/Library/LaunchDaemons/com.fluoxetine.lurosd.plist" <<<
 grep -F ".$install_prefix/etc/profile.d/com.fluoxetine.luros.sh" <<<"$contents" >/dev/null
 
 mv -f "$temporary_deb" "$output_deb"
-echo "Packaged Apelin ($flavor): $output_deb"
+echo "Packaged Luros ($flavor): $output_deb"
 shasum -a 256 "$output_deb"

@@ -142,7 +142,7 @@ enum EnvironmentPrompt {
             // The jbroot was renamed on a device between two runs of one
             // chat, which trusted the paths it had written down.
             lines.append(
-                "- roothide can rename the install root when the device is rebooted or jailbroken again, and everything under it moves: Apelin's data folder (in the jbroot's own `var/mobile`), the project's real path, `$APELIN_PROJECT_ROOT`, `$APELIN_TOOLCHAIN_BIN`, `SDKROOT`, every toolchain and SDK path above. Never write such a path into anything that outlives this run (project files, build scripts, Makefiles, AGENTS.md or CLAUDE.md, memory, skills, package scripts, code): code finds it at run time as roothide's `jbroot()` does (the apelin-bootstrap-paths skill's `ApelinBootstrapPath()`), plists and maintainer scripts use `@PREFIX@` and `@ROOTFS@`, and a script uses the variables Apelin sets when it runs or paths relative to the project.",
+                "- roothide can rename the install root when the device is rebooted or jailbroken again, and everything under it moves: Luros's data folder (in the jbroot's own `var/mobile`), the project's real path, `$APELIN_PROJECT_ROOT`, `$APELIN_TOOLCHAIN_BIN`, `SDKROOT`, every toolchain and SDK path above. Never write such a path into anything that outlives this run (project files, build scripts, Makefiles, AGENTS.md or CLAUDE.md, memory, skills, package scripts, code): code finds it at run time as roothide's `jbroot()` does (the apelin-bootstrap-paths skill's `ApelinBootstrapPath()`), plists and maintainer scripts use `@PREFIX@` and `@ROOTFS@`, and a script uses the variables Luros sets when it runs or paths relative to the project.",
             )
         }
         if let found = inputs.commandsFound {
@@ -276,14 +276,14 @@ enum EnvironmentPrompt {
 
     private static func preparedLine(_ inputs: Inputs, environment: DevelopmentEnvironment) -> String {
         guard let toolchain = environment.toolchain else {
-            return "- shell_run has no Apelin compiler until a toolchain is installed. Do not search the device for one; ask the user to set one up."
+            return "- shell_run has no Luros compiler until a toolchain is installed. Do not search the device for one; ask the user to set one up."
         }
         guard environment.sdk != nil else {
             return "- shell_run has the prepared toolchain's tools first on PATH, but no SDK it reads is registered. Do not search for one; ask the user to import one."
         }
         let target = environment.deploymentTarget
         let whose = inputs.binding?.deploymentTarget == target ? "this project's deployment target"
-            : inputs.inProject ? "Apelin's default" : "Apelin's default; this chat has no project"
+            : inputs.inProject ? "Luros's default" : "Luros's default; this chat has no project"
         var line = "- shell_run and the user's terminal already have the toolchain and SDK marked prepared: "
             + "the toolchain's tools first on PATH, SDKROOT set to the SDK, IPHONEOS_DEPLOYMENT_TARGET=\(target) (\(whose)). "
             + "clang, clang++, ld, lipo and the other tools are found by name and build for iOS against that SDK "
@@ -292,7 +292,7 @@ enum EnvironmentPrompt {
             ? "; swiftc takes the SDK too but needs -target arm64-apple-ios\(target). "
             : ". "
         line += "So do not look for compilers, SDKs or paths, and never set up or import again a toolchain or SDK listed here. "
-            + "A project with an Apelin build description builds with apelin_project_build."
+            + "A project with an Luros build description builds with apelin_project_build."
         return line
     }
 

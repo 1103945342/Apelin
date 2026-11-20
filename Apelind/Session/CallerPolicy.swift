@@ -87,7 +87,7 @@ enum CallerPolicy {
         // chose, under Confirm only as the user approved exactly it
         // (AgentIssueCreateRules).
         .gitIssueCreate,
-        // A public issue on Apelin's own repository with the user's GitHub
+        // A public issue on Luros's own repository with the user's GitHub
         // sign-in, filed or, when the account opened it, edited under
         // Confirm only as the user approved exactly it (AgentFeedbackRules),
         // and read.

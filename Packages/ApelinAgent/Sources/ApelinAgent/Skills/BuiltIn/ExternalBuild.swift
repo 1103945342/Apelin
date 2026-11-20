@@ -1,17 +1,17 @@
 extension BuiltInSkills {
     static let externalBuild = SkillDocument(
         name: "apelin-external-build",
-        description: "Building and installing a workspace (an imported repository) with its own tools: the build script Apelin runs, what it gets, the one package it writes, and how that package is installed.",
+        description: "Building and installing a workspace (an imported repository) with its own tools: the build script Luros runs, what it gets, the one package it writes, and how that package is installed.",
         body: """
         # Building a workspace
 
         A workspace — an imported repository, or an empty project — keeps its
-        own way of building. Apelin runs one script of the project's and
+        own way of building. Luros runs one script of the project's and
         installs the one package it writes; it does not compile, sign or
         package for it.
 
         ## Declare the script
-        In `luros-project.json` (Apelin's file, which git ignores), beside
+        In `luros-project.json` (Luros's file, which git ignores), beside
         what is already there:
         ```json
         "external": {"script": "apelin/build.sh", "interpreter": "sh", "arguments": []}
@@ -107,7 +107,7 @@ extension BuiltInSkills {
         apelin-packaging-and-install skill describes. The first install asks the
         user; it asks again only when the control file (but `Version`), a
         maintainer script or an installed path changes. A package someone
-        installed on this device without Apelin is never replaced: never
+        installed on this device without Luros is never replaced: never
         rename the package to get past that, tell the user. Write how the
         project builds into `AGENTS.md` once it works.
 

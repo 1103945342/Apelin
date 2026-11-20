@@ -9,5 +9,5 @@ enum AppProtocol {
     /// Executables allowed to connect, relative to the install root. The app
     /// is the only public peer: workers reach the session host through the
     /// socketpair it made for them, never through this service.
-    static let clientPaths = ["/Applications/Luros.app/Apelin"]
+    static let clientPaths = ["/Applications/Luros.app/Luros"]
 }

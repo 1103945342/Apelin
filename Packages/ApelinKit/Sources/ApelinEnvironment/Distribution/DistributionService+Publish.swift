@@ -28,7 +28,7 @@ extension DistributionService {
         let files = try request.files.map { path -> URL in
             guard let builds, !path.utf8.contains(0), let resolved = CanonicalPath.resolve(path),
                   resolved.hasPrefix(builds + "/"), resolved.hasSuffix(".deb")
-            else { throw ApelinError(.badRequest, "Only a package Apelin built can be published.") }
+            else { throw ApelinError(.badRequest, "Only a package Luros built can be published.") }
             var metadata = stat()
             guard lstat(resolved, &metadata) == 0, metadata.st_mode & S_IFMT == S_IFREG else {
                 throw ApelinError(.notFound, "\((resolved as NSString).lastPathComponent) is not there.")
@@ -190,7 +190,7 @@ extension DistributionService {
               let root, fcntl(input, F_GETPATH, &path) == 0,
               let opened = CanonicalPath.resolve(String(cString: path)),
               CanonicalPath.isCanonical(opened, inside: root)
-        else { throw ApelinError(.conflict, "\(name) is no longer a package in Apelin's build folder.") }
+        else { throw ApelinError(.conflict, "\(name) is no longer a package in Luros's build folder.") }
         let output = open(destination.path, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0o644)
         guard output >= 0 else {
             throw ApelinError(.internal, "could not copy \(name): \(String(cString: strerror(errno)))")

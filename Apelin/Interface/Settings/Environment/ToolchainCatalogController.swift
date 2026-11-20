@@ -5,7 +5,7 @@ import UIKit
 
 /// Toolchain ▸ Set Up: the Command Line Tools releases Apple's software
 /// update catalog offers, newest first, as Inspector's table: the newest SDK
-/// each one's tools read, those already set up marked, those Apelin cannot
+/// each one's tools read, those already set up marked, those Luros cannot
 /// set up dimmed with the reason. Picking one sets it up — with Swift where
 /// the release and this device take it, which the app always asks for then
 /// — and hands over to the setup page.
@@ -197,7 +197,7 @@ final class ToolchainCatalogController: TableController {
         let installed = isInstalled(product)
         let swiftName = product.swiftRequirements.map { String(localized: "Swift \($0.version)") }
             ?? String(localized: "Swift")
-        // a release Apelin cannot set up is struck through; the reason is a tap away
+        // a release Luros cannot set up is struck through; the reason is a tap away
         var attributes: [NSAttributedString.Key: Any] = [
             .foregroundColor: supported ? UIColor.label : UIColor.tertiaryLabel,
         ]

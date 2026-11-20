@@ -1,4 +1,4 @@
-# Apelin 里程碑 1 计划
+# Luros 里程碑 1 计划
 
 状态：owner 第三轮批注已并入（§15 末尾列出改动）。日期：2026-10-16。
 
@@ -125,14 +125,14 @@ apelind (root, 按需拉起)                瘦 proxy：鉴权、转发，不链
 
 ## 3. 工具链
 
-**产品边界**：设备直接获取 Apple Command Line Tools（CLT），在设备上解包、改造、签名和安装；不要求 Mac、完整 Xcode 或 Apple ID。Apelin 不托管 Apple 二进制，不自编 LLVM。Swift 在 v1，设置时可选，模板默认 ObjC。改造后工具链的导入、导出属于二阶段，不与 v1 的 SDK 文件导入混为一谈。
+**产品边界**：设备直接获取 Apple Command Line Tools（CLT），在设备上解包、改造、签名和安装；不要求 Mac、完整 Xcode 或 Apple ID。Luros 不托管 Apple 二进制，不自编 LLVM。Swift 在 v1，设置时可选，模板默认 ObjC。改造后工具链的导入、导出属于二阶段，不与 v1 的 SDK 文件导入混为一谈。
 
 ### 3.1 来源与首次安装
 
 - **[已验证]** 既有报告记录 CLT 27.0 的 `CLTools_Executables.pkg` 可从 Apple 软件更新目录找到并免登录下载；这是该版本的实测，不保证以后每个版本都有同样入口。
 - **[设计]** 来源适配器读取 Apple catalog，列出产品 ID、版本、下载大小和包来源；只对已有适配方案的版本显示“可设置”。记录原始 URL、catalog 产品标识、上游校验信息及本地 SHA256。上游校验与本地哈希分开记录，本地哈希只用于一致性检查，不能单独证明发行者身份。
 - **[设计]** 支持下载重试和断点续传；服务器对象变化时重新下载。找不到可用包或遇到未知格式时显示具体原因，保留已安装版本，不静默改用社区工具链镜像。
-- **[设计]** 首次安装由主包自带的 `apelin-environment` 完成归档读取和 Mach-O 处理，不能先依赖尚未能运行的 CLT 中的 `vtool`、`install_name_tool`、git 或 Swift。helper 随 Apelin 的正常构建产生；归档库复用方案走 §11 的依赖审阅。
+- **[设计]** 首次安装由主包自带的 `apelin-environment` 完成归档读取和 Mach-O 处理，不能先依赖尚未能运行的 CLT 中的 `vtool`、`install_name_tool`、git 或 Swift。helper 随 Luros 的正常构建产生；归档库复用方案走 §11 的依赖审阅。
 
 ### 3.2 组件和兼容性
 
@@ -156,7 +156,7 @@ clangd 不进 v1（owner 2026-10-16 决定），闭包不包含它，见 §10。
 2. **隔离解包**：在任务自己的 staging 目录处理 xar → pbzx → cpio。先验证复用的 libarchive 能覆盖哪些层；缺失层再写最小适配器，不能把“库支持归档”当成已支持 pbzx。限制展开大小、条目数和递归层数，拒绝路径逃逸、特殊设备文件和越界链接。
 3. **识别**：读取 Mach-O 各切片、加载命令、依赖与资源。验证字段范围与文件边界，解析不支持的布局就停止；遇到 AppKit 等没有对应运行环境的依赖时报告不兼容。
 4. **平台与路径改写**：复用并扩展 Irisin 的 Mach-O 模块，处理平台声明、框架的 macOS 版本目录布局、库引用及所需 rpath。输出独立副本；加载命令空间不足时明确失败，未经验证不移动整个镜像布局。不添加 libvroot，运行时用 daemon 返回的物理安装根解析路径。
-5. **Swift 兼容**：按版本核对未满足的符号与 ABI，只对已知组合提供 shim，记录实现来源和许可。前期调研发现 7 个缺失符号不意味着所有版本都固定缺这 7 个；单纯让符号存在也不能证明语义正确。shim 随 Apelin 构建提供，不能要求设备先有可用 swiftc 来生成它。
+5. **Swift 兼容**：按版本核对未满足的符号与 ABI，只对已知组合提供 shim，记录实现来源和许可。前期调研发现 7 个缺失符号不意味着所有版本都固定缺这 7 个；单纯让符号存在也不能证明语义正确。shim 随 Luros 构建提供，不能要求设备先有可用 swiftc 来生成它。
 6. **签名与本地包**：所有字节改写完成后，用 Irisin 签名模块签名；生成仅保留在本机的工具链 deb，交 Irisin 安装。设备端安装流程也不调用 apt/dpkg。签名完成后不再改写二进制。
 7. **自检与注册**：即 §3.2 的安装完成自检，对安装后的字节运行检查，验证重签、加载和资源定位。C 组件通过才注册基础工具链；Swift 单独记录通过或失败，失败时保留可用的 C 环境但明确 Swift 尚不可用。成功后原子更新注册记录。
 
@@ -271,16 +271,16 @@ app 启动、从安装界面返回和手动刷新时重新扫描，通过 daemon
 
 agent 能调用的工具，除了 §7 的内置本地工具，其余都做成"代理工具扩展"，和应用、插件、命令行工具、设置面板这几类开发扩展并列。
 
-**为什么单独分发**：有些工具的许可是 GPL 系。Apelin 本体和开源仓库保持 MIT，不能把 GPL 代码链接进主包。所以：
+**为什么单独分发**：有些工具的许可是 GPL 系。Luros 本体和开源仓库保持 MIT，不能把 GPL 代码链接进主包。所以：
 - 每个代理工具扩展是独立的包，各自带自己的许可和源码履约材料。独立进程是工程边界，不能仅据此认定 GPL 的影响必定止于该包，见 §12。
-- 扩展在**独立进程**里运行，和 Apelin 之间只有一条数据协议，不共享地址空间，不链接对方的库。
+- 扩展在**独立进程**里运行，和 Luros 之间只有一条数据协议，不共享地址空间，不链接对方的库。
 - 主包不依赖任何扩展，也不 `Recommends` GPL 的扩展；用户主动从包源安装。
 
 **分发（owner 2026-10-16 决定）**：我们的所有包——IDE 主包、四类开发扩展、代理工具扩展——每个都出 rootless 和 roothide 两个 deb，全部放进我们的仓库索引（owngoal-packages），用户用自己的包管理器从同一个源安装。app 的扩展页只列出已装和缺失的扩展并说明用途，不自己下载安装包。CI 按 `ci.yml` / `release.yml` 构建、校验和发布，每个扩展包用自己的包 ID 和版本。
 
 **协议**（草案）
 - 扩展随包带一个清单 `<prefix>/usr/share/luros/agent-tools/<id>/manifest.json`：id、名称、版本、许可、可执行文件的固定路径、提供的工具列表。
-- 每个工具有名称、描述、JSON Schema 参数，格式与 `AgentTool` 一致，Apelin 直接转成 agent 的工具定义。
+- 每个工具有名称、描述、JSON Schema 参数，格式与 `AgentTool` 一致，Luros 直接转成 agent 的工具定义。
 - 启动方式：apelin-agent 经继承的内部通道向宿主请求 `toolHostOpen{id}`，宿主检查登记信息和审批后拉起扩展进程；公共 XPC 入口只供 app 使用。清单和可执行文件需满足 §2 的路径和权限规则，项目中的清单不作为可执行程序登记来源。
 - **[设计]** stdin/stdout 用 JSON 行交换带 `protocolVersion`、`requestID` 的 `hello`、`call{tool, args}`、`result{content}`、`error` 和 `cancel`；stderr 单独记日志。限制帧大小和并发数，规定超时、取消、崩溃及协议不兼容的错误结果；一个扩展退出不结束 agent 会话。图片通过有大小限制的附件句柄传递，不把任意大 base64 塞进事件日志。
 - 扩展以 mobile 身份运行，不拿 root。文件通过宿主启动时继承的描述符或专用 socket 传递，JSON 里的附件 ID 映射到接收进程自己的 fd；不能把发送进程的 fd 整数当成可跨进程使用的句柄。传 fd 也不等于给进程提供了文件系统沙盒，不承诺可安全运行任意恶意扩展。
@@ -303,7 +303,7 @@ agent 能调用的工具，除了 §7 的内置本地工具，其余都做成"�
 
 **模型与凭证**
 - Anthropic 原生接口，加 OpenAI 兼容接口。
-- 凭证存钥匙串：本机，不同步，Apelin 自己的条目。**[设计，待实测]** 首选 app 与 agent 共用专属 keychain access group；A 阶段验证两个进程在支持的 bootstrap 上的读写和锁屏行为。若不可行，由 app 通过已鉴权连接按会话递送凭证，仅放进 agent 内存，不能放在 argv、环境变量、日志或会话文件中。无可用凭证时会话等待重新授权，不默认落盘。accessibility 使用适合后台会话的 ThisDeviceOnly 策略并验证重启后首次解锁边界。
+- 凭证存钥匙串：本机，不同步，Luros 自己的条目。**[设计，待实测]** 首选 app 与 agent 共用专属 keychain access group；A 阶段验证两个进程在支持的 bootstrap 上的读写和锁屏行为。若不可行，由 app 通过已鉴权连接按会话递送凭证，仅放进 agent 内存，不能放在 argv、环境变量、日志或会话文件中。无可用凭证时会话等待重新授权，不默认落盘。accessibility 使用适合后台会话的 ThisDeviceOnly 策略并验证重启后首次解锁边界。
 - 不读 `~/.kwwk`，不和 kk 共享；会话目录是 `~/Documents/com.fluoxetine.luros/sessions`。
 - 登录状态的导出放到以后。
 
@@ -320,7 +320,7 @@ agent 能调用的工具，除了 §7 的内置本地工具，其余都做成"�
 | `framework_header` | 取一个框架的头文件，来源是已注册的 SDK | 只读 |
 | `build` | 构建项目，返回结构化诊断 | 执行工具并写项目；预设步骤/自定义脚本按下文分别判断 |
 | `install` | 按产物 ID/摘要安装，返回事务与安装记录 ID | 系统；安装可能执行 root maintainer 脚本 |
-| `remove_package` | 按安装记录 ID 卸载 Apelin 构建并安装的受管项目包，见 §8 | 系统；核心包与无匹配安装记录的包不在能力范围内 |
+| `remove_package` | 按安装记录 ID 卸载 Luros 构建并安装的受管项目包，见 §8 | 系统；核心包与无匹配安装记录的包不在能力范围内 |
 | `respring` | 重启主屏幕，返回重连信息 | 系统，预设允许 |
 | `confirm_loaded` | 按构建标记、目标进程与库身份核对加载，分别返回日志/镜像证据 | 受限只读 |
 | `read_logs` | 按项目 subsystem/目标进程读取有条数和时间上限的日志 | 受限只读 |
@@ -372,16 +372,16 @@ agent 能调用的工具，除了 §7 的内置本地工具，其余都做成"�
 
 **安装**：一律打包后交给 Irisin 的守护进程。
 - 需要改 Irisin：把 Irisin 专属可执行路径白名单改为已约定的 jailbreak 根/系统可信路径范围，保留 audit token、允许的 euid、必要 entitlement、root 所有且不可被组/其他用户写的可执行文件检查。路径先规范化后按组件比较。**固定安装桥接方选为 `apelind-session`**：宿主执行审批、固定包内容后直接作为 irisind 客户端；app 的安装操作仍通过 apelind 控制面进入宿主。build/agent/扩展不持有 Irisin 客户端 entitlement，不直接提交安装。
-- Irisin 发新版，Apelin 依赖这个版本；在此之前，设备上的联调用 dpkg 代替。**[现状]** 已完成：Apelin 依赖 Irisin 4.7.0，所有安装和卸载都经 irisind。
-- Apelin 里不出现对 `apt`、`dpkg` 二进制的调用（实测阶段的 dpkg 只是临时手段）。
+- Irisin 发新版，Luros 依赖这个版本；在此之前，设备上的联调用 dpkg 代替。**[现状]** 已完成：Luros 依赖 Irisin 4.7.0，所有安装和卸载都经 irisind。
+- Luros 里不出现对 `apt`、`dpkg` 二进制的调用（实测阶段的 dpkg 只是临时手段）。
 
 **[设计]** 安装桥接包含服务版本/能力握手、包 fd 提交、事务 ID、进度、结果和 app 重连查询；重复提交同一个已完成事务不能重复安装。Irisin 的实际协议需在 A 阶段核对，缺项列入其新版本工作，不能把现有 `run` 当作已支持完整恢复。B 的工具链安装也依赖此桥接，手工 dpkg 联调不计入里程碑验收。
 
-**受管包卸载 [设计]**：`remove_package` / `removePackage` 接收宿主登记的 `installationID`，由宿主解析包 ID；仅覆盖 Apelin 自己构建且经本安装桥接成功安装的项目包。登记由宿主保存于其私有状态目录，绑定项目/构建 ID、产物摘要、包 ID、版本、安装事务与安装服务回执，mobile 项目清单不能伪造所有权。卸载前与当前安装状态核对；版本被外部替换、记录缺失或身份不符时返回不可受管，转交用户的包管理器处理。
+**受管包卸载 [设计]**：`remove_package` / `removePackage` 接收宿主登记的 `installationID`，由宿主解析包 ID；仅覆盖 Luros 自己构建且经本安装桥接成功安装的项目包。登记由宿主保存于其私有状态目录，绑定项目/构建 ID、产物摘要、包 ID、版本、安装事务与安装服务回执，mobile 项目清单不能伪造所有权。卸载前与当前安装状态核对；版本被外部替换、记录缺失或身份不符时返回不可受管，转交用户的包管理器处理。
 
-bootstrap 核心包、安装服务、Apelin 自身及受保护系统包始终不属于项目卸载范围；安装项目包时也检查保留包 ID 与已有非受管包冲突，防止先覆盖再取得“自己的包”身份。卸载计划只包含选定受管包，依赖检查不通过时拒绝，不递归卸载其他包。工具链/SDK 删除使用各自的环境管理入口。此能力范围对两档模式一致；Relaxed 仍直接执行范围内的操作，Confirm 是否确认由 §7 决定，不提供通过确认越过范围的例外。A1 验证无效记录、外部升级、核心包冲突与依赖连带删除均被拒绝。
+bootstrap 核心包、安装服务、Luros 自身及受保护系统包始终不属于项目卸载范围；安装项目包时也检查保留包 ID 与已有非受管包冲突，防止先覆盖再取得“自己的包”身份。卸载计划只包含选定受管包，依赖检查不通过时拒绝，不递归卸载其他包。工具链/SDK 删除使用各自的环境管理入口。此能力范围对两档模式一致；Relaxed 仍直接执行范围内的操作，Confirm 是否确认由 §7 决定，不提供通过确认越过范围的例外。A1 验证无效记录、外部升级、核心包冲突与依赖连带删除均被拒绝。
 
-**Irisin 信任边界 [设计，A1 两仓同步]**：路径范围放宽按既定产品方向推进，但其含义是信任满足检查的已安装包，不是只信任 Apelin。模型里把已能安装、自签并取得 root-owned 可执行文件的包视为受信任的系统参与者；entitlement 是调用资格声明，不是已安装包之间的身份隔离。Apelin 生成并装入的 CLI 也可能满足这些条件，恶意已安装包、root 或被篡改的安装服务不在 Apelin 审批机制可防御的范围内。审批保护的是经 Apelin 发起的工作流，不能承诺阻止有同等系统能力的软件绕开它。A1 必须把这一模型写入 Irisin 的鉴权文档、Apelin 的实现决定及测试用例；若产品需要隔离已安装包，需重新决定不可自声明的身份/能力机制，不能靠 entitlement 名称补足。
+**Irisin 信任边界 [设计，A1 两仓同步]**：路径范围放宽按既定产品方向推进，但其含义是信任满足检查的已安装包，不是只信任 Luros。模型里把已能安装、自签并取得 root-owned 可执行文件的包视为受信任的系统参与者；entitlement 是调用资格声明，不是已安装包之间的身份隔离。Luros 生成并装入的 CLI 也可能满足这些条件，恶意已安装包、root 或被篡改的安装服务不在 Luros 审批机制可防御的范围内。审批保护的是经 Luros 发起的工作流，不能承诺阻止有同等系统能力的软件绕开它。A1 必须把这一模型写入 Irisin 的鉴权文档、Luros 的实现决定及测试用例；若产品需要隔离已安装包，需重新决定不可自声明的身份/能力机制，不能靠 entitlement 名称补足。
 
 **respring 与确认加载**
 - respring 走 apelind 的封闭操作。
@@ -393,7 +393,7 @@ bootstrap 核心包、安装服务、Apelin 自身及受保护系统包始终不
 
 里程碑 1 只做简单调试，不做断点调试器。
 
-**icli 优先（owner 2026-10-16 决定）**：凡是 `owngoal-dev/icli` 已经能做的，一律用 icli，借此 dogfooding icli。按 icli README 当前列出的能力，覆盖：系统日志、崩溃报告读取、截图与 OCR、UI 树、点击/输入/滑动等 UI 动作、前台 app 与进程、已装 tweak 列表、重启 SpringBoard（respring 兜底）。缺什么、哪里不好用，在 icli 仓库补，不在 Apelin 里另写一份。仍由 Apelin 自己负责的只有 icli 没有的：崩溃符号化与嫌疑排序（XrashKit）、目标进程已加载库的核对（Inspector 的做法，icli 有了就换）。A2 逐项核对上面每个能力在 icli 里的实际 API 和所需 entitlement。
+**icli 优先（owner 2026-10-16 决定）**：凡是 `owngoal-dev/icli` 已经能做的，一律用 icli，借此 dogfooding icli。按 icli README 当前列出的能力，覆盖：系统日志、崩溃报告读取、截图与 OCR、UI 树、点击/输入/滑动等 UI 动作、前台 app 与进程、已装 tweak 列表、重启 SpringBoard（respring 兜底）。缺什么、哪里不好用，在 icli 仓库补，不在 Luros 里另写一份。仍由 Luros 自己负责的只有 icli 没有的：崩溃符号化与嫌疑排序（XrashKit）、目标进程已加载库的核对（Inspector 的做法，icli 有了就换）。A2 逐项核对上面每个能力在 icli 里的实际 API 和所需 entitlement。
 
 - **日志**：宿主管理 `apelin-diagnostics`，读取系统日志并按项目 subsystem/进程过滤，经 `logStream` 和 `read_logs` 输出。日志读取用 icli；界面复用已有应用日志查看器，不把“查看器”当成系统日志读取实现。
 - **崩溃**：复用 XrashKit 的解析、符号化、嫌疑排序。受保护的报告由宿主按报告 ID 打开，只传只读 fd，普通可读报告无需提升权限。符号化用项目构建时保留并匹配 UUID 的 dSYM。
@@ -449,13 +449,13 @@ owner 的原则：优先用乌龙工作室现有产品里的轮子。审批前�
 | git | libgit2，经新建的 `Lakr233/libgit2.xcframework`（照 `Lakr233/libarchive.xcframework` 的做法） | Git 适配层和界面新写 | A2 建仓出版本并审阅许可（libgit2 为 GPLv2 附 linking exception，及其编进去的依赖），B 交付 SDK 获取，I 交付界面 |
 | SDK 来源 | `owngoal-dev/iOS-SDKs`，由 `xybp888/iOS-SDKs` fork 后 detach | 默认 SDK 来源，一 SDK 一分支 | A2 建仓、改布局、写致谢；Apple SDK 条款见 §12 |
 
-**重复代码**：Runestone 在 Irisin 和 Xrash 里各 vendor 了一份且不同，Apelin 统一用 `Runestone.xcframework`，不搬任一份源码；`MachOImage` 在 Fila 和 Xrash 里是分叉，搬进来时取一份，抽成共享包，不再产生第三份。 **[现状]** 已改为 vendor 源码并裁剪语法（`Packages/Runestone`，取自 Irisin 那份），见 `AGENTS.md` ▸ UI dependencies。
+**重复代码**：Runestone 在 Irisin 和 Xrash 里各 vendor 了一份且不同，Luros 统一用 `Runestone.xcframework`，不搬任一份源码；`MachOImage` 在 Fila 和 Xrash 里是分叉，搬进来时取一份，抽成共享包，不再产生第三份。 **[现状]** 已改为 vendor 源码并裁剪语法（`Packages/Runestone`，取自 Irisin 那份），见 `AGENTS.md` ▸ UI dependencies。
 
 ## 12. 许可
 
-- Apelin 本体 MIT。主包里不放 GPL 和 AGPL 的代码，不链接。
+- Luros 本体 MIT。主包里不放 GPL 和 AGPL 的代码，不链接。
 - **ldid**（AGPL）：不进主包，用 Irisin 的 Swift 实现代替；实测阶段在设备上临时装过。
-- **Apple 的二进制和 SDK**：产品决定是不托管、不再分发。工具链由设备从 Apple 下载，Apelin 的包里不带 Apple 二进制和 SDK。SDK 的默认来源改为我们维护的 `owngoal-dev/iOS-SDKs`（§4），这意味着乌龙的组织在 GitHub 上托管 Apple SDK，此前“Apelin 不托管 SDK”的前提变了：建仓前核对 Apple SDK 的条款和 GitHub 的政策，记录结论；README、depiction 是否链接该仓库随结论定。这些设计不等于已取得修改、使用或分发许可。二阶段的工具链导出也必须单独审阅。**[待定]**
+- **Apple 的二进制和 SDK**：产品决定是不托管、不再分发。工具链由设备从 Apple 下载，Luros 的包里不带 Apple 二进制和 SDK。SDK 的默认来源改为我们维护的 `owngoal-dev/iOS-SDKs`（§4），这意味着乌龙的组织在 GitHub 上托管 Apple SDK，此前“Luros 不托管 SDK”的前提变了：建仓前核对 Apple SDK 的条款和 GitHub 的政策，记录结论；README、depiction 是否链接该仓库随结论定。这些设计不等于已取得修改、使用或分发许可。二阶段的工具链导出也必须单独审阅。**[待定]**
 - **GPL 工具**：按选定版本的实际许可证分类，不根据工具名字推定。主包保持不链接 GPL/AGPL；独立扩展须保留通知、提供所需对应源码与构建材料。独立包、独立进程和数据协议是拟采用的边界，是否构成一个组合程序仍取决于交互语义，不能作为自动免责结论。[GNU GPL FAQ：聚合与通信边界](https://www.gnu.org/licenses/gpl-faq.en.html#MereAggregation)。
 - 新依赖（libgit2、kwwk 及其传递依赖 NIO、BoringSSL、stb、libwebp 等）：进 `Licenses/` 和 `review.json`，由 `collect-licenses.py` 校验。
 - 从 Irisin 抽出的共享代码：核对许可和文件头，保留原有版权、许可与必要署名；“统一”只指包内组织与通知收集，不删除原作者信息。
@@ -546,4 +546,4 @@ owner 的原则：优先用乌龙工作室现有产品里的轮子。审批前�
 - §6：所有包出 rootless/roothide 两个 deb，进仓库索引。
 - §4/§11/§14：git 后端定为 libgit2，在 `Lakr233/libgit2.xcframework` 维护。
 
-**实施时的验证记录**：每个测试组合记录系统版本、bootstrap 类型、目标架构、工具链/SDK ID、Apelin/Irisin 版本、步骤、预期/实际、产物 UUID 与日志摘要。使用不含设备标识的编号引用本地连接配置。产品全链路、Swift、rootless、真机和最低系统保持未完成状态，直到相应记录存在。原始聊天导出保存在仓库外，不作为计划附件提交。
+**实施时的验证记录**：每个测试组合记录系统版本、bootstrap 类型、目标架构、工具链/SDK ID、Luros/Irisin 版本、步骤、预期/实际、产物 UUID 与日志摘要。使用不含设备标识的编号引用本地连接配置。产品全链路、Swift、rootless、真机和最低系统保持未完成状态，直到相应记录存在。原始聊天导出保存在仓库外，不作为计划附件提交。

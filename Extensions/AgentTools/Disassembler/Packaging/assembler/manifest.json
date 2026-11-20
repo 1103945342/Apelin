@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "license": "GPL-2.0-only AND MIT AND NCSA",
   "licenseFiles": [
-    "licenses/Apelin/LICENSE",
+    "licenses/Luros/LICENSE",
     "licenses/Keystone/COPYING",
     "licenses/Keystone/EXCEPTIONS-CLIENT",
     "licenses/Keystone/LLVM-LICENSE.TXT",

@@ -6,7 +6,7 @@ import Foundation
 
 /// Unpacks a zip, tar.xz, tar.zst (or any tar libarchive reads through any
 /// filter) into a staging folder, entry by entry and never through
-/// `archive_read_extract`, so every rule is Apelin's:
+/// `archive_read_extract`, so every rule is Luros's:
 ///
 /// - a name with NUL, an absolute name, `..`, or a name that appears twice is
 ///   refused;

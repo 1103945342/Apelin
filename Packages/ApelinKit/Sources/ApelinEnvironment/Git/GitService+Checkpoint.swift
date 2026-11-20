@@ -12,7 +12,7 @@ extension GitService {
         let commit = try mapped {
             try repository.saveCheckpoint(
                 at: GitCheckpointRules.reference(for: request.messageID),
-                message: "Checkpoint before message \(request.messageID.uuidString.lowercased())\n\nSaved by Apelin: every file the repository does not ignore, as it was before the run.\n",
+                message: "Checkpoint before message \(request.messageID.uuidString.lowercased())\n\nSaved by Luros: every file the repository does not ignore, as it was before the run.\n",
                 author: author,
                 maximumFiles: GitCheckpointRules.maximumFiles,
                 maximumBytes: GitCheckpointRules.maximumBytes,
@@ -35,10 +35,10 @@ extension GitService {
     }
 
     /// The author Settings ▸ Git names, else the repository's, else
-    /// Apelin's own: a checkpoint is on no branch, and a missing author
+    /// Luros's own: a checkpoint is on no branch, and a missing author
     /// must not cost the reader the code they would go back to.
     private func checkpointAuthor(_ repository: GitRepository) -> GitSignature {
         (try? author(name: nil, email: nil, repository: repository))
-            ?? GitSignature(name: "Apelin", email: "apelin@localhost")
+            ?? GitSignature(name: "Luros", email: "apelin@localhost")
     }
 }

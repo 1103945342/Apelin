@@ -2,7 +2,7 @@
 """Standalone report regression, not a replacement for make check or SDK tests.
 
 Run from the repository root. On iOS pass --ios and --entitlements with the
-Tool.entitlements from Apelin's device-executables skill. Output stays in build/.
+Tool.entitlements from Luros's device-executables skill. Output stays in build/.
 """
 import argparse
 from pathlib import Path

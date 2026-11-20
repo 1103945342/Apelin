@@ -14,7 +14,7 @@ public enum KeychainCredentialError: Error, Equatable, LocalizedError {
     }
 }
 
-/// Provider credentials in the keychain: Apelin's own generic-password
+/// Provider credentials in the keychain: Luros's own generic-password
 /// items under service `com.fluoxetine.luros.agent`, one per kwwk store id,
 /// readable after first unlock on this device only and never synchronised.
 ///

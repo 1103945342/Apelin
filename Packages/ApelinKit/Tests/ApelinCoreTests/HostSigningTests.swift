@@ -3,7 +3,7 @@ import Foundation
 import XCTest
 
 /// roothide Bootstrap is told from every other root by the mark it writes
-/// into its own (issue #35: it runs no ad hoc signature, so Apelin's
+/// into its own (issue #35: it runs no ad hoc signature, so Luros's
 /// toolchain was set up and then failed its self-test).
 final class HostSigningTests: XCTestCase {
     private var base: URL!

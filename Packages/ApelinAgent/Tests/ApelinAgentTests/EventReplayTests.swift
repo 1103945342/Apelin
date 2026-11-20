@@ -72,7 +72,7 @@ struct EventReplayTests {
     }
 
     @Test
-    func `the keychain items are this-device-only, unsynchronised, Apelin's own`() {
+    func `the keychain items are this-device-only, unsynchronised, Luros's own`() {
         let source = KeychainCredentialSource(accessGroup: "TEAMID.com.fluoxetine.luros")
         let query = source.itemQuery(CredentialProviderID.githubCopilot)
         #expect(query[kSecAttrService as String] as? String == "com.fluoxetine.luros.agent")

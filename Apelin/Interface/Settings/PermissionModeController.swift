@@ -32,7 +32,7 @@ final class PermissionModeController: TableController {
         dataSource.footerTitle = { section in
             switch section {
             case .modes: AgentPermissions.explanation
-            case .screen: String(localized: "While this is on, the agent asks you before it opens an app or a link, reads what is on the screen or acts on it, through Apelin’s screen tools or icli, in every permission mode. Before a screenshot it always asks in the conversation. Each chat follows a change when you send its next message.")
+            case .screen: String(localized: "While this is on, the agent asks you before it opens an app or a link, reads what is on the screen or acts on it, through Luros’s screen tools or icli, in every permission mode. Before a screenshot it always asks in the conversation. Each chat follows a change when you send its next message.")
             }
         }
         dataSource.update([

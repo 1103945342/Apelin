@@ -492,8 +492,8 @@ enum ChannelModelList {
     }
 }
 
-/// The language Apelin's own interface is in (`Bundle.main`'s, which follows
-/// the per-app language set in Settings ▸ Apelin). The channel lives in the
+/// The language Luros's own interface is in (`Bundle.main`'s, which follows
+/// the per-app language set in Settings ▸ Luros). The channel lives in the
 /// session host, and a daemon reads the *system's* locale — usually English —
 /// so a WeChat reply would otherwise come back in a language the app never
 /// shows. Handed over the same way the model list is: at launch, when the

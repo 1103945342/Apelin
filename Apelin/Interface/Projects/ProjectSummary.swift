@@ -117,7 +117,7 @@ enum ProjectIcon {
         UIImage(named: assetName(for: kind))
     }
 
-    /// The development extension's own icon, Apelin's braces around its
+    /// The development extension's own icon, Luros's braces around its
     /// mark, drawn by Scripts/render-package-icons.py.
     private static func assetName(for kind: DevelopmentExtensionKind) -> String {
         switch kind {

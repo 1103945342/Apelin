@@ -7,7 +7,7 @@ differed from Irisin.
 
 ## Source mapping
 
-| Apelin file | Copied source |
+| Luros file | Copied source |
 | --- | --- |
 | `WelcomeController.swift` | `Irisin/Interface/Onboarding/WelcomeController.swift` |
 | `WelcomeFeatureRow.swift` | `Irisin/Interface/Onboarding/WelcomeFeatureRow.swift` |
@@ -43,9 +43,9 @@ Next remains available to skip.
 The notification page retains Xrash's 92 pt heading start, 24 pt side margins,
 18 pt stack and 8 pt heading gap, separate Not Now action above the original
 bar, and its 38 pt icon/14 pt content inset/22 pt corner notification preview.
-Only the displayed example and permission callback belong to Apelin.
+Only the displayed example and permission callback belong to Luros.
 
-## Apelin behavior
+## Luros behavior
 
 The six steps are product introduction, a resolved SDK/toolchain pair,
 provider sign-in, first project creation, notification permission, and the

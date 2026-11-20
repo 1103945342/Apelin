@@ -20,7 +20,7 @@ public enum AgentTurnOutcome: String, Codable, Sendable, Hashable {
 
 /// Who asked the turn to stop, when it did not end on its own.
 public enum AgentTurnStoppedBy: String, Codable, Sendable, Hashable {
-    /// The reader, in Apelin or through a chat channel.
+    /// The reader, in Luros or through a chat channel.
     case user
     /// The conversation that opened the child.
     case opener

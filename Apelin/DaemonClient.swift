@@ -57,7 +57,7 @@ final class DaemonClient: ApelinTransport, @unchecked Sendable {
 
     func call(_ request: WireRequest, descriptors: [OwnedDescriptor]) async throws -> (WireReply, [OwnedDescriptor]) {
         guard let connection = await connection() else {
-            throw ApelinError(.backendUnavailable, "Apelin’s background service is not running")
+            throw ApelinError(.backendUnavailable, "Luros’s background service is not running")
         }
         // Attach requests add their wait to the ordinary bound. A model test is
         // a task now and answers with its handle at once, like any other.
@@ -78,7 +78,7 @@ final class DaemonClient: ApelinTransport, @unchecked Sendable {
                     continuation.resume(
                         throwing: ApelinError(
                             .unavailable,
-                            String(localized: "The connection to Apelin’s background service closed. Try again."),
+                            String(localized: "The connection to Luros’s background service closed. Try again."),
                         ),
                     )
                     return
@@ -91,7 +91,7 @@ final class DaemonClient: ApelinTransport, @unchecked Sendable {
                 continuation.resume(
                     throwing: ApelinError(
                         .timeout,
-                        String(localized: "Apelin’s background service did not answer within \(waited). Try again."),
+                        String(localized: "Luros’s background service did not answer within \(waited). Try again."),
                     ),
                 )
             }

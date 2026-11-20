@@ -1,10 +1,10 @@
 import UIKit
 import UserNotifications
 
-/// The banners the session host posts as Apelin when a conversation's turn
+/// The banners the session host posts as Luros when a conversation's turn
 /// ends or it waits for a decision (`NoticePoster`, AGENTS.md ▸ The session
 /// host's own work ▸ Notifications). They are for a reader who is elsewhere:
-/// while Apelin is in front, none shows, and opening a conversation clears
+/// while Luros is in front, none shows, and opening a conversation clears
 /// the ones it left. A tap hands the banner's link to the app's own URL
 /// handling.
 @MainActor

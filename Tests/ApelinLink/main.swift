@@ -55,7 +55,7 @@ for name in ["I3 Chain Tweak", "相机翻译", "a?b#c;d", "100% done", session] 
     }
 }
 
-// MARK: - Open in Apelin for a repository
+// MARK: - Open in Luros for a repository
 
 let repository = "https://github.com/owner/repo"
 let escapedRepository = "https%3A%2F%2Fgithub.com%2Fowner%2Frepo"
@@ -135,7 +135,7 @@ for invalid in [
     "lurosdev://import?url=\(escapedRepository)&branch=%FF",
     "lurosdev://import?url=https%3A%2F%2Fgithub.com%2Fowner%2Frepo%FF",
 ] {
-    require(link(invalid) == .invalidImport, "An import naming nothing Apelin imports: \(invalid)")
+    require(link(invalid) == .invalidImport, "An import naming nothing Luros imports: \(invalid)")
 }
 
 require(link("lurosdev://import/x?url=\(escapedRepository)") == .unknown, "An import has no path of its own")

@@ -240,8 +240,8 @@ final class ModelParameterFormController: TableController {
             switch section {
             case .catalog:
                 return catalog == nil
-                    ? String(localized: "Neither the catalog Apelin ships nor its models.dev copy names this model, so what your provider reports is used.")
-                    : String(localized: "Apelin looks a model up by the full name your provider is asked for, and reads it by what the catalog says. Turn this off for an endpoint that refuses a figure it does not honour.")
+                    ? String(localized: "Neither the catalog Luros ships nor its models.dev copy names this model, so what your provider reports is used.")
+                    : String(localized: "Luros looks a model up by the full name your provider is asked for, and reads it by what the catalog says. Turn this off for an endpoint that refuses a figure it does not honour.")
             case .window:
                 return String(localized: "Tokens a conversation may take before your agent compacts it. Leave it empty to use the catalog's figure, or the model's own.")
             case .output:

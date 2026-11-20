@@ -2,7 +2,7 @@
 """Exercise BuildPipeline's real compile/link methods with the on-device CLT.
 
 Run in the repository: python3 Scripts/test-mixed-build-device.py
-Requires Apelin's APELIN_PROJECT_ROOT, APELIN_TOOLCHAIN_BIN, SDKROOT and ldid.
+Requires Luros's APELIN_PROJECT_ROOT, APELIN_TOOLCHAIN_BIN, SDKROOT and ldid.
 All generated files stay in .build/mixed-device; no app/package is installed.
 This is a compile/link/runtime smoke test, NOT a substitute for make check or
 BuildService/Mach-O verification/packaging tests. Full XCTest runs on CI.
@@ -34,7 +34,7 @@ def run(argv, cwd=REPO):
 
 def source(path):
     text = (KIT / path).read_text()
-    return re.sub(r"^import Apelin\w+\n", "", text, flags=re.M)
+    return re.sub(r"^import Luros\w+\n", "", text, flags=re.M)
 
 
 def prepare_harness():

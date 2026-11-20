@@ -96,11 +96,11 @@
   },
   "package": {
     "id": "com.example.apelinhello",
-    "name": "Apelin Hello",
+    "name": "Luros Hello",
     "version": "0.0.1",
-    "description": "Built on this device with Apelin.",
+    "description": "Built on this device with Luros.",
     "icon": "https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.dev.cli.png",
-    "author": "Apelin User",
+    "author": "Luros User",
     "section": "Utilities",
     "layout": [
       {

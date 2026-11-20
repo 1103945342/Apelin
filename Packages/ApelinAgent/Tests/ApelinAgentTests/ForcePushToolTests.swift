@@ -102,7 +102,7 @@ struct ForcePushToolTests {
             #expect(request.reason.contains("Force-pushes main to origin (\(Self.url)), overwriting its history there"))
             #expect(request.reason.contains("the remote's main, at aaaaaaa, is replaced by this project's bbbbbbb “Rewrite the clock”"))
             #expect(request.reason.contains("2 commits on the remote will no longer be on main: aaaaaaa “Theirs”, ccccccc “Older”"))
-            #expect(request.reason.contains("This cannot be undone from Apelin."))
+            #expect(request.reason.contains("This cannot be undone from Luros."))
             #expect(request.reason.contains("Each forced push needs your approval, in every mode."))
 
             let calls = await harness.backend.calls

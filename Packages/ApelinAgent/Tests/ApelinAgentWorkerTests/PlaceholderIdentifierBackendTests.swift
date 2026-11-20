@@ -4,7 +4,7 @@ import ApelinProtocol
 import Foundation
 import Testing
 
-/// apelin_project_create's result names the identifiers Apelin made up for
+/// apelin_project_create's result names the identifiers Luros made up for
 /// the project, read from the folder `projectCreate` made, so the chat that
 /// made it asks the user before the first install.
 @Suite("A new project's placeholder identifiers")
@@ -43,7 +43,7 @@ struct PlaceholderIdentifierBackendTests {
         let fixture = try Fixture()
         defer { try? FileManager.default.removeItem(at: fixture.dataFolder) }
         let created = try await create(fixture, manifest: Self.manifest(packageID: "local.apelin.banana"), bundleID: "local.apelin.banana")
-        #expect(created.identifierHint == "Its package ID local.apelin.banana and app bundle ID local.apelin.banana are placeholders Apelin made up. Before its first install the user should choose permanent ones, kept the same for debug and release builds: ask here and pass them on in the prompt of the conversation you open for it, or tell that conversation to ask.")
+        #expect(created.identifierHint == "Its package ID local.apelin.banana and app bundle ID local.apelin.banana are placeholders Luros made up. Before its first install the user should choose permanent ones, kept the same for debug and release builds: ask here and pass them on in the prompt of the conversation you open for it, or tell that conversation to ask.")
     }
 
     @Test

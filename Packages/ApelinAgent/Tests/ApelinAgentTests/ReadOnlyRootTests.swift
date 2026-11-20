@@ -5,7 +5,7 @@ import KWWKAgent
 import KWWKAI
 import Testing
 
-/// The read tools reach Apelin's development extensions and the registered
+/// The read tools reach Luros's development extensions and the registered
 /// SDKs by absolute path, in every mode and without asking; the write tools
 /// never do, and nothing else outside the project opens.
 @Suite("Read-only roots")
@@ -197,7 +197,7 @@ struct ReadOnlyRootTests {
         }
         // The refusal says where else the read tools read.
         let refusal = try #require(await fixture.refusal(.fileRead, ["path": .string(fixture.outside.path)], mode: .confirm))
-        #expect(refusal.contains("is outside the project; the file tools also read, never write, an absolute path inside Apelin's development extensions (\(fixture.development)) or the registered SDKs (\(fixture.sdks))"), "\(refusal)")
+        #expect(refusal.contains("is outside the project; the file tools also read, never write, an absolute path inside Luros's development extensions (\(fixture.development)) or the registered SDKs (\(fixture.sdks))"), "\(refusal)")
         // A write's refusal does not offer what it cannot do.
         let write = try #require(await fixture.refusal(.fileWrite, ["path": .string(fixture.outside.path), "content": "x"], mode: .relaxed))
         #expect(!write.contains("also read"), "\(write)")

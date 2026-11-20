@@ -25,7 +25,7 @@ struct UserNotices {
             throw ToolArgumentError("title is \(title.count) characters; keep it to \(AgentNoticeRules.maximumTitleLength), a few words, or leave it out")
         }
         guard sentThisTurn < AgentNoticeRules.maximumPerTurn else {
-            throw ToolDeniedError(message: "Not sent: this turn has sent \(AgentNoticeRules.maximumPerTurn) notifications, the most one may. Say the rest in your reply; Apelin notifies the user when the turn ends.")
+            throw ToolDeniedError(message: "Not sent: this turn has sent \(AgentNoticeRules.maximumPerTurn) notifications, the most one may. Say the rest in your reply; Luros notifies the user when the turn ends.")
         }
         if let lastSent, now.timeIntervalSince(lastSent) < AgentNoticeRules.minimumInterval {
             let seconds = Int(AgentNoticeRules.minimumInterval)
@@ -44,6 +44,6 @@ struct UserNotices {
     /// What the model reads once the notice is recorded.
     var sentMessage: String {
         let left = AgentNoticeRules.maximumPerTurn - sentThisTurn
-        return "Sent to Apelin as a notification. It shows only while Apelin is not in front and the user allows its notifications, and nothing tells you whether they saw it. \(left) more may go this turn."
+        return "Sent to Luros as a notification. It shows only while Luros is not in front and the user allows its notifications, and nothing tells you whether they saw it. \(left) more may go this turn."
     }
 }

@@ -21,7 +21,7 @@ CHATS=("Frosted Dock" "Choosing a Toolchain" "Battery Health" "Heart Rate Chart"
 mkdir -p "$WORK/screenshots"
 
 # --- The app, for the simulator ----------------------------------------------
-# A screenshot build only: Apelin ships no simulator build. The packages the
+# A screenshot build only: Luros ships no simulator build. The packages the
 # device build resolved are reused when they are there.
 if [[ -d /private/tmp/apelin-deriveddata/SourcePackages && ! -e $DERIVED/SourcePackages ]]; then
     mkdir -p "$DERIVED"

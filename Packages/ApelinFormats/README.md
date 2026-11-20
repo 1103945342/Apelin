@@ -1,6 +1,6 @@
 # ApelinFormats
 
-The file formats Apelin reads and writes on the device: Mach-O images, and
+The file formats Luros reads and writes on the device: Mach-O images, and
 Debian binary packages in both directions. Every API is synchronous and
 throwing; nothing spawns a process, imports UIKit or knows where the
 bootstrap is installed. iOS 16 and macOS 13; `swift test` runs everything on
@@ -33,7 +33,7 @@ linked into apelind.
   of its `MachOBinary`, read by hand instead of through MachOKit and without
   roothide's install-name rewrite. `Tests/ApelinCodeSignTests/Fixtures` holds
   inputs built from `fixture.c` and what `ldid -Hsha256 -S` made of them
-  (`build.sh`); the signer must match them byte for byte. It is Apelin's one
+  (`build.sh`); the signer must match them byte for byte. It is Luros's one
   signer: `Packages/ApelinToolchain` builds its retargeted tools' signatures
   from the same `LdidStyleSignature` and `LdidEntitlements`, held to Irisin's
   seven device ldid fixtures there.

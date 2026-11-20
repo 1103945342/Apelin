@@ -19,7 +19,7 @@ struct HostRestartNoteTests {
         }
     }
 
-    private static let note = "Apelin's background service has restarted since this conversation last ran"
+    private static let note = "Luros's background service has restarted since this conversation last ran"
 
     private static func text(_ message: Message) -> String? {
         guard case let .user(user) = message else { return nil }

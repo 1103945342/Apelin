@@ -173,7 +173,7 @@ public enum GitClone {
         }
     }
 
-    /// A file of the folder the repository's own copy may replace (an Apelin
+    /// A file of the folder the repository's own copy may replace (an Luros
     /// workspace's `luros-project.json`): `settle` is handed the
     /// repository's bytes before anything is checked out, and answers what
     /// the file holds afterwards — those bytes, or others — or throws to

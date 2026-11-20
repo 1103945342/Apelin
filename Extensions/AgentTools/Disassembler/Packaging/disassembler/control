@@ -3,7 +3,7 @@ Name: Luros Disassembler
 Version: @VERSION@
 Architecture: @ARCHITECTURE@
 Description: Disassembly and Mach-O symbol tools for Luros's agent, for @FLAVOR@ jailbreaks
- An agent tool extension for Apelin. It gives the agent two read-only tools: disassemble, which decodes instructions from a Mach-O binary with Capstone, and symbols, which lists a binary's symbol table. It runs as its own process and only when Luros's agent calls it.
+ An agent tool extension for Luros. It gives the agent two read-only tools: disassemble, which decodes instructions from a Mach-O binary with Capstone, and symbols, which lists a binary's symbol table. It runs as its own process and only when Luros's agent calls it.
 Icon: https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.agent-tools.disassembler.png
 Maintainer: OwnGoal Studio <not-gonna-reply@owngoal.dev>
 Author: OwnGoal Studio <not-gonna-reply@owngoal.dev>

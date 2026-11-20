@@ -71,7 +71,7 @@ enum SystemPrompt {
     static func injectedSection(_ text: String) -> String {
         """
         # Injected instructions
-        The reader set these in Apelin's settings. They come before everything \
+        The reader set these in Luros's settings. They come before everything \
         else here and take precedence over the instructions below.
         \(text)
         """
@@ -80,7 +80,7 @@ enum SystemPrompt {
     /// Project instructions, memories and skills written before the tools
     /// were renamed (`AgentToolName.legacyNames`) still name them the old
     /// way; nothing rewrites them.
-    static let renamedToolsNote = "Notes written before Apelin renamed its tools (project instructions, memories, skills) may use the old names, such as run_code, write_file or build: use the tool of the same purpose here."
+    static let renamedToolsNote = "Notes written before Luros renamed its tools (project instructions, memories, skills) may use the old names, such as run_code, write_file or build: use the tool of the same purpose here."
 
     /// How a chat works with other conversations, of its project or another.
     static let conversationsSection = SystemPromptText.conversations

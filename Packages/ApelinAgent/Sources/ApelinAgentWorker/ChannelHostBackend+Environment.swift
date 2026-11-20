@@ -139,7 +139,7 @@ public extension ChannelHostBackend {
         let problems = errors.map(fieldAndMessage).joined(separator: "; ")
         var message = "apelin_project_set_environment failed: the project file did not read (\(problems))."
         if errors.contains(where: { $0.code == schemaErrorCode && $0.field == "/" && createdMembers.contains($0.message) }) {
-            message += " This luros-project.json lacks the template and environment only apelin_project_create writes, so it is not an Apelin build description and no toolchain or SDK can be bound to it. An imported or empty workspace keeps \"kind\": \"workspace\" and builds with a script of its own (the apelin-external-build skill); shell_run already has the device's toolchain and SDK."
+            message += " This luros-project.json lacks the template and environment only apelin_project_create writes, so it is not an Luros build description and no toolchain or SDK can be bound to it. An imported or empty workspace keeps \"kind\": \"workspace\" and builds with a script of its own (the apelin-external-build skill); shell_run already has the device's toolchain and SDK."
         } else if errors.contains(where: { $0.code == schemaErrorCode }) {
             message += " " + schemaPointer
         }

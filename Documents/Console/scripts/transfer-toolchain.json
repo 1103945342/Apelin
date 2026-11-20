@@ -6,7 +6,7 @@
     {"op": "expect", "request": {"step": "status", "path": "response.toolchains.0.id", "exists": true}},
 
     {"op": "transferExport", "label": "export", "timeoutSeconds": 3600,
-     "request": {"kind": "toolchain", "id": "${status.response.toolchains.0.id}", "createdBy": "Apelin console"}},
+     "request": {"kind": "toolchain", "id": "${status.response.toolchains.0.id}", "createdBy": "Luros console"}},
     {"op": "expect", "request": {"step": "export", "state": "succeeded"}},
 
     {"op": "transferInspect", "label": "inspect",

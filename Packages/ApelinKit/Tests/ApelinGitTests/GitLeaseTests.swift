@@ -11,7 +11,7 @@ import XCTest
 /// and once through `git daemon` on the loopback, whose receive-pack holds
 /// an update to the old value the push sends.
 final class GitLeaseTests: XCTestCase {
-    private let author = GitSignature(name: "Apelin Test", email: "test@apelin.invalid")
+    private let author = GitSignature(name: "Luros Test", email: "test@apelin.invalid")
 
     private struct Remote {
         let base: URL

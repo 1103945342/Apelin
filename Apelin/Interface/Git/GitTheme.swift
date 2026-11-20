@@ -4,7 +4,7 @@ import UIKit
 
 /// The Git screen's colours, type and spacing. The grounds, the text and the
 /// accent are the app's own (`UIColor+Surfaces`, `AppAccent`), so the page
-/// belongs to Apelin like the pages beside it; only what carries meaning —
+/// belongs to Luros like the pages beside it; only what carries meaning —
 /// a diff's added and removed lines, the graph's lanes, a path's status — keeps
 /// a colour of its own.
 enum GitTheme {

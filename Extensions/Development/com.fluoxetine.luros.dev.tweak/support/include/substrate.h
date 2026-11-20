@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 OwnGoal Studio
 //
-// The substrate-compatible hooking interface Apelin's tweak templates call.
-// Written for Apelin from the published function signatures; no header is
+// The substrate-compatible hooking interface Luros's tweak templates call.
+// Written for Luros from the published function signatures; no header is
 // copied from Cydia Substrate, ElleKit or any other implementation.
 //
 // At run time these symbols come from whatever the bootstrap installs as the

@@ -1,6 +1,6 @@
 import Foundation
 
-/// What Open in Apelin for a repository (`ApelinLink.importRepository`)
+/// What Open in Luros for a repository (`ApelinLink.importRepository`)
 /// decides before anything is asked of the host: the project name it
 /// suggests, whether a project on the device already has the repository,
 /// and what a second link does while an import is shown or running.

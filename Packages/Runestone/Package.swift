@@ -3,7 +3,7 @@
 import PackageDescription
 
 /// Runestone, vendored: simonbs/Runestone's text view, the Tree-sitter runtime,
-/// and only the grammars Apelin highlights. README.md says where each part
+/// and only the grammars Luros highlights. README.md says where each part
 /// came from, what changed, and how a grammar is added.
 let grammars: [(name: String, cxx: Bool, exclude: [String])] = [
     ("TreeSitterBash", true, []),

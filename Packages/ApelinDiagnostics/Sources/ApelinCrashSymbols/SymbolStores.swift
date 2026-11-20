@@ -180,7 +180,7 @@ public final class DSYMStore: DSYMLookup, @unchecked Sendable {
     }
 }
 
-// Apelin: Xrash's SystemSymbolStore (dyld shared cache extraction) is not
-// ported. It is the only part that needed MachOKit, and Apelin symbolicates
+// Luros: Xrash's SystemSymbolStore (dyld shared cache extraction) is not
+// ported. It is the only part that needed MachOKit, and Luros symbolicates
 // its own project images from the dSYM the build kept; system frames keep
 // the names the report already carries.

@@ -2,11 +2,11 @@ import ApelinCore
 import ApelinProtocol
 import Foundation
 
-/// The console: Apelin run headless from a script, against the same
+/// The console: Luros run headless from a script, against the same
 /// `ApelinService` the UI and the agent's tools call. It is the app itself,
 /// not a second peer of apelind, so "No CLI" holds; the app binds it to
 /// `ApelinService.app` and `DataFolder.app` and starts it from
-/// `didFinishLaunching` (Apelin/Console/ConsoleLaunch.swift).
+/// `didFinishLaunching` (Luros/Console/ConsoleLaunch.swift).
 ///
 /// Scripts come from the launch argument `-apelin-console <path>` and from
 /// `~/Documents/com.fluoxetine.luros/console/inbox/*.json`, checked at launch and
@@ -241,7 +241,7 @@ public actor ConsoleRunner {
         // A star is the reader's, given on their GitHub account by a tap in
         // the app; a script never gives one for them.
         guard operation != .feedbackStar else {
-            throw ApelinError(.denied, "Apelin is starred only from the app, when the reader taps Star Now.")
+            throw ApelinError(.denied, "Luros is starred only from the app, when the reader taps Star Now.")
         }
         // A command as root runs only after the device owner's check in the
         // app: approving one carries the owner mark, and Full runs one

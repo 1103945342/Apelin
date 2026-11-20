@@ -7,7 +7,7 @@ import KWWKAI
 /// put in the user's package repository as their builds made them, every
 /// one in one commit — roothide and rootless of one version together. What could
 /// never be published is refused here, before anyone is asked: a build
-/// that left no package, a debug build, a package gone from Apelin's build
+/// that left no package, a debug build, a package gone from Luros's build
 /// folder, two packages of one ID, version and architecture, and a device
 /// with no linked repository or no GitHub sign-in. The card then names the
 /// repository and each package with the digest its build recorded, and
@@ -55,7 +55,7 @@ public enum PackagePublish {
                 continue
             }
             guard record.present else {
-                problems.append("The package of \(id), \(package), is no longer in Apelin's build folder: build it again.")
+                problems.append("The package of \(id), \(package), is no longer in Luros's build folder: build it again.")
                 continue
             }
             if let twin = packages.first(where: {

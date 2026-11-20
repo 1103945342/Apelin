@@ -125,7 +125,7 @@ struct ProjectDeleteToolTests {
     }
 
     @Test
-    func `the prompt keeps it to the user's explicit request and off Apelin's screen`() throws {
+    func `the prompt keeps it to the user's explicit request and off Luros's screen`() throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let prompt = SystemPrompt.make(project: home.project, projectRoot: home.projectURL.path, skills: [], mcpServers: [])

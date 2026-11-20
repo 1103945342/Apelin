@@ -4,7 +4,7 @@ import SnapKit
 import Then
 import UIKit
 
-/// Open in Apelin ▸ the confirmation: what the file holds, what it needs,
+/// Open in Luros ▸ the confirmation: what the file holds, what it needs,
 /// what would stop it, and Import. The manifest is read by the session host
 /// (`transferInspect`), which says whether an import would start here; the
 /// payload is checked by the import itself, before anything is installed or

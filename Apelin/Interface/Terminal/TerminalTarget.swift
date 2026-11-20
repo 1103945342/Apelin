@@ -2,7 +2,7 @@ import Foundation
 
 /// Where a terminal starts, in the terms a restart can keep: a folder inside a
 /// project, named by the project's folder and a plain relative path, or a
-/// folder relative to Apelin's own data folder. Never an absolute path: on
+/// folder relative to Luros's own data folder. Never an absolute path: on
 /// roothide one carries an install root that a reboot may rename, and a record
 /// written that way opens the wrong place — or nothing — the next day.
 ///
@@ -134,7 +134,7 @@ struct TerminalTarget: Codable, Hashable, Sendable {
 /// the folder the shell actually starts in, canonical.
 ///
 /// The folder is part of the identity and none of the record: two folders
-/// outside Apelin's own storage both persist as `.elsewhere`, and a page
+/// outside Luros's own storage both persist as `.elsewhere`, and a page
 /// opened on the second must not be handed the first one's shell.
 struct TerminalIdentity: Hashable, Sendable {
     let target: TerminalTarget

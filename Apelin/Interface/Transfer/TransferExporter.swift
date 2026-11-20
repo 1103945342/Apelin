@@ -35,14 +35,14 @@ enum TransferExporter {
         case .toolchain:
             presenter.presentConfirmation(
                 title: "Export the Toolchain?",
-                message: "This file contains Apple’s Command Line Tools adapted for your own devices. Apelin does not upload it.",
+                message: "This file contains Apple’s Command Line Tools adapted for your own devices. Luros does not upload it.",
                 confirmTitle: "Export",
                 onConfirm: start,
             )
         case .sdk:
             presenter.presentConfirmation(
                 title: "Export the SDK?",
-                message: "This file contains Apple’s iPhoneOS SDK for your own devices. Apelin does not upload it.",
+                message: "This file contains Apple’s iPhoneOS SDK for your own devices. Luros does not upload it.",
                 confirmTitle: "Export",
                 onConfirm: start,
             )
@@ -56,12 +56,12 @@ enum TransferExporter {
         }
     }
 
-    /// `Apelin <version> (<build>)`, for the manifest.
+    /// `Luros <version> (<build>)`, for the manifest.
     static var createdBy: String {
         let info = Bundle.main.infoDictionary
         let version = info?["CFBundleShortVersionString"] as? String ?? "?"
         let build = info?["CFBundleVersion"] as? String ?? "?"
-        return "Apelin \(version) (\(build))"
+        return "Luros \(version) (\(build))"
     }
 
     private static func export(

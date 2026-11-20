@@ -72,8 +72,8 @@ public struct InstallConflict: Codable, Sendable, Hashable {
     public var packageID: String
     /// The version installed now.
     public var version: String
-    /// The installation `removePackage` takes, when Apelin installed this
-    /// version; nil when Apelin did not.
+    /// The installation `removePackage` takes, when Luros installed this
+    /// version; nil when Luros did not.
     public var installationID: String?
     public var projectID: String?
 

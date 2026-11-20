@@ -329,8 +329,8 @@ actor TerminalHost {
         var environment = [
             "TERM": "xterm-256color",
             "COLORTERM": "truecolor",
-            "TERM_PROGRAM": "Apelin",
-            // This shell is Apelin's own: the login profile snippet shortens
+            "TERM_PROGRAM": "Luros",
+            // This shell is Luros's own: the login profile snippet shortens
             // its prompt only when it is set, so a terminal opened anywhere
             // else keeps the prompt its user configured.
             "APELIN_TERMINAL": "1",

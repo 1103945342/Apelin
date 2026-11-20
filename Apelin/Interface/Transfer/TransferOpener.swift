@@ -4,7 +4,7 @@ import Darwin
 import UIKit
 import UniformTypeIdentifiers
 
-/// A transfer file the app was handed, held open: Open in Apelin, a file
+/// A transfer file the app was handed, held open: Open in Luros, a file
 /// picked in Files. The path is read once, to open it; from then on only the
 /// descriptor is passed on, a duplicate for each request, and the file
 /// closes when the last page holding it goes.
@@ -28,7 +28,7 @@ final class TransferFile {
     }
 }
 
-/// Opening a transfer file: the scene's Open in Apelin and the pickers in
+/// Opening a transfer file: the scene's Open in Luros and the pickers in
 /// Settings come here. The file is opened while its security scope lasts and
 /// held by descriptor; the confirmation page (`TransferImportController`)
 /// reads its manifest and asks before anything is imported.
@@ -41,7 +41,7 @@ enum TransferOpener {
         UTType(kind.typeIdentifier) ?? UTType(filenameExtension: kind.fileExtension) ?? .data
     }
 
-    /// Open in Apelin: in front of whatever the scene shows.
+    /// Open in Luros: in front of whatever the scene shows.
     static func open(_ url: URL, in scene: UIWindowScene) {
         guard var top = scene.keyWindow?.rootViewController ?? scene.windows.first?.rootViewController else { return }
         while let presented = top.presentedViewController, !presented.isBeingDismissed {
@@ -65,8 +65,8 @@ enum TransferOpener {
             switch problem {
             case .unknownKind:
                 presenter.presentNotice(
-                    title: "Not an Apelin File",
-                    message: "Apelin opens toolchains (.apetc), SDKs (.apesdk) and projects (.apeproj).",
+                    title: "Not an Luros File",
+                    message: "Luros opens toolchains (.apetc), SDKs (.apesdk) and projects (.apeproj).",
                 )
             case let .unreadable(reason):
                 presenter.presentNotice(title: "Unable to Open", message: reason)

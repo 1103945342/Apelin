@@ -77,7 +77,7 @@
 				<string>public.archive</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Apelin Toolchain</string>
+			<string>Luros Toolchain</string>
 			<key>UTTypeIdentifier</key>
 			<string>com.fluoxetine.luros.toolchain-package</string>
 			<key>UTTypeTagSpecification</key>
@@ -95,7 +95,7 @@
 				<string>public.archive</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Apelin SDK</string>
+			<string>Luros SDK</string>
 			<key>UTTypeIdentifier</key>
 			<string>com.fluoxetine.luros.sdk-package</string>
 			<key>UTTypeTagSpecification</key>
@@ -113,7 +113,7 @@
 				<string>public.archive</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Apelin Project</string>
+			<string>Luros Project</string>
 			<key>UTTypeIdentifier</key>
 			<string>com.fluoxetine.luros.project-package</string>
 			<key>UTTypeTagSpecification</key>

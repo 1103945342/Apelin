@@ -49,7 +49,7 @@ final class ExtensionAndProjectTests: XCTestCase {
         XCTAssertTrue(catalog.usable.isEmpty)
     }
 
-    /// The copy Apelin's own package carries stands in for an extension no
+    /// The copy Luros's own package carries stands in for an extension no
     /// package installs, and an installed one of the same id wins over it.
     func testBundledCopyStandsInAndInstalledWins() throws {
         let installed = try scratchDirectory()
@@ -129,7 +129,7 @@ final class ExtensionAndProjectTests: XCTestCase {
                 let architectures = JSONWriter.compact(.object(JSONObject(Bootstrap.allCases.compactMap { bootstrap in
                     manifest.requirements.architectures[bootstrap].map { (bootstrap.rawValue, .array($0.map { .string($0.rawValue) })) }
                 })))
-                // Apelin names the product after the project, as it fills
+                // Luros names the product after the project, as it fills
                 // bundleID and packageID; the reference is given the same.
                 let productName = template.parameters.contains { $0.name == "productName" }
                     ? ", \"productName\": \(CanonicalJSON.quote(ProjectStore.identifier(name)!))" : ""
@@ -153,13 +153,13 @@ final class ExtensionAndProjectTests: XCTestCase {
                 XCTAssertEqual(created.baseline.packaging.digest, expected["packaging"]?["digest"]?.stringValue, template.id)
                 XCTAssertEqual(created.baseline.build.canonical, expected["build"]?["canonical"]?.stringValue, template.id)
                 try assertSameTree(created.root, reference, template.id)
-                // the repository is Apelin's, not the template's
+                // the repository is Luros's, not the template's
                 XCTAssertEqual(
                     try String(contentsOf: created.root.appendingPathComponent(".git/HEAD"), encoding: .utf8),
                     "ref: refs/heads/main\n",
                     template.id,
                 )
-                // and keeps Apelin's own files out of it
+                // and keeps Luros's own files out of it
                 XCTAssertEqual(
                     try String(contentsOf: created.root.appendingPathComponent(".git/info/exclude"), encoding: .utf8),
                     "/Attachments/\n/.apelin-metadata-*\n.*.apelin-*\n",

@@ -33,7 +33,7 @@ public struct DebPackageWriter: Sendable {
     public var controlFiles: [String: Data] = [:]
     public var compression: DebCompression = .zstd
     /// The control member's own compression, when it should differ from the
-    /// data's. Apelin's session host reads a package's control file itself
+    /// data's. Luros's session host reads a package's control file itself
     /// before it hands the package to irisind, with system code only — gzip,
     /// xz or none — so a package for the install bridge sets `.gzip` here.
     /// nil uses `compression`.

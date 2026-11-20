@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Keep this repository's copy of models.dev's catalog: Apelin/Resources/models.dev.json.
+"""Keep this repository's copy of models.dev's catalog: Luros/Resources/models.dev.json.
 
 The app ships this file and writes it into the data folder on the first launch,
 so a device reads a model the catalog kwwk ships does not name without reaching
@@ -8,7 +8,7 @@ the network; the app replaces it when its copy is older than a week.
 The trimming is the one `ModelDataSnapshot.parse` does in Swift — the fields a
 conversation reads, nothing else — so the app decodes this file with the same
 type it decodes models.dev's own api.json with. The file is rewritten only when
-a model's figures change: its `generatedAt` is the moment Apelin's copy last
+a model's figures change: its `generatedAt` is the moment Luros's copy last
 changed, which is what the app's week is measured from.
 
 Usage: refresh-models-dev.py [repository root] [--source URL]
@@ -20,7 +20,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-RELATIVE = Path("Apelin/Resources/models.dev.json")
+RELATIVE = Path("Luros/Resources/models.dev.json")
 DEFAULT_SOURCE = "https://models.dev/api.json"
 
 

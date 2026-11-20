@@ -61,7 +61,7 @@ enum TerminalTargetCheck {
         )
         check(slashed == inner, "a trailing slash does not change the target")
 
-        // Apelin's own data folder: General Chat's temporary workspace.
+        // Luros's own data folder: General Chat's temporary workspace.
         let data = TerminalTarget.resolve(directory: temporary, projectRoot: nil, dataRoot: dataRoot)
         check(data == TerminalTarget(location: .data(relativePath: "Temporary/1234")),
               "a folder in the data folder is kept relative to it")

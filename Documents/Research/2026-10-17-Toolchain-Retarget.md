@@ -4,7 +4,7 @@ The standalone `Packages/ApelinToolchain` base pipeline downloaded Apple's CLT,
 extracted it, adapted and signed it **on both devices as uid/gid 501**. C, C++
 and Objective-C compiled, linked and ran for arm64 and arm64e; every executable's
 UUID matched its dSYM. This is the package on its own, driven by its probe;
-the same pipeline run as `toolchainSetup` through Apelin, installed by irisind
+the same pipeline run as `toolchainSetup` through Luros, installed by irisind
 and registered, is in `Device-Validation.md`.
 
 ## Tested combination
@@ -178,7 +178,7 @@ What the releases needed, and why:
   and the classic bind stream; lazy binds resolve only on first call). An
   iOS link never calls either library. Asking for those paths on purpose,
   `-fembed-bitcode` with 14.3 or `-Wl,-adhoc_codesign` with 15.3, gets
-  ld killed (`linker command failed due to signal`); Apelin passes neither.
+  ld killed (`linker command failed due to signal`); Luros passes neither.
 - **The self-test's dSYM reader** rejected CLT 13–15's C++ dSYMs: their
   dsymutil copies `__eh_frame` into the dSYM, so `__TEXT` has file bytes
   while its other sections stay virtual at offset 0. Fixed in the reader,
@@ -191,7 +191,7 @@ What the releases needed, and why:
   report was produced to symbolicate, so the cause is unconfirmed; an older
   libc++ inline ABI against the system's arm64e libc++ is the likely one.
 
-Through Apelin (`t3-toolchain-side-by-side.json`, 2026-10-19, build 19,
+Through Luros (`t3-toolchain-side-by-side.json`, 2026-10-19, build 19,
 scheme 1, so 16.4's ID there is scheme 1's):
 `sdkImport` of the 18.5 SDK from the inbox (3.3 s); `toolchainSetup` of
 12.4 failed at once with that refusal, before any download; 16.4 set up
@@ -232,7 +232,7 @@ like the C tools; nothing is invented or built from source.
   checks each target. Resources: `usr/lib/swift/host` (the in-process plugin
   server and the macro plugins, which resolve `@rpath` through the host
   folder) and `usr/lib/swift/apinotes`. libSwiftScan (170 MB, explicit
-  module builds only) is left out; Apelin passes `-nonlib-dependency-scanner`
+  module builds only) is left out; Luros passes `-nonlib-dependency-scanner`
   so the driver does not warn about it. An empty `usr/lib/swift/iphoneos`
   keeps ld from warning about the search path swiftc adds. The tree is
   364 files, 478 MB; setup peaked at 526 MB RSS on the Mac.
@@ -284,7 +284,7 @@ arm64e, and Swift macro failed on both as described above. A Swift program
 using `@Observable` (deployment target 17.0) and parameter packs in
 closures and async functions also compiled and ran by hand.
 
-Through Apelin (`t4-toolchain-swift.json`, twice): `toolchainSetup` of 27.0
+Through Luros (`t4-toolchain-swift.json`, twice): `toolchainSetup` of 27.0
 with Swift beside the registered scheme 1 27.0 toolchain, installed by
 irisind as `com.fluoxetine.luros.toolchain.b7c9ecde91f0cca89ea0594f` (364 files,
 `newestSDK` 27.0), both components `selfCheckPassed`, self-tested against
@@ -518,7 +518,7 @@ imports, not a device launch or proof of iOS 16.0 compatibility. The 17.3.1
 legacy Swift floor remains a labeled support policy based on the oldest
 actual run, rather than being presented as a CPU instruction requirement.
 
-`StaticInventoryTests` prepares only the host images selected by Apelin's
+`StaticInventoryTests` prepares only the host images selected by Luros's
 real dependency closure, using downloaded Apple packages. Images are
 thinned to arm64 without modifying their instructions. A local C helper uses
 Xcode's LLVM decoder API on every instruction in every executable section,

@@ -560,7 +560,7 @@ def _jcs_string(text: str) -> str:
 
 
 def canonical_json(value: Any) -> bytes:
-    """RFC 8785 for the value space Apelin allows: no non-integer numbers."""
+    """RFC 8785 for the value space Luros allows: no non-integer numbers."""
 
     def encode(v: Any) -> str:
         if v is None:
@@ -574,7 +574,7 @@ def canonical_json(value: Any) -> bytes:
                 raise ValueError("an integer outside ±(2^53-1) cannot be canonicalised")
             return str(v)
         if isinstance(v, float):
-            raise ValueError("non-integer numbers are not part of Apelin documents")
+            raise ValueError("non-integer numbers are not part of Luros documents")
         if isinstance(v, str):
             return _jcs_string(v)
         if isinstance(v, list):
@@ -601,7 +601,7 @@ def digest_of(document: Any) -> str:
 
 
 def manifest_text(document: Any) -> bytes:
-    """luros-project.json as Apelin writes it (README ▸ Written form)."""
+    """luros-project.json as Luros writes it (README ▸ Written form)."""
     return (json.dumps(document, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
 
 

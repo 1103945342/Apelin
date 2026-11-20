@@ -1,6 +1,6 @@
 # Bundled tools
 
-Apelin carries the two device tools it cannot work without, so its package
+Luros carries the two device tools it cannot work without, so its package
 depends on no package for them:
 
 | File | From | Version | SHA-256 |

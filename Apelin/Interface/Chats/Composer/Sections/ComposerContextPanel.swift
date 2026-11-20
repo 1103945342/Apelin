@@ -12,7 +12,7 @@ import UIKit
 /// about the room left.
 final class ComposerContextPanel: ComposerPanel {
     /// Where the agent compacts on its own: kwwk's `AgentAutoCompactOptions`
-    /// default, which Apelin does not override. The tick on the bar and the
+    /// default, which Luros does not override. The tick on the bar and the
     /// sentence under it both read this one figure.
     /// What the reader set in Settings ▸ Chat: the share at which a
     /// conversation compacts itself, shown here as a percentage.

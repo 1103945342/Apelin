@@ -88,10 +88,10 @@
   },
   "package": {
     "id": "com.example.apelinhello",
-    "name": "Apelin Hello",
+    "name": "Luros Hello",
     "version": "0.0.1",
-    "description": "Built on this device with Apelin.",
-    "author": "Apelin User",
+    "description": "Built on this device with Luros.",
+    "author": "Luros User",
     "section": "Utilities",
     "layout": [
       {

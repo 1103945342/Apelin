@@ -218,7 +218,7 @@ struct TransferArchiveReader {
         guard status == ARCHIVE_OK || status == ARCHIVE_WARN, let entry,
               Self.name(of: entry) == TransferManifest.fileName, archive_entry_filetype(entry) == S_IFREG
         else {
-            throw ApelinError(.badRequest, "This is not an Apelin transfer file. Choose another file.")
+            throw ApelinError(.badRequest, "This is not an Luros transfer file. Choose another file.")
         }
         let size = archive_entry_size(entry)
         guard size > 0, size <= Int64(limits.manifestBytes) else {
@@ -246,10 +246,10 @@ struct TransferArchiveReader {
     /// The manifest's own rules, before any payload is read.
     static func check(_ manifest: TransferManifest, limits: TransferLimits) throws {
         guard manifest.formatVersion <= TransferManifest.currentFormatVersion else {
-            throw ApelinError(.badRequest, "This file was made by a newer version of Apelin. Update Apelin to open it.")
+            throw ApelinError(.badRequest, "This file was made by a newer version of Luros. Update Luros to open it.")
         }
         guard manifest.formatVersion >= 1 else {
-            throw ApelinError(.badRequest, "Apelin cannot open this file. Export it again.")
+            throw ApelinError(.badRequest, "Luros cannot open this file. Export it again.")
         }
         guard !manifest.id.isEmpty, !CanonicalPath.containsNUL(manifest.id), !manifest.name.isEmpty else {
             throw ApelinError(.badRequest, "The file is missing its name or identifier. Export it again.")

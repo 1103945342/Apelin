@@ -44,7 +44,7 @@ combination has been run. `arm64` alone is not sufficient: the tools contain
 LRCPC instructions that A9–A11 cannot execute. Raising their iOS version cannot
 add those instructions. New chips are evaluated by their reported features.
 
-The static inventory describes the host images selected by Apelin, including
+The static inventory describes the host images selected by Luros, including
 loaded libraries and Swift plugins, and excludes iOS target runtime archives.
 An instruction in a guarded or unused path is recorded but is not automatically
 a requirement of every operation. In particular, base compilation, Clang
@@ -76,7 +76,7 @@ Device evidence is kept in [Device-Validation](Research/Device-Validation.md).
 Counts include the six C-family cases. Swift 5.7 has no macros; the iOS 27
 SDK exposes Swift interfaces for arm64e only. The 15.x compilers carry two
 SHA3 instructions, in BLAKE3's hash_many (compile caching) and in the
-symbol-graph edge set (`-emit-symbol-graph`), neither of which an Apelin
+symbol-graph edge set (`-emit-symbol-graph`), neither of which an Luros
 build reaches; every Swift case passed on an A12Z without SHA3. 16.4's and
 27.0's swift-frontend also hash modules with XXH3 (SHA3) and use DotProd.
 CPU features, rather than the device's marketing name, decide availability.
@@ -177,7 +177,7 @@ To inspect the table without a device or network request, run
    the opt-in `StaticInventoryTests` test. Set `APELIN_STATIC_PACKAGE` to the
    downloaded package, `APELIN_STATIC_VERSION` to its release, and
    `APELIN_STATIC_WORKSPACE` to a new private output directory. The test uses
-   Apelin's own dependency selection, retains arm64 host images and never
+   Luros's own dependency selection, retains arm64 host images and never
    executes or installs them.
 2. Run `Scripts/inspect-toolchain-imports.py <workspace>/host-images
    --instructions --cpu apple-a12 --cpu apple-a13`. It verifies image digests,

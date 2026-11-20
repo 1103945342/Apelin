@@ -22,7 +22,7 @@ public protocol AgentHostBackend: Sendable {
     func install(_ request: InstallRequest) async throws -> InstallResponse
     /// Remove a managed project package by its installation record.
     func removePackage(_ request: RemovePackageRequest) async throws -> RemovePackageResponse
-    /// The packages Apelin installed that are still on the device, every
+    /// The packages Luros installed that are still on the device, every
     /// project's, each with the installation a removal acts on.
     func installations(_ request: InstallationListToolRequest) async throws -> InstallationListToolResponse
     /// Restart SpringBoard.
@@ -159,10 +159,10 @@ public protocol AgentHostBackend: Sendable {
     /// The session's project checked as if bound to these components:
     /// the binding with the registry's digests and its findings.
     func checkEnvironment(_ request: EnvironmentCheckToolRequest) async throws -> EnvironmentCheckToolResponse
-    /// A public issue on Apelin's own repository with the user's GitHub
+    /// A public issue on Luros's own repository with the user's GitHub
     /// sign-in; the host checks it was approved.
     func sendFeedback(_ request: FeedbackToolRequest) async throws -> FeedbackToolResponse
-    /// An issue on Apelin's own repository, read with the user's GitHub
+    /// An issue on Luros's own repository, read with the user's GitHub
     /// sign-in.
     func readFeedback(_ request: FeedbackReadToolRequest) async throws -> FeedbackReadToolResponse
     /// An issue the user's GitHub account opened there, edited only while it

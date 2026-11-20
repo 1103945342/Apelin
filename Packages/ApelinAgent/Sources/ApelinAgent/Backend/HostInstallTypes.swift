@@ -33,7 +33,7 @@ public struct InstallResponse: Sendable, Hashable, Codable {
     public var succeeded: Bool
     public var message: String
     /// When the installer refused it: each installed package in the way,
-    /// with the `installationID` apelin_package_remove takes when Apelin
+    /// with the `installationID` apelin_package_remove takes when Luros
     /// installed it. nil when none was found.
     public var conflicts: [InstallConflict]?
     /// For an app project, that a copy already running keeps the previous

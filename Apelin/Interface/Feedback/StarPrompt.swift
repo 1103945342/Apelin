@@ -4,13 +4,13 @@ import SPIndicator
 import UIKit
 
 /// Once the reader has signed in with GitHub, builds that complete ask
-/// whether they like Apelin, and Star Now stars its repository with that
+/// whether they like Luros, and Star Now stars its repository with that
 /// sign-in (owner, 2026-10-29), as `StarPromptState` paces it: after ten
 /// builds, again ten builds after each Maybe Later, three times at most.
 /// Only builds that complete while the sign-in is there count: a
 /// conversation's (`CompletedBuilds`) and the distribution page's. Before
 /// it asks, it reads in the background whether the account has starred
-/// Apelin, at most once a day, and one that has is never asked. Whatever
+/// Luros, at most once a day, and one that has is never asked. Whatever
 /// keeps it from asking — the app in the background, another alert up,
 /// GitHub not answering — waits for a build on a later day.
 @MainActor
@@ -51,7 +51,7 @@ enum StarPrompt {
             }
             guard let page = controller.flatMap({ topPage(over: $0) }) else { return }
             page.presentConfirmation(
-                title: "Do You Like Apelin?",
+                title: "Do You Like Luros?",
                 message: "Please star us on GitHub. It helps us go further.",
                 cancelTitle: "Maybe Later",
                 confirmTitle: "Star Now",
@@ -83,7 +83,7 @@ enum StarPrompt {
                     haptic: .success,
                 )
             } catch {
-                (topPage(over: page) ?? page).presentNotice(title: "Unable to Star Apelin", message: error.readableMessage)
+                (topPage(over: page) ?? page).presentNotice(title: "Unable to Star Luros", message: error.readableMessage)
             }
         }
     }

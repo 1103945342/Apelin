@@ -37,7 +37,7 @@ enum PromptRewriter {
         throw ApelinError(
             .unavailable,
             """
-            The prompt optimization instructions are missing from this install. Reinstall Apelin \
+            The prompt optimization instructions are missing from this install. Reinstall Luros \
             with your preferred package manager, then try again.
             """,
         )

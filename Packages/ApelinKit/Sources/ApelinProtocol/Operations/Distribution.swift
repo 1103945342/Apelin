@@ -1,10 +1,10 @@
 // The package repository a user publishes to: an APT source in a GitHub
 // repository of theirs, served by GitHub Pages and indexed there by the
-// workflow Apelin's template brings (after owngoal-dev/owngoal-packages).
+// workflow Luros's template brings (after owngoal-dev/owngoal-packages).
 // Served by apelin-environment, which holds the github.com credential the
 // user signed in with and calls GitHub's API with it; the app's alone, but
 // for the packages an agent publishes to the linked repository
-// (`DistributionPublishRequest`) and the feedback it files on Apelin's own
+// (`DistributionPublishRequest`) and the feedback it files on Luros's own
 // repository (`FeedbackSendRequest`), reads and edits there
 // (`FeedbackReadRequest`, `FeedbackEditRequest`). Starring that repository
 // is the app's alone (`FeedbackStarRequest`).
@@ -98,7 +98,7 @@ public struct DistributionRepositoryListResponse: Codable, Sendable, Equatable {
 }
 
 /// A task: makes `name` on the signed-in account, or in the organization
-/// `owner` names, public, from Apelin's template, as a new workspace project; commits and pushes it, turns on
+/// `owner` names, public, from Luros's template, as a new workspace project; commits and pushes it, turns on
 /// GitHub Pages with the workflow as its source and links it. Stages
 /// `creating`, `preparing`, `pushing`, `publishing`; the final `state`
 /// carries `result` {repository: DistributionRepository, warnings}.
@@ -197,7 +197,7 @@ public struct DistributionPublishRequest: OperationRequest {
     }
 }
 
-/// Files feedback as a public issue on Apelin's own repository
+/// Files feedback as a public issue on Luros's own repository
 /// (`FeedbackRules.repository`, never one the request names) with the
 /// github.com sign-in, the title and body checked by `FeedbackRules` first
 /// and a footer apelin-environment writes added below the body. Not a task:
@@ -228,7 +228,7 @@ public struct FeedbackSendResponse: Codable, Sendable, Equatable {
     }
 }
 
-/// Reads one issue on Apelin's own repository (`FeedbackRules.repository`,
+/// Reads one issue on Luros's own repository (`FeedbackRules.repository`,
 /// never another) with the github.com sign-in: its title, its body without
 /// the footer `feedbackSend` wrote and that footer apart, who opened it and
 /// whether the signed-in account did, which alone may edit it
@@ -253,7 +253,7 @@ public struct FeedbackReadResponse: Codable, Sendable, Equatable {
     public var title: String
     /// The body without the footer.
     public var body: String
-    /// The footer's line (`Sent with Apelin … · iOS … · <bootstrap>`), nil
+    /// The footer's line (`Sent with Luros … · iOS … · <bootstrap>`), nil
     /// when the body does not end with one.
     public var footer: String?
     /// The login of the account that opened it.
@@ -285,7 +285,7 @@ public struct FeedbackReadResponse: Codable, Sendable, Equatable {
 }
 
 /// Edits the title, the body or both of an issue the signed-in account
-/// opened on Apelin's own repository (owner, 2026-10-30): another account's
+/// opened on Luros's own repository (owner, 2026-10-30): another account's
 /// is `denied`. The new text is checked by `FeedbackRules.editProblem`
 /// before the sign-in is read; then the issue is read again and nothing is
 /// written unless its title and body (without the footer) are still
@@ -333,7 +333,7 @@ public struct FeedbackEditResponse: Codable, Sendable, Equatable {
     }
 }
 
-/// Whether the github.com sign-in has starred Apelin's own repository
+/// Whether the github.com sign-in has starred Luros's own repository
 /// (`FeedbackRules.repository`), read before the app asks the reader to
 /// star it, so one who already has is never asked. The app's alone. Without
 /// a sign-in, `denied` with reason `authenticationRequired`.
@@ -344,7 +344,7 @@ public struct FeedbackStarStateRequest: OperationRequest {
     public init() {}
 }
 
-/// Stars Apelin's own repository with the github.com sign-in: sent only
+/// Stars Luros's own repository with the github.com sign-in: sent only
 /// when the reader taps Star Now in the app's prompt, never by an agent
 /// and never by the console. Starring it again changes nothing. Without a
 /// sign-in, `denied` with reason `authenticationRequired`.

@@ -21,7 +21,7 @@ enum FileBrowserFailure: Error, Equatable {
     case atRoot
     /// A symbolic link whose target does not resolve.
     case brokenLink
-    /// One of Apelin's own records: reading is the point, and changing it
+    /// One of Luros's own records: reading is the point, and changing it
     /// belongs to the page that manages it.
     case record(FileBrowserProtectedRecord)
     /// Readable, and nothing more.
@@ -34,7 +34,7 @@ extension FileBrowserFailure: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missing: String(localized: "There is nothing at this path.")
-        case .notPermitted: String(localized: "Apelin does not have permission to open this.")
+        case .notPermitted: String(localized: "Luros does not have permission to open this.")
         case .notADirectory: String(localized: "This is a file, not a folder.")
         case .exists: String(localized: "Something with that name is already here.")
         case .invalidName: String(localized: "That name cannot be used here.")

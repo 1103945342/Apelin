@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://owngoal-dev.github.io/Apelin/schemas/apelin-project-1.json",
-  "title": "Apelin project description, version 1",
+  "title": "Luros project description, version 1",
   "description": "luros-project.json at the root of ~/Documents/com.fluoxetine.luros/Projects/<name>/. The one build entry the UI, the agent and apelin-build all read. Documents/Schemas/README.md is the prose specification; it also fixes which members form the build and packaging descriptions whose digests drive Confirm-mode approval.",
   "type": "object",
   "additionalProperties": false,
@@ -664,7 +664,7 @@
           "items": { "type": "string", "maxLength": 200, "pattern": "^[^\\u0000-\\u001f\\u007f]*$" }
         },
         "icon": {
-          "description": "The control's Icon: the image a package manager shows beside the package, not the app's own icon. An https URL in printable ASCII, so no space or control character and at most 2048 bytes. Templates write their extension's icon on Apelin's Pages.",
+          "description": "The control's Icon: the image a package manager shows beside the package, not the app's own icon. An https URL in printable ASCII, so no space or control character and at most 2048 bytes. Templates write their extension's icon on Luros's Pages.",
           "type": "string",
           "maxLength": 2048,
           "pattern": "^https://[A-Za-z0-9][!-~]*$"

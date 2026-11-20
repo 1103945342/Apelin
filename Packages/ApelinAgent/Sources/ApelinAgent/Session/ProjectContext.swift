@@ -26,7 +26,7 @@ enum ProjectContext {
     static func make(project: ProjectIdentity, root: ScopedRoot, repository: GitStatusToolResponse? = nil) -> String {
         var lines = [
             openingTag,
-            "Apelin added this to the first message: the project when the conversation began. It is context, not the user's request, and files change after it.",
+            "Luros added this to the first message: the project when the conversation began. It is context, not the user's request, and files change after it.",
         ]
         let manifest = manifest(in: root)
         let displayName = text(manifest?["displayName"]).flatMap { $0.isEmpty ? nil : $0 }
@@ -88,9 +88,9 @@ enum ProjectContext {
         }
         switch buildSystem {
         case .external:
-            lines.append("- Build: external. No Apelin build description; build with the project's own tools through shell_run.")
+            lines.append("- Build: external. No Luros build description; build with the project's own tools through shell_run.")
         case .apelin:
-            var build = "Apelin's build tool"
+            var build = "Luros's build tool"
             if case let .array(steps)? = manifest.value(at: "build.steps") {
                 build += ", \(steps.count) steps"
             } else {

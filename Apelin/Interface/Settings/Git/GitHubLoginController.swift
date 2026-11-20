@@ -77,7 +77,7 @@ final class GitHubLoginController: UIViewController {
         $0.textAlignment = .center
         $0.numberOfLines = 0
         $0.text = String(localized: """
-        GitHub’s page asks you to authorize GitHub CLI: Apelin signs in through its app. The token is \
+        GitHub’s page asks you to authorize GitHub CLI: Luros signs in through its app. The token is \
         kept only in this device’s keychain and used for remotes on github.com.
         """)
     }

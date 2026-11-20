@@ -128,7 +128,7 @@ jobs:
           else
             echo "::warning::Documents/Releases/$VERSION.md is missing; the generic notes go out instead"
             {
-              printf 'Apelin %s, from the build of %s.\n\n' "$VERSION" "$SHA"
+              printf 'Luros %s, from the build of %s.\n\n' "$VERSION" "$SHA"
               printf 'SHA-256 sums are in `SHA256SUMS`.\n'
             } > "$notes"
           fi
@@ -154,7 +154,7 @@ jobs:
           out="$(gh api -X POST "repos/$GH_REPO/releases" \
             -f tag_name="$TAG" \
             -f target_commitish="$SHA" \
-            -f name="Apelin $VERSION" \
+            -f name="Luros $VERSION" \
             -f body=@"$NOTES" \
             -F draft=true 2>&1)" || rc=$?
           if [[ "$rc" != 0 ]]; then
@@ -195,7 +195,7 @@ jobs:
           set -uo pipefail
           rc=0
           out="$(gh api -X PATCH "repos/$GH_REPO/releases/${{ steps.draft.outputs.id }}" \
-            -f draft=false -f name="Apelin $VERSION" -f body=@"$NOTES" 2>&1)" || rc=$?
+            -f draft=false -f name="Luros $VERSION" -f body=@"$NOTES" 2>&1)" || rc=$?
           if [[ "$rc" != 0 ]]; then
             echo "::error::publishing the release was refused (exit $rc): $(printf '%s' "$out" | tr '\n' ' ' | head -c 400)"
             exit 1

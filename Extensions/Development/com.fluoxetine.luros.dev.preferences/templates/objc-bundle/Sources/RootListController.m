@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 OwnGoal Studio
 //
-// From Apelin's preference bundle template: the bundle's principal class.
+// From Luros's preference bundle template: the bundle's principal class.
 // Root.plist describes the rows. Each row names the preferences domain and
 // key it stores; Preferences reads and writes them through cfprefsd and posts
 // the row's PostNotification after a change, so whatever reads the setting

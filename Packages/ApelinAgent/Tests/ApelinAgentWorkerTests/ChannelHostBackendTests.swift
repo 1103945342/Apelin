@@ -605,7 +605,7 @@ struct ChannelHostBackendTests {
         #expect(WorkerState.decision(AgentApproveRequest(sessionID: "s", approvalID: "a", decision: .approve)) == .approve(.once))
         #expect(WorkerState.decision(AgentApproveRequest(sessionID: "s", approvalID: "a", decision: .approve, scope: .once)) == .approve(.once))
         #expect(WorkerState.decision(AgentApproveRequest(sessionID: "s", approvalID: "a", decision: .approve, scope: .session)) == .approve(.session))
-        #expect(WorkerState.decision(AgentApproveRequest(sessionID: "s", approvalID: "a", decision: .deny, scope: .session)) == .deny(reason: "denied in Apelin"))
+        #expect(WorkerState.decision(AgentApproveRequest(sessionID: "s", approvalID: "a", decision: .deny, scope: .session)) == .deny(reason: "denied in Luros"))
     }
 
     @Test

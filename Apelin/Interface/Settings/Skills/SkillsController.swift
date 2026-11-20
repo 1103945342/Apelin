@@ -5,7 +5,7 @@ import Then
 import UIKit
 import UniformTypeIdentifiers
 
-/// Settings ▸ Agent ▸ Skills: every skill a chat is offered — Apelin's own,
+/// Settings ▸ Agent ▸ Skills: every skill a chat is offered — Luros's own,
 /// then those in the skills folder — and what in that folder is not offered
 /// as it stands. The list is the agent worker's (`agentSkillList`), read as
 /// a session reads it. A skill opens its instructions; the plus copies one

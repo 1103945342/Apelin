@@ -287,7 +287,7 @@ final class ToolchainServiceTests: XCTestCase {
         unsupportedReason: "This toolchain requires CPU features this device lacks: FEAT_LRCPC.", reviewed: true,
     )
 
-    /// The picker lists only releases Apelin sets up: an unreviewed or
+    /// The picker lists only releases Luros sets up: an unreviewed or
     /// dropped one is left out, a kept one this device cannot run stays with
     /// its reason, and setup still refuses the left-out one by ID.
     func testTheCatalogLeavesOutReleasesApelinDoesNotSetUp() async throws {
@@ -680,7 +680,7 @@ final class ToolchainServiceTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: jobFolder(home).path))
     }
 
-    /// A package removed outside Apelin: the bridge refuses, the tree is
+    /// A package removed outside Luros: the bridge refuses, the tree is
     /// gone, and only the record is left to drop.
     func testRemovalOfAPackageRemovedOutsideUnregistersIt() async throws {
         let home = try await ready(self)
@@ -820,7 +820,7 @@ final class ToolchainPackagerTests: XCTestCase {
             XCTAssertNil(control["Depends"])
             XCTAssertEqual(control["Icon"], "https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.toolchain.png")
             XCTAssertEqual(control["Name"]?.hasPrefix("Command Line Tools "), true)
-            XCTAssertEqual(control["Name"]?.hasSuffix(" (Apelin)"), true)
+            XCTAssertEqual(control["Name"]?.hasSuffix(" (Luros)"), true)
             XCTAssertEqual(Set(contents.controlFiles.keys), ["control"], "no maintainer scripts")
 
             let root = prefix + "/usr/lib/apelin/toolchains/" + FakeBackend.id

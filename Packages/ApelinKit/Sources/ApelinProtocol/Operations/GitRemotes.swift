@@ -149,7 +149,7 @@ public enum GitRemoteURL {
             return "Give the repository's HTTPS address, such as https://github.com/owner/name.git."
         }
         guard components.user == nil, components.password == nil, components.query == nil, components.fragment == nil else {
-            return "Give the address without a user, token, query or fragment: Apelin offers the saved credential for its host itself."
+            return "Give the address without a user, token, query or fragment: Luros offers the saved credential for its host itself."
         }
         return nil
     }

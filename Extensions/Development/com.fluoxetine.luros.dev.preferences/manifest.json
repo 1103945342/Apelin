@@ -62,9 +62,9 @@
       "project": "luros-project.json",
       "parameters": [
         { "name": "productName", "type": "identifier", "label": "Product Name", "help": "The bundle name, also the prefix of its principal class.", "required": true, "default": "ApelinSettings" },
-        { "name": "displayName", "type": "string", "label": "Title in Settings", "default": "Apelin Settings", "maxLength": 64 },
-        { "name": "summary", "type": "string", "label": "Description", "default": "Built on this device with Apelin.", "maxLength": 200 },
-        { "name": "author", "type": "string", "label": "Author", "default": "Apelin User", "maxLength": 64 }
+        { "name": "displayName", "type": "string", "label": "Title in Settings", "default": "Luros Settings", "maxLength": 64 },
+        { "name": "summary", "type": "string", "label": "Description", "default": "Built on this device with Luros.", "maxLength": 200 },
+        { "name": "author", "type": "string", "label": "Author", "default": "Luros User", "maxLength": 64 }
       ],
       "files": [
         { "path": "luros-project.json", "format": "json" },
@@ -76,7 +76,7 @@
         { "path": "Resources/icon@3x.png", "format": "copy" },
         { "path": "Packaging/entry.plist", "format": "plist-xml" }
       ],
-      "digest": "sha256:c24d3e0382b7cba0a1c7b9762eb5bf3129f638221309dd6420389ff446d6db21"
+      "digest": "sha256:349a71b64f0397b9e9bdafde0c56b0dcc7ab80ba5f7547b266fd378a70f8c3c9"
     }
   ],
   "provenance": [
@@ -90,7 +90,7 @@
         "Kept: a PSListController subclass as principal class loading Root.plist, a switch stored in the package's own domain with a PostNotification, the PreferenceLoader entry with PSLinkCell/isController, the generated bundle Info.plist keys, preferenceloader as the package dependency, and the layout (Library/PreferenceBundles, Library/PreferenceLoader/Preferences).",
         "Changed: plists are XML rather than OpenStep text; the controller caches in the framework's _specifiers ivar instead of a static, so a second instance reloads correctly; reading and writing values is left to Preferences' own defaults/key handling instead of overriding it with NSUserDefaults; a text field row is added to show a value round-trip.",
         "Changed: the private framework comes from this extension's own declarations and link stub instead of requiring a Theos SDK with PrivateFrameworks.",
-        "Added: package.icon, this extension's icon on Apelin's Pages, written as the control's Icon so a package manager shows it beside the package.",
+        "Added: package.icon, this extension's icon on Luros's Pages, written as the control's Icon so a package manager shows it beside the package.",
         "Added: the Settings row's icon, the entry's icon key naming Resources/icon.png and its @2x and @3x (29 points), which the bundle carries: this extension's plate as Scripts/render-package-icons.py draws it for the app's ProjectIconPreferences image set, scaled down, for the developer to replace."
       ]
     },
@@ -98,7 +98,7 @@
       "scope": "support:preferences",
       "origin": "written",
       "adaptations": [
-        "PSListController.h is written for Apelin, growing platformize-tweak-ios's one-class declaration (template/src/prefs/TWListController.h, MIT, OwnGoal Studio) to the ivar and methods the template uses, then the cell types, the specifier factories and properties, and the specifier list edits a pane built in code calls. The .tbd stub is hand-written."
+        "PSListController.h is written for Luros, growing platformize-tweak-ios's one-class declaration (template/src/prefs/TWListController.h, MIT, OwnGoal Studio) to the ivar and methods the template uses, then the cell types, the specifier factories and properties, and the specifier list edits a pane built in code calls. The .tbd stub is hand-written."
       ]
     }
   ],

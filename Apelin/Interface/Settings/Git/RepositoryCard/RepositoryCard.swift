@@ -59,7 +59,7 @@ struct RepositoryCard {
 }
 
 /// The card's own choices, per repository, in the app's defaults: a title
-/// in place of the repository's name, and an icon in place of Apelin's.
+/// in place of the repository's name, and an icon in place of Luros's.
 struct RepositoryCardStyle: Codable, Equatable {
     var title: String?
     /// A square PNG, at most `iconSide` pixels a side.

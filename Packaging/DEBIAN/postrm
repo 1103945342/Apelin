@@ -24,7 +24,7 @@ if [ "${1:-}" = remove ] || [ "${1:-}" = purge ]; then
     fi
 fi
 
-# Apelin wrote this job file itself in postinst, so no package removes it:
+# Luros wrote this job file itself in postinst, so no package removes it:
 # dpkg does not know it, and postrm is the last chance to take it away. A file
 # Irisin's own package wrote is a different name and is never touched.
 iris_label=com.fluoxetine.luros.irisind
@@ -36,6 +36,11 @@ if [ "${1:-}" = remove ] || [ "${1:-}" = purge ]; then
         "$launchctl" bootout "gui/501/$iris_label" 2>/dev/null || true
     fi
     rm -f "${iris_plist:?}"
+    # The copy postinst made is no package's; one Irisin's package owns is
+    # left where it is.
+    if [ ! -f "@PREFIX@/var/lib/dpkg/info/wiki.qaq.irisind.list" ]; then
+        rm -f "@PREFIX@/usr/libexec/irisind"
+    fi
 fi
 
 exit 0

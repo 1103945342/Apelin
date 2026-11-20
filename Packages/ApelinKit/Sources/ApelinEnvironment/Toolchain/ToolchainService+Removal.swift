@@ -18,7 +18,7 @@ public extension ToolchainService {
         guard record.installationID != nil else {
             throw ApelinError(
                 .conflict,
-                "Apelin has no install record for \(record.id). Remove its package with your preferred package manager.",
+                "Luros has no install record for \(record.id). Remove its package with your preferred package manager.",
             )
         }
         return record
@@ -40,7 +40,7 @@ public extension ToolchainService {
             {
                 // The bridge no longer manages it and its tree is gone: the
                 // package was removed from outside. Only the record is left.
-                reporter.warning("\(record.id) was already removed outside Apelin (\(error.message)); unregistering it")
+                reporter.warning("\(record.id) was already removed outside Luros (\(error.message)); unregistering it")
             }
         }
         var registry = ToolchainRegistry.load(layout)

@@ -117,7 +117,7 @@ public struct DistributionService: Sendable {
         let organization = request.owner.flatMap { $0.lowercased() == login.lowercased() ? nil : $0 }
         let created = try await api.createRepository(
             name: name,
-            description: request.description ?? "Packages for jailbroken iOS, published with Apelin.",
+            description: request.description ?? "Packages for jailbroken iOS, published with Luros.",
             isPrivate: false,
             organization: organization,
             // Issues for its users; neither a wiki nor a project board.
@@ -226,7 +226,7 @@ public struct DistributionService: Sendable {
             try repository.stage(added)
             try repository.commit(
                 message: request.overwrite
-                    ? "Update the package repository from Apelin's template"
+                    ? "Update the package repository from Luros's template"
                     : "Add the package index and its GitHub Pages workflow",
                 author: author(repository, login: login),
             )
@@ -290,7 +290,7 @@ public struct DistributionService: Sendable {
         try GitHubAPI.signedIn(credentials, exchange: exchange)
     }
 
-    /// The commit author Apelin's settings name, else the repository's, else
+    /// The commit author Luros's settings name, else the repository's, else
     /// the GitHub account's no-reply address.
     func author(_ repository: GitRepository, login: String) -> GitSignature {
         (try? git.author(name: nil, email: nil, repository: repository))
@@ -422,7 +422,7 @@ enum GitHubHost {
     static let name = "github.com"
 }
 
-/// The branch a repository Apelin makes starts on.
+/// The branch a repository Luros makes starts on.
 enum EmptyRepositoryBranch {
     static let name = "main"
 }

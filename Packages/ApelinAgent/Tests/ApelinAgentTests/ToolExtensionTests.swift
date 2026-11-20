@@ -154,7 +154,7 @@ struct ToolExtensionTests {
         let runner = try Self.runner(home, backend: MockBackend())
         let names = runner.agentTools(mcp: []).map(\.name)
         let tools = runner.agentTools(mcp: [], extensions: offer.extensions)
-        #expect(tools.map(\.name) == names + ["assemble", "disassemble", "symbols"], "after Apelin's own")
+        #expect(tools.map(\.name) == names + ["assemble", "disassemble", "symbols"], "after Luros's own")
         let symbols = try #require(tools.last)
         #expect(symbols.description.hasPrefix("List the symbol table (LC_SYMTAB)"))
         #expect(symbols.description.hasSuffix("From Disassembler 1.1.0, an agent tool extension: it runs in its own process as mobile, outside the project, so give it absolute paths."))
@@ -165,7 +165,7 @@ struct ToolExtensionTests {
     }
 
     @Test
-    func `a name Apelin's tools have or had, one a provider refuses, a reason argument, or a name two extensions declare is left out`() throws {
+    func `a name Luros's tools have or had, one a provider refuses, a reason argument, or a name two extensions declare is left out`() throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let installed = try InstalledToolExtensions(in: home)
@@ -182,8 +182,8 @@ struct ToolExtensionTests {
         #expect(offer.tools.map(\.name) == ["kept"])
         let leftOut = offer.leftOut.joined(separator: "\n")
         for line in [
-            "example.first: tool shell_run is the name of one of Apelin's own tools",
-            "example.first: tool build is the name of one of Apelin's own tools",
+            "example.first: tool shell_run is the name of one of Luros's own tools",
+            "example.first: tool build is the name of one of Luros's own tools",
             "example.first: tool Upper is not a name",
             "example.first: tool two__parts is not a name",
             "example.first: tool trailing_ is not a name",

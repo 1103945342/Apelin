@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail when the tools Apelin carries beside it drift from what says so.
+"""Fail when the tools Luros carries beside it drift from what says so.
 
 `Vendor/` holds the `icli` and `irisind` binaries the package no longer
 depends on. Three things have to agree with it, and a change to one that
@@ -10,7 +10,7 @@ leaves the others behind is the bug this checks for:
 - `Scripts/package-deb.sh` stages both into `Luros.app/Vendor/` and proves
   the packaged deb holds them.
 - `Packaging/DEBIAN/control` depends on neither package, and the maintainer
-  scripts register the bundled daemon under Apelin's own label and remove
+  scripts register the bundled daemon under Luros's own label and remove
   that label's file, never Irisin's.
 
 Usage: check-vendored-tools.py <root>
@@ -90,10 +90,10 @@ def main():
         text = read(os.path.join(root, "Packaging", "DEBIAN", script))
         if LABEL not in text:
             problems.append(f"{script} never stops {LABEL}")
-        if "wiki.qaq.irisind" in text:
-            problems.append(f"{script} names Irisin's own job, which Apelin does not own")
+        if "wiki.qaq.irisind.plist" in text or "system/wiki.qaq.irisind" in text:
+            problems.append(f"{script} names Irisin's own job, which Luros does not own")
     if f'rm -f "${{iris_plist:?}}"' not in read(os.path.join(root, "Packaging", "DEBIAN", "postrm")):
-        problems.append("postrm does not remove the job file Apelin wrote")
+        problems.append("postrm does not remove the job file Luros wrote")
 
     for problem in problems:
         print("error: " + problem, file=sys.stderr)

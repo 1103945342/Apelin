@@ -63,7 +63,7 @@ public struct DistributionCheck: Sendable {
             warn(
                 "distribution.package.id.local",
                 "/package/id",
-                "/package/id \(package.id) is the local identifier Apelin made up; use a reverse-DNS identifier you own",
+                "/package/id \(package.id) is the local identifier Luros made up; use a reverse-DNS identifier you own",
             )
         }
 
@@ -112,7 +112,7 @@ public struct DistributionCheck: Sendable {
     /// What a workspace's release package carries that a package for other
     /// people should not, read off the package its script wrote
     /// (`ExternalBuild`), since a workspace has no description to read
-    /// before it is built: the identifier Apelin makes up, a version this
+    /// before it is built: the identifier Luros makes up, a version this
     /// project already packaged for the target, and a package other than
     /// the one the other target's latest release carried. `record` is the
     /// new package's, before it is saved.
@@ -124,7 +124,7 @@ public struct DistributionCheck: Sendable {
         if record.packageID.hasPrefix(localPrefix) {
             warn(
                 "distribution.package.id.local",
-                "the package's identifier \(record.packageID) is the local one Apelin makes up; have the build script use a reverse-DNS identifier you own",
+                "the package's identifier \(record.packageID) is the local one Luros makes up; have the build script use a reverse-DNS identifier you own",
             )
         }
         let releases = ArtifactStore(store: store).all().filter {

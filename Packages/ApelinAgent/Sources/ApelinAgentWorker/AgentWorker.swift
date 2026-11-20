@@ -15,7 +15,7 @@ import KWWKAI
 ///
 /// The session's events go to the host as the events of its `agent` task.
 public enum AgentWorker {
-    /// Apelin's own keychain items, shared by nothing else.
+    /// Luros's own keychain items, shared by nothing else.
     public static let keychainAccessGroup = "com.fluoxetine.luros.agent"
     public static let defaultCopilotModel = "claude-sonnet-5.5"
 
@@ -574,7 +574,7 @@ actor WorkerState {
     /// session" where the app said so (the gate keeps it only for a request
     /// that offered it, and the host records the matching grant).
     static func decision(_ approve: AgentApproveRequest) -> ApelinAgent.ApprovalDecision {
-        guard approve.decision == .approve else { return .deny(reason: "denied in Apelin") }
+        guard approve.decision == .approve else { return .deny(reason: "denied in Luros") }
         return .approve(approve.scope == .session ? .session : .once)
     }
 
@@ -607,7 +607,7 @@ actor WorkerState {
         guard !finished else { return }
         finished = true
         if let context, let taskID {
-            let message = "This chat did not stop in time, so Apelin ended it. Send a message to continue."
+            let message = "This chat did not stop in time, so Luros ended it. Send a message to continue."
             context.emit(taskID, "error", .object(["message": .string(message)]))
             context.finish(taskID, .cancelled, message: message)
         }

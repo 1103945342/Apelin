@@ -19,20 +19,20 @@ public enum PlaceholderIdentifiers {
     /// conversation that made it has no file tools there.
     public static func createHint(in root: ScopedRoot) -> String? {
         guard let named = named(in: root) else { return nil }
-        return "Its \(named.subject) Apelin made up. Before its first install the user should choose \(named.permanent), kept the same for debug and release builds: ask here and pass \(named.them) on in the prompt of the conversation you open for it, or tell that conversation to ask."
+        return "Its \(named.subject) Luros made up. Before its first install the user should choose \(named.permanent), kept the same for debug and release builds: ask here and pass \(named.them) on in the prompt of the conversation you open for it, or tell that conversation to ask."
     }
 
     /// An automatic apelin_project_rename's: the project has just taken
     /// the name its goal gave it.
     static func renameHint(in root: ScopedRoot) -> String? {
         guard let named = named(in: root) else { return nil }
-        return "This project's \(named.subject) Apelin made up: ask the user for \(named.permanent) before the first install and keep \(named.them) the same for debug and release builds (file_grep for local.apelin. finds every file that spells one). Once a package of this project is installed, a new identifier makes another package: agree a migration with the user first, as the apelin-packaging-and-install skill says."
+        return "This project's \(named.subject) Luros made up: ask the user for \(named.permanent) before the first install and keep \(named.them) the same for debug and release builds (file_grep for local.apelin. finds every file that spells one). Once a package of this project is installed, a new identifier makes another package: agree a migration with the user first, as the apelin-packaging-and-install skill says."
     }
 
     /// A Debug build's, while nothing the project built is installed.
     static func buildHint(in root: ScopedRoot) -> String? {
         guard let named = named(in: root) else { return nil }
-        return "This project's \(named.subject) Apelin made up, and nothing it built is installed now. Before installing, ask the user for \(named.permanent) or whether to keep \(named.them), the same for debug and release builds: changed after an install, an identifier makes another package (apelin-packaging-and-install skill)."
+        return "This project's \(named.subject) Luros made up, and nothing it built is installed now. Before installing, ask the user for \(named.permanent) or whether to keep \(named.them), the same for debug and release builds: changed after an install, an identifier makes another package (apelin-packaging-and-install skill)."
     }
 
     /// Each placeholder the project still carries, as the notes name it:

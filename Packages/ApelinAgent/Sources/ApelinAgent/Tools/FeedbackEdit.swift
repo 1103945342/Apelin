@@ -4,7 +4,7 @@ import Foundation
 import KWWKAI
 
 /// apelin_feedback_read and apelin_feedback_edit (owner, 2026-10-30): an
-/// issue on Apelin's own repository read, and one the user's GitHub account
+/// issue on Luros's own repository read, and one the user's GitHub account
 /// opened there changed, rather than filed again. The edit names the
 /// revision of the read it was made against; before anyone is asked the
 /// tool reads the issue again and refuses an edit of another account's

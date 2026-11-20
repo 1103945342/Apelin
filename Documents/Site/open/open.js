@@ -1,7 +1,7 @@
-// Open in Apelin: reads `url` and an optional `branch` from this page's
-// address, checks them as Apelin does (ApelinLink.isRepositoryAddress and
+// Open in Luros: reads `url` and an optional `branch` from this page's
+// address, checks them as Luros does (ApelinLink.isRepositoryAddress and
 // isBranchName in Widgets/Shared/ApelinLink.swift), and offers the
-// lurosdev://import link Apelin asks about. Nothing read here is ever put into
+// lurosdev://import link Luros asks about. Nothing read here is ever put into
 // the page as markup: text goes in as text, and the link is built from the
 // checked values, each URL-encoded.
 "use strict";
@@ -67,10 +67,10 @@ function isBranchName(name) {
   return name.split("/").every((part) => !part.startsWith(".") && !part.endsWith(".lock"));
 }
 
-// `url` and `branch` each at most once, as Apelin reads them; anything else
+// `url` and `branch` each at most once, as Luros reads them; anything else
 // in the address is ignored. Null when the link names nothing to import.
 function readRequest(search) {
-  // read as Apelin reads them: `+` is a plus, not a space, and a value
+  // read as Luros reads them: `+` is a plus, not a space, and a value
   // whose escapes do not decode to text names nothing
   const addresses = [];
   const branches = [];
@@ -108,7 +108,7 @@ function pageLink(request) {
 
 function markdown(request) {
   const badge = new URL("badge.svg", location.href).href;
-  return "[![Open in Apelin](" + badge + ")](" + pageLink(request) + ")";
+  return "[![Open in Luros](" + badge + ")](" + pageLink(request) + ")";
 }
 
 async function copy(text, status, done) {
@@ -153,10 +153,10 @@ if (request === null) {
   const open = document.getElementById("open");
   open.href = importLink(request);
   open.addEventListener("click", () => {
-    // still here a while after the tap: Apelin did not open
+    // still here a while after the tap: Luros did not open
     setTimeout(() => {
       if (document.visibilityState === "visible" && document.hasFocus()) {
-        status.textContent = "If Apelin did not open, install it as described below, or copy the address and import it in Apelin with New Project.";
+        status.textContent = "If Luros did not open, install it as described below, or copy the address and import it in Luros with New Project.";
       }
     }, 2500);
   });

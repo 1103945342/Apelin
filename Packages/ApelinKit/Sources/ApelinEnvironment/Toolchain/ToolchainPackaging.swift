@@ -115,10 +115,10 @@ public struct ToolchainPackager: Sendable {
     }
 
     /// What a package manager lists it as, beside the ID that keeps side-by-side
-    /// toolchains apart: "Command Line Tools 15.0 with Swift (Apelin)".
+    /// toolchains apart: "Command Line Tools 15.0 with Swift (Luros)".
     static func name(of prepared: PreparedToolchain) -> String {
         let swift = prepared.components.contains(.swift) ? " with Swift" : ""
-        return "Command Line Tools \(prepared.product.version)\(swift) (Apelin)"
+        return "Command Line Tools \(prepared.product.version)\(swift) (Luros)"
     }
 
     /// Every toolchain's package manager icon: one for all of them, drawn
@@ -133,11 +133,11 @@ public struct ToolchainPackager: Sendable {
             package: packageID,
             version: version.first?.isNumber == true ? version : "0" + version,
             architecture: packageLayout.architecture,
-            description: "Apelin toolchain \(prepared.id)\nApple Command Line Tools \(prepared.product.version) retargeted on this device. Built locally; never redistributed.",
+            description: "Luros toolchain \(prepared.id)\nApple Command Line Tools \(prepared.product.version) retargeted on this device. Built locally; never redistributed.",
         )
         control["Name"] = Self.name(of: prepared)
         control["Icon"] = Self.icon
-        control["Maintainer"] = "Apelin (built on this device)"
+        control["Maintainer"] = "Luros (built on this device)"
         control["Section"] = "Development"
         control["Priority"] = "optional"
 

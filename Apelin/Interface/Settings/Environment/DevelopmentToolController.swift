@@ -1,7 +1,7 @@
 import ApelinProtocol
 import UIKit
 
-/// Settings ▸ Environment ▸ Third-Party Tools: the four packages Apelin's own
+/// Settings ▸ Environment ▸ Third-Party Tools: the four packages Luros's own
 /// work needs — `ldid`, `git`, `dpkg-deb` and `uikittools` (whose `uicache`
 /// registers a built app) — and whether this device has each one.
 ///

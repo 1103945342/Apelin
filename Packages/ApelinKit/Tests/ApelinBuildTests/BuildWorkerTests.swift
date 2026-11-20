@@ -223,8 +223,8 @@ final class BuildWorkerTests: XCTestCase {
         let manifest = root.appendingPathComponent("luros-project.json")
         var text = try String(contentsOf: manifest, encoding: .utf8)
         for (old, new) in [
-            ("\"Apelin App\"", "\"Shipping Notes\""), ("Built on this device with Apelin.", "Notes that ship."),
-            ("\"Apelin User\"", "\"Ada\""), ("\"0.0.1\"", "\"1.0.0\""), ("local.apelin.shipping", "wiki.example.shipping"),
+            ("\"Luros App\"", "\"Shipping Notes\""), ("Built on this device with Luros.", "Notes that ship."),
+            ("\"Luros User\"", "\"Ada\""), ("\"0.0.1\"", "\"1.0.0\""), ("local.apelin.shipping", "wiki.example.shipping"),
         ] {
             XCTAssertTrue(text.contains(old), old)
             text = text.replacingOccurrences(of: old, with: new)

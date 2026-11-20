@@ -8,11 +8,11 @@ import Foundation
 /// `__SOURCE_URL__` and `__BRANCH__` are the repository's `owner/name`, its
 /// Pages address and the branch its packages are pushed to.
 enum DistributionTemplate {
-    /// What a repository must have for Apelin to call it one; a link adds
+    /// What a repository must have for Luros to call it one; a link adds
     /// whatever of the template it lacks.
     static let workflowPath = ".github/workflows/update-repository.yml"
 
-    /// The files Apelin keeps up to date and Update Repository… replaces;
+    /// The files Luros keeps up to date and Update Repository… replaces;
     /// every other template file is the user's once it exists.
     static let maintained: Set<String> = [
         workflowPath, "scripts/update-repository.sh", "index.html", "README.md", "CydiaIcon.png",
@@ -212,7 +212,7 @@ enum DistributionTemplate {
 
     """#
 
-    /// The source's home page: the repository's card as Apelin draws it
+    /// The source's home page: the repository's card as Luros draws it
     /// (Repository Card…), centred on the page, with Open in Irisin… under
     /// it. Every line is the body size in a rounded face, set apart by
     /// weight and half opacity; the card stays light whatever the system is.
@@ -278,14 +278,14 @@ enum DistributionTemplate {
     static let readme = """
     # __REPOSITORY__
 
-    An APT source for jailbroken iOS, published with Apelin.
+    An APT source for jailbroken iOS, published with Luros.
 
     Add `__SOURCE_URL__` in Irisin.
 
     ## How it works
 
     - Packages are the `.deb` files in `debs/`, named
-      `<Package>_<Version>_<Architecture>.deb`. Apelin's Distribute… page
+      `<Package>_<Version>_<Architecture>.deb`. Luros's Distribute… page
       publishes a release build here; a `.deb` pushed by hand works the same.
     - On every push to `__BRANCH__`, `.github/workflows/update-repository.yml` runs
       `scripts/update-repository.sh`, which indexes `debs/` into `Packages`,

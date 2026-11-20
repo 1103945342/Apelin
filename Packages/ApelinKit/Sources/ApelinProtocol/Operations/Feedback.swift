@@ -1,7 +1,7 @@
 import ApelinCore
 import Foundation
 
-/// What feedback filed on Apelin's own repository may say (`feedbackSend`,
+/// What feedback filed on Luros's own repository may say (`feedbackSend`,
 /// the agent's `apelin_feedback_send`; owner, 2026-10-29). It is a public
 /// issue under the user's GitHub account, so the repository is fixed here,
 /// never a request's, and the title and body are checked — by the agent
@@ -11,7 +11,7 @@ import Foundation
 /// name, a device identifier, a token or key. The check reads shapes; it
 /// cannot prove a text holds nothing private, which is why Strict shows the
 /// user the whole text first. Below the body apelin-environment writes
-/// `footer`: Apelin's version, the iOS version and the bootstrap, naming
+/// `footer`: Luros's version, the iOS version and the bootstrap, naming
 /// no device. An edit of an issue the account opened (`feedbackEdit`;
 /// owner, 2026-10-30) checks the title or body it puts in the same way,
 /// and keeps below the body the footer the issue had (`split`).
@@ -31,14 +31,14 @@ public enum FeedbackRules {
     /// For an edit: nil when the new title, the new body or both may be put
     /// in, else why not, as `problem` says it; nil stands for a field that
     /// stays. Only what changes is read, so words the user wrote on GitHub
-    /// themselves never hold an edit up. A body that ends with Apelin's
+    /// themselves never hold an edit up. A body that ends with Luros's
     /// footer is refused: the footer the issue has stays below it.
     public static func editProblem(title: String?, body: String?, paths: [String] = [], names: [String] = []) -> String? {
         guard title != nil || body != nil else {
             return "it changes neither the title nor the body"
         }
         if let body, split(issueBody: body).footer != nil {
-            return "the body ends with the line Apelin adds below it, which stays as it is: leave it out"
+            return "the body ends with the line Luros adds below it, which stays as it is: leave it out"
         }
         return textProblem(title: title, body: body, paths: paths, names: names)
     }
@@ -67,7 +67,7 @@ public enum FeedbackRules {
     /// The line apelin-environment writes below the body: only what a report
     /// needs to be reproduced, never the device's name, model or identifier.
     public static func footer(appVersion: String?, appBuild: String?, osVersion: String, bootstrap: BuildBootstrap) -> String {
-        var apelin = "Apelin " + (appVersion ?? "(version unknown)")
+        var apelin = "Luros " + (appVersion ?? "(version unknown)")
         if appVersion != nil, let appBuild {
             apelin += " (\(appBuild))"
         }
@@ -98,7 +98,7 @@ public enum FeedbackRules {
     }
 
     /// `body` split at the footer it ends with: a rule on a line of its own
-    /// after a blank line, then `Sent with Apelin … · iOS … · <bootstrap>`,
+    /// after a blank line, then `Sent with Luros … · iOS … · <bootstrap>`,
     /// with `\n` or GitHub's `\r\n` line ends.
     public static func split(issueBody body: String) -> IssueBody {
         guard let match = footerPattern.firstMatch(in: body, range: NSRange(body.startIndex..., in: body)),
@@ -108,7 +108,7 @@ public enum FeedbackRules {
     }
 
     private static let footerPattern = pattern(
-        #"(?:\r?\n){2}---[ \t]*\r?\n(Sent with Apelin [^\r\n]* · iOS [^\r\n]* · (?:"#
+        #"(?:\r?\n){2}---[ \t]*\r?\n(Sent with Luros [^\r\n]* · iOS [^\r\n]* · (?:"#
             + BuildBootstrap.allCases.map(\.rawValue).joined(separator: "|")
             + #"))[ \t\r\n]*\z"#,
     )

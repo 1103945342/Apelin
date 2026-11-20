@@ -4,7 +4,7 @@ import Foundation
 import KWWKAI
 import os
 
-/// The catalogs Apelin reads a model against, and the one lookup that answers
+/// The catalogs Luros reads a model against, and the one lookup that answers
 /// what a model is.
 ///
 /// Two copies are read: the catalog kwwk ships (which describes the models of

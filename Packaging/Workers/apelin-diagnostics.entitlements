@@ -10,7 +10,7 @@
 	Each group below is a row of Packages/ApelinDiagnostics/README.md's
 	privilege matrix, read from icli 0.8.6's docs/entitlements.md. Only the
 	rows apelin-diagnostics serves are here: no pasteboard, keychain, install,
-	location, launchd or reboot key. None has been run from an Apelin process
+	location, launchd or reboot key. None has been run from an Luros process
 	on a device yet; icli verified them as a whole profile.
 
 	Never `com.fluoxetine.luros.client` and never the Mach-lookup of

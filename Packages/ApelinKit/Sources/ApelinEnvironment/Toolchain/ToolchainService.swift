@@ -49,8 +49,8 @@ public struct ToolchainService: Sendable {
         return ToolchainStatusResponse(toolchains: toolchains, defaultID: registry.defaultID, activeTasks: activeTasks)
     }
 
-    /// The releases Apelin sets up, from Apple's catalog, newest first, for
-    /// the app to pick from. A product Apelin has not reviewed (12.4, a
+    /// The releases Luros sets up, from Apple's catalog, newest first, for
+    /// the app to pick from. A product Luros has not reviewed (12.4, a
     /// release it dropped, one it never took) is left out: setup still
     /// refuses it by ID with its reason. A reviewed one this device cannot
     /// run stays, with that reason; on roothide Bootstrap, which runs none,
@@ -101,7 +101,7 @@ public struct ToolchainService: Sendable {
         guard backend.isAvailable else {
             throw ApelinError(.unavailable, UnavailableToolchainBackend.setupUnavailable)
         }
-        // nothing Apelin signs runs on roothide Bootstrap, and the tools'
+        // nothing Luros signs runs on roothide Bootstrap, and the tools'
         // machine code is the M1's, which some CPUs cannot run
         if let refusal = HostSigning.toolchainRefusal(installRoot: layout.installRoot) ?? HostCPU.toolchainRefusal {
             throw ApelinError(.unavailable, refusal)
@@ -121,7 +121,7 @@ public struct ToolchainService: Sendable {
         guard !sdks.list().isEmpty || supplier.hasEnabledSource else {
             throw ApelinError(
                 .badRequest,
-                "Import an SDK first. Apelin tests each new toolchain against an SDK.",
+                "Import an SDK first. Luros tests each new toolchain against an SDK.",
             )
         }
         return PreparedSetup(request: request)
@@ -146,7 +146,7 @@ public struct ToolchainService: Sendable {
         } else {
             let supported = catalog.filter { $0.unsupportedReason == nil }
             guard let newest = supported.sorted(by: { Self.versionOrder($0.version, $1.version) }).last else {
-                throw ApelinError(.notFound, "Apple's catalog lists no Command Line Tools that Apelin can set up")
+                throw ApelinError(.notFound, "Apple's catalog lists no Command Line Tools that Luros can set up")
             }
             product = newest
         }
@@ -456,7 +456,7 @@ public struct ToolchainService: Sendable {
         guard let installationID else {
             throw ApelinError(
                 .internal,
-                "Apelin has no install record for this toolchain, so it was not added. Try again.",
+                "Luros has no install record for this toolchain, so it was not added. Try again.",
             )
         }
         let record = ToolchainRecord(

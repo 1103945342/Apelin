@@ -38,7 +38,7 @@ public struct DevelopmentEnvironment: Sendable, Equatable {
 
     /// What a project gets when it names no deployment target, and what a
     /// command outside a project builds for: `projectCreate`'s default and
-    /// the oldest iOS Apelin runs on.
+    /// the oldest iOS Luros runs on.
     public static let defaultDeploymentTarget = "16.0"
 
     public var toolchain: Toolchain?
@@ -125,7 +125,7 @@ public struct DevelopmentEnvironment: Sendable, Equatable {
 
     /// The directories shell_run looks a bare command name up in, and its
     /// `PATH` behind the toolchain: the bootstrap's bin directories, then
-    /// the system's, then the tools Apelin carries in its own bundle. The
+    /// the system's, then the tools Luros carries in its own bundle. The
     /// bundle's `icli` is last so an `icli` the device installed still wins;
     /// it is there because the package no longer depends on it.
     public static func searchPath(installRoot: String) -> [String] {

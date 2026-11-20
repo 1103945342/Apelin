@@ -7,7 +7,7 @@ import UserNotifications
 /// `com.apple.private.usernotifications.bundle-identifiers` names it, which
 /// apelind's entitlements do; the banner is then the app's in every way —
 /// its icon, its settings and authorization, and a tap opens it. Nothing
-/// shows until the reader has allowed Apelin's notifications, which the app
+/// shows until the reader has allowed Luros's notifications, which the app
 /// asks for when they send their first message.
 struct NoticePoster: @unchecked Sendable {
     private static let appBundleIdentifier = "com.fluoxetine.luros"

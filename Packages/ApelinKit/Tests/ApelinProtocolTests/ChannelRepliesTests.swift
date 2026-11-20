@@ -112,16 +112,16 @@ final class ChannelRepliesTests: XCTestCase {
             arguments: #"{"argv":["git","status"]}"#,
             language: "en"
         )
-        XCTAssertTrue(text.contains("Apelin needs your approval"))
+        XCTAssertTrue(text.contains("Luros needs your approval"))
         XCTAssertTrue(text.contains("shell_run"))
         XCTAssertTrue(text.contains("needs to rebuild"))
         XCTAssertTrue(text.contains("approve"))
-        XCTAssertFalse(text.contains("Apelin 需要"))
+        XCTAssertFalse(text.contains("Luros 需要"))
     }
 
     func testARootApprovalSaysWhereItIsGiven() {
         let text = ChannelReplies.text(for: approval(needsApp: true), language: "zh-Hans")
-        XCTAssertTrue(text.contains("在 Apelin 里确认"))
+        XCTAssertTrue(text.contains("在 Luros 里确认"))
     }
 
     /// Every message is acknowledged, in the language the phone speaks, so a

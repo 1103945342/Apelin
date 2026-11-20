@@ -509,7 +509,7 @@ public struct ChannelHostBackend: AgentHostBackend {
         let wanted = request.sdkID ?? Self.pinnedSDK(projectURL: projectURL)
         let record = wanted.flatMap { id in list.sdks.first { $0.id == id || $0.canonicalName == id } }
             ?? list.sdks.first
-        guard let record else { throw ApelinError(.notFound, "no SDK is registered; add one in Apelin's SDK manager") }
+        guard let record else { throw ApelinError(.notFound, "no SDK is registered; add one in Luros's SDK manager") }
         if let asked = request.sdkID, record.id != asked, record.canonicalName != asked {
             throw ApelinError(.notFound, "no registered SDK matches \(asked)")
         }

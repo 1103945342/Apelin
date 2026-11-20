@@ -3,7 +3,7 @@ Name: Luros Preference Bundle Development
 Version: @VERSION@
 Architecture: @ARCHITECTURE@
 Description: Settings pane templates for Luros, for @FLAVOR@ jailbreaks
- Lets Apelin create, build and package preference bundles on the device: a
+ Lets Luros create, build and package preference bundles on the device: a
  template with a switch and a text field, the PreferenceLoader entry that
  shows it in Settings, and declarations for the private Preferences
  framework. Needs PreferenceLoader, which your preferred package manager

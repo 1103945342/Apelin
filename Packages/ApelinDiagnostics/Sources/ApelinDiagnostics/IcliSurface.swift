@@ -61,7 +61,7 @@ public protocol IcliSurface: Sendable {
     func respring() throws -> [String: Any]
 }
 
-/// The fields of icli's `SyslogFilter` Apelin sets: what icli matches before
+/// The fields of icli's `SyslogFilter` Luros sets: what icli matches before
 /// it counts or delivers anything.
 public struct IcliSyslogFilter: Sendable, Hashable {
     /// A case-insensitive substring of the process name.

@@ -10,7 +10,7 @@ import XCTest
 /// pushes, the `lease` event, and the reasons a refusal carries. Against a
 /// bare repository on disk (`acceptsLocalRemotes`).
 final class GitForcePushServiceTests: XCTestCase {
-    private let author = GitSignature(name: "Apelin Test", email: "test@apelin.invalid")
+    private let author = GitSignature(name: "Luros Test", email: "test@apelin.invalid")
     private let id = "8a6f3c1e-0000-4000-8000-000000000201"
 
     /// A workspace cloned from a bare remote, both sides with a commit of

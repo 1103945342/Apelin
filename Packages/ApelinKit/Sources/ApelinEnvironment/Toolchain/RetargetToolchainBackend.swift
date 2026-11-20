@@ -24,7 +24,7 @@
             try await ToolchainCatalog().list().map(Self.product)
         }
 
-        /// One catalog source as a product, with what this Apelin's support
+        /// One catalog source as a product, with what this Luros's support
         /// table says of its release.
         static func product(_ source: ApelinToolchain.ToolchainSource) throws -> ToolchainProduct {
             let release = CommandLineToolsSupport.release(source.version)
@@ -52,7 +52,7 @@
                 swiftRequirements: swift,
                 swiftUnavailableReason: swift?.unavailableReason ?? (release != nil && swift == nil
                     ? release?.swiftUnavailable
-                    ?? "Swift from Command Line Tools \(source.version) has not been adapted for Apelin; CPU instruction compatibility alone does not establish runtime compatibility."
+                    ?? "Swift from Command Line Tools \(source.version) has not been adapted for Luros; CPU instruction compatibility alone does not establish runtime compatibility."
                     : nil),
                 clangModuleCPUFeatures: release?.clangModuleCPUFeatures,
                 compatibility: compatibility,
@@ -175,7 +175,7 @@
         }
 
         /// A tree and its manifest as setup's `prepare` answers them: the
-        /// product as this Apelin's support table describes its release now.
+        /// product as this Luros's support table describes its release now.
         static func prepared(_ manifest: ToolchainManifest, tree: URL) throws -> PreparedToolchain {
             try PreparedToolchain(
                 id: manifest.id,

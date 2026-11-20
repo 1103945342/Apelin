@@ -180,7 +180,7 @@ struct EnvironmentBackendTests {
         let failure = await #expect(throws: EnvironmentToolFailure.self) { _ = try await fixture.backend.checkEnvironment(request) }
         let message = failure?.message ?? ""
         #expect(message.contains("(/: missing template; /: missing environment)"), "\(message)")
-        #expect(message.contains("not an Apelin build description") && message.contains("apelin-external-build"), "\(message)")
+        #expect(message.contains("not an Luros build description") && message.contains("apelin-external-build"), "\(message)")
 
         fixture.host.on(.projectCheck, reply: ProjectCheckResponse(passed: false, diagnostics: [
             ProjectDiagnostic(code: "project.invalid", severity: .error, message: "unknown member", file: "luros-project.json", field: "/configurations/Debug/linkerFlags"),
@@ -188,7 +188,7 @@ struct EnvironmentBackendTests {
         let misspelled = await #expect(throws: EnvironmentToolFailure.self) { _ = try await fixture.backend.checkEnvironment(request) }
         #expect(misspelled?.message.contains("(/configurations/Debug/linkerFlags: unknown member)") == true)
         #expect(misspelled?.message.contains("apelin-project.schema.json") == true)
-        #expect(misspelled?.message.contains("not an Apelin build description") == false)
+        #expect(misspelled?.message.contains("not an Luros build description") == false)
     }
 
     @Test

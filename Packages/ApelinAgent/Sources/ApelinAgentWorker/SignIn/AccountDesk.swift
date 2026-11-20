@@ -61,7 +61,7 @@ public actor AccountDesk {
         self.verifyKey = verifyKey
     }
 
-    /// kwwk's NIO listener with Apelin's own pages.
+    /// kwwk's NIO listener with Luros's own pages.
     public static let nioListener: OAuthLoopbackFactory = { host, port, path in
         try OAuthCallbackServer(
             port: port,
@@ -307,7 +307,7 @@ public actor AccountDesk {
         case .deviceCode:
             throw ApelinError(
                 .badRequest,
-                "Complete sign-in on the provider’s website. No response is needed in Apelin.",
+                "Complete sign-in on the provider’s website. No response is needed in Luros.",
             )
         case .browser:
             guard values.count == 1, let text = values[.callbackURL] else {
@@ -617,7 +617,7 @@ enum SignInDeadline: Error {
 /// kwwk's page presenter: says what to open, once, and lets the flow's own
 /// waiting run. A device flow has said it already, code and page together.
 /// A flow that polls the provider (Cursor, Qoder, WorkBuddy, Z.ai) or binds
-/// its own listener (Kiro) has no loopback of Apelin's, so nothing pasted
+/// its own listener (Kiro) has no loopback of Luros's, so nothing pasted
 /// can stand in for its redirect.
 private struct SignInPresenter: OAuthBrowserPresenter {
     let signIn: SignInRun

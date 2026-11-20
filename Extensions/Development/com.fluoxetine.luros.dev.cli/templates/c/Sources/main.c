@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 OwnGoal Studio
 //
-// From Apelin's command-line template. The build defines APELIN_VERSION and
+// From Luros's command-line template. The build defines APELIN_VERSION and
 // APELIN_BUILD_ID as string literals on every compile. Exit codes follow
 // sysexits(3): 0 on success, 64 for a usage error.
 #include <stdio.h>

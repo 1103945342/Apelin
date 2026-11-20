@@ -130,7 +130,7 @@ for ((index = 0; index < license_count; index++)); do
         echo "error: $entry is not in Licenses/review.json" >&2
         exit 65
     }
-    if [[ "$component" == Apelin ]]; then
+    if [[ "$component" == Luros ]]; then
         source_file="$repository_root/LICENSE"
     else
         source_file="$extension_root/Licenses/$component/$file"
@@ -139,7 +139,7 @@ for ((index = 0; index < license_count; index++)); do
         echo "error: $source_file differs from the reviewed text; read it and update Licenses/review.json" >&2
         exit 65
     }
-    if [[ -n "$checkouts" && "$component" != Apelin ]]; then
+    if [[ -n "$checkouts" && "$component" != Luros ]]; then
         upstream="$checkouts/$(json "$review" components "$component" files "$file" checkout)"
         [[ -f "$upstream" && "$(sha256 "$upstream")" == "$expected" ]] || {
             echo "error: $upstream no longer matches the reviewed $component notice; read it and update Licenses/" >&2
@@ -169,13 +169,13 @@ if [[ "$tool" == assembler ]]; then
     archive="$output_directory/$archive_name"
     if [[ ! -f "$archive" ]]; then
         source_tree="$scratch/source"
-        mkdir -p "$source_tree/Apelin/Packages" "$source_tree/Apelin/Extensions/AgentTools" "$source_tree/Dependencies"
+        mkdir -p "$source_tree/Luros/Packages" "$source_tree/Luros/Extensions/AgentTools" "$source_tree/Dependencies"
         excludes=(--exclude .build --exclude .swiftpm --exclude build --exclude .DS_Store --exclude .git)
-        rsync -a "${excludes[@]}" "$repository_root/LICENSE" "$source_tree/Apelin/"
-        rsync -a "${excludes[@]}" "$repository_root/Packages/ApelinToolHost" "$source_tree/Apelin/Packages/"
-        rsync -a "${excludes[@]}" "$extension_root" "$source_tree/Apelin/Extensions/AgentTools/"
+        rsync -a "${excludes[@]}" "$repository_root/LICENSE" "$source_tree/Luros/"
+        rsync -a "${excludes[@]}" "$repository_root/Packages/ApelinToolHost" "$source_tree/Luros/Packages/"
+        rsync -a "${excludes[@]}" "$extension_root" "$source_tree/Luros/Extensions/AgentTools/"
         rsync -a "${excludes[@]}" "$checkouts/libkeystone-spm" "$checkouts/libcapstone-spm" "$source_tree/Dependencies/"
-        tar --uid 0 --gid 0 --uname root --gname wheel --no-xattrs --no-mac-metadata -cJf "$scratch/$archive_name" -C "$source_tree" Apelin Dependencies
+        tar --uid 0 --gid 0 --uname root --gname wheel --no-xattrs --no-mac-metadata -cJf "$scratch/$archive_name" -C "$source_tree" Luros Dependencies
         mv "$scratch/$archive_name" "$archive"
     fi
     sed \

@@ -41,11 +41,11 @@ struct DebianControlFileTests {
     @Test func `parses A template and round trips`() throws {
         let template = """
         Package: com.fluoxetine.luros
-        Name: Apelin
+        Name: Luros
         Version: 1.0
         Architecture: iphoneos-arm64e
         Description: An on-device IDE
-         Apelin is an on-device IDE.
+         Luros is an on-device IDE.
          .
          Second paragraph.
         Depends: firmware (>= 16.0), uikittools, launchctl

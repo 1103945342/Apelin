@@ -1,6 +1,6 @@
 import Foundation
 
-// The device tools Apelin's own work needs and its package does not carry:
+// The device tools Luros's own work needs and its package does not carry:
 // `ldid` signs, `git` fetches a repository, `dpkg-deb` reads a package, and
 // `uikittools` carries `uicache`, which registers a built app. Settings ▸
 // Environment reads their state; a missing one is installed from the user's

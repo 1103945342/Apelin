@@ -61,7 +61,7 @@ public struct PreservedList<Element: Codable>: Codable {
     }
 }
 
-/// A file Apelin keeps that does not read at all. It is never replaced with
+/// A file Luros keeps that does not read at all. It is never replaced with
 /// an empty state that the next save would make permanent: it is renamed
 /// beside itself, `<name>.unreadable-<time>`, kept for whoever looks, and the
 /// caller starts afresh.

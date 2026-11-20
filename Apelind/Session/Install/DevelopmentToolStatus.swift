@@ -1,7 +1,7 @@
 import ApelinProtocol
 import Foundation
 
-/// The four programs Apelin's own work needs, and whether this device has
+/// The four programs Luros's own work needs, and whether this device has
 /// each: the program must be an executable in `usr/bin`, and the package that
 /// carries it installed, for the row to say so.
 ///

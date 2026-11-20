@@ -85,7 +85,7 @@ public struct CredentialInbox: Sendable {
             case .tooLarge: "larger than 64 KiB; removed"
             case let .unreadable(code): "could not be read (\(String(cString: strerror(code))))"
             case .notCredentials: "not a kwwk credential or auth.json map; removed"
-            case let .unknownProvider(id): "\(id) is not a provider Apelin offers; removed"
+            case let .unknownProvider(id): "\(id) is not a provider Luros offers; removed"
             }
         }
     }

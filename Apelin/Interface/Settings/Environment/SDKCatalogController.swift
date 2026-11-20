@@ -292,7 +292,7 @@ extension SDKCatalogController: UIDocumentPickerDelegate {
     /// is copied into the inbox first and imported from there.
     @objc dynamic func documentPicker(_: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
-        // an SDK exported by Apelin is a transfer file, not an archive to unpack
+        // an SDK exported by Luros is a transfer file, not an archive to unpack
         if TransferKind(fileName: url.lastPathComponent) != nil {
             TransferOpener.open(url, from: self, pushingOnto: navigationController)
             return

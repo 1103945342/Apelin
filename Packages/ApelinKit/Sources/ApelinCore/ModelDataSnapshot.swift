@@ -1,6 +1,6 @@
 import Foundation
 
-/// models.dev's catalog as Apelin keeps it on the device: what a conversation
+/// models.dev's catalog as Luros keeps it on the device: what a conversation
 /// reads a model against — its window, its reply ceiling, what it accepts,
 /// whether it reasons — trimmed to those fields and written beside the rest of
 /// the app's data, so the agent reads a model it has never heard of without
@@ -95,7 +95,7 @@ extension ModelDataSnapshot {
     /// models.dev answers from Japan and is slow from China; the repository's
     /// copy comes through jsDelivr, which is reachable there.
     public static let mirrorURL =
-        URL(string: "https://cdn.jsdelivr.net/gh/1103945342/Apelin@main/Apelin/Resources/models.dev.json")!
+        URL(string: "https://cdn.jsdelivr.net/gh/1103945342/Luros@main/Luros/Resources/models.dev.json")!
     /// How old the copy may be before the app looks for a newer one.
     public static let refreshInterval: TimeInterval = 7 * 24 * 60 * 60
 
@@ -166,9 +166,9 @@ extension ModelDataSnapshot {
 // MARK: - models.dev
 
 extension ModelDataSnapshot {
-    /// models.dev's `api.json`, trimmed to what Apelin reads: every provider it
+    /// models.dev's `api.json`, trimmed to what Luros reads: every provider it
     /// names, every model, and the fields `Model` keeps. A provider or a model
-    /// without a number Apelin uses is still written, so a later edit of
+    /// without a number Luros uses is still written, so a later edit of
     /// models.dev's shape cannot silently empty the file.
     public static func parse(modelsDev data: Data, source: String = ModelDataSnapshot.remoteURL.absoluteString) throws -> ModelDataSnapshot {
         guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
@@ -216,7 +216,7 @@ extension ModelDataSnapshot {
     }
 
     /// models.dev's `reasoning_options`: an `effort` entry lists the levels the
-    /// model takes, a `toggle` entry none Apelin can grade.
+    /// model takes, a `toggle` entry none Luros can grade.
     private static func efforts(_ value: Any?) -> [String]? {
         guard let options = value as? [[String: Any]] else { return nil }
         for option in options where (option["type"] as? String) == "effort" {

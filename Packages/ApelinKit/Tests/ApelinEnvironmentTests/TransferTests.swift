@@ -10,7 +10,7 @@ import XCTest
 // MARK: - The fake backend's transfer half
 
 extension FakeBackend {
-    /// Release `9.9` stands for one this Apelin no longer supports.
+    /// Release `9.9` stands for one this Luros no longer supports.
     static let unsupportedVersion = "9.9"
 
     private func prepared(_ tree: URL, version: String = FakeBackend.newest.version) -> PreparedToolchain {
@@ -41,7 +41,7 @@ extension FakeBackend {
     }
 
     func importRefusal(_ toolchain: TransferToolchain) -> String? {
-        toolchain.record.version == Self.unsupportedVersion ? "Command Line Tools 9.9 is not a release this Apelin supports." : nil
+        toolchain.record.version == Self.unsupportedVersion ? "Command Line Tools 9.9 is not a release this Luros supports." : nil
     }
 }
 
@@ -72,7 +72,7 @@ final class TransferTests: XCTestCase {
 
     private func export(_ home: TemporaryHome, _ kind: TransferKind, _ id: String, log: EventLog = EventLog()) async throws -> TransferExport {
         let transfers = service(home)
-        let prepared = try transfers.prepareExport(TransferExportRequest(kind: kind, id: id, createdBy: "Apelin 0.1.0 (1)"))
+        let prepared = try transfers.prepareExport(TransferExportRequest(kind: kind, id: id, createdBy: "Luros 0.1.0 (1)"))
         return try await transfers.export(prepared, staging: home.layout.makeStaging("export-\(UUID().uuidString)"), reporter: log.reporter)
     }
 
@@ -137,7 +137,7 @@ final class TransferTests: XCTestCase {
         XCTAssertTrue(export.path.hasPrefix(first.layout.exports.path + "/"))
         XCTAssertEqual(export.summary.kind, .sdk)
         XCTAssertEqual(export.summary.sdk?.record.path, "", "the exporting device's path stays there")
-        XCTAssertEqual(export.summary.createdBy, "Apelin 0.1.0 (1)")
+        XCTAssertEqual(export.summary.createdBy, "Luros 0.1.0 (1)")
         XCTAssertEqual(log.events.filter { $0.0 == "stage" }.compactMap { $0.1?["stage"]?.stringValue }, ["collecting", "hashing", "packing", "verifying"])
         let attributes = try FileManager.default.attributesOfItem(atPath: export.path)
         XCTAssertEqual((attributes[.size] as? NSNumber)?.int64Value, export.size)
@@ -354,7 +354,7 @@ final class TransferTests: XCTestCase {
         let file = try craft(manifest, payload: [("payload/usr", nil)], on: second, named: "Old.apetc")
         let inspection = try inspect(file.path, on: second)
         XCTAssertFalse(inspection.importable)
-        XCTAssertEqual(inspection.problems.first, "Command Line Tools 9.9 is not a release this Apelin supports.")
+        XCTAssertEqual(inspection.problems.first, "Command Line Tools 9.9 is not a release this Luros supports.")
         let refusal = await code { _ = try await self.importFile(file.path, on: second) }
         XCTAssertEqual(refusal, .badRequest)
     }

@@ -2,10 +2,10 @@ import ApelinProtocol
 import Darwin
 import Foundation
 
-/// What Apelin itself writes into a project folder that is none of the
+/// What Luros itself writes into a project folder that is none of the
 /// project's: the agent's saved attachments, and the temporary files the
 /// project metadata writer and the agent's file tools write beside a file
-/// they replace. Every repository Apelin makes keeps them out through
+/// they replace. Every repository Luros makes keeps them out through
 /// `.git/info/exclude`, the repository's own list, which is never committed
 /// or pushed; `.gitignore` is the project's.
 public enum ProjectExcludes {

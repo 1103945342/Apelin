@@ -3,14 +3,14 @@ import Foundation
 import KWWKAI
 
 /// Kimi's device fingerprint without kwwk's `~/.kwwk/kimi-device-id`, which
-/// Apelin never reads or writes (nothing is shared with `~/.kwwk`).
+/// Luros never reads or writes (nothing is shared with `~/.kwwk`).
 ///
 /// Kimi binds a grant to the device id it was approved on. kwwk writes that
 /// id into the credential as its `deviceId` extra at sign-in and again on
 /// every refresh, and a refresh sends the recorded id whatever identity it
 /// was given. So the id lives in the credential, in the keychain: a sign-in
 /// again reuses the one the stored credential recorded, and a first one
-/// makes a new id in kwwk's format. Every identity Apelin hands kwwk names
+/// makes a new id in kwwk's format. Every identity Luros hands kwwk names
 /// its id, so kwwk never falls back to its own file.
 public enum KimiIdentity {
     public static let deviceIDExtra = "deviceId"
@@ -41,7 +41,7 @@ public enum KimiIdentity {
         #endif
         return KimiDeviceIdentity(
             deviceId: deviceID,
-            deviceName: PrivateShapes.currentHostName() ?? "Apelin",
+            deviceName: PrivateShapes.currentHostName() ?? "Luros",
             deviceModel: "\(system) \(architecture)",
             osVersion: ProcessInfo.processInfo.operatingSystemVersionString
         )

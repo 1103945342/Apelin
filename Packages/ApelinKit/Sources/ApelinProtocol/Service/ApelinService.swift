@@ -9,7 +9,7 @@ public protocol ApelinTransport: Sendable {
     func call(_ request: WireRequest, descriptors: [OwnedDescriptor]) async throws -> (WireReply, [OwnedDescriptor])
 }
 
-/// Everything Apelin can do, one typed async method per `AppOperation`.
+/// Everything Luros can do, one typed async method per `AppOperation`.
 /// The console, the agent's tools and the UI all call this and nothing
 /// lower; the methods themselves live beside their types in
 /// `Operations/<Domain>.swift`.

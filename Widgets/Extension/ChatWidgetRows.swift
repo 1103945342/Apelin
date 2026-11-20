@@ -68,7 +68,7 @@ struct ChatWidgetHeader: View {
     var body: some View {
         HStack(alignment: .center, spacing: WidgetSpacing.line) {
             MarkView(size: 22, braces: theme.braces)
-            Text(verbatim: "Apelin")
+            Text(verbatim: "Luros")
                 .font(.rounded(.subheadline, .bold))
             Spacer(minLength: WidgetSpacing.line)
             if let summary = snapshot.summaryLine {

@@ -1,8 +1,8 @@
 {
   "name": "i5-log-continuity",
   "setup": [
-    "Proves logStream has no gap between reads. The console logs every output line it writes to the unified log (subsystem com.fluoxetine.luros, category console, process Apelin), so the script is its own steady logger: 100 hello steps labelled tick-001 ... tick-100, 0.2 s apart, each logging a step.start and a step.result line that carry its label.",
-    "One logStream listens to those lines for 60 s (filter: subsystem com.fluoxetine.luros, process Apelin, message containing \"label\":\"tick-\"), long enough for every tick on a slow device; the read after the window replays every event.",
+    "Proves logStream has no gap between reads. The console logs every output line it writes to the unified log (subsystem com.fluoxetine.luros, category console, process Luros), so the script is its own steady logger: 100 hello steps labelled tick-001 ... tick-100, 0.2 s apart, each logging a step.start and a step.result line that carry its label.",
+    "One logStream listens to those lines for 60 s (filter: subsystem com.fluoxetine.luros, process Luros, message containing \"label\":\"tick-\"), long enough for every tick on a slow device; the read after the window replays every event.",
     "Pass: the run ends ok. The expects require exactly 200 log events (two per tick) followed by the state event: one line lost would leave 199, one repeated would make 201. To see it yourself, take the logs-read step.result in console/out/<runID>.jsonl: its response.events, in order, are the step.start then step.result line of tick-001, tick-002, ... tick-100, each exactly once.",
     "The chunked reader (icli, as mobile) starts a new read every 3 s, so the 25-40 s of ticks cross about ten read boundaries; the root reader (apelin-log-reader, used only when the mobile read is denied) keeps one stream for the window. To know which served, run `ps ax | grep apelin-log-reader` during the run: present means root.",
     "If the run fails at the 200th event: count the tick labels in response.events. A missing label is a lost line; a label three times is a repeat; a truncated event with reason source means icli dropped lines past its cap or a read started late."
@@ -12,7 +12,7 @@
     {
       "op": "logStream",
       "label": "logs",
-      "request": {"filter": {"subsystem": "com.fluoxetine.luros", "process": "Apelin", "messageContains": "\"label\":\"tick-", "windowSeconds": 60, "limit": 1000}, "afterSeq": 0, "waitMilliseconds": 1000},
+      "request": {"filter": {"subsystem": "com.fluoxetine.luros", "process": "Luros", "messageContains": "\"label\":\"tick-", "windowSeconds": 60, "limit": 1000}, "afterSeq": 0, "waitMilliseconds": 1000},
       "follow": false
     },
     {"op": "hello", "label": "tick-001"},

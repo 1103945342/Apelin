@@ -7,14 +7,14 @@ import Foundation
 // Session/Install/ApplicationCensus.swift).
 //
 // Only apps under `<install root>/Applications` are the subject: an app the
-// bootstrap put there, one Apelin installed from an `.ipa`, or a registration
+// bootstrap put there, one Luros installed from an `.ipa`, or a registration
 // left behind by one whose bundle is gone. An app iOS keeps in its own
 // containers is listed nowhere and never removed from here, and a bundle a
 // package owns is shown as that package's — a removal would break it.
 
 /// Who put an app under `Applications`.
 public enum ApplicationSource: String, Codable, Sendable {
-    /// Apelin installed it from an `.ipa`; `installationID` names the record.
+    /// Luros installed it from an `.ipa`; `installationID` names the record.
     case apelin
     /// An installed package lists the bundle: the package manager's to remove.
     case package
@@ -37,7 +37,7 @@ public struct ApplicationSummary: Codable, Sendable, Equatable {
     /// the bundle under it went away.
     public var registeredPath: String?
     public var source: ApplicationSource
-    /// Apelin's installation record for this app, when it has one.
+    /// Luros's installation record for this app, when it has one.
     public var installationID: String?
     /// The package that lists this bundle, when one does.
     public var packageID: String?

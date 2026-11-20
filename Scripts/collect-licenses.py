@@ -113,7 +113,7 @@ def package_pins(project):
 def excluded_paths(review):
     """Reviewed: folders a package's own manifest leaves out of every target
     it builds (libpng's contrib, zlib's contrib). A notice there describes
-    code that is never compiled into Apelin, so it is not collected. Each
+    code that is never compiled into Luros, so it is not collected. Each
     entry is a review decision in review.json, never inferred."""
     return {identity: [os.path.normpath(path) for path in paths]
             for identity, paths in review.get("excludedPaths", {}).items()}

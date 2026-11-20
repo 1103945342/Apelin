@@ -3,7 +3,7 @@
 //
 // The Preferences.framework declarations a preference bundle subclasses and
 // builds its rows with. The SDK ships no Preferences headers, so these are
-// Apelin's own, written from the framework's exported interface; nothing is
+// Luros's own, written from the framework's exported interface; nothing is
 // copied from Apple. The symbols resolve from the private framework at run
 // time; the link stub beside this folder (support/stubs/Preferences.framework)
 // declares exactly the classes and ivars used here, and a new one goes into

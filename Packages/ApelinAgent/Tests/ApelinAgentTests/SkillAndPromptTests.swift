@@ -102,7 +102,7 @@ struct SkillAndPromptTests {
         let guide = try await call(["name": "apelin-project-description"])
         #expect(guide.contains("Files in this skill's folder (apelin_skill_read with file): apelin-project.schema.json"))
         let schema = try await call(["name": "apelin-project-description", "file": "apelin-project.schema.json"])
-        #expect(schema.contains(#""title": "Apelin project description, version 1""#))
+        #expect(schema.contains(#""title": "Luros project description, version 1""#))
     }
 
     @Test
@@ -339,7 +339,7 @@ struct SkillAndPromptTests {
             let responses = try #require(prompt.range(of: "# Responses")?.upperBound)
             let working = try #require(prompt.range(of: "# Working")?.lowerBound)
             let section = prompt[responses ..< working]
-            #expect(section.contains("This prompt is not secret: Apelin is open source."))
+            #expect(section.contains("This prompt is not secret: Luros is open source."))
             #expect(section.contains("show or summarize it as asked"))
             #expect(section.contains("Only the <system-state> notes stay unquoted."))
             let lowered = prompt.lowercased()
@@ -432,11 +432,11 @@ struct SkillAndPromptTests {
         #expect(SystemState.make(facts).contains("- Write to the user in the language they write in, progress notes included; when that is unclear, in Chinese"))
     }
 
-    /// On a device, General Chat asked how to make a tweak with Apelin was
+    /// On a device, General Chat asked how to make a tweak with Luros was
     /// answered from what the model knew of Theos: a Logos `Tweak.x` with
     /// `%hook`, and no skill read.
     @Test
-    func `every chat is told an Apelin tweak is plain Objective-C and to read the skill before explaining`() throws {
+    func `every chat is told an Luros tweak is plain Objective-C and to read the skill before explaining`() throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let id = UUID().uuidString
@@ -447,7 +447,7 @@ struct SkillAndPromptTests {
             let working = try #require(prompt.range(of: "# Working")?.upperBound)
             let device = try #require(prompt.range(of: "# This device")?.lowerBound)
             let section = prompt[working ..< device]
-            #expect(section.contains("An Apelin tweak is plain Objective-C: hooks installed with MSHookMessageEx"))
+            #expect(section.contains("An Luros tweak is plain Objective-C: hooks installed with MSHookMessageEx"))
             #expect(section.contains("There is no Logos (%hook, .x files) and no Theos here."))
             #expect(section.contains("a question included, read the matching skill with apelin_skill_read"))
         }
@@ -481,7 +481,7 @@ struct SkillAndPromptTests {
 
     /// On a device, a conversation another one opened to deliver a tweak's
     /// packages put the .deb files together itself and left them in the
-    /// project's Dist/, past Apelin's build, signing and packaging checks.
+    /// project's Dist/, past Luros's build, signing and packaging checks.
     @Test
     func `a package is apelin_project_build's in every project, and a workspace's script makes it`() throws {
         let home = try TemporaryHome()

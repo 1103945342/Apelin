@@ -2,7 +2,7 @@ import Foundation
 
 /// Where the symbolicator finds the DWARF for an image UUID.
 ///
-/// Xrash's `DSYMStore` copies imported dSYMs into a store of its own. Apelin's
+/// Xrash's `DSYMStore` copies imported dSYMs into a store of its own. Luros's
 /// build keeps a dSYM beside every product it installs, so the lookup is
 /// `ProjectDSYMs`, which reads those in place; `DSYMStore`, kept from the
 /// port, still conforms, but only the tests construct one.

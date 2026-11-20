@@ -3,7 +3,7 @@
 /// (`ToolCatalog`); the session host and the app read the names from here,
 /// so a rename reaches all three at once.
 ///
-/// A tool that acts on what Apelin keeps — its projects and templates, the
+/// A tool that acts on what Luros keeps — its projects and templates, the
 /// packages it installs, the device, toolchains and SDKs, conversations,
 /// memory, skills, its settings — or reaches past the device, as the web
 /// fetch does, is `apelin_<scope>_<verb>`; a generic verb on the session's

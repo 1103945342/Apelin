@@ -4,7 +4,7 @@ import Foundation
 import XCTest
 
 final class GitRepositoryTests: XCTestCase {
-    private let author = GitSignature(name: "Apelin Test", email: "test@apelin.invalid")
+    private let author = GitSignature(name: "Luros Test", email: "test@apelin.invalid")
 
     private func temporaryRepository() throws -> (URL, GitRepository) {
         let base = URL(fileURLWithPath: CanonicalPath.resolve(NSTemporaryDirectory())!, isDirectory: true)

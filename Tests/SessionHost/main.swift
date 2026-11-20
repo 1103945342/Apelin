@@ -589,7 +589,7 @@ do {
     check(!CallerPolicy.allows(environment, .agentRunCode), "the environment worker does not")
 }
 
-// MARK: - An agent and Apelin's own screen
+// MARK: - An agent and Luros's own screen
 
 do {
     func forwarded(_ action: UIActionRequest, from caller: Caller) throws -> WireRequest {
@@ -600,7 +600,7 @@ do {
     for sent: [String]? in [nil, [], ["com.apple.springboard"]] {
         let action = try forwarded(UIActionRequest(targetID: "com.fluoxetine.luros", action: tap, refusedBundleIDs: sent), from: agent)
             .decode(UIActionRequest.self)
-        check(action.refusedBundleIDs == ["com.fluoxetine.luros"], "an agent's UI action refuses Apelin whatever it sent (\(String(describing: sent)))")
+        check(action.refusedBundleIDs == ["com.fluoxetine.luros"], "an agent's UI action refuses Luros whatever it sent (\(String(describing: sent)))")
         check(action.targetID == "com.fluoxetine.luros" && action.action == tap, "and is otherwise as it was sent")
     }
     let app = try forwarded(UIActionRequest(action: tap), from: .app)
@@ -1435,7 +1435,7 @@ do {
         expectError("installing \(reserved)", code: .denied) { try ManagedPackagePolicy.checkInstall(packageID: reserved, installed: installed, records: []) }
     }
     expectError("a bad package ID", code: .badRequest) { try ManagedPackagePolicy.checkInstall(packageID: "Bad ID", installed: installed, records: []) }
-    expectError("overwriting a package Apelin did not install", code: .conflict) {
+    expectError("overwriting a package Luros did not install", code: .conflict) {
         try ManagedPackagePolicy.checkInstall(packageID: "com.example.other", installed: installed, records: [])
     }
     try ManagedPackagePolicy.checkInstall(packageID: "com.example.new", installed: installed, records: [])
@@ -1496,7 +1496,7 @@ do {
     check(there.path(under: applications) == there.bundlePath, "a record that still names the bundle keeps its path")
 }
 
-// Settings ▸ Apps: only what Apelin installed from an .ipa, and what a
+// Settings ▸ Apps: only what Luros installed from an .ipa, and what a
 // removal there would do.
 do {
     let root = "/private/var/containers/Bundle/Application/.jbroot-0123456789ABCDEF"
@@ -1553,17 +1553,17 @@ do {
     )
 
     check(rows.map(\.name) == ["Demo", "Gone", "Owned"],
-          "only Apelin's own apps are listed, and only while something of them is left: \(rows.map(\.name))")
+          "only Luros's own apps are listed, and only while something of them is left: \(rows.map(\.name))")
     let byName = Dictionary(uniqueKeysWithValues: rows.map { ($0.name, $0) })
     check(byName["Demo"]?.source == .apelin && byName["Demo"]?.removable == true
         && byName["Demo"]?.path == demo && byName["Demo"]?.installationID != nil,
-          "an app Apelin installed is its own to remove")
+          "an app Luros installed is its own to remove")
     check(byName["Gone"]?.path == nil && byName["Gone"]?.registeredPath == gone
         && byName["Gone"]?.removable == true && byName["Gone"]?.version == "0.9",
           "a registration with no bundle behind it is listed, and removable too")
     check(byName["Owned"]?.source == .package && byName["Owned"]?.packageID == "com.example.owner"
         && byName["Owned"]?.removable == false, "an app a package now lists is the package manager's")
-    check(!rows.contains { $0.bundleID == "com.example.stranger" }, "an app Apelin never installed is not listed")
+    check(!rows.contains { $0.bundleID == "com.example.stranger" }, "an app Luros never installed is not listed")
     check(ApplicationCensus.parseRegistered("local.apelin.demo : /Applications/Demo.app\nnonsense\n")
         .first?.bundleID == "local.apelin.demo", "uicache's own list is read")
 }
@@ -2268,7 +2268,7 @@ do {
 
     irisin.lock.withLock { irisin.installedVersions["com.example.hello"] = "2.0" }
     let replaced = try await install.list(InstallationListRequest(packageID: "com.example.hello"), caller: lister)
-    check(replaced.installations.first.map { !$0.removable && ($0.reason ?? "").contains("now version 2.0") } == true, "a package changed outside Apelin is listed as not removable, with the refusal")
+    check(replaced.installations.first.map { !$0.removable && ($0.reason ?? "").contains("now version 2.0") } == true, "a package changed outside Luros is listed as not removable, with the refusal")
     irisin.lock.withLock { irisin.installedVersions["com.example.hello"] = "1.0" }
 
     // A removal under way is the package's newest record: the install
@@ -2378,7 +2378,7 @@ do {
     let installations = InstallationStore(directory: state.appendingPathComponent("installations"))
     let dylib = "/Library/MobileSubstrate/DynamicLibraries/DockFlip.dylib"
     let foreignDylib = "/Library/MobileSubstrate/DynamicLibraries/Foreign.dylib"
-    // DockFlip before its rename, which Apelin installed.
+    // DockFlip before its rename, which Luros installed.
     let renamed = record(package: "local.apelin.dockflip", version: "0.1")
     try await installations.save(renamed)
     let installed = Dictionary(uniqueKeysWithValues: [
@@ -2435,11 +2435,11 @@ do {
         return (conflicts, batch.events.last?.payload?["message"]?.stringValue ?? "")
     }
 
-    // A package renamed from one Apelin installed: that installation, to remove.
+    // A package renamed from one Luros installed: that installation, to remove.
     let owned = "\(dylib) is owned by local.apelin.dockflip; Replaces is required"
     let rename = try await refused("local.apelin.flipdock", files: [dylib], text: owned)
     check(rename.conflicts == [InstallConflict(relation: .file, file: dylib, packageID: "local.apelin.dockflip", version: "0.1", installationID: renamed.installationID, projectID: "p")], "the renamed package's installation is named (\(rename.conflicts))")
-    check(rename.message == "\(dylib) already belongs to local.apelin.dockflip 0.1, which Apelin installed (installation \(renamed.installationID)). Remove that installation first, then install again. Irisin reported: \(owned)", "the message names the package and the removal, then irisind's words (\(rename.message))")
+    check(rename.message == "\(dylib) already belongs to local.apelin.dockflip 0.1, which Luros installed (installation \(renamed.installationID)). Remove that installation first, then install again. Irisin reported: \(owned)", "the message names the package and the removal, then irisind's words (\(rename.message))")
 
     // Conflicts and Breaks without a version name an installed package; a
     // versioned one, an absent one and a file the package Replaces do not.
@@ -2456,7 +2456,7 @@ do {
     // A file another source installed: no installation, the package manager's to remove.
     let foreign = try await refused("local.apelin.copy", files: [foreignDylib], text: "\(foreignDylib) is owned by com.example.foreign; Replaces is required")
     check(foreign.conflicts == [InstallConflict(relation: .file, file: foreignDylib, packageID: "com.example.foreign", version: "2.0")], "a foreign owner has no installation")
-    check(foreign.message.hasPrefix("\(foreignDylib) already belongs to com.example.foreign 2.0, which Apelin did not install. Remove it with your preferred package manager first, then install again. Add com.example.foreign to this package's Replaces only if"), "a foreign owner is the package manager's to remove (\(foreign.message))")
+    check(foreign.message.hasPrefix("\(foreignDylib) already belongs to com.example.foreign 2.0, which Luros did not install. Remove it with your preferred package manager first, then install again. Add com.example.foreign to this package's Replaces only if"), "a foreign owner is the package manager's to remove (\(foreign.message))")
 
     // A protected package is never offered for removal.
     let core = try await refused("local.apelin.shim", files: ["/usr/lib/libsubstrate.dylib"], text: "owned")
@@ -2662,9 +2662,9 @@ do {
     check(path.first == developmentBin, "the terminal's PATH starts with the default toolchain's tools: \(path)")
     check(path.dropFirst().first == "/usr/local/bin" && path.contains("/usr/bin"), "then the bootstrap's and the system's directories: \(path)")
     check(environment["SDKROOT"] == developmentNewSDK, "SDKROOT is the newest SDK it reads: \(String(describing: environment["SDKROOT"]))")
-    check(environment["IPHONEOS_DEPLOYMENT_TARGET"] == "16.0", "outside a project the deployment target is Apelin's default")
+    check(environment["IPHONEOS_DEPLOYMENT_TARGET"] == "16.0", "outside a project the deployment target is Luros's default")
     check(environment["APELIN_TOOLCHAIN_BIN"] == developmentBin, "the toolchain is named for the login profile snippet")
-    check(environment["APELIN_TERMINAL"] == "1", "the terminal says the shell is Apelin's own, for the profile snippet's short prompt")
+    check(environment["APELIN_TERMINAL"] == "1", "the terminal says the shell is Luros's own, for the profile snippet's short prompt")
     check(environment.values.allSatisfy { !$0.contains("tok3n") && !$0.contains("inst-secret") }, "no record field but paths reaches the terminal")
     check(environment["GIT_CONFIG_KEY_0"] == "safe.bareRepository", "the terminal keeps its protected git config")
 }
@@ -3374,7 +3374,7 @@ do {
     await ask("feedback-2", body: feedback.body, repository: "someone/elsewhere")
     await sessions.record(strict.sessionID, approvalID: "feedback-2", decision: .approve)
     let elsewhere = await authorized(strict)
-    check(elsewhere != nil, "and Apelin's own repository only")
+    check(elsewhere != nil, "and Luros's own repository only")
     await ask("feedback-3", body: feedback.body)
     let asked = await authorized(strict)
     check(asked != nil, "asking is not approving")
@@ -3604,7 +3604,7 @@ do {
         session: strict.sessionID,
         registry: registry,
     )
-    check(feedback != nil, "an issue's approval files no feedback on Apelin's repository")
+    check(feedback != nil, "an issue's approval files no feedback on Luros's repository")
     await ask("issue-exact")
     let approved = await authorized(strict)
     check(approved == nil, "the approved issue is opened")

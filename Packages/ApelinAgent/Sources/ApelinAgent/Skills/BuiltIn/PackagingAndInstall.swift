@@ -13,7 +13,7 @@ extension BuiltInSkills {
         manager: the apelin-ipa-development skill has that loop.
 
         ## Where the package goes
-        - The `.deb` stays in Apelin's folder for that build, outside the
+        - The `.deb` stays in Luros's folder for that build, outside the
           project; the file tools do not reach it. It is the project's only
           package: never repack, rename or copy it into the project, and
           never make one yourself with `dpkg-deb -b`, `ar` or `tar`, to test
@@ -29,7 +29,7 @@ extension BuiltInSkills {
         ## Package identity
         - A new project's `package.id` in luros-project.json, and an app's
           `CFBundleIdentifier` in its Info.plist, start as `local.apelin.…`
-          placeholders Apelin made up from the folder name. Before the first
+          placeholders Luros made up from the folder name. Before the first
           install, ask the user for permanent reverse-DNS identifiers, or
           whether to keep these, and write each one everywhere the project
           spells it: `file_grep` for `local.apelin.` finds each place, such
@@ -83,12 +83,12 @@ extension BuiltInSkills {
         `package.conflicts` or `package.breaks` names an installed package
         (`Conflicting final packages`). The result's `conflicts` then names
         each package in the way, the file, and the `installationID` when
-        Apelin installed it.
+        Luros installed it.
         - After a package ID change the user agreed to (Package identity,
           above), or reusing a product name another package already
           installs, remove the installation named there with
           `apelin_package_remove` (in Strict mode the user confirms it), then
-          install again. A package Apelin did not install is the
+          install again. A package Luros did not install is the
           user's to remove with their package manager: ask them.
         - Adding `conflicts` or `breaks` removes nothing; it only makes the
           install fail while that package is there.
@@ -154,7 +154,7 @@ extension BuiltInSkills {
           load no tweaks at all.
 
         ## Removal
-        - `apelin_package_list` lists what Apelin installed that is still on
+        - `apelin_package_list` lists what Luros installed that is still on
           the device, from every project and conversation: per package, the
           installation id, version, the project whose build it was, and
           whether it can be removed. Read it instead of rebuilding or
@@ -163,7 +163,7 @@ extension BuiltInSkills {
         - `apelin_package_remove` takes that installation id, one an install
           returned or a refused install names in `conflicts`, or the package
           id alone, and removes only what a project's build installed:
-          bootstrap packages, Apelin itself and its toolchains (removed in
+          bootstrap packages, Luros itself and its toolchains (removed in
           Settings) are out of reach, and a package installed some other way
           is the user's to remove with their package manager. In Strict mode
           every removal asks.

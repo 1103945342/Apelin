@@ -35,16 +35,16 @@
       "project": "luros-project.json",
       "parameters": [
         { "name": "productName", "type": "identifier", "label": "Command Name", "help": "The executable installed into /usr/bin.", "required": true, "default": "apelinhello" },
-        { "name": "displayName", "type": "string", "label": "Package Name", "default": "Apelin Hello", "maxLength": 64 },
-        { "name": "summary", "type": "string", "label": "Description", "default": "Built on this device with Apelin.", "maxLength": 200 },
-        { "name": "author", "type": "string", "label": "Author", "default": "Apelin User", "maxLength": 64 }
+        { "name": "displayName", "type": "string", "label": "Package Name", "default": "Luros Hello", "maxLength": 64 },
+        { "name": "summary", "type": "string", "label": "Description", "default": "Built on this device with Luros.", "maxLength": 200 },
+        { "name": "author", "type": "string", "label": "Author", "default": "Luros User", "maxLength": 64 }
       ],
       "files": [
         { "path": "luros-project.json", "format": "json" },
         { "path": "Sources/main.c", "format": "c" },
         { "path": "Packaging/Tool.entitlements", "format": "plist-xml" }
       ],
-      "digest": "sha256:d7daf1162e40b98a2e62ac2435a5c9d774dc9ed8f55bd08e02457c532d48ec61"
+      "digest": "sha256:f1f354c4f1b959703c3ef267f0dd6162aa13b82a8eb91e196d72d10dd4a6fa72"
     },
     {
       "id": "objc",
@@ -56,16 +56,16 @@
       "project": "luros-project.json",
       "parameters": [
         { "name": "productName", "type": "identifier", "label": "Command Name", "help": "The executable installed into /usr/bin.", "required": true, "default": "apelinhello" },
-        { "name": "displayName", "type": "string", "label": "Package Name", "default": "Apelin Hello", "maxLength": 64 },
-        { "name": "summary", "type": "string", "label": "Description", "default": "Built on this device with Apelin.", "maxLength": 200 },
-        { "name": "author", "type": "string", "label": "Author", "default": "Apelin User", "maxLength": 64 }
+        { "name": "displayName", "type": "string", "label": "Package Name", "default": "Luros Hello", "maxLength": 64 },
+        { "name": "summary", "type": "string", "label": "Description", "default": "Built on this device with Luros.", "maxLength": 200 },
+        { "name": "author", "type": "string", "label": "Author", "default": "Luros User", "maxLength": 64 }
       ],
       "files": [
         { "path": "luros-project.json", "format": "json" },
         { "path": "Sources/main.m", "format": "objc" },
         { "path": "Packaging/Tool.entitlements", "format": "plist-xml" }
       ],
-      "digest": "sha256:2de276d41c5f43a133f6ca6bef212f0fe3fd6c0025016b21384976f13c9d34dd"
+      "digest": "sha256:e5adc803d141c085084231c0c3e943e6a58d772763e51bf745baacb9def809c6"
     }
   ],
   "provenance": [
@@ -78,8 +78,8 @@
       "adaptations": [
         "Kept: the four entitlements with their reasons (platform-application, no-sandbox, the two storage classes roothide needs, container-required explicitly false), the /usr/bin install path and a control file without extra dependencies.",
         "Added: the IOKit user-client list of the uikit-objc and uikit-swift templates (from platformize-app-ios) under both spellings of the key, so a tool that calls VideoToolbox, Core Video, Core Image or Metal can allocate IOSurfaces and reach the GPU.",
-        "Added: package.icon, this extension's icon on Apelin's Pages, written as the control's Icon so a package manager shows it beside the package.",
-        "Changed: platformize-bin-ios ports an upstream program; here the program itself is new, a small C tool written for Apelin with sysexits exit codes so the acceptance check can test output and exit status.",
+        "Added: package.icon, this extension's icon on Luros's Pages, written as the control's Icon so a package manager shows it beside the package.",
+        "Changed: platformize-bin-ios ports an upstream program; here the program itself is new, a small C tool written for Luros with sysexits exit codes so the acceptance check can test output and exit status.",
         "Dropped: the libroot launcher in /usr/bin that re-execs the real binary from /usr/libexec (a ported tool needs the bootstrap PATH and certificate paths; this one does not), the upstream follow/patch machinery and the Mac build scripts."
       ]
     },

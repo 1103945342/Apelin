@@ -113,10 +113,10 @@ public enum ApprovalDetail: Sendable, Hashable, Codable {
     /// A rename of another project than the session's. The host lets
     /// through only the rename it names, once.
     case projectRename(ProjectRenameApproval)
-    /// A public issue on Apelin's own repository: the whole title and body.
+    /// A public issue on Luros's own repository: the whole title and body.
     /// The host lets through only the issue it names, once.
     case feedback(FeedbackApproval)
-    /// An edit of an issue the user's GitHub account opened on Apelin's own
+    /// An edit of an issue the user's GitHub account opened on Luros's own
     /// repository: the issue and the whole new title or body. The host lets
     /// through only the edit it names, against the text it was made
     /// against, once.

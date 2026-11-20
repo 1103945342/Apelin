@@ -4,7 +4,7 @@ import Foundation
 import KWWKAI
 import Testing
 
-/// A project kept the `local.apelin.` identifiers Apelin made up until
+/// A project kept the `local.apelin.` identifiers Luros made up until
 /// release preparation, after a debug package was installed, and its
 /// package ID changed then. The moments a new project takes shape now say
 /// so in their result: an automatic rename, and a Debug build while nothing
@@ -64,13 +64,13 @@ struct PlaceholderIdentifierTests {
 
         let renamed = try await run(harness, .projectRename, ["display_name": "Lock Screen Clock", "automatic": true])
         let hint = try #require(renamed["identifierHint"] as? String)
-        #expect(hint.hasPrefix("This project's package ID local.apelin.banana and app bundle ID local.apelin.banana are placeholders Apelin made up: ask the user for permanent ones before the first install and keep them the same for debug and release builds"))
+        #expect(hint.hasPrefix("This project's package ID local.apelin.banana and app bundle ID local.apelin.banana are placeholders Luros made up: ask the user for permanent ones before the first install and keep them the same for debug and release builds"))
         #expect(hint.contains("file_grep for local.apelin."))
         #expect(hint.contains("a new identifier makes another package: agree a migration with the user first, as the apelin-packaging-and-install skill says."))
 
         try harness.home.write("luros-project.json", Self.manifest())
         let tweak = try await run(harness, .projectRename, ["display_name": "Clock", "automatic": true])
-        #expect((tweak["identifierHint"] as? String)?.hasPrefix("This project's package ID local.apelin.banana is a placeholder Apelin made up: ask the user for a permanent one before the first install and keep it the same") == true)
+        #expect((tweak["identifierHint"] as? String)?.hasPrefix("This project's package ID local.apelin.banana is a placeholder Luros made up: ask the user for a permanent one before the first install and keep it the same") == true)
     }
 
     @Test
@@ -102,7 +102,7 @@ struct PlaceholderIdentifierTests {
         let built = try await run(harness, .projectBuild)
         #expect(built["succeeded"] as? Bool == true)
         let hint = try #require(built["identifierHint"] as? String)
-        #expect(hint == "This project's package ID local.apelin.banana is a placeholder Apelin made up, and nothing it built is installed now. Before installing, ask the user for a permanent one or whether to keep it, the same for debug and release builds: changed after an install, an identifier makes another package (apelin-packaging-and-install skill).")
+        #expect(hint == "This project's package ID local.apelin.banana is a placeholder Luros made up, and nothing it built is installed now. Before installing, ask the user for a permanent one or whether to keep it, the same for debug and release builds: changed after an install, an identifier makes another package (apelin-packaging-and-install skill).")
         #expect(await harness.backend.installationQueries == [InstallationListToolRequest(projectID: harness.home.project.id)])
 
         let release = try await run(harness, .projectBuild, ["configuration": "release"])

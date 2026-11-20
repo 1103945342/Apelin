@@ -1,6 +1,6 @@
 # ApelinToolHost
 
-The agent-tool-extension protocol (milestone 1 plan, §6): how Apelin's
+The agent-tool-extension protocol (milestone 1 plan, §6): how Luros's
 session host runs a tool that ships in its own package and its own process.
 Both ends live here, on system libraries only.
 

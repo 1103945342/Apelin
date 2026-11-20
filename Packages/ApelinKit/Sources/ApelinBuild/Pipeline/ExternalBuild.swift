@@ -9,7 +9,7 @@ import Foundation
 /// own script, run as mobile in the project with the development
 /// environment shell_run and the terminal get, then the one `.deb` it wrote
 /// into `APELIN_PACKAGE_DIR` checked and registered as the build's artifact,
-/// as `BuildService` registers its own. Apelin neither compiles, signs nor
+/// as `BuildService` registers its own. Luros neither compiles, signs nor
 /// packages here: the script does all of it, and the package is judged by
 /// what it holds.
 ///
@@ -118,7 +118,7 @@ public enum ExternalBuild {
             contents = try DebArchiveReader.contents(of: .path(deb.path), contentsLimit: filterPlistLimit)
             control = try contents.control()
         } catch {
-            throw BuildFailure("\(deb.lastPathComponent) is not a package Apelin can read: \(error)")
+            throw BuildFailure("\(deb.lastPathComponent) is not a package Luros can read: \(error)")
         }
         let expected = inputs.layout.architecture
         guard let packageID = control.package, let version = control.version else {

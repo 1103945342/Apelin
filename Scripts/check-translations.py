@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fail the build when a string is missing a shipped language.
 
-Apelin ships the languages its sibling apps ship (owner, 2026-10-22):
+Luros ships the languages its sibling apps ship (owner, 2026-10-22):
 English and the twelve below. A key added in English only renders the
 English text on a Japanese or Arabic device and never warns, so every key
 a catalog asks to translate needs a translated unit, or plural variations,

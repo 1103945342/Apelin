@@ -59,7 +59,7 @@ struct InstallationRecord: Codable, Equatable, Sendable {
         var name: String
         /// `<install root>/Applications/<name>.app`, as it was copied.
         var bundlePath: String
-        /// True when the app that was at this path before Apelin got there was
+        /// True when the app that was at this path before Luros got there was
         /// not one of its own: the record says so rather than claiming it
         /// installed the app the device had.
         var foreign: Bool?

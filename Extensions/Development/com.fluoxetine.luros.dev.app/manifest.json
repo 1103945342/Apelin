@@ -35,9 +35,9 @@
       "project": "luros-project.json",
       "parameters": [
         { "name": "productName", "type": "identifier", "label": "Product Name", "help": "The executable and bundle name.", "required": true, "default": "ApelinApp" },
-        { "name": "displayName", "type": "string", "label": "Display Name", "default": "Apelin App", "maxLength": 64 },
-        { "name": "summary", "type": "string", "label": "Description", "default": "Built on this device with Apelin.", "maxLength": 200 },
-        { "name": "author", "type": "string", "label": "Author", "default": "Apelin User", "maxLength": 64 }
+        { "name": "displayName", "type": "string", "label": "Display Name", "default": "Luros App", "maxLength": 64 },
+        { "name": "summary", "type": "string", "label": "Description", "default": "Built on this device with Luros.", "maxLength": 200 },
+        { "name": "author", "type": "string", "label": "Author", "default": "Luros User", "maxLength": 64 }
       ],
       "files": [
         { "path": "luros-project.json", "format": "json" },
@@ -51,7 +51,7 @@
         { "path": "Resources/Info.plist", "format": "plist-xml" },
         { "path": "Packaging/App.entitlements", "format": "plist-xml" }
       ],
-      "digest": "sha256:9410761ce4a38b93ca047165aac747bd7b17f0e8a35786ec75d404690ede293e"
+      "digest": "sha256:eef25700bea87ecd51b7c6e37feb054ceba814d9e904a2386abbd54d77533c58"
     },
     {
       "id": "uikit-swift",
@@ -63,9 +63,9 @@
       "project": "luros-project.json",
       "parameters": [
         { "name": "productName", "type": "identifier", "label": "Product Name", "help": "The executable and bundle name.", "required": true, "default": "ApelinApp" },
-        { "name": "displayName", "type": "string", "label": "Display Name", "default": "Apelin App", "maxLength": 64 },
-        { "name": "summary", "type": "string", "label": "Description", "default": "Built on this device with Apelin.", "maxLength": 200 },
-        { "name": "author", "type": "string", "label": "Author", "default": "Apelin User", "maxLength": 64 }
+        { "name": "displayName", "type": "string", "label": "Display Name", "default": "Luros App", "maxLength": 64 },
+        { "name": "summary", "type": "string", "label": "Description", "default": "Built on this device with Luros.", "maxLength": 200 },
+        { "name": "author", "type": "string", "label": "Author", "default": "Luros User", "maxLength": 64 }
       ],
       "files": [
         { "path": "luros-project.json", "format": "json" },
@@ -75,7 +75,7 @@
         { "path": "Resources/Info.plist", "format": "plist-xml" },
         { "path": "Packaging/App.entitlements", "format": "plist-xml" }
       ],
-      "digest": "sha256:f116eca0f64cebf9f9ae7319b2563b3186438afc13a637993330e4162c639d5d"
+      "digest": "sha256:7612e398819c2e57cd401e61a4e56371e59a52ddeff9497cf7cb0329776b6e0c"
     }
   ],
   "provenance": [
@@ -88,7 +88,7 @@
       "adaptations": [
         "Kept: the manual main that deletes this bundle's .savedState before UIApplicationMain, the first screen's layout, the GPU IOKit user-client list with its reason, platform-application and no-sandbox, and the uikittools dependency whose triggers register the app.",
         "Changed: SceneRestorationReset is folded into main.swift; the Info.plist keys the Xcode project generated (INFOPLIST_KEY_*) are written out in Resources/Info.plist; the scene delegate gets a fixed Objective-C name because there is no Xcode module prefix.",
-        "Added: package.icon, this extension's icon on Apelin's Pages, written as the control's Icon so a package manager shows it beside the package; it is not the app's own icon.",
+        "Added: package.icon, this extension's icon on Luros's Pages, written as the control's Icon so a package manager shows it beside the package; it is not the app's own icon.",
         "Dropped: the daemon, the XPC client and its entitlements, the App Group, the storage entitlements, ExecutableWatch, QuietExit, the string catalogue and the Xcode project (apelin-build has no Xcode)."
       ]
     },

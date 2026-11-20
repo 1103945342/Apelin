@@ -138,7 +138,7 @@ final class TerminalSession {
     }
 
     /// What this session would write down now, or nil when nothing about it can
-    /// be reopened — a folder outside Apelin's own storage is kept by this run
+    /// be reopened — a folder outside Luros's own storage is kept by this run
     /// alone.
     var record: TerminalSessionRecord? {
         guard target.isRestorable, let taskID else { return nil }

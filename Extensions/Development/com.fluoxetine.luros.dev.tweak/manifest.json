@@ -73,21 +73,21 @@
           "name": "displayName",
           "type": "string",
           "label": "Package Name",
-          "default": "Apelin Tweak",
+          "default": "Luros Tweak",
           "maxLength": 64
         },
         {
           "name": "summary",
           "type": "string",
           "label": "Description",
-          "default": "Built on this device with Apelin.",
+          "default": "Built on this device with Luros.",
           "maxLength": 200
         },
         {
           "name": "author",
           "type": "string",
           "label": "Author",
-          "default": "Apelin User",
+          "default": "Luros User",
           "maxLength": 64
         },
         {
@@ -102,7 +102,7 @@
         { "path": "luros-project.json", "format": "json" },
         { "path": "Sources/Tweak.m", "format": "objc" }
       ],
-      "digest": "sha256:52c3ec62db86d5664e7684f677fad9bf495a899073845cb3557e1c7695c3caa8"
+      "digest": "sha256:88523864cb46917d3f88714493cca567f5ed4ae0643b4d3c5c9ab357dc7b7cac"
     }
   ],
   "provenance": [
@@ -116,7 +116,7 @@
         "Kept: one constructor, identity check before any hook, os_log subsystem equal to the package id, the filter scoped to SpringBoard, mobilesubstrate as the provider dependency, the compile flags (-fvisibility=hidden, -Werror=unguarded-availability-new, -ffile-prefix-map) and the dSYM-before-strip order, now apelin-build's fixed baseline.",
         "Changed: the runtime-only TW_HOOK table is replaced by one MSHookMessageEx call through the extension's substrate support, so the template exercises the declared hook API; the filter plist becomes package.tweakFilter; build.env/version.txt become luros-project.json; the badge example becomes a SpringBoard launch hook.",
         "Added: the ApelinLoaded <build id> and ApelinHooked markers confirm_loaded reads.",
-        "Added: package.icon, this extension's icon on Apelin's Pages, written as the control's Icon so a package manager shows it beside the package.",
+        "Added: package.icon, this extension's icon on Luros's Pages, written as the control's Icon so a package manager shows it beside the package.",
         "Dropped: the kill-switch file, the preferences reader and the helper daemon (other templates or later work), and the Mac-side scripts.",
         "The hook target is the one Documents/Research/ApelinHello validated on the iOS 27 vphone."
       ]
@@ -125,7 +125,7 @@
       "scope": "support:substrate",
       "origin": "written",
       "adaptations": [
-        "substrate.h is written for Apelin from the published signatures. The two .tbd stubs are hand-written; their install names follow the layout the bootstraps' ElleKit packages install and Theos's own rootless/roothide stubs link against (owngoal-dev/theos-lib 514d139524300afd2fe04dc69e4be361f872c39d), read for the install names only."
+        "substrate.h is written for Luros from the published signatures. The two .tbd stubs are hand-written; their install names follow the layout the bootstraps' ElleKit packages install and Theos's own rootless/roothide stubs link against (owngoal-dev/theos-lib 514d139524300afd2fe04dc69e4be361f872c39d), read for the install names only."
       ]
     }
   ],

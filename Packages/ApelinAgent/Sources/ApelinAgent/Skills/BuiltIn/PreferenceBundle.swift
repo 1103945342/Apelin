@@ -37,7 +37,7 @@ extension BuiltInSkills {
           `<install root>/usr/share/luros/development/com.fluoxetine.luros.dev.preferences/support/include/Preferences/PSListController.h`
           (the install root # Environment names), which
           `#import <Preferences/PSListController.h>` finds. With no extension
-          package installed it is the copy inside Apelin's app bundle, at
+          package installed it is the copy inside Luros's app bundle, at
           `<install root>/Applications/Luros.app/Development/` under the same
           path below that folder. Read it with
           file_read before calling the framework from code: it is what the
@@ -64,7 +64,7 @@ extension BuiltInSkills {
         - **The row's icon** is `icon.png` with `icon@2x.png` and
           `icon@3x.png`, 29 points (29, 58 and 87 pixels), a rounded square
           on a clear ground, listed in the product's `resources` so the
-          bundle carries them. The template ships Apelin's preferences
+          bundle carries them. The template ships Luros's preferences
           plate; replace the three files, same names and sizes, to give the
           pane its own. Without `icon` the row shows no image.
         - **The bundle Info.plist** names `NSPrincipalClass` and

@@ -43,14 +43,14 @@ core=(Packages/ApelinKit/Sources/ApelinCore/CanonicalPath.swift)
     -c -o "$work/ApelinCore.o" "${core[@]}"
 
 model=(
-    Apelin/Interface/Files/FileBrowserBreadcrumb.swift
-    Apelin/Interface/Files/FileBrowserFailure.swift
-    Apelin/Interface/Files/FileBrowserListing.swift
-    Apelin/Interface/Files/FileBrowserLocation.swift
-    Apelin/Interface/Files/FileBrowserLocations.swift
-    Apelin/Interface/Files/FileBrowserOperations.swift
-    Apelin/Interface/Files/FileBrowserPolicy.swift
-    Apelin/Interface/Files/FileBrowserWriteGuard.swift
+    Luros/Interface/Files/FileBrowserBreadcrumb.swift
+    Luros/Interface/Files/FileBrowserFailure.swift
+    Luros/Interface/Files/FileBrowserListing.swift
+    Luros/Interface/Files/FileBrowserLocation.swift
+    Luros/Interface/Files/FileBrowserLocations.swift
+    Luros/Interface/Files/FileBrowserOperations.swift
+    Luros/Interface/Files/FileBrowserPolicy.swift
+    Luros/Interface/Files/FileBrowserWriteGuard.swift
 )
 checks=(
     Tests/FileBrowser/FileBrowserLocationCheck.swift
@@ -75,5 +75,5 @@ fi
 # app's SnapKit, Then, SPIndicator and AlertController modules, which this
 # harness does not build. The Xcode build of the app type-checks them.
 "${compiler[@]}" -swift-version 5 -parse \
-    Apelin/Interface/Files/FileBrowserController.swift \
-    Apelin/Interface/Files/FileBrowserPresenter.swift
+    Luros/Interface/Files/FileBrowserController.swift \
+    Luros/Interface/Files/FileBrowserPresenter.swift

@@ -8,8 +8,8 @@ import Foundation
 /// manifest checked against its digest, RootHide's runtime brand undone
 /// (`removingRuntimeBrand`), its links and folders as they are. Import
 /// trusts nothing the tree says about itself until it holds: the manifest's
-/// identity, an ID that is the one setup derives, a release Apelin still
-/// supports from a source Apelin reviewed, every file and link the manifest
+/// identity, an ID that is the one setup derives, a release Luros still
+/// supports from a source Luros reviewed, every file and link the manifest
 /// lists and nothing else, each matching its digest.
 public enum ToolchainTransfer {
     /// The largest `manifest.json` a tree may have.
@@ -174,21 +174,21 @@ public enum ToolchainTransfer {
         swift: Bool,
     ) -> String? {
         guard scheme == ToolchainSetup.schemeVersion else {
-            return "This toolchain was prepared by a different version of Apelin. Set it up again on this device."
+            return "This toolchain was prepared by a different version of Luros. Set it up again on this device."
         }
         if let reason = CommandLineToolsSupport.refusal(for: version, productID: productID) {
             return reason
         }
         let release = CommandLineToolsSupport.release(version)! // refusal(for:) answered nil
         guard release.sources[productID] == sourceSHA256 else {
-            return "This toolchain was not adapted from the Apple package Apelin reviewed for Command Line Tools \(version)."
+            return "This toolchain was not adapted from the Apple package Luros reviewed for Command Line Tools \(version)."
         }
         if let reason = release.compatibility.hostRefusal {
             return reason
         }
         if swift {
             guard let support = release.swiftSupport else {
-                return "This version of Apelin does not support Swift from Command Line Tools \(version)."
+                return "This version of Luros does not support Swift from Command Line Tools \(version)."
             }
             if let reason = support.hostRefusal {
                 return reason

@@ -263,7 +263,7 @@ jobs:
           else
             echo "::warning::Documents/Releases/$VERSION.md is missing; the generic notes go out instead"
             cat > "$notes" <<NOTES
-          Apelin $VERSION, for roothide and for rootless (/var/jb) bootstraps,
+          Luros $VERSION, for roothide and for rootless (/var/jb) bootstraps,
           with its development and agent tool extensions.
 
           SHA-256 sums are in \`SHA256SUMS\`.
@@ -274,7 +274,7 @@ jobs:
           # Each failure says why in an annotation: the run's log is not the
           # only place a maintainer reads.
           if ! out="$(gh release create "$TAG" --target "$GITHUB_SHA" \
-                --title "Apelin $VERSION" \
+                --title "Luros $VERSION" \
                 --notes-file "$notes" \
                 ./*.deb ./*_source.tar.xz ./*_dSYMs.zip ./*_Templates.tar.zst ./SHA256SUMS 2>&1)"; then
             echo "::error::gh release create: $(printf '%s' "$out" | tr '\n' '|' | head -c 900)"

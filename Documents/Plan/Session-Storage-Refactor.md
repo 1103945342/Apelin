@@ -1,8 +1,8 @@
 # 会话可靠性与大历史按需读取计划
 
-修订日期：2026-10-29。代码基线：Apelin 0.2.6，提交 `308d31574e15eee21b154a3f6fca14a8e2671a39`。
+修订日期：2026-10-29。代码基线：Luros 0.2.6，提交 `308d31574e15eee21b154a3f6fca14a8e2671a39`。
 
-Apelin 的目标场景是移动设备上的低并发运行，同时允许单个会话积累百万到千万级历史事件。并发请求数与归档容量分别设计：修复少量请求重叠造成的状态错误，让旧历史留在磁盘，正常打开只读取当前状态、必要的模型上下文和有限的最近内容。
+Luros 的目标场景是移动设备上的低并发运行，同时允许单个会话积累百万到千万级历史事件。并发请求数与归档容量分别设计：修复少量请求重叠造成的状态错误，让旧历史留在磁盘，正常打开只读取当前状态、必要的模型上下文和有限的最近内容。
 
 三个版本只是迭代窗口，不是三次大型重构承诺。先修已确认故障，再完成大历史按需读取，最后根据实测处理剩余问题；不为了填满版本增加功能或切换数据格式。本计划尚未实施，不修改当前版本配置。
 
@@ -29,7 +29,7 @@ Apelin 的目标场景是移动设备上的低并发运行，同时允许单个�
 | 消息中断 | 输入先记录，模型上下文主要到轮末保存；中间退出后，旧 ID 可能被去重但没有进入恢复的上下文。 | 先复现并明确中断、待处理与重试结果，不以完整检查点体系作为前提。 |
 | App 与附件 | 聊天整份读写，草稿内嵌附件；模型图片也可内嵌 Base64。 | App 不能抵消后端按需读取的收益；附件优化按真实读写与内存成本单独决定。 |
 
-相关代码：[AgentHandler](../../Apelind/Dispatch/AgentHandler.swift)、[AgentWorker](../../Packages/ApelinAgent/Sources/ApelinAgentWorker/AgentWorker.swift)、[WorkerSupervisor](../../Apelind/Session/WorkerSupervisor.swift)、[SessionHost](../../Apelind/Session/SessionHost.swift)、[SessionEventLog](../../Packages/ApelinAgent/Sources/ApelinAgent/Persistence/SessionEventLog.swift)、[AgentSession](../../Packages/ApelinAgent/Sources/ApelinAgent/Session/AgentSession.swift)、[ChatStore](../../Apelin/Interface/Chats/ChatStore.swift)、[ChatRuntime](../../Apelin/Interface/Chats/ChatRuntime.swift)。
+相关代码：[AgentHandler](../../Apelind/Dispatch/AgentHandler.swift)、[AgentWorker](../../Packages/ApelinAgent/Sources/ApelinAgentWorker/AgentWorker.swift)、[WorkerSupervisor](../../Apelind/Session/WorkerSupervisor.swift)、[SessionHost](../../Apelind/Session/SessionHost.swift)、[SessionEventLog](../../Packages/ApelinAgent/Sources/ApelinAgent/Persistence/SessionEventLog.swift)、[AgentSession](../../Packages/ApelinAgent/Sources/ApelinAgent/Session/AgentSession.swift)、[ChatStore](../../Luros/Interface/Chats/ChatStore.swift)、[ChatRuntime](../../Luros/Interface/Chats/ChatRuntime.swift)。
 
 ## 按需读取的最小组成
 

@@ -4,7 +4,7 @@ import Foundation
 /// The guard the browser hands the editor is a value of its own: it keeps
 /// working after the page that opened the file is gone, and it refuses a save
 /// whose target changed underneath — a file replaced, a link re-aimed, a path
-/// that now leads into one of Apelin's records — instead of answering nil
+/// that now leads into one of Luros's records — instead of answering nil
 /// because there is no page left to ask.
 func checkFileBrowserWriteGuard() throws {
     let work = try temporaryFolder("guard")

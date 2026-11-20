@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Draw the package icons that every Apelin deb names in its `Icon:` field.
+"""Draw the package icons that every Luros deb names in its `Icon:` field.
 
-Each extension's icon is Apelin's own — the light plate and the braces from
+Each extension's icon is Luros's own — the light plate and the braces from
 Documents/Icon/AppIcon.icon — with the leaf swapped for a green mark of what
 the package adds. The marks are written here; the script writes one SVG per
 package to Documents/Icon/Packages/ and renders it with Chrome to a 512 px
 PNG in Documents/Site/icons/, which Pages serves at
-https://owngoal-dev.github.io/Apelin/icons/<name>.png. Apelin's own icon stays
+https://owngoal-dev.github.io/Apelin/icons/<name>.png. Luros's own icon stays
 Documents/Site/icon.png, rendered from the .icon.
 
 The four development extensions' icons are also each project kind's icon in
@@ -28,7 +28,7 @@ SOURCES = ROOT / "Documents/Icon/Packages"
 OUTPUT = ROOT / "Documents/Site/icons"
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 SIZE = 512
-ASSETS = ROOT / "Apelin/Resources/Assets.xcassets"
+ASSETS = ROOT / "Luros/Resources/Assets.xcassets"
 # The image sets are drawn at 40 points, the most the app shows one at.
 ASSET_POINTS = 40
 

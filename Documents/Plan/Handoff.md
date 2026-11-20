@@ -12,7 +12,7 @@ page and it disagree.
 **`ApelinService`** (`Packages/ApelinKit/Sources/ApelinProtocol/Service/`)
 is the only surface: one typed `async throws` method per `AppOperation`,
 defined beside its request and response types in `Operations/<Domain>.swift`.
-The app's binding is `ApelinService.app` (`Apelin/Service/ApelinService.swift`,
+The app's binding is `ApelinService.app` (`Luros/Service/ApelinService.swift`,
 over `DaemonClient`); the console and the agent's tools call the same
 methods, so whatever the console scripts do, the UI can do the same way.
 Failures are `ApelinError` {code, message, reason?}: show `message` to
@@ -45,7 +45,7 @@ LRUCache and the shared swift-collections pin with them. `import` them and
 use them; no source in the app imports any of them yet. Things to know:
 
 - **Runestone** is vendored from source in `Packages/Runestone` with only
-  the grammars Apelin highlights (`AGENTS.md` ▸ Runestone is vendored and
+  the grammars Luros highlights (`AGENTS.md` ▸ Runestone is vendored and
   trimmed; the package's README.md). `import Runestone` for the text view,
   `RunestoneLanguageSupport` for the languages and
   `RunestoneThemeSupport` for Tomorrow and One Dark. Open a file with
@@ -89,7 +89,7 @@ the same way).
 The siblings' own helpers, not copied yet. Paths are in the sibling
 repositories under `owngoal-dev/`.
 
-- `Irisin/Irisin/Interface/InterfaceHostController.swift` — root container that swaps split and compact layouts as the window resizes, without a tab bar controller. (The split, its column host and the detail navigator are ported, in `Apelin/Interface/Split/`; the compact layout is not.)
+- `Irisin/Irisin/Interface/InterfaceHostController.swift` — root container that swaps split and compact layouts as the window resizes, without a tab bar controller. (The split, its column host and the detail navigator are ported, in `Luros/Interface/Split/`; the compact layout is not.)
 - `Irisin/Irisin/Interface/Components/Settings/SettingsController.swift`, `SettingsCell.swift` — inset grouped Settings driven by `SettingsItem` rows with live closures, and the build footer.
 - `Irisin/Irisin/Interface/Components/Settings/LicenseController.swift` — the Licenses screen over `Licenses.json`, the same file our collector writes.
 - `Irisin/Irisin/Interface/Components/LogViewerController/` — Dog's current journal as filterable rows, with a share menu.

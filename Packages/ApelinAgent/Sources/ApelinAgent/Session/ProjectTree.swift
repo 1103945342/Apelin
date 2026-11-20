@@ -8,7 +8,7 @@ import Foundation
 /// deep corner: at most `maximumEntries` entries, folders opened to
 /// `maximumDepth` levels, each folder read for at most
 /// `maximumNamesPerFolder` names and `maximumExamined` in all. `.git`,
-/// `.DS_Store`, the top-level `Builds`, Apelin's own temporary files and
+/// `.DS_Store`, the top-level `Builds`, Luros's own temporary files and
 /// what the project's `.gitignore` files name are left out; the top-level
 /// `Attachments` (the chat's saved files) is shown but not opened. Nothing
 /// is followed: a link is listed as a link, whatever it points to.

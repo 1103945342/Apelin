@@ -23,7 +23,7 @@ public struct ToolchainProduct: Codable, Sendable, Equatable {
     public var swiftUnavailableReason: String?
     public var clangModuleCPUFeatures: [String]?
     public var compatibility: ToolchainCompatibility?
-    /// False for a product Apelin has not reviewed (a release it never took
+    /// False for a product Luros has not reviewed (a release it never took
     /// or no longer takes, or an unknown product ID of a kept one): setup
     /// refuses it with `unsupportedReason`, and the picker does not list it.
     /// Nil reads as reviewed, for records written before it.
@@ -198,7 +198,7 @@ public extension ToolchainBackend {
     }
 
     /// Checks a toolchain tree another device exported: its own manifest's
-    /// identity, a release and source Apelin still supports, the files and
+    /// identity, a release and source Luros still supports, the files and
     /// links it lists and nothing else. Answers it as prepared.
     func importTree(_: URL) throws -> PreparedToolchain {
         throw ApelinError(.unavailable, UnavailableToolchainBackend.transferUnavailable)
@@ -213,9 +213,9 @@ public extension ToolchainBackend {
 
 /// The backend of a build without `Packages/ApelinToolchain`.
 public struct UnavailableToolchainBackend: ToolchainBackend {
-    static let setupUnavailable = "Toolchain setup is not available in this version of Apelin."
-    static let transferUnavailable = "Toolchain import and export are not available in this version of Apelin."
-    static let selfTestUnavailable = "Toolchain self-tests are not available in this version of Apelin."
+    static let setupUnavailable = "Toolchain setup is not available in this version of Luros."
+    static let transferUnavailable = "Toolchain import and export are not available in this version of Luros."
+    static let selfTestUnavailable = "Toolchain self-tests are not available in this version of Luros."
 
     public init() {}
 

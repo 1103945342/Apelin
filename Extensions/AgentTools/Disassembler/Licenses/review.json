@@ -1,7 +1,7 @@
 {
   "note": "Every notice the two agent-tool packages ship: the text hash a person reviewed, and where package-agent-tool.sh finds the same file in a SwiftPM checkout. A changed notice or a moved pin fails packaging until this file is updated after reading the new text.",
   "components": {
-    "Apelin": {
+    "Luros": {
       "license": "MIT",
       "covers": "ApelinToolHost, MachOReader and the extensions' own code",
       "files": {

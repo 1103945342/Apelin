@@ -703,7 +703,7 @@ extension GitController: UIScrollViewDelegate {
 
 @MainActor
 extension GitPageHost {
-    /// A failure: git's own words, or what Apelin could not do.
+    /// A failure: git's own words, or what Luros could not do.
     func gitShowToast(_ text: String) {
         gitShowToast(text, succeeded: false)
     }

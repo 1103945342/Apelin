@@ -12,7 +12,7 @@ import Foundation
 /// Refused: a path outside the install root (canonical, compared by
 /// components), a symlink at the picked path, a hard-linked file, a file with
 /// any execute bit, a Mach-O, anything over `maximumBytes`, and the package
-/// managers' and Apelin's own records (`var/lib/dpkg`, `var/lib/apt`,
+/// managers' and Luros's own records (`var/lib/dpkg`, `var/lib/apt`,
 /// `var/lib/irisin`, `var/lib/luros`). A LaunchDaemons plist is allowed but
 /// needs the save's explicit confirmation.
 enum ProtectedEditPolicy {
@@ -53,7 +53,7 @@ enum ProtectedEditPolicy {
         for tree in refusedTrees {
             let parts = CanonicalPath.components(tree)
             if relative.count >= parts.count, zip(relative, parts).allSatisfy({ $0 == $1 }) {
-                throw ApelinError(.denied, "\(canonical) is a package manager's or Apelin's own record")
+                throw ApelinError(.denied, "\(canonical) is a package manager's or Luros's own record")
             }
         }
 

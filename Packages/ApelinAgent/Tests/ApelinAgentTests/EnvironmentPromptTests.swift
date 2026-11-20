@@ -14,14 +14,14 @@ struct EnvironmentPromptTests {
         let quiet = AgentSessionConfiguration(project: home.project, provider: .githubCopilot(model: "m"), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot)
         let plain = try AgentSession.systemPrompt(quiet, root: root, skills: [])
         #expect(!plain.contains("# Injected instructions"), "nothing is injected with none set")
-        #expect(plain.hasPrefix("You are the agent inside Apelin"), "the identity opens the prompt without them")
+        #expect(plain.hasPrefix("You are the agent inside Luros"), "the identity opens the prompt without them")
 
         var configuration = quiet
         configuration.promptInjection = "Always answer in Chinese."
         let prompt = try AgentSession.systemPrompt(configuration, root: root, skills: [])
         #expect(prompt.hasPrefix("# Injected instructions\n"), "the injected section opens the prompt")
         let injected = try #require(prompt.range(of: "Always answer in Chinese."))
-        let identity = try #require(prompt.range(of: "You are the agent inside Apelin"))
+        let identity = try #require(prompt.range(of: "You are the agent inside Luros"))
         #expect(injected.lowerBound < identity.lowerBound, "the reader's text comes before everything else")
     }
 
@@ -40,7 +40,7 @@ struct EnvironmentPromptTests {
         #expect(prompt.contains("- SDKs: none registered."))
         #expect(prompt.contains("This project binds toolchain gone, which is not installed here"))
         #expect(prompt.contains("This project binds SDK gone-too, which is not registered here"))
-        #expect(prompt.contains("shell_run has no Apelin compiler until a toolchain is installed"))
+        #expect(prompt.contains("shell_run has no Luros compiler until a toolchain is installed"))
         #expect(prompt.contains("never through a login shell"))
         #expect(!prompt.contains("`/rootfs`"), "the rootfs note is roothide's")
         #expect(!prompt.contains("roothide can rename the install root"), "so is the renamed jbroot's")
@@ -53,7 +53,7 @@ struct EnvironmentPromptTests {
         let sdks = home.dataRoot.url.appendingPathComponent("SDKs").path
         let configuration = AgentSessionConfiguration(project: home.project, provider: .githubCopilot(model: "m"), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot, installRoot: home.home.path + "/jb")
         let prompt = try AgentSession.systemPrompt(configuration, root: ScopedRoot(home.projectURL), skills: [])
-        #expect(prompt.contains("- file_read, file_list, file_grep and file_find also read, never write, an absolute path inside Apelin's development extensions (\(home.home.path)/jb/usr/share/luros/development) or the registered SDKs (\(sdks)). The headers a template's support component adds, such as the Preferences framework's, are in `<extension id>/support/include` there."))
+        #expect(prompt.contains("- file_read, file_list, file_grep and file_find also read, never write, an absolute path inside Luros's development extensions (\(home.home.path)/jb/usr/share/luros/development) or the registered SDKs (\(sdks)). The headers a template's support component adds, such as the Preferences framework's, are in `<extension id>/support/include` there."))
 
         // Without an install root (no session host) only the SDKs are named.
         let unhosted = AgentSessionConfiguration(project: home.project, provider: .githubCopilot(model: "m"), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot)
@@ -117,7 +117,7 @@ struct EnvironmentPromptTests {
         let prompt = try AgentSession.systemPrompt(configuration, root: ScopedRoot(folder), skills: [])
         #expect(prompt.contains("Default, prepared."))
         #expect(!prompt.contains("This project's") && !prompt.contains("This project binds"))
-        #expect(prompt.contains("IPHONEOS_DEPLOYMENT_TARGET=16.0 (Apelin's default; this chat has no project)"))
+        #expect(prompt.contains("IPHONEOS_DEPLOYMENT_TARGET=16.0 (Luros's default; this chat has no project)"))
     }
 
     @Test

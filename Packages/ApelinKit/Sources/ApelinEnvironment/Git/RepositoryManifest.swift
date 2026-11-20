@@ -84,7 +84,7 @@ final class RepositoryManifest {
         return ours
     }
 
-    /// Whether `id` is Apelin's shape of ID and nothing on this device has
+    /// Whether `id` is Luros's shape of ID and nothing on this device has
     /// it: no other project's folder, conversation, build or memory.
     @objc private dynamic func isFree(_ id: String) -> Bool {
         guard ProjectManifestIdentity.isApelinID(id) else { return false }

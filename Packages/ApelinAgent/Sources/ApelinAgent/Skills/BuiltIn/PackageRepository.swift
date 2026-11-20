@@ -6,9 +6,9 @@ extension BuiltInSkills {
         # Maintaining a package repository
 
         A package repository is an APT source the user's devices and other
-        people add in Irisin. Apelin keeps one in a GitHub
+        people add in Irisin. Luros keeps one in a GitHub
         repository of the user's, set up from Settings ▸ Git ▸ Publishing:
-        Create Distribution Repository makes it from Apelin's template, and
+        Create Distribution Repository makes it from Luros's template, and
         Link Distribution Repository takes one the user has, adding what the
         template has and it lacks. Either way its folder is a workspace
         project, and that project's conversation maintains it with the file

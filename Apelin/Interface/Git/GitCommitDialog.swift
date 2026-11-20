@@ -206,7 +206,7 @@ final class GitCommitDialogController: UIViewController {
         guard !generating, hasIdentity else { return }
         generating = true
         // A local suggestion from what is staged. The reference app asks its
-        // model with the staged diff; Apelin's app has no model of its own,
+        // model with the staged diff; Luros's app has no model of its own,
         // so the button composes the message the diff already names.
         let names = staged.map { ($0.entry.path as NSString).lastPathComponent }
         let type: String

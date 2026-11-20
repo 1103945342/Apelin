@@ -1,7 +1,7 @@
 #!/bin/zsh
 # audit-objc-selectors.sh <products folder> [--baseline <products folder>]
 #
-# Every member of Apelin's own classes that Objective-C can represent is
+# Every member of Luros's own classes that Objective-C can represent is
 # `@objc dynamic` (AGENTS.md ▸ Hard rules), so a tweak can hook it. Run this
 # after adding classes or members, on the iPhoneOS products a build left
 # (`$(DERIVED_DATA)/Build/Products/Release-iphoneos`): it reads the Objective-C
@@ -52,7 +52,7 @@ for candidate in $products/apelind(N.) $products/apelin-*(N.); do
   [[ $candidate == *.* ]] && continue
   [[ $(file -b $candidate) == *Mach-O*executable* ]] && binaries+=($candidate)
 done
-(( ${#binaries} )) || { print -u2 "error: no Apelin executables under $products"; exit 2; }
+(( ${#binaries} )) || { print -u2 "error: no Luros executables under $products"; exit 2; }
 
 developer=${IOS_DEVELOPER_DIR:-}
 if [[ -z $developer && -d $HOME/Applications/Xcode_27.0-sdk27.1.app ]]; then

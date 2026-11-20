@@ -38,7 +38,7 @@ extension ToolchainService {
         guard !sdks.list().isEmpty || supplier.hasEnabledSource else {
             throw ApelinError(
                 .badRequest,
-                "Import an SDK first. Apelin tests each new toolchain against an SDK.",
+                "Import an SDK first. Luros tests each new toolchain against an SDK.",
             )
         }
 

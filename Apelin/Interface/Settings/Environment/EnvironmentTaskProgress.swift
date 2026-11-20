@@ -23,7 +23,7 @@ struct EnvironmentTaskProgress {
         case distributionCreate
         case distributionLink
         case distributionPublish
-        /// Open in Apelin for a repository: `gitCloneInto` into the
+        /// Open in Luros for a repository: `gitCloneInto` into the
         /// workspace made for it.
         case repositoryImport
 

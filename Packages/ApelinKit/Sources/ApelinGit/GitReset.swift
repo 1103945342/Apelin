@@ -387,7 +387,7 @@ public extension GitRepository {
         var signature: UnsafeMutablePointer<git_signature>?
         try GitError.check(git_signature_now(&signature, author.name, author.email), "make the signature")
         defer { git_signature_free(signature) }
-        let message = "Saved by Apelin before resetting to \(plan.remote)/\(plan.branch)\n\nThe uncommitted changes and the files the reset replaced, on top of the commit HEAD was at.\n"
+        let message = "Saved by Luros before resetting to \(plan.remote)/\(plan.branch)\n\nThe uncommitted changes and the files the reset replaced, on top of the commit HEAD was at.\n"
         var commitID = git_oid()
         var parents: [OpaquePointer?] = parent.map { [$0] } ?? []
         let code = parents.withUnsafeMutableBufferPointer { buffer in

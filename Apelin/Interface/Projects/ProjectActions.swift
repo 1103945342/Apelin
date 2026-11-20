@@ -72,7 +72,7 @@ enum ProjectActions {
 
     /// Open Terminal and Browse Files, for the folder `folder` answers when
     /// one is picked; a folder it cannot answer is `failureTitle`'s notice.
-    /// Both pages are Apelin's own — the terminal (`TerminalPresenter`) and
+    /// Both pages are Luros's own — the terminal (`TerminalPresenter`) and
     /// the file browser (`FileBrowserPresenter`) — so neither action needs
     /// another app installed. `UIKit.UIAction` is spelled out in types here:
     /// ApelinProtocol has a `UIAction` of its own, the wire's.

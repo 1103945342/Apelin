@@ -43,7 +43,7 @@ enum MCPBridge {
         guard !servers.isEmpty else { return (nil, []) }
         let manager = MCPManager(
             configs: servers.map(\.kwwkConfig),
-            clientName: "Apelin",
+            clientName: "Luros",
             clientVersion: "1",
         )
         await manager.start()

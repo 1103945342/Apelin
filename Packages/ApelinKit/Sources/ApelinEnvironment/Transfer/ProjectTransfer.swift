@@ -56,7 +56,7 @@ extension TransferService {
                 includesRepository = true
                 remote = opened.remoteURL().flatMap { GitClone.isAcceptedRemote($0) ? $0 : nil }
             } else {
-                warnings.append("the project's .git is not a repository Apelin can open; it was left out")
+                warnings.append("the project's .git is not a repository Luros can open; it was left out")
             }
         }
         let ignores = try GitIgnoreRules(

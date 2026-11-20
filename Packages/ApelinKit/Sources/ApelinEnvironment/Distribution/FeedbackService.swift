@@ -1,7 +1,7 @@
 import ApelinProtocol
 import Foundation
 
-/// Feedback filed as a public issue on Apelin's own repository
+/// Feedback filed as a public issue on Luros's own repository
 /// (`FeedbackSendRequest`), with the github.com sign-in the user made in
 /// Settings ▸ Git. The title and body are checked as `IssueReport` checks
 /// every public issue's — against this device's own home, install root and
@@ -38,7 +38,7 @@ public struct FeedbackService: Sendable {
         return FeedbackSendResponse(number: issue.number, url: issue.htmlURL)
     }
 
-    /// One issue of Apelin's repository, its footer apart, and whether the
+    /// One issue of Luros's repository, its footer apart, and whether the
     /// sign-in opened it.
     public func read(_ request: FeedbackReadRequest) async throws -> FeedbackReadResponse {
         try Self.checkNumber(request.number)
@@ -100,7 +100,7 @@ public struct FeedbackService: Sendable {
         )
     }
 
-    /// Issue `number` of Apelin's repository and nothing else: not a pull
+    /// Issue `number` of Luros's repository and nothing else: not a pull
     /// request, and not an issue GitHub moved to another repository, whose
     /// old address it redirects to the new one.
     private func feedbackIssue(_ number: Int, api: GitHubAPI) async throws -> GitHubAPI.IssueDetail {
@@ -133,14 +133,14 @@ public struct FeedbackService: Sendable {
         issue.user?.login ?? "ghost"
     }
 
-    /// Whether the sign-in has starred Apelin's repository.
+    /// Whether the sign-in has starred Luros's repository.
     public func starState(_: FeedbackStarStateRequest) async throws -> FeedbackStarResponse {
         let api = try GitHubAPI.signedIn(credentials, exchange: exchange)
         let starred = try await api.isStarred(FeedbackRules.repository)
         return FeedbackStarResponse(repository: FeedbackRules.repository, starred: starred)
     }
 
-    /// Stars Apelin's repository with the sign-in, as the reader asked.
+    /// Stars Luros's repository with the sign-in, as the reader asked.
     public func star(_: FeedbackStarRequest) async throws -> FeedbackStarResponse {
         let api = try GitHubAPI.signedIn(credentials, exchange: exchange)
         try await api.star(FeedbackRules.repository)

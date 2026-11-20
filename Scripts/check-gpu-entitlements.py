@@ -11,7 +11,7 @@ IOSurfaces the same way: a VideoToolbox converter's `CVPixelBufferCreate`
 answered -6662 on a device until the tool named them. Nothing in the build
 notices the miss; the program fails on the user's device.
 
-`make check` passes Apelin's own entitlements and those of the app and
+`make check` passes Luros's own entitlements and those of the app and
 command-line tool templates.
 
 Both spellings of the key must carry every class below: the kernel's denial

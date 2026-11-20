@@ -5,7 +5,7 @@ import Then
 import UIKit
 
 /// Settings ▸ Apps: every app under the bootstrap's `Applications` — the ones
-/// Apelin installed from an `.ipa`, the ones a package owns, the ones another
+/// Luros installed from an `.ipa`, the ones a package owns, the ones another
 /// tool put there — and the registrations LaunchServices still holds for a
 /// bundle that is gone. A removable row is deleted with a trailing swipe,
 /// after a confirmation: its registration first, then its files. The icon
@@ -50,7 +50,7 @@ final class AppsController: TableController {
         dataSource.headerTitle = { _ in String(localized: "Installed") }
         dataSource.footerTitle = { _ in
             String(localized: """
-            The apps Apelin installed from an .ipa. One whose bundle is gone is listed as a registration \
+            The apps Luros installed from an .ipa. One whose bundle is gone is listed as a registration \
             that can still be cleared.
             """)
         }

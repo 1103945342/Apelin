@@ -1,16 +1,16 @@
 extension BuiltInSkills {
     static let deviceCLI = SkillDocument(
         name: "apelin-icli",
-        description: "Running icli, the device's command-line tool, through shell_run: apps, URLs, files, preferences, processes, launchd, packages, the screen and input, when no dedicated Apelin tool does it, and icli probe, a JavaScriptCore script with Objective-C reflection for probing what the device has. What runs as mobile, what changes the device only as the user asks, roothide paths, and what to tell the user when icli is missing.",
+        description: "Running icli, the device's command-line tool, through shell_run: apps, URLs, files, preferences, processes, launchd, packages, the screen and input, when no dedicated Luros tool does it, and icli probe, a JavaScriptCore script with Objective-C reflection for probing what the device has. What runs as mobile, what changes the device only as the user asks, roothide paths, and what to tell the user when icli is missing.",
         body: """
         # icli
 
         icli (package `com.icli.icli`, OwnGoal's) is one executable that
         does on the device what a person at it would: apps, URLs, files,
         property lists and preferences, processes, launchd services, the
-        package database, the screen, touch and keys, the clipboard. Apelin
+        package database, the screen, touch and keys, the clipboard. Luros
         depends on it, so it is normally installed, and its name resolves on
-        shell_run's search path. Apelin's own device tools are built on its
+        shell_run's search path. Luros's own device tools are built on its
         library.
 
         ## Running it
@@ -23,7 +23,7 @@ extension BuiltInSkills {
 
         ## Asking before using the screen
         While `<system-state>` says Ask Before Using the Screen is on, every
-        icli command asks the user on Apelin's card, in every mode, whatever
+        icli command asks the user on Luros's card, in every mode, whatever
         it does, and the session host runs none without that approval. Before
         one that opens an app or a link (`app launch`, `url open`), reads
         the screen (`screen info`) or acts on it (`screen tap`,
@@ -35,7 +35,7 @@ extension BuiltInSkills {
         way.
 
         ## Dedicated tools come first
-        Where Apelin has a tool, use it, not icli: building and installing
+        Where Luros has a tool, use it, not icli: building and installing
         your package, removing it, respringing (`apelin_device_respring`),
         confirming a tweak loaded, the live log (`apelin_log_read`), crash
         reports, screenshots and the UI tree and its actions. Those go
@@ -134,7 +134,7 @@ extension BuiltInSkills {
         it changes, and only with the user's explicit go-ahead for exactly
         that command in their reply, in every mode. `device reboot` only
         when the user asks for exactly that, after saying that this
-        conversation stops until Apelin's service is back and that a
+        conversation stops until Luros's service is back and that a
         jailbreak that does not survive a reboot must be run again. If the
         user would rather do it, say which command would.
 
@@ -146,10 +146,10 @@ extension BuiltInSkills {
         The apelin-bootstrap-paths skill has the rest.
 
         ## When icli is missing
-        icli ships with Apelin, in the app bundle at
+        icli ships with Luros, in the app bundle at
         `Applications/Luros.app/Vendor/bin` — the last directory on every
-        run's `PATH`. If shell_run cannot find it, say so: Apelin's copy is
-        missing from the installation, so the fix is to reinstall Apelin,
+        run's `PATH`. If shell_run cannot find it, say so: Luros's copy is
+        missing from the installation, so the fix is to reinstall Luros,
         never to add a repository or install another copy. A newer icli of
         the user's own, earlier on the `PATH`, is what runs when they have
         one.

@@ -2,8 +2,8 @@ Package: com.fluoxetine.luros.dev.tweak
 Name: Luros Tweak Development
 Version: @VERSION@
 Architecture: @ARCHITECTURE@
-Description: Tweak templates and hooking headers for Apelin, for @FLAVOR@ jailbreaks
- Lets Apelin create, build and package Objective-C tweaks on the device: a
+Description: Tweak templates and hooking headers for Luros, for @FLAVOR@ jailbreaks
+ Lets Luros create, build and package Objective-C tweaks on the device: a
  template that hooks SpringBoard through the substrate-compatible API, the
  headers and link stubs for that API, and the process filter. Needs an
  injection framework, which your preferred package manager installs with it.

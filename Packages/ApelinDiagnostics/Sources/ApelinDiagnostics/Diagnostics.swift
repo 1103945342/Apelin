@@ -35,8 +35,8 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
     /// What icli is asked to match before it caps or delivers anything.
     /// Subsystem (with its dotted children), message substring (case-sensitive)
     /// and minimum level mean in icli exactly what they mean in `LogFilter`.
-    /// Two fields differ and stay Apelin's: icli's `process`
-    /// is a substring where Apelin's is the whole name (so icli gets it as a
+    /// Two fields differ and stay Luros's: icli's `process`
+    /// is a substring where Luros's is the whole name (so icli gets it as a
     /// narrowing and `LogFilter.matches` decides), and icli has no `since`.
     /// Every entry icli hands back still passes through `LogFilter.matches`,
     /// the one definition both log readers share.
@@ -50,7 +50,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
     }
 
     /// One bounded read. icli's cap counts what its own filter kept, so when
-    /// a field only Apelin checks is set (process, since) icli is asked for
+    /// a field only Luros checks is set (process, since) icli is asked for
     /// its full 5000, and if the cap still falls first `truncated` says so.
     public func readLogs(_ filter: LogFilter) throws -> LogReadResult {
         try filter.validate()
@@ -447,7 +447,7 @@ public struct Diagnostics: LogEvidenceSource, LiveLogSource {
     /// leaving can be the verified front on two reads in a row, which says
     /// nothing of the app an action is bound to (one bound to Fila, sent
     /// right after Fila was opened, was refused while the front went
-    /// between Fila and Apelin).
+    /// between Fila and Luros).
     public func settledForegroundApp(expecting bundleIdentifier: String? = nil) -> ForegroundApp {
         let deadline = Date().addingTimeInterval(settleTimeout)
         var previous: ForegroundApp?

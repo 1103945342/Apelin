@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Find the Objective-C selectors Apelin's own classes take over by accident.
+"""Find the Objective-C selectors Luros's own classes take over by accident.
 
-Every member of Apelin's own classes that Objective-C can represent is
+Every member of Luros's own classes that Objective-C can represent is
 `@objc dynamic`, so a tweak can hook it (AGENTS.md ▸ Hard rules). A selector
 made that way can land on one the class already answers through its Apple
 superclasses — public or private —, and then UIKit, which calls that selector,
@@ -378,7 +378,7 @@ def module_of(name):
 
 
 def is_ours(record):
-    """Apelin's modules (Apelin, apelind, apelin_<worker>, Apelin<Package>), not a dependency's."""
+    """Luros's modules (Luros, apelind, apelin_<worker>, Luros<Package>), not a dependency's."""
     return module_of(record["name"]).lower().startswith("apelin")
 
 

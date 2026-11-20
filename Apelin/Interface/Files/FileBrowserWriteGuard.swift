@@ -22,7 +22,7 @@ import Foundation
 /// this is a last-moment check, not descriptor-level isolation, and it is not
 /// offered as one. What it does close is everything a page could otherwise
 /// miss: a link re-aimed, a file replaced, a path that now leads into one of
-/// Apelin's records, and an edit written in place — of any length, even one
+/// Luros's records, and an edit written in place — of any length, even one
 /// whose modification time was put back afterwards, because the bytes
 /// themselves are compared.
 ///

@@ -41,7 +41,7 @@ struct FileScopes: Sendable {
         }
         if let id = Self.suffix(scopeID, "extension:") {
             let installed = try component(root + "/usr/share/luros/development", id)
-            // An installed copy wins over the one Apelin's own package carries,
+            // An installed copy wins over the one Luros's own package carries,
             // as the catalog's does; the bundle's stands in for an id no
             // extension package provides.
             var info = stat()

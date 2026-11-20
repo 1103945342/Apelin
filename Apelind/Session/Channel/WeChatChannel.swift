@@ -17,7 +17,7 @@ import Foundation
 /// channel on and signed in to it in Settings, so its messages are the
 /// reader's messages. An approval is answered here as it is in the app —
 /// a word for yes and one for no — except one that runs as root, which takes
-/// the device owner's check in Apelin. The asks are kept on disk as well as
+/// the device owner's check in Luros. The asks are kept on disk as well as
 /// in memory, so a reply is still read as one after the host restarts.
 ///
 /// The credential lives in `<data>/WeChatChannel/channel.json`, written
@@ -431,7 +431,7 @@ actor WeChatChannel {
                     return
                 case .bindedRedirect:
                     phase = .failed
-                    message = "This WeChat account is already connected to an Apelin. Sign out there first, then start again."
+                    message = "This WeChat account is already connected to an Luros. Sign out there first, then start again."
                     login = nil
                     loginTask = nil
                     return
@@ -557,7 +557,7 @@ actor WeChatChannel {
                 let failure = await settle(pending.ask, answer: answer)
                 if let failure {
                     if failure.code == .notFound {
-                        // The run ended, or the decision was taken in Apelin,
+                        // The run ended, or the decision was taken in Luros,
                         // while this ask was kept: nothing waits for it now.
                         trace("answer to \(pending.ask.approvalID) found nothing waiting")
                         await send(
@@ -567,14 +567,14 @@ actor WeChatChannel {
                         )
                     } else {
                         // Refused or out of reach: the ask stays, so it can be
-                        // answered again here or in Apelin — and the phone is
+                        // answered again here or in Luros — and the phone is
                         // told why, rather than left waiting for nothing.
                         pendingAsks[pending.ask.sessionID] = pending
                         saveAsks()
                         let reason = failure.message.isEmpty
                             ? t("未知原因", "未知原因", "unknown reason") : failure.message
                         await send(
-                            t("这次答复没能交给 Apelin：\(reason)", "這次答覆沒能交給 Apelin：\(reason)", "Apelin did not take that answer: \(reason)"),
+                            t("这次答复没能交给 Luros：\(reason)", "這次答覆沒能交給 Luros：\(reason)", "Luros did not take that answer: \(reason)"),
                             to: from,
                             contextToken: pending.contextToken
                         )
@@ -1057,7 +1057,7 @@ actor WeChatChannel {
     private func workspaceListText(for userID: String) -> String {
         let projects = ChannelDirectory.projects(home: home)
         guard !projects.isEmpty else {
-            return t("这台设备还没有任何项目。先在 Apelin 里建一个。", "這台裝置還沒有任何專案。先在 Apelin 裡建一個。", "No projects on this device yet. Make one in Apelin first.")
+            return t("这台设备还没有任何项目。先在 Luros 里建一个。", "這台裝置還沒有任何專案。先在 Luros 裡建一個。", "No projects on this device yet. Make one in Luros first.")
         }
         let current = peers.items.first(where: { $0.userID == userID })?.projectName ?? record.projectName
         var lines = [t("项目（共 \(projects.count) 个）：", "專案（共 \(projects.count) 個）：", "Projects (\(projects.count)):"), ""]
@@ -1100,9 +1100,9 @@ actor WeChatChannel {
         let models = await models()
         guard !models.isEmpty else {
             return t(
-                "还没有可用的模型。先在 Apelin 的「模型供应商」里登录，再到「模型」里启用要用的。",
-                "還沒有可用的模型。先在 Apelin 的「模型供應商」裡登入，再到「模型」裡啟用要用的。",
-                "No models yet. Sign in a provider in Apelin, then enable the ones you want under Models."
+                "还没有可用的模型。先在 Luros 的「模型供应商」里登录，再到「模型」里启用要用的。",
+                "還沒有可用的模型。先在 Luros 的「模型供應商」裡登入，再到「模型」裡啟用要用的。",
+                "No models yet. Sign in a provider in Luros, then enable the ones you want under Models."
             )
         }
         guard let argument else {
@@ -1452,7 +1452,7 @@ actor WeChatChannel {
         let question = payload["detail"]?[AgentQuestionRules.detailKey]
             .flatMap { try? $0.decode(AgentQuestion.self) }
         // A command as root takes the device owner's check, which a chat
-        // message cannot give: announced, answered only in Apelin.
+        // message cannot give: announced, answered only in Luros.
         let needsApp = payload["detail"]?[RunCodeApproval.rootCommandDetail] != nil
         var ask = ChannelAsk(
             approvalID: approvalID,
@@ -1521,7 +1521,7 @@ actor WeChatChannel {
     private func failed(_ error: any Error, to reply: Reply) {
         message = (error as? ApelinError)?.message ?? String(describing: error)
         Task { [weak self] in
-            await self?.send("Apelin could not start this turn.", to: reply.userID, contextToken: reply.contextToken)
+            await self?.send("Luros could not start this turn.", to: reply.userID, contextToken: reply.contextToken)
         }
     }
 

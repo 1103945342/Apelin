@@ -5,8 +5,8 @@ import Foundation
 // the bytes fields are base64 strings and the 64-bit ids are numbers that do
 // not fit a Double, so `message_id` is read as text where it matters.
 //
-// Nothing here is Apelin's protocol: this is the far side of the wire, and
-// what Apelin does with a message lives in the session host
+// Nothing here is Luros's protocol: this is the far side of the wire, and
+// what Luros does with a message lives in the session host
 // (`Apelind/Session/Channel/`). No token is ever put in an error or a log.
 
 /// One QR code to scan, as `ilink/bot/get_bot_qrcode` answers it.

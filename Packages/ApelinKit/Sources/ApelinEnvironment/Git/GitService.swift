@@ -79,7 +79,7 @@ public struct GitService: Sendable {
     }
 
     /// A repository for a project that has none, on `main`, keeping
-    /// Apelin's own files out as a new project's does.
+    /// Luros's own files out as a new project's does.
     public func initialize(_ request: GitInitRequest) throws -> GitInitResponse {
         let project = try projects.locate(request.projectID)
         var metadata = stat()
@@ -94,7 +94,7 @@ public struct GitService: Sendable {
         return GitInitResponse(branch: repository.head().branch ?? Self.initialBranch)
     }
 
-    /// The branch a repository Apelin makes starts on.
+    /// The branch a repository Luros makes starts on.
     static let initialBranch = "main"
 
     /// Validates a clone request before the task is accepted.
@@ -188,10 +188,10 @@ public struct GitService: Sendable {
 
     // MARK: Clone into a workspace
 
-    /// What Apelin itself keeps in a project folder, none of it the
+    /// What Luros itself keeps in a project folder, none of it the
     /// repository's, so a repository taken into a workspace keeps it out
     /// through `.git/info/exclude`: the description and the icon beside it,
-    /// and what every repository Apelin makes keeps out
+    /// and what every repository Luros makes keeps out
     /// (`ProjectExcludes.apelinFiles`).
     static let apelinFiles = ["/luros-project.json", "/apelin-icon.png"] + ProjectExcludes.apelinFiles
 
@@ -386,7 +386,7 @@ public struct GitService: Sendable {
         }
         var payload: [String: JSONValue] = ["remote": .string(result.remote), "updated": .array(updated)]
         if let compared = result.comparison {
-            // Shown on an approval card: only an address Apelin pushes to,
+            // Shown on an approval card: only an address Luros pushes to,
             // which carries no credential.
             let pushURL = target.repository.remotePushURL(target.remote).flatMap { url in
                 (try? checkRemoteURL(url)) == nil ? nil : url
@@ -628,7 +628,7 @@ public struct GitService: Sendable {
             return
         }
         guard GitClone.isAcceptedRemote(url) else {
-            throw ApelinError(.badRequest, "Apelin supports only HTTPS remotes. Use an HTTPS remote URL.")
+            throw ApelinError(.badRequest, "Luros supports only HTTPS remotes. Use an HTTPS remote URL.")
         }
     }
 
@@ -723,7 +723,7 @@ public struct GitService: Sendable {
         return (project, repository)
     }
 
-    /// A repository made before every one Apelin makes kept its own files
+    /// A repository made before every one Luros makes kept its own files
     /// out (`ProjectExcludes.apelinFiles`) is given them once the agent has
     /// saved an attachment in the project, before anything reads the work
     /// tree, so the chat's files are never a change to show or commit.

@@ -14,7 +14,7 @@
     {"op": "gitUnstage", "request": {"projectID": "I2GitCheck", "paths": ["master.txt"]}, "label": "unstage"},
     {"op": "gitDiff", "request": {"projectID": "I2GitCheck", "staged": true}, "label": "staged"},
     {"op": "expect", "request": {"step": "staged", "path": "response.diff", "equals": ""}},
-    {"op": "gitCommit", "request": {"projectID": "I2GitCheck", "message": "Nothing changed", "authorName": "Apelin Console", "authorEmail": "console@apelin.invalid"}, "label": "empty-commit", "allowError": true},
+    {"op": "gitCommit", "request": {"projectID": "I2GitCheck", "message": "Nothing changed", "authorName": "Luros Console", "authorEmail": "console@apelin.invalid"}, "label": "empty-commit", "allowError": true},
     {"op": "expect", "request": {"step": "empty-commit", "errorCode": "badRequest"}},
     {"op": "gitInit", "request": {"projectID": "I2GitCheck"}, "label": "init-again", "allowError": true},
     {"op": "expect", "request": {"step": "init-again", "errorCode": "conflict"}},

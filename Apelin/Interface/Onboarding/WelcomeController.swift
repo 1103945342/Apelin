@@ -157,7 +157,7 @@ class WelcomeController: UIViewController {
 
         // the translation places the line break and the name; the name is
         // tinted wherever it lands
-        let title = String(localized: "Welcome to\nApelin")
+        let title = String(localized: "Welcome to\nLuros")
         let titleText = NSMutableAttributedString(string: title, attributes: [
             .font: WelcomeStyle.titleFont,
             .foregroundColor: WelcomeStyle.titleColor,
@@ -165,7 +165,7 @@ class WelcomeController: UIViewController {
         titleText.addAttribute(
             .foregroundColor,
             value: WelcomeStyle.accent,
-            range: (title as NSString).range(of: "Apelin"),
+            range: (title as NSString).range(of: "Luros"),
         )
         stackView.addArrangedSubview(UILabel().then {
             $0.numberOfLines = 0

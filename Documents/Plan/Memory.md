@@ -10,7 +10,7 @@ Read with `proc_pid_rusage` (`RUSAGE_INFO_V4`), as root for the daemon.
 
 | process | physical footprint | resident | lifetime peak |
 |---|---|---|---|
-| Apelin (app) | 490–506 MB | 329 MB | 622 MB |
+| Luros (app) | 490–506 MB | 329 MB | 622 MB |
 | apelind (session host, pid 70027) | 463.5 MB | 60 MB | 701 MB |
 | apelind (launchd proxy, pid 70026) | 2.5 MB | 8 MB | 35 MB |
 | apelin-agent (one worker) | 24–28 MB | 6–30 MB | 205 MB |
@@ -32,7 +32,7 @@ This is not a leak (no retain cycle, no unbounded timer; the thumbnail `NSCache`
 is capped at 128 entries / 32 MB). It is "everything resident" by design, in both
 processes:
 
-- `ChatRecord.events` (`Apelin/Interface/Chats/ChatStore.swift:17`) only ever grows
+- `ChatRecord.events` (`Luros/Interface/Chats/ChatStore.swift:17`) only ever grows
   (`take`), and `ChatRuntime.load` (`ChatRuntime.swift:99`) reads every `Chats/*.json`
   at launch.
 - `TaskRegistry.load()` (`Apelind/Session/TaskRegistry.swift:105`) reads and decodes
@@ -203,7 +203,7 @@ next economy, and it needs the page to say which chat it is showing.
 ## 10. Why the launch still cost 350 MB: restoring lineage read every history
 
 Measured on the device on 2026-11-19 with the head-only launch already in place:
-Apelin was 428.9 MB footprint / 241.4 MB resident running, and 420.2 / 349.2 MB six
+Luros was 428.9 MB footprint / 241.4 MB resident running, and 420.2 / 349.2 MB six
 seconds after a cold start. The heads are a few hundred bytes each, so the events
 were coming back some other way. They were: `ChatRuntime.load` ends with
 `restoreLineage()`, which passed no sessions, and with no sessions the host's list
@@ -241,5 +241,5 @@ Verified on the device: `Scripts/test-chat-store.sh --device` **25/25** (the sca
 finds only the opened events, keeps them whole, drops a line a write cut short), and
 a one-off harness of the real `ChatAdoption.restoreLineage` + `ChatEventsFile.scan`
 **8/8** (an edge restores from the scan alone, none from an empty scan). The app
-target is not built here, so the drop in Apelin's own footprint is still to be
+target is not built here, so the drop in Luros's own footprint is still to be
 measured on a CI build.

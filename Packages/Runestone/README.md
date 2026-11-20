@@ -1,7 +1,7 @@
 # Runestone
 
 The editor's text view, vendored from source so the app carries the grammars
-Apelin highlights instead of every grammar Tree-sitter has.
+Luros highlights instead of every grammar Tree-sitter has.
 `Lakr233/Runestone.xcframework` links 38 languages into one static archive;
 this package keeps the ones iOS development and its usual scripts use, and
 adds the three it lacked (Objective-C, XML, Make). It starts from Irisin's
@@ -104,8 +104,8 @@ tree-sitter CLI 0.24.7, the last whose own ABI is 14:
 ```sh
 cd tree-sitter-make            # a clone at 70613f3d
 npx --yes tree-sitter-cli@0.24.7 generate --abi 14 src/grammar.json
-cp src/parser.c <Apelin>/Packages/Runestone/Sources/TreeSitterMake/src/
-cp -R src/tree_sitter <Apelin>/Packages/Runestone/Sources/TreeSitterMake/src/
+cp src/parser.c <Luros>/Packages/Runestone/Sources/TreeSitterMake/src/
+cp -R src/tree_sitter <Luros>/Packages/Runestone/Sources/TreeSitterMake/src/
 ```
 
 A grammar outside 13–14 does not load, and its files show as plain text.

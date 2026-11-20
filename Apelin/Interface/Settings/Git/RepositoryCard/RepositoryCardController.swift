@@ -11,7 +11,7 @@ import UIKit
 /// someone points the Camera at to add the source in Irisin. Save writes
 /// it to Photos; `…` opens Irisin on this device with the same link the
 /// card's code holds, chooses the card's icon (or removes it, back to
-/// Apelin's) and edits its title, kept per repository
+/// Luros's) and edits its title, kept per repository
 /// (`RepositoryCardStyle`). Nothing sits under the card: an iPad's form
 /// sheet has no height to spare.
 final class RepositoryCardController: UIViewController, PHPickerViewControllerDelegate {
@@ -104,7 +104,7 @@ final class RepositoryCardController: UIViewController, PHPickerViewControllerDe
         updateCard()
     }
 
-    /// Irisin is a dependency of Apelin's, so it is there to take the link.
+    /// Irisin is a dependency of Luros's, so it is there to take the link.
     @objc private dynamic func openInIrisin() {
         guard let url = URL(string: RepositoryCard.irisinLink(source: repository.sourceURL)) else { return }
         UIApplication.shared.open(url)
@@ -158,7 +158,7 @@ final class RepositoryCardController: UIViewController, PHPickerViewControllerDe
         PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
             guard status == .authorized || status == .limited else {
                 DispatchQueue.main.async { [weak self] in
-                    self?.presentNotice(title: "Unable to Save Image", message: "Allow Apelin to add photos in Settings.")
+                    self?.presentNotice(title: "Unable to Save Image", message: "Allow Luros to add photos in Settings.")
                 }
                 return
             }

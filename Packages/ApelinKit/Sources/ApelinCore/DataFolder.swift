@@ -1,7 +1,7 @@
 import Foundation
 
 /// `~/Documents/com.fluoxetine.luros`, the app's data folder, and everything
-/// Apelin keeps inside it. The package's postinst makes the folder for
+/// Luros keeps inside it. The package's postinst makes the folder for
 /// mobile; whatever runs as mobile makes the levels below it.
 ///
 /// `home` is mobile's home as the caller knows it: `RoothideRoot.mobileHome`

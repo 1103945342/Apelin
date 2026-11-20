@@ -112,7 +112,7 @@ struct UserNoticeTests {
         let runner = try Self.runner(home, gate: ApprovalGate { await asked.add($0) }) { await recorded.add($0) }
         // An empty title is a title left out.
         let answer = try await Self.notify(runner, ["title": "", "body": "Unlock the phone so I can check the tweak."])
-        #expect(answer.hasPrefix("Sent to Apelin as a notification."))
+        #expect(answer.hasPrefix("Sent to Luros as a notification."))
         #expect(await recorded.events == [.notice(title: nil, body: "Unlock the phone so I can check the tweak.")])
         #expect(await asked.events.isEmpty)
         await #expect(throws: ToolDeniedError.self) {

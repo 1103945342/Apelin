@@ -6,7 +6,7 @@ import KWWKAI
 /// (its `SystemMessage`s). A reopened session then sends every provider a
 /// history whose calls name the tools the request offers, and the model
 /// never sees an old name to call. Text is left as it was, and so is any
-/// name no release of Apelin gave (an MCP tool's).
+/// name no release of Luros gave (an MCP tool's).
 enum LegacyToolNames {
     static func migrate(_ messages: [Message]) -> [Message] {
         messages.map { message in

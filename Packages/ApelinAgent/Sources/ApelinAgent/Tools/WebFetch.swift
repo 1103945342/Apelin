@@ -31,7 +31,7 @@ struct WebFetch: Sendable {
         configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
         configuration.timeoutIntervalForRequest = TimeInterval(Self.timeoutSeconds)
         configuration.httpAdditionalHeaders = [
-            "User-Agent": "Apelin",
+            "User-Agent": "Luros",
             "Accept": "text/html, application/xhtml+xml, text/plain, text/markdown, application/json, application/xml;q=0.9, */*;q=0.5",
         ]
         session = URLSession(configuration: configuration, delegate: RedirectHold(), delegateQueue: nil)

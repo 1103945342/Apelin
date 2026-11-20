@@ -3,20 +3,20 @@ import enum ApelinProject.ProjectValidation
 extension BuiltInSkills {
     static let projectDescription = SkillDocument(
         name: "apelin-project-description",
-        description: "Every member of luros-project.json, the build description Apelin's build reads: products, flags, steps, package, layout, tweak filter, the macros the build defines, and what asks the user.",
+        description: "Every member of luros-project.json, the build description Luros's build reads: products, flags, steps, package, layout, tweak filter, the macros the build defines, and what asks the user.",
         body: """
         # The project description
 
-        `luros-project.json` at the project root is the one thing Apelin's
+        `luros-project.json` at the project root is the one thing Luros's
         build reads. It is checked strictly: an unknown member, a duplicate
         key or a wrong type is an error naming its field, such as
         `/products/0/sources`. The complete schema is this skill's file
         `apelin-project.schema.json` (apelin_skill_read with that file).
-        Apelin writes it two spaces a level, one member or element a line,
+        Luros writes it two spaces a level, one member or element a line,
         and every build puts it back in that form, values unchanged: keep to
         it, and read the file again before file_edit after a build.
 
-        ## Members Apelin writes
+        ## Members Luros writes
         Never invent, copy or change these:
         - `schemaVersion` (1) and `projectID`, a lowercase UUID approvals are
           bound to.
@@ -24,7 +24,7 @@ extension BuiltInSkills {
         - `environment` `{toolchain, sdk}`, each `{id, digest}`: the
           registered toolchain and SDK. Change them only with
           apelin_project_set_environment; never type a digest.
-        - `displayName` and `autoName`: the name Apelin shows.
+        - `displayName` and `autoName`: the name Luros shows.
 
         Only apelin_project_create writes `template` and `environment`, so a
         description written from scratch lacks them: it does not build, and
@@ -234,7 +234,7 @@ extension BuiltInSkills {
           Never publish one to a package repository.
         - `icon`: the image a package manager shows beside the package, its
           control `Icon`: an `https://` URL in printable ASCII, at most 2048
-          bytes. Every template writes its extension's icon on Apelin's
+          bytes. Every template writes its extension's icon on Luros's
           Pages, such as
           `https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.dev.tweak.png`.
           Keep it, or put in an https image the user gives as their own. It

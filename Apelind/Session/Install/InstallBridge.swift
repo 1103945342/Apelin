@@ -609,7 +609,7 @@ actor InstallBridge {
     /// there, the package database's word on it, and the newest record of ours
     /// that still has that bundle on the device. A record whose own copy is
     /// gone holds nothing — that app went away with the root it was installed
-    /// under, or outside Apelin.
+    /// under, or outside Luros.
     private func existingAtDestination(
         _ destination: URL,
         bundleID: String,
@@ -928,7 +928,7 @@ actor InstallBridge {
             case .build:
                 return
             case .environment:
-                throw ApelinError(.denied, "Apelin's toolchain packages are removed in Settings, not by the agent.")
+                throw ApelinError(.denied, "Luros's toolchain packages are removed in Settings, not by the agent.")
             case .file:
                 throw ApelinError(
                     .denied,
@@ -1005,7 +1005,7 @@ actor InstallBridge {
 
     // MARK: Apps
 
-    /// Settings ▸ Apps: the apps Apelin installed from an `.ipa` that are
+    /// Settings ▸ Apps: the apps Luros installed from an `.ipa` that are
     /// still on the device — its bundle, or the registration left after the
     /// bundle went away — each with what a removal from there would do.
     /// Read afresh every time: an app removed elsewhere changes it, and
@@ -1095,8 +1095,8 @@ actor InstallBridge {
     /// At start, before anything can install: the folders left behind by
     /// every toolchain whose package is not on the device and that no
     /// install or removal still handles — after a removal nothing pruned (an
-    /// earlier Apelin's, or one cut short), or files taken away outside
-    /// Apelin. A tree whose package dpkg lists is dpkg's, and stays.
+    /// earlier Luros's, or one cut short), or files taken away outside
+    /// Luros. A tree whose package dpkg lists is dpkg's, and stays.
     func pruneLeftoverToolchains() async {
         // Without the package list, a tree in use cannot be told apart.
         guard let database = try? packages.installedPackages() else { return }
@@ -1246,13 +1246,13 @@ actor InstallBridge {
             NSLog("apelind-session: irisind lacks %@", missing.sorted().joined(separator: ", "))
             throw ApelinError(
                 .unavailable,
-                "This version of Irisin cannot install packages for Apelin. Update Irisin, then try again.",
+                "This version of Irisin cannot install packages for Luros. Update Irisin, then try again.",
             )
         }
         guard Self.sameRoot(info.installRoot, paths.installRoot) else {
             throw ApelinError(
                 .unavailable,
-                "Irisin installs to \(info.installRoot), but Apelin is installed in \(paths.installRoot). Make sure Apelin and Irisin are installed in the same location, then try again.",
+                "Irisin installs to \(info.installRoot), but Luros is installed in \(paths.installRoot). Make sure Luros and Irisin are installed in the same location, then try again.",
             )
         }
         checkedService = true

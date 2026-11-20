@@ -85,11 +85,11 @@ final class FeedbackRulesTests: XCTestCase {
     func testTheFooterNamesTheVersionTheSystemAndTheBootstrapOnly() {
         XCTAssertEqual(
             FeedbackRules.footer(appVersion: "0.2.7", appBuild: "18", osVersion: "17.3.1", bootstrap: .roothide),
-            "Sent with Apelin 0.2.7 (18) · iOS 17.3.1 · roothide",
+            "Sent with Luros 0.2.7 (18) · iOS 17.3.1 · roothide",
         )
         XCTAssertEqual(
             FeedbackRules.footer(appVersion: nil, appBuild: "18", osVersion: "26.0", bootstrap: .rootless),
-            "Sent with Apelin (version unknown) · iOS 26.0 · rootless",
+            "Sent with Luros (version unknown) · iOS 26.0 · rootless",
         )
         XCTAssertEqual(FeedbackRules.issueBody("Body.\n\n ", footer: "F"), "Body.\n\n---\nF")
     }
@@ -122,7 +122,7 @@ final class FeedbackRulesTests: XCTestCase {
         XCTAssertEqual(split.replacingText("It also stops on roothide.\n\n"), "It also stops on roothide.\n\n---\n" + footer)
 
         // GitHub's own line ends, after an edit on the site, and a version
-        // Apelin could not read: the footer still comes off, and goes back
+        // Luros could not read: the footer still comes off, and goes back
         // as it was.
         let unknown = FeedbackRules.footer(appVersion: nil, appBuild: nil, osVersion: "26.0", bootstrap: .roothide)
         let edited = "Line one\r\nLine two\r\n\r\n---\r\n" + unknown + "\r\n"
@@ -135,9 +135,9 @@ final class FeedbackRulesTests: XCTestCase {
         for body in [
             "No footer here.",
             "Quoted:\n\n---\n" + footer + "\n\nand more below it.",
-            "Sent with Apelin 0.2.7 (18) · iOS 17.3.1 · rootless",
+            "Sent with Luros 0.2.7 (18) · iOS 17.3.1 · rootless",
             "Body\n---\n" + footer,
-            "Body\n\n---\nSent with Apelin 0.2.7 · iOS 17.3.1 · jailbroken",
+            "Body\n\n---\nSent with Luros 0.2.7 · iOS 17.3.1 · jailbroken",
         ] {
             let split = FeedbackRules.split(issueBody: body)
             XCTAssertNil(split.footer, body)

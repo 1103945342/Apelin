@@ -100,7 +100,7 @@ read that one and older, so the host self-tests against the newest
 registered SDK the release reads. A release whose ld loads a macOS system
 library iOS lacks (`libxar` for bitcode in 14.2, `libcodedirectory`
 for linker signatures in 15.x) gets that load weakened, with every
-launch-time bind from it marked weak (`MachOImage.weakenLoads`); Apelin
+launch-time bind from it marked weak (`MachOImage.weakenLoads`); Luros
 never takes the paths that call them. Entry points
 are clang, ld, lipo, dsymutil, strip, ar, libtool, nm, otool and llvm-otool;
 resources come from `usr/lib/clang` (only iOS target runtime libraries),
@@ -113,7 +113,7 @@ AppKit/Cocoa/Carbon dependencies fail clearly. Load-command growth never moves
 sections: insufficient room is an explicit error. Signing is the last byte
 change. The signature and entitlements blobs are `ApelinCodeSign`'s
 `LdidStyleSignature` and `LdidEntitlements` (Irisin's, MIT), the one signer
-Apelin has. The layout around them stays in `MachOImage.signed` and differs
+Luros has. The layout around them stays in `MachOImage.signed` and differs
 from `CodeSigner`'s on purpose: it works on the retargeted command list, keeps
 every byte up to the old signature (ldid ends the code at the string table),
 re-appends the signature command last, signs only the arm64 slice, and gives
@@ -163,7 +163,7 @@ its iOS arm64 executable ad hoc with `platform-application` and
 and UUID for any installed build. Device evidence lives in
 `Documents/Research/2026-10-17-Toolchain-Retarget.md` (this package alone)
 and `Documents/Research/Device-Validation.md` (`toolchainSetup` through
-Apelin and irisind).
+Luros and irisind).
 
 Irisin provenance: `Lakr233/Irisin` revision
 `a0bd81d523ae679f3aefb31d11bf93477a079345`, MIT, copyright OwnGoal Studio.

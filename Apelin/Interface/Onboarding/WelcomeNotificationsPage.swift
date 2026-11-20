@@ -127,7 +127,7 @@ final class WelcomeNotificationsPage: UIViewController {
         }
         let intro = UILabel().then {
             // The same sentence Settings words its footer with.
-            $0.text = String(localized: "Allow notifications from Apelin. You can change permission in Settings at any time.")
+            $0.text = String(localized: "Allow notifications from Luros. You can change permission in Settings at any time.")
             $0.font = WelcomeStyle.subtitleFont
             $0.adjustsFontForContentSizeCategory = true
             $0.textColor = WelcomeStyle.detailColor
@@ -190,7 +190,7 @@ private final class WelcomeNoticePreview: UIView {
         }
         let title = UILabel().then {
             // The words the notification itself uses, from the same key.
-            $0.text = "Apelin"
+            $0.text = "Luros"
             $0.font = WelcomeStyle.featureTitleFont
             $0.adjustsFontForContentSizeCategory = true
             $0.textColor = WelcomeStyle.titleColor
@@ -205,7 +205,7 @@ private final class WelcomeNoticePreview: UIView {
         }
         let body = UILabel().then {
             // A report's own words are in no language.
-            $0.text = String(localized: "Notifications from Apelin will appear here.")
+            $0.text = String(localized: "Notifications from Luros will appear here.")
             $0.font = WelcomeStyle.detailFont
             $0.adjustsFontForContentSizeCategory = true
             $0.textColor = WelcomeStyle.titleColor

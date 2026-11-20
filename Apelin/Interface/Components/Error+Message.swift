@@ -35,11 +35,11 @@ extension ApelinError.Code {
             String(localized: "Check the information you entered and try again.")
         case .unknownOperation, .unsupportedVersion:
             String(localized: """
-            Apelin and its background service are different versions. Reinstall Apelin with your \
+            Luros and its background service are different versions. Reinstall Luros with your \
             preferred package manager, then try again.
             """)
         case .denied:
-            String(localized: "Apelin does not have permission to complete this action.")
+            String(localized: "Luros does not have permission to complete this action.")
         case .notFound:
             String(localized: "The item could not be found. It may have been removed.")
         case .conflict:
@@ -50,11 +50,11 @@ extension ApelinError.Code {
             String(localized: "The request timed out. Try again.")
         case .backendUnavailable:
             String(localized: """
-            This needs Apelin’s background service, which is not running on this device. Reinstall \
-            Apelin with your preferred package manager to set it up again.
+            This needs Luros’s background service, which is not running on this device. Reinstall \
+            Luros with your preferred package manager to set it up again.
             """)
         case .unavailable:
-            String(localized: "Apelin’s background service could not be reached. Try again in a moment.")
+            String(localized: "Luros’s background service could not be reached. Try again in a moment.")
         case .internal:
             String(localized: "Something went wrong. Try again.")
         }

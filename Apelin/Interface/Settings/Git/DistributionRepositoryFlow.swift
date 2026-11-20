@@ -106,7 +106,7 @@ final class DistributionRepositoryFlow {
     private func confirmLink(_ candidate: DistributionRepositoryCandidate) {
         presenter?.presentConfirmation(
             title: "Link \(candidate.fullName)?",
-            message: "Apelin clones it as a project, adds the package index’s files it lacks — a GitHub Pages workflow and an index script — without changing any it has, pushes them, and turns on GitHub Pages.",
+            message: "Luros clones it as a project, adds the package index’s files it lacks — a GitHub Pages workflow and an index script — without changing any it has, pushes them, and turns on GitHub Pages.",
             confirmTitle: "Link",
         ) { [weak self] in
             self?.start(
@@ -117,12 +117,12 @@ final class DistributionRepositoryFlow {
         }
     }
 
-    /// Apelin's current template over the files it maintains, after a
+    /// Luros's current template over the files it maintains, after a
     /// warning that whatever the user changed in them is replaced.
     func confirmUpdate(_ repository: DistributionRepository) {
         presenter?.presentConfirmation(
             title: "Update \(repository.fullName)?",
-            message: "This overwrites the repository’s home page, README, icon, GitHub Pages workflow and index script with Apelin’s current template, replacing any changes made to them, then commits and pushes. Packages, depictions and banners stay as they are.",
+            message: "This overwrites the repository’s home page, README, icon, GitHub Pages workflow and index script with Luros’s current template, replacing any changes made to them, then commits and pushes. Packages, depictions and banners stay as they are.",
             confirmTitle: "Update",
             destructive: true,
         ) { [weak self] in

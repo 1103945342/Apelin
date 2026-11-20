@@ -21,7 +21,7 @@
     titleLabel.textAlignment = NSTextAlignmentCenter;
 
     UILabel *detailLabel = [UILabel new];
-    detailLabel.text = [NSString stringWithFormat:@"Built on this device with Apelin.\nVersion %s (%s)", APELIN_VERSION, APELIN_BUILD_ID];
+    detailLabel.text = [NSString stringWithFormat:@"Built on this device with Luros.\nVersion %s (%s)", APELIN_VERSION, APELIN_BUILD_ID];
     detailLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     detailLabel.adjustsFontForContentSizeCategory = YES;
     detailLabel.textColor = UIColor.secondaryLabelColor;

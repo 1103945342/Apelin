@@ -5,7 +5,7 @@ import Foundation
 /// apelin-environment's request handling, everything `Workers/Environment`
 /// hands it: the toolchain and SDK operations, the git service and its
 /// settings, a repository made on GitHub and an issue opened on one, the
-/// package repository, the feedback filed, read and edited on Apelin's own
+/// package repository, the feedback filed, read and edited on Luros's own
 /// repository and the star the reader gives it, and the cancellation of the
 /// tasks it runs.
 ///

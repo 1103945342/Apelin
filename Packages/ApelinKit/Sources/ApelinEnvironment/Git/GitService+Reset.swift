@@ -6,7 +6,7 @@ import Foundation
 
 /// "Remote wins" (issue #32): what a reset of a project to a remote's branch
 /// would lose, read after a fetch, and the reset itself, held to exactly
-/// the state that was shown. Apelin's own files (`luros-project.json`, the
+/// the state that was shown. Luros's own files (`luros-project.json`, the
 /// icon) are settled as an import settles them: the remote's when it has
 /// them, the project's identity kept in the manifest; the project's own,
 /// kept out of the repository, when it has not.
@@ -96,7 +96,7 @@ public extension GitService {
         let files = try settledFiles(target, remoteCommit: request.expectedRemoteCommit)
         reporter.stage("resetting")
         let backupAuthor = (try? author(name: nil, email: nil, repository: target.repository))
-            ?? GitSignature(name: "Apelin", email: "apelin@localhost.invalid")
+            ?? GitSignature(name: "Luros", email: "apelin@localhost.invalid")
         let result = try mapped {
             try target.repository.reset(
                 toRemote: target.remote,
@@ -146,7 +146,7 @@ public extension GitService {
         )
     }
 
-    /// What Apelin's own files hold after a reset to `remoteCommit`: the
+    /// What Luros's own files hold after a reset to `remoteCommit`: the
     /// remote's manifest with this project's ID (refused when it does not
     /// read as one), else this project's own, and the icon likewise; and
     /// the files the remote lacks, which are kept out of the repository.

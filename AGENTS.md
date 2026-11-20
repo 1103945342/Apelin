@@ -1,4 +1,4 @@
-# Apelin — Agent Notes
+# Luros — Agent Notes
 
 An on-device IDE where an agent writes, builds and installs tweaks, for
 jailbroken iOS 16.0+ — roothide and rootless bootstraps both. **iOS only**: there is no Mac Catalyst build and no
@@ -85,10 +85,10 @@ the same executable in session mode; the workers are its children.
   from that same description: one native target per product, the
   configurations' settings, the sources and resources its globs matched when
   it was written, a shared scheme each, and the extension support's headers
-  and link stubs copied into `Xcode/Support/`. Nothing in Apelin reads it, a
+  and link stubs copied into `Xcode/Support/`. Nothing in Luros reads it, a
   failure to write it never refuses a project, and it is written once — Xcode
   owns the file afterwards, so a second run would throw away what Xcode added.
-  Signing with ldid, the package and `swiftModules` stay with Apelin;
+  Signing with ldid, the package and `swiftModules` stay with Luros;
   `Documents/Xcode.md` is what a user reads.
 - **A Swift module is the project's own sources, never a resolution.** A
   package a project vendors is a folder of the project: `swiftModules` names
@@ -111,14 +111,14 @@ the same executable in session mode; the workers are its children.
   `realpath(3)` first, then compare components; reject an embedded NUL first.
 - **A recursive `rm` never runs on an unchecked variable.** An empty one
   makes the path `/`, which on roothide is the bootstrap's root, and a
-  maintainer script runs as root. Apelin's scripts, the
+  maintainer script runs as root. Luros's scripts, the
   `update-repository.sh` it writes into a user's package repository and the
   scripts the agent's skills hand out spell each variable in a recursive
   `rm` `${name:?}` (`$${name:?}` in a Makefile), so the shell stops before
   the command runs; `make check` runs `Scripts/check-shell-deletes.py`. The
   agent is told the same in the prompt's `# Working`, and the
   apelin-external-build skill's script starts by checking every variable
-  Apelin sets (`$APELIN_PREFIX` set and empty on roothide), which
+  Luros sets (`$APELIN_PREFIX` set and empty on roothide), which
   `EmptyVariableGuardTests` runs with them missing, empty and set.
 - **Start `ExecutableWatch` once, early in `didFinishLaunching`.** When the
   opened executable loses its last hard link, offer Later or Quit with wording
@@ -321,7 +321,7 @@ the same executable in session mode; the workers are its children.
   candidate. Pass every target's sources. `--delete-orphans` is opt-in and is
   for a single-target app only: with a root missing it takes live strings and
   all of their translations out in one commit.
-- **Apelin's own classes are open to hooks** (owner, 2026-11-04). Every
+- **Luros's own classes are open to hooks** (owner, 2026-11-04). Every
   `func`, `var` and `subscript` of a class this repository declares, or of an
   extension of one, is `@objc dynamic`, statics and private ones included,
   wherever Objective-C can represent it, so a tweak that replaces it with
@@ -377,7 +377,7 @@ the same executable in session mode; the workers are its children.
   `.github/workflows/model-catalog.yml` reads `https://models.dev/api.json`
   every day at 12:00 UTC (20:00 Asia/Shanghai), trims it with
   `Scripts/refresh-models-dev.py` to the fields `ModelDataSnapshot` keeps, and
-  commits `Apelin/Resources/models.dev.json` only when a model's figures
+  commits `Luros/Resources/models.dev.json` only when a model's figures
   changed — that commit's `generatedAt` is the stamp the app measures a week
   from. The app ships the file, writes it into
   `~/Documents/com.fluoxetine.luros/ModelData/models.json` on the first launch (the
@@ -495,7 +495,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   other sentence is a new turn while the ask waits, and the phone is told so
   in one line that also says the ask is still there — a reply the channel did
   not understand never looks approved, or lost. Every message is acknowledged
-  as soon as it arrives ("已收到你的消息，Apelin 正在处理中。"), before the
+  as soon as it arrives ("已收到你的消息，Luros 正在处理中。"), before the
   turn behind it answers; an answer to an ask and a command are answered with
   their own line instead. A decision taken in the app clears the ask the phone
   was given (`approvalResolved`). The asks are kept in `pending-asks.json`
@@ -510,7 +510,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   no history to read after the fact. The one
   thing WeChat cannot give is a command as root: that takes the device
   owner's check (`ownerVerified`), so it is announced with a line saying so
-  and approved only in Apelin. Settings ▸ Plugins names it WeChat ClawBot, and
+  and approved only in Luros. Settings ▸ Plugins names it WeChat ClawBot, and
   its page lists the commands a phone can type, in the footer under the
   sign-in rows — the same list `/help` answers with.
   A phone asks for the rest with commands, answered by the channel and never
@@ -574,7 +574,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `com.apple.private.security.no-sandbox` and `platform-application`, each
   strictly true (the app carries `platform-application`, so it is required;
   drop it from both or neither); `proc_pidpath` realpath-equal to
-  `<install root>/Applications/Luros.app/Apelin`; that file regular,
+  `<install root>/Applications/Luros.app/Luros`; that file regular,
   root-owned, owner-executable and not group- or world-writable.
 - **No CLI.** The app is the only peer. A CLI would be a second one, added to
   `clientPaths`, signed with its own entitlements, and written down here.
@@ -703,7 +703,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     `packageID`, `version`, `projectID`, `packagingDigest`, `packageFiles`) —, a toolchain
     package `toolchain-<id>` from apelin-environment:
     `Environment/Artifacts/<artifactID>.deb`, which must be
-    `com.fluoxetine.luros.toolchain.<id>` (the one Apelin-prefixed family a
+    `com.fluoxetine.luros.toolchain.<id>` (the one Luros-prefixed family a
     non-IDE source may install, and only that source; the environment
     worker removes only its own records) — or, from the app only,
     `file:<path inside ~/Documents/com.fluoxetine.luros>`. A writer for the
@@ -722,14 +722,14 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     (unless the deb Replaces it), or that the deb's unversioned Conflicts
     or Breaks names (the host compares no versions), as a `conflict` event
     (`InstallConflict`, with the installation `removePackage` takes when
-    Apelin made it); the failure says who and how to clear it before
+    Luros made it); the failure says who and how to clear it before
     irisind's own words, which stand alone when nothing is found. irisind
     decided already, and nothing is removed. `removePackage{installationID}`
     acts only on a record whose install succeeded and whose package is
     still installed at that version, with no newer record of the package
     (whose ID the refusal names);
-    bootstrap core, Irisin, Apelin and essential or required packages are
-    refused both ways, and so is installing over a package Apelin did not
+    bootstrap core, Irisin, Luros and essential or required packages are
+    refused both ways, and so is installing over a package Luros did not
     install (`ManagedPackagePolicy`). The agent removes only what a build
     installed, never a toolchain's record or a file's; apelin-environment
     only its toolchains'.
@@ -812,7 +812,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     An agent's `distributionPublish` (owner, 2026-10-29; `AgentPublishRules`)
     names, in every mode, the repository and one digest per file, and each
     file must be an artifact a build reported to this host
-    (`ArtifactRegistry.artifact(path:)`) with that digest: only what Apelin
+    (`ArtifactRegistry.artifact(path:)`) with that digest: only what Luros
     built, as it built it. Under Confirm it spends one approval naming
     exactly that repository and those files and digests, in order
     (`detail.packagePublish` {repository, sourceURL?, packages: [{buildID,
@@ -851,7 +851,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     then `protectedEditCommit{grantID, contents | contentsBase64,
     expectedVersion, confirmed}`: existing regular files inside the install
     root only; no symlink, hard link, execute bit, Mach-O, package-manager
-    or Apelin record; a LaunchDaemons plist needs `confirmed`; the old
+    or Luros record; a LaunchDaemons plist needs `confirmed`; the old
     contents are backed up to `~/Documents/com.fluoxetine.luros/backups/` (every
     level opened `O_NOFOLLOW`, the file handed to mobile, the newest ten
     per file) and replaced through `AtomicReplace` (Fila's AtomicSave:
@@ -870,7 +870,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     shell's `/etc/profile` sets `PATH` and the prompt anew, so the package ships
     `etc/profile.d/com.fluoxetine.luros.sh` (`Packaging/profile.d/`): it puts
     `APELIN_TOOLCHAIN_BIN` back in front when it is set, and — for bash only,
-    and only when `APELIN_TERMINAL` says the shell is Apelin's own — cuts the
+    and only when `APELIN_TERMINAL` says the shell is Luros's own — cuts the
     prompt to the folder and the shell's own `$`/`#`, since that profile's
     `\w` puts the whole path on every line. A shell opened anywhere else, and
     a prompt the user's own `.bash_profile` or `.bashrc` sets after it, are
@@ -1003,7 +1003,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   every path is plain, literal (never a pathspec glob) and resolves inside.
   A commit's author is the request's, else `Settings/git.json`, else the
   repository's config; `gitCommit{all: true}` stages every change first,
-  as `git add --all` does (ignored files left out). Every project Apelin
+  as `git add --all` does (ignored files left out). Every project Luros
   makes starts as a repository on `main` with no commit (owner,
   2026-10-25): apelin-build, which has no libgit2, writes what
   `git init -b main` leaves into the staging folder (`EmptyRepository`
@@ -1011,7 +1011,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   makes one on `main` for a project that has none (`conflict` when it has
   a `.git`; any other call on one without is `notFound`, reason
   `notARepository`). Both write `.git/info/exclude`, never `.gitignore`,
-  with what Apelin writes into a project that is not the project's
+  with what Luros writes into a project that is not the project's
   (`ProjectExcludes.apelinFiles`: the agent's `Attachments/`, the metadata
   writer's and the file tools' temporary files); a repository made
   without it is given it by its next git call once the project has an
@@ -1075,7 +1075,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   repository into an existing workspace project — the repository
   initialised in the folder, `origin`
   fetched in full, the branch checked out without overwriting a file
-  already there (a clash fails and leaves the folder as it was), Apelin's
+  already there (a clash fails and leaves the folder as it was), Luros's
   own files kept out through `.git/info/exclude`. The untouched repository
   a new workspace starts with (`GitRepository.isUntouched`: HEAD unborn, no
   reference, remote or staged entry) is replaced, and put back on its
@@ -1154,7 +1154,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   is exactly that one, once per operation; an authentication failure is
   `denied` with reason `authenticationRequired`. `gitSettings`,
   `gitAuthorSet`, `gitCredentialSet` and `gitCredentialRemove` are the
-  app's and the agent's (Settings ▸ Git, `Apelin/Interface/Settings/Git/`): the list names
+  app's and the agent's (Settings ▸ Git, `Luros/Interface/Settings/Git/`): the list names
   hosts and usernames, never a token, and the console refuses
   `gitCredentialSet` before sending it. github.com is signed in to with a
   code, the device flow `gh auth login` runs (owner, 2026-10-25;
@@ -1204,12 +1204,12 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   the account cannot see `notFound`, issues turned off there (410) or no
   permission (403) `denied`, GitHub's validation (422) `conflict`; without
   a sign-in, `denied` with reason `authenticationRequired`. Only the
-  repository named is asked, never Apelin's in its place. Unscoped in
+  repository named is asked, never Luros's in its place. Unscoped in
   `GitHandler`; an agent's passes `AgentIssueCreateRules` first. Tested by
   `GitHubIssueTests`; `i2-git-remote.json` names a repository with no
   owner, refused before GitHub.
   An empty workspace's manifest says `"buildSystem": "external"` (one
-  without the key is read the same way): Apelin has no build description
+  without the key is read the same way): Luros has no build description
   for it, so the agent builds with the project's own tools through
   `shell_run` and writes down how in the project's `AGENTS.md`; a package
   it installs comes from the workspace's own build script (Workspace
@@ -1249,8 +1249,8 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   2026-11-06; each set up and self-tested on a device) — and refuses any other, before downloading,
   with the catalog's `unsupportedReason`: 12.4 for its arm64e C++, and
   16.2, 14.3, 13.4, 13.2 and 12.5, which passed but were dropped, as
-  releases Apelin no longer sets up. `toolchainCatalog` lists only the kept
-  releases (a product Apple lists that Apelin has not reviewed is left
+  releases Luros no longer sets up. `toolchainCatalog` lists only the kept
+  releases (a product Apple lists that Luros has not reviewed is left
   out, `ToolchainProduct.reviewed`); a kept one this device cannot run
   stays, with its reason. Each kept release records its package
   (`CommandLineToolsPackage`: product, SHA-256, address, size, the digest
@@ -1273,7 +1273,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `HostSigning` in ApelinCore): it trust-caches nothing it installs and
   runs only a Mach-O carrying the CoreTrust-bypass signature its dpkg
   hook writes (Bootstrap-basebin `autosign.m`: its own `ldid`, then
-  `fastPathSign`), and what Apelin signs is ad hoc and goes through
+  `fastPathSign`), and what Luros signs is ad hoc and goes through
   irisind, never dpkg — on the reporter's iPhone clang was "Bad
   executable" at the self-test.
   It is known by the mark Bootstrap writes in its root, `.thebootstrapped`
@@ -1285,7 +1285,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   which promises Settings, and lists no pair
   (`WelcomeEnvironmentIntroduction`).
   Real support would mean writing Bootstrap's signature on everything
-  Apelin signs and installs, which nothing here can test; it waits for a
+  Luros signs and installs, which nothing here can test; it waits for a
   Bootstrap device.
   Each release reads SDKs up to its Xcode's (`newestSDK`, major.minor),
   which the record keeps: the self-test compiles against the newest
@@ -1300,7 +1300,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   Swift (`components: ["c", "swift"]`) is reviewed for CLT 14.2 (Swift 5.7.2,
   iOS 17.3.1+, LRCPC), 15.0 (Swift 5.9) and 15.3 (Swift 5.10), both iOS
   17.3.1+ and LRCPC — swift-frontend's two SHA3 sites, BLAKE3 hash_many and
-  the symbol-graph edge set, are off Apelin's build path, and an A12Z ran
+  the symbol-graph edge set, are off Luros's build path, and an A12Z ran
   every Swift case of both —, and 27.0 and 27.2 (Swift 6.4 and 6.4.2, iOS
   26+, LRCPC/SHA3/DotProd). 16.4 ships Swift 6.1.2 and does not offer it
   (`swiftUnavailable`): its swift-driver imports macOS's zippered
@@ -1373,14 +1373,14 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `t2-toolchain-remove.json` and `t3-toolchain-side-by-side.json`.
 - **Transfer files** (2026-10-21; `Operations/Transfer.swift`,
   `ApelinEnvironment/Transfer/`, `Apelind/Dispatch/TransferHandler.swift`,
-  `Apelin/Interface/Transfer/`). A registered toolchain (`.apetc`), a
+  `Luros/Interface/Transfer/`). A registered toolchain (`.apetc`), a
   registered SDK (`.apesdk`) or a project (`.apeproj`) goes from one device
   to another as one file, user to own device: nothing is uploaded, and the
   export's confirmation says so in a line. The app declares the exported
   types `com.fluoxetine.luros.toolchain-package`, `…sdk-package` and
   `…project-package` (conforming to `public.data` and `public.archive`, by
   extension) and owns them in `CFBundleDocumentTypes`, in the partial
-  `Apelin/Resources/Info.plist` merged with the generated one (kept out of
+  `Luros/Resources/Info.plist` merged with the generated one (kept out of
   the target's resources by the synced folder's exception set), with
   `LSSupportsOpeningDocumentsInPlace`; no document icon, the system draws
   one from the app's. *The format*: a pax tar through zstd whose first
@@ -1456,7 +1456,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   approved. A `source` is the app's descriptor (`file`, rewound before each
   read), or a file in `inbox/` or `Exports/` (an export's folder names its
   one file), canonicalised; a named file's extension must be its kind.
-  The app's flows: Open in Apelin and launch URLs (`SceneDelegate`) and the
+  The app's flows: Open in Luros and launch URLs (`SceneDelegate`) and the
   pickers (Toolchains ▸ + ▸ From File…, SDKs ▸ + ▸ From Files… for an
   `.apesdk`) open the file read-only under its security scope and keep only
   the descriptor; `TransferImportController` shows what it is and what it
@@ -1478,10 +1478,10 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   unified log (`com.fluoxetine.luros`, `console`). It calls `ApelinService`, the
   one typed surface — one async method per operation — that the UI and the
   agent's tools (over `ChannelTransport`) call too; `ApelinService.app`
-  (`Apelin/Service/`) binds it to `DaemonClient`. The runner is the
+  (`Luros/Service/`) binds it to `DaemonClient`. The runner is the
   `ApelinConsole` library (ApelinCore and ApelinProtocol only), given an
   `ApelinService`, a `DataFolder` and a log sink; the app keeps the binding
-  and the launch and foreground hooks (`Apelin/Console/`). A step answering
+  and the launch and foreground hooks (`Luros/Console/`). A step answering
   a task handle, or an attach answering an unfinished batch, follows the
   task to its end (an attach by ID reads a task an earlier run started). A followed task
   is announced by a `step.task` line, so a launch after the app died
@@ -1984,7 +1984,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   is seen through frames extracted as image files, as the refusal of any
   other binary now says. The read tools
   (file_read, file_list, file_grep, file_find) also read, never write, an
-  absolute path whose realpath lies in Apelin's development extensions
+  absolute path whose realpath lies in Luros's development extensions
   (`<install root>/usr/share/luros/development`, or the copy the package
   carries at `<app>/Development`, where a template's support headers are) or
   the data folder's `SDKs/`, as the read presets
@@ -2114,7 +2114,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   remote and shows the bound detail, `ApprovalCardText`) names the
   branch, the remote and its URL, the remote commit replaced and the
   local one sent, the commits that leave the branch, and that it cannot
-  be undone from Apelin. It asks in every mode, never with a session
+  be undone from Luros. It asks in every mode, never with a session
   grant; a `url` that is not where the remote pushes, a detached HEAD or
   a fetch that fails is refused before asking. The push carries the
   card's lease (`GitPushLease`), and the result names the remote, the
@@ -2165,7 +2165,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   apelin_git_create_issue {repository, title, body} → `gitIssueCreate`
   (owner, 2026-10-30), in any chat: an issue under the user's account on
   a repository the user named (`owner/name`), such as another app's or
-  tweak's, answering its number and link; Apelin's own feedback stays
+  tweak's, answering its number and link; Luros's own feedback stays
   apelin_feedback_send, and the tool refuses owngoal-dev/Apelin for it.
   Its description and a line of the prompt's `# Working` keep it to a
   repository the user named and asked to file on (or explicitly agreed to
@@ -2189,7 +2189,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   Toolchains and SDKs (2026-10-22, `ChannelHostBackend+Environment.swift`),
   in any chat: apelin_toolchain_list → `toolchainStatus` and `toolchainCatalog`
   (the installed ones with their components, newest SDK read and
-  self-test results; each release Apelin sets up with its size, newest
+  self-test results; each release Luros sets up with its size, newest
   SDK, recommended SDK, minimum iOS, CPU features, Swift and why this
   device cannot take it, the catalog's fields the app's picker shows; the
   project's binding), apelin_sdk_list → `sdkList` with the sources read and
@@ -2420,7 +2420,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   Feedback already filed is edited, never filed again (owner, 2026-10-30;
   `Tools/FeedbackEdit.swift`), in any chat: apelin_feedback_read {number}
   → `feedbackRead`, a read preset, answering the title, the body without
-  Apelin's footer, the footer apart, who opened it, whether the user's
+  Luros's footer, the footer apart, who opened it, whether the user's
   account did, the state, the link and a `revision` naming the title and
   body it saw; apelin_feedback_edit {number, revision, title?, body?} reads
   the issue again first and refuses before asking another account's
@@ -2614,10 +2614,10 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   decision back if the worker does not accept it; `agentClose` forgets the
   session.
 - **Agent tool names** (owner, 2026-10-24). A tool that acts on what
-  Apelin keeps — its projects and templates, the packages it installs, the
+  Luros keeps — its projects and templates, the packages it installs, the
   device, the screen, logs and crashes, toolchains and SDKs, other
   conversations, memory, skills, its git settings, a notification, the
-  feedback filed on Apelin — or reaches past the device (`apelin_web_fetch`,
+  feedback filed on Luros — or reaches past the device (`apelin_web_fetch`,
   `apelin_git_create_repository`, `apelin_git_create_issue`) is
   `apelin_<scope>_<verb>` (`apelin_project_build`, `apelin_package_install`,
   `apelin_device_respring`, `apelin_git_set_author`, `apelin_feedback_send`);
@@ -2632,7 +2632,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   keeps that rule, is no name `AgentToolName.canonical` knows, takes no
   `reason` argument and is declared by one installed extension only;
   otherwise the tool is left out, both of a duplicate
-  (`ToolExtensionOffer`). Apelin's own names are ApelinProtocol's
+  (`ToolExtensionOffer`). Luros's own names are ApelinProtocol's
   `AgentToolName`, which the session host's approval rules, the app's
   titles and widget and the agent read; what each tool does stays in
   ApelinAgent's `ToolCatalog`. `AgentToolName.legacyNames` keeps the names 0.1.8 and
@@ -2666,7 +2666,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   instance named `credential-import`, so the item is written and read by
   the same signed executable.
 - **Agent sign-in** (`Packages/ApelinAgent/Sources/ApelinAgentWorker/SignIn/`,
-  `Apelin/Interface/Settings/Accounts/`). Settings ▸ Model Providers (one
+  `Luros/Interface/Settings/Accounts/`). Settings ▸ Model Providers (one
   row on the Settings root, the signed-in count beside it, pushing
   `ModelProvidersController`: signed in first with who as and a `…` menu,
   then the rest under Sign In with an Account and API Keys, searchable)
@@ -2750,7 +2750,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   (`oc_sk_…`) for Go, the subscription, under `opencode-go`, or Zen,
   pay-as-you-go, under `opencode`, each wire at its own path under the
   plan's root and every request naming its conversation in
-  `x-opencode-session`, which Go refuses a request without. Apelin adds
+  `x-opencode-session`, which Go refuses a request without. Luros adds
   only the cases, the key forms and model discovery at the plan's
   `<root>/v1/models`, which, like kwwk's routes, never reads a `baseUrl`
   an imported credential carries.
@@ -2762,7 +2762,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   the tier and, when Google names it, the email as extras; it renews at Google (`upkeep: .refreshed`, in
   `KimiIdentity.refreshers(for:)` for that account) and answers through Code
   Assist's `streamGenerateContent`. A free Google account signs in too;
-  which models a plan serves is Google's. Apelin adds the case, after
+  which models a plan serves is Google's. Luros adds the case, after
   Cursor in the order, and its mark (its official logo on a white plate):
   the models are kwwk's bundled list for it (`antigravity`, from 0.1.111
   Gemini 4 Argon, Gemini 3.8 Flash, Claude Opus 5.5 and Sonnet 5.5 among
@@ -2786,7 +2786,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   Raccoon is SenseTime's office assistant (xiaohuanxiong.com): its portal
   page is told to deliver its code to a loopback, and the office identity
   the sign-in answers rides on every request. Both renew through kwwk
-  (`upkeep: .refreshed`). Apelin adds the cases, after WorkBuddy in the
+  (`upkeep: .refreshed`). Luros adds the cases, after WorkBuddy in the
   order, and their marks (Trae's one for both builds). Fetch Models reads
   the account's own roster from its gate (`TraeModels.fetch`,
   `RaccoonModels.fetch`) with the token as it is stored, and kwwk's
@@ -2796,11 +2796,11 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `/v3/config`), and the levels it names for each model are kept for ten
   minutes (`WorkBuddyEffortCache`) for the account list, which makes no
   request of its own.
-  Display order is Apelin's `AgentProvider.signInOrder`, independent of
+  Display order is Luros's `AgentProvider.signInOrder`, independent of
   kwwk's registration order;
   `AccountDeskTests` fails when kwwk gains a subscription or a stored
   provider (`providerDirectory`) the table lacks, or when a provider here is
-  one neither kwwk nor Apelin can register for a session.
+  one neither kwwk nor Luros can register for a session.
   Several OpenAI-compatible endpoints (#60: there was one, and adding
   another replaced it): the first is `openAICompatible` as before, and
   each further one is a provider of its own, `openAICompatibleEndpoint(n)`,
@@ -2922,8 +2922,8 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   root reader keeps one LoggingSupport live stream open for the window;
   apelin-diagnostics keeps one icli `SyslogStream` open for it. icli
   filters by subsystem (dotted children), category, pid, message and level
-  before anything counts; process (icli's is a substring, Apelin's the
-  whole name) and `since` stay Apelin's, and every entry passes
+  before anything counts; process (icli's is a substring, Luros's the
+  whole name) and `since` stay Luros's, and every entry passes
   `LogFilter.matches`. icli's stream ending `interrupted` in the first
   second with nothing heard is `denied`; later, `truncated`
   {`reason: source`}. A streaming call belongs in icli, not beside it —
@@ -2972,13 +2972,13 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   and that a wake comes first. A wake runs on either and answers what it
   left (`locked`, `screenOff`): a device without a passcode is past its
   lock screen, one with a passcode stays on it for the user to unlock.
-  Nothing in Apelin asks for, keeps or types a passcode: not icli's
+  Nothing in Luros asks for, keeps or types a passcode: not icli's
   `unlockDevice` (0.11.0 and later), nor its `device passcode`, which the
   `apelin-icli` skill tells the agent never to run. IcliKit 1.0.0
   has the press and the wake with the same iOS code as 0.9.0; it carries
   `unlockDevice` too, never called, so apelin-diagnostics has no
   `com.apple.keystore.device`. An agent's
-  action never reaches Apelin itself (`AgentUIActionRules`): the host sets
+  action never reaches Luros itself (`AgentUIActionRules`): the host sets
   its `refusedBundleIDs` to `com.fluoxetine.luros`, whatever the agent sent, and
   apelin-diagnostics answers `denied` for a target on that list, before
   reading anything, and for an app on it in front — on the settled read
@@ -2993,7 +2993,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   unlinked temporary file's descriptor, JPEG.
 - **The hello** has a five-second bound per attempt, guarded by connection
   generation, retried every second; the fallback to the unprivileged backend
-  comes ten seconds after the first miss (`Apelin/DaemonClient.swift`). After
+  comes ten seconds after the first miss (`Luros/DaemonClient.swift`). After
   it answers, the connection stays open — a connected app is work that keeps
   apelind up — and is said hello to again after it drops. Without the
   backend, calls fail with `backendUnavailable` after one fresh hello.
@@ -3015,19 +3015,19 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   default may be newer. A layout reads size class and the space it has,
   insets each edge by its own safe-area inset, and leaves bars to the
   navigation controllers; nothing asks whether it is on an iPhone Duo.
-- **Strings**: one catalogue, `Apelin/Resources/Localizable.xcstrings`, kept
+- **Strings**: one catalogue, `Luros/Resources/Localizable.xcstrings`, kept
   the manual way — a key Xcode cannot see stays `extractionState: manual`,
   `make check` refuses `stale`. Prune by hand with Xcode closed, passing every
-  source root: `Scripts/prune-xcstrings.py Apelin/Resources/Localizable.xcstrings
-  Apelin Apelind Shared Widgets Workers Packages`. Never `--delete-orphans`: the
+  source root: `Scripts/prune-xcstrings.py Luros/Resources/Localizable.xcstrings
+  Luros Apelind Shared Widgets Workers Packages`. Never `--delete-orphans`: the
   project has several targets now. The widget extension is a bundle of its own
   and keeps its own, `Widgets/Extension/Resources/Localizable.xcstrings`, the
-  same way; the gates run over both. Apelin ships the thirteen languages the
+  same way; the gates run over both. Luros ships the thirteen languages the
   sibling apps ship (owner, 2026-10-22): English, Arabic, German, Spanish,
   French, Italian, Japanese, Korean, Portuguese (Brazil), Russian,
   Vietnamese and Chinese (Simplified and Traditional, Taiwan usage), all
   in the project's `knownRegions`. A key goes in with all twelve
-  translations, and so does a key of `Apelin/Resources/<language>.lproj/
+  translations, and so does a key of `Luros/Resources/<language>.lproj/
   InfoPlist.strings` (the camera prompt and the three document type
   names): `make check` runs `Scripts/check-translations.py`, which refuses
   a key missing one. Use the words the siblings already use for the same
@@ -3081,7 +3081,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   does it): `Packages/Runestone` is simonbs/Runestone 0.5.2 from source,
   from Irisin's copy (the Xcode 27 `TreeSitter.h` fix, typed pointers,
   `EditMenuController`, themes in code), with the Tree-sitter runtime and
-  only the grammars Apelin highlights: C, C++, Objective-C, Swift, Bash,
+  only the grammars Luros highlights: C, C++, Objective-C, Swift, Bash,
   Python, Ruby, JSON, YAML, Markdown and Markdown inline, XML and Make. The
   last three are upstream tree-sitter-grammars at ABI 14 (Make's parser
   regenerated with the 0.24.7 CLI; README.md there says how).
@@ -3107,7 +3107,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   xcframework with all 38 languages in use made it 55.0 MB.
 - **The root** is laid out as ChatGPT's and FlowDown's (owner,
   2026-10-21): `RootInterfaceController`
-  (`Apelin/Interface/Root/`), a container of its own, no
+  (`Luros/Interface/Root/`), a container of its own, no
   `UISplitViewController`, with the sidebar's navigation controller and
   `DetailNavigator`, whose picked page — `ChatController` or the icon —
   is the stack's root. The window's horizontal size
@@ -3153,7 +3153,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   accent is black in the light and white in the dark, the window's tint
   and AlertController's (`AppAccent`; owner, 2026-10-22); with Liquid Glass
   it stays the system's blue. With no project open
-  the title is "Apelin" alone, with no subtitle (owner, 2026-10-21) and
+  the title is "Luros" alone, with no subtitle (owner, 2026-10-21) and
   no menu, and New Chat starts a temporary
   conversation, as ChatGPT's temporary chat: it belongs to no project and
   is kept in `~/Documents/com.fluoxetine.luros/Temporary/<conversation>/`,
@@ -3231,7 +3231,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   selected page, and the first transcript layout jumps to the bottom without
   animating. Never hide a
   `UITabBarController`'s bar to simulate that hierarchy.
-  *The conversation page* (`Apelin/Interface/Chats/`, owner, 2026-10-21)
+  *The conversation page* (`Luros/Interface/Chats/`, owner, 2026-10-21)
   is made once: the root keeps one `ChatController`, picking a
   conversation hands it over with `use(_:)`, and the navigator shows it
   again only when something else is its root. Switching never builds a
@@ -3311,7 +3311,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   published state alone drives the plus/close icon. Items dropped on the
   composer's card (FlowDown's drop, tinted while a drag is over it) are
   read as a pick from Files is, an image as a photo; a folder, a drag from
-  Apelin itself or a drop while a request covers the input is refused
+  Luros itself or a drop while a request covers the input is refused
   (`ComposerDropPolicy`). Attachments use its
   horizontal preview layout, removal and Quick Look; camera, Photos and
   Files use system pickers, and web text uses FlowDown's ScrubberKit at its
@@ -3461,7 +3461,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   line to the unified log under its own subsystem, `com.lakr233.dog`. It
   is the app's alone: apelind and the workers never link it and keep their
   own logging, and no task, scope or operation reads the journal.
-  Settings ▸ About ▸ Logs (`Apelin/Interface/Settings/Logs/`) reads it
+  Settings ▸ About ▸ Logs (`Luros/Interface/Settings/Logs/`) reads it
   back: every launch Dog keeps (`JournalFiles`, tested by
   `Tests/Journal`), this one first, each opening Irisin's log page
   (`LogViewerController`: level and category filters, Errors Only, a search
@@ -3526,12 +3526,12 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   substitution and keep their layout; the file tools write what the model
   writes, and the next build tidies it.
 - **Extensions** are scanned from `<install root>/usr/share/luros/development/`
-  and then from the copy Apelin's own package carries at
+  and then from the copy Luros's own package carries at
   `<install root>/Applications/Luros.app/Development/` (an installed one of
   the same id wins), on every `extensionList`; each is checked alone and a bad
   one, or both of a duplicate id, is listed with its problems and never offered.
 - **projectCreate** stages beside `Projects/<name>/` (`.<name>.creating-…`)
-  and moves in with `renamex_np(RENAME_EXCL)`. Apelin supplies `projectName`,
+  and moves in with `renamex_np(RENAME_EXCL)`. Luros supplies `projectName`,
   `projectID` and the `template*` values; `bundleID` and `packageID` default
   to `local.apelin.<name as a slug>`, an `identifier` parameter named
   `productName` to the name's words joined and capitalised (`I3 Chain Tweak`
@@ -3723,7 +3723,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   (owner, 2026-11-11, issue #44: https URLs of the icon's form, each
   written only when the project has it, no template's; the first is the
   web page, the second the native depiction JSON Sileo and Irisin draw,
-  where a changelog tab comes from. Apelin passes the addresses on and
+  where a changelog tab comes from. Luros passes the addresses on and
   hosts nothing), maintainer scripts with
   `@PREFIX@`/`@ROOTFS@` filled and `sh -n` passing, `control.tar.gz`
   (`controlCompression = .gzip`, which the host reads) and `data.tar.zst`. ApelinDebArchive brings
@@ -3747,7 +3747,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   becomes the artifact (`ArtifactRecord` with `buildSystem: external`, no
   build digest, binding or template), reported by the same `artifact` and
   `state` events, so installPackage, removal, crash lookup and
-  confirmLoaded work as for any build; Apelin neither compiles, signs nor
+  confirmLoaded work as for any build; Luros neither compiles, signs nor
   packages for it. Its packaging digest is cut from the package
   (`apelin.external-packaging`: the control file but `Version`, every
   other control member's digest, each data member's path, kind and mode),
@@ -3761,7 +3761,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   configuration, bootstrap?}, `AgentExternalBuildRules`): one approval
   builds once, never for the session, since the script runs whatever the
   repository holds. ManagedPackagePolicy still refuses installing over a
-  package Apelin did not install. A workspace is distributed like any
+  package Luros did not install. A workspace is distributed like any
   project (owner, 2026-10-24): a release build per bootstrap, its package
   exported from the distribution page. Having no description to check
   before, the release build reads the package it wrote
@@ -3785,13 +3785,13 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
 - **Distribution repository** (owner, 2026-10-25;
   `Operations/Distribution.swift`, `ApelinEnvironment/Distribution/`,
   `Apelind/Dispatch/DistributionHandler.swift`,
-  `Apelin/Interface/Settings/Git/DistributionRepository*`). The user's own
+  `Luros/Interface/Settings/Git/DistributionRepository*`). The user's own
   package repository: a GitHub repository of theirs that GitHub Actions
   indexes and GitHub Pages serves as an APT source
   (`https://<owner>.github.io/<name>/`), laid out after
   owngoal-dev/owngoal-packages trimmed to committed packages
   (`DistributionTemplate`: `debs/`, `depictions/`, `index.html`,
-  `CydiaIcon.png` (Apelin's icon), `sileo-featured.json` (a file name
+  `CydiaIcon.png` (Luros's icon), `sileo-featured.json` (a file name
   Irisin reads too), `scripts/update-repository.sh` indexing `debs/` with
   apt-ftparchive and drawing the home page's QR code with qrencode for the
   address `configure-pages` answers, and
@@ -3843,7 +3843,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   organizations', with those organizations (`/user/orgs`, which the `repo`
   scope may not fill, and every organization owner the list names);
   `distributionRepositoryUnlink` forgets the link only. Its card (Repository
-  Card…, `Apelin/Interface/Settings/Git/RepositoryCard/`) is a badge the
+  Card…, `Luros/Interface/Settings/Git/RepositoryCard/`) is a badge the
   Camera scans to add the source in Irisin: icon, title, the source address,
   a QR code of `irisin://repository/add?url=<source address>` (Irisin's
   `IrisinLink`) and `@<owner>`, every line the body size in SF Rounded,
@@ -3869,7 +3869,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   read of the star: nothing is written to GitHub).
   *Feedback* (owner, 2026-10-29; `Operations/Feedback.swift`,
   `ApelinEnvironment/Distribution/FeedbackService.swift`). `feedbackSend
-  {title, body}` files a public issue on Apelin's own repository,
+  {title, body}` files a public issue on Luros's own repository,
   `FeedbackRules.repository` (owngoal-dev/Apelin, never one a request
   names), with the same github.com sign-in (`GitHubAPI.createIssue`); one
   request, not a task. apelin-environment checks the text first, before
@@ -3881,7 +3881,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   MAC address — `badRequest` naming the kind, never quoting it. The check
   reads shapes and proves nothing; Strict showing the whole text is the
   safeguard. Below the body it writes the footer itself, "Sent with
-  Apelin <version> (<build>) · iOS <version> · <bootstrap>", the version
+  Luros <version> (<build>) · iOS <version> · <bootstrap>", the version
   from `<install root>/Applications/Luros.app/Info.plist` (`BoundedFile`)
   and no model, name or identifier. Without a sign-in, `denied` with
   reason `authenticationRequired`. The app's and the agent's, as
@@ -3905,9 +3905,9 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   Answers {number, url, title, body}. Both the app's and the agent's.
   Tested by `FeedbackEditTests`; `distribution.json` reads issue 0 and
   edits a title to nothing, both refused before GitHub.
-  *The star* (owner, 2026-10-29; `Apelin/Interface/Feedback/`). Once the
+  *The star* (owner, 2026-10-29; `Luros/Interface/Feedback/`). Once the
   reader has signed in with GitHub, builds that complete ask "Do You Like
-  Apelin?" — "Please star us on GitHub. It helps us go further.", Maybe
+  Luros?" — "Please star us on GitHub. It helps us go further.", Maybe
   Later (下次一定) beside Star Now (立即标记) — and Star Now stars
   `FeedbackRules.repository` with that sign-in (`feedbackStar`,
   `PUT /user/starred/…` with an empty body), then says Thank You, or
@@ -3920,7 +3920,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `succeeded` (`CompletedBuilds`, so a reopened session's replay counts
   nothing again) and each distribution build. When an ask is due it reads
   `feedbackStarState` in the background (`GET /user/starred/…`, 404 being
-  no star), at most once a day, and an account that has starred Apelin is
+  no star), at most once a day, and an account that has starred Luros is
   never asked. While the app is in the background, an alert or a
   presentation is coming or going, the read fails or UIKit does not take
   the alert, it asks nothing and waits for a build on a later day. Both
@@ -3946,13 +3946,13 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   downloads one from `owngoal-dev/iOS-SDKs` — a detached fork of
   `xybp888/iOS-SDKs` we maintain and credit, one SDK per branch — or another
   source the user adds, or takes a file, identifies it from `SDKSettings.json`
-  and its `.tbd` targets, and registers it. No Apelin package carries an SDK.
+  and its `.tbd` targets, and registers it. No Luros package carries an SDK.
 - **Git** is libgit2, built and kept as `Lakr233/libgit2.xcframework` the way
   `Lakr233/libarchive.xcframework` is.
 - **Agent**: option C — the session host spawns `apelin-agent`, running as
   mobile and linking KWWKAgent; the app renders its structured events.
 - **Credentials** live in the keychain, this device only, never synced, in
-  Apelin's own items; nothing is shared with kk or `~/.kwwk`. Exporting a
+  Luros's own items; nothing is shared with kk or `~/.kwwk`. Exporting a
   signed-in state comes later.
 - **Approval** has three modes (owner, 2026-10-24). *Relaxed* runs everything.
   *Confirm* lets every
@@ -3992,7 +3992,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   <id>`), irisin-cli's questions and `--dry-run --yes`, which Irisin answers
   only as root (apelin-package-dependencies skill), or another step only
   root can take — never the project's own build, install, removal or a
-  respring, never to get around a refusal or an approval, never Apelin's,
+  respring, never to get around a refusal or an approval, never Luros's,
   Irisin's or the bootstrap's own packages. The prompt has the agent say
   first what a root call runs and why, request root when the user asks it
   to, and, in every mode, Full included, make a change outside the
@@ -4030,9 +4030,9 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
 - **Install** always packages a deb and hands it to Irisin's daemon. irisind
   is changed to accept a peer by its entitlement and an executable under the
   jailbreak root or the system, not by Irisin's own path, and ships in a new
-  Irisin release; Apelin depends on that version and installs through it
+  Irisin release; Luros depends on that version and installs through it
   from there on. No CLI, no symlinks into the load directory. Nothing in
-  Apelin couples to the `apt` or `dpkg` binaries: both are on their way out.
+  Luros couples to the `apt` or `dpkg` binaries: both are on their way out.
 - **Reuse before writing**: everything the five sibling apps already do comes
   across — iGhostVT's terminal, log viewing, Fila's binary parsing and its
   file-descriptor editing through the privileged process, Irisin's signing —
@@ -4082,7 +4082,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   under the label `com.fluoxetine.luros.irisind` with the Mach service irisind
   serves, and only when no Irisin job is on disk: a device with the real
   package keeps its daemon, and `prerm`/`postrm` stop and remove only
-  Apelin's. `Scripts/check-vendored-tools.py` fails when a binary, the table,
+  Luros's. `Scripts/check-vendored-tools.py` fails when a binary, the table,
   the packaging script, the control file or the maintainer scripts stop
   agreeing. Neither copy reads a resource from the rest of its original
   package, and both link only system libraries.
@@ -4107,7 +4107,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
 ## Layout
 
 ```
-Apelin/                  the app: main.swift (manual UIApplicationMain), Application/
+Luros/                  the app: main.swift (manual UIApplicationMain), Application/
                          (delegate, ExecutableWatch, QuietExit, saved-state reset),
                          Interface/<feature>/, Resources/ (assets, string catalogue)
                          Console/ (the console's launch hook), Service/ (ApelinService.app),
@@ -4253,8 +4253,8 @@ folder across sessions matters more than it looks: it is also SwiftPM's
 ## Package Pages
 
 Every deb's control names its package manager icon (`Icon:`), served from
-`Documents/Site`: Apelin's is `icon.png`, rendered from the `.icon`; each
-extension's and the toolchain's is `icons/<package id>.png`, Apelin's plate
+`Documents/Site`: Luros's is `icon.png`, rendered from the `.icon`; each
+extension's and the toolchain's is `icons/<package id>.png`, Luros's plate
 and braces with a green mark in place of the leaf, drawn and rendered by
 `Scripts/render-package-icons.py` (sources in `Documents/Icon/Packages/`).
 A new package gets its mark there; `make check` fails a control without
@@ -4363,9 +4363,9 @@ adding a dated record beside it.
   chasing the message. `install-device.sh` runs `uicache -p` after every
   install anyway, for the install-from-a-file case above.
 - **An iPad keeps the other app.** On the iOS 27 iPad vphone, opening
-  Settings and then Apelin, to make Apelin come to the foreground, left
+  Settings and then Luros, to make Luros come to the foreground, left
   Settings beside it with the focus: the UI tree read Settings, a tap meant
-  for Apelin went to Settings, and Apelin was suspended mid-run, its follow
+  for Luros went to Settings, and Luros was suspended mid-run, its follow
   stalled for good. The harness quits an idle app and launches it instead.
   And (4, 4), a corner of the status bar on an iPhone, is a window's close
   control on iPadOS 26: `diagnostics.json` taps (200, 4).
@@ -4529,7 +4529,7 @@ their delivered banners and their widget and Live Activity rows go as
 Delete takes them. It goes by the folder rather than by an event on the
 deleting conversation's task because the app may not be following that
 task (closed, or the host restarted since), and because a folder another
-app or a command removed is just as gone; a folder renamed outside Apelin,
+app or a command removed is just as gone; a folder renamed outside Luros,
 whose conversations were already unreachable, loses them too. Only a
 folder the app listed before in that `Projects/` counts as gone
 (`DeletedProjects`), so a wrong or new `Projects/` takes nothing. Tested by
@@ -4581,7 +4581,7 @@ owner, 2026-10-24); it is disabled, saying what is missing, for a manifest
 with no `build` and for a workspace with no `external` script, and the
 distribution page checks again, lists the check's errors (a script that is
 not in the project, say) and keeps Build off until they are fixed.
-Open Terminal and Browse Files are Apelin's own pages, `TerminalPresenter` and
+Open Terminal and Browse Files are Luros's own pages, `TerminalPresenter` and
 `FileBrowserPresenter`, which the app shows in place of the page it came from;
 neither needs another app installed. A project's chat hands over its canonical
 folder as both the directory and the project root; a General Chat hands over its
@@ -4678,14 +4678,14 @@ never run). `# Responses` makes concision bite —
 match the length to the task, and do not paste tool output, files, diffs or
 logs back, narrate the steps or recap at the end; a progress note is one short
 line in the user's language (owner, 2026-10-24). It also says the prompt is
-not secret, Apelin being open source: asked for it, its skills list or the
+not secret, Luros being open source: asked for it, its skills list or the
 project instructions, the model shows or summarizes them, and only
 `<system-state>` stays unquoted (2026-10-29; on a device a chat refused,
 stretching that block's rule to the whole prompt). `# Working` opens with
-what a model's general knowledge gets wrong: an Apelin tweak is plain
+what a model's general knowledge gets wrong: an Luros tweak is plain
 Objective-C hooked with `MSHookMessageEx` (the template's `Sources/Tweak.m`),
 with no Logos or Theos,
-and Apelin-specific work, a question included, starts from the matching skill
+and Luros-specific work, a question included, starts from the matching skill
 (on a device, General Chat answered from memory that the template was a
 Logos `Tweak.x`). A package comes only from apelin_project_build: never a
 `.deb` put together by hand or copied into the project, a workspace's
@@ -4755,16 +4755,16 @@ on the first message after the host said it restarted (`hostRestarted`,
 Agent sessions above; owner, 2026-10-29: a roothide device's jbroot was
 renamed after a reboot, and a chat that went on trusted the paths in its
 history and spent a turn finding its toolchain and SDK "gone") a note
-(`SystemState.restartNote`) that Apelin's background service restarted
+(`SystemState.restartNote`) that Luros's background service restarted
 since the conversation last ran, so the device may have rebooted and the
-jailbreak, Apelin or the bootstrap's root path may have changed, naming
+jailbreak, Luros or the bootstrap's root path may have changed, naming
 the install root now, that paths, toolchains, SDKs, processes and files
 named earlier may be stale while the Environment section is current (a
 reopened session takes its system prompt afresh), and to check before
 relying on an earlier path and set up, install or import nothing again
 before checking what is registered. It is taken as a delta is, so a
 dropped queued message that carried it leaves it for the next, and a
-steer carries none — and the prompt says it is Apelin's, unseen
+steer carries none — and the prompt says it is Luros's, unseen
 by the user, and not to be quoted. Like the project context it is added to the text the
 model sees and goes into that message of the transcript, so every later
 request sends it as it went; the app's `prompt`, `queued` and `steer` events,
@@ -4783,7 +4783,7 @@ description only, and `apelin_skill_read{name, file?}` reads the body, or a file
 user skill's own folder (no link out of it), on demand; it is a read preset.
 The built-ins are one Swift file each under `ApelinAgent/Skills/BuiltIn/`,
 listed by `BuiltInSkills.all`; what they claim about the device was read from
-Apelin's own templates and pipeline, the sibling apps (Irisin's installer,
+Luros's own templates and pipeline, the sibling apps (Irisin's installer,
 icli, Xrash, iGhostVT, Fila, LookInside's tweak) and roothide's developer
 notes, and a claim nobody has seen hold on a device stays out.
 A built-in skill may carry files of its own (`SkillDocument.files`):
@@ -4859,7 +4859,7 @@ renderer reads it, with a page of two tabs, Details and Changelog, as its
 file `depiction.json`; a test holds that file to the views the skill names
 and that the prompt lists the skill without its body. `apelin-icli` (owner,
 2026-10-26) is running icli through shell_run: an argv, its help read
-first, Apelin's own tools where they exist, the commands its device
+first, Luros's own tools where they exist, the commands its device
 acceptance ran as mobile, never its package, respring or uicache
 commands, its launchd changes, `fs chown`, system writes and a reboot only
 as root with the user's go-ahead for exactly that (owner, 2026-10-30), its
@@ -4877,7 +4877,7 @@ Skills, memory and the project instructions are the session's snapshot
 (Prompt caching, below): an open session hears of a change as a delta in its
 next message's `<system-state>`. Skills are global (owner, 2026-10-23): the built-ins and the skills folder,
 never a project's own `.claude/skills` or `.kwwk/skills`. Settings ▸ Agent ▸
-Skills (`Apelin/Interface/Settings/Skills/`) lists them from `agentSkillList`,
+Skills (`Luros/Interface/Settings/Skills/`) lists them from `agentSkillList`,
 which the credential worker answers with `SkillCatalog.listing` — the
 catalogue a session reads, each skill's body and files as `apelin_skill_read` serves
 them, its place in the folder (`location`) and every problem kwwk or a taken
@@ -4940,7 +4940,7 @@ so none is written into anything that outlives the run (project files,
 build scripts, Makefiles, `AGENTS.md`/`CLAUDE.md`, memory, skills, package
 scripts, code): code resolves it at run time (`jbroot()`, the
 apelin-bootstrap-paths skill's `ApelinBootstrapPath()`), plists and
-maintainer scripts take `@PREFIX@`/`@ROOTFS@`, scripts Apelin's run-time
+maintainer scripts take `@PREFIX@`/`@ROOTFS@`, scripts Luros's run-time
 variables or project-relative paths (owner, 2026-10-29; rootless's `/var/jb`
 does not move, and the skill says so), and which of cmake,
 dpkg-deb, git, ldid, make, ninja, perl, python3 and xcrun are on shell_run's
@@ -4967,7 +4967,7 @@ spells them, at most 12 then counted, and `origin` without any credential),
 asked before the run starts and waited for at most 3 s, else read from
 `.git` itself, naming git_init when there is none — and a breadth-first tree (`ProjectTree`: at most
 200 entries, 6 levels, 2000 names a folder, 20,000 names in all; `.git`,
-`.DS_Store`, the top-level `Builds`, Apelin's temporary files and what the
+`.DS_Store`, the top-level `Builds`, Luros's temporary files and what the
 `.gitignore` files name left out; `Attachments` shown, not opened; links
 listed, never followed), then that message's `<system-state>`. It then lives
 in the transcript, so a reopened
@@ -5126,11 +5126,11 @@ fragment. The chat's ListViewKit keeps its own update mechanism.
   only suggest a message (≤ 32 KB, no control character but a line break or
   a tab, else `unknown`; without `prompt` the composer is empty).
   `lurosdev://import?url=<address>&branch=<name>` (owner, 2026-10-31, issue
-  #31) is Open in Apelin for a Git repository: a README's button
+  #31) is Open in Luros for a Git repository: a README's button
   (`Documents/Site/open/badge.svg`) links to
   `https://owngoal-dev.github.io/Apelin/open/?url=…&branch=…`, a static
   page (`open.js`, the same checks, no markup from the query) that shows
-  the repository, opens this link, says how to install Apelin and copies
+  the repository, opens this link, says how to install Luros and copies
   the address. `url` starts `https://`, in lower case, with a host and a
   path, printable ASCII, no user, password, query or fragment, ≤ 2 KB
   (`isRepositoryAddress`); the host is a public name spelt as it is shown
@@ -5142,7 +5142,7 @@ fragment. The chat's ListViewKit keeps its own update mechanism.
   no white space, format, default-ignorable or blank-drawing character
   (`isBranchName`); each is named at most once, a value whose escapes do
   not decode is none, `+` is a plus, anything else is ignored, and a link
-  that fails is `invalidImport` ("names no HTTPS repository Apelin can
+  that fails is `invalidImport` ("names no HTTPS repository Luros can
   import"). The app
   asks first (`RepositoryImportController`, a form sheet): the address,
   the branch, any project whose `.git/config` origin is the same
@@ -5164,7 +5164,7 @@ fragment. The chat's ListViewKit keeps its own update mechanism.
   writes these links. `ApelinLink`
   (`Widgets/Shared/ApelinLink.swift`, Foundation only; `Tests/ApelinLink` in
   `make harness`) parses and builds them; the scheme is declared in the
-  partial `Apelin/Resources/Info.plist`. `SceneDelegate` hands an `apelin:`
+  partial `Luros/Resources/Info.plist`. `SceneDelegate` hands an `apelin:`
   URL from the connection options or `openURLContexts` to `ApelinLinkRouter`
   and anything else to `TransferOpener`, as before. A link tapped in a
   transcript (`ChatMessageRow`'s `linkHandler`) goes there too, never through
@@ -5199,7 +5199,7 @@ fragment. The chat's ListViewKit keeps its own update mechanism.
   `platform-application`, storage, container or client keys, no Mach
   lookup). The snapshot is ready to draw — status, the project's display
   name, the order, the counts, and no dates, so streamed text writes nothing.
-  `ChatWidgetPublisher` (`Apelin/Widgets/`) is attached and told of every
+  `ChatWidgetPublisher` (`Luros/Widgets/`) is attached and told of every
   `ChatRuntime` change by the root, looks at most once a second and only
   once the saved conversations are read, writes and reloads the timeline
   (one entry, policy `.never`) only when the snapshot changed, and reads the
@@ -5216,7 +5216,7 @@ fragment. The chat's ListViewKit keeps its own update mechanism.
   in `applicationWillTerminate` (nothing would update it after); one that a
   killed run left is updated or ended by the first look after the next
   launch. iPadOS 26.4 shows it on the lock screen too, after asking once to
-  allow Live Activities from Apelin.
+  allow Live Activities from Luros.
 - **After installing over an earlier build**, chronod keeps refusing the new
   extension's timelines (`WidgetArchiver.ValidationError.bundleStubNotSupported`
   in its log) and the widgets go on showing their last render until chronod
@@ -5302,7 +5302,7 @@ packages both flavours and every extension, reads each package back, and keeps
 install`, `make vphone` and `make device-*` need a host reaching the device
 over ssh.
 
-## The in-app Git screen (`Apelin/Interface/Git/`)
+## The in-app Git screen (`Luros/Interface/Git/`)
 
 The screen draws with `GitTheme` and the app's own tokens rather than a palette
 of its own: the grounds, cards, separators and text are `UIColor.pageBackground`

@@ -4,7 +4,7 @@ import Foundation
 ///
 /// A relay serves models under names of its own — `cn:deepseek-v4.1-flash`,
 /// `free: deepseek-v4.1-flash`, `anthropic/claude-sonnet-4` — while the
-/// catalogs Apelin reads spell the same model `deepseek-v4.1-flash`. The name
+/// catalogs Luros reads spell the same model `deepseek-v4.1-flash`. The name
 /// is never rewritten before it is looked up: the catalog entry matches when it
 /// is the name, or a whole stretch of it that begins and ends where the name
 /// breaks (`:`, `/`, `-`, `.`, `@`, `_`, a space). A stretch from the middle of

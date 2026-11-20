@@ -36,7 +36,7 @@ final class SessionLink: @unchecked Sendable {
             return (
                 .failure(request.requestID, ApelinError(
                     .unavailable,
-                    "Apelin's background service is unavailable. \(error)",
+                    "Luros's background service is unavailable. \(error)",
                 )),
                 [],
             )
@@ -51,7 +51,7 @@ final class SessionLink: @unchecked Sendable {
             }
             // A host that keeps dying is not restarted in a tight loop.
             if let lastStart, Date().timeIntervalSince(lastStart) < 1 {
-                throw ApelinError(.unavailable, "Apelin's background service stopped. Try again in a moment.")
+                throw ApelinError(.unavailable, "Luros's background service stopped. Try again in a moment.")
             }
             lastStart = Date()
             let (local, remote) = try WorkerChannel.makePair()

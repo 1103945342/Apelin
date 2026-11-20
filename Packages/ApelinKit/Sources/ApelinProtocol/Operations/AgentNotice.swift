@@ -1,7 +1,7 @@
 import Foundation
 
 /// A banner an agent asks for during a turn (`apelin_notification_send`, 2026-10-24),
-/// for something the reader would want to know while away from Apelin.
+/// for something the reader would want to know while away from Luros.
 ///
 /// No operation carries it. The tool records a `notice` event {title?, body}
 /// in the session's `agent` task, and the session host posts it as the app

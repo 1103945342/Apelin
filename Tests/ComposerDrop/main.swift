@@ -32,7 +32,7 @@ require(accepts([]), "An empty drop is FlowDown's: taken, and nothing is importe
 require(!accepts([folder]), "A folder is refused")
 require(!accepts([pdf, folder]), "One folder refuses the whole drop")
 require(!accepts([NSItemProvider()]), "An item with nothing to read is refused")
-require(!accepts([pdf], fromThisApp: true), "A drag that started in Apelin is refused")
+require(!accepts([pdf], fromThisApp: true), "A drag that started in Luros is refused")
 require(!accepts([pdf], inputCovered: true), "Nothing lands under a request that covers the input")
 
 /// A file on disk, as a drag from another app carries one. (A folder from
@@ -45,4 +45,4 @@ try Data("notes".utf8).write(to: file)
 require(NSItemProvider(contentsOf: file).map { accepts([$0]) } == true, "A file on disk is taken")
 try FileManager.default.removeItem(at: scratch)
 
-print("ok: composer drops (files, several kinds, folders, items with nothing to read, drags from Apelin, a covered input)")
+print("ok: composer drops (files, several kinds, folders, items with nothing to read, drags from Luros, a covered input)")

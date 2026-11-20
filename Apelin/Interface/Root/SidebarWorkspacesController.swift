@@ -6,7 +6,7 @@ import UIKit
 /// aimini's workspace tab lists them, with the way to make another above the
 /// list.
 ///
-/// General Chat is here too, last: Apelin keeps conversations no project
+/// General Chat is here too, last: Luros keeps conversations no project
 /// holds, and aimini has nowhere else to put them.
 final class SidebarWorkspacesController: UIViewController {
     /// What a tap picks: a project, or nil for General Chat.

@@ -1,11 +1,11 @@
 # Development extensions
 
-The four packages that teach Apelin to make something. Each folder here is
+The four packages that teach Luros to make something. Each folder here is
 exactly what its package installs at
 `<install-root>/usr/share/luros/development/<id>/` — `manifest.json`,
 `templates/`, `support/`, `LICENSE` — and nothing in it is executed: the app
 reads the manifest and copies template files, the build reads headers and
-link stubs. Apelin's own package also carries all four inside its app bundle,
+link stubs. Luros's own package also carries all four inside its app bundle,
 at `<install-root>/Applications/Luros.app/Development/<id>/`, so the IDE can
 make every kind of project with no extension package installed; an installed
 package of the same id wins over the copy, which is how one is updated alone.
@@ -24,7 +24,7 @@ run time (`requirements.runtimeDependencies` and its support components'),
 so a template that builds also runs. The packager derives `Depends` from the
 manifest; nothing is retyped in the control files.
 
-Every template's `package.icon` is its extension's own icon on Apelin's
+Every template's `package.icon` is its extension's own icon on Luros's
 Pages, `https://owngoal-dev.github.io/Apelin/icons/<id>.png` (from app and
 tweak 0.1.1, cli and preferences 0.1.2), so a package built from it shows
 that icon in a package manager until the user names their own;
@@ -61,7 +61,7 @@ as the app's `ProjectIconPreferences` image set draws it, which the entry's
 `com.fluoxetine.luros.dev.tweak` ships its own header and stubs; it does not
 assume the SDK has substrate interfaces.
 
-- `support/include/substrate.h` — MIT, written for Apelin from the published
+- `support/include/substrate.h` — MIT, written for Luros from the published
   signatures. The declared compatible set is `MSHookMessageEx`,
   `MSHookFunction`, `MSGetImageByName`, `MSFindSymbol`.
 - `support/lib/rootless/libsubstrate.tbd` — install name
@@ -155,6 +155,6 @@ owngoal-packages entry lists the four package ids with their own versions.
 
 ## Published templates
 
-Templates are a read-only catalog shipped with Apelin. New templates and changes to existing templates are contributed through pull requests to this repository; the app does not maintain a separate user template library.
+Templates are a read-only catalog shipped with Luros. New templates and changes to existing templates are contributed through pull requests to this repository; the app does not maintain a separate user template library.
 
 `make template-archive` validates the manifests and template digests, then writes `build/Packages/Apelin_<version>_Templates.tar.zst`. It contains every development extension's template sources, support files and licenses, plus `catalog.json` with the app version and the built-in empty workspace. File ordering, ownership metadata and timestamps are fixed for reproducible output. The packager decompresses and compares every byte before accepting the archive. CI builds this archive, includes it in `SHA256SUMS`, and Release publishes those verified bytes alongside the packages.

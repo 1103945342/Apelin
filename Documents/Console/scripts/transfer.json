@@ -6,7 +6,7 @@
     {"op": "expect", "request": {"step": "sdks", "path": "response.sdks.0.id", "exists": true}},
 
     {"op": "transferExport", "label": "export", "timeoutSeconds": 1800,
-     "request": {"kind": "sdk", "id": "${sdks.response.sdks.0.id}", "createdBy": "Apelin console"}},
+     "request": {"kind": "sdk", "id": "${sdks.response.sdks.0.id}", "createdBy": "Luros console"}},
     {"op": "expect", "request": {"step": "export", "state": "succeeded"}},
     {"op": "expect", "request": {"step": "export", "path": "lastEvent.payload.result.export.exportedPath", "exists": true}},
 

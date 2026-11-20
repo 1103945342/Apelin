@@ -1,7 +1,7 @@
 import CryptoKit
 import Foundation
 
-/// RFC 8785 (JCS) for the value space Apelin documents allow — no
+/// RFC 8785 (JCS) for the value space Luros documents allow — no
 /// non-integer numbers — and the `sha256:` digests taken over it
 /// (Documents/Schemas/README.md ▸ Canonical form and digest). Byte for byte
 /// the reference implementation's `canonical_json`; the fixtures in

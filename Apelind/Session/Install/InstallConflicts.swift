@@ -69,7 +69,7 @@ struct DpkgFileLists: PackageFileLists {
 /// Who is in the way of an install irisind refused, and what to do about
 /// it. irisind is the authority and has decided already: nothing here runs
 /// before it, and nothing is removed. The package database is read only to
-/// name the package, and its installation when Apelin made it.
+/// name the package, and its installation when Luros made it.
 enum InstallConflicts {
     /// One entry a package and relation, by package ID: an installed package
     /// (not this one, nor one it Replaces) that lists a path this one
@@ -149,13 +149,13 @@ enum InstallConflicts {
         case (.file, _) where protected:
             return "\(conflict.file ?? "A file") already belongs to \(package), a protected system package. Leave that file out of this package, then install again."
         case let (.file, installation?):
-            return "\(conflict.file ?? "A file") already belongs to \(package), which Apelin installed (installation \(installation)). Remove that installation first, then install again."
+            return "\(conflict.file ?? "A file") already belongs to \(package), which Luros installed (installation \(installation)). Remove that installation first, then install again."
         case (.file, nil):
-            return "\(conflict.file ?? "A file") already belongs to \(package), which Apelin did not install. Remove it with your preferred package manager first, then install again. Add \(conflict.packageID) to this package's Replaces only if this package is meant to take over its files."
+            return "\(conflict.file ?? "A file") already belongs to \(package), which Luros did not install. Remove it with your preferred package manager first, then install again. Add \(conflict.packageID) to this package's Replaces only if this package is meant to take over its files."
         case _ where protected:
             return "This package's \(field) names \(package), a protected system package. Take it out of \(field), then install again."
         case let (_, installation?):
-            return "This package's \(field) names \(package), which Apelin installed (installation \(installation)). The installer does not remove it: remove that installation first, then install again."
+            return "This package's \(field) names \(package), which Luros installed (installation \(installation)). The installer does not remove it: remove that installation first, then install again."
         case (_, nil):
             return "This package's \(field) names \(package), which is installed. The installer does not remove it: remove it with your preferred package manager first, then install again."
         }

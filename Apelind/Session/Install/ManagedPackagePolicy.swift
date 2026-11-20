@@ -68,7 +68,7 @@ struct DpkgStatusDatabase: InstalledPackageSource {
 /// Milestone 1 §8, managed packages: which packages a project install may
 /// put on the device, and which installation records a removal may act on.
 ///
-/// - The bootstrap's core, the install service, Apelin itself and protected
+/// - The bootstrap's core, the install service, Luros itself and protected
 ///   system packages are never a project's: an install naming one is
 ///   refused, and so is its removal, whatever the records say.
 /// - An install whose package ID is already installed by someone else — no
@@ -80,7 +80,7 @@ struct DpkgStatusDatabase: InstalledPackageSource {
 ///   it: the same package at the same version. Anything else is not managed,
 ///   and is the user's package manager's to remove.
 enum ManagedPackagePolicy {
-    /// Package ID prefixes that are never a project's: Apelin and its
+    /// Package ID prefixes that are never a project's: Luros and its
     /// extensions, Irisin (irisind refuses its own too), the system's
     /// virtual packages.
     static let reservedPrefixes = ["com.fluoxetine.luros", "wiki.qaq.irisin", "gsc.", "cy+"]
@@ -100,7 +100,7 @@ enum ManagedPackagePolicy {
         "xinamine", "serotonin",
     ]
 
-    /// The one family under Apelin's own prefix a source other than the
+    /// The one family under Luros's own prefix a source other than the
     /// IDE's package may install: apelin-environment's local toolchains, and
     /// only from that source.
     static let toolchainPrefix = "com.fluoxetine.luros.toolchain."
@@ -179,7 +179,7 @@ enum ManagedPackagePolicy {
         guard let record else {
             throw ApelinError(
                 .notFound,
-                "Apelin did not install this package. Remove it with your preferred package manager.",
+                "Luros did not install this package. Remove it with your preferred package manager.",
             )
         }
         guard record.status == .installed, record.receipt?.isInstalled == true else {
@@ -194,7 +194,7 @@ enum ManagedPackagePolicy {
                 .denied,
                 record.origin == .environment
                     ? "\(record.packageID) is not a toolchain package, so the environment cannot remove it."
-                    : "\(record.packageID) is a protected system package, so Apelin cannot remove it.",
+                    : "\(record.packageID) is a protected system package, so Luros cannot remove it.",
             )
         }
         guard let current, current.isInstalled else {
@@ -203,7 +203,7 @@ enum ManagedPackagePolicy {
         guard current.version == record.version else {
             throw ApelinError(
                 .conflict,
-                "\(record.packageID) is now version \(current.version), not version \(record.version) that Apelin installed. Remove it with your preferred package manager.",
+                "\(record.packageID) is now version \(current.version), not version \(record.version) that Luros installed. Remove it with your preferred package manager.",
             )
         }
         // A later install of the same package supersedes this record.
@@ -218,7 +218,7 @@ enum ManagedPackagePolicy {
     }
 
     /// The installation a removal of this package would act on: its newest
-    /// record, when `checkRemoval` accepts it. nil when Apelin did not
+    /// record, when `checkRemoval` accepts it. nil when Luros did not
     /// install the version there now.
     static func removableRecord(
         of packageID: String,

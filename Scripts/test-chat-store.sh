@@ -41,11 +41,11 @@ files = []
 for package in ("ApelinProtocol", "ApelinCore"):
     files += glob.glob(f"Packages/ApelinKit/Sources/{package}/**/*.swift", recursive=True)
 files += [
-    "Apelin/Interface/Chats/ChatSummary.swift",
-    "Apelin/Interface/Chats/Composer/ComposerDraft.swift",
-    "Apelin/Interface/Chats/ChatStore.swift",
-    "Apelin/Interface/Chats/ChatFork.swift",
-    "Apelin/Interface/Chats/ChatEventsFile.swift",
+    "Luros/Interface/Chats/ChatSummary.swift",
+    "Luros/Interface/Chats/Composer/ComposerDraft.swift",
+    "Luros/Interface/Chats/ChatStore.swift",
+    "Luros/Interface/Chats/ChatFork.swift",
+    "Luros/Interface/Chats/ChatEventsFile.swift",
     "Tests/ChatStore/Check.swift",
 ]
 

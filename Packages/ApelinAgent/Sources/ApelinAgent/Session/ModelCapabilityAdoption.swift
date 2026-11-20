@@ -49,7 +49,7 @@ extension ModelCatalogIndex.Entry {
         )
     }
 
-    /// The levels Apelin offers for the model this entry describes: those the
+    /// The levels Luros offers for the model this entry describes: those the
     /// catalog lists, and `off` for a model that thinks before it answers. A
     /// model that does not reason is offered none.
     public var reasoningEfforts: [AgentReasoningEffort] {

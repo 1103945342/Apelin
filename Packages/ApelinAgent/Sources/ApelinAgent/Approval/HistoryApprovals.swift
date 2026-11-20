@@ -109,7 +109,7 @@ extension ApprovalPolicy {
         let commits = force.overwrittenCount == 1 ? "1 commit" : "\(force.overwrittenCount) commits"
         let replaced = "the remote's \(force.branch), at \(shortCommit(force.expectedCommit))"
         let replacement = "this project's \(shortCommit(force.localCommit)) “\(force.localSubject)”"
-        return "Force-pushes \(force.branch) to \(place), overwriting its history there: \(replaced), is replaced by \(replacement), and \(commits) on the remote will no longer be on \(force.branch): \(named.joined(separator: ", "))\(more). This cannot be undone from Apelin. If the remote's \(force.branch) changes before the push, nothing is pushed. Each forced push needs your approval, in every mode."
+        return "Force-pushes \(force.branch) to \(place), overwriting its history there: \(replaced), is replaced by \(replacement), and \(commits) on the remote will no longer be on \(force.branch): \(named.joined(separator: ", "))\(more). This cannot be undone from Luros. If the remote's \(force.branch) changes before the push, nothing is pushed. Each forced push needs your approval, in every mode."
     }
 
     /// The first seven digits, as git abbreviates a commit.

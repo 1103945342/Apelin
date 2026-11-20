@@ -241,7 +241,7 @@ public struct ToolchainSetup: Sendable {
               manifest.components.contains(.base), manifest.retargetSchemeVersion == schemeVersion
         else {
             throw ToolchainFailure(
-                "The toolchain manifest is invalid or from another version of Apelin. Set up the toolchain again.",
+                "The toolchain manifest is invalid or from another version of Luros. Set up the toolchain again.",
             )
         }
     }

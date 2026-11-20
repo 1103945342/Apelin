@@ -1,6 +1,6 @@
 import Foundation
 
-/// Who builds the project, read from its `luros-project.json`: Apelin's
+/// Who builds the project, read from its `luros-project.json`: Luros's
 /// build tool from the build description, or the project's own tools.
 enum ProjectBuildSystem: Equatable {
     /// `buildStart` from the manifest's configurations and products.
@@ -15,7 +15,7 @@ enum ProjectBuildSystem: Equatable {
 
     /// Read again on every call, so a manifest the agent or the user edits
     /// counts from the next prompt. A manifest that is missing, too large or
-    /// not JSON is Apelin's: the build tool then reports what is wrong.
+    /// not JSON is Luros's: the build tool then reports what is wrong.
     static func read(in root: ScopedRoot) -> ProjectBuildSystem {
         guard let manifest = manifest(in: root) else { return .apelin }
         if manifest["kind"] as? String == "workspace" || manifest["buildSystem"] as? String == "external" {

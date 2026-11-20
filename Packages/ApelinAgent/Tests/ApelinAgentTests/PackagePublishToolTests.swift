@@ -173,7 +173,7 @@ struct PackagePublishToolTests {
             (["build_ids": .array((0 ... 16).map { JSONValue.string("build-\($0)") })], "at most 16 packages"),
             (["build_ids": ["build-nothing"]], "No build build-nothing made a package"),
             (["build_ids": ["build-debug"]], "build-debug is a Debug build of com.example.clock 1.0 for iphoneos-arm64e; publish a release build"),
-            (["build_ids": ["build-gone"]], "is no longer in Apelin's build folder: build it again"),
+            (["build_ids": ["build-gone"]], "is no longer in Luros's build folder: build it again"),
             (["build_ids": ["build-roothide", "build-twin"]], "build-roothide and build-twin are both com.example.clock 1.0 for iphoneos-arm64e"),
         ]
         for (arguments, words) in refused {
@@ -189,7 +189,7 @@ struct PackagePublishToolTests {
             _ = try await harness.run(.packagePublish, ["build_ids": ["build-debug", "build-gone"]])
         } throws: { error in
             let message = (error as? ToolArgumentError)?.message ?? ""
-            return message.contains("build-debug is a Debug build") && message.contains("is no longer in Apelin's build folder")
+            return message.contains("build-debug is a Debug build") && message.contains("is no longer in Luros's build folder")
         }
 
         await harness.backend.setPublishing(repository: nil, signedIn: true)

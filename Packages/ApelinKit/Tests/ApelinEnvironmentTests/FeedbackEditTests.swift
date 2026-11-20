@@ -5,7 +5,7 @@ import ApelinGit
 import Foundation
 import XCTest
 
-/// An issue feedback filed, read and edited on Apelin's own repository:
+/// An issue feedback filed, read and edited on Luros's own repository:
 /// GitHub's API answered by a fake that keeps the issues and applies an
 /// edit, the github.com sign-in in memory.
 final class FeedbackEditTests: XCTestCase {
@@ -87,8 +87,8 @@ final class FeedbackEditTests: XCTestCase {
     }
 
     private static let token = "gho_feedbacktoken0123456789"
-    /// The footer an earlier Apelin wrote, which an edit keeps as it is.
-    private static let footer = "Sent with Apelin 0.2.7 (18) · iOS 17.3.1 · rootless"
+    /// The footer an earlier Luros wrote, which an edit keeps as it is.
+    private static let footer = "Sent with Luros 0.2.7 (18) · iOS 17.3.1 · rootless"
 
     private func service(_ home: TemporaryHome, github: IssueGitHub, signedIn: Bool = true) throws -> FeedbackService {
         let store = MemoryGitCredentialStore()
@@ -192,7 +192,7 @@ final class FeedbackEditTests: XCTestCase {
 
     func testAnEditSendsOnlyWhatChangesAndKeepsTheFooterAsItWas() async throws {
         let home = try TemporaryHome(self)
-        // This device runs a later Apelin: the footer stays the one written.
+        // This device runs a later Luros: the footer stays the one written.
         let app = URL(fileURLWithPath: home.layout.installRoot).appendingPathComponent("Applications/Luros.app")
         try FileManager.default.createDirectory(at: app, withIntermediateDirectories: true)
         try PropertyListSerialization.data(

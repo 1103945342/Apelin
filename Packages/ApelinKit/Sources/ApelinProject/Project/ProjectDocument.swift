@@ -361,7 +361,7 @@ public struct ProjectDocument: Codable, Sendable, Equatable {
         public var description: String
         public var longDescription: [String]?
         /// The control's `Icon`, an https URL; templates write their
-        /// extension's icon on Apelin's Pages.
+        /// extension's icon on Luros's Pages.
         public var icon: String?
         /// The control's `Depiction`, the https address of the package's
         /// web page.

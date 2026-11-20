@@ -11,7 +11,7 @@ import UIKit
 /// API keys use a native inset grouped form; browser and device flows
 /// use one centred column with little to read: the provider's mark, its name, one line under it, then what the
 /// step needs — the device code, or the fields of a key with Sign In as the
-/// one prominent button. The provider's page opens inside Apelin by itself
+/// one prominent button. The provider's page opens inside Luros by itself
 /// once it is known (a code it needs is on the clipboard, which the
 /// keyboard offers), in `SignInBrowser`: Safari's own cookies, so an
 /// account already signed in there stays signed in, and nothing leaves the
@@ -316,7 +316,7 @@ final class ProviderLoginController: UIViewController {
     @objc dynamic static func unavailableText(_ error: Error) -> String {
         if let error = error as? ApelinError, error.code == .backendUnavailable {
             return String(localized: """
-            Apelin’s background service is unavailable. Reinstall Apelin with your preferred package \
+            Luros’s background service is unavailable. Reinstall Luros with your preferred package \
             manager to sign in.
             """)
         }

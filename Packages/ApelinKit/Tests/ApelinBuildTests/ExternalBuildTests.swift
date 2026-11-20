@@ -302,7 +302,7 @@ final class ExternalBuildTests: XCTestCase {
             ("exit 0\n", "[]", "wrote no package"),
             ("cp \"$1\" \"$APELIN_PACKAGE_DIR/a.deb\"\ncp \"$1\" \"$APELIN_PACKAGE_DIR/b.deb\"\n", #"["\#(roothide.path)"]"#, "wrote 2 packages"),
             ("cp \"$1\" \"$APELIN_PACKAGE_DIR/\"\n", #"["\#(rootless.path)"]"#, "is for iphoneos-arm64, not iphoneos-arm64e"),
-            ("echo not a package > \"$APELIN_PACKAGE_DIR/x.deb\"\n", "[]", "is not a package Apelin can read"),
+            ("echo not a package > \"$APELIN_PACKAGE_DIR/x.deb\"\n", "[]", "is not a package Luros can read"),
         ] {
             let project = try workspace(script: script, external: #"{"script": "apelin/build.sh", "arguments": \#(arguments)}"#)
             let (_, events) = try build(project.id)

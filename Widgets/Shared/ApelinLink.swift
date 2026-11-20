@@ -12,11 +12,11 @@ import Foundation
 ///   in the composer and the keyboard up. Nothing is sent: the reader reads
 ///   it and taps Send. Without `prompt` the composer is empty.
 /// - `lurosdev://import?url=<address>&branch=<name>` asks whether to import a
-///   Git repository into a new project: Open in Apelin on a README, through
+///   Git repository into a new project: Open in Luros on a README, through
 ///   the page at `https://owngoal-dev.github.io/Apelin/open/`. It carries
 ///   the repository's HTTPS address and, optionally, a branch, each named
 ///   once, and nothing else: any other parameter is ignored. One whose
-///   address or branch Apelin would not take is `invalidImport`.
+///   address or branch Luros would not take is `invalidImport`.
 /// - `lurosdev://` opens the app as it is.
 ///
 /// Anything else with the scheme is `unknown`: the app opens and nothing it
@@ -31,12 +31,12 @@ enum ApelinLink: Hashable, Sendable {
     /// `isRepositoryAddress` takes, and a branch `isBranchName` takes or
     /// nil for the repository's default branch.
     case importRepository(url: String, branch: String?)
-    /// An import link that names no repository Apelin can import.
+    /// An import link that names no repository Luros can import.
     case invalidImport
     case unknown
 
     static let scheme = "lurosdev"
-    /// A link the official Apelin writes still opens here: the scheme this
+    /// A link the official Luros writes still opens here: the scheme this
     /// app registers is its own, but the format is shared.
     static let previousSchemes: Set<String> = ["apelin"]
 

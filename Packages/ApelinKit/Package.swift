@@ -1,6 +1,6 @@
 // swift-tools-version: 5.9
 //
-// Apelin's own shared code, linked into the app, apelind and the workers by
+// Luros's own shared code, linked into the app, apelind and the workers by
 // Apelin.xcodeproj and tested on the Mac with `swift test` (`make harness`).
 //
 // Which binary links what is decided in the xcodeproj and written down in

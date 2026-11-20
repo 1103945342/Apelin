@@ -36,7 +36,7 @@ mobile_dir() {
 }
 for directory in /var/mobile /var/mobile/Documents "$app_data"; do
     mobile_dir "$directory" || {
-        echo "warning: unable to set up $directory for Apelin's data. Make sure it is a folder, not a file or a link." >&2
+        echo "warning: unable to set up $directory for Luros's data. Make sure it is a folder, not a file or a link." >&2
         break
     }
 done
@@ -57,15 +57,22 @@ loaded() {
     return 1
 }
 
-# irisind: Apelin carries its own copy of the daemon that installs, registers
+# irisind: Luros carries its own copy of the daemon that installs, registers
 # and removes packages, so the IDE needs no Irisin package. A device that has
 # Irisin keeps its own daemon: the copy is registered only when no Irisin job
-# is on disk, and then under Apelin's own label and file, so removing the IDE
+# is on disk, and then under Luros's own label and file, so removing the IDE
 # removes exactly what it added and never Irisin's.
 iris_label=com.fluoxetine.luros.irisind
 iris_plist="@PREFIX@/Library/LaunchDaemons/$iris_label.plist"
-iris_daemon="@PREFIX@/Applications/Luros.app/Vendor/libexec/irisind"
-if [ -x "$iris_daemon" ] && [ ! -e "@PREFIX@/Library/LaunchDaemons/wiki.qaq.irisind.plist" ]; then
+# irisind finds its install root from its own path, so it runs from the path
+# an Irisin package puts it at; the app bundle keeps the copy, and this one is
+# made here, owned by no package, only while Irisin's own job is absent.
+iris_bundled="@PREFIX@/Applications/Luros.app/Vendor/libexec/irisind"
+iris_daemon="@PREFIX@/usr/libexec/irisind"
+if [ -x "$iris_bundled" ] && [ ! -e "@PREFIX@/Library/LaunchDaemons/wiki.qaq.irisind.plist" ]; then
+    mkdir -p "@PREFIX@/usr/libexec"
+    cp "$iris_bundled" "$iris_daemon"
+    chmod 0755 "$iris_daemon"
     cat >"$iris_plist.new" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -110,7 +117,7 @@ EOF
             sleep 1
         done
         if [ "$iris_attempt" -ge 5 ]; then
-            echo "warning: the package daemon Apelin carries could not be registered. Installing a package will fail until it is; reinstall Apelin to try again." >&2
+            echo "warning: the package daemon Luros carries could not be registered. Installing a package will fail until it is; reinstall Luros to try again." >&2
         fi
     fi
 fi
@@ -127,7 +134,7 @@ if launchctl="$(find_tool launchctl)"; then
     waited=0
     while loaded; do
         if [ "$waited" -ge 15 ]; then
-            echo "error: Apelin's background service ($label) did not finish unloading. Try installing again." >&2
+            echo "error: Luros's background service ($label) did not finish unloading. Try installing again." >&2
             exit 1
         fi
         waited=$((waited + 1))
@@ -144,10 +151,10 @@ if launchctl="$(find_tool launchctl)"; then
         attempt=$((attempt + 1))
         if [ "$attempt" -lt 15 ]; then sleep 1; fi
     done
-    echo "error: Apelin's background service ($label) could not be registered: ${failure:-launchctl gave no reason}. Try installing again." >&2
+    echo "error: Luros's background service ($label) could not be registered: ${failure:-launchctl gave no reason}. Try installing again." >&2
     exit 1
 else
-    echo "error: launchctl is required to register Apelin's background service ($label). Reinstall launchctl, then try again." >&2
+    echo "error: launchctl is required to register Luros's background service ($label). Reinstall launchctl, then try again." >&2
     exit 1
 fi
 

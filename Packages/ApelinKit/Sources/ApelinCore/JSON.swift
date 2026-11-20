@@ -1,6 +1,6 @@
 import Foundation
 
-/// One JSON configuration for everything Apelin writes: sorted keys so the
+/// One JSON configuration for everything Luros writes: sorted keys so the
 /// same value is the same bytes, ISO 8601 dates, base64 data.
 public enum JSONCoding {
     public static func encoder(pretty: Bool = false) -> JSONEncoder {

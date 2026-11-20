@@ -1,6 +1,6 @@
 import Darwin
 
-/// Whether this device runs the code Apelin signs. Everything Apelin makes
+/// Whether this device runs the code Luros signs. Everything Luros makes
 /// is signed ad hoc — `ApelinCodeSign` writes what `ldid -S` writes, for the
 /// retargeted toolchain, its self-tests and every build's products alike —
 /// and is installed through irisind, not dpkg. A jailbreak with a kernel
@@ -13,7 +13,7 @@ import Darwin
 /// writes that signature itself, from a hook on dpkg's `close()` that runs
 /// its own `ldid` and then `fastPathSign` over every Mach-O dpkg unpacks
 /// (Bootstrap-basebin, `bootstrap/autosign.m`). An ad hoc signature is
-/// killed at launch there, and nothing Apelin installs passes through that
+/// killed at launch there, and nothing Luros installs passes through that
 /// hook: on issue #35's iPhone the toolchain's clang was "Bad executable"
 /// at its self-test, and a bootstrap `/bin/echo` signed again with
 /// `ldid -S` was SIGKILLed.
@@ -30,7 +30,7 @@ public enum HostSigning {
     /// Shown wherever a toolchain would be set up, imported or built with on
     /// roothide Bootstrap. The app's catalogue has it as a key, so an alert
     /// showing it reads it in the user's language: change both together.
-    public static let bootstrapRefusal = "Apelin cannot build on roothide Bootstrap. Bootstrap runs only programs it signs itself, and it does not sign Apelin’s build tools or the programs they build."
+    public static let bootstrapRefusal = "Luros cannot build on roothide Bootstrap. Bootstrap runs only programs it signs itself, and it does not sign Luros’s build tools or the programs they build."
 
     /// Whether `installRoot` is a root roothide Bootstrap made: a root named
     /// as libroothide names one, holding Bootstrap's mark as a regular file.
@@ -45,7 +45,7 @@ public enum HostSigning {
         }
     }
 
-    /// Why Apelin's toolchain, and so anything it would build, cannot run
+    /// Why Luros's toolchain, and so anything it would build, cannot run
     /// under `installRoot`; nil when it can.
     public static func toolchainRefusal(installRoot: String) -> String? {
         isRoothideBootstrap(installRoot: installRoot) ? bootstrapRefusal : nil

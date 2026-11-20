@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fail when the app still reaches for Fila or iGhostVT, or depends on them.
 
-Both used to be how Apelin showed a folder: the chat menu opened
+Both used to be how Luros showed a folder: the chat menu opened
 `ighostvt://new?directory=…` and `fila://open?path=…&tab=new`, Settings ▸ SDKs
 and Toolchains revealed a folder with `fila://reveal`, and the package made
 both apps mandatory. The terminal and the file browser are the app's own now

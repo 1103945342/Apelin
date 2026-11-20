@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self'; base-uri 'none'; form-action 'none'">
-<title>Open in Apelin</title>
+<title>Open in Luros</title>
 <style>
 :root { color-scheme: light; --ink: #1f232b; --page: #f2f2f7; --accent: #007aff; }
 * { box-sizing: border-box; }
@@ -43,9 +43,9 @@ pre {
 <body>
 <main class="card lead">
 <img class="icon" src="../icon.png" alt="">
-<h1>Open in Apelin</h1>
+<h1>Open in Luros</h1>
 <div id="about" hidden>
-<p class="small">This page opens a Git repository in Apelin from a button on a README or a web page. Apelin asks before it imports anything.</p>
+<p class="small">This page opens a Git repository in Luros from a button on a README or a web page. Luros asks before it imports anything.</p>
 </div>
 <div id="repository" hidden>
 <dl>
@@ -54,29 +54,29 @@ pre {
 <dt>Branch</dt>
 <dd id="branch"></dd>
 </dl>
-<a class="button primary" id="open">Open in Apelin</a>
+<a class="button primary" id="open">Open in Luros</a>
 <button class="button" id="copy-address" type="button">Copy Repository Address</button>
 <p class="small" id="status" role="status"></p>
-<p class="small dim">Apelin shows the address, the branch and the new project’s name, and imports nothing until you confirm. Nothing in the repository runs, and nothing is sent to your agent.</p>
+<p class="small dim">Luros shows the address, the branch and the new project’s name, and imports nothing until you confirm. Nothing in the repository runs, and nothing is sent to your agent.</p>
 </div>
 <div id="invalid" hidden>
-<p>This link names no repository Apelin can import.</p>
-<p class="small dim">An Open in Apelin link carries the repository’s HTTPS address, with no user name, token, query or fragment in it, and optionally a branch. Ask whoever shared it for a corrected link.</p>
+<p>This link names no repository Luros can import.</p>
+<p class="small dim">An Open in Luros link carries the repository’s HTTPS address, with no user name, token, query or fragment in it, and optionally a branch. Ask whoever shared it for a corrected link.</p>
 </div>
 </main>
 <section class="card" id="install">
-<h2>Don’t have Apelin?</h2>
-<p class="small">Apelin is an IDE for iPhone and iPad running custom firmware on iOS and iPadOS 16 or later. It installs from apt.owngoal.dev through Irisin, Apelin’s installer: add the source, install Apelin, then come back and tap Open in Apelin.</p>
+<h2>Don’t have Luros?</h2>
+<p class="small">Luros is an IDE for iPhone and iPad running custom firmware on iOS and iPadOS 16 or later. It installs from apt.owngoal.dev through Irisin, Luros’s installer: add the source, install Luros, then come back and tap Open in Luros.</p>
 <a class="button" id="add-source" href="irisin://repository/add?url=https%3A%2F%2Fapt.owngoal.dev%2F">Add apt.owngoal.dev in Irisin</a>
-<p class="small">Or add <a href="https://apt.owngoal.dev/">apt.owngoal.dev</a> in your preferred package manager. More about Apelin is on <a href="https://github.com/owngoal-dev/Apelin">GitHub</a>.</p>
+<p class="small">Or add <a href="https://apt.owngoal.dev/">apt.owngoal.dev</a> in your preferred package manager. More about Luros is on <a href="https://github.com/owngoal-dev/Apelin">GitHub</a>.</p>
 </section>
 <section class="card" id="format">
 <h2>Add this button to a README</h2>
-<p><img src="badge.svg" width="172" height="40" alt="Open in Apelin"></p>
-<pre id="markdown">[![Open in Apelin](https://owngoal-dev.github.io/Apelin/open/badge.svg)](https://owngoal-dev.github.io/Apelin/open/?url=https%3A%2F%2Fgithub.com%2Fowner%2Frepository)</pre>
+<p><img src="badge.svg" width="172" height="40" alt="Open in Luros"></p>
+<pre id="markdown">[![Open in Luros](https://owngoal-dev.github.io/Apelin/open/badge.svg)](https://owngoal-dev.github.io/Apelin/open/?url=https%3A%2F%2Fgithub.com%2Fowner%2Frepository)</pre>
 <button class="button" id="copy-markdown" type="button">Copy Markdown</button>
 <p class="small" id="markdown-status" role="status"></p>
-<p class="small">The link is <code>https://owngoal-dev.github.io/Apelin/open/?url=</code> and the repository’s HTTPS address, URL-encoded, with <code>&amp;branch=</code> and a branch name to check out one other than the default. It carries nothing else: no command, no message for the agent and no credential. A private repository asks for a sign-in in Apelin.</p>
+<p class="small">The link is <code>https://owngoal-dev.github.io/Apelin/open/?url=</code> and the repository’s HTTPS address, URL-encoded, with <code>&amp;branch=</code> and a branch name to check out one other than the default. It carries nothing else: no command, no message for the agent and no credential. A private repository asks for a sign-in in Luros.</p>
 </section>
 <script src="open.js"></script>
 </body>

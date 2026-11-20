@@ -7,7 +7,7 @@ import ApelinProtocol
 /// one cut off is answered by running it again, which a link does safely.
 ///
 /// Feedback (`feedbackSend`) is one request to GitHub with the same sign-in,
-/// on Apelin's own repository; an agent may send it, and edit an issue the
+/// on Luros's own repository; an agent may send it, and edit an issue the
 /// account opened there (`feedbackEdit`), as AgentFeedbackRules allows,
 /// checked here before it is forwarded, and read one (`feedbackRead`).
 /// Reading and giving that repository a star (`feedbackStarState`,

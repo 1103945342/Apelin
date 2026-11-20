@@ -43,7 +43,7 @@ final class DistributionRepositoryPickerController: TableController {
         title = String(localized: "Link Repository")
         navigationItem.largeTitleDisplayMode = .never
         dataSource.footerTitle = { _ in
-            String(localized: "Choose the repository your packages go to. Apelin adds what the package index needs and leaves everything else as it is.")
+            String(localized: "Choose the repository your packages go to. Luros adds what the package index needs and leaves everything else as it is.")
         }
         dataSource.update([(0, [.loading])])
         load()

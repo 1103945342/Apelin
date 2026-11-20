@@ -1,6 +1,6 @@
 # Disassembler and Assembler agent tools
 
-Two agent tool extensions for Apelin (milestone 1 plan, §6), built from this
+Two agent tool extensions for Luros (milestone 1 plan, §6), built from this
 one folder and shipped as two packages, each in a roothide and a rootless
 deb:
 
@@ -11,7 +11,7 @@ deb:
 
 Keystone is GPLv2, so it links into `apelin-assembler` alone: the
 disassembler package carries no GPL code (the packager refuses a disassembler
-that defines `ks_asm`), and Apelin neither depends on nor recommends either
+that defines `ks_asm`), and Luros neither depends on nor recommends either
 package. Both speak the protocol in `Packages/ApelinToolHost` and run as
 mobile, in their own process, only when the agent calls them.
 
@@ -59,10 +59,10 @@ what ships.
 
 ## Licenses
 
-- The disassembler ships Apelin's MIT license, Capstone's
+- The disassembler ships Luros's MIT license, Capstone's
   `LICENSE.TXT`, `LICENSE_BSD_3_CLAUSE.txt` and `LICENSE_LLVM.TXT`, and
   libcapstone-spm's license.
-- The assembler ships Apelin's MIT license, Keystone's `COPYING` (GPLv2),
+- The assembler ships Luros's MIT license, Keystone's `COPYING` (GPLv2),
   `EXCEPTIONS-CLIENT` and LLVM license, libkeystone-spm's license, and
   `SOURCE.md`, which names the corresponding-source archive the build writes
   beside the debs (`com.fluoxetine.luros.agent-tools.assembler_<version>_source.tar.xz`:

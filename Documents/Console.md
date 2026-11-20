@@ -1,6 +1,6 @@
 # Console
 
-Apelin runs headless from a script: the permitted operations on the wire, in order,
+Luros runs headless from a script: the permitted operations on the wire, in order,
 through `ApelinService` — the same typed surface the UI and the agent's tools
 call. `agentAPIConfiguration` is restricted to the provider editing form: the
 console refuses it before sending so a saved API key never enters its output or logs.
@@ -14,7 +14,7 @@ parameterised on an `ApelinService`, a `DataFolder` and a log sink, and
 tested on the Mac by `make harness` (`Packages/ApelinKit/Tests/ApelinConsoleTests`) against a
 fake transport. The app keeps only the binding — `ApelinService.app`,
 `DataFolder.app`, the unified log — and the launch and foreground hooks
-(`Apelin/Console/ConsoleLaunch.swift`).
+(`Luros/Console/ConsoleLaunch.swift`).
 
 ## Start a Run
 
@@ -88,7 +88,7 @@ so a poll costs milliseconds.
 **A run**: the script is dropped into the inbox under a name of its own
 (`dh<time>-<script>.json`, so its `runID` is found in `running/` or
 `done/`), and the app is quit, if idle, and launched again: a launch reads
-the inbox. Going through another app to bring Apelin to the foreground
+the inbox. Going through another app to bring Luros to the foreground
 does not work on an iPad, where iPadOS 26 leaves that app beside it with the
 focus. While the run writes, each `step.result` is printed (`✓`, `✗`, `~`
 for an allowed error), and `stage`, `resumed` and `approvalRequested`

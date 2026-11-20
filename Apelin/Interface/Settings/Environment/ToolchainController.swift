@@ -161,7 +161,7 @@ final class ToolchainController: TableController {
     @objc dynamic static func unavailableText(_ error: Error) -> String {
         if let error = error as? ApelinError, error.code == .backendUnavailable {
             return String(localized: """
-            Apelin’s background service is unavailable. Reinstall Apelin with your preferred package \
+            Luros’s background service is unavailable. Reinstall Luros with your preferred package \
             manager to restore it.
             """)
         }

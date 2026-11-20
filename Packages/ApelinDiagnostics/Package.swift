@@ -1,7 +1,7 @@
 // swift-tools-version: 5.10
 import PackageDescription
 
-/// Apelin's diagnostics: what the mobile worker does through icli, what the
+/// Luros's diagnostics: what the mobile worker does through icli, what the
 /// root log helper does with system libraries alone, crash symbolication and
 /// blame, and the three-way "is the tweak loaded" check.
 ///
@@ -35,7 +35,7 @@ let package = Package(
         // owngoal-dev/icli, MIT. Any 1.x release; Package.resolved records the
         // reviewed version.
         .package(url: "https://github.com/owngoal-dev/icli.git", from: "1.0.0"),
-        // Apelin's own wire and worker channel. System code only.
+        // Luros's own wire and worker channel. System code only.
         .package(path: "../ApelinKit"),
     ],
     targets: [

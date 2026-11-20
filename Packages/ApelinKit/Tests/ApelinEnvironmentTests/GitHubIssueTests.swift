@@ -6,7 +6,7 @@ import Foundation
 import XCTest
 
 /// An issue opened on a repository the user chose: GitHub's API answered
-/// by a fake, the github.com sign-in in memory, Apelin's Info.plist a file
+/// by a fake, the github.com sign-in in memory, Luros's Info.plist a file
 /// under the install root as the package leaves it.
 final class GitHubIssueTests: XCTestCase {
     /// GitHub's issues endpoint, noting each request.
@@ -81,12 +81,12 @@ final class GitHubIssueTests: XCTestCase {
         XCTAssertEqual(github.requests.count, 1)
         let sent = try XCTUnwrap(github.requests.first)
         XCTAssertEqual(sent.httpMethod, "POST")
-        XCTAssertEqual(sent.url?.absoluteString, "https://api.github.com/repos/Lakr233/Irisin/issues", "the repository named, never Apelin's")
+        XCTAssertEqual(sent.url?.absoluteString, "https://api.github.com/repos/Lakr233/Irisin/issues", "the repository named, never Luros's")
         XCTAssertEqual(sent.value(forHTTPHeaderField: "Authorization"), "Bearer \(Self.token)")
         let body = try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(sent.httpBody)) as? [String: String])
         XCTAssertEqual(Set(body.keys), ["title", "body"], "nothing but the issue")
         XCTAssertEqual(body["title"], "The installer stops at 90%")
-        XCTAssertEqual(body["body"], "Installing a package from the inbox stops at 90%.\n\n---\nSent with Apelin 0.3.0 (23) · iOS 17.3.1 · rootless")
+        XCTAssertEqual(body["body"], "Installing a package from the inbox stops at 90%.\n\n---\nSent with Luros 0.3.0 (23) · iOS 17.3.1 · rootless")
     }
 
     func testGitHubsRefusalsSayWhatBlocksItInItsWords() async throws {

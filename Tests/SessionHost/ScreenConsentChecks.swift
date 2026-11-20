@@ -178,7 +178,7 @@ func screenConsentChecks(scratch: URL, scratchPath: String) async {
         check(tapped, "\(mode): the approved tap goes through")
         let tappedAgain = await passes(tap, from: entry)
         check(!tappedAgain, "\(mode): once")
-        // the host adds Apelin to an agent's action; that is not part of it
+        // the host adds Luros to an agent's action; that is not part of it
         await ask(entry, "tap-2", tool: .screenInteract, detail: tapDetail)
         await approve(entry, "tap-2")
         let scoped = await passes(UIActionRequest(action: .tap(x: 10, y: 20.5), refusedBundleIDs: ["x"]), from: entry)

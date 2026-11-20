@@ -6,7 +6,7 @@ import Foundation
 func checkLinkedPackage() {
     let list = Data(#"""
     [
-      {"id": "app/Apelin", "name": "Apelin", "license": "MIT", "url": "", "text": "", "version": "0.4.7"},
+      {"id": "app/Luros", "name": "Luros", "license": "MIT", "url": "", "text": "", "version": "0.4.7"},
       {"id": "kwwk/LICENSE", "name": "kwwk", "license": "MIT", "url": "", "text": "", "version": "0.1.121"},
       {"id": "kwwk/Sources/x/LICENSE", "name": "kwwk / Sources/x", "license": "MIT", "url": "", "text": ""},
       {"id": "dog/LICENSE", "name": "Dog", "license": "MIT", "url": "", "text": "",
@@ -15,7 +15,7 @@ func checkLinkedPackage() {
     ]
     """#.utf8)
     precondition(LinkedPackage.version(of: "kwwk", in: list) == "0.1.121")
-    precondition(LinkedPackage.version(of: "Apelin", in: list) == "0.4.7")
+    precondition(LinkedPackage.version(of: "Luros", in: list) == "0.4.7")
     precondition(LinkedPackage.version(of: "Dog", in: list) == nil, "a revision is no version to show")
     precondition(LinkedPackage.version(of: "Then", in: list) == nil, "none stated")
     precondition(LinkedPackage.version(of: "Missing", in: list) == nil)

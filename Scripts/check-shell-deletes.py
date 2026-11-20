@@ -5,7 +5,7 @@ An empty variable in a removed path takes the path with it: the folder
 becomes `/`, and on roothide `/` is the bootstrap's root, where a build
 script runs as mobile and a maintainer script as root. `${name:?}` makes the
 shell stop with an error before the command runs, so every variable in a
-recursive `rm` is spelled that way, in Apelin's own scripts, in the files it
+recursive `rm` is spelled that way, in Luros's own scripts, in the files it
 writes into a user's repository (DistributionTemplate) and in the script the
 agent's skills hand out.
 

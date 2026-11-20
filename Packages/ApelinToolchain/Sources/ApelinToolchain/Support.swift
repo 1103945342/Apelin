@@ -104,7 +104,7 @@ public struct CommandLineToolsRelease: Sendable, Equatable {
     /// passed the self-test.
     public let newestSDK: String
     /// macOS system libraries the tools load that iOS does not have, each
-    /// loaded weakly. Only a path Apelin never takes calls into them; see
+    /// loaded weakly. Only a path Luros never takes calls into them; see
     /// `CommandLineToolsSupport.weakSystemLibraryReasons`.
     public let weakSystemLibraries: Set<String>
     /// Whether its Swift tools were reviewed and passed the Swift self-test.
@@ -189,11 +189,11 @@ public enum CommandLineToolsSupport {
     static let libcodedirectory = "/usr/lib/libcodedirectory.dylib"
 
     /// Why a library may be loaded weakly: what in the tools calls it, and why
-    /// Apelin never asks for that.
+    /// Luros never asks for that.
     public static let weakSystemLibraryReasons: [String: String] = [
-        libxar: "ld64 reads and writes bitcode bundles with libxar; Apelin never embeds or links bitcode",
+        libxar: "ld64 reads and writes bitcode bundles with libxar; Luros never embeds or links bitcode",
         libcodedirectory: "ld writes a linker ad-hoc signature with libcodedirectory, which it does for macOS "
-            + "and simulator outputs or when asked with -adhoc_codesign; Apelin links for iOS devices, never asks, "
+            + "and simulator outputs or when asked with -adhoc_codesign; Luros links for iOS devices, never asks, "
             + "and signs with ApelinCodeSign",
     ]
 
@@ -293,7 +293,7 @@ public enum CommandLineToolsSupport {
             newestSDK: "17.4",
             weakSystemLibraries: [libcodedirectory],
             // swift-frontend's only SHA3 code is BLAKE3's hash_many (compile caching) and the
-            // symbol-graph edge set (-emit-symbol-graph), neither on Apelin's build path; on an
+            // symbol-graph edge set (-emit-symbol-graph), neither on Luros's build path; on an
             // A12Z (no SHA3) every Swift case, macros included, passed (2026-10-21).
             swift: .init(
                 version: "5.10",
@@ -318,7 +318,7 @@ public enum CommandLineToolsSupport {
             newestSDK: "17.0",
             weakSystemLibraries: [libcodedirectory],
             // swift-frontend's only SHA3 code is BLAKE3's hash_many (compile caching) and the
-            // symbol-graph edge set (-emit-symbol-graph), neither on Apelin's build path; on an
+            // symbol-graph edge set (-emit-symbol-graph), neither on Luros's build path; on an
             // A12Z (no SHA3) every Swift case, macros included, passed (2026-10-21).
             swift: .init(
                 version: "5.9",
@@ -414,10 +414,10 @@ public enum CommandLineToolsSupport {
             return "Command Line Tools \(version) cannot be set up: \(reason). Pick one of \(supported)."
         }
         if version == unknownVersion {
-            return "This Command Line Tools package does not say which version it is, so Apelin cannot set it up. "
+            return "This Command Line Tools package does not say which version it is, so Luros cannot set it up. "
                 + "Pick one of \(supported)."
         }
-        return "Command Line Tools \(version) has not been tested on iOS, so Apelin does not set it up yet. "
+        return "Command Line Tools \(version) has not been tested on iOS, so Luros does not set it up yet. "
             + "Pick one of \(supported)."
     }
 

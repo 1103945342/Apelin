@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Writes demo projects and conversations into an Apelin data folder."""
+"""Writes demo projects and conversations into an Luros data folder."""
 import json, os, sys, uuid, datetime
 
 root = sys.argv[1]  # .../Documents/com.fluoxetine.luros
@@ -82,7 +82,7 @@ project("LockTweaks", "preferences", "Lock Screen Tweaks", "3F405162-7C8D-4E9F-A
 c = Chat("Frosted Dock", "DockGlass", 3, pinned=True)
 c.user("Make the dock frosted glass, and give app icons a little bounce when they launch.")
 c.think("The dock background is SBDockView's backgroundView. I'll swap it for a UIVisualEffectView, then hook SBIconView's launch to add a spring animation.", 6)
-c.tool("file_read", {"path": "Sources/Tweak.m"}, "1\t// From Apelin's tweak template.\n2\t#import <UIKit/UIKit.h>\n...", "Read the template's hook")
+c.tool("file_read", {"path": "Sources/Tweak.m"}, "1\t// From Luros's tweak template.\n2\t#import <UIKit/UIKit.h>\n...", "Read the template's hook")
 c.tool("file_edit", {"path": "Sources/Tweak.m"}, "Patched Sources/Tweak.m +38 -4", "Add the dock and launch hooks")
 c.tool("apelin_project_build", {}, "{\"state\":\"succeeded\",\"bootstrap\":\"roothide\"}", "Build the tweak", 9)
 c.tool("apelin_package_install", {}, "Installed local.apelin.dockglass 0.0.2", "Install the package", 4)
@@ -110,7 +110,7 @@ c = Chat("Choosing a Toolchain", None, 42)
 c.user("Which toolchain should I set up on this iPhone? I want Swift too.")
 c.think("Reading the catalog and this device's CPU features.", 3)
 c.tool("apelin_toolchain_list", {}, "...", "See what this device can run")
-c.say("""Your iPhone 15 Pro runs every release Apelin sets up. For Swift, pick **CLT 27.0**:
+c.say("""Your iPhone 15 Pro runs every release Luros sets up. For Swift, pick **CLT 27.0**:
 
 | Release | Swift | Newest SDK | Size |
 | --- | --- | --- | --- |

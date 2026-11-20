@@ -5,7 +5,7 @@ import Foundation
 /// The part of GitHub's REST API a package repository needs, called with the
 /// github.com credential the user signed in with: the account, its own
 /// repositories, making one, and GitHub Pages; the issue feedback files,
-/// reads and edits, and the star the reader gives Apelin; and the empty
+/// reads and edits, and the star the reader gives Luros; and the empty
 /// repository a project is pushed to (`gitRepositoryCreate`). The token
 /// goes in the `Authorization` header to api.github.com and nowhere else;
 /// no message quotes it.
@@ -291,7 +291,7 @@ struct GitHubAPI: Sendable {
         return message
     }
 
-    /// GitHub's refusal in its own words, with the code Apelin gives it.
+    /// GitHub's refusal in its own words, with the code Luros gives it.
     static func check(_ response: HTTPURLResponse, _ data: Data) throws {
         guard !(200 ..< 300).contains(response.statusCode) else { return }
         let message = words(response, data)

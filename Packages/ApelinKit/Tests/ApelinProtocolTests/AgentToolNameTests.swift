@@ -24,6 +24,6 @@ final class AgentToolNameTests: XCTestCase {
         for tool in AgentToolName.allCases {
             XCTAssertEqual(AgentToolName.canonical(tool.rawValue), tool)
         }
-        XCTAssertNil(AgentToolName.canonical("mcp__server__tool"), "an MCP tool is no tool of Apelin's")
+        XCTAssertNil(AgentToolName.canonical("mcp__server__tool"), "an MCP tool is no tool of Luros's")
     }
 }

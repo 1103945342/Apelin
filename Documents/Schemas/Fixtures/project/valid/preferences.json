@@ -110,11 +110,11 @@
   },
   "package": {
     "id": "com.example.apelinsettings",
-    "name": "Apelin Settings",
+    "name": "Luros Settings",
     "version": "0.0.1",
-    "description": "Built on this device with Apelin.",
+    "description": "Built on this device with Luros.",
     "icon": "https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.dev.preferences.png",
-    "author": "Apelin User",
+    "author": "Luros User",
     "section": "Addons",
     "depends": [
       "preferenceloader"

@@ -408,7 +408,7 @@ final class ConsoleRunnerTests: XCTestCase {
         let script = folder.console.appendingPathComponent("launch.json")
         try Data("[{\"op\": \"hello\"}]".utf8).write(to: script)
         fake.reply(.hello, with: HelloResponse(installRoot: "/var/jb"))
-        await runner.runLaunchScript(arguments: ["Apelin", ConsoleRunner.launchArgument, "launch.json"])
+        await runner.runLaunchScript(arguments: ["Luros", ConsoleRunner.launchArgument, "launch.json"])
         XCTAssertEqual(fake.operations, [.hello])
         XCTAssertTrue(FileManager.default.fileExists(atPath: script.path), "the file is left where it is")
         let out = try names(folder.consoleOut)

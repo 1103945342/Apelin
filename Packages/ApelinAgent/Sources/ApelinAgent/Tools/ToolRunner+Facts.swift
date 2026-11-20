@@ -219,7 +219,7 @@ extension ToolRunner {
         case .gitCreateIssue:
             // Checked before anyone is asked, and again by apelin-environment;
             // the card names the repository and the text that is sent.
-            // Apelin's own feedback is apelin_feedback_send's.
+            // Luros's own feedback is apelin_feedback_send's.
             let request = try GitIssueCreateRequest(
                 repository: arguments.requireString("repository").trimmingCharacters(in: .whitespaces),
                 title: arguments.requireString("title").trimmingCharacters(in: .whitespaces),
@@ -229,7 +229,7 @@ extension ToolRunner {
                 throw ToolArgumentError("Nothing was posted: \(problem)")
             }
             guard request.repository.lowercased() != FeedbackRules.repository.lowercased() else {
-                throw ToolArgumentError("Nothing was posted: feedback about Apelin itself goes to \(FeedbackRules.repository) with apelin_feedback_send.")
+                throw ToolArgumentError("Nothing was posted: feedback about Luros itself goes to \(FeedbackRules.repository) with apelin_feedback_send.")
             }
             if let problem = FeedbackRules.problem(title: request.title, body: request.body) {
                 throw ToolArgumentError("Nothing was posted: \(problem).")
@@ -440,7 +440,7 @@ extension ToolRunner {
     }
 
     /// The installation a removal takes, found before asking: the one
-    /// installation_id names, or the one Apelin can remove of the package
+    /// installation_id names, or the one Luros can remove of the package
     /// package_id names. One the list shows as not removable, or does not
     /// show at all, is refused here, with why, so the user is never asked
     /// about a removal the host would refuse. Its row in apelin_package_list
@@ -459,7 +459,7 @@ extension ToolRunner {
                 if all.truncated {
                     return (installationID, nil)
                 }
-                throw ToolDeniedError(message: "Apelin has no installation \(installationID) it can remove: the package is gone, a later install replaced it, or the id is not one apelin_package_install or apelin_package_list gave." + Self.removable(in: all.installations))
+                throw ToolDeniedError(message: "Luros has no installation \(installationID) it can remove: the package is gone, a later install replaced it, or the id is not one apelin_package_install or apelin_package_list gave." + Self.removable(in: all.installations))
             }
             guard listed.removable else {
                 throw ToolDeniedError(message: Self.notRemovable(listed))
@@ -469,14 +469,14 @@ extension ToolRunner {
             let rows = try await backend.installations(InstallationListToolRequest(packageID: packageID)).installations
             guard let row = rows.first(where: \.removable) else {
                 throw ToolDeniedError(message: rows.first.map(Self.notRemovable)
-                    ?? "Apelin has no installation of \(packageID) on this device: it did not install it, or the package is gone. A package installed some other way is the user's to remove with their package manager; apelin_package_list lists what Apelin installed.")
+                    ?? "Luros has no installation of \(packageID) on this device: it did not install it, or the package is gone. A package installed some other way is the user's to remove with their package manager; apelin_package_list lists what Luros installed.")
             }
             return (row.installationID, row)
         }
     }
 
     private static func notRemovable(_ listed: ListedInstallation) -> String {
-        "Apelin cannot remove \(listed.packageID) \(listed.version) (installation \(listed.installationID)): \(listed.reason ?? "it is not removable now.")"
+        "Luros cannot remove \(listed.packageID) \(listed.version) (installation \(listed.installationID)): \(listed.reason ?? "it is not removable now.")"
     }
 
     /// For a host's refusal of an installation id, stale or mistaken: the
@@ -488,12 +488,12 @@ extension ToolRunner {
 
     private static func removable(in listed: [ListedInstallation]) -> String {
         let removable = listed.filter(\.removable)
-        guard !removable.isEmpty else { return " Apelin has no installation it can remove on this device." }
+        guard !removable.isEmpty else { return " Luros has no installation it can remove on this device." }
         let shown = removable.prefix(10).map { row in
             "\(row.installationID) (\(row.packageID) \(row.version)\(row.project.map { ", project \($0)" } ?? ""))"
         }
         let more = removable.count > shown.count ? "; more in apelin_package_list" : ""
-        return " Apelin can remove: \(shown.joined(separator: "; "))\(more)."
+        return " Luros can remove: \(shown.joined(separator: "; "))\(more)."
     }
 
     /// A context for reads made while gathering facts, before any approval.

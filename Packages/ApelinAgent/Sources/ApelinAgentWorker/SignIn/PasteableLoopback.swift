@@ -125,7 +125,7 @@ extension PasteableLoopback {
     <title>Signed In</title>
     <style>body{font:17px -apple-system,system-ui;padding:3em 1.5em;max-width:30em;margin:0 auto;color:#222}
     @media (prefers-color-scheme:dark){body{background:#000;color:#eee}}</style></head>
-    <body><h1>Signed in</h1><p>Return to Apelin. It finishes signing in by itself.</p></body></html>
+    <body><h1>Signed in</h1><p>Return to Luros. It finishes signing in by itself.</p></body></html>
     """
 
     static let errorPage = """
@@ -134,6 +134,6 @@ extension PasteableLoopback {
     <title>Sign-In Failed</title>
     <style>body{font:17px -apple-system,system-ui;padding:3em 1.5em;max-width:30em;margin:0 auto;color:#222}
     @media (prefers-color-scheme:dark){body{background:#000;color:#eee}}</style></head>
-    <body><h1>Unable to Sign In</h1><p>Return to Apelin and try again.</p></body></html>
+    <body><h1>Unable to Sign In</h1><p>Return to Luros and try again.</p></body></html>
     """
 }

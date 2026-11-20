@@ -101,13 +101,13 @@
   },
   "package": {
     "id": "com.example.apelintweak",
-    "name": "Apelin Tweak",
+    "name": "Luros Tweak",
     "version": "0.0.1",
-    "description": "Built on this device with Apelin.",
+    "description": "Built on this device with Luros.",
     "icon": "https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.dev.tweak.png",
     "depiction": "https://example.github.io/repo/depictions/com.example.apelintweak/",
     "sileoDepiction": "https://example.github.io/repo/depictions/com.example.apelintweak/depiction.json",
-    "author": "Apelin User",
+    "author": "Luros User",
     "section": "Tweaks",
     "depends": [
       "mobilesubstrate"

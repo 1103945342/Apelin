@@ -20,7 +20,7 @@ final class FileEditorController: UIViewController {
 
     /// Asked before the file is made writable (the pencil) and again just
     /// before a save starts: the page that opened it may refuse — a file in
-    /// one of Apelin's own records belongs to the page that manages it — with
+    /// one of Luros's own records belongs to the page that manages it — with
     /// the sentence to show. A page that leaves it nil, as the sidebar's files
     /// page does, opens every file as it always did.
     var writeRefusal: (() -> String?)?

@@ -3,7 +3,7 @@
   "steps": [
     {"op": "hello"},
     {"op": "transferExport", "label": "export", "timeoutSeconds": 600,
-     "request": {"kind": "project", "id": "I3 Chain Tweak", "createdBy": "Apelin console"}},
+     "request": {"kind": "project", "id": "I3 Chain Tweak", "createdBy": "Luros console"}},
     {"op": "expect", "request": {"step": "export", "state": "succeeded"}},
     {"op": "expect", "request": {"step": "export", "path": "lastEvent.payload.result.export.fileName", "equals": "I3 Chain Tweak.apeproj"}},
 

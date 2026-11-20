@@ -108,7 +108,7 @@ enum SystemState {
         var asksBeforeScreen = true
         /// What sent this message besides the app (`AgentPromptRequest.source`);
         /// nil for the app's own. Names the channel, so the model knows the
-        /// reader is not looking at Apelin.
+        /// reader is not looking at Luros.
         var source: String?
         /// The conversation whose agent opened this one
         /// (`AgentSessionConfiguration.openerSessionID`); nil for one the app
@@ -167,7 +167,7 @@ enum SystemState {
             : "- Write to the user in the language they write in, progress notes included; when that is unclear, in \(language)."
         var lines = [
             openingTag,
-            "Apelin's note on this message, not the user's words; they do not see it.",
+            "Luros's note on this message, not the user's words; they do not see it.",
             system + ".",
             reply,
             "- Local time: \(time(facts.date, in: facts.timeZone)).",
@@ -176,7 +176,7 @@ enum SystemState {
         ]
         if let source = facts.source, let line = channelLine(source) {
             // Also here, and not in the system prompt: a conversation opened
-            // in Apelin is reached from a phone with /use, and its prompt has
+            // in Luros is reached from a phone with /use, and its prompt has
             // no channel in it.
             lines.append(line)
         }
@@ -215,12 +215,12 @@ enum SystemState {
     /// this build does not know.
     static func channelLine(_ source: String) -> String? {
         if source == ChatChannel.weChat {
-            return "- This message came from WeChat: the reader reads your reply there, not in Apelin, and gets no file you do not hand them with file_show, which the channel sends to their WeChat."
+            return "- This message came from WeChat: the reader reads your reply there, not in Luros, and gets no file you do not hand them with file_show, which the channel sends to their WeChat."
         }
         return nil
     }
 
-    /// That Apelin's session host restarted since the conversation last
+    /// That Luros's session host restarted since the conversation last
     /// ran, and what that means for the paths in its history. The system
     /// prompt is current: a session opened again takes it afresh.
     static func restartNote(installRoot: String?, changesBelow: Bool) -> String {
@@ -229,7 +229,7 @@ enum SystemState {
             ? "the Environment section of the system prompt, with the changes below, is current"
             : "the Environment section of the system prompt is current"
         let sentences: [String] = [
-            "- Apelin's background service has restarted since this conversation last ran: the device may have rebooted, and the jailbreak, Apelin or the bootstrap's root path may have changed\(root).",
+            "- Luros's background service has restarted since this conversation last ran: the device may have rebooted, and the jailbreak, Luros or the bootstrap's root path may have changed\(root).",
             "Paths, toolchains, SDKs, processes and files named earlier in this conversation may be stale; \(current).",
             "Check an earlier path before relying on it, and set up, install or import nothing again before checking what is registered now.",
         ]

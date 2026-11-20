@@ -4,7 +4,7 @@
     "digest": "sha256:07f69879fd8c653c341aabc685941445e14a2738d53bc5f50c7b50e50a87c3c0"
   },
   "packaging": {
-    "canonical": "{\"description\":\"apelin.packaging\",\"files\":{\"Packaging/apelinhello.conf\":\"sha256:48a5c612d5451c559d7b2c303a9b765672e3d20942de14e7365c0a2f02e8390c\",\"Packaging/postinst\":\"sha256:358da055723617aed4cded0cf36df16783007adf9a6cc4adfea26795d36a6045\"},\"project\":{\"kind\":\"cli\",\"package\":{\"author\":\"Apelin User\",\"description\":\"Built on this device with Apelin.\",\"id\":\"com.example.apelinhello\",\"layout\":[{\"mode\":\"0755\",\"path\":\"/usr/bin/apelinhello\",\"product\":\"tool\"},{\"file\":\"Packaging/apelinhello.conf\",\"path\":\"/etc/apelinhello.conf\",\"substitutePrefix\":true}],\"maintainerScripts\":{\"postinst\":\"Packaging/postinst\"},\"name\":\"Apelin Hello\",\"section\":\"Utilities\"}},\"version\":1}",
-    "digest": "sha256:ae4d34db5568cfae37fa179443465f05aa8b0c75141755f75c3b768adbf8e66a"
+    "canonical": "{\"description\":\"apelin.packaging\",\"files\":{\"Packaging/apelinhello.conf\":\"sha256:48a5c612d5451c559d7b2c303a9b765672e3d20942de14e7365c0a2f02e8390c\",\"Packaging/postinst\":\"sha256:358da055723617aed4cded0cf36df16783007adf9a6cc4adfea26795d36a6045\"},\"project\":{\"kind\":\"cli\",\"package\":{\"author\":\"Luros User\",\"description\":\"Built on this device with Luros.\",\"id\":\"com.example.apelinhello\",\"layout\":[{\"mode\":\"0755\",\"path\":\"/usr/bin/apelinhello\",\"product\":\"tool\"},{\"file\":\"Packaging/apelinhello.conf\",\"path\":\"/etc/apelinhello.conf\",\"substitutePrefix\":true}],\"maintainerScripts\":{\"postinst\":\"Packaging/postinst\"},\"name\":\"Luros Hello\",\"section\":\"Utilities\"}},\"version\":1}",
+    "digest": "sha256:106e686b892aeba9d57992c4168e91084ae188e48f10976b69cd0d44d55ee856"
   }
 }

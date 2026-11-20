@@ -28,7 +28,7 @@ final class SettingsViewController: TableController {
         case toolchain
         case sdks
         /// Settings ▸ Environment ▸ Third-Party Tools: the device programs
-        /// Apelin's own work needs, and installing a missing one.
+        /// Luros's own work needs, and installing a missing one.
         case developmentTools
         /// Settings ▸ Apps: the apps under the bootstrap's `Applications`.
         case apps
@@ -276,7 +276,7 @@ final class SettingsViewController: TableController {
         navigationController?.dismiss(animated: true) { [weak root] in root?.presentWelcome() }
     }
 
-    /// A new issue on Apelin's repository, in the browser.
+    /// A new issue on Luros's repository, in the browser.
     @objc private dynamic static func reportProblem() {
         guard let url = URL(string: "https://github.com/owngoal-dev/Apelin/issues/new") else { return }
         UIApplication.shared.open(url)

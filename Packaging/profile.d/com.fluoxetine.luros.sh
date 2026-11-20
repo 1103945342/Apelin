@@ -1,4 +1,4 @@
-# Apelin's terminal starts its shell with the project's toolchain first on
+# Luros's terminal starts its shell with the project's toolchain first on
 # PATH and names it in APELIN_TOOLCHAIN_BIN, and names itself in
 # APELIN_TERMINAL. A login shell's /etc/profile sets PATH and the prompt anew,
 # then reads this folder: put the toolchain back in front, and shorten the

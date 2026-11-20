@@ -3,16 +3,16 @@ import ApelinProtocol
 import Darwin
 import Foundation
 
-/// What Settings ▸ Apps lists: the apps Apelin installed from an `.ipa`, and
+/// What Settings ▸ Apps lists: the apps Luros installed from an `.ipa`, and
 /// for each one whether its bundle is still there — a registration
 /// LaunchServices kept after the bundle went away is shown, so it can be
 /// cleared.
 ///
 /// Nothing else under `Applications` is this screen's subject: an app a
 /// package installed belongs to its package manager, and one another tool
-/// copied in was never Apelin's. Nothing here changes anything.
+/// copied in was never Luros's. Nothing here changes anything.
 enum ApplicationCensus {
-    /// Apelin's own bundle, never removed from this screen.
+    /// Luros's own bundle, never removed from this screen.
     static let ownBundleID = "com.fluoxetine.luros"
 
     /// `<install root>/Applications`.
@@ -66,13 +66,13 @@ enum ApplicationCensus {
         return owners
     }
 
-    /// One row per app Apelin installed that is still worth showing: its
+    /// One row per app Luros installed that is still worth showing: its
     /// bundle, or the registration left after the bundle went away. A record
     /// whose app is gone from both is left out — there is nothing to remove.
     ///
     /// - Parameters:
     ///   - registered: what `uicache -l` answered.
-    ///   - records: Apelin's installation records, oldest first.
+    ///   - records: Luros's installation records, oldest first.
     ///   - owners: `packageOwners`' answer.
     ///   - describe: `describe(bundleAt:)`, or a test's stand-in.
     static func rows(

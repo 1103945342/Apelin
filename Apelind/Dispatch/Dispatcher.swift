@@ -26,7 +26,7 @@ struct HostRequest: Sendable {
             throw ApelinError(
                 .badRequest,
                 """
-                Apelin could not read this request. Reinstall Apelin with your preferred package manager, \
+                Luros could not read this request. Reinstall Luros with your preferred package manager, \
                 then try again.
                 """,
             )

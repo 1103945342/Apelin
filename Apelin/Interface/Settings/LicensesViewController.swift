@@ -51,7 +51,7 @@ final class LicensesViewController: TableController {
         dataSource.update([(0, entries)])
         if entries.isEmpty {
             let label = UILabel()
-            label.text = String(localized: "No license information is available. Reinstall Apelin to restore it.")
+            label.text = String(localized: "No license information is available. Reinstall Luros to restore it.")
             label.font = .preferredFont(forTextStyle: .body)
             label.textColor = .secondaryLabel
             label.numberOfLines = 0

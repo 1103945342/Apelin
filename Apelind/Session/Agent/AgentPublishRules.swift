@@ -8,7 +8,7 @@ import Foundation
 /// asks under Confirm every time. In every mode the request names the
 /// repository and each package's digest, and each file is a package a
 /// build reported to this host (ArtifactRegistry) with that digest, so the
-/// agent publishes only what Apelin built, as it was built, never a `.deb`
+/// agent publishes only what Luros built, as it was built, never a `.deb`
 /// it made itself.
 /// Under Confirm each one spends an approval the app gave this session
 /// whose own `approvalRequested` names exactly that repository and those
@@ -54,7 +54,7 @@ enum AgentPublishRules {
             guard let built = await artifacts.artifact(path: file), InstallDigest.normalized(digest) == built.digest else {
                 return ApelinError(
                     .denied,
-                    "an agent publishes only packages Apelin's builds made, as they made them: \((file as NSString).lastPathComponent) is not one with that digest; build it again with apelin_project_build",
+                    "an agent publishes only packages Luros's builds made, as they made them: \((file as NSString).lastPathComponent) is not one with that digest; build it again with apelin_project_build",
                 )
             }
         }

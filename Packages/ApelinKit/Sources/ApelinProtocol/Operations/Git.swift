@@ -2,9 +2,9 @@
 // local commit, fetch, a fast-forward pull and push, and the settings behind
 // them — the commit author and one HTTPS credential per host —, an empty
 // repository made on GitHub for a project to push to, and an issue opened on
-// a repository the user chose. A project Apelin makes starts as a
+// a repository the user chose. A project Luros makes starts as a
 // repository on `main` with no commit, whose `.git/info/exclude` keeps
-// Apelin's own files out (the agent's `Attachments/`, temporary files); a
+// Luros's own files out (the agent's `Attachments/`, temporary files); a
 // repository made before gets it on a git call once the project has an
 // `Attachments` folder. A project that is not a repository is `notFound`
 // with reason `notARepository`.
@@ -181,7 +181,7 @@ public struct GitCommitResponse: Codable, Sendable, Equatable {
 }
 
 /// Makes a repository in a project that has none: HEAD on `main`, no
-/// commit, as `git init -b main` leaves it, with Apelin's own files in
+/// commit, as `git init -b main` leaves it, with Luros's own files in
 /// `.git/info/exclude`. A project with a `.git` already is `conflict`.
 public struct GitInitRequest: OperationRequest {
     public typealias Response = GitInitResponse
@@ -493,8 +493,8 @@ public struct GitRepositoryCreateResponse: Codable, Sendable, Equatable {
 /// the github.com sign-in (owner, 2026-10-30): the title and body are
 /// checked by `FeedbackRules.problem` — the shapes of a device's private
 /// data, with this device's own paths and name — before the sign-in is
-/// read, and below the body goes the footer feedback carries, Apelin's
-/// version, the iOS version and the bootstrap. Apelin's own feedback is
+/// read, and below the body goes the footer feedback carries, Luros's
+/// version, the iOS version and the bootstrap. Luros's own feedback is
 /// `FeedbackSendRequest`. Not a task: one request to GitHub. The app's,
 /// and an agent's as the host allows it (AgentIssueCreateRules). Without a
 /// sign-in, `denied` with reason `authenticationRequired`. GitHub's

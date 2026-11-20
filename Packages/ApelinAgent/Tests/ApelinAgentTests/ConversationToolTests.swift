@@ -377,7 +377,7 @@ struct ConversationToolTests {
         #expect(general.contains("# Conversations") && general.contains("apelin_conversation_create with project set to the new project"))
         for prompt in [project, general] {
             #expect(prompt.contains("lurosdev://conversation/<session id>") && prompt.contains("lurosdev://project/<projectID>"))
-            #expect(!prompt.contains("there is no Apelin URL scheme"))
+            #expect(!prompt.contains("there is no Luros URL scheme"))
         }
     }
 

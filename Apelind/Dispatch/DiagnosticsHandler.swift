@@ -34,7 +34,7 @@ enum DiagnosticsHandler: DomainHandler {
     }
 
     /// An agent acts only as its session's Ask Before Using the Screen lets
-    /// it (AgentScreenRules), and never on Apelin itself (AgentUIActionRules).
+    /// it (AgentScreenRules), and never on Luros itself (AgentUIActionRules).
     private static func forwardAction(_ request: HostRequest, host: SessionHost) async -> HostReply {
         if let refusal = await AgentScreenRules.authorize(request.request, caller: request.caller, registry: host.registry) {
             return request.fail(refusal)

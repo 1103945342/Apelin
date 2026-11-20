@@ -18,7 +18,7 @@ public struct ChannelAsk: Sendable, Equatable, Codable {
     public var question: AgentQuestion?
     /// A `shell_run` as root needs the device owner's check (Face ID, Touch
     /// ID or the passcode, `ownerVerified`), which a chat message cannot
-    /// give: the channel announces it and only Apelin can approve it.
+    /// give: the channel announces it and only Luros can approve it.
     public var needsAppToApprove: Bool
     /// What was sent to WeChat, kept so a reply is read against the same ask.
     public var text: String
@@ -56,7 +56,7 @@ public struct ChannelAnswer: Sendable, Equatable {
 public enum ChannelReplies {
     public enum Reading: Equatable {
         case answer(ChannelAnswer)
-        /// An approval only Apelin can give: the message is answered with a
+        /// An approval only Luros can give: the message is answered with a
         /// word about that, and the ask stays waiting.
         case needsApp
         /// Neither yes, no, nor a choice: the message is a new turn.
@@ -206,7 +206,7 @@ public enum ChannelReplies {
         return wasQuestion && answer.answer == nil ? words.skipped : words.denied
     }
 
-    /// The line a message that only Apelin can settle is answered with.
+    /// The line a message that only Luros can settle is answered with.
     public static func onlyInApp(language: String = ChannelReplies.language) -> String {
         Wording(language: language).onlyInApp
     }
@@ -295,46 +295,46 @@ public enum ChannelReplies {
         init(language: String) {
             switch language {
             case "zh-Hans":
-                needsApproval = "Apelin 需要你批准这一步。"
+                needsApproval = "Luros 需要你批准这一步。"
                 answerApproval = "回复「同意」批准，「拒绝」不批准。"
-                onlyInApp = "这一条需要在 Apelin 里确认，在微信里的回复不会生效。"
+                onlyInApp = "这一条需要在 Luros 里确认，在微信里的回复不会生效。"
                 approved = "已批准。"
                 denied = "已拒绝。"
                 skipped = "已跳过。"
-                received = "已收到你的消息，Apelin 正在处理中。"
-                receivedWaitingApproval = "已收到你的消息，Apelin 正在处理中。刚才那一步还在等你答复：回「同意」或「拒绝」。"
-                receivedWaitingQuestion = "已收到你的消息，Apelin 正在处理中。刚才那个问题还在等你回答：回序号或直接写你的答案。"
-                noLongerWaiting = "这一步已经不在等答复了：它可能已经在 Apelin 里处理，或这一轮已经结束。"
-                nothingWaiting = "现在没有在等答复的审批，这句没有转给 Apelin。要接着说，直接写你要做什么。"
+                received = "已收到你的消息，Luros 正在处理中。"
+                receivedWaitingApproval = "已收到你的消息，Luros 正在处理中。刚才那一步还在等你答复：回「同意」或「拒绝」。"
+                receivedWaitingQuestion = "已收到你的消息，Luros 正在处理中。刚才那个问题还在等你回答：回序号或直接写你的答案。"
+                noLongerWaiting = "这一步已经不在等答复了：它可能已经在 Luros 里处理，或这一轮已经结束。"
+                nothingWaiting = "现在没有在等答复的审批，这句没有转给 Luros。要接着说，直接写你要做什么。"
                 pickOne = "回复序号，或直接写你的答案。"
                 pickSeveral = "回复序号（可多选，用逗号分开），或直接写你的答案。"
                 isQuestion = true
             case "zh-Hant":
-                needsApproval = "Apelin 需要你核准這一步。"
+                needsApproval = "Luros 需要你核准這一步。"
                 answerApproval = "回覆「同意」核准，「拒絕」不核准。"
-                onlyInApp = "這一項需要在 Apelin 裡確認，在微信裡的回覆不會生效。"
+                onlyInApp = "這一項需要在 Luros 裡確認，在微信裡的回覆不會生效。"
                 approved = "已核准。"
                 denied = "已拒絕。"
                 skipped = "已略過。"
-                received = "已收到你的訊息，Apelin 正在處理中。"
-                receivedWaitingApproval = "已收到你的訊息，Apelin 正在處理中。剛才那一步還等你答覆：回「同意」或「拒絕」。"
-                receivedWaitingQuestion = "已收到你的訊息，Apelin 正在處理中。剛才那個問題還等你回答：回序號或直接寫你的答案。"
-                noLongerWaiting = "這一步已經不在等答覆了：它可能已經在 Apelin 裡處理，或這一輪已經結束。"
-                nothingWaiting = "現在沒有在等答覆的審批，這句沒有轉給 Apelin。要接著說，直接寫你要做什麼。"
+                received = "已收到你的訊息，Luros 正在處理中。"
+                receivedWaitingApproval = "已收到你的訊息，Luros 正在處理中。剛才那一步還等你答覆：回「同意」或「拒絕」。"
+                receivedWaitingQuestion = "已收到你的訊息，Luros 正在處理中。剛才那個問題還等你回答：回序號或直接寫你的答案。"
+                noLongerWaiting = "這一步已經不在等答覆了：它可能已經在 Luros 裡處理，或這一輪已經結束。"
+                nothingWaiting = "現在沒有在等答覆的審批，這句沒有轉給 Luros。要接著說，直接寫你要做什麼。"
                 pickOne = "回覆序號，或直接寫你的答案。"
                 pickSeveral = "回覆序號（可多選，用逗號分開），或直接寫你的答案。"
                 isQuestion = true
             default:
-                needsApproval = "Apelin needs your approval for this step."
+                needsApproval = "Luros needs your approval for this step."
                 answerApproval = "Reply approve to allow it, or deny to refuse it."
-                onlyInApp = "This one is approved in Apelin: a reply here does not count."
+                onlyInApp = "This one is approved in Luros: a reply here does not count."
                 approved = "Approved."
                 denied = "Denied."
                 skipped = "Skipped."
-                received = "Got your message — Apelin is working on it."
-                receivedWaitingApproval = "Got your message — Apelin is working on it. The step is still waiting: reply approve to allow it, or deny to refuse it."
-                receivedWaitingQuestion = "Got your message — Apelin is working on it. The question is still waiting: reply with a number, or write your own answer."
-                noLongerWaiting = "That step is no longer waiting for an answer — it may have been settled in Apelin, or the run has ended."
+                received = "Got your message — Luros is working on it."
+                receivedWaitingApproval = "Got your message — Luros is working on it. The step is still waiting: reply approve to allow it, or deny to refuse it."
+                receivedWaitingQuestion = "Got your message — Luros is working on it. The question is still waiting: reply with a number, or write your own answer."
+                noLongerWaiting = "That step is no longer waiting for an answer — it may have been settled in Luros, or the run has ended."
                 nothingWaiting = "No approval is waiting for an answer right now, so this was not passed on. To carry on, just say what you want."
                 pickOne = "Reply with a number, or write your own answer."
                 pickSeveral = "Reply with numbers (comma-separated for several), or write your own answer."

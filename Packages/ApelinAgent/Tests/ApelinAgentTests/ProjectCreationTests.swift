@@ -161,14 +161,14 @@ struct ProjectCreationTests {
     }
 
     @Test
-    func `The screen tools leave Apelin's own screen to the user`() throws {
+    func `The screen tools leave Luros's own screen to the user`() throws {
         let home = try TemporaryHome()
         defer { home.remove() }
-        #expect(AgentToolName.screenInteract.summary.contains("Never in Apelin itself (com.fluoxetine.luros)"))
+        #expect(AgentToolName.screenInteract.summary.contains("Never in Luros itself (com.fluoxetine.luros)"))
         // A project is deleted by its own tool, never by taps through All Projects.
         #expect(AgentToolName.screenInteract.summary.contains("a project is deleted with apelin_project_delete"))
         let prompt = SystemPrompt.make(project: home.project, projectRoot: home.projectURL.path, skills: [], mcpServers: [])
-        let line = prompt.split(separator: "\n").first { $0.contains("never on Apelin's own screen") }
-        #expect(line?.contains("A project is deleted with apelin_project_delete, never through Apelin's screen.") == true)
+        let line = prompt.split(separator: "\n").first { $0.contains("never on Luros's own screen") }
+        #expect(line?.contains("A project is deleted with apelin_project_delete, never through Luros's screen.") == true)
     }
 }

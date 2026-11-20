@@ -30,7 +30,7 @@ final class GitSettingsController: TableController {
         case repository(DistributionRepository)
         /// The card a camera scans to add the source in Irisin.
         case repositoryCard(DistributionRepository)
-        /// Apelin's current template over the files it maintains.
+        /// Luros's current template over the files it maintains.
         case updateRepository(DistributionRepository)
         /// Publishing needs the GitHub account first.
         case createRepository

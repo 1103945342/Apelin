@@ -95,11 +95,11 @@
   },
   "package": {
     "id": "com.example.apelinapp",
-    "name": "Apelin App",
+    "name": "Luros App",
     "version": "0.0.1",
-    "description": "Built on this device with Apelin.",
+    "description": "Built on this device with Luros.",
     "icon": "https://owngoal-dev.github.io/Apelin/icons/com.fluoxetine.luros.dev.app.png",
-    "author": "Apelin User",
+    "author": "Luros User",
     "section": "Applications",
     "depends": [
       "uikittools"

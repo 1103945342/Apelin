@@ -1,4 +1,4 @@
-# Apelin — Checklist
+# Luros — Checklist
 
 One time, before any code is written. `make check` runs
 `Scripts/check-checklist.sh` first, and every build target depends on it, so
@@ -23,7 +23,7 @@ platformize-app-ios's; the quoted name is its section.
       **Done:** Session host (iGhostVT shape), at the top of `AGENTS.md`; the launchd job is on demand and idle-exits only when it has no work (owner, 2026-10-16).
 - [x] `Scripts/`, `Makefile`, `.gitignore` and the release workflow are copied from the sibling of that shape, and `.gitignore` ignores `.build/` and `.swiftpm/`.
       SKILL.md "Template".
-      **Done:** From iGhostVT 860cbc4 (Scripts, Makefile, .gitignore) and Irisin a0bd81d5 (workflows), then rewritten for Apelin; `.gitignore` has both.
+      **Done:** From iGhostVT 860cbc4 (Scripts, Makefile, .gitignore) and Irisin a0bd81d5 (workflows), then rewritten for Luros; `.gitignore` has both.
 - [x] `grep -rn '@[A-Z_]*@' --exclude-dir=.git .` shows only the packager's tokens (`@PREFIX@`, `@VERSION@`, `@ARCHITECTURE@`, `@FLAVOR@`, `@INSTALLED_SIZE@`).
       SKILL.md "Template", Placeholders.
       **Done:** Only the packager's tokens remain (`@PREFIX@`, `@VERSION@`, `@ARCHITECTURE@`, `@FLAVOR@`, `@INSTALLED_SIZE@`).
@@ -127,7 +127,7 @@ platformize-app-ios's; the quoted name is its section.
 
 - [x] `Scripts/check-accessibility.py` is copied in and wired into `make check`, so a label on a cell or view that UIKit will never read fails the build.
       SKILL.md "The contract": a label on a container that is not an accessibility element is never read.
-      **Done:** Wired over `Apelin/`.
+      **Done:** Wired over `Luros/`.
 - [x] Every icon-only button and bar button item is labelled as it is written, the label is set beside the state it describes rather than once at construction, and no label repeats what VoiceOver already reads.
       SKILL.md "The contract": a control with no text has no name.
       **Done:** The one icon-only button, Settings, is labelled where it is made; nothing repeats a read label.
@@ -142,7 +142,7 @@ platformize-app-ios's; the quoted name is its section.
       **Done:** No `UIImage(named: "AppIcon")` (`make check` greps for it); no in-app icon use yet, so no `AppIconMark` set.
 - [x] Another app's icon is asked of IconServices first; the fallback reads `CFBundleIconFiles` names as files with `UIImage(contentsOfFile:)`, never `UIImage(named:in:)`. Ticked as not applicable if the app shows none.
       SKILL.md "The contract", same bullet.
-      **Done:** Not applicable: Apelin shows no other app's icon yet.
+      **Done:** Not applicable: Luros shows no other app's icon yet.
 - [x] The app icon is `AppIcon.appiconset` with three JPEGs written by `scripts/render-app-icon.py`, no `.icon` is in any target (the source lives in `Documents/Icon/`), and `xcrun assetutil --info` on the built `Assets.car` shows every `AppIcon` rendition as JPEG. A changed icon was checked on a device after removing the package, not over it.
       SKILL.md "The contract": the app icon ships as three JPEGs in a plain icon set.
       **Done:** Three JPEGs; `assetutil` shows all six AppIcon renditions as JPEG; the `.icon` is in no target. Checked on the vphone after `dpkg -r`, then a fresh install: the leaf icon shows.
@@ -157,10 +157,10 @@ platformize-app-ios's; the quoted name is its section.
       **Done:** The manual discipline (`AGENTS.md` ▸ Decisions); `check-stale-strings.py` is the gate.
 - [x] `Scripts/check-stale-strings.py` is copied in and wired into `make check`, so a key Xcode reaped during a build cannot ride into a commit unseen.
       SKILL.md "Localization is verified against the compiler": nothing else catches the marker.
-      **Done:** Wired over `Apelin/`.
+      **Done:** Wired over `Luros/`.
 - [x] Every target's source root is written down for `prune-xcstrings.py` — app, extensions, macOS, visionOS, packages — and `--delete-orphans` is used only if this app has one target.
       SKILL.md: stale does not mean dead; a missing root deletes live strings and their translations.
-      **Done:** `Apelin Apelind Shared` (`AGENTS.md` ▸ Decisions); one target, `--delete-orphans` still not used.
+      **Done:** `Luros Apelind Shared` (`AGENTS.md` ▸ Decisions); one target, `--delete-orphans` still not used.
 - [x] One licence discipline is chosen (scanned or reviewed), and the collector, the Collect Licenses build phase, the screen and both gates are in before the first dependency.
       SKILL.md "Licenses are collected by the build".
       **Done:** Reviewed (Fila's): collector, build phase, Settings ▸ About ▸ Licenses, and both gates, before any dependency.

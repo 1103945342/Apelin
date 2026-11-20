@@ -4,7 +4,7 @@ import SPIndicator
 import Then
 import UIKit
 
-/// Open in Apelin for a Git repository (`lurosdev://import`), asked before
+/// Open in Luros for a Git repository (`lurosdev://import`), asked before
 /// anything is made: the address and branch the link names, any project
 /// that already has that repository as its `origin`, to open instead, and
 /// the name of the new project. Import runs `RepositoryImporter` on the
@@ -128,7 +128,7 @@ final class RepositoryImportController: TableController, UITextFieldDelegate {
         dataSource.footerTitle = { section in
             switch section {
             case .repository:
-                String(localized: "Apelin downloads the repository into a new project and opens it. Nothing in it runs, and nothing is sent to your agent.")
+                String(localized: "Luros downloads the repository into a new project and opens it. Nothing in it runs, and nothing is sent to your agent.")
             case .existing:
                 String(localized: "This repository is already a project on this device. Open it, or import it again as a new project with another name.")
             case .name: nil
@@ -326,7 +326,7 @@ final class RepositoryImportController: TableController, UITextFieldDelegate {
     }
 
     /// Why nothing was imported. A repository that wants a sign-in names
-    /// the one Apelin takes for its host: Sign In with GitHub for
+    /// the one Luros takes for its host: Sign In with GitHub for
     /// github.com, a token the user gives the agent anywhere else.
     @objc private dynamic func report(_ error: Error) {
         if (error as? ApelinError)?.code == .conflict {
@@ -356,12 +356,12 @@ final class RepositoryImportController: TableController, UITextFieldDelegate {
         var message = if needsSignIn, host == "github.com" {
             String(localized: "This repository needs a GitHub sign-in. Sign In with GitHub in Settings ▸ Git, then import again.")
         } else if needsSignIn {
-            String(localized: "\(host) asks for a sign-in. Give your agent a token for it in a chat, which it saves for Apelin, then import again.")
+            String(localized: "\(host) asks for a sign-in. Give your agent a token for it in a chat, which it saves for Luros, then import again.")
         } else {
             failure.message
         }
         if let left = failure.leftProject {
-            message += "\n\n" + String(localized: "Apelin could not remove the project “\(left)”. Delete it in All Projects.")
+            message += "\n\n" + String(localized: "Luros could not remove the project “\(left)”. Delete it in All Projects.")
         }
         presentNotice(title: "Unable to Import", message: message)
     }

@@ -3,7 +3,7 @@ import Foundation
 import KWWKAI
 
 /// The same registration for account verification and conversation requests.
-/// kwwk owns the transports; Apelin adds DeepSeek's separate credential and
+/// kwwk owns the transports; Luros adds DeepSeek's separate credential and
 /// restores the catalog capabilities its generic Chat Completions login loses.
 public enum ProviderRegistration {
     public static func resolve(

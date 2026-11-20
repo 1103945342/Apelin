@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-	The app's entitlements. Apelin ships as a deb only, roothide and rootless;
+	The app's entitlements. Luros ships as a deb only, roothide and rootless;
 	Scripts/package-deb.sh signs with this file and reads every key below back
 	out of the signed binary.
 
 	`com.fluoxetine.luros.client` is the private key the daemon's authenticator
-	looks for on a peer. It is Apelin's alone; never grant it to anything you
+	looks for on a peer. It is Luros's alone; never grant it to anything you
 	would not hand a root descriptor to.
 
 	Mach-lookup of `com.fluoxetine.luros.service` is not optional: without it the app

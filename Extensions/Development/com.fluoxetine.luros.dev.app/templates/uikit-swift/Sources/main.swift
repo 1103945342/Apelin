@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 OwnGoal Studio
 //
-// From Apelin's app template. A manual entry point rather than `@main` on the
+// From Luros's app template. A manual entry point rather than `@main` on the
 // app delegate: work that must finish before UIKit reads saved sessions runs
 // here. UIKit reads Library/Saved Application State/<bundle id>.savedState
 // before any scene delegate runs, and a leftover archive from an earlier

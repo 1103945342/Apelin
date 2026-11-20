@@ -42,7 +42,7 @@ enum AppJournal {
             // Include this launch: Dog's initialization prunes before creating it.
             Dog.shared.maximumLogCount = 100
         } catch {
-            NSLog("Apelin: the journal could not be opened: %@", String(describing: error))
+            NSLog("Luros: the journal could not be opened: %@", String(describing: error))
             return
         }
         let info = Bundle.main.infoDictionary
@@ -51,7 +51,7 @@ enum AppJournal {
         Dog.shared.join(
             "App",
             """
-            Apelin \(version) (\(build)) launched
+            Luros \(version) (\(build)) launched
             System: \(UIDevice.current.systemName) \(UIDevice.current.systemVersion)
             Location:
                 [*] \(redaction.redacted(Bundle.main.bundleURL.path))

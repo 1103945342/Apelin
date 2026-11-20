@@ -5,7 +5,7 @@ import os
 /// models.dev's catalog as this device holds it.
 ///
 /// The app ships a copy of the trimmed catalog (`.github/workflows/model-catalog.yml`
-/// writes `Apelin/Resources/models.dev.json` every day), and the first launch
+/// writes `Luros/Resources/models.dev.json` every day), and the first launch
 /// writes it into the data folder the agent reads, so a device that has never
 /// reached the network still reads models the catalog kwwk ships does not name.
 /// A copy older than a week is replaced in the background — this repository's

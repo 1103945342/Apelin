@@ -13,7 +13,7 @@ set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root"
-: "${SDKROOT:?run this where the Apelin toolchain environment is set}"
+: "${SDKROOT:?run this where the Luros toolchain environment is set}"
 mkdir -p build
 work="$(mktemp -d build/protocol-check.XXXXXX)"
 trap 'rm -rf -- "${work:?}"' EXIT

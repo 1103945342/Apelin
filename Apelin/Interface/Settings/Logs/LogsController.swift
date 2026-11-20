@@ -68,8 +68,8 @@ final class LogsController: TableController {
         dataSource.footerTitle = { section in
             switch section {
             case .current: nil
-            case .conversations: String(localized: "Apelin keeps the logs of its last 100 chats.")
-            case .earlier: String(localized: "Apelin keeps the logs of its last 100 launches.")
+            case .conversations: String(localized: "Luros keeps the logs of its last 100 chats.")
+            case .earlier: String(localized: "Luros keeps the logs of its last 100 launches.")
             }
         }
     }
@@ -112,7 +112,7 @@ final class LogsController: TableController {
             tableView.backgroundView = rows.isEmpty && chats.isEmpty ? EmptyStateView(
                 symbolName: "doc.text",
                 title: String(localized: "No Logs"),
-                text: String(localized: "Logs appear here when Apelin starts."),
+                text: String(localized: "Logs appear here when Luros starts."),
             ) : nil
         }
     }

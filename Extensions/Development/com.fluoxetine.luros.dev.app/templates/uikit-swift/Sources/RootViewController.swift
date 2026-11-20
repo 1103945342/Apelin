@@ -20,7 +20,7 @@ final class RootViewController: UIViewController {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
         let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? ""
         let detailLabel = UILabel()
-        detailLabel.text = "Built on this device with Apelin.\nVersion \(version) (\(build))"
+        detailLabel.text = "Built on this device with Luros.\nVersion \(version) (\(build))"
         detailLabel.font = .preferredFont(forTextStyle: .body)
         detailLabel.adjustsFontForContentSizeCategory = true
         detailLabel.textColor = .secondaryLabel

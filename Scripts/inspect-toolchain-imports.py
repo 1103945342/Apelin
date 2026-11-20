@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Inventory strong/weak system imports in an Apelin research tree; never executes it."""
+"""Inventory strong/weak system imports in an Luros research tree; never executes it."""
 import argparse
 import collections
 import hashlib

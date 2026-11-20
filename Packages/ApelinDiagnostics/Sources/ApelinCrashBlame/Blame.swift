@@ -40,7 +40,7 @@ public struct PackageOwner: Codable, Hashable, Sendable {
         .union(CharacterSet(charactersIn: ",;<>"))
 }
 
-/// Who installed the file at a path. Apelin replaces Xrash's `DpkgDatabase`
+/// Who installed the file at a path. Luros replaces Xrash's `DpkgDatabase`
 /// (a reader of `<root>/var/lib/dpkg/info`) with this: the product keeps no
 /// coupling to dpkg's files, and the session host already knows which files
 /// each package it installed carries. Whatever answers must be cheap per call

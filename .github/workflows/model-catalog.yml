@@ -2,7 +2,7 @@
 # catalog kwwk ships does not name before it has ever reached the network.
 #
 # Every day at 20:00 Asia/Shanghai (12:00 UTC) this reads models.dev's api.json,
-# trims it to the fields a conversation reads, and commits Apelin/Resources/models.dev.json
+# trims it to the fields a conversation reads, and commits Luros/Resources/models.dev.json
 # when a model's figures changed — a day without a change leaves the file, and
 # its `generatedAt`, alone. The app ships that file, writes it into the data
 # folder on the first launch, and replaces it when its own copy is a week old.
@@ -58,13 +58,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -z "$(git status --porcelain -- Apelin/Resources/models.dev.json)" ]]; then
+          if [[ -z "$(git status --porcelain -- Luros/Resources/models.dev.json)" ]]; then
             echo "models.dev's catalog is unchanged"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- Apelin/Resources/models.dev.json
+          git add -- Luros/Resources/models.dev.json
           git commit -m "Update models.dev's catalog"
           git push origin "HEAD:${GITHUB_REF_NAME}"
 
@@ -80,8 +80,8 @@ jobs:
           set +e
           title="models.dev's catalog could not be read"
           {
-            echo "The update of \`Apelin/Resources/models.dev.json\` did not finish, so the catalog"
-            echo "Apelin ships is the one from the last run that did. Nothing else is affected."
+            echo "The update of \`Luros/Resources/models.dev.json\` did not finish, so the catalog"
+            echo "Luros ships is the one from the last run that did. Nothing else is affected."
             echo
             echo '```'
             tail -n 40 trim.log 2>/dev/null || echo "no output"

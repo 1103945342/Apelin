@@ -32,7 +32,7 @@ public enum ProjectManifestIdentity {
         return projectID(in: rewritten) == new ? rewritten : nil
     }
 
-    /// Whether `id` is shaped as Apelin makes one, a lowercase UUID, and so
+    /// Whether `id` is shaped as Luros makes one, a lowercase UUID, and so
     /// is safe to name folders and records by.
     public static func isApelinID(_ id: String) -> Bool {
         UUID(uuidString: id) != nil && id == id.lowercased()
