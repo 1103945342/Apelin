@@ -1,4 +1,5 @@
 import ApelinCore
+import ApelinProtocol
 import CryptoKit
 import Darwin
 import Foundation
