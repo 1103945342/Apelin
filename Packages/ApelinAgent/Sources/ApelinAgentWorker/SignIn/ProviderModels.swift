@@ -34,37 +34,6 @@ final class WorkBuddyEffortCache: @unchecked Sendable {
         lock.withLock { entries[storeID] = (efforts, Date()) }
     }
 }
-
-/// The reasoning levels each WorkBuddy model was last seen offering, per
-/// store id, for ten minutes.
-///
-/// `fetch` reads the account's config, which names the models and their
-/// levels together, while the account list needs the same levels without a
-/// request of its own: what a fetch kept answers the list, and a model no
-/// fetch has covered yet falls back to the bundled rows. Ten minutes is
-/// what kwwk keeps a gate's own listing for: the config does not change
-/// often, and an account list is drawn every time Settings opens.
-final class WorkBuddyEffortCache: @unchecked Sendable {
-    static let shared = WorkBuddyEffortCache()
-
-    private let lock = NSLock()
-    private var entries: [String: (efforts: [String: [AgentReasoningEffort]], at: Date)] = [:]
-    private let lifetime: TimeInterval = 10 * 60
-
-    /// Objective-C cannot carry these dictionaries, so the accessors stay
-    /// plain (AGENTS.md ▸ Hard rules).
-    func efforts(for storeID: String) -> [String: [AgentReasoningEffort]]? {
-        lock.withLock {
-            guard let entry = entries[storeID], Date().timeIntervalSince(entry.at) < lifetime else { return nil }
-            return entry.efforts
-        }
-    }
-
-    func store(_ efforts: [String: [AgentReasoningEffort]], for storeID: String) {
-        lock.withLock { entries[storeID] = (efforts, Date()) }
-    }
-}
-
 /// The endpoint's model family is distinct from its wire format. DeepSeek's
 /// Anthropic endpoint accepts Claude aliases but still runs DeepSeek models.
 enum ProviderModels {
