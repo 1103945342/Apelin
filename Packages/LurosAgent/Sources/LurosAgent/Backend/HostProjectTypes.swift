@@ -54,7 +54,7 @@ public struct ProjectTemplate: Sendable, Hashable, Codable {
         }
     }
 
-    /// `<extension-id>/<template-id>`, what apelin_project_create takes.
+    /// `<extension-id>/<template-id>`, what luros_project_create takes.
     public var id: String
     public var name: String
     /// The extension's kind: workspace, app, tweak, commandLineTool or
@@ -119,7 +119,7 @@ public struct ProjectCreateToolResponse: Sendable, Hashable, Codable {
     }
 }
 
-/// apelin_project_list: the projects under `Projects/`, by the folder name
+/// luros_project_list: the projects under `Projects/`, by the folder name
 /// and projectID the conversation tools take.
 public struct ProjectListToolResponse: Sendable, Hashable, Codable {
     public var projects: [ListedProject]
@@ -137,7 +137,7 @@ public struct ListedProject: Sendable, Hashable, Codable {
     public var projectID: String
     /// The name the sidebar shows (`displayName`, else the folder).
     public var displayName: String
-    /// `apelin` (a build description) or `external` (a workspace's own build).
+    /// `luros` (a build description) or `external` (a workspace's own build).
     public var buildSystem: String
     /// The project this conversation works in.
     public var isThisProject: Bool
@@ -154,7 +154,7 @@ public struct ListedProject: Sendable, Hashable, Codable {
     }
 }
 
-/// apelin_project_rename: a project's displayName, by `projectRename`.
+/// luros_project_rename: a project's displayName, by `projectRename`.
 public struct ProjectRenameToolRequest: Sendable, Hashable, Codable {
     public var context: HostCallContext
     public var projectID: String
@@ -171,7 +171,7 @@ public struct ProjectRenameToolRequest: Sendable, Hashable, Codable {
     }
 }
 
-/// apelin_project_delete: another project, for good, by `projectDelete`.
+/// luros_project_delete: another project, for good, by `projectDelete`.
 public struct ProjectDeleteToolRequest: Sendable, Hashable, Codable {
     public var context: HostCallContext
     public var projectID: String

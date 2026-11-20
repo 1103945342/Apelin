@@ -9,7 +9,7 @@ import Testing
 struct MemoryTests {
     private static let weather = try! ProjectIdentity(id: "6f1c5b0e-0000-4000-8000-00000000beef", name: ProjectName("Weather"))
 
-    /// apelin_memory_list's answer with all_projects, as the model reads it.
+    /// luros_memory_list's answer with all_projects, as the model reads it.
     private struct Listing: Decodable {
         struct Record: Decodable, Equatable {
             var title: String
@@ -230,7 +230,7 @@ struct MemoryTests {
         snapshot = try store.save(old, revision: snapshot.revision)
         let backend = MockBackend()
         await backend.setListedProjects(ProjectListToolResponse(projects: [
-            ListedProject(folder: "Hello", projectID: home.project.id, displayName: "Clock", buildSystem: "apelin", isThisProject: true),
+            ListedProject(folder: "Hello", projectID: home.project.id, displayName: "Clock", buildSystem: "luros", isThisProject: true),
             ListedProject(folder: "Weather", projectID: Self.weather.id, displayName: "Rain Radar", buildSystem: "external", isThisProject: false),
         ], truncated: false))
         let runner = try Self.runner(home, store, backend)

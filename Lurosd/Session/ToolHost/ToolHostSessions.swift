@@ -82,7 +82,7 @@ actor ToolHostSessions {
         let client = ToolHostClient(
             validated: validated,
             environment: environment,
-            host: ToolPeer(name: "apelin", version: Self.hostVersion),
+            host: ToolPeer(name: "luros", version: Self.hostVersion),
             runAs: identity,
             logHandler: { line in NSLog("lurosd-session: agent tool %@: %@", request.id, line) },
         )

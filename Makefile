@@ -99,8 +99,8 @@ LAUNCH_DAEMON       := $(ROOT_DIR)/Packaging/$(DAEMON_ID).plist
 # Every Swift source root, for the greps and the gates that read source.
 SOURCE_ROOTS        := $(ROOT_DIR)/Luros $(ROOT_DIR)/Lurosd $(ROOT_DIR)/Shared $(ROOT_DIR)/Widgets $(ROOT_DIR)/Workers $(ROOT_DIR)/Packages/LurosKit/Sources
 # The shared package: `make harness` runs its tests on the Mac.
-APELINKIT           := $(ROOT_DIR)/Packages/LurosKit
-SWIFTPM_SCRATCH     ?= $(APELINKIT)/.build
+LUROSKIT           := $(ROOT_DIR)/Packages/LurosKit
+SWIFTPM_SCRATCH     ?= $(LUROSKIT)/.build
 # LurosToolHost links into lurosd's session host; the harness builds it to
 # typecheck lurosd, in the scratch path its tests use below.
 TOOLHOST            := $(ROOT_DIR)/Packages/LurosToolHost
@@ -135,7 +135,7 @@ AGENT_TOOLS_SCRATCH ?= $(DERIVED_DATA)/AgentToolsSPM
 # them on purpose).
 DEV_EXTENSIONS      := com.fluoxetine.luros.dev.app com.fluoxetine.luros.dev.tweak com.fluoxetine.luros.dev.cli com.fluoxetine.luros.dev.preferences
 # The worker packages' scratch paths, which the worker typechecks read.
-APELIN_DIAGNOSTICS  := $(ROOT_DIR)/Packages/LurosDiagnostics
+LUROS_DIAGNOSTICS  := $(ROOT_DIR)/Packages/LurosDiagnostics
 DIAGNOSTICS_SCRATCH := $(call package_scratch,LurosDiagnostics)
 AGENT_SCRATCH       := $(call package_scratch,LurosAgent)
 # The oldest iOS the package claims. `check` refuses one in project.pbxproj.
@@ -308,7 +308,7 @@ check:
 	@# depends on none of them and recommends none of them: a package manager
 	@# installs the IDE alone, and one of the four installed on its own only
 	@# updates the copy the bundle carries.
-	@! grep -nE '^(Pre-Depends|Depends|Recommends|Suggests):.*wiki\.qaq\.apelin\.(dev|agent-tools)\.' "$(CONTROL_TEMPLATE)" \
+	@! grep -nE '^(Pre-Depends|Depends|Recommends|Suggests):.*wiki\.qaq\.luros\.(dev|agent-tools)\.' "$(CONTROL_TEMPLATE)" \
 		|| { echo "error: the IDE depends on, recommends or suggests an extension (above)" >&2; exit 65; }
 	@# The tools the IDE cannot work without ride inside its bundle too: icli
 	@# and irisind are committed under Vendor/ with their digests, the package
@@ -529,9 +529,9 @@ harness:
 		cp -p "$$harness_dir/executable-watch" "$$harness_dir/$$mode" && "$$harness_dir/$$mode" "$$mode" \
 			|| { echo "error: ExecutableWatch failed in mode $$mode" >&2; exit 1; }; \
 	done && echo "ok: ExecutableWatch" && \
-	swift test --package-path "$(APELINKIT)" --scratch-path "$(SWIFTPM_SCRATCH)" && echo "ok: LurosKit tests" && \
+	swift test --package-path "$(LUROSKIT)" --scratch-path "$(SWIFTPM_SCRATCH)" && echo "ok: LurosKit tests" && \
 	$(foreach package,$(HARNESS_PACKAGES),swift test --package-path "$(ROOT_DIR)/Packages/$(package)" --scratch-path "$(call package_scratch,$(package))" && echo "ok: $(package) tests" && ) \
-	"$(ROOT_DIR)/Scripts/check-system-only.py" "$(APELINKIT)" --scratch-path "$(SWIFTPM_SCRATCH)" \
+	"$(ROOT_DIR)/Scripts/check-system-only.py" "$(LUROSKIT)" --scratch-path "$(SWIFTPM_SCRATCH)" \
 		--toolhost-scratch-path "$(TOOLHOST_SCRATCH)" --diagnostics-scratch-path "$(DIAGNOSTICS_SCRATCH)" && \
 	swift build --package-path "$(TOOLHOST)" --scratch-path "$(TOOLHOST_SCRATCH)" --target LurosToolHost \
 		|| { echo "error: a harness step above failed" >&2; exit 1; }; \
@@ -563,8 +563,8 @@ harness:
 	xcrun --sdk macosx swiftc -swift-version 5 -typecheck -target arm64-apple-macos13.0 -I "$(XPC_SHIM_DIR)" -I "$(IRISIN_SHIM_DIR)" $$kit_flags -I "$$toolhost_modules" \
 		$$(find "$(ROOT_DIR)/Shared/Protocol" "$(ROOT_DIR)/Lurosd" -name '*.swift' | sort) "$(ROOT_DIR)/Shared/RoothideRoot.swift" && \
 	echo "ok: lurosd typechecks for macOS" && \
-	swift build --package-path "$(APELINKIT)" --scratch-path "$(SWIFTPM_SCRATCH)" --product luros-environment-harness && \
-	environment_harness="$$(swift build --package-path "$(APELINKIT)" --scratch-path "$(SWIFTPM_SCRATCH)" --show-bin-path)/luros-environment-harness" && \
+	swift build --package-path "$(LUROSKIT)" --scratch-path "$(SWIFTPM_SCRATCH)" --product luros-environment-harness && \
+	environment_harness="$$(swift build --package-path "$(LUROSKIT)" --scratch-path "$(SWIFTPM_SCRATCH)" --show-bin-path)/luros-environment-harness" && \
 	"$(ROOT_DIR)/Scripts/test-session-host.sh" "$$modules" "$$environment_harness" && echo "ok: session host tests (toolchain setup end to end included)" && \
 	for worker in "$(ROOT_DIR)"/Workers/*/; do \
 		flags="$$kit_flags"; \
@@ -628,7 +628,7 @@ _package:
 		echo "error: Luros.app is linked against the iOS $${sdk:-unknown} SDK, older than $(IOS_SDK_TIER); build it again with Xcode $(IOS_SDK_TIER) or later" >&2; \
 		exit 65; \
 	fi
-	APELIN_AGENT_TOOLS="$(PACKAGES_DIR)" CONFIGURATION="$(CONFIGURATION)" "$(DEB_PACKAGER)" \
+	LUROS_AGENT_TOOLS="$(PACKAGES_DIR)" CONFIGURATION="$(CONFIGURATION)" "$(DEB_PACKAGER)" \
 		"$(APP_BUNDLE)" \
 		"$(DAEMON_BINARY)" \
 		"$(CONTROL_TEMPLATE)" \

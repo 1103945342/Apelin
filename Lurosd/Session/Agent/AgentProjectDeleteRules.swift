@@ -2,7 +2,7 @@ import LurosCore
 import LurosProtocol
 import Foundation
 
-/// A project deleted for good (`projectDelete`; apelin_project_delete,
+/// A project deleted for good (`projectDelete`; luros_project_delete,
 /// owner, 2026-10-29): its folder under `Projects/` with every file in it,
 /// and the conversations of it, which the host closes first. The project
 /// is the one whose `luros-project.json` carries the id asked for, in a

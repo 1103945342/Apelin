@@ -4,11 +4,11 @@ import KWWKAgent
 import KWWKAI
 import Testing
 
-/// What the model reads from apelin_package_confirm_loaded. On an iOS 17
+/// What the model reads from luros_package_confirm_loaded. On an iOS 17
 /// device it read `imageLoaded: false` beside a note about the iOS 27
 /// kernel, and no `loaded` at all: the verdict was a computed property the
 /// encoder skipped.
-@Suite("apelin_package_confirm_loaded's answer")
+@Suite("luros_package_confirm_loaded's answer")
 struct ConfirmLoadedAnswerTests {
     @Test
     func `carries the host's verdict and what it rests on, and no image fields`() async throws {

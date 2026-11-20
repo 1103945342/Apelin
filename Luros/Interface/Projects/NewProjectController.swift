@@ -391,7 +391,7 @@ final class NewProjectController: TableController, UITextFieldDelegate {
                     automaticallyName: automaticallyName,
                     outputFormat: isAppTemplate ? outputFormat : nil,
                 ))
-                NotificationCenter.default.post(name: .apelinProjectsChanged, object: nil)
+                NotificationCenter.default.post(name: .lurosProjectsChanged, object: nil)
                 let project = ProjectSummary(
                     name: created.name,
                     kind: entry.kind,
@@ -410,5 +410,5 @@ final class NewProjectController: TableController, UITextFieldDelegate {
 }
 
 extension Notification.Name {
-    static let apelinProjectsChanged = Notification.Name("com.fluoxetine.luros.projectsChanged")
+    static let lurosProjectsChanged = Notification.Name("com.fluoxetine.luros.projectsChanged")
 }

@@ -3,7 +3,7 @@ import Foundation
 import KWWKAI
 import Testing
 
-/// apelin_sdk_analyze_framework and apelin_sdk_read_header against a small SDK
+/// luros_sdk_analyze_framework and luros_sdk_read_header against a small SDK
 /// tree: both framework folders, a header named after a class it does not
 /// hold, and a header that links out of the SDK.
 @Suite("SDK framework tools")
@@ -155,7 +155,7 @@ struct FrameworkToolTests {
     func `a comment declares nothing`() throws {
         defer { try? FileManager.default.removeItem(at: base) }
         let commented = try tools.header(["framework": "Vision", "symbol": "VNRequestTrackingLevelFast"])
-        #expect(commented.hasSuffix("VNRequestTrackingLevelFast is not declared in the headers of Vision.framework; apelin_sdk_analyze_framework with symbol_filter shows whether its .tbd exports it"))
+        #expect(commented.hasSuffix("VNRequestTrackingLevelFast is not declared in the headers of Vision.framework; luros_sdk_analyze_framework with symbol_filter shows whether its .tbd exports it"))
 
         var inComment = false
         #expect(HeaderDeclarations.code(of: "int a; /* b */ int c; // d", inComment: &inComment) == "int a;   int c; ")
@@ -216,7 +216,7 @@ struct FrameworkToolTests {
         """)
 
         let symbol = try tools.header(["framework": "Vision", "symbol": "VNMissing"])
-        #expect(symbol.hasSuffix("VNMissing is not declared in the headers of Vision.framework; apelin_sdk_analyze_framework with symbol_filter shows whether its .tbd exports it"))
+        #expect(symbol.hasSuffix("VNMissing is not declared in the headers of Vision.framework; luros_sdk_analyze_framework with symbol_filter shows whether its .tbd exports it"))
 
         let existing = try tools.header(["framework": "Vision", "header": "VNRequest.h"])
         #expect(existing == "Vision.framework (Frameworks)\n" + Self.requestHeader)

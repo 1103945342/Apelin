@@ -20,8 +20,8 @@ root="$(cd -P "$(dirname "$0")/../.." && pwd -P)"
 # On roothide the bootstrap's `/var` is not where the project is, and `/rootfs`
 # is not part of a real path; the compiler wants the physical one.
 root="${root#/rootfs}"
-if [[ -n "${APELIN_PROJECT_ROOT:-}" ]]; then
-    root="${APELIN_PROJECT_ROOT#/rootfs}"
+if [[ -n "${LUROS_PROJECT_ROOT:-}" ]]; then
+    root="${LUROS_PROJECT_ROOT#/rootfs}"
 fi
 cd "$root"
 mkdir -p build

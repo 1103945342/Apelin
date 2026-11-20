@@ -9,7 +9,7 @@ import XCTest
 /// saw it, the base is an ancestor, there are two or more commits, and
 /// nothing tracked is uncommitted.
 final class GitSquashTests: XCTestCase {
-    private let author = GitSignature(name: "Luros Test", email: "test@apelin.invalid")
+    private let author = GitSignature(name: "Luros Test", email: "test@luros.invalid")
 
     private func scratch() -> URL {
         let base = URL(fileURLWithPath: CanonicalPath.resolve(NSTemporaryDirectory())!, isDirectory: true)

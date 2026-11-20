@@ -83,7 +83,7 @@ public final class ToolHostClient: @unchecked Sendable {
         policy: ToolManifestPolicy = .init(),
         environment: [String: String] = Configuration.defaultEnvironment(),
         limits: ToolProtocolLimits = .init(),
-        host: ToolPeer = ToolPeer(name: "apelin", version: "0"),
+        host: ToolPeer = ToolPeer(name: "luros", version: "0"),
         runAs: ToolProcessIdentity? = nil,
         logHandler: (@Sendable (String) -> Void)? = nil,
     ) {

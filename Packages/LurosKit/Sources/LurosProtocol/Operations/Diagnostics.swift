@@ -41,7 +41,7 @@ public enum LoadImageCheck: String, Codable, Sendable {
     case regionPaths
 }
 
-/// `buildID` is the build's `APELIN_BUILD_ID` (the marker is `LurosLoaded
+/// `buildID` is the build's `LUROS_BUILD_ID` (the marker is `LurosLoaded
 /// <buildID>`); `targetID` an executable name (`SpringBoard`) or a bundle
 /// id (`com.apple.springboard`). With `projectID`, the marker's subsystem,
 /// the installed dylib and the filter come from the project's

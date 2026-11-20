@@ -11,7 +11,7 @@ import XCTest
 /// workspace's, which holds nothing but its identity, and the identity in
 /// it is settled.
 final class GitImportManifestTests: XCTestCase {
-    private let author = GitSignature(name: "Luros Test", email: "test@apelin.invalid")
+    private let author = GitSignature(name: "Luros Test", email: "test@luros.invalid")
     private let theirID = "5f0c2a8e-1b7d-4c39-9e46-0a1b2c3d4e5f"
 
     private func service(_ home: TemporaryHome) -> GitService {

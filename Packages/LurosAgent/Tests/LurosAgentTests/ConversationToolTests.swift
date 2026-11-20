@@ -16,7 +16,7 @@ struct ConversationToolTests {
     @Test
     func `the catalog names the conversation tools with their risks, in every chat`() {
         #expect(Self.tools.map(\.rawValue) == [
-            "apelin_conversation_create", "apelin_conversation_send", "apelin_conversation_list", "apelin_conversation_read", "apelin_conversation_stop",
+            "luros_conversation_create", "luros_conversation_send", "luros_conversation_list", "luros_conversation_read", "luros_conversation_stop",
         ])
         for tool in [AgentToolName.conversationCreate, .conversationSend, .conversationStop] {
             #expect(tool.risk == .writeProject, "\(tool.rawValue)")
@@ -143,8 +143,8 @@ struct ConversationToolTests {
                 ""
             }
         } == [
-            "apelin_conversation_create \(Self.far.id)", "apelin_conversation_send \(Self.far.id)",
-            "apelin_conversation_list \(Self.far.id)", "apelin_conversation_read \(Self.far.id)",
+            "luros_conversation_create \(Self.far.id)", "luros_conversation_send \(Self.far.id)",
+            "luros_conversation_list \(Self.far.id)", "luros_conversation_read \(Self.far.id)",
         ])
         // The same call again asks again.
         let (_, again) = try await harness.run(.conversationCreate, ["prompt": "Import the repo and build it", "project": "Far"], answering: .approve(.session))
@@ -167,7 +167,7 @@ struct ConversationToolTests {
         await relaxed.backend.addProject(Self.far)
         let (_, asked) = try await relaxed.run(.conversationCreate, ["prompt": "Build it", "project": "Far"])
         #expect(asked.isEmpty)
-        #expect(await relaxed.backend.calls == [.conversationElsewhere(tool: "apelin_conversation_create", project: Self.far.id, evidence: .relaxed)])
+        #expect(await relaxed.backend.calls == [.conversationElsewhere(tool: "luros_conversation_create", project: Self.far.id, evidence: .relaxed)])
     }
 
     @Test(.timeLimit(.minutes(1)))
@@ -186,7 +186,7 @@ struct ConversationToolTests {
             try await runner.run(.local(.conversationRead), toolCallID: "c2", arguments: ["session_id": "far-chat"], cancellation: nil, mcp: nil)
         }
         _ = try await runner.run(.local(.conversationCreate), toolCallID: "c3", arguments: ["prompt": "Build it", "project": "Far"], cancellation: nil, mcp: nil)
-        #expect(await backend.calls == [.conversationElsewhere(tool: "apelin_conversation_create", project: Self.far.id, evidence: .relaxed)])
+        #expect(await backend.calls == [.conversationElsewhere(tool: "luros_conversation_create", project: Self.far.id, evidence: .relaxed)])
         await #expect(throws: ToolDeniedError.self) {
             try await runner.run(.local(.conversationCreate), toolCallID: "c4", arguments: ["prompt": "x", "project": "Nowhere"], cancellation: nil, mcp: nil)
         }
@@ -366,7 +366,7 @@ struct ConversationToolTests {
         defer { home.remove() }
         let project = SystemPrompt.make(project: home.project, projectRoot: home.projectURL.path, skills: [], mcpServers: [])
         #expect(project.contains("# Conversations"))
-        #expect(project.contains("apelin_conversation_create") && project.contains("not the user"))
+        #expect(project.contains("luros_conversation_create") && project.contains("not the user"))
         let id = UUID().uuidString
         let general = try SystemPrompt.make(
             project: ProjectIdentity(id: "temporary:" + id, name: ProjectName(id)),
@@ -374,7 +374,7 @@ struct ConversationToolTests {
             skills: [],
             mcpServers: [],
         )
-        #expect(general.contains("# Conversations") && general.contains("apelin_conversation_create with project set to the new project"))
+        #expect(general.contains("# Conversations") && general.contains("luros_conversation_create with project set to the new project"))
         for prompt in [project, general] {
             #expect(prompt.contains("lurosdev://conversation/<session id>") && prompt.contains("lurosdev://project/<projectID>"))
             #expect(!prompt.contains("there is no Luros URL scheme"))

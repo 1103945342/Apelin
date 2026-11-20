@@ -68,18 +68,18 @@ public enum AgentDelegationToolPolicy {
         // file_show materializes managed Attachments/ inside the workspace;
         // without a scoped export adapter it is not a read-only operation.
         case "file_read", "file_list", "file_find", "file_grep",
-             "apelin_sdk_analyze_framework", "apelin_sdk_read_header",
-             "apelin_memory_list", "apelin_skill_list", "apelin_skill_read",
-             "apelin_template_list", "apelin_project_list", "apelin_project_check_distribution",
-             "apelin_package_list", "apelin_toolchain_list", "apelin_sdk_list",
+             "luros_sdk_analyze_framework", "luros_sdk_read_header",
+             "luros_memory_list", "luros_skill_list", "luros_skill_read",
+             "luros_template_list", "luros_project_list", "luros_project_check_distribution",
+             "luros_package_list", "luros_toolchain_list", "luros_sdk_list",
              "git_status", "git_diff", "git_branches", "git_log", "git_commit_detail",
-             "git_remote_list", "apelin_git_read_settings",
-             "apelin_conversation_list", "apelin_conversation_read",
-             "apelin_todo_list", "apelin_crash_list", "apelin_crash_read", "apelin_log_read",
-             "apelin_screen_read_tree", "apelin_screen_capture", "apelin_feedback_read",
-             "web_search", "apelin_web_fetch": return .read
-        case "apelin_todo_write", "apelin_notification_send", "apelin_question_ask",
-             "apelin_run_mode", "apelin_conversation_plan", "apelin_conversation_send":
+             "git_remote_list", "luros_git_read_settings",
+             "luros_conversation_list", "luros_conversation_read",
+             "luros_todo_list", "luros_crash_list", "luros_crash_read", "luros_log_read",
+             "luros_screen_read_tree", "luros_screen_capture", "luros_feedback_read",
+             "web_search", "luros_web_fetch": return .read
+        case "luros_todo_write", "luros_notification_send", "luros_question_ask",
+             "luros_run_mode", "luros_conversation_plan", "luros_conversation_send":
             return .bookkeeping
         case "file_write", "file_create", "file_edit": return .fileWrite
         default: return .unsupported

@@ -1,6 +1,6 @@
 import Foundation
 
-/// Whether apelin_web_fetch may send a request to a host, by what its name
+/// Whether luros_web_fetch may send a request to a host, by what its name
 /// or address says: a local name, or a literal loopback, link-local,
 /// private, shared (CGNAT), multicast or reserved address, is refused, in
 /// whatever form the resolver also reads (`2130706433` and `127.1` are

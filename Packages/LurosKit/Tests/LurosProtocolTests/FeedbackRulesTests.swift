@@ -68,12 +68,12 @@ final class FeedbackRulesTests: XCTestCase {
         XCTAssertNotNil(problem("it is Adas-iPhone that fails", names: ["Adas-iPhone"]))
         XCTAssertNil(problem("it is Adas-iPhones that fails", names: ["Adas-iPhone"]), "a word, not a part of one")
         XCTAssertNil(problem("on an iPhone 15 Pro", names: ["iPhone"]), "a name every device of its kind has says nothing")
-        XCTAssertNil(problem("under /var/jb/usr/lib/apelin", paths: ["/var/jb", "/"]), "rootless's install root is every rootless device's")
+        XCTAssertNil(problem("under /var/jb/usr/lib/luros", paths: ["/var/jb", "/"]), "rootless's install root is every rootless device's")
     }
 
     func testWhatABadCaseOrdinarilyHoldsGoesThrough() {
         let report = """
-        On iOS 17.3.1 (21D61), arm64e, roothide, the build of local.apelin.hello failed.
+        On iOS 17.3.1 (21D61), arm64e, roothide, the build of local.luros.hello failed.
         Its log is ~/Documents/com.fluoxetine.luros/Builds/p/9F86D081-884C-4D63-A1B2-0123456789AB/build.log;
         the artifact's digest is sha256:\(String(repeating: "ab", count: 32)) and the commit 1a2b3c4d.
         IPHONEOS_DEPLOYMENT_TARGET is 16.0; clang listened on 127.0.0.1. CLT 15.3 from /var/jb/usr/lib.

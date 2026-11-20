@@ -161,9 +161,9 @@ if [[ "$tool" == assembler ]]; then
             exit 65
         }
     done
-    apelin_commit="$(git -C "$repository_root" rev-parse HEAD)"
+    luros_commit="$(git -C "$repository_root" rev-parse HEAD)"
     if [[ -n "$(git -C "$repository_root" status --porcelain -- Packages/LurosToolHost Extensions/AgentTools/Disassembler LICENSE)" ]]; then
-        apelin_commit="$apelin_commit, with uncommitted changes"
+        luros_commit="$luros_commit, with uncommitted changes"
     fi
     archive_name="${package_id}_${version}_source.tar.xz"
     archive="$output_directory/$archive_name"
@@ -182,7 +182,7 @@ if [[ "$tool" == assembler ]]; then
         -e "s|@VERSION@|$version|g" \
         -e "s|@SOURCE_ARCHIVE@|$archive_name|g" \
         -e "s|@SOURCE_SHA256@|$(sha256 "$archive")|g" \
-        -e "s|@APELIN_COMMIT@|$apelin_commit|g" \
+        -e "s|@LUROS_COMMIT@|$luros_commit|g" \
         -e "s|@KEYSTONE_REVISION@|$keystone_revision|g" \
         "$packaging/SOURCE.md.in" >"$data_directory/licenses/SOURCE.md"
 fi

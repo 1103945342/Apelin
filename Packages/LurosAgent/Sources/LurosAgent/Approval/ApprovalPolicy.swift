@@ -10,8 +10,8 @@ public struct ApprovalPresets: Sendable, Hashable, Codable {
     /// Read tools that run without asking. Only read-only tools count; a
     /// system tool named here is ignored.
     public var readTools: Set<AgentToolName>
-    /// System tools that run without asking. Only `apelin_device_respring` and
-    /// `apelin_screen_interact` can be preset; build and install follow the digest rule,
+    /// System tools that run without asking. Only `luros_device_respring` and
+    /// `luros_screen_interact` can be preset; build and install follow the digest rule,
     /// shell_run follows `commands`, and package removal always asks.
     public var systemTools: Set<AgentToolName>
     public var commands: [CommandPreset]
@@ -96,9 +96,9 @@ public struct InvocationFacts: Sendable, Hashable {
     public var command: RunCodeInvocation?
     /// For build (`.build`) and install (`.packaging`).
     public var description: DescriptionState?
-    /// For apelin_package_remove: the installation record it removes.
+    /// For luros_package_remove: the installation record it removes.
     public var installationID: String?
-    /// That installation as apelin_package_list lists it, when the backend
+    /// That installation as luros_package_list lists it, when the backend
     /// found it: what the card names.
     public var removedPackage: ListedInstallation?
     /// For git_push: where it pushes, and what.
@@ -125,10 +125,10 @@ public struct InvocationFacts: Sendable, Hashable {
     public var workingDirectory: String
     /// For shell_run: run as root (`root: true`).
     public var runsAsRoot: Bool
-    /// For apelin_toolchain_setup: the release, resolved in Apple's catalog before
+    /// For luros_toolchain_setup: the release, resolved in Apple's catalog before
     /// asking, and sent by product ID.
     public var toolchainSetup: ToolchainSetupApproval?
-    /// For apelin_sdk_import: the source and branch, resolved before asking.
+    /// For luros_sdk_import: the source and branch, resolved before asking.
     public var sdkImport: SDKImportApproval?
     /// For a conversation tool that names another project than the
     /// session's: what it does there.
@@ -138,33 +138,33 @@ public struct InvocationFacts: Sendable, Hashable {
     /// For build in a workspace: what it builds, which runs the workspace's
     /// own script.
     public var externalBuild: ExternalBuildApproval?
-    /// For apelin_skill_save and apelin_skill_remove: the skill, checked
+    /// For luros_skill_save and luros_skill_remove: the skill, checked
     /// before asking, and what a save writes.
     public var skillChange: SkillChangeApproval?
-    /// For apelin_project_rename of another project than the session's: the
+    /// For luros_project_rename of another project than the session's: the
     /// project and the name; nil for the session's own project.
     public var projectRename: ProjectRenameApproval?
-    /// The project apelin_project_rename renames, as the backend resolved it.
+    /// The project luros_project_rename renames, as the backend resolved it.
     public var renamedProject: ProjectIdentity?
-    /// For apelin_feedback_send: the issue, checked before asking, as it is
+    /// For luros_feedback_send: the issue, checked before asking, as it is
     /// sent.
     public var feedback: FeedbackApproval?
-    /// For apelin_feedback_edit: the issue, read and checked before asking,
+    /// For luros_feedback_edit: the issue, read and checked before asking,
     /// and the edit as it is sent.
     public var feedbackEdit: FeedbackEditApproval?
-    /// For apelin_git_create_repository: the repository, checked before
+    /// For luros_git_create_repository: the repository, checked before
     /// asking, as it is requested.
     public var repositoryCreate: RepositoryCreateApproval?
-    /// For apelin_git_create_issue: the repository and the issue, checked
+    /// For luros_git_create_issue: the repository and the issue, checked
     /// before asking, as they are sent.
     public var issueCreate: IssueCreateApproval?
-    /// For apelin_project_delete: the project, resolved before asking,
+    /// For luros_project_delete: the project, resolved before asking,
     /// which is the one deleted.
     public var projectDeletion: ProjectDeleteApproval?
-    /// For apelin_package_publish: the repository and the packages,
+    /// For luros_package_publish: the repository and the packages,
     /// checked before asking, as they are sent.
     public var packagePublish: PackagePublishApproval?
-    /// For apelin_screen_read_tree, apelin_screen_interact and a shell_run
+    /// For luros_screen_read_tree, luros_screen_interact and a shell_run
     /// that runs icli (or another of `ScreenConsent.programs`): what it does
     /// on the screen, as the host is asked for it.
     public var screenControl: ScreenControlApproval?

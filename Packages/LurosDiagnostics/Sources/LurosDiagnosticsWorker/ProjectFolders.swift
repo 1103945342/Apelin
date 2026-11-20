@@ -73,7 +73,7 @@ enum ProjectFolders {
 }
 
 /// What `confirmLoaded` looks for, read from `luros-project.json`: the
-/// marker the template logs (`LurosLoaded <APELIN_BUILD_ID>` under the
+/// marker the template logs (`LurosLoaded <LUROS_BUILD_ID>` under the
 /// package id's subsystem), where the package installs the tweak's dylib on
 /// this bootstrap, and the filter plist the packager writes beside it.
 struct LoadPlan: Equatable {

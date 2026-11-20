@@ -98,7 +98,7 @@ public struct DevelopmentEnvironment: Sendable, Equatable {
     /// `basePath`; `SDKROOT` and `IPHONEOS_DEPLOYMENT_TARGET` when there is
     /// an SDK (clang then targets iOS against it without `-isysroot` or
     /// `-target`, and swiftc takes the SDK from `SDKROOT`); and
-    /// `APELIN_TOOLCHAIN_BIN`, which the package's login profile snippet puts
+    /// `LUROS_TOOLCHAIN_BIN`, which the package's login profile snippet puts
     /// back on a `PATH` the bootstrap's `/etc/profile` replaced.
     public func variables(basePath: [String]) -> [String: String] {
         var path = basePath
@@ -121,7 +121,7 @@ public struct DevelopmentEnvironment: Sendable, Equatable {
         variables(basePath: basePath).sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }
     }
 
-    public static let toolchainBinVariable = "APELIN_TOOLCHAIN_BIN"
+    public static let toolchainBinVariable = "LUROS_TOOLCHAIN_BIN"
 
     /// The directories shell_run looks a bare command name up in, and its
     /// `PATH` behind the toolchain: the bootstrap's bin directories, then

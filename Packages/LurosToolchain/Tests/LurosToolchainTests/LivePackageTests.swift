@@ -4,9 +4,9 @@ import Testing
 
 /// Opt-in local smoke test. Apple payloads are never committed as test fixtures.
 struct LivePackageTests {
-    @Test(.enabled(if: ProcessInfo.processInfo.environment["APELIN_TEST_PACKAGE"] != nil))
+    @Test(.enabled(if: ProcessInfo.processInfo.environment["LUROS_TEST_PACKAGE"] != nil))
     func `extracts real apple package`() throws {
-        let input = try URL(fileURLWithPath: #require(ProcessInfo.processInfo.environment["APELIN_TEST_PACKAGE"]))
+        let input = try URL(fileURLWithPath: #require(ProcessInfo.processInfo.environment["LUROS_TEST_PACKAGE"]))
         let root = URL(fileURLWithPath: "/private/tmp/luros-toolchain-live-" + UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
         try PackageArchive(limits: .init()).extract(input, to: root)

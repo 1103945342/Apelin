@@ -103,14 +103,14 @@ enum GitLibrary {
         // By default libgit2 waits on a silent server for ever. A transfer
         // that stalled never ended its task, and the conversation reading
         // that task could be neither stopped nor continued (#59).
-        _ = apelin_git_set_option(Int32(GIT_OPT_SET_SERVER_CONNECT_TIMEOUT.rawValue), connectTimeout)
+        _ = luros_git_set_option(Int32(GIT_OPT_SET_SERVER_CONNECT_TIMEOUT.rawValue), connectTimeout)
         setServerTimeout(serverTimeout)
         return true
     }()
 
     /// Sets how long a remote may stay silent, in milliseconds.
     static func setServerTimeout(_ milliseconds: Int32) {
-        _ = apelin_git_set_option(Int32(GIT_OPT_SET_SERVER_TIMEOUT.rawValue), milliseconds)
+        _ = luros_git_set_option(Int32(GIT_OPT_SET_SERVER_TIMEOUT.rawValue), milliseconds)
     }
 
     /// The limits libgit2 holds now, in milliseconds; nil for one it does
@@ -118,7 +118,7 @@ enum GitLibrary {
     static var timeouts: (connect: Int32?, server: Int32?) {
         func read(_ option: git_libgit2_opt_t) -> Int32? {
             var value: Int32 = 0
-            return apelin_git_get_option(Int32(option.rawValue), &value) == 0 ? value : nil
+            return luros_git_get_option(Int32(option.rawValue), &value) == 0 ? value : nil
         }
         return (read(GIT_OPT_GET_SERVER_CONNECT_TIMEOUT), read(GIT_OPT_GET_SERVER_TIMEOUT))
     }

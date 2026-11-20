@@ -312,7 +312,7 @@ final class RepositoryImportController: TableController, UITextFieldDelegate {
                 ) { update in
                     try await RepositoryImporter.run(request, name: name, update: update)
                 }
-                NotificationCenter.default.post(name: .apelinProjectsChanged, object: nil)
+                NotificationCenter.default.post(name: .lurosProjectsChanged, object: nil)
                 SPIndicator.present(title: String(localized: "Project Imported"), preset: .done, haptic: .success)
                 close { [onOpen] in onOpen?(project, true) }
             } catch is CancellationError {

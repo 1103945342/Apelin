@@ -37,7 +37,7 @@ struct PromptCacheTests {
     private static func furnishedHome() throws -> TemporaryHome {
         let home = try TemporaryHome()
         _ = try EnvironmentContextTests.register(in: home)
-        try home.write("AGENTS.md", "Build with apelin_project_build.")
+        try home.write("AGENTS.md", "Build with luros_project_build.")
         let skill = home.dataRoot.skills.appendingPathComponent("theme", isDirectory: true)
         try FileManager.default.createDirectory(at: skill, withIntermediateDirectories: true)
         try "---\nname: theme-colours\ndescription: Use for theme work.\n---\nUse the palette.\n"
@@ -126,7 +126,7 @@ struct PromptCacheTests {
             // The first run: two calls, one of them a notice, then an answer.
             reply(fauxAssistantMessage(blocks: [
                 fauxToolCall(name: "file_list", arguments: ["reason": "Look at the project", "path": "."], id: "call-1"),
-                fauxToolCall(name: "apelin_notification_send", arguments: ["reason": "Say it is done", "body": "The list is ready."], id: "call-2"),
+                fauxToolCall(name: "luros_notification_send", arguments: ["reason": "Say it is done", "body": "The list is ready."], id: "call-2"),
             ], stopReason: .toolUse)),
             reply(fauxAssistantMessage("Listed.")),
             // The second run, past midnight, in another mode, after
@@ -152,7 +152,7 @@ struct PromptCacheTests {
         var revision = try store.save(MemoryRecord(title: "Editor", body: "Prefers tabs."), revision: store.read().revision).revision
         revision = try store.save(MemoryRecord(title: "Other", body: "Not this project's.", projectID: "another-project"), revision: revision).revision
         try Self.saveSkill(home, "release-notes", "Use for writing release notes.")
-        try home.write("AGENTS.md", "Build with apelin_project_build, then confirm it loaded.")
+        try home.write("AGENTS.md", "Build with luros_project_build, then confirm it loaded.")
         try FileManager.default.removeItem(at: home.dataRoot.url.appendingPathComponent("SDKs/.registry/\(EnvironmentContextTests.olderSDKID).json"))
         // The app sends the mode it has with every message.
         await session.setApprovalMode(.relaxed)
@@ -191,7 +191,7 @@ struct PromptCacheTests {
             }
         }
         let prompt = try #require(sent[0].systemPrompt)
-        for section in ["Reply in Chinese.", "Hooks SpringBoard only.", "theme-colours", "Build with apelin_project_build.", "# Environment", "# Approval modes"] {
+        for section in ["Reply in Chinese.", "Hooks SpringBoard only.", "theme-colours", "Build with luros_project_build.", "# Environment", "# Approval modes"] {
             #expect(prompt.contains(section), "the prompt has no \(section)")
         }
         for changing in ["2026-10-2", "Approval mode:", SystemState.closingTag, "Prefers tabs.", "release-notes"] {
@@ -227,7 +227,7 @@ struct PromptCacheTests {
         #expect(told.contains("  - skill added: release-notes (user): Use for writing release notes."), "\(told)")
         #expect(told.contains("  - project instructions: AGENTS.md is now:"), "\(told)")
         #expect(told.contains("  - environment:"), "\(told)")
-        #expect(blocks[1].contains("Build with apelin_project_build, then confirm it loaded."))
+        #expect(blocks[1].contains("Build with luros_project_build, then confirm it loaded."))
         #expect(blocks[1].contains("    - no longer: \(EnvironmentContextTests.olderSDKID): iOS 17.0"))
         #expect(!blocks[1].contains("Not this project's."), "another project's memory is not this chat's")
         // The reader's instructions turned on while the chat was open, told
@@ -284,8 +284,8 @@ struct PromptCacheTests {
         provider.setResponses([
             .factory { _, _, _, _ in
                 try fauxAssistantMessage(blocks: [
-                    fauxToolCall(name: "apelin_memory_save", arguments: ["reason": "Remember it", "revision": .string(store.read().revision), "title": "Editor", "body": "Prefers tabs.", "scope": "global"], id: "save"),
-                    fauxToolCall(name: "apelin_skill_save", arguments: ["reason": "Keep it", "name": "release-notes", "description": "Use for release notes.", "instructions": "Write them."], id: "skill"),
+                    fauxToolCall(name: "luros_memory_save", arguments: ["reason": "Remember it", "revision": .string(store.read().revision), "title": "Editor", "body": "Prefers tabs.", "scope": "global"], id: "save"),
+                    fauxToolCall(name: "luros_skill_save", arguments: ["reason": "Keep it", "name": "release-notes", "description": "Use for release notes.", "instructions": "Write them."], id: "skill"),
                 ], stopReason: .toolUse)
             },
             .factory { _, _, _, _ in
@@ -333,7 +333,7 @@ struct PromptCacheTests {
                 // the user, in Settings, for this project
                 try store.save(MemoryRecord(title: "Build", body: "Runs make.", projectID: home.project.id), revision: store.read().revision)
                 return try fauxAssistantMessage(blocks: [
-                    fauxToolCall(name: "apelin_memory_save", arguments: ["reason": "Note it there", "revision": .string(store.read().revision), "title": "Build", "body": "Runs cmake.", "project": "Weather"], id: "save"),
+                    fauxToolCall(name: "luros_memory_save", arguments: ["reason": "Note it there", "revision": .string(store.read().revision), "title": "Build", "body": "Runs cmake.", "project": "Weather"], id: "save"),
                 ], stopReason: .toolUse)
             },
             .message(fauxAssistantMessage("Saved.")),
@@ -372,7 +372,7 @@ struct PromptCacheTests {
         // three replies of about 10k tokens each: more than kwwk keeps as they are
         let long = String(repeating: "The build log says the hook loaded. ", count: 1200)
         provider.setResponses([
-            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove it", "installation_id": "inst-1"])], stopReason: .toolUse)),
+            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "luros_package_remove", arguments: ["reason": "Remove it", "installation_id": "inst-1"])], stopReason: .toolUse)),
             .factory { context, options, _, _ in
                 await requests.add(context, options)
                 return fauxAssistantMessage("First: " + long)
@@ -452,7 +452,7 @@ struct PromptCacheTests {
         // The run takes the queued message and the steer one turn each,
         // then the other conversation's message starts the next.
         provider.setResponses([
-            reply(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove it", "installation_id": "inst-1"])], stopReason: .toolUse)),
+            reply(fauxAssistantMessage(blocks: [fauxToolCall(name: "luros_package_remove", arguments: ["reason": "Remove it", "installation_id": "inst-1"])], stopReason: .toolUse)),
             reply(fauxAssistantMessage("Removed, and the logs kept.")),
             reply(fauxAssistantMessage("It was inst-1.")),
             reply(fauxAssistantMessage("Reviewed.")),

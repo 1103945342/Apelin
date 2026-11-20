@@ -58,7 +58,7 @@ struct EnvironmentContextTests {
         "architectures":{"rootless":["arm64","arm64e"],"roothide":["arm64e"]},
         "products":[{"id":"Tweak","type":"dylib","name":"Tweak","sources":["Sources/*.x"]}],
         "build":{"steps":[{"compile":{"product":"Tweak"}},{"link":{"product":"Tweak"}}]},
-        "package":{"id":"local.apelin.hello","version":"0.0.1"}}
+        "package":{"id":"local.luros.hello","version":"0.0.1"}}
         """)
         return (canonical(toolchain.path + "/usr/bin"), canonical(sdk.path))
     }
@@ -205,7 +205,7 @@ struct EnvironmentContextTests {
         #expect(first.contains("- Kind: tweak; Objective-C; deployment target 15.0; architectures roothide arm64e, rootless arm64 arm64e"))
         #expect(first.contains("- Template: com.fluoxetine.luros.dev.tweak tweak 1.0.0"))
         #expect(first.contains("- Build: Luros's build tool, 2 steps; products Tweak (dylib)"))
-        #expect(first.contains("- Package: local.apelin.hello 0.0.1"))
+        #expect(first.contains("- Package: local.luros.hello 0.0.1"))
         #expect(first.contains("- Git: on branch main at abc123; nothing to commit."), "as the host's git status answered")
         let tree = first.components(separatedBy: "\n")
         for line in ["Sources/", "  Tweak.x", "Resources/", "  Info.plist", "luros-project.json", ".gitignore", "keep.log", "outside@"] {

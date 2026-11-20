@@ -55,13 +55,13 @@ func agentNoticeChecks() async {
     _ = track.take("prompt", payload: object(["id": .string("m"), "text": .string("Hide the dock\nplease")]), title: nil, posted: none)
     _ = track.take("toolCall", payload: object([
         "id": .string("call-1"),
-        "tool": .string("apelin_project_build"),
+        "tool": .string("luros_project_build"),
         "arguments": .string(#"{"reason":"Build the tweak to check it compiles"}"#),
     ]), title: nil, posted: none)
     let approval = track.take("approvalRequested", payload: object([
         "approvalID": .string("a-1"),
         "toolCallID": .string("call-1"),
-        "tool": .string("apelin_project_build"),
+        "tool": .string("luros_project_build"),
         "reason": .string("The build description changed. Review it before running."),
     ]), title: nil, posted: none)
     check(
@@ -118,7 +118,7 @@ func agentNoticeChecks() async {
     let consoleApproval = headless.take("approvalRequested", payload: object(["approvalID": .string("a")]), title: nil, posted: none)
     check(console == nil && consoleApproval == nil && headless.marks == AgentNoticeMarks(turns: 1, approvals: 1), "a headless session posts nothing")
 
-    // MARK: The agent's own notices (apelin_notification_send)
+    // MARK: The agent's own notices (luros_notification_send)
 
     check(AgentNoticeRules.plain("  Build\n\tfailed:\u{202E}  see\u{0007} log ") == "Build failed: see log", "a notice is one plain line")
     check(AgentNoticeRules.plain(" \n\u{200F} ") == nil && AgentNoticeRules.plain(nil) == nil, "nothing left is no notice")

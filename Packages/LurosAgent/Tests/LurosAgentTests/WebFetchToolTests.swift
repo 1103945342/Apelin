@@ -5,7 +5,7 @@ import KWWKAgent
 import KWWKAI
 import Testing
 
-@Suite("apelin_web_fetch")
+@Suite("luros_web_fetch")
 struct WebFetchToolTests {
     /// Every fetch here goes to `WebStub`, never the network.
     private static let web: WebFetch = {
@@ -263,7 +263,7 @@ struct WebFetchToolTests {
         WebStub.serve("https://\(host)/notes.txt", .text("hello"))
         let events = EventCollector()
         let runner = try Self.runner(home, mode: .relaxed, gate: ApprovalGate { await events.add($0) })
-        #expect(runner.agentTools(mcp: []).contains { $0.name == "apelin_web_fetch" })
+        #expect(runner.agentTools(mcp: []).contains { $0.name == "luros_web_fetch" })
         #expect(!AgentToolName.webFetch.isProjectOnly, "General Chat has it too")
         let schema = ToolReason.adding(to: AgentToolName.webFetch.parameters)
         #expect(schema["required"] == .array(["url", "reason"]))
@@ -298,7 +298,7 @@ struct WebFetchToolTests {
             try await Task.sleep(nanoseconds: 1_000_000)
         }
         let request = try #require(await gate.pending.first)
-        #expect(request.tool == "apelin_web_fetch" && request.allowsSessionScope)
+        #expect(request.tool == "luros_web_fetch" && request.allowsSessionScope)
         #expect(request.arguments.contains("https://\(host)/page"))
         #expect(!WebStub.requested.contains("https://\(host)/page"), "nothing is sent before the user answers")
         try await gate.resolve(request.id, decision: .approve(.once))

@@ -268,7 +268,7 @@ public final class BuildWorker: @unchecked Sendable {
         let problem: String?
         do {
             problem = try ExternalBuildDeclaration.read(manifest, root: root) == nil
-                ? "This workspace declares no build: add \"external\": {\"script\": \"<a project file>\"} to its luros-project.json; the script writes one .deb into APELIN_PACKAGE_DIR."
+                ? "This workspace declares no build: add \"external\": {\"script\": \"<a project file>\"} to its luros-project.json; the script writes one .deb into LUROS_PACKAGE_DIR."
                 : nil
         } catch {
             problem = (error as? LurosError)?.message ?? "\(error)"
@@ -332,7 +332,7 @@ public final class BuildWorker: @unchecked Sendable {
         guard let declaration = try ExternalBuildDeclaration.read(manifest, root: root) else {
             throw LurosError(
                 .badRequest,
-                "this workspace declares no build: add \"external\": {\"script\": \"<a project file>\"} to its luros-project.json; the script writes one .deb into APELIN_PACKAGE_DIR",
+                "this workspace declares no build: add \"external\": {\"script\": \"<a project file>\"} to its luros-project.json; the script writes one .deb into LUROS_PACKAGE_DIR",
             )
         }
         let inputs = ExternalBuild.Inputs(

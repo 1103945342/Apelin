@@ -5,7 +5,7 @@ import LurosProtocol
 import Foundation
 import Testing
 
-@Suite("apelin_feedback_send is one feedbackSend request")
+@Suite("luros_feedback_send is one feedbackSend request")
 struct FeedbackBackendTests {
     @Test
     func `the issue goes as feedbackSend with its title and body alone`() async throws {
@@ -109,7 +109,7 @@ struct FeedbackBackendTests {
     @Test
     func `the approval carries the edit the host matches, with no field that stays`() {
         let request = ApprovalRequest(
-            id: "a", toolCallID: "c", tool: "apelin_feedback_edit", arguments: "{}", workingDirectory: ".",
+            id: "a", toolCallID: "c", tool: "luros_feedback_edit", arguments: "{}", workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Replaces the body of issue #12.",
             detail: .feedbackEdit(FeedbackEditApproval(
                 repository: "1103945342/Luros", number: 12, url: "https://github.com/1103945342/Luros/issues/12",
@@ -130,7 +130,7 @@ struct FeedbackBackendTests {
     @Test
     func `the approval carries the issue the host matches`() {
         let request = ApprovalRequest(
-            id: "a", toolCallID: "c", tool: "apelin_feedback_send", arguments: "{}", workingDirectory: ".",
+            id: "a", toolCallID: "c", tool: "luros_feedback_send", arguments: "{}", workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Posts this title and body as a public issue.",
             detail: .feedback(FeedbackApproval(repository: "1103945342/Luros", title: "T", body: "B")),
             allowsSessionScope: false,

@@ -5,7 +5,7 @@ import LurosProtocol
 import Foundation
 import Testing
 
-@Suite("apelin_git_create_repository is one gitRepositoryCreate request")
+@Suite("luros_git_create_repository is one gitRepositoryCreate request")
 struct RepositoryBackendTests {
     private static let created = GitRepositoryCreateResponse(
         fullName: "someone/clock-tweak",
@@ -62,7 +62,7 @@ struct RepositoryBackendTests {
     @Test
     func `the approval carries the repository the host matches`() {
         let request = ApprovalRequest(
-            id: "a", toolCallID: "c", tool: "apelin_git_create_repository", arguments: "{}", workingDirectory: ".",
+            id: "a", toolCallID: "c", tool: "luros_git_create_repository", arguments: "{}", workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Creates the empty private repository clock-tweak.",
             detail: .repositoryCreate(RepositoryCreateApproval(owner: nil, name: "clock-tweak", visibility: .private, description: nil)),
             allowsSessionScope: false,

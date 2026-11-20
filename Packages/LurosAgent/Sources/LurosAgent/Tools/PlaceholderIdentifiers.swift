@@ -1,32 +1,32 @@
 import Foundation
 
 /// The identifiers `projectCreate` makes up for a project nobody gave them
-/// to, `local.apelin.<the folder's slug>`, while the project still has
+/// to, `local.luros.<the folder's slug>`, while the project still has
 /// them: its package ID and its app's bundle ID. The distribution check
 /// names them only when a release is prepared; in one project the package
 /// ID was changed then, after a debug package was installed, and the user
 /// met installer errors moving from one to the other. So the moments a new
 /// project takes shape say so in their result, for the agent to ask the
-/// user first: apelin_project_create, an automatic apelin_project_rename,
+/// user first: luros_project_create, an automatic luros_project_rename,
 /// and a Debug build while nothing the project built is installed. A note,
 /// never a refusal.
 public enum PlaceholderIdentifiers {
     /// What `projectCreate` puts in front of an identifier nobody chose, as
     /// luros-build's `DistributionCheck` reads it.
-    static let prefix = "local.apelin."
+    static let prefix = "local.luros."
 
-    /// apelin_project_create's, for the project it made at `root`: the
+    /// luros_project_create's, for the project it made at `root`: the
     /// conversation that made it has no file tools there.
     public static func createHint(in root: ScopedRoot) -> String? {
         guard let named = named(in: root) else { return nil }
         return "Its \(named.subject) Luros made up. Before its first install the user should choose \(named.permanent), kept the same for debug and release builds: ask here and pass \(named.them) on in the prompt of the conversation you open for it, or tell that conversation to ask."
     }
 
-    /// An automatic apelin_project_rename's: the project has just taken
+    /// An automatic luros_project_rename's: the project has just taken
     /// the name its goal gave it.
     static func renameHint(in root: ScopedRoot) -> String? {
         guard let named = named(in: root) else { return nil }
-        return "This project's \(named.subject) Luros made up: ask the user for \(named.permanent) before the first install and keep \(named.them) the same for debug and release builds (file_grep for local.apelin. finds every file that spells one). Once a package of this project is installed, a new identifier makes another package: agree a migration with the user first, as the luros-packaging-and-install skill says."
+        return "This project's \(named.subject) Luros made up: ask the user for \(named.permanent) before the first install and keep \(named.them) the same for debug and release builds (file_grep for local.luros. finds every file that spells one). Once a package of this project is installed, a new identifier makes another package: agree a migration with the user first, as the luros-packaging-and-install skill says."
     }
 
     /// A Debug build's, while nothing the project built is installed.

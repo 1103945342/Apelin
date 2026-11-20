@@ -12,9 +12,9 @@ public struct AgentSkill: Codable, Sendable, Equatable {
     public var name: String
     public var description: String
     public var source: AgentSkillSource
-    /// The instructions, cut where `apelin_skill_read` cuts them.
+    /// The instructions, cut where `luros_skill_read` cuts them.
     public var body: String
-    /// The other files `apelin_skill_read` serves for it, relative to its folder.
+    /// The other files `luros_skill_read` serves for it, relative to its folder.
     public var files: [String]
     /// A user skill's place in the skills folder, relative to it: its
     /// folder, or its file for a `.md` at the top. Absent for a built-in.

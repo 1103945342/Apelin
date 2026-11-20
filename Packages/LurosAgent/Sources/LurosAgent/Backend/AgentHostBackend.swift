@@ -44,8 +44,8 @@ public protocol AgentHostBackend: Sendable {
     func readUITree(_ request: ReadUITreeRequest) async throws -> ReadUITreeResponse
     /// One structured UI action on the target.
     func uiAction(_ request: UIActionRequest) async throws -> UIActionResponse
-    /// Where a registered SDK lives, for `apelin_sdk_analyze_framework` and
-    /// `apelin_sdk_read_header` to read as mobile.
+    /// Where a registered SDK lives, for `luros_sdk_analyze_framework` and
+    /// `luros_sdk_read_header` to read as mobile.
     func registeredSDK(_ request: RegisteredSDKRequest) async throws -> RegisteredSDKResponse
     /// What a package for other people should not carry yet: warnings,
     /// never a refusal.
@@ -176,7 +176,7 @@ public protocol AgentHostBackend: Sendable {
     func callToolExtension(_ request: ToolExtensionCallRequest) async throws -> ToolExtensionCallResponse
     func closeToolExtension(sessionID: String) async throws
     /// The linked package repository, the GitHub sign-in and each build's
-    /// package record, read before apelin_package_publish asks.
+    /// package record, read before luros_package_publish asks.
     func packagePublication(_ request: PackagePublicationRequest) async throws -> PackagePublication
     /// Builds' packages published to the linked package repository as they
     /// were built, read to the end; the host checks they were approved.

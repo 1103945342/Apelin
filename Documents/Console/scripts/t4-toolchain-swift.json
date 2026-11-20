@@ -26,7 +26,7 @@
     {"op": "projectCreate", "label": "project", "request": {
       "templateID": "com.fluoxetine.luros.dev.app/uikit-swift",
       "name": "T4 Swift App",
-      "values": {"toolchainID": "${after.response.toolchains.1.id}", "packageID": "local.apelin.t4-swift-app", "displayName": "T4 Swift App"}
+      "values": {"toolchainID": "${after.response.toolchains.1.id}", "packageID": "local.luros.t4-swift-app", "displayName": "T4 Swift App"}
     }},
     {"op": "projectCheck", "label": "check", "request": {"projectID": "${project.response.projectID}"}},
     {"op": "expect", "request": {"step": "check", "path": "response.passed", "equals": true}},

@@ -3,7 +3,7 @@ import Foundation
 import KWWKAgent
 import KWWKAI
 
-/// apelin_skill_list, apelin_skill_save and apelin_skill_remove: the user's
+/// luros_skill_list, luros_skill_save and luros_skill_remove: the user's
 /// skills folder, written as mobile through the writer Settings ▸ Skills
 /// uses (`SkillFolder`). A save is checked as kwwk will read it before it is
 /// asked about, and again, staged, before it goes in.
@@ -38,7 +38,7 @@ struct SkillTools {
         var name: String
         var location: String
         var replaced: Bool
-        var note = "Every conversation lists it from its next message; apelin_skill_read reads it."
+        var note = "Every conversation lists it from its next message; luros_skill_read reads it."
     }
 
     struct Removed: Encodable {
@@ -46,7 +46,7 @@ struct SkillTools {
         var location: String
     }
 
-    /// What a session is offered, without the instructions apelin_skill_read
+    /// What a session is offered, without the instructions luros_skill_read
     /// answers.
     func list() -> Listing {
         let listing = SkillCatalog.listing(userDirectory: directory)
@@ -80,7 +80,7 @@ struct SkillTools {
         let place = directory.appendingPathComponent(name, isDirectory: true)
         let occupied = Self.exists(place)
         if Self.exists(directory.appendingPathComponent(name + ".md")) {
-            throw ToolArgumentError("\(name).md at the top of the skills folder is a skill of that name; remove it with apelin_skill_remove first, or choose another name.")
+            throw ToolArgumentError("\(name).md at the top of the skills folder is a skill of that name; remove it with luros_skill_remove first, or choose another name.")
         }
         if occupied, arguments.argBool("replace") != true {
             throw ToolArgumentError("The skills folder already holds \(name); pass replace: true to replace it, or choose another name.")
@@ -99,7 +99,7 @@ struct SkillTools {
         let name = try arguments.requireString("name").trimmingCharacters(in: .whitespaces)
         let skills = SkillCatalog.load(userDirectory: directory).skills
         guard let skill = skills.first(where: { $0.name == name }) else {
-            throw ToolArgumentError("No skill is named \(name); apelin_skill_list names them.")
+            throw ToolArgumentError("No skill is named \(name); luros_skill_list names them.")
         }
         guard skill.isUserSkill, let location = skill.location else {
             throw ToolArgumentError("\(name) is built into Luros and cannot be removed.")

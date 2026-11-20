@@ -36,7 +36,7 @@ mkdir -p "$work/tmp"
 # The checks make their scratch folders from NSTemporaryDirectory, so TMPDIR
 # points at this run's own folder. It is made through the relative path above
 # and handed over as the real absolute path, taken at run time.
-export TMPDIR="${APELIN_PROJECT_ROOT:-$root}/$work/tmp"
+export TMPDIR="${LUROS_PROJECT_ROOT:-$root}/$work/tmp"
 trap 'rm -rf -- "${work:?}"' EXIT
 
 # Everything the checks reach, and the two stand-ins they compile instead of
@@ -83,4 +83,4 @@ PY
 swiftc -swift-version 5 -target arm64-apple-ios16.0 -Onone \
     -o "$work/terminal-backend" $(<"$work/files.txt")
 ldid "-S$entitlements" "$work/terminal-backend"
-APELIN_TERMINAL_SHELL="$(command -v sh || true)" "$work/terminal-backend"
+LUROS_TERMINAL_SHELL="$(command -v sh || true)" "$work/terminal-backend"

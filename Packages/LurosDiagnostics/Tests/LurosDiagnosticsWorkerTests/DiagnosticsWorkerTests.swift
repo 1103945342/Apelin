@@ -391,8 +391,8 @@ final class DiagnosticsWorkerTests: XCTestCase {
     /// bound to the app it is switching to: the target is waited for.
     func testATargetIsWaitedForWhileTheAppItLeavesIsStillInFront() throws {
         let icli = FakeIcli()
-        let apelin: [String: Any] = ["bundle_id": "com.fluoxetine.luros", "verified": true, "source": "runningboard"]
-        icli.fronts = [apelin, apelin]
+        let luros: [String: Any] = ["bundle_id": "com.fluoxetine.luros", "verified": true, "source": "runningboard"]
+        icli.fronts = [luros, luros]
         icli.front = ["bundle_id": "wiki.qaq.fila", "verified": true, "source": "runningboard"]
         var diagnostics = Diagnostics(icli: icli)
         diagnostics.settleInterval = 0.01
@@ -475,8 +475,8 @@ final class DiagnosticsWorkerTests: XCTestCase {
     /// the same tap goes through.
     func testARefusedAppIsNeverReachedByAUIAction() async throws {
         let icli = FakeIcli()
-        let apelin: [String: Any] = ["bundle_id": "com.fluoxetine.luros", "verified": true, "source": "runningboard"]
-        icli.front = apelin
+        let luros: [String: Any] = ["bundle_id": "com.fluoxetine.luros", "verified": true, "source": "runningboard"]
+        icli.front = luros
         var diagnostics = Diagnostics(icli: icli)
         diagnostics.settleInterval = 0.01
         diagnostics.settleTimeout = 0.05
@@ -516,7 +516,7 @@ final class DiagnosticsWorkerTests: XCTestCase {
 
         icli.front = ["bundle_id": "com.apple.Preferences", "verified": true, "source": "runningboard"]
         _ = try await service.uiAction(.init(action: .tap(x: 1, y: 2), refusedBundleIDs: refused))
-        icli.front = apelin
+        icli.front = luros
         _ = try await service.uiAction(.init(action: .tap(x: 200, y: 4)))
         XCTAssertEqual(icli.taps.map(\.0), [1, 200], "another app in front, and any app without the list")
     }

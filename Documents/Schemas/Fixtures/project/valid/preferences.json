@@ -109,7 +109,7 @@
     ]
   },
   "package": {
-    "id": "com.example.apelinsettings",
+    "id": "com.example.lurossettings",
     "name": "Luros Settings",
     "version": "0.0.1",
     "description": "Built on this device with Luros.",

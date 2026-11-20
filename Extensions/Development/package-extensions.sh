@@ -5,7 +5,7 @@
 #
 #   Extensions/Development/package-extensions.sh <output-directory> [roothide|rootless ...]
 #
-# With no flavor named, both are built. Set APELIN_EXTENSIONS_NO_BUILD=1 to
+# With no flavor named, both are built. Set LUROS_EXTENSIONS_NO_BUILD=1 to
 # skip the Mac build of every template (check-templates.py --no-build); the
 # manifest, template and digest checks always run.
 #
@@ -33,7 +33,7 @@ flavors=("$@")
 command -v dpkg-deb >/dev/null || { echo "error: dpkg-deb is required (install it with your preferred package manager)" >&2; exit 69; }
 command -v python3 >/dev/null || { echo "error: python3 is required" >&2; exit 69; }
 
-if [[ "${APELIN_EXTENSIONS_NO_BUILD:-0}" == 1 ]]; then
+if [[ "${LUROS_EXTENSIONS_NO_BUILD:-0}" == 1 ]]; then
     python3 -I -B "$here/check-templates.py" --no-build
 else
     python3 -I -B "$here/check-templates.py"
@@ -55,7 +55,7 @@ manifest = luros_schema.load_json(sys.argv[2])
 field = sys.argv[3]
 if field == "depends":
     flavor = sys.argv[4]
-    relations = [f"com.fluoxetine.luros (>= {manifest['apelinCompatibility']['minimumAppVersion']})"]
+    relations = [f"com.fluoxetine.luros (>= {manifest['lurosCompatibility']['minimumAppVersion']})"]
     relations += manifest["requirements"].get("runtimeDependencies", {}).get(flavor, [])
     for component in manifest.get("support", {}).values():
         for relation in component.get("runtimeDependencies", {}).get(flavor, []):

@@ -1,6 +1,6 @@
 import Foundation
 
-// MARK: - apelin_package_confirm_loaded
+// MARK: - luros_package_confirm_loaded
 
 public struct ConfirmLoadedRequest: Sendable, Hashable, Codable {
     public var context: HostCallContext

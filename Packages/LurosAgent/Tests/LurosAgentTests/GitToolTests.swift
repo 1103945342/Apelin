@@ -86,7 +86,7 @@ struct GitToolTests {
         for tool in Self.gitTools {
             #expect(!general.contains(tool.rawValue), "\(tool.rawValue)")
         }
-        #expect(general.contains("apelin_project_create"))
+        #expect(general.contains("luros_project_create"))
     }
 
     // MARK: Approval
@@ -238,7 +238,7 @@ struct GitToolTests {
             _ = try await harness.run(.projectBuild, [:])
         } catch let error as ToolDeniedError {
             #expect(error.message.contains("\"external\""))
-            #expect(error.message.contains("APELIN_PACKAGE_DIR"))
+            #expect(error.message.contains("LUROS_PACKAGE_DIR"))
             #expect(error.message.contains("luros-external-build skill"))
         }
         #expect(await harness.backend.calls.isEmpty)
@@ -250,7 +250,7 @@ struct GitToolTests {
         let home = try TemporaryHome()
         defer { home.remove() }
         let root = try ScopedRoot(home.projectURL)
-        #expect(ProjectBuildSystem.read(in: root) == .apelin, "no manifest")
+        #expect(ProjectBuildSystem.read(in: root) == .luros, "no manifest")
         try home.write("luros-project.json", #"{"kind":"workspace"}"#)
         #expect(ProjectBuildSystem.read(in: root) == .external)
         try home.write("luros-project.json", #"{"kind":"workspace","buildSystem":"external"}"#)
@@ -258,9 +258,9 @@ struct GitToolTests {
         try home.write("luros-project.json", #"{"kind":"tweak","buildSystem":"external"}"#)
         #expect(ProjectBuildSystem.read(in: root) == .external)
         try home.write("luros-project.json", #"{"kind":"tweak","configurations":{}}"#)
-        #expect(ProjectBuildSystem.read(in: root) == .apelin)
+        #expect(ProjectBuildSystem.read(in: root) == .luros)
         try home.write("luros-project.json", "not json")
-        #expect(ProjectBuildSystem.read(in: root) == .apelin)
+        #expect(ProjectBuildSystem.read(in: root) == .luros)
     }
 
     @Test
@@ -270,7 +270,7 @@ struct GitToolTests {
         func prompt(_ buildSystem: ProjectBuildSystem) -> String {
             SystemPrompt.make(project: home.project, projectRoot: home.projectURL.path, skills: [], mcpServers: [], buildSystem: buildSystem)
         }
-        let tweak = prompt(.apelin)
+        let tweak = prompt(.luros)
         #expect(tweak.contains("only through the git_* tools"))
         #expect(tweak.contains("A refused push is never a reason to force it"))
         #expect(!tweak.contains("# Workspace"))
@@ -283,7 +283,7 @@ struct GitToolTests {
         #expect(workspace.contains("git_clone"))
         #expect(workspace.contains("Settings ▸ Git"))
 
-        #expect(prompt(.apelin).contains("git_push"))
+        #expect(prompt(.luros).contains("git_push"))
     }
 
     // MARK: Settings
@@ -331,10 +331,10 @@ struct GitToolTests {
     @Test
     func `a recorded call shows a mask for the token and nothing else changes`() {
         let arguments = #"{"host":"github.com","token":"ghp_secret","username":"octocat"}"#
-        let redacted = ToolArgumentRedaction.redacted(arguments, tool: "apelin_git_save_credential")
+        let redacted = ToolArgumentRedaction.redacted(arguments, tool: "luros_git_save_credential")
         #expect(!redacted.contains("ghp_secret"))
         #expect(redacted.contains("github.com") && redacted.contains("octocat"))
-        #expect(ToolArgumentRedaction.redacted("not json ghp_secret", tool: "apelin_git_save_credential") == "{}")
+        #expect(ToolArgumentRedaction.redacted("not json ghp_secret", tool: "luros_git_save_credential") == "{}")
         #expect(ToolArgumentRedaction.redacted(arguments, tool: "git_status") == arguments)
         // A session recorded before the rename relays its calls again on reopen.
         #expect(!ToolArgumentRedaction.redacted(arguments, tool: "git_save_credential").contains("ghp_secret"))

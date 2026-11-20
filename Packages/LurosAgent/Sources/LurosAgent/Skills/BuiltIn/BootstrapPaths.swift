@@ -11,7 +11,7 @@ extension BuiltInSkills {
         write a path.
 
         The build tells C and Objective-C code which bootstrap it is building
-        for: `APELIN_BOOTSTRAP_ROOTHIDE` or `APELIN_BOOTSTRAP_ROOTLESS` is `1`
+        for: `LUROS_BOOTSTRAP_ROOTHIDE` or `LUROS_BOOTSTRAP_ROOTLESS` is `1`
         (Swift gets them as conditions). The environment section of the system
         prompt names this device's bootstrap and its install root.
 
@@ -36,7 +36,7 @@ extension BuiltInSkills {
            not vroot-linked, so it opens files at their real kernel path. A
            bootstrap path like `/Library/…` must be made absolute first:
            `/var/jb` + path on rootless, the jbroot + path on roothide. This
-           skill's file `LurosBootstrap.h` does exactly that (apelin_skill_read with
+           skill's file `LurosBootstrap.h` does exactly that (luros_skill_read with
            that file); it is what roothide's `jbroot()` and rootless's
            `ROOT_PATH_NS()` do, written so the one source builds for both
            bootstraps. System paths — `/System`, `/usr/lib/libSystem.B.dylib`,
@@ -48,7 +48,7 @@ extension BuiltInSkills {
            `/rootfs`. So `pwd -P`, `realpath` and `readlink` in that shell
            print `/var/mobile/…` for a path your compiler knows by the jbroot,
            and a path the shell prints is not the name to hand a compiler.
-           Give the compiler relative paths or `$APELIN_PROJECT_ROOT`. On
+           Give the compiler relative paths or `$LUROS_PROJECT_ROOT`. On
            rootless the shell and the kernel agree (`/var/jb`).
         3. **launchd and the installer** read a plist or run a script in the
            bootstrap. See the two sections below.
@@ -85,7 +85,7 @@ extension BuiltInSkills {
         ## Never store a resolved path
         On roothide everything under the jbroot moves when it is renamed:
         Luros's data folder (in the jbroot's own `var/mobile`), the
-        project's real path, `$APELIN_PROJECT_ROOT`, `$APELIN_TOOLCHAIN_BIN`,
+        project's real path, `$LUROS_PROJECT_ROOT`, `$LUROS_TOOLCHAIN_BIN`,
         `SDKROOT`, every toolchain's and SDK's folder. A path read today (in
         a tool's result, the environment section or a variable's value) may
         be gone after the next reboot or jailbreak, so the jbroot's real
@@ -98,11 +98,11 @@ extension BuiltInSkills {
           literal.
         - a plist or maintainer script: `@PREFIX@/…`, `@ROOTFS@/…`.
         - a build script or Makefile: the variables Luros sets when it runs
-          (`$APELIN_PROJECT_ROOT`, `$SDKROOT`, `$APELIN_TOOLCHAIN_BIN`, and
-          for a workspace build `$APELIN_PREFIX` and `$APELIN_PACKAGE_DIR`),
+          (`$LUROS_PROJECT_ROOT`, `$SDKROOT`, `$LUROS_TOOLCHAIN_BIN`, and
+          for a workspace build `$LUROS_PREFIX` and `$LUROS_PACKAGE_DIR`),
           or paths relative to the project. Each is checked before it is
-          used (`${APELIN_PACKAGE_DIR:?}`), since a run that did not set it
-          leaves it empty; `$APELIN_PREFIX` is empty on roothide by design,
+          used (`${LUROS_PACKAGE_DIR:?}`), since a run that did not set it
+          leaves it empty; `$LUROS_PREFIX` is empty on roothide by design,
           so nothing is removed under it alone.
         - a note (`AGENTS.md`, memory, a skill): the place in words or a
           variable ("the project root", "the registered iOS 17 SDK",
@@ -110,7 +110,7 @@ extension BuiltInSkills {
         On rootless `/var/jb` and `/var/mobile` do not move, so nothing there
         goes stale on this device; still spell paths as above, since the
         project also builds for roothide, and write a bare `/var/jb` only
-        where the code is rootless's alone (`APELIN_BOOTSTRAP_ROOTLESS`).
+        where the code is rootless's alone (`LUROS_BOOTSTRAP_ROOTLESS`).
 
         ## Quick rules
         - Opening a bootstrap file from your own code → make it absolute with
@@ -118,7 +118,7 @@ extension BuiltInSkills {
         - A system file (`/var/mobile/…`, `/System/…`, a container) from your
           code → use it as it is.
         - A path for a compiler, from a script → relative or
-          `$APELIN_PROJECT_ROOT`, never one a bootstrap tool printed.
+          `$LUROS_PROJECT_ROOT`, never one a bootstrap tool printed.
         - A path in a plist or maintainer script → `@PREFIX@/…` or
           `@ROOTFS@/…`, `substitutePrefix: true` for a shipped file.
         - Comparing two paths → canonicalise both first (`realpath`): `/var`
@@ -151,7 +151,7 @@ extension BuiltInSkills {
     //
     // This is what roothide's jbroot() and rootless's ROOT_PATH_NS() do; it is
     // here so the one source builds for both without libroothide or libroot.
-    // The build defines APELIN_BOOTSTRAP_ROOTHIDE or APELIN_BOOTSTRAP_ROOTLESS.
+    // The build defines LUROS_BOOTSTRAP_ROOTHIDE or LUROS_BOOTSTRAP_ROOTLESS.
     #pragma once
 
     #import <Foundation/Foundation.h>
@@ -161,7 +161,7 @@ extension BuiltInSkills {
     // found (roothide, no .jbroot- ancestor). Cached for the process; do not
     // persist it — roothide renames the jbroot at every jailbreak.
     static inline NSString *_Nullable LurosBootstrapRoot(void) {
-    #ifdef APELIN_BOOTSTRAP_ROOTHIDE
+    #ifdef LUROS_BOOTSTRAP_ROOTHIDE
         static NSString *root;
         static dispatch_once_t once;
         dispatch_once(&once, ^{

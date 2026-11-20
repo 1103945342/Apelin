@@ -910,9 +910,9 @@ struct AccountDeskTests {
     @Test
     func `every stored provider is registered by kwwk or Luros`() {
         let kwwk = Set(providerDirectory.map(\.storeId))
-        let apelin = Set(AgentProvider.allCases.map(\.storeID))
-        #expect(kwwk.subtracting(apelin).isEmpty, "kwwk stores \(kwwk.subtracting(apelin).sorted()) with no provider")
-        #expect(apelin.subtracting(kwwk) == [CredentialProviderID.deepSeek])
+        let luros = Set(AgentProvider.allCases.map(\.storeID))
+        #expect(kwwk.subtracting(luros).isEmpty, "kwwk stores \(kwwk.subtracting(luros).sorted()) with no provider")
+        #expect(luros.subtracting(kwwk) == [CredentialProviderID.deepSeek])
         // A store id kwwk keeps as a typed key and does not sign in to is
         // a key form here.
         let subscriptions = Set(OAuthSubscriptions.providers.map(\.id))
@@ -1064,7 +1064,7 @@ struct AccountDeskTests {
         try await recorder.waitFor { $0.state != nil }
         #expect(recorder.state == .succeeded)
         #expect(try await store.credentials(for: "openrouter")?.access == "sk-or-SECRET")
-        #expect(try await store.credentials(for: "openrouter")?.extras["apelinSignInMethod"] == .string("apiKey"))
+        #expect(try await store.credentials(for: "openrouter")?.extras["lurosSignInMethod"] == .string("apiKey"))
         #expect(!recorder.transcript.contains("SECRET"))
     }
 

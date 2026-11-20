@@ -172,7 +172,7 @@ actor WorkerSupervisor {
             "HOME=\(home)",
             "PATH=\(installRoot == "/" ? "" : installRoot)/usr/bin:/usr/bin:/bin",
             "DISABLE_TWEAKS=1",
-            "APELIN_ROLE=\(key.role.rawValue)",
+            "LUROS_ROLE=\(key.role.rawValue)",
         ]
         let pid: pid_t
         do {

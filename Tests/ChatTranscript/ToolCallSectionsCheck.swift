@@ -78,7 +78,7 @@ func checkToolCallSections() {
 
     var unknown = ChatMessage(role: .tool, text: "Look it up")
     unknown.tool = "mcp_search"
-    unknown.detail = json(["reason": .string("Find it"), "query": .string("apelin")])
+    unknown.detail = json(["reason": .string("Find it"), "query": .string("luros")])
     precondition(ToolCallSections.sections(of: unknown).map(\.name) == ["query"],
                  "a tool this build does not know shows its arguments")
 

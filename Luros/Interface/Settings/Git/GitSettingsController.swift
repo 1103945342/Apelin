@@ -136,7 +136,7 @@ final class GitSettingsController: TableController {
 
     // MARK: - Loading
 
-    @objc(apelin_load) private dynamic func load() {
+    @objc(luros_load) private dynamic func load() {
         loader?.cancel()
         dataSource.beginLoad()
         loader = Task { [weak self] in

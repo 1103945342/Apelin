@@ -64,10 +64,10 @@ public enum AgentSessionEvent: Sendable, Hashable, Codable {
     case approvalRequested(ApprovalRequest)
     case approvalResolved(requestID: String, decision: ApprovalDecision)
     /// The agent asked Luros to tell the user something while they are
-    /// away (`apelin_notification_send`): plain text within `AgentNoticeRules`' lengths,
+    /// away (`luros_notification_send`): plain text within `AgentNoticeRules`' lengths,
     /// which the session host posts as a banner by its own rules.
     case notice(title: String?, body: String)
-    /// The agent changed the conversation's own run mode (`apelin_run_mode`),
+    /// The agent changed the conversation's own run mode (`luros_run_mode`),
     /// as the composer's pill would: the mode it is now and why. The app
     /// writes it where the pill reads it, so the next prompt goes out with it.
     case runModeChanged(runMode: AgentRunMode, reason: String)

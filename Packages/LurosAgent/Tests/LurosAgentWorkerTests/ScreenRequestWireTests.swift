@@ -47,7 +47,7 @@ struct ScreenRequestWireTests {
     @Test
     func `screenControl names the request as the host is asked for it`() throws {
         for (use, detail) in Self.shapes {
-            let payload = EventRelay.approvalPayload(Self.request(.screenControl(use), tool: "apelin_screen_interact"))
+            let payload = EventRelay.approvalPayload(Self.request(.screenControl(use), tool: "luros_screen_interact"))
             let expected = try JSONCoding.decode(LurosCore.JSONValue.self, from: Data(detail.utf8))
             #expect(payload["detail"] == expected, "\(use)")
         }
@@ -56,7 +56,7 @@ struct ScreenRequestWireTests {
     @Test
     func `an element with nothing to tap it by names no request, so no approval covers it`() {
         let use = ScreenControlApproval.interact(targetID: nil, action: .tapElement(id: "index:3"))
-        let payload = EventRelay.approvalPayload(Self.request(.screenControl(use), tool: "apelin_screen_interact"))
+        let payload = EventRelay.approvalPayload(Self.request(.screenControl(use), tool: "luros_screen_interact"))
         #expect(payload["detail"]?[ScreenConsent.detailKey]?["operation"] == .string("uiAction"))
         #expect(payload["detail"]?[ScreenConsent.detailKey]?["request"] == nil)
     }
@@ -74,7 +74,7 @@ struct ScreenRequestWireTests {
         let sent = try #require(fixture.host.requests(LurosProtocol.UIActionRequest.self).first)
         let payload = EventRelay.approvalPayload(Self.request(
             .screenControl(.interact(targetID: "com.apple.mobilesafari", action: action)),
-            tool: "apelin_screen_interact",
+            tool: "luros_screen_interact",
         ))
         let shown = try #require(payload["detail"]?[ScreenConsent.detailKey]?["request"])
             .decode(LurosProtocol.UIActionRequest.self)

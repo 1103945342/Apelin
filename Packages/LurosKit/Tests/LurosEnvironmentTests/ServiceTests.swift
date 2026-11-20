@@ -30,7 +30,7 @@ final class GitServiceTests: XCTestCase {
         _ = try git.stage(GitStageRequest(projectID: id, paths: ["main.c", "luros-project.json"]))
         XCTAssertTrue(try git.diff(GitDiffRequest(projectID: id, staged: true)).diff.contains("+int x;"))
         _ = try git.unstage(GitUnstageRequest(projectID: id, paths: ["luros-project.json"]))
-        let commit = try git.commit(GitCommitRequest(projectID: id, message: "Start", authorName: "A", authorEmail: "a@apelin.invalid"))
+        let commit = try git.commit(GitCommitRequest(projectID: id, message: "Start", authorName: "A", authorEmail: "a@luros.invalid"))
         XCTAssertEqual(commit.commitID.count, 40)
         XCTAssertEqual(try git.status(GitStatusRequest(projectID: id)).head, commit.commitID)
     }
@@ -42,7 +42,7 @@ final class GitServiceTests: XCTestCase {
         let git = GitService(layout: home.layout)
         _ = try git.stage(GitStageRequest(projectID: "Hello", paths: ["x"]))
         try home.layout.make(home.layout.settings)
-        try Data(#"{"authorName": "Settings Person", "authorEmail": "settings@apelin.invalid"}"#.utf8).write(to: home.layout.gitSettings)
+        try Data(#"{"authorName": "Settings Person", "authorEmail": "settings@luros.invalid"}"#.utf8).write(to: home.layout.gitSettings)
         let commit = try git.commit(GitCommitRequest(projectID: "Hello", message: "From settings"))
         XCTAssertEqual(commit.commitID.count, 40)
     }
@@ -83,7 +83,7 @@ final class GitServiceTests: XCTestCase {
     }
 
     func testCloneIntoAProjectOverTheNetwork() throws {
-        try XCTSkipIf(ProcessInfo.processInfo.environment["APELIN_SKIP_NETWORK_TESTS"] != nil, "APELIN_SKIP_NETWORK_TESTS is set")
+        try XCTSkipIf(ProcessInfo.processInfo.environment["LUROS_SKIP_NETWORK_TESTS"] != nil, "LUROS_SKIP_NETWORK_TESTS is set")
         let home = try TemporaryHome(self)
         let git = GitService(layout: home.layout)
         let request = GitCloneRequest(url: "https://github.com/libgit2/TestGitRepository.git", branch: "first-merge", projectName: "Cloned")
@@ -187,7 +187,7 @@ final class EnvironmentWorkerTests: XCTestCase {
     /// repository of the same URL and branch: the resumed task answers it
     /// rather than failing on a folder that exists. Talks to github.com.
     func testAResumedCloneThatHadFinishedSucceeds() async throws {
-        try XCTSkipIf(ProcessInfo.processInfo.environment["APELIN_SKIP_NETWORK_TESTS"] != nil, "APELIN_SKIP_NETWORK_TESTS is set")
+        try XCTSkipIf(ProcessInfo.processInfo.environment["LUROS_SKIP_NETWORK_TESTS"] != nil, "LUROS_SKIP_NETWORK_TESTS is set")
         let home = try TemporaryHome(self)
         let request = GitCloneRequest(
             url: "https://github.com/libgit2/TestGitRepository.git",
@@ -236,12 +236,12 @@ final class EnvironmentWorkerTests: XCTestCase {
         let repository = try GitRepository.create(at: root)
         try Data("int x;\n".utf8).write(to: root.appendingPathComponent("main.c"))
         try repository.stage(["main.c"])
-        _ = try repository.commit(message: "Start", author: GitSignature(name: "A", email: "a@apelin.invalid"))
+        _ = try repository.commit(message: "Start", author: GitSignature(name: "A", email: "a@luros.invalid"))
         // What the other task's finished clone leaves: its origin, and its
         // own task ID in the repository's configuration.
         let config = try FileHandle(forWritingTo: root.appendingPathComponent(".git/config"))
         config.seekToEndOfFile()
-        config.write(Data("[remote \"origin\"]\n\turl = \(request.url)\n[apelin]\n\tcloneTask = other-task\n".utf8))
+        config.write(Data("[remote \"origin\"]\n\turl = \(request.url)\n[luros]\n\tcloneTask = other-task\n".utf8))
         try config.close()
 
         let worker = EnvironmentWorker(

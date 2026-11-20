@@ -2,7 +2,7 @@
 // Copyright (c) 2026 OwnGoal Studio
 //
 // The first screen: replace it with the app. The build defines
-// APELIN_VERSION and APELIN_BUILD_ID as string literals on every compile.
+// LUROS_VERSION and LUROS_BUILD_ID as string literals on every compile.
 #import "RootViewController.h"
 
 @implementation RootViewController
@@ -21,7 +21,7 @@
     titleLabel.textAlignment = NSTextAlignmentCenter;
 
     UILabel *detailLabel = [UILabel new];
-    detailLabel.text = [NSString stringWithFormat:@"Built on this device with Luros.\nVersion %s (%s)", APELIN_VERSION, APELIN_BUILD_ID];
+    detailLabel.text = [NSString stringWithFormat:@"Built on this device with Luros.\nVersion %s (%s)", LUROS_VERSION, LUROS_BUILD_ID];
     detailLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     detailLabel.adjustsFontForContentSizeCategory = YES;
     detailLabel.textColor = UIColor.secondaryLabelColor;

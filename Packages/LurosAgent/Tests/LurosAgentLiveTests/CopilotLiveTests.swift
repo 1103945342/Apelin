@@ -3,18 +3,18 @@ import Foundation
 import KWWKAI
 import Testing
 
-/// Talks to GitHub Copilot for real. Skipped unless APELIN_LIVE_OAUTH_PATH
+/// Talks to GitHub Copilot for real. Skipped unless LUROS_LIVE_OAUTH_PATH
 /// names a kwwk-format credential file with a `github-copilot` entry. The
 /// file is read only through kwwk's own loader (`OAuthStore(url:)`), its
 /// entry is handed to the session in memory, and nothing from it is printed
 /// or written anywhere.
-@Suite("Live: Copilot", .enabled(if: ProcessInfo.processInfo.environment["APELIN_LIVE_OAUTH_PATH"] != nil))
+@Suite("Live: Copilot", .enabled(if: ProcessInfo.processInfo.environment["LUROS_LIVE_OAUTH_PATH"] != nil))
 struct CopilotLiveTests {
     static let model = "claude-sonnet-5.5"
 
     @Test(.timeLimit(.minutes(3)))
     func `one tool-call round trip with Claude Sonnet 5.5 through Copilot`() async throws {
-        let path = try #require(ProcessInfo.processInfo.environment["APELIN_LIVE_OAUTH_PATH"])
+        let path = try #require(ProcessInfo.processInfo.environment["LUROS_LIVE_OAUTH_PATH"])
         let store = try OAuthStore(url: URL(fileURLWithPath: path))
         let entry = try #require(await store.credentials(for: CredentialProviderID.githubCopilot), "no github-copilot entry")
         let credentials = DeliveredCredentialSource([CredentialProviderID.githubCopilot: entry])

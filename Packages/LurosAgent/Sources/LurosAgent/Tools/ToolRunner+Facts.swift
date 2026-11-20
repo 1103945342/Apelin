@@ -64,7 +64,7 @@ extension ToolRunner {
             if ProjectBuildSystem.read(in: root) == .external {
                 let artifact = try arguments.requireString("artifact_id")
                 guard let state = try? await digests.packagingState(ofArtifact: artifact, for: project) else {
-                    throw ToolArgumentError("No build of this workspace made a package \(artifact): build it again with apelin_project_build, then install the artifact that build answers.")
+                    throw ToolArgumentError("No build of this workspace made a package \(artifact): build it again with luros_project_build, then install the artifact that build answers.")
                 }
                 facts.description = state
             } else {
@@ -219,7 +219,7 @@ extension ToolRunner {
         case .gitCreateIssue:
             // Checked before anyone is asked, and again by luros-environment;
             // the card names the repository and the text that is sent.
-            // Luros's own feedback is apelin_feedback_send's.
+            // Luros's own feedback is luros_feedback_send's.
             let request = try GitIssueCreateRequest(
                 repository: arguments.requireString("repository").trimmingCharacters(in: .whitespaces),
                 title: arguments.requireString("title").trimmingCharacters(in: .whitespaces),
@@ -229,7 +229,7 @@ extension ToolRunner {
                 throw ToolArgumentError("Nothing was posted: \(problem)")
             }
             guard request.repository.lowercased() != FeedbackRules.repository.lowercased() else {
-                throw ToolArgumentError("Nothing was posted: feedback about Luros itself goes to \(FeedbackRules.repository) with apelin_feedback_send.")
+                throw ToolArgumentError("Nothing was posted: feedback about Luros itself goes to \(FeedbackRules.repository) with luros_feedback_send.")
             }
             if let problem = FeedbackRules.problem(title: request.title, body: request.body) {
                 throw ToolArgumentError("Nothing was posted: \(problem).")
@@ -298,7 +298,7 @@ extension ToolRunner {
     ) async throws {
         guard let reference = arguments.argNonEmptyString("project") else {
             if project.isTemporary, name != .conversationList {
-                throw ToolArgumentError("General Chat has no conversations of its own: name the project with project (its projectID or folder name; apelin_conversation_list gives each conversation's, apelin_project_list every project's)")
+                throw ToolArgumentError("General Chat has no conversations of its own: name the project with project (its projectID or folder name; luros_conversation_list gives each conversation's, luros_project_list every project's)")
             }
             return
         }
@@ -336,7 +336,7 @@ extension ToolRunner {
         if let reference = arguments.argNonEmptyString("project") {
             target = try await backend.resolveProject(reference)
         } else if project.isTemporary {
-            throw ToolArgumentError("General Chat has no project of its own: name it with project (its projectID or folder name, as apelin_project_list answers them)")
+            throw ToolArgumentError("General Chat has no project of its own: name it with project (its projectID or folder name, as luros_project_list answers them)")
         } else {
             target = project
         }
@@ -385,12 +385,12 @@ extension ToolRunner {
         let product: AvailableToolchain
         if let id = arguments.argNonEmptyString("product_id") {
             guard let match = listed.available.first(where: { $0.productID == id }) else {
-                throw ToolArgumentError("no release \(id) in apelin_toolchain_list's available")
+                throw ToolArgumentError("no release \(id) in luros_toolchain_list's available")
             }
             product = match
         } else if let version = arguments.argNonEmptyString("version") {
             guard let match = listed.available.first(where: { $0.version == version }) else {
-                throw ToolArgumentError("no Command Line Tools \(version) in apelin_toolchain_list's available")
+                throw ToolArgumentError("no Command Line Tools \(version) in luros_toolchain_list's available")
             }
             product = match
         } else {
@@ -411,7 +411,7 @@ extension ToolRunner {
         if let installed = listed.installed.first(where: { record in
             record.version == product.version && components.allSatisfy(record.components.contains) && record.problem == nil
         }) {
-            throw ToolArgumentError("Command Line Tools \(product.version) is already set up as \(installed.id); bind it with apelin_project_set_environment")
+            throw ToolArgumentError("Command Line Tools \(product.version) is already set up as \(installed.id); bind it with luros_project_set_environment")
         }
         return ToolchainSetupApproval(
             productID: product.productID,
@@ -427,14 +427,14 @@ extension ToolRunner {
         let version = try arguments.requireString("version").trimmingCharacters(in: .whitespaces)
         let listed = try await backend.sdks(context: probeContext)
         if let registered = listed.installed.first(where: { $0.version == version }) {
-            throw ToolArgumentError("iPhoneOS \(version) is already registered as \(registered.id); bind it with apelin_project_set_environment")
+            throw ToolArgumentError("iPhoneOS \(version) is already registered as \(registered.id); bind it with luros_project_set_environment")
         }
         let source = arguments.argNonEmptyString("source")
         guard let offer = listed.available.first(where: {
             $0.version == version && (source == nil || $0.source == source)
         }) else {
             let problems = listed.sourceProblems.isEmpty ? "" : " (\(listed.sourceProblems.joined(separator: "; ")))"
-            throw ToolArgumentError("no enabled source offers iPhoneOS \(version)\(source.map { " in \($0)" } ?? "")\(problems); apelin_sdk_list names what they offer")
+            throw ToolArgumentError("no enabled source offers iPhoneOS \(version)\(source.map { " in \($0)" } ?? "")\(problems); luros_sdk_list names what they offer")
         }
         return SDKImportApproval(source: offer.source, url: offer.sourceURL, branch: offer.branch, version: offer.version)
     }
@@ -443,12 +443,12 @@ extension ToolRunner {
     /// installation_id names, or the one Luros can remove of the package
     /// package_id names. One the list shows as not removable, or does not
     /// show at all, is refused here, with why, so the user is never asked
-    /// about a removal the host would refuse. Its row in apelin_package_list
+    /// about a removal the host would refuse. Its row in luros_package_list
     /// is what the card names; without the whole list the host decides.
     private func removalToAsk(_ arguments: JSONValue) async throws -> (installationID: String, listed: ListedInstallation?) {
         switch (arguments.argNonEmptyString("installation_id"), arguments.argNonEmptyString("package_id")) {
         case (nil, nil):
-            throw ToolArgumentError("Give installation_id, from apelin_package_install or apelin_package_list, or package_id.")
+            throw ToolArgumentError("Give installation_id, from luros_package_install or luros_package_list, or package_id.")
         case (.some, .some):
             throw ToolArgumentError("Give installation_id or package_id, not both.")
         case let (installationID?, nil):
@@ -459,7 +459,7 @@ extension ToolRunner {
                 if all.truncated {
                     return (installationID, nil)
                 }
-                throw ToolDeniedError(message: "Luros has no installation \(installationID) it can remove: the package is gone, a later install replaced it, or the id is not one apelin_package_install or apelin_package_list gave." + Self.removable(in: all.installations))
+                throw ToolDeniedError(message: "Luros has no installation \(installationID) it can remove: the package is gone, a later install replaced it, or the id is not one luros_package_install or luros_package_list gave." + Self.removable(in: all.installations))
             }
             guard listed.removable else {
                 throw ToolDeniedError(message: Self.notRemovable(listed))
@@ -469,7 +469,7 @@ extension ToolRunner {
             let rows = try await backend.installations(InstallationListToolRequest(packageID: packageID)).installations
             guard let row = rows.first(where: \.removable) else {
                 throw ToolDeniedError(message: rows.first.map(Self.notRemovable)
-                    ?? "Luros has no installation of \(packageID) on this device: it did not install it, or the package is gone. A package installed some other way is the user's to remove with their package manager; apelin_package_list lists what Luros installed.")
+                    ?? "Luros has no installation of \(packageID) on this device: it did not install it, or the package is gone. A package installed some other way is the user's to remove with their package manager; luros_package_list lists what Luros installed.")
             }
             return (row.installationID, row)
         }
@@ -480,7 +480,7 @@ extension ToolRunner {
     }
 
     /// For a host's refusal of an installation id, stale or mistaken: the
-    /// ones apelin_package_remove can take instead.
+    /// ones luros_package_remove can take instead.
     func removableInstead() async -> String {
         guard let listed = try? await backend.installations(InstallationListToolRequest()).installations else { return "" }
         return Self.removable(in: listed)
@@ -492,7 +492,7 @@ extension ToolRunner {
         let shown = removable.prefix(10).map { row in
             "\(row.installationID) (\(row.packageID) \(row.version)\(row.project.map { ", project \($0)" } ?? ""))"
         }
-        let more = removable.count > shown.count ? "; more in apelin_package_list" : ""
+        let more = removable.count > shown.count ? "; more in luros_package_list" : ""
         return " Luros can remove: \(shown.joined(separator: "; "))\(more)."
     }
 

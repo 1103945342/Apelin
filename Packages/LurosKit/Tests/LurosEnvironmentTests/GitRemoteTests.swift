@@ -9,7 +9,7 @@ import XCTest
 /// The git service's remote operations and settings: against a bare
 /// repository on disk (`acceptsLocalRemotes`), with credentials in memory.
 final class GitRemoteServiceTests: XCTestCase {
-    private let author = GitSignature(name: "Luros Test", email: "test@apelin.invalid")
+    private let author = GitSignature(name: "Luros Test", email: "test@luros.invalid")
 
     private func service(_ home: TemporaryHome, store: any GitCredentialStore = MemoryGitCredentialStore()) -> GitService {
         var git = GitService(layout: home.layout, credentials: store)
@@ -68,7 +68,7 @@ final class GitRemoteServiceTests: XCTestCase {
         XCTAssertEqual(status.branch, "main")
         XCTAssertEqual(status.entries, [], "Luros's own files are excluded")
         let exclude = try String(contentsOf: root.appendingPathComponent(".git/info/exclude"), encoding: .utf8)
-        for pattern in GitService.apelinFiles {
+        for pattern in GitService.lurosFiles {
             XCTAssertTrue(exclude.contains(pattern + "\n"), pattern)
         }
 
@@ -192,7 +192,7 @@ final class GitRemoteServiceTests: XCTestCase {
         XCTAssertFalse(try git.diff(GitDiffRequest(projectID: created.projectID)).diff.contains("Attachments"))
 
         _ = try git.commit(GitCommitRequest(
-            projectID: created.projectID, message: "First", authorName: "A", authorEmail: "a@apelin.invalid", all: true,
+            projectID: created.projectID, message: "First", authorName: "A", authorEmail: "a@luros.invalid", all: true,
         ))
         XCTAssertEqual(try git.status(GitStatusRequest(projectID: created.projectID)).entries, [])
         // Had it been committed, its removal would be a change.
@@ -207,7 +207,7 @@ final class GitRemoteServiceTests: XCTestCase {
         let git = service(home)
         _ = try git.initialize(GitInitRequest(projectID: id))
         let exclude = try String(contentsOf: root.appendingPathComponent(".git/info/exclude"), encoding: .utf8)
-        for pattern in ProjectExcludes.apelinFiles {
+        for pattern in ProjectExcludes.lurosFiles {
             XCTAssertTrue(exclude.contains(pattern + "\n"), pattern)
         }
         try writeLurosFiles(in: root)
@@ -229,7 +229,7 @@ final class GitRemoteServiceTests: XCTestCase {
         try writeLurosFiles(in: root)
         XCTAssertEqual(try git.status(GitStatusRequest(projectID: id)).entries.map(\.path), ["luros-project.json"])
         let text = try String(contentsOf: exclude, encoding: .utf8)
-        for pattern in ProjectExcludes.apelinFiles {
+        for pattern in ProjectExcludes.lurosFiles {
             XCTAssertEqual(text.components(separatedBy: "\n").count(where: { $0 == pattern }), 1, pattern)
         }
         _ = try git.status(GitStatusRequest(projectID: id))
@@ -258,7 +258,7 @@ final class GitRemoteServiceTests: XCTestCase {
         try Data("b\n".utf8).write(to: root.appendingPathComponent("b.m"))
         let commit = { (message: String) in
             try git.commit(GitCommitRequest(
-                projectID: id, message: message, authorName: "A", authorEmail: "a@apelin.invalid", all: true,
+                projectID: id, message: message, authorName: "A", authorEmail: "a@luros.invalid", all: true,
             ))
         }
         _ = try commit("First")
@@ -272,7 +272,7 @@ final class GitRemoteServiceTests: XCTestCase {
         // without all, only what was staged
         try Data("a3\n".utf8).write(to: root.appendingPathComponent("a.m"))
         XCTAssertThrowsError(try git.commit(GitCommitRequest(
-            projectID: id, message: "Staged only", authorName: "A", authorEmail: "a@apelin.invalid",
+            projectID: id, message: "Staged only", authorName: "A", authorEmail: "a@luros.invalid",
         )))
     }
 
@@ -344,7 +344,7 @@ final class GitRemoteServiceTests: XCTestCase {
         // A commit here goes back.
         try Data("int x;\n".utf8).write(to: root.appendingPathComponent("main.c"))
         _ = try git.stage(GitStageRequest(projectID: id, paths: ["main.c"]))
-        let third = try git.commit(GitCommitRequest(projectID: id, message: "Third", authorName: "A", authorEmail: "a@apelin.invalid"))
+        let third = try git.commit(GitCommitRequest(projectID: id, message: "Third", authorName: "A", authorEmail: "a@luros.invalid"))
         let pushLog = EventLog()
         let pushed = try git.push(git.preparePush(GitPushRequest(projectID: id)), reporter: pushLog.reporter)
         XCTAssertEqual(pushed, .object([
@@ -361,12 +361,12 @@ final class GitRemoteServiceTests: XCTestCase {
         try seed.stage(["README"])
         try seed.commit(message: "Diverge", author: author)
         XCTAssertThrowsError(try seed.push()) { error in
-            XCTAssertEqual(GitService.apelinError(error).code, .conflict)
-            XCTAssertEqual(GitService.apelinError(error).reason?.rawValue, "rejected")
+            XCTAssertEqual(GitService.lurosError(error).code, .conflict)
+            XCTAssertEqual(GitService.lurosError(error).reason?.rawValue, "rejected")
         }
         XCTAssertThrowsError(try seed.pull()) { error in
-            XCTAssertEqual(GitService.apelinError(error).code, .conflict)
-            XCTAssertEqual(GitService.apelinError(error).reason?.rawValue, "notFastForward")
+            XCTAssertEqual(GitService.lurosError(error).code, .conflict)
+            XCTAssertEqual(GitService.lurosError(error).reason?.rawValue, "notFastForward")
         }
     }
 
@@ -409,7 +409,7 @@ final class GitRemoteServiceTests: XCTestCase {
         let id = created.projectID
         let git = service(home)
         let commit = try git.commit(GitCommitRequest(
-            projectID: id, message: "First", authorName: "A", authorEmail: "a@apelin.invalid", all: true,
+            projectID: id, message: "First", authorName: "A", authorEmail: "a@luros.invalid", all: true,
         )).commitID
 
         XCTAssertThrowsError(try git.preparePush(GitPushRequest(projectID: id))) {
@@ -499,10 +499,10 @@ final class GitRemoteServiceTests: XCTestCase {
     }
 
     func testErrorsCarryTheirReason() {
-        let auth = GitService.apelinError(GitError(.authenticationFailed, "fetch origin: authentication failed"))
+        let auth = GitService.lurosError(GitError(.authenticationFailed, "fetch origin: authentication failed"))
         XCTAssertEqual(auth.code, .denied)
         XCTAssertEqual(auth.reason?.rawValue, "authenticationRequired")
-        XCTAssertNil(GitService.apelinError(GitError(.conflict, "checkout")).reason, "an overwrite is not a refusal")
+        XCTAssertNil(GitService.lurosError(GitError(.conflict, "checkout")).reason, "an overwrite is not a refusal")
     }
 
     func testAFailedTaskCarriesTheReasonInItsState() async throws {
@@ -546,8 +546,8 @@ final class GitRemoteServiceTests: XCTestCase {
         let home = try TemporaryHome(self)
         let git = service(home)
         XCTAssertEqual(try git.settings(), GitSettingsResponse())
-        _ = try git.setAuthor(GitAuthorSetRequest(authorName: "  Ada  ", authorEmail: "ada@apelin.invalid"))
-        XCTAssertEqual(try git.settings(), GitSettingsResponse(authorName: "Ada", authorEmail: "ada@apelin.invalid"))
+        _ = try git.setAuthor(GitAuthorSetRequest(authorName: "  Ada  ", authorEmail: "ada@luros.invalid"))
+        XCTAssertEqual(try git.settings(), GitSettingsResponse(authorName: "Ada", authorEmail: "ada@luros.invalid"))
         _ = try git.setAuthor(GitAuthorSetRequest(authorName: "Ada", authorEmail: ""))
         XCTAssertEqual(try git.settings(), GitSettingsResponse(authorName: "Ada"))
         let text = try String(contentsOf: home.layout.gitSettings, encoding: .utf8)

@@ -2,13 +2,13 @@ import LurosCore
 import LurosProtocol
 import Foundation
 
-/// An apelin_question_ask card is its question and options, from
+/// An luros_question_ask card is its question and options, from
 /// `detail.question`: the question is its title, the options its body in
 /// the transcript, and its trace step says whether it was answered — never
 /// the arguments the call named, nor Approve's words.
 func checkQuestionCard() {
     let asked: [String: JSONValue] = [
-        "approvalID": .string("q1"), "toolCallID": .string("call-q"), "tool": .string("apelin_question_ask"),
+        "approvalID": .string("q1"), "toolCallID": .string("call-q"), "tool": .string("luros_question_ask"),
         "arguments": .string(#"{"question":"Which design?","options":[{"label":"A"},{"label":"B"}]}"#),
         "reason": .string("Which design?"),
         "detail": .object(["question": .object([
@@ -28,7 +28,7 @@ func checkQuestionCard() {
 
     let waiting = ChatTranscript(events: [
         event(1, "prompt", ["text": .string("Add the tool")]),
-        event(2, "toolCall", ["id": .string("call-q"), "tool": .string("apelin_question_ask"), "arguments": asked["arguments"]!]),
+        event(2, "toolCall", ["id": .string("call-q"), "tool": .string("luros_question_ask"), "arguments": asked["arguments"]!]),
         event(3, "approvalRequested", asked),
     ]) { _ in nil }.messages.first { $0.role.needsApproval }
     precondition(waiting?.question?.question == "Which design?", "the row carries the question")

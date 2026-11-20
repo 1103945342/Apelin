@@ -95,7 +95,7 @@ public struct ApprovalDigests: Codable, Sendable, Equatable {
             }
         }
         return .object(JSONObject([
-            ("description", .string("apelin.build")),
+            ("description", .string("luros.build")),
             ("version", .integer(1)),
             ("project", .object(selected)),
             ("files", .object(files)),
@@ -119,7 +119,7 @@ public struct ApprovalDigests: Codable, Sendable, Equatable {
             }
         }
         return .object(JSONObject([
-            ("description", .string("apelin.packaging")),
+            ("description", .string("luros.packaging")),
             ("version", .integer(1)),
             ("project", .object(JSONObject([("kind", document["kind"] ?? .null), ("package", .object(trimmed))]))),
             ("files", .object(files)),

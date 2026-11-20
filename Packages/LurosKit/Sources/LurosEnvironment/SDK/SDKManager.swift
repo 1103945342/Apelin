@@ -119,7 +119,7 @@ public struct SDKManager: Sendable {
                     return !reporter.isCancelled
                 }
             } catch {
-                throw GitService.apelinError(error)
+                throw GitService.lurosError(error)
             }
             // Pinned by commit, not by the movable branch name.
             try FileManager.default.removeItem(at: unpacked.appendingPathComponent(".git"))

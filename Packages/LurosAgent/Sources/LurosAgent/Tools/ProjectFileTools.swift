@@ -285,7 +285,7 @@ struct ProjectFileTools: Sendable {
                 if visited > Self.maxWalkEntries {
                     return
                 }
-                if entry == ".git" || entry == ".build" || entry == ".apelin" {
+                if entry == ".git" || entry == ".build" || entry == ".luros" {
                     continue
                 }
                 let full = (current as NSString).appendingPathComponent(entry)

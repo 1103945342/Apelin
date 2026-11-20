@@ -19,7 +19,7 @@ import Foundation
 /// build cannot write is never a failed build — it is a slower one.
 ///
 /// What is deliberately absent from a key: the build ID (Swift never sees
-/// `APELIN_BUILD_ID`; C-family compiles do, and their key carries the whole
+/// `LUROS_BUILD_ID`; C-family compiles do, and their key carries the whole
 /// define list instead), the work directory, `-module-cache-path`, and any
 /// path under the project or the install root, which `stablePath` spells
 /// relative.

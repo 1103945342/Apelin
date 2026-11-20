@@ -105,7 +105,7 @@ require(manager.fileExists(atPath: base.appendingPathComponent("secret.txt").pat
 try folder.remove("lint")
 require(visible(folder.root) == ["release-notes"], "a skill goes by its place")
 
-// Written text (the agent's apelin_skill_save): a folder named for the
+// Written text (the agent's luros_skill_save): a folder named for the
 // skill, checked while staged, in whole or not at all.
 var checked: [String] = []
 let written = try folder.write("---\nname: triage\ndescription: Crashes.\n---\n\nRead the report.\n", named: "triage", replacing: false) {

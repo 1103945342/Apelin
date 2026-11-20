@@ -4,7 +4,7 @@ import Foundation
 
 /// A banner the session host posts as the app (`NoticePoster`): a turn of an
 /// agent session ended, the session waits for the reader's decision, or its
-/// agent asked to tell the reader something (`apelin_notification_send`).
+/// agent asked to tell the reader something (`luros_notification_send`).
 struct AgentNotice: Equatable, Sendable {
     /// The same for the same event however often the session's events are
     /// relayed again, so posting it twice replaces it instead of doubling it.

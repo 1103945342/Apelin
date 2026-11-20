@@ -256,7 +256,7 @@ func rootRunChecks(scratch: URL, scratchPath: String) async {
     )
     check(rootEntries.contains("HOME=\(AgentRunCode.rootHome)"), "a run as root has root's own HOME")
     check(!rootEntries.contains("HOME=\(mobileHome)"), "and not mobile's")
-    check(rootEntries.contains("APELIN_PROJECT_ROOT=\(scratchPath)"), "in the same project")
+    check(rootEntries.contains("LUROS_PROJECT_ROOT=\(scratchPath)"), "in the same project")
     let mobileEntries = AgentRunCode.environment(preset: nil, project: project, installRoot: "/", home: mobileHome)
     check(mobileEntries.contains("HOME=\(mobileHome)"), "a run as mobile keeps mobile's HOME")
 

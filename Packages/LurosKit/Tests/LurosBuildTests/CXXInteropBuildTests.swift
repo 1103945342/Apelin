@@ -83,7 +83,7 @@ final class CXXInteropBuildTests: XCTestCase {
             XCTAssertTrue(swift.contains("-Xcc -std=c++17"), "c++17 when the project names none: \(swift)")
             XCTAssertTrue(swift.contains("-Xcc -I\(include)"), "the modulemap's search path reaches clang: \(swift)")
             XCTAssertFalse(swift.contains("-import-objc-header"), "interop replaces the bridging header: \(swift)")
-            for identity in ["APELIN_BUILD_ID", "APELIN_PACKAGE_ID", "APELIN_VERSION"] {
+            for identity in ["LUROS_BUILD_ID", "LUROS_PACKAGE_ID", "LUROS_VERSION"] {
                 XCTAssertFalse(
                     swift.contains("-Xcc -D" + identity),
                     "the importer never sees \(identity): clang keys its module cache on the macro set, so "

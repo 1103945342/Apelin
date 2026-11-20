@@ -80,12 +80,12 @@ final class ServiceTableTests: XCTestCase {
             return Row(reply: handle) { _ = try await $0.removePackage(installationID: "i") }
         case .installationList:
             return Row(reply: InstallationListResponse(installations: [])) {
-                _ = try await $0.installationList(packageID: "local.apelin.hello")
+                _ = try await $0.installationList(packageID: "local.luros.hello")
             }
         case .applicationList:
             return Row(reply: ApplicationListResponse(applications: [])) { _ = try await $0.applicationList() }
         case .applicationRemove:
-            return Row(reply: ack) { try await $0.applicationRemove(bundleID: "local.apelin.hello", path: nil) }
+            return Row(reply: ack) { try await $0.applicationRemove(bundleID: "local.luros.hello", path: nil) }
         case .respring:
             return Row(reply: ack) { try await $0.respring() }
         case .approvalDigestState:

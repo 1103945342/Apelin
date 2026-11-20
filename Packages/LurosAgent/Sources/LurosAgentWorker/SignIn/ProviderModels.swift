@@ -38,7 +38,7 @@ final class WorkBuddyEffortCache: @unchecked Sendable {
 /// Anthropic endpoint accepts Claude aliases but still runs DeepSeek models.
 enum ProviderModels {
     /// The extra a sign-in records its method in, where the provider offers more than one.
-    static let signInMethodExtra = "apelinSignInMethod"
+    static let signInMethodExtra = "lurosSignInMethod"
 
     static func usesAPIKey(_ provider: AgentProvider, credentials: OAuthCredentials) -> Bool {
         if case let .string(method)? = credentials.extras[signInMethodExtra] {

@@ -20,7 +20,7 @@
 extern "C" {
 #endif
 
-#define APELIN_SUBSTRATE_EXPORT extern __attribute__((visibility("default")))
+#define LUROS_SUBSTRATE_EXPORT extern __attribute__((visibility("default")))
 
 /// An image handle returned by MSGetImageByName.
 typedef const void *MSImageRef;
@@ -28,20 +28,20 @@ typedef const void *MSImageRef;
 /// Replaces the instance method `message` on `_class` with `hook`. When `old`
 /// is not NULL it receives the implementation that was in place, to call
 /// from the hook. An inherited method is overridden on `_class` only.
-APELIN_SUBSTRATE_EXPORT void MSHookMessageEx(Class _class, SEL message, IMP hook, IMP *old);
+LUROS_SUBSTRATE_EXPORT void MSHookMessageEx(Class _class, SEL message, IMP hook, IMP *old);
 
 /// Redirects the function at `symbol` to `replace`. When `result` is not NULL
 /// it receives a callable trampoline to the original function.
-APELIN_SUBSTRATE_EXPORT void MSHookFunction(void *symbol, void *replace, void **result);
+LUROS_SUBSTRATE_EXPORT void MSHookFunction(void *symbol, void *replace, void **result);
 
 /// Returns the already-loaded image whose path is `file`, or NULL.
-APELIN_SUBSTRATE_EXPORT MSImageRef MSGetImageByName(const char *file);
+LUROS_SUBSTRATE_EXPORT MSImageRef MSGetImageByName(const char *file);
 
 /// Returns the address of the symbol `name` (with its leading underscore) in
 /// `image`, or in every loaded image when `image` is NULL; NULL when absent.
-APELIN_SUBSTRATE_EXPORT void *MSFindSymbol(MSImageRef image, const char *name);
+LUROS_SUBSTRATE_EXPORT void *MSFindSymbol(MSImageRef image, const char *name);
 
-#undef APELIN_SUBSTRATE_EXPORT
+#undef LUROS_SUBSTRATE_EXPORT
 
 #ifdef __cplusplus
 }

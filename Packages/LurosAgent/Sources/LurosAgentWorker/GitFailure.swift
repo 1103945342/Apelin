@@ -62,7 +62,7 @@ enum GitFailure {
             guard operation == "git push" else {
                 return "The project has no remote of that name: git_remote_list lists the ones it has, and git_remote_set adds one at the address the user gave you."
             }
-            return "The project has no such remote yet: ask the user whether to create a GitHub repository for it with apelin_git_create_repository, and with which owner, name and visibility, or for the HTTPS address of an empty repository they made (no README, licence or .gitignore); then git_push with url."
+            return "The project has no such remote yet: ask the user whether to create a GitHub repository for it with luros_git_create_repository, and with which owner, name and visibility, or for the HTTPS address of an empty repository they made (no README, licence or .gitignore); then git_push with url."
         }
         if reason == LurosError.Reason.headChanged.rawValue {
             return "The branch moved after the user saw what would be squashed, so nothing was squashed. Tell the user; to squash it still, call git_squash again, which reads the commits again and asks again."
@@ -76,7 +76,7 @@ enum GitFailure {
                 return "The remote wants a credential Luros does not have for github.com, or refused the saved one: ask the user to sign in with Sign In with GitHub in Settings ▸ Git, then try again."
             }
             let place = host.map { "for \($0) " } ?? ""
-            return "The remote wants a credential Luros does not have, or refused the saved one: ask the user for a token \(place)to save with apelin_git_save_credential, then try again."
+            return "The remote wants a credential Luros does not have, or refused the saved one: ask the user for a token \(place)to save with luros_git_save_credential, then try again."
         }
         if operation == "git commit", message.lowercased().contains("author") {
             return "Ask the user to set the commit author in Settings ▸ Git."

@@ -50,7 +50,7 @@ extension BuiltInSkills {
 
         ## The native depiction
         This skill's file `depiction.json` is a page to start from, with a
-        Details tab and a Changelog tab: read it with apelin_skill_read
+        Details tab and a Changelog tab: read it with luros_skill_read
         `{"name": "luros-package-depiction", "file": "depiction.json"}`.
         Its shape:
 
@@ -74,7 +74,7 @@ extension BuiltInSkills {
         that names a class a package manager does not know, is not drawn.
 
         ## Checking
-        - `apelin_web_fetch` the address: it answers the JSON once the host
+        - `luros_web_fetch` the address: it answers the JSON once the host
           serves it. On GitHub Pages that is after the repository's workflow
           has run.
         - Build and install, then ask the user to open the package in their

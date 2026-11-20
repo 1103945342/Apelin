@@ -8,14 +8,14 @@ import Testing
 /// the session; the package it made is installed under the packaging rule.
 @Suite("Workspace builds")
 struct ExternalBuildToolTests {
-    private static let manifest = #"{"schemaVersion":1,"projectID":"x","kind":"workspace","buildSystem":"external","external":{"script":"apelin/build.sh"}}"#
+    private static let manifest = #"{"schemaVersion":1,"projectID":"x","kind":"workspace","buildSystem":"external","external":{"script":"luros/build.sh"}}"#
 
     @Test
     func `a workspace's build asks every time, naming its script, and is never granted for the session`() async throws {
         let harness = try DigestApprovalTests.Harness()
         defer { harness.home.remove() }
         try harness.home.write("luros-project.json", Self.manifest)
-        let asked = ExternalBuildApproval(projectID: harness.home.project.id, script: "apelin/build.sh", configuration: "debug", bootstrap: nil)
+        let asked = ExternalBuildApproval(projectID: harness.home.project.id, script: "luros/build.sh", configuration: "debug", bootstrap: nil)
 
         let (_, first) = try await harness.run(.projectBuild, [:], answering: .approve(.session))
         #expect(first.count == 1)
@@ -24,7 +24,7 @@ struct ExternalBuildToolTests {
         let (_, second) = try await harness.run(.projectBuild, ["configuration": "release", "bootstrap": "rootless"])
         #expect(second.first?.detail == .externalBuild(ExternalBuildApproval(
             projectID: harness.home.project.id,
-            script: "apelin/build.sh",
+            script: "luros/build.sh",
             configuration: "release",
             bootstrap: "rootless",
         )), "a session answer granted nothing: the next build asks again")

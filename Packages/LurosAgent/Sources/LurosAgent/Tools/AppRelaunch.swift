@@ -1,7 +1,7 @@
 import Darwin
 import Foundation
 
-/// What apelin_package_install adds to an app project's result. Installing
+/// What luros_package_install adds to an app project's result. Installing
 /// replaces the bundle on disk, but a copy of the app already running keeps
 /// the build it started with until it exits, and neither the installer nor
 /// the host restarts it: on a device the agent went on testing the old

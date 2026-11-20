@@ -20,7 +20,7 @@ work="$(mktemp -d build/team-assignment-store.XXXXXX)"
 mkdir -p "$work/tmp"
 # The checks make their scratch folders from NSTemporaryDirectory, so TMPDIR
 # points at this run's own folder, handed over as the real absolute path.
-export TMPDIR="${APELIN_PROJECT_ROOT:-$root}/$work/tmp"
+export TMPDIR="${LUROS_PROJECT_ROOT:-$root}/$work/tmp"
 trap 'rm -rf -- "${work:?}"' EXIT
 compiler=(xcrun --sdk macosx swiftc -target arm64-apple-macos13.0)
 entitlements=

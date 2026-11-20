@@ -289,11 +289,11 @@ enum EmbeddedSchemas {
         "optimization": { "enum": ["0", "1", "2", "3", "s", "z"] },
         "debugInfo": { "type": "boolean" },
         "defines": {
-          "description": "Preprocessor definitions. The APELIN_ prefix is reserved for what the build injects.",
+          "description": "Preprocessor definitions. The LUROS_ prefix is reserved for what the build injects.",
           "type": "object",
           "maxProperties": 64,
           "propertyNames": {
-            "pattern": "^(?!APELIN_)[A-Za-z_][A-Za-z0-9_]{0,63}$"
+            "pattern": "^(?!LUROS_)[A-Za-z_][A-Za-z0-9_]{0,63}$"
           },
           "additionalProperties": {
             "type": "string",
@@ -779,7 +779,7 @@ enum EmbeddedSchemas {
     "kind",
     "displayName",
     "summary",
-    "apelinCompatibility",
+    "lurosCompatibility",
     "requirements",
     "templates",
     "provenance",
@@ -798,7 +798,7 @@ enum EmbeddedSchemas {
     "kind": { "enum": ["app", "tweak", "cli", "preferences"] },
     "displayName": { "$ref": "#/$defs/text" },
     "summary": { "$ref": "#/$defs/text" },
-    "apelinCompatibility": {
+    "lurosCompatibility": {
       "type": "object",
       "additionalProperties": false,
       "required": ["minimumAppVersion", "projectSchemaVersions", "manifestSchemaVersion"],

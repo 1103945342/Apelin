@@ -9,7 +9,7 @@ import KWWKAgent
 import KWWKAI
 import Testing
 
-@Suite("apelin_question_ask")
+@Suite("luros_question_ask")
 struct QuestionToolTests {
     static let arguments: JSONValue = [
         "question": "Which design?",
@@ -74,7 +74,7 @@ struct QuestionToolTests {
                     try? await gate.resolve(request.id, decision: .approve(.once), answer: AgentQuestionAnswer(selected: ["End the turn"]))
                 }
                 #expect(asked.count == 1, "one card, the question itself: \(mode) plan=\(plan)")
-                #expect(asked.first?.tool == "apelin_question_ask")
+                #expect(asked.first?.tool == "luros_question_ask")
                 #expect(asked.first?.allowsSessionScope == false)
                 #expect(asked.first?.reason == "Which design?", "the host's banner shows the question")
                 guard case let .question(question)? = asked.first?.detail else {
@@ -200,7 +200,7 @@ struct QuestionToolTests {
         let home = try TemporaryHome()
         defer { home.remove() }
         let prompt = SystemPrompt.make(project: home.project, projectRoot: home.projectURL.path, skills: [], mcpServers: [])
-        #expect(prompt.contains("ask with apelin_question_ask"))
+        #expect(prompt.contains("ask with luros_question_ask"))
         #expect(prompt.contains("which a picked option is not"))
         #expect(AgentToolName.questionAsk.risk == .readOnly, "a plan run may ask")
         #expect(!ToolRunner.allowsSessionScope(.local(.questionAsk), detail: .question(AgentQuestion(question: "q", options: []))))

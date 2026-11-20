@@ -119,10 +119,10 @@ func check() throws {
         try fm.createDirectory(at: apps, withIntermediateDirectories: true)
         try fm.createDirectory(at: staging, withIntermediateDirectories: true)
         let destination = apps.appendingPathComponent("Swap.app")
-        try writeApp(at: destination, bundleID: "local.apelin.swap", version: "1.0", executable: "Swap")
+        try writeApp(at: destination, bundleID: "local.luros.swap", version: "1.0", executable: "Swap")
         let incoming = staging.appendingPathComponent("Swap.app")
-        try writeApp(at: incoming, bundleID: "local.apelin.swap", version: "2.0", executable: "Swap")
-        try ApplicationInstall.validate(incoming, expecting: "local.apelin.swap")
+        try writeApp(at: incoming, bundleID: "local.luros.swap", version: "2.0", executable: "Swap")
+        try ApplicationInstall.validate(incoming, expecting: "local.luros.swap")
         try require(AppBundle.describe(bundleAt: incoming.path)?.name == "Swap", "the incoming app describes itself")
 
         let placed = try ApplicationInstall.place(incoming, at: destination)
@@ -137,7 +137,7 @@ func check() throws {
 
         // An install that finishes keeps the new bundle and drops the old one.
         let second = staging.appendingPathComponent("Swap.app")
-        try writeApp(at: second, bundleID: "local.apelin.swap", version: "3.0", executable: "Swap")
+        try writeApp(at: second, bundleID: "local.luros.swap", version: "3.0", executable: "Swap")
         let kept = try ApplicationInstall.place(second, at: destination)
         for entry in kept.displaced { try fm.removeItem(at: entry.aside) }
         try require(AppBundle.describe(bundleAt: destination.path)?.version == "3.0", "the third version stays")
@@ -156,12 +156,12 @@ func check() throws {
 
         // A bundle that is not the app it claims never goes in place.
         let wrong = staging.appendingPathComponent("Wrong.app")
-        try writeApp(at: wrong, bundleID: "local.apelin.other", version: "1.0", executable: "Wrong")
+        try writeApp(at: wrong, bundleID: "local.luros.other", version: "1.0", executable: "Wrong")
         do {
-            try ApplicationInstall.validate(wrong, expecting: "local.apelin.swap")
+            try ApplicationInstall.validate(wrong, expecting: "local.luros.swap")
             try require(false, "a bundle claiming another ID is refused")
         } catch let failure as ApplicationInstall.Failure {
-            try require(failure.description.contains("local.apelin.other"), "the refusal names the ID (\(failure))")
+            try require(failure.description.contains("local.luros.other"), "the refusal names the ID (\(failure))")
         }
         print("ok: placement replaces in place and rolls back")
     }
@@ -174,9 +174,9 @@ func check() throws {
         try fm.createDirectory(at: apps, withIntermediateDirectories: true)
         try fm.createDirectory(at: staging, withIntermediateDirectories: true)
         let destination = apps.appendingPathComponent("Copy.app")
-        try writeApp(at: destination, bundleID: "local.apelin.copy", version: "1.0", executable: "Copy")
+        try writeApp(at: destination, bundleID: "local.luros.copy", version: "1.0", executable: "Copy")
         let incoming = staging.appendingPathComponent("Copy.app")
-        try writeApp(at: incoming, bundleID: "local.apelin.copy", version: "2.0", executable: "Copy")
+        try writeApp(at: incoming, bundleID: "local.luros.copy", version: "2.0", executable: "Copy")
         try require(ApplicationInstall.sameVolume(destination.path, apps.path), "one folder is one volume")
 
         let placed = try ApplicationInstall.place(incoming, at: destination, copying: true)

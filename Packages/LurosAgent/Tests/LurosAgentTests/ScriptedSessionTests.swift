@@ -160,7 +160,7 @@ struct ScriptedSessionTests {
     }
 
     @Test
-    func `file_edit → apelin_project_build → apelin_package_install → apelin_package_confirm_loaded through a mock host`() async throws {
+    func `file_edit → luros_project_build → luros_package_install → luros_package_confirm_loaded through a mock host`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         try home.write("Sources/Tweak.m", "static BOOL enabled = NO;\n")
@@ -172,9 +172,9 @@ struct ScriptedSessionTests {
                 fauxText("Enabling the hook."),
                 fauxToolCall(name: "file_edit", arguments: ["reason": "Turn the hook on", "path": "Sources/Tweak.m", "old_text": "enabled = NO", "new_text": "enabled = YES"]),
             ], stopReason: .toolUse)),
-            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_project_build", arguments: ["reason": "Build it", "configuration": "debug"])], stopReason: .toolUse)),
-            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_install", arguments: ["reason": "Install it", "artifact_id": "artifact-1", "artifact_digest": "deb-digest-1"])], stopReason: .toolUse)),
-            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_confirm_loaded", arguments: ["reason": "Check it loaded", "build_id": "build-1", "target": "SpringBoard"])], stopReason: .toolUse)),
+            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "luros_project_build", arguments: ["reason": "Build it", "configuration": "debug"])], stopReason: .toolUse)),
+            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "luros_package_install", arguments: ["reason": "Install it", "artifact_id": "artifact-1", "artifact_digest": "deb-digest-1"])], stopReason: .toolUse)),
+            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "luros_package_confirm_loaded", arguments: ["reason": "Check it loaded", "build_id": "build-1", "target": "SpringBoard"])], stopReason: .toolUse)),
             .message(fauxAssistantMessage("Installed and loaded in SpringBoard.")),
         ])
 
@@ -253,9 +253,9 @@ struct ScriptedSessionTests {
         #expect(patchResult?.output.split(separator: "\n").first?.hasSuffix("(1 replacement, +1 -1)") == true)
         #expect(toolOrder == [
             "start:file_edit", "end:file_edit",
-            "start:apelin_project_build", "end:apelin_project_build",
-            "start:apelin_package_install", "ask:apelin_package_install", "resolved", "end:apelin_package_install",
-            "start:apelin_package_confirm_loaded", "end:apelin_package_confirm_loaded",
+            "start:luros_project_build", "end:luros_project_build",
+            "start:luros_package_install", "ask:luros_package_install", "resolved", "end:luros_package_install",
+            "start:luros_package_confirm_loaded", "end:luros_package_confirm_loaded",
         ])
         #expect(events.contains(.messageFinished(text: "Installed and loaded in SpringBoard.")))
         #expect(events.last == .finished(reason: .completed))
@@ -291,7 +291,7 @@ struct ScriptedSessionTests {
         let faux = await registerFauxProvider()
         defer { faux.unregister() }
         faux.setResponses([
-            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove it", "installation_id": "inst-1"])], stopReason: .toolUse)),
+            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "luros_package_remove", arguments: ["reason": "Remove it", "installation_id": "inst-1"])], stopReason: .toolUse)),
             .message(fauxAssistantMessage("never reached")),
         ])
         let backend = MockBackend()
@@ -325,7 +325,7 @@ struct ScriptedSessionTests {
         let faux = await registerFauxProvider()
         defer { faux.unregister() }
         faux.setResponses([
-            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove it", "installation_id": "inst-1"])], stopReason: .toolUse)),
+            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "luros_package_remove", arguments: ["reason": "Remove it", "installation_id": "inst-1"])], stopReason: .toolUse)),
             .message(fauxAssistantMessage("Removed, and noted.")),
         ])
         let session = try await AgentSession(
@@ -384,7 +384,7 @@ struct ScriptedSessionTests {
         let faux = await registerFauxProvider()
         defer { faux.unregister() }
         faux.setResponses([
-            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove it", "installation_id": "inst-1"])], stopReason: .toolUse)),
+            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "luros_package_remove", arguments: ["reason": "Remove it", "installation_id": "inst-1"])], stopReason: .toolUse)),
             .message(fauxAssistantMessage("never reached")),
         ])
         let session = try await AgentSession(

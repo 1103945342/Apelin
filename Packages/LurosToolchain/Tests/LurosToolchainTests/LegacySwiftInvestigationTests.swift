@@ -5,12 +5,12 @@ import Testing
 /// Opt-in preparation for reproducible probes, using ordinary reviewed setup.
 /// The resulting tree is never installed or registered by this fixture.
 struct LegacySwiftInvestigationTests {
-    @Test(.enabled(if: ProcessInfo.processInfo.environment["APELIN_LEGACY_SWIFT_VERSION"] != nil))
+    @Test(.enabled(if: ProcessInfo.processInfo.environment["LUROS_LEGACY_SWIFT_VERSION"] != nil))
     func `prepare swift tree`() async throws {
         #if os(macOS)
             let environment = ProcessInfo.processInfo.environment
-            let version = try #require(environment["APELIN_LEGACY_SWIFT_VERSION"])
-            let workspacePath = try #require(environment["APELIN_LEGACY_SWIFT_WORKSPACE"])
+            let version = try #require(environment["LUROS_LEGACY_SWIFT_VERSION"])
+            let workspacePath = try #require(environment["LUROS_LEGACY_SWIFT_WORKSPACE"])
             try #require(workspacePath.hasPrefix("/"))
             let workspace = URL(fileURLWithPath: workspacePath, isDirectory: true)
             let output = workspace.appendingPathComponent("tree", isDirectory: true)

@@ -2,7 +2,7 @@ import LurosCore
 import LurosProtocol
 import Foundation
 
-/// An agent's `distributionPublish` (apelin_package_publish; owner,
+/// An agent's `distributionPublish` (luros_package_publish; owner,
 /// 2026-10-29): packages builds made, put in the user's package repository
 /// where anyone who adds the source can install them, so, like a push, it
 /// asks under Confirm every time. In every mode the request names the
@@ -54,7 +54,7 @@ enum AgentPublishRules {
             guard let built = await artifacts.artifact(path: file), InstallDigest.normalized(digest) == built.digest else {
                 return LurosError(
                     .denied,
-                    "an agent publishes only packages Luros's builds made, as they made them: \((file as NSString).lastPathComponent) is not one with that digest; build it again with apelin_project_build",
+                    "an agent publishes only packages Luros's builds made, as they made them: \((file as NSString).lastPathComponent) is not one with that digest; build it again with luros_project_build",
                 )
             }
         }

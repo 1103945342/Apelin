@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - feedback
 
-/// An issue apelin_feedback_send files on Luros's own repository: the title
+/// An issue luros_feedback_send files on Luros's own repository: the title
 /// and body its card showed, nothing else. The repository is the host's
 /// constant, and the footer luros-environment's.
 public struct FeedbackToolRequest: Sendable, Hashable, Codable {
@@ -29,7 +29,7 @@ public struct FeedbackToolResponse: Sendable, Hashable, Codable {
     }
 }
 
-/// The issue apelin_feedback_read reads, and apelin_feedback_edit reads
+/// The issue luros_feedback_read reads, and luros_feedback_edit reads
 /// again before it asks.
 public struct FeedbackReadToolRequest: Sendable, Hashable, Codable {
     public var context: HostCallContext
@@ -85,7 +85,7 @@ public struct FeedbackReadToolResponse: Sendable, Hashable, Codable {
     }
 }
 
-/// An edit apelin_feedback_edit makes: the fields its card showed (nil for
+/// An edit luros_feedback_edit makes: the fields its card showed (nil for
 /// one that stays) and the title and body it was made against, which
 /// luros-environment requires the issue still to have.
 public struct FeedbackEditToolRequest: Sendable, Hashable, Codable {

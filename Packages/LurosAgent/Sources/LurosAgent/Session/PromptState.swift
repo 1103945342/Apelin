@@ -85,9 +85,9 @@ struct PromptState: Equatable {
             switch self {
             case .buildSystem: "luros-project.json says how it builds"
             case .instructions: "read AGENTS.md or CLAUDE.md with file_read"
-            case .skills: "apelin_skill_list answers them"
-            case .memory: "apelin_memory_list answers it"
-            case .environment: "apelin_toolchain_list and apelin_sdk_list answer it"
+            case .skills: "luros_skill_list answers them"
+            case .memory: "luros_memory_list answers it"
+            case .environment: "luros_toolchain_list and luros_sdk_list answer it"
             }
         }
     }

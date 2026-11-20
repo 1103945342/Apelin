@@ -50,7 +50,7 @@ actor ToolRunner {
     let skills: URL?
     /// Where the read tools reach besides the project.
     let readOnlyRoots: ReadOnlyRoots
-    /// Writes an event to the session's log: apelin_notification_send's `notice`.
+    /// Writes an event to the session's log: luros_notification_send's `notice`.
     let record: (@Sendable (AgentSessionEvent) async throws -> Void)?
     let webFetch: WebFetch
     /// The agent tool extensions' sessions, opened as their tools are called.
@@ -130,7 +130,7 @@ actor ToolRunner {
     private var runMode: LurosProtocol.AgentRunMode?
 
     /// The mode this run is in now, as the agent may have changed it itself
-    /// (`apelin_run_mode`): what `<system-state>` says of the steps after it.
+    /// (`luros_run_mode`): what `<system-state>` says of the steps after it.
     var currentRunMode: LurosProtocol.AgentRunMode? {
         runMode
     }
@@ -571,7 +571,7 @@ actor ToolRunner {
                 default: return try json(tools.delete(arguments))
                 }
             } catch MemoryStoreError.changed {
-                throw ToolDeniedError(message: "Memory changed. Read apelin_memory_list again and respect the user's latest corrections or deletions; do not blindly retry.")
+                throw ToolDeniedError(message: "Memory changed. Read luros_memory_list again and respect the user's latest corrections or deletions; do not blindly retry.")
             } catch MemoryStoreError.invalidContent {
                 throw ToolArgumentError("Memory needs a nonempty, single-line title and nonempty body, without NUL bytes.")
             } catch MemoryStoreError.full {
@@ -1229,7 +1229,7 @@ actor ToolRunner {
         }
     }
 
-    /// `apelin_conversation_plan`: the host's plan for this conversation, or
+    /// `luros_conversation_plan`: the host's plan for this conversation, or
     /// for one it opened — read, and the few moves the assignment allows. The
     /// host decides who may do what and whether the revision is current; this
     /// only names the action and, for an amendment, the step.
@@ -1297,13 +1297,13 @@ actor ToolRunner {
     }
 
     /// The memory a call reaches: this session's project's, or the
-    /// project it names, by projectID or folder as apelin_project_list
+    /// project it names, by projectID or folder as luros_project_list
     /// answers them. A projectID no project has now still reaches the
     /// records kept for it, to change or delete, but takes no new one.
     private func memoryTools(_ store: MemoryStore, naming reference: String?) async throws -> MemoryTools {
         guard let reference else {
             let refusal = project.isTemporary
-                ? "General Chat has no project of its own: name it with project (its projectID or folder name, as apelin_project_list answers them), or use scope global."
+                ? "General Chat has no project of its own: name it with project (its projectID or folder name, as luros_project_list answers them), or use scope global."
                 : nil
             return MemoryTools(store: store, projectID: project.id, newRecordRefusal: refusal)
         }
@@ -1323,7 +1323,7 @@ actor ToolRunner {
     }
 
     /// The projects the records of `snapshot` are kept for, by projectID,
-    /// as apelin_project_list names them; one that is not there is gone.
+    /// as luros_project_list names them; one that is not there is gone.
     private func memoryProjects(_ snapshot: MemorySnapshot) async throws -> [String: MemoryListing.Project] {
         let listing = try await backend.projects()
         var projects: [String: MemoryListing.Project] = [:]

@@ -378,8 +378,8 @@ def module_of(name):
 
 
 def is_ours(record):
-    """Luros's modules (Luros, lurosd, apelin_<worker>, Luros<Package>), not a dependency's."""
-    return module_of(record["name"]).lower().startswith("apelin")
+    """Luros's modules (Luros, lurosd, luros_<worker>, Luros<Package>), not a dependency's."""
+    return module_of(record["name"]).lower().startswith("luros")
 
 
 def read_probe(path):
@@ -783,7 +783,7 @@ def audit(binary, probe, actions, sources, baseline):
                 if overrides:
                     base = ancestors.get(selector, "")
                     dynamic = any(re.search(r"\bdynamic\b", d[3]) for d in declarations)
-                    if is_final and not dynamic and selector not in apple_side and module_of(base).lower().startswith("apelin"):
+                    if is_final and not dynamic and selector not in apple_side and module_of(base).lower().startswith("luros"):
                         findings.append(("direct", record["name"], kind + selector, context, base,
                                          "an override in a final class: Swift calls it directly through this type unless it is dynamic"))
                     continue
@@ -811,7 +811,7 @@ def audit(binary, probe, actions, sources, baseline):
         instance = set().union(*(probe["instance"].get(n, set()) for n in apple)) if apple else set()
         class_side = set().union(*(probe["class"].get(n, set()) for n in apple)) if apple else set()
         for category in categories:
-            if not category["name"].lower().startswith("apelin"):
+            if not category["name"].lower().startswith("luros"):
                 continue
             for kind, own, answered in (("-", category["instance"], instance), ("+", category["class"], class_side)):
                 for selector, imp in own:

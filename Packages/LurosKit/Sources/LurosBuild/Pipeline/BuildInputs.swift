@@ -17,7 +17,7 @@ public enum BootstrapResolution {
 
 /// Everything one build needs, resolved before the first tool runs.
 public struct BuildInputs: Sendable {
-    /// Unique per build; `APELIN_BUILD_ID`, the marker `apelin_package_confirm_loaded`
+    /// Unique per build; `LUROS_BUILD_ID`, the marker `luros_package_confirm_loaded`
     /// matches, and the artifact's ID. The session host's task ID.
     public var buildID: String
     public var projectRoot: URL

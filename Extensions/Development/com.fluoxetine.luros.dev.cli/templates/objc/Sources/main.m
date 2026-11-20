@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 OwnGoal Studio
 //
-// From Luros's command-line template. The build defines APELIN_VERSION and
-// APELIN_BUILD_ID as string literals on every compile. Exit codes follow
+// From Luros's command-line template. The build defines LUROS_VERSION and
+// LUROS_BUILD_ID as string literals on every compile. Exit codes follow
 // sysexits(3): 0 on success, 64 for a usage error.
 #import <Foundation/Foundation.h>
 #include <stdio.h>
@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
         for (NSUInteger index = 1; index < arguments.count; index++) {
             NSString *argument = arguments[index];
             if ([argument isEqualToString:@"--version"]) {
-                printf("%s %s (%s)\n", "{{productName}}", APELIN_VERSION, APELIN_BUILD_ID);
+                printf("%s %s (%s)\n", "{{productName}}", LUROS_VERSION, LUROS_BUILD_ID);
                 return EX_OK;
             }
             if ([argument isEqualToString:@"--help"] || [argument isEqualToString:@"-h"]) {

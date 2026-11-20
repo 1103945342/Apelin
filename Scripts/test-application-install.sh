@@ -13,10 +13,10 @@ core=Packages/LurosKit/Sources/LurosCore
 compiler=(xcrun --sdk macosx swiftc -target arm64-apple-macos13.0)
 live=()
 if [[ "${1:-}" == --device ]]; then
-    : "${APELIN_PROJECT_ROOT:?}" "${APELIN_TOOLCHAIN_BIN:?}" "${2:?tool entitlements required}"
+    : "${LUROS_PROJECT_ROOT:?}" "${LUROS_TOOLCHAIN_BIN:?}" "${2:?tool entitlements required}"
     compiler=(swiftc -target arm64-apple-ios16.0)
-    install_root="${APELIN_TOOLCHAIN_BIN%%/usr/lib/luros/toolchains/*}"
-    [[ -n "$install_root" && "$install_root" != "$APELIN_TOOLCHAIN_BIN" ]] || exit 64
+    install_root="${LUROS_TOOLCHAIN_BIN%%/usr/lib/luros/toolchains/*}"
+    [[ -n "$install_root" && "$install_root" != "$LUROS_TOOLCHAIN_BIN" ]] || exit 64
     printf 'int main(void) { return 0; }\n' > "$work/fixture.c"
     clang -arch arm64 "$work/fixture.c" -o "$work/fixture"
     printf '%s\n' '<?xml version="1.0"?><plist version="1.0"><dict><key>get-task-allow</key><true/></dict></plist>' > "$work/app.plist"
@@ -25,7 +25,7 @@ if [[ "${1:-}" == --device ]]; then
     printf '#include <unistd.h>\nint main(void) { for (;;) sleep(60); }\n' > "$work/sleeper.c"
     clang -arch arm64 "$work/sleeper.c" -o "$work/sleeper"
     ldid -S "$work/sleeper"
-    live=("$install_root" "$install_root/usr/bin/ldid" "$APELIN_PROJECT_ROOT/$work/fixture" "$APELIN_PROJECT_ROOT/$work/sleeper")
+    live=("$install_root" "$install_root/usr/bin/ldid" "$LUROS_PROJECT_ROOT/$work/fixture" "$LUROS_PROJECT_ROOT/$work/sleeper")
 fi
 "${compiler[@]}" -swift-version 5 -parse-as-library -whole-module-optimization \
     -module-name LurosCore -emit-module -emit-module-path "$work/LurosCore.swiftmodule" \
@@ -36,7 +36,7 @@ fi
     -o "$work/check"
 if [[ "${1:-}" == --device ]]; then
     ldid "-S$2" "$work/check"
-    "$work/check" "$APELIN_PROJECT_ROOT/$work/data" "${live[@]}"
+    "$work/check" "$LUROS_PROJECT_ROOT/$work/data" "${live[@]}"
 else
     "$work/check" "$PWD/$work/data"
 fi

@@ -177,8 +177,8 @@ final class MixedNativeBuildTests: XCTestCase {
     """
 
     private static let objcHeader = """
-    #ifndef APELIN_MIXED_OBJC_WRAPPER_H
-    #define APELIN_MIXED_OBJC_WRAPPER_H
+    #ifndef LUROS_MIXED_OBJC_WRAPPER_H
+    #define LUROS_MIXED_OBJC_WRAPPER_H
 
     #ifdef __cplusplus
     extern "C" {

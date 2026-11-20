@@ -4,7 +4,7 @@ import Foundation
 import KWWKAI
 import Testing
 
-/// apelin_project_rename: the session's own project's displayName without
+/// luros_project_rename: the session's own project's displayName without
 /// asking, as the file tools may write it; another project's only as the
 /// user approves, every time; an automatic rename for the own project only.
 @Suite("Project rename")

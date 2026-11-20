@@ -2,7 +2,7 @@ import LurosProtocol
 import UIKit
 
 /// One skill from Settings ▸ Skills: its description, the instructions the
-/// agent reads with `apelin_skill_read`, and the other files its folder serves.
+/// agent reads with `luros_skill_read`, and the other files its folder serves.
 /// Selectable, wrapping text, as a license's page is.
 final class SkillTextController: UIViewController {
     private let skill: AgentSkill

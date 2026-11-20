@@ -152,7 +152,7 @@ struct ChannelHostBackendTests {
         let response = try await fixture.backend.build(BuildRequest(context: fixture.context(), configuration: .debug, buildDescriptionDigest: "d"))
         #expect(response.diagnostics.map(\.field) == ["/configurations/Debug/linkerFlags", nil])
         let note = try #require(response.diagnostics.last)
-        #expect(note.severity == .note && note.message.contains("luros-project.schema.json (apelin_skill_read)"))
+        #expect(note.severity == .note && note.message.contains("luros-project.schema.json (luros_skill_read)"))
     }
 
     @Test
@@ -183,7 +183,7 @@ struct ChannelHostBackendTests {
     }
 
     @Test
-    func `apelin_project_check_distribution counts what stops the build, and says a workspace's package is checked by its build`() async throws {
+    func `luros_project_check_distribution counts what stops the build, and says a workspace's package is checked by its build`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.projectCheck, reply: ProjectCheckResponse(
             passed: false,
@@ -208,7 +208,7 @@ struct ChannelHostBackendTests {
     }
 
     @Test
-    func `apelin_project_check_distribution names each issue's field, and where the schema is`() async throws {
+    func `luros_project_check_distribution names each issue's field, and where the schema is`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.projectCheck, reply: ProjectCheckResponse(passed: false, diagnostics: [
             ProjectDiagnostic(code: "project.invalid", severity: .error, message: "unknown member", file: "luros-project.json", field: "/configurations/Debug/linkerFlags"),
@@ -219,7 +219,7 @@ struct ChannelHostBackendTests {
     }
 
     @Test
-    func `a build that names its APELIN_BUILD_ID reports that id`() async throws {
+    func `a build that names its LUROS_BUILD_ID reports that id`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.buildStart, reply: TaskHandle(taskID: TaskID("build-task"), kind: .build))
         fixture.host.on(.buildAttach, reply: batch("build-task", [
@@ -256,7 +256,7 @@ struct ChannelHostBackendTests {
         let renamed = InstallConflict(
             relation: .file,
             file: "/Library/MobileSubstrate/DynamicLibraries/DockFlip.dylib",
-            packageID: "local.apelin.dockflip",
+            packageID: "local.luros.dockflip",
             version: "0.1",
             installationID: "0b6f3c2e-0000-4000-8000-000000000001",
             projectID: "p-1",
@@ -267,13 +267,13 @@ struct ChannelHostBackendTests {
             ("irisin", .object(["seq": .number(1), "kind": .string("failure"), "text": .string("owned")])),
             ("conflict", LurosCore.JSONValue(encoding: renamed)),
             ("conflict", LurosCore.JSONValue(encoding: declared)),
-            stateEvent(.failed, "…already belongs to local.apelin.dockflip 0.1…"),
+            stateEvent(.failed, "…already belongs to local.luros.dockflip 0.1…"),
         ]))
         let response = try await fixture.backend.install(InstallRequest(context: fixture.context(), artifactID: "art-2", artifactDigest: "sha256:cd", packagingDescriptionDigest: "p"))
         #expect(!response.succeeded)
         #expect(response.installationID == nil)
         #expect(response.conflicts == [renamed, declared])
-        #expect(response.message.contains("local.apelin.dockflip"))
+        #expect(response.message.contains("local.luros.dockflip"))
     }
 
     /// The tweak template's filterBundles is a list of bundle IDs: its
@@ -313,13 +313,13 @@ struct ChannelHostBackendTests {
         let installedAt = Date(timeIntervalSince1970: 1_790_000_000)
         fixture.host.on(.installationList, reply: InstallationListResponse(installations: [
             InstallationSummary(installationID: "inst-2", packageID: "wiki.qaq.hello", version: "0.0.2", projectID: fixture.project.id, buildID: "B-2", installedAt: installedAt, removable: true),
-            InstallationSummary(installationID: "inst-1", packageID: "local.apelin.gone", version: "1", projectID: "deleted-project", installedAt: installedAt, removable: false, reason: "local.apelin.gone is now version 2"),
+            InstallationSummary(installationID: "inst-1", packageID: "local.luros.gone", version: "1", projectID: "deleted-project", installedAt: installedAt, removable: false, reason: "local.luros.gone is now version 2"),
         ]))
         let listed = try await fixture.backend.installations(InstallationListToolRequest(packageID: "wiki.qaq.hello"))
         let sent = try #require(fixture.host.requests(InstallationListRequest.self).first)
         #expect(sent.packageID == "wiki.qaq.hello" && sent.projectID == nil)
         #expect(listed.installations.map(\.project) == ["Hello", nil], "a project still under Projects/ is named by its folder")
-        #expect(listed.installations.last?.reason == "local.apelin.gone is now version 2" && listed.installations.last?.removable == false)
+        #expect(listed.installations.last?.reason == "local.luros.gone is now version 2" && listed.installations.last?.removable == false)
         #expect(listed.installations.first?.buildID == "B-2" && !listed.truncated)
     }
 
@@ -333,7 +333,7 @@ struct ChannelHostBackendTests {
     }
 
     @Test
-    func `apelin_package_confirm_loaded starts a load check with the session's project and reads its answer from the final state`() async throws {
+    func `luros_package_confirm_loaded starts a load check with the session's project and reads its answer from the final state`() async throws {
         let fixture = try Fixture()
         let answer = LurosProtocol.ConfirmLoadedResponse(loaded: true, evidence: [
             LoadEvidence(kind: "log", passed: true, detail: "confirmed: Marker logged by pid 55."),
@@ -362,7 +362,7 @@ struct ChannelHostBackendTests {
     }
 
     @Test
-    func `apelin_package_confirm_loaded answers the host's verdict when the marker is not heard`() async throws {
+    func `luros_package_confirm_loaded answers the host's verdict when the marker is not heard`() async throws {
         let fixture = try Fixture()
         let answer = LurosProtocol.ConfirmLoadedResponse(loaded: false, evidence: [
             LoadEvidence(kind: "log", passed: false, detail: "absent: No line containing \"LurosLoaded B-42\" from SpringBoard in 30 s."),
@@ -384,7 +384,7 @@ struct ChannelHostBackendTests {
     }
 
     @Test
-    func `apelin_package_confirm_loaded without respring sends no trigger; a check that ended without an answer throws`() async throws {
+    func `luros_package_confirm_loaded without respring sends no trigger; a check that ended without an answer throws`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.confirmLoaded, reply: TaskHandle(taskID: TaskID("confirm-task"), kind: .confirmLoaded))
         fixture.host.on(.confirmLoadedAttach, reply: batch("confirm-task", [stateEvent(.failed, "luros-diagnostics exited")]))
@@ -395,7 +395,7 @@ struct ChannelHostBackendTests {
     }
 
     @Test
-    func `apelin_log_read opens a bounded stream and reads it to its end`() async throws {
+    func `luros_log_read opens a bounded stream and reads it to its end`() async throws {
         let fixture = try Fixture()
         let entry: LurosCore.JSONValue = .object([
             "time": .string("2026-10-17T10:00:00Z"), "process": .string("SpringBoard"),
@@ -423,7 +423,7 @@ struct ChannelHostBackendTests {
     }
 
     @Test
-    func `apelin_crash_read reads the descriptor crashOpen hands back, bounded`() async throws {
+    func `luros_crash_read reads the descriptor crashOpen hands back, bounded`() async throws {
         let fixture = try Fixture()
         let text = Data(String(repeating: "x", count: 100).utf8)
         fixture.host.on(.crashOpen) { _ in (CrashOpenResponse(descriptor: DescriptorSlot(index: 0), size: 100), [descriptor(holding: text)]) }
@@ -434,7 +434,7 @@ struct ChannelHostBackendTests {
     }
 
     @Test
-    func `apelin_crash_symbolicate asks the diagnostics worker with the project`() async throws {
+    func `luros_crash_symbolicate asks the diagnostics worker with the project`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.crashSymbolicate, reply: CrashSymbolicateResponse(id: "r.ips", process: "SpringBoard", matchedImageUUIDs: ["UUID-1"], crashedThread: [
             LurosProtocol.SymbolicatedFrame(index: 0, image: "Hello.dylib", address: "0x1000", symbol: "HookedDidFinishLaunching", file: "Tweak.m", line: 30),
@@ -447,7 +447,7 @@ struct ChannelHostBackendTests {
     }
 
     @Test
-    func `apelin_screen_capture reads the image from the reply's descriptor`() async throws {
+    func `luros_screen_capture reads the image from the reply's descriptor`() async throws {
         let fixture = try Fixture()
         let jpeg = Data([0xFF, 0xD8, 0xFF, 0xE0, 1, 2, 3])
         fixture.host.on(.captureScreen) { _ in (LurosProtocol.CaptureScreenResponse(image: DescriptorSlot(index: 0), width: 10, height: 20), [descriptor(holding: jpeg)]) }

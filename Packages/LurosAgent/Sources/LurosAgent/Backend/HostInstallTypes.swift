@@ -1,7 +1,7 @@
 import struct LurosProtocol.InstallConflict
 import Foundation
 
-// MARK: - install / apelin_package_remove / apelin_package_list / respring
+// MARK: - install / luros_package_remove / luros_package_list / respring
 
 public struct InstallRequest: Sendable, Hashable, Codable {
     public var context: HostCallContext
@@ -33,7 +33,7 @@ public struct InstallResponse: Sendable, Hashable, Codable {
     public var succeeded: Bool
     public var message: String
     /// When the installer refused it: each installed package in the way,
-    /// with the `installationID` apelin_package_remove takes when Luros
+    /// with the `installationID` luros_package_remove takes when Luros
     /// installed it. nil when none was found.
     public var conflicts: [InstallConflict]?
     /// For an app project, that a copy already running keeps the previous
@@ -86,7 +86,7 @@ public struct RemovePackageResponse: Sendable, Hashable, Codable {
     }
 }
 
-// MARK: - apelin_package_list
+// MARK: - luros_package_list
 
 public struct InstallationListToolRequest: Sendable, Hashable, Codable {
     /// Only this package.
@@ -114,7 +114,7 @@ public struct InstallationListToolResponse: Sendable, Hashable, Codable {
 }
 
 public struct ListedInstallation: Sendable, Hashable, Codable {
-    /// What apelin_package_remove takes.
+    /// What luros_package_remove takes.
     public var installationID: String
     public var packageID: String
     public var version: String
@@ -124,7 +124,7 @@ public struct ListedInstallation: Sendable, Hashable, Codable {
     public var project: String?
     public var buildID: String?
     public var installedAt: Date
-    /// Whether apelin_package_remove can remove it; it still asks in Strict mode.
+    /// Whether luros_package_remove can remove it; it still asks in Strict mode.
     public var removable: Bool
     /// Why not, when it cannot.
     public var reason: String?

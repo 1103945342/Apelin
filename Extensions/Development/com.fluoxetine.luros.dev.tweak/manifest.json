@@ -5,7 +5,7 @@
   "kind": "tweak",
   "displayName": "Tweak Development",
   "summary": "Objective-C tweaks that hook through the substrate-compatible API, with a process filter and package layout.",
-  "apelinCompatibility": {
+  "lurosCompatibility": {
     "minimumAppVersion": "0.1.0",
     "projectSchemaVersions": [1],
     "manifestSchemaVersion": 1
@@ -102,7 +102,7 @@
         { "path": "luros-project.json", "format": "json" },
         { "path": "Sources/Tweak.m", "format": "objc" }
       ],
-      "digest": "sha256:7da9c2ce4d737f9e72f45209789e511249b89b616edfd200cc5b7db76bc6f08b"
+      "digest": "sha256:c0147c86ca56c095604d4d32061b787daa5385286e64b87011fd417026d566ae"
     }
   ],
   "provenance": [

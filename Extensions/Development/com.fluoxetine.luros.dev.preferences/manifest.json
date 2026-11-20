@@ -5,7 +5,7 @@
   "kind": "preferences",
   "displayName": "Preference Bundle Development",
   "summary": "Build Settings panes with a preference bundle, a specifier plist and a PreferenceLoader entry.",
-  "apelinCompatibility": {
+  "lurosCompatibility": {
     "minimumAppVersion": "0.1.0",
     "projectSchemaVersions": [1],
     "manifestSchemaVersion": 1
@@ -76,7 +76,7 @@
         { "path": "Resources/icon@3x.png", "format": "copy" },
         { "path": "Packaging/entry.plist", "format": "plist-xml" }
       ],
-      "digest": "sha256:ae393ab10f35b155d813d42191313d48c09e6f5daf84a669872d7c52bd622ce4"
+      "digest": "sha256:2d55c7110e0bdc3aaf204841d85b00b97f8d9e22a36b29adf6bb740fd7805e17"
     }
   ],
   "provenance": [

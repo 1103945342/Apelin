@@ -6,12 +6,12 @@ import Testing
 /// It thins Apple's package to arm64 but never executes, signs or installs it.
 /// Feed the resulting manifest to Scripts/inspect-toolchain-imports.py.
 struct StaticInventoryTests {
-    @Test(.enabled(if: ProcessInfo.processInfo.environment["APELIN_STATIC_PACKAGE"] != nil))
+    @Test(.enabled(if: ProcessInfo.processInfo.environment["LUROS_STATIC_PACKAGE"] != nil))
     func `prepare host images`() throws {
         let environment = ProcessInfo.processInfo.environment
-        let package = try URL(fileURLWithPath: #require(environment["APELIN_STATIC_PACKAGE"]))
-        let output = try URL(fileURLWithPath: #require(environment["APELIN_STATIC_WORKSPACE"]))
-        let version = try #require(environment["APELIN_STATIC_VERSION"])
+        let package = try URL(fileURLWithPath: #require(environment["LUROS_STATIC_PACKAGE"]))
+        let output = try URL(fileURLWithPath: #require(environment["LUROS_STATIC_WORKSPACE"]))
+        let version = try #require(environment["LUROS_STATIC_VERSION"])
         try #require(!FileManager.default.fileExists(atPath: output.path))
         try directory(output)
         let extracted = output.appendingPathComponent("extracted")

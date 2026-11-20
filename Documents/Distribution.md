@@ -47,7 +47,7 @@ with GitHub when there is no account yet. Close Settings and publish again;
 the build stays as it was.
 
 A conversation publishes release builds it has made without building them
-again: asked to, it calls `apelin_package_publish` with those builds, which
+again: asked to, it calls `luros_package_publish` with those builds, which
 go in together — the roothide and the rootless package of one version in one
 commit —, each held to the digest its build recorded, and none goes in if
 one has changed. In Strict mode it asks first, naming the repository and
@@ -66,7 +66,7 @@ from `projectCheck` with `purpose: distribution` (and the chosen target as
 - `distribution.package.version.template`: the version is still the one the
   template's project file starts with.
 - `distribution.package.id.local`, `distribution.bundleID.local`: the package
-  ID or an app's `CFBundleIdentifier` is still the `local.apelin.` one
+  ID or an app's `CFBundleIdentifier` is still the `local.luros.` one
   `projectCreate` made up.
 - `distribution.icon.missing`: an app's Info.plist names no icon.
 - `distribution.version.packaged`: a release package of this ID and version
@@ -79,9 +79,9 @@ waits until it is fixed.
 
 They are advice. Build still goes ahead after a confirmation, and the build
 itself is never refused for them. **Ask Agent to Prepare** closes the page and
-sends the project's conversation a request to run `apelin_project_check_distribution`, fix
+sends the project's conversation a request to run `luros_project_check_distribution`, fix
 what it lists and report back without building. The agent's
-`apelin_project_check_distribution` tool answers the same findings; its `apelin_project_build` with
+`luros_project_check_distribution` tool answers the same findings; its `luros_project_build` with
 `configuration: release` and a `bootstrap` returns them among the
 diagnostics, and its system prompt tells it to check before a distribution
 build.
@@ -97,15 +97,15 @@ the same.
 ## Workspaces
 
 A workspace keeps its own build: Build runs its script once for the chosen
-target, with `APELIN_CONFIGURATION=release` and that target's
-`APELIN_BOOTSTRAP`, `APELIN_ARCHITECTURE` and `APELIN_PREFIX`, whatever this
+target, with `LUROS_CONFIGURATION=release` and that target's
+`LUROS_BOOTSTRAP`, `LUROS_ARCHITECTURE` and `LUROS_PREFIX`, whatever this
 device runs. Its script writes the one `.deb`; Luros reads its control file,
 requires the target's architecture and registers it as for any build. There is
-no description to check before, so `apelin_project_check_distribution` and the first page
+no description to check before, so `luros_project_check_distribution` and the first page
 only say whether the script is declared. The release build reads the package it
 wrote and lists, under the outcome and among the agent's build diagnostics:
 
-- `distribution.package.id.local`: the package ID starts `local.apelin.`.
+- `distribution.package.id.local`: the package ID starts `local.luros.`.
 - `distribution.version.packaged`: this project already packaged this ID and
   version for the target.
 - `distribution.package.id.differs`: the other target's latest release package
@@ -122,7 +122,7 @@ For a project luros-build builds, use its existing build and packaging descripti
 - Declare maintainer scripts in `package.maintainerScripts` only when needed.
   Refer to bootstrap paths with `@PREFIX@` and real system paths with `@ROOTFS@`.
   The packager substitutes these per target and checks every script with `sh -n`.
-- Use the typed `apelin_project_build` tool with `configuration: "release"` and an explicit
+- Use the typed `luros_project_build` tool with `configuration: "release"` and an explicit
   `bootstrap: "roothide"` or `"rootless"` when asking the agent to build a
   distribution. Omit bootstrap for an ordinary build for the current device.
 - Do not create a second packaging script that bypasses these checks. Never

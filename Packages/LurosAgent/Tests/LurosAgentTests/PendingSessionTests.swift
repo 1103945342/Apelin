@@ -149,7 +149,7 @@ struct PendingSessionTests {
         let faux = await registerFauxProvider()
         defer { faux.unregister() }
         faux.setResponses([
-            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove", "installation_id": "inst-1"])], stopReason: .toolUse)),
+            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "luros_package_remove", arguments: ["reason": "Remove", "installation_id": "inst-1"])], stopReason: .toolUse)),
             .message(fauxAssistantMessage("First finished.")),
             .message(fauxAssistantMessage("Second finished.")),
             .message(fauxAssistantMessage("Third finished.")),
@@ -201,7 +201,7 @@ struct PendingSessionTests {
         let faux = await registerFauxProvider()
         defer { faux.unregister() }
         faux.setResponses([
-            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove", "installation_id": "inst-1"])], stopReason: .toolUse)),
+            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "luros_package_remove", arguments: ["reason": "Remove", "installation_id": "inst-1"])], stopReason: .toolUse)),
             .message(fauxAssistantMessage("First finished.")),
             .message(fauxAssistantMessage("Second finished.")),
             .message(fauxAssistantMessage("Third finished.")),
@@ -335,7 +335,7 @@ struct PendingSessionTests {
         let faux = await registerFauxProvider()
         defer { faux.unregister() }
         faux.setResponses([
-            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove", "installation_id": "inst-1"])], stopReason: .toolUse)),
+            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "luros_package_remove", arguments: ["reason": "Remove", "installation_id": "inst-1"])], stopReason: .toolUse)),
             .message(fauxAssistantMessage("Resumed.")),
         ])
         let configuration = AgentSessionConfiguration(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot)

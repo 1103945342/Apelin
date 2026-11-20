@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "com.example.apelin.dev.minimal",
+  "id": "com.example.luros.dev.minimal",
   "version": "1.0.0",
   "kind": "cli",
   "displayName": "Minimal",
   "summary": "The smallest valid manifest.",
-  "apelinCompatibility": {
+  "lurosCompatibility": {
     "minimumAppVersion": "0.1.0",
     "projectSchemaVersions": [
       1

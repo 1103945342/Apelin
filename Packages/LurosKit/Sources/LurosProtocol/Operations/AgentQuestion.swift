@@ -1,6 +1,6 @@
 import Foundation
 
-/// A question the agent asks the reader and waits on (`apelin_question_ask`,
+/// A question the agent asks the reader and waits on (`luros_question_ask`,
 /// 2026-11-05): a few options to pick from, or an answer of their own.
 ///
 /// It rides the approval path rather than an operation of its own: the

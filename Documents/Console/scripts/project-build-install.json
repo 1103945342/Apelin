@@ -8,7 +8,7 @@
     {"op": "projectCreate", "label": "project", "request": {
       "templateID": "com.fluoxetine.luros.dev.tweak/objc-hook",
       "name": "Console Build Check",
-      "values": {"packageID": "local.apelin.console-build-check", "displayName": "Console Build Check"}
+      "values": {"packageID": "local.luros.console-build-check", "displayName": "Console Build Check"}
     }},
     {"op": "projectCheck", "label": "check", "request": {"projectID": "${project.response.projectID}"}},
     {"op": "expect", "request": {"step": "check", "path": "response.passed", "equals": true}},
@@ -51,7 +51,7 @@
      "request": {"taskID": "${install.response.taskID}", "afterSeq": 0, "waitMilliseconds": 1000}},
     {"op": "expect", "request": {"step": "install-replay", "state": "succeeded"}},
     {"op": "installationList", "label": "installed",
-     "request": {"packageID": "local.apelin.console-build-check"}},
+     "request": {"packageID": "local.luros.console-build-check"}},
     {"op": "expect", "request": {"step": "installed", "path": "response.installations.0.installationID",
      "equals": "${install.lastEvent.payload.result.installationID}"}},
     {"op": "expect", "request": {"step": "installed", "path": "response.installations.0.removable", "equals": true}},
@@ -61,7 +61,7 @@
      "request": {"installationID": "${install.lastEvent.payload.result.installationID}"}},
     {"op": "expect", "request": {"step": "remove", "state": "succeeded"}},
     {"op": "installationList", "label": "removed",
-     "request": {"packageID": "local.apelin.console-build-check"}},
+     "request": {"packageID": "local.luros.console-build-check"}},
     {"op": "expect", "request": {"step": "removed", "path": "response.installations.0", "exists": false}}
   ]
 }

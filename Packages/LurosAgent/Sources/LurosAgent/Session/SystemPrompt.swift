@@ -13,7 +13,7 @@ enum SystemPrompt {
         skills: [SkillDocument],
         mcpServers: [MCPServerConfiguration],
         projectInstructions: ProjectInstructions? = nil,
-        buildSystem: ProjectBuildSystem = .apelin,
+        buildSystem: ProjectBuildSystem = .luros,
         memory: String = "",
         environment: String = "",
         injected: String = "",

@@ -153,8 +153,8 @@ public struct ExtensionCatalog: Sendable {
         if manifest.id != name {
             problems.append("id \(manifest.id) differs from the folder name")
         }
-        if !manifest.apelinCompatibility.projectSchemaVersions.contains(ProjectStore.projectSchemaVersion) {
-            problems.append("its templates are for project schema \(manifest.apelinCompatibility.projectSchemaVersions), not \(ProjectStore.projectSchemaVersion)")
+        if !manifest.lurosCompatibility.projectSchemaVersions.contains(ProjectStore.projectSchemaVersion) {
+            problems.append("its templates are for project schema \(manifest.lurosCompatibility.projectSchemaVersions), not \(ProjectStore.projectSchemaVersion)")
         }
         for license in manifest.licenses where (try? ProjectFiles.read(license.path, in: root)) == nil {
             problems.append("license \(license.path) is missing")

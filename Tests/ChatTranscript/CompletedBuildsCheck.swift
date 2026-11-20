@@ -2,7 +2,7 @@ import LurosCore
 import LurosProtocol
 import Foundation
 
-/// A build counts for the star prompt only when apelin_project_build
+/// A build counts for the star prompt only when luros_project_build
 /// answered that it succeeded: not a failed build, a refused call, another
 /// tool or the call itself.
 func checkCompletedBuilds() {

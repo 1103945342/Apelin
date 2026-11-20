@@ -74,7 +74,7 @@ final class WelcomeEnvironmentPage: WelcomeListPage {
         dataSource.update(sections, changedItems: [.introduction])
     }
 
-    @objc(apelin_load) private dynamic func load() {
+    @objc(luros_load) private dynamic func load() {
         operation?.cancel()
         dataSource.beginLoad()
         resolving = true

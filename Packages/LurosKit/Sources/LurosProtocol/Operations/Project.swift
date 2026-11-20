@@ -405,7 +405,7 @@ public struct ProjectCheckResponse: Codable, Sendable, Equatable {
 /// Who builds a project: luros-build from its description, or the
 /// workspace's own script.
 public enum BuildSystemKind: String, Codable, Sendable {
-    case apelin
+    case luros
     case external
 }
 

@@ -94,8 +94,8 @@ struct ApprovalMatrixTests {
             }
         }
         #expect(verdict(.confirm, InvocationFacts(tool: .local(.questionAsk))) == .allow(.notRequired))
-        // respring is preset; apelin_screen_interact and apelin_package_remove ask.
-        #expect(verdict(.confirm, InvocationFacts(tool: .local(.deviceRespring))) == .allow(.preset("apelin_device_respring")))
+        // respring is preset; luros_screen_interact and luros_package_remove ask.
+        #expect(verdict(.confirm, InvocationFacts(tool: .local(.deviceRespring))) == .allow(.preset("luros_device_respring")))
         #expect(isAsk(verdict(.confirm, InvocationFacts(tool: .local(.screenInteract)))))
         #expect(isAsk(verdict(.confirm, InvocationFacts(tool: .local(.packageRemove)))))
         // MCP tools ask.
@@ -112,7 +112,7 @@ struct ApprovalMatrixTests {
         #expect(ToolRunner.allowsSessionScope(.local(.webFetch), detail: .none))
         var presets = ApprovalPresets.default
         presets.readTools.insert(.webFetch)
-        #expect(verdict(.confirm, facts, presets: presets) == .allow(.preset("apelin_web_fetch")))
+        #expect(verdict(.confirm, facts, presets: presets) == .allow(.preset("luros_web_fetch")))
         #expect(verdict(.relaxed, facts) == .allow(.relaxed))
         #expect(verdict(.full, facts) == .allow(.relaxed))
     }
@@ -128,8 +128,8 @@ struct ApprovalMatrixTests {
         presets.systemTools.formUnion([.packageRemove, .shellRun])
         presets.readTools.insert(.packageRemove)
 
-        #expect(verdict(.confirm, InvocationFacts(tool: .local(.screenCapture)), presets: presets) == .allow(.preset("apelin_screen_capture")))
-        #expect(verdict(.confirm, InvocationFacts(tool: .local(.screenInteract)), presets: presets) == .allow(.preset("apelin_screen_interact")))
+        #expect(verdict(.confirm, InvocationFacts(tool: .local(.screenCapture)), presets: presets) == .allow(.preset("luros_screen_capture")))
+        #expect(verdict(.confirm, InvocationFacts(tool: .local(.screenInteract)), presets: presets) == .allow(.preset("luros_screen_interact")))
         #expect(isAsk(verdict(.confirm, InvocationFacts(tool: .local(.deviceRespring)), presets: presets)))
         #expect(isAsk(verdict(.confirm, InvocationFacts(tool: .local(.packageRemove)), presets: presets)))
         #expect(isAsk(verdict(.confirm, InvocationFacts(tool: .local(.shellRun), command: .shell("x | y")), presets: presets)))
@@ -290,10 +290,10 @@ struct ApprovalMatrixTests {
         #expect(base != ApprovalFingerprint.make(tool: "shell_run", arguments: ["argv": ["make", "x"]], workingDirectory: ".", projectID: "p", digest: nil))
         #expect(base != ApprovalFingerprint.make(tool: "shell_run", arguments: ["argv": ["make"]], workingDirectory: "Sources", projectID: "p", digest: nil))
         #expect(base != ApprovalFingerprint.make(tool: "shell_run", arguments: ["argv": ["make"]], workingDirectory: ".", projectID: "q", digest: nil))
-        #expect(base != ApprovalFingerprint.make(tool: "apelin_project_build", arguments: ["argv": ["make"]], workingDirectory: ".", projectID: "p", digest: nil))
+        #expect(base != ApprovalFingerprint.make(tool: "luros_project_build", arguments: ["argv": ["make"]], workingDirectory: ".", projectID: "p", digest: nil))
         #expect(
-            ApprovalFingerprint.make(tool: "apelin_project_build", arguments: [:], workingDirectory: ".", projectID: "p", digest: "a")
-                != ApprovalFingerprint.make(tool: "apelin_project_build", arguments: [:], workingDirectory: ".", projectID: "p", digest: "b"),
+            ApprovalFingerprint.make(tool: "luros_project_build", arguments: [:], workingDirectory: ".", projectID: "p", digest: "a")
+                != ApprovalFingerprint.make(tool: "luros_project_build", arguments: [:], workingDirectory: ".", projectID: "p", digest: "b"),
         )
     }
 }

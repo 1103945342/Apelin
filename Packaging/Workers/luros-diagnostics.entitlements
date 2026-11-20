@@ -31,7 +31,7 @@
 	<key>platform-application</key>
 	<true/>
 
-	<!-- Live log (logStream, apelin_log_read, the confirmLoaded marker). -->
+	<!-- Live log (logStream, luros_log_read, the confirmLoaded marker). -->
 	<key>com.apple.private.logging.stream</key>
 	<true/>
 	<key>com.apple.diagnosticd.stream</key>

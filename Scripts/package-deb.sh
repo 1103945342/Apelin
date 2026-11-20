@@ -49,7 +49,7 @@ worker_resources=(kwwk_KWWKAI.bundle)
 worker_runtime_libraries=(libswiftCompatibilitySpan.dylib)
 packaging_root="$(cd "$(dirname "$control_template")/.." && pwd -P)"
 # Sourced by the bootstrap's /etc/profile after it sets PATH anew: puts the
-# toolchain Luros's terminal named in APELIN_TOOLCHAIN_BIN back in front.
+# toolchain Luros's terminal named in LUROS_TOOLCHAIN_BIN back in front.
 login_profile="$packaging_root/profile.d/com.fluoxetine.luros.sh"
 [[ -f "$login_profile" ]] || { echo "error: missing packaging input: $login_profile" >&2; exit 66; }
 /bin/sh -n "$login_profile" || { echo "error: $login_profile is not valid sh" >&2; exit 65; }
@@ -257,7 +257,7 @@ done
 # Luros.app/AgentTools, and each manifest's `executable` — a path relative to
 # the install root — is rewritten to the copy that is there. The host reads an
 # installed folder first, so a tool package installed on its own still wins.
-agent_tools_source="${APELIN_AGENT_TOOLS:?APELIN_AGENT_TOOLS must name the folder holding the built agent tool packages}"
+agent_tools_source="${LUROS_AGENT_TOOLS:?LUROS_AGENT_TOOLS must name the folder holding the built agent tool packages}"
 installed_agent_tools="$installed_app/AgentTools"
 mkdir -p "$installed_agent_tools"
 for tool in assembler disassembler; do
@@ -559,7 +559,7 @@ dpkg-deb --root-owner-group -Zzstd -b "$staging" "$temporary_deb"
 # its own only updates the copy the bundle carries. The assembler contains
 # GPL-2.0 Keystone, so wherever this package is published its corresponding
 # source archive ships with it (deb-agent-tools writes that beside its debs).
-if dpkg-deb -f "$temporary_deb" Depends Pre-Depends Recommends Suggests | grep -qE 'wiki\.qaq\.apelin\.(dev|agent-tools)\.'; then
+if dpkg-deb -f "$temporary_deb" Depends Pre-Depends Recommends Suggests | grep -qE 'wiki\.qaq\.luros\.(dev|agent-tools)\.'; then
     echo "error: the IDE must not depend on, recommend or suggest an extension" >&2
     exit 65
 fi

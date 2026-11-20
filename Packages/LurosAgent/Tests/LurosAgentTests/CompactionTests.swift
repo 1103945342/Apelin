@@ -87,7 +87,7 @@ struct CompactionTests {
         faux.setResponses([
             .message(fauxAssistantMessage(
                 blocks: [fauxToolCall(
-                    name: "apelin_package_remove",
+                    name: "luros_package_remove",
                     arguments: ["reason": "Remove it", "installation_id": "inst-1"],
                 )],
                 stopReason: .toolUse,

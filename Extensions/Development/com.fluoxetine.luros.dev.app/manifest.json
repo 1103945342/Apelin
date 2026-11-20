@@ -5,7 +5,7 @@
   "kind": "app",
   "displayName": "App Development",
   "summary": "Build UIKit apps in Objective-C or Swift and install them in /Applications. Swift requires the Swift toolchain component.",
-  "apelinCompatibility": {
+  "lurosCompatibility": {
     "minimumAppVersion": "0.1.0",
     "projectSchemaVersions": [1],
     "manifestSchemaVersion": 1
@@ -51,7 +51,7 @@
         { "path": "Resources/Info.plist", "format": "plist-xml" },
         { "path": "Packaging/App.entitlements", "format": "plist-xml" }
       ],
-      "digest": "sha256:7590ab6f7cbb9683bfb229b2209c91276eeaee5d353831fcd3e59108efee89f8"
+      "digest": "sha256:14c44dde29e7f9fe5291bd5c3d951e4d337e8bac3ddcf97a93481a0df76b8584"
     },
     {
       "id": "uikit-swift",
@@ -75,7 +75,7 @@
         { "path": "Resources/Info.plist", "format": "plist-xml" },
         { "path": "Packaging/App.entitlements", "format": "plist-xml" }
       ],
-      "digest": "sha256:5942a1fdea925cc8200c681e4ce9432a0c66cf2644d0302d26c2b3e44e992daa"
+      "digest": "sha256:3b04e2ccd2a93cdb82efc623d772c04b2e651c282906bbf20243be0199c090c1"
     }
   ],
   "provenance": [
@@ -99,7 +99,7 @@
       "commit": "0aac1f88779f86e4288cd99fd6e330ce4df56d3f",
       "paths": ["template/App/main.swift", "template/App/SceneRestorationReset.swift", "template/App/RootViewController.swift", "template/Packaging/APP.entitlements", "template/Packaging/DEBIAN/control"],
       "adaptations": [
-        "The uikit-swift adaptation, translated to Objective-C: main.m clears saved scene state before UIApplicationMain; the first screen also shows APELIN_VERSION and APELIN_BUILD_ID, which the build defines."
+        "The uikit-swift adaptation, translated to Objective-C: main.m clears saved scene state before UIApplicationMain; the first screen also shows LUROS_VERSION and LUROS_BUILD_ID, which the build defines."
       ]
     }
   ],

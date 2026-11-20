@@ -369,7 +369,7 @@ public enum TemplateDigest {
             entries.append(.object(item))
         }
         return CanonicalJSON.digest(.object(JSONObject([
-            ("description", .string("apelin.template")),
+            ("description", .string("luros.template")),
             ("version", .integer(1)),
             ("files", .array(entries)),
         ])))

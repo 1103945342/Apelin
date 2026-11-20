@@ -51,11 +51,11 @@ other hidden configuration.
 | `projectID` | Lowercase UUID, made at creation. Renaming the folder never changes it; approvals are bound to it. |
 | `kind` | `app`, `tweak`, `cli` or `preferences`. Requires a product of type `app`, `dylib` (plus `package.tweakFilter`), `executable` or `bundle` respectively. Only `tweak` may carry `tweakFilter`. |
 | `template` | `{extensionID, templateID, version, digest}`: the extension, its version and the template digest (below) the project was generated from. The Confirm baseline. |
-| `environment` | `{toolchain, sdk}`, each `{id, digest}`: the registered toolchain and SDK the project is pinned to. Changing either is an explicit operation (the agent's `apelin_project_set_environment`, checked first by `projectCheck` with `environment`); a new default never moves a project. |
+| `environment` | `{toolchain, sdk}`, each `{id, digest}`: the registered toolchain and SDK the project is pinned to. Changing either is an explicit operation (the agent's `luros_project_set_environment`, checked first by `projectCheck` with `environment`); a new default never moves a project. |
 | `language` | `c`, `objc` or `swift`: the main language, for the editor and the templates. A product is not limited to it (below). |
 | `deploymentTarget` | `16.0` or later, as a string. |
 | `architectures` | `{rootless?, roothide?}` → `arm64`/`arm64e` lists. The keys present are the bootstraps the project packages for. Templates default to rootless `[arm64, arm64e]`, roothide `[arm64e]`. |
-| `configurations` | `Debug` and `Release`, each `{optimization: "0"…"3"/"s"/"z", debugInfo, defines?, cFlags?, cxxFlags?, swiftFlags?, linkFlags?}`. A define's name may not start with `APELIN_`. A flag is one argv element starting with `-`; nothing here is ever given to a shell. `cxxFlags` reach only the C++ and Objective-C++ files, after `cFlags`. |
+| `configurations` | `Debug` and `Release`, each `{optimization: "0"…"3"/"s"/"z", debugInfo, defines?, cFlags?, cxxFlags?, swiftFlags?, linkFlags?}`. A define's name may not start with `LUROS_`. A flag is one argv element starting with `-`; nothing here is ever given to a shell. `cxxFlags` reach only the C++ and Objective-C++ files, after `cFlags`. |
 | `products` | 1–8 of `{id, type, name, sources, headerSearchPaths?, resources?, infoPlist?, entitlements?, bridgingHeader?, installName?, objcARC?, cxxStandard?, cxxInterop?, frameworks?, weakFrameworks?, libraries?, frameworkSearchPaths?, librarySearchPaths?, extensionSupport?, swiftModules?}`. `type` is `app`, `appex`, `bundle`, `dylib` or `executable`. `app`, `appex` and `bundle` require `infoPlist`; only they may have `resources`; only `dylib` may set `installName` (default `@rpath/<name>.dylib`). `extensionSupport` names `{extension, component}` from an installed extension's manifest; the build adds that component's include directories, link-stub directories for the bootstrap being built and rpaths. `bridgingHeader`, `cxxStandard` and `cxxInterop` are the mixed-language members below. `swiftModules` names the project's modules this product compiles against and links (below). Ids and names are unique (beyond the schema). |
 | `swiftModules` | 1–32 when present, of `{name, sources, dependencies?, cxxInterop?, headerSearchPaths?, cxxStandard?}`, each a Swift module built out of the project's own files — one target of a vendored package, say. `name` is the name its Swift sources import; `sources` are its `.swift` files (Swift only: a module never carries C or C++ sources); `dependencies` names the modules it imports, which are built before it. `cxxInterop`, `headerSearchPaths` and `cxxStandard` are the module's side of Swift and C++, below. Each module becomes one `.swiftmodule` and one object, per architecture, which a product that names it (or names a module that imports it) compiles against with `-I` and links. **Nothing is resolved, fetched or downloaded**: SwiftPM never runs, a vendored package is a folder of the project like any other, and its own `Package.swift` is never read, so its resources and `Bundle.module` are not supported in v1. Any project may carry modules whatever its `language`; names are unique and never a product's name, a module never depends on itself, every dependency is declared, and the modules may not depend on each other in a cycle (all beyond the schema). |
 | `build.steps` | The typed steps, below. |
@@ -152,7 +152,7 @@ when it is on the product's Swift sources import C++ declarations themselves
 - **Flags and defines.** The product's `cFlags` and `cxxFlags` reach the
   importer as `-Xcc` after the `-std`, and the configuration's `defines` as
   `-Xcc -D…`, so a header's macro-selected layout is the same on both sides.
-  `APELIN_PRODUCT_NAME` is a product's own and is not given to a module.
+  `LUROS_PRODUCT_NAME` is a product's own and is not given to a module.
 - **What it needs.** Command Line Tools 15.0 (Swift 5.9) or newer
   (`environment.toolchain.cxxInterop`), and a CPU that can run clang's module
   machinery, because the importer builds each imported header as a clang
@@ -202,17 +202,17 @@ with the SDK's physical path, `-mios-version-min` / `-target` from
 
 | Define | Value |
 |---|---|
-| `APELIN_BUILD_ID` | String literal, unique per build; the marker `apelin_package_confirm_loaded` matches. |
-| `APELIN_PACKAGE_ID`, `APELIN_VERSION`, `APELIN_PRODUCT_NAME` | String literals from `package.id`, `package.version`, the product's `name`. |
-| `APELIN_BOOTSTRAP_ROOTLESS` or `APELIN_BOOTSTRAP_ROOTHIDE` | `1`, for the bootstrap being built. |
-| `APELIN_CONFIGURATION_DEBUG` or `APELIN_CONFIGURATION_RELEASE` | `1`. |
+| `LUROS_BUILD_ID` | String literal, unique per build; the marker `luros_package_confirm_loaded` matches. |
+| `LUROS_PACKAGE_ID`, `LUROS_VERSION`, `LUROS_PRODUCT_NAME` | String literals from `package.id`, `package.version`, the product's `name`. |
+| `LUROS_BOOTSTRAP_ROOTLESS` or `LUROS_BOOTSTRAP_ROOTHIDE` | `1`, for the bootstrap being built. |
+| `LUROS_CONFIGURATION_DEBUG` or `LUROS_CONFIGURATION_RELEASE` | `1`. |
 
 Swift gets the bootstrap and configuration names as `-D` conditions.
 With `cxxInterop` on, Swift also compiles with
 `-cxx-interoperability-mode=default`; the importer is told the closure's
 `-std=<standard>` and receives the configuration's `cFlags` and `cxxFlags`
 as `-Xcc` after it, and its `defines` as `-Xcc -D<name>=<value>`, so a C++
-header sees the same macros on both sides. `APELIN_PRODUCT_NAME` is a
+header sees the same macros on both sides. `LUROS_PRODUCT_NAME` is a
 product's own and is not given to a module.
 
 #### Compiled code kept between builds
@@ -228,7 +228,7 @@ entry was stored with. The key covers the toolchain's and the SDK's digests,
 given, the SHA-256 of every source file, the SHA-256 of every regular file
 under the declared `headerSearchPaths` and of a `bridgingHeader`, and the
 keys of the Swift modules it imports. It is never a modification time,
-`APELIN_BUILD_ID` (Swift is not given it; a C-family compile is, so a C-family
+`LUROS_BUILD_ID` (Swift is not given it; a C-family compile is, so a C-family
 object's key carries the whole define list and those objects are compiled on
 every build), the work directory or a path under the project or the install
 root, which the key spells relative — a renamed jbroot keeps what the last
@@ -306,10 +306,10 @@ packages whose file still exists.
   `appex` ones and an empty `layout`, and no relations, `tweakFilter` or
   `maintainerScripts` (the check says which). The build writes
   `<id>_<version>.ipa` into the build's folder and records it with
-  `format: "ipa"`; `apelin_package_install` installs one as an app — unpacked
+  `format: "ipa"`; `luros_package_install` installs one as an app — unpacked
   under `<install root>/Applications`, each Mach-O inside it signed with
   `ldid`, registered with `uicache -p`, and taken off again by
-  `apelin_package_remove` — no package
+  `luros_package_remove` — no package
   repository takes one, and Distribute… offers Share `.ipa` alone. The
   archive is read back after writing: every member under `Payload/<name>.app/`,
   an `Info.plist` among them, nothing absolute or leading outside, and each
@@ -336,7 +336,7 @@ the digests, and the description documents themselves to render a diff.
 
 ```json
 {
-  "description": "apelin.build",
+  "description": "luros.build",
   "version": 1,
   "project": { …members below, copied as written… },
   "files": { "<project path>": "sha256:<digest of the file's bytes>", … }
@@ -369,7 +369,7 @@ read: their content is a source edit — nor does `template`, `environment`,
 
 ```json
 {
-  "description": "apelin.packaging",
+  "description": "luros.packaging",
   "version": 1,
   "project": { "kind": …, "package": { …package, without "version"… } },
   "files": { "<project path>": "sha256:…", … }
@@ -431,7 +431,7 @@ Members, after Milestone 1 §5.2:
 |---|---|
 | `schemaVersion`, `id`, `version`, `kind` | `1`; reverse-DNS id equal to the package id and the folder name; `x.y.z` version equal to the package version; one of the four kinds. |
 | `displayName`, `summary` | English source text, resolved against the app's catalogue. |
-| `apelinCompatibility` | `{minimumAppVersion, projectSchemaVersions, manifestSchemaVersion: 1}`. The packager turns `minimumAppVersion` into `Depends: com.fluoxetine.luros (>= …)`. |
+| `lurosCompatibility` | `{minimumAppVersion, projectSchemaVersions, manifestSchemaVersion: 1}`. The packager turns `minimumAppVersion` into `Depends: com.fluoxetine.luros (>= …)`. |
 | `requirements` | `{toolchainComponents, languages, sdkFrameworks?, bootstraps, architectures, runtimeDependencies?}`. `architectures` has exactly the `bootstraps` (beyond the schema). `runtimeDependencies` are what packages built from the templates need on the device, per bootstrap, as virtual package names; the extension package depends on them too, so a template that builds also runs. |
 | `support` | Named components: `{summary, includeDirectories?, linkStubDirectories?, libraries?, frameworks?, rpaths?, installNames?, symbols?, architectures, runtimeDependencies?, spdx, license}`. Stubs are hand-written `.tbd` link inputs, never loaded. `rpaths` may start with `@PREFIX@`, which the build replaces. `symbols` is the declared compatible set; the stubs declare exactly those and the install names in `installNames`. |
 | `templates` | `{id, directory: "templates/<id>", displayName, summary, language, toolchainComponents?, project: "luros-project.json", parameters, files, digest}`. |
@@ -449,7 +449,7 @@ duplicate id isolates both. Nothing named in a manifest is executed.
 
 ```
 digest = sha256 over JCS({
-  "description": "apelin.template", "version": 1,
+  "description": "luros.template", "version": 1,
   "files": [ {"path", "format", "sha256": <hex of the raw file>, "mode"?}, … sorted by path as UTF-8 bytes ]
 })
 ```

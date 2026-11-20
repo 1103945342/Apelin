@@ -5,7 +5,7 @@ import LurosProtocol
 import Foundation
 import Testing
 
-@Suite("apelin_git_create_issue is one gitIssueCreate request")
+@Suite("luros_git_create_issue is one gitIssueCreate request")
 struct IssueBackendTests {
     private func request(_ fixture: Fixture) -> IssueCreateToolRequest {
         IssueCreateToolRequest(
@@ -61,7 +61,7 @@ struct IssueBackendTests {
     @Test
     func `the approval carries the issue the host matches`() {
         let request = ApprovalRequest(
-            id: "a", toolCallID: "c", tool: "apelin_git_create_issue", arguments: "{}", workingDirectory: ".",
+            id: "a", toolCallID: "c", tool: "luros_git_create_issue", arguments: "{}", workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Opens this issue on Lakr233/Irisin.",
             detail: .issueCreate(IssueCreateApproval(repository: "Lakr233/Irisin", title: "T", body: "B")),
             allowsSessionScope: false,

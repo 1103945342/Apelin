@@ -14,7 +14,7 @@ struct AppRelaunchTests {
     <plist version="1.0">
     <dict>
     \t<key>CFBundleIdentifier</key>
-    \t<string>local.apelin.demo</string>
+    \t<string>local.luros.demo</string>
     </dict>
     </plist>
     """
@@ -28,7 +28,7 @@ struct AppRelaunchTests {
 
     private static let arguments: JSONValue = ["artifact_id": "artifact-1", "artifact_digest": "deb-digest-1"]
 
-    /// apelin_package_install's result, as the model reads it.
+    /// luros_package_install's result, as the model reads it.
     private func install(_ harness: DigestApprovalTests.Harness) async throws -> [String: Any] {
         let (result, asked) = try await harness.run(.packageInstall, Self.arguments)
         #expect(asked.isEmpty, "a template package installs without asking")
@@ -52,8 +52,8 @@ struct AppRelaunchTests {
         let result = try await install(harness)
         #expect(result["succeeded"] as? Bool == true)
         let hint = try #require(result["relaunchHint"] as? String)
-        #expect(hint.contains("If local.apelin.demo is running, it still runs the previous build."))
-        #expect(hint.contains("icli app kill --force local.apelin.demo, then icli app launch local.apelin.demo"))
+        #expect(hint.contains("If local.luros.demo is running, it still runs the previous build."))
+        #expect(hint.contains("icli app kill --force local.luros.demo, then icli app launch local.luros.demo"))
         #expect(hint.contains("shell_run as mobile"))
     }
 
@@ -76,11 +76,11 @@ struct AppRelaunchTests {
         try FileManager.default.createSymbolicLink(at: resources.appendingPathComponent("Info.plist"), withDestinationURL: outside)
         result = try await install(harness)
         hint = try #require(result["relaunchHint"] as? String)
-        #expect(!hint.contains("local.apelin.demo"))
+        #expect(!hint.contains("local.luros.demo"))
 
         // Nor is an identifier that is not spelled as one.
         try FileManager.default.removeItem(at: resources.appendingPathComponent("Info.plist"))
-        try harness.home.write("Resources/Info.plist", Self.infoPlist.replacingOccurrences(of: "local.apelin.demo", with: "demo; rm -rf ~"))
+        try harness.home.write("Resources/Info.plist", Self.infoPlist.replacingOccurrences(of: "local.luros.demo", with: "demo; rm -rf ~"))
         result = try await install(harness)
         hint = try #require(result["relaunchHint"] as? String)
         #expect(hint.contains("<bundle id>") && !hint.contains("rm -rf"))

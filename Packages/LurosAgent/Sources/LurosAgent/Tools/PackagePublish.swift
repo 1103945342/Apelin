@@ -3,7 +3,7 @@ import struct LurosProtocol.DistributionPublishRequest
 import Foundation
 import KWWKAI
 
-/// apelin_package_publish (owner, 2026-10-29): release builds' packages
+/// luros_package_publish (owner, 2026-10-29): release builds' packages
 /// put in the user's package repository as their builds made them, every
 /// one in one commit — roothide and rootless of one version together. What could
 /// never be published is refused here, before anyone is asked: a build
@@ -20,7 +20,7 @@ public enum PackagePublish {
         guard let ids = arguments.argStrings(buildIDsKey)?.map({ $0.trimmingCharacters(in: .whitespaces) }),
               !ids.isEmpty, !ids.contains(where: \.isEmpty)
         else {
-            throw ToolArgumentError("Nothing was published: name the build_id of each release build to publish, as apelin_project_build answered it.")
+            throw ToolArgumentError("Nothing was published: name the build_id of each release build to publish, as luros_project_build answered it.")
         }
         guard ids.count <= DistributionPublishRequest.maximumFiles else {
             throw ToolArgumentError("Nothing was published: publish at most \(DistributionPublishRequest.maximumFiles) packages at a time.")
@@ -44,14 +44,14 @@ public enum PackagePublish {
         var packages: [PackagePublishApproval.Package] = []
         for (id, record) in zip(ids, publication.builds) {
             guard let record else {
-                problems.append("No build \(id) made a package: give the build_id apelin_project_build answered, which is also its package artifact's id.")
+                problems.append("No build \(id) made a package: give the build_id luros_project_build answered, which is also its package artifact's id.")
                 continue
             }
             let package = "\(record.packageID) \(record.version) for \(record.architecture)"
             // The record spells it as the project's configurations do
             // (issue #21: a lowercase comparison refused every release build).
             guard record.configuration == ConfigurationName.release.rawValue else {
-                problems.append("\(id) is a \(record.configuration) build of \(package); publish a release build, made by apelin_project_build with configuration release and the bootstrap, once for roothide and once for rootless.")
+                problems.append("\(id) is a \(record.configuration) build of \(package); publish a release build, made by luros_project_build with configuration release and the bootstrap, once for roothide and once for rootless.")
                 continue
             }
             guard record.present else {

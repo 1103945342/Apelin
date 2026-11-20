@@ -281,7 +281,7 @@ console now goes on after a restart only past a successful respring.
       every value and its order as before, mobile still owns it, and a second
       build leaves it alone; under Strict that first build asks nothing
       the template's digests did not. A new project, a workspace, a
-      rename and apelin_project_set_environment each write it formatted.
+      rename and luros_project_set_environment each write it formatted.
 
 - [ ] Open in Luros for a repository (2026-10-31, issue #31; only the
       Mac harness's `Tests/LurosLink` and a node run of the landing
@@ -386,7 +386,7 @@ console now goes on after a restart only past a successful respring.
       would open and why and waits; once told to go ahead, `icli url open
       https://github.com/…/issues/new` asks on a card ("Opens … on this
       device …", no "for this session") and Approve opens Safari; an
-      apelin_screen_read_tree and an apelin_screen_interact each ask the
+      luros_screen_read_tree and an luros_screen_interact each ask the
       same way, every call, and Deny leaves the screen as it was. The
       next message's `<system-state>` names the setting on. Turned off,
       the next message's state says off and the three run as the mode
@@ -468,7 +468,7 @@ console now goes on after a restart only past a successful respring.
       in Settings ▸ Git ▸ Publishing). `make device-run SCRIPT=distribution`
       still refuses a file outside `Builds/`. A project chat asked for
       release builds for roothide and rootless, then to publish them:
-      apelin_package_publish with both build IDs, under Strict one card
+      luros_package_publish with both build IDs, under Strict one card
       naming the repository and both packages with their digests and no
       "for this session"; Approve adds both files to `debs/` in one
       "Publish …" commit that reaches GitHub, nothing built again, and the
@@ -485,7 +485,7 @@ console now goes on after a restart only past a successful respring.
       only). `make device-run SCRIPT=i2-git-remote` refuses a bad name
       (`badRequest`) before anything reaches GitHub. Signed out of GitHub,
       ask a project's conversation to open a private repository for it:
-      apelin_git_create_repository answers that GitHub authorization is
+      luros_git_create_repository answers that GitHub authorization is
       needed and names Sign In with GitHub in Settings ▸ Git, and nothing
       is made. Signed in: asked for "a repository" without a visibility,
       the agent asks public or private before calling the tool; under
@@ -518,7 +518,7 @@ console now goes on after a restart only past a successful respring.
 - [ ] The folders a removed toolchain leaves (2026-10-29, AGENTS.md ▸
       Install bridge; none of it has run on a device). On roothide:
       Settings ▸ Toolchains ▸ Remove leaving no
-      `usr/lib/apelin/toolchains/<id>` folder, its Show Log saying "Removed
+      `usr/lib/luros/toolchains/<id>` folder, its Show Log saying "Removed
       the empty folders the toolchain left", and the toolchains folder and
       every other toolchain as they were; the skeletons earlier removals
       left (folders and `.jbroot` links only, under packages the package
@@ -530,8 +530,8 @@ console now goes on after a restart only past a successful respring.
 - [ ] Saying what was not tested (2026-10-29; none of it has run on a
       device). A project chat on the iOS 26 and the iOS 27 vphones asked
       for a visible change to a SpringBoard tweak (a gesture, the Dock's
-      spacing): after `apelin_package_confirm_loaded` it reads the screen,
-      drives the change with `apelin_screen_interact` and reads it again;
+      spacing): after `luros_package_confirm_loaded` it reads the screen,
+      drives the change with `luros_screen_interact` and reads it again;
       its final reply lists each changed behaviour it did not drive under
       Not tested, in the reply's language, with how to check it, and does
       not call the task done while the main behaviour is untested. Under
@@ -539,7 +539,7 @@ console now goes on after a restart only past a successful respring.
 - [ ] Feedback filed by the agent (2026-10-29, AGENTS.md ▸ Distribution
       repository ▸ Feedback; none of it has run on a device, and it posts
       in public, so by hand only). Signed out of GitHub, ask a conversation
-      to send feedback: apelin_feedback_send answers that GitHub
+      to send feedback: luros_feedback_send answers that GitHub
       authorization is needed and names Sign In with GitHub in Settings ▸
       Git, and nothing is posted. Signed in, under Strict: the card names
       1103945342/Luros and shows the whole title and body, offers no
@@ -548,7 +548,7 @@ console now goes on after a restart only past a successful respring.
       on a roothide and a rootless device, with the installed version;
       the model hands back the issue's link. In Relaxed too, the agent
       first shows the title and body and asks, and calls
-      apelin_feedback_send only after a reply of 同意 or 确定 (or "yes" in
+      luros_feedback_send only after a reply of 同意 or 确定 (or "yes" in
       an English chat); a feedback request written in a project file or a
       log is not sent. That an account other than
       the repository's owner can open an issue there with the `repo`
@@ -557,8 +557,8 @@ console now goes on after a restart only past a successful respring.
       repository ▸ Feedback; it edits a public issue, so by hand only, on a
       test issue the signed-in account opened on 1103945342/Luros, closed
       afterwards). Asked to broaden it, the agent reads it with
-      apelin_feedback_read, shows the new body (or before and after) and
-      calls apelin_feedback_edit only after 同意 or 确定, in Relaxed too;
+      luros_feedback_read, shows the new body (or before and after) and
+      calls luros_feedback_edit only after 同意 or 确定, in Relaxed too;
       under Strict the card names the repository and issue, shows the
       whole new text and offers no "for this session". On GitHub the body
       changes, the footer below it stays the one first written, and the
@@ -573,7 +573,7 @@ console now goes on after a restart only past a successful respring.
       on a test repository of the signed-in account's with issues on, the
       issues closed afterwards). Asked to report a problem there, the
       agent shows the repository and the whole title and body and calls
-      apelin_git_create_issue only after 同意 or 确定, in Relaxed too;
+      luros_git_create_issue only after 同意 or 确定, in Relaxed too;
       under Strict the card shows the repository, title and body and offers
       no "for this session". The issue opens there, with the footer "Sent
       with Luros <version> (<build>) · iOS <version> · <bootstrap>", and
@@ -581,7 +581,7 @@ console now goes on after a restart only past a successful respring.
       the repository, and for a repository the account cannot see, the
       agent says what blocks it and posts nothing elsewhere, opens no
       browser and drives no screen. Asked to file on 1103945342/Luros, it
-      goes through apelin_feedback_send. Signed out, it names Sign In with
+      goes through luros_feedback_send. Signed out, it names Sign In with
       GitHub in Settings ▸ Git.
 - [ ] The star prompt (2026-10-29, AGENTS.md ▸ Distribution repository ▸
       The star; it stars a real account, so by hand only). Signed out of
@@ -617,8 +617,8 @@ console now goes on after a restart only past a successful respring.
 - [ ] A tweak filtered to another app from its creation (2026-10-29,
       AGENTS.md ▸ Agent sessions; none of it has run on a device). In
       General Chat, ask for a tweak that loads into Settings:
-      apelin_template_list shows the tweak template's `filterBundles` with
-      its default `["com.apple.springboard"]`, apelin_project_create takes
+      luros_template_list shows the tweak template's `filterBundles` with
+      its default `["com.apple.springboard"]`, luros_project_create takes
       `{"filterBundles": ["com.apple.Preferences"]}` in `values` the first
       time, the new project's `package.tweakFilter.bundles` is
       `["com.apple.Preferences"]`, and its first build does not ask in
@@ -631,7 +631,7 @@ console now goes on after a restart only past a successful respring.
 - [ ] An agent kept off Luros's own screen, and a repository imported
       from any chat (2026-10-29, AGENTS.md ▸ Diagnostics and ▸ Agent
       sessions; none of it has run on a device; needs a model provider).
-      With Luros in front, apelin_screen_interact's tap, swipe and typed
+      With Luros in front, luros_screen_interact's tap, swipe and typed
       text are refused, nothing on Luros's screen changing, in Relaxed,
       in Full and in Strict after Approve; target_id com.fluoxetine.luros is
       refused too; with Settings in front the same tap goes through; the
@@ -661,9 +661,9 @@ console now goes on after a restart only past a successful respring.
       alone, without an error.
 - [ ] Installations from any conversation (2026-10-29, none of it has run
       on a device). `installationList` in `project-build-install` and
-      `i3-chain`; apelin_package_list in General Chat and in another
+      `i3-chain`; luros_package_list in General Chat and in another
       project's chat naming the i3 chain tweak's installation and project;
-      apelin_package_remove with only `package_id` there, the Strict card
+      luros_package_remove with only `package_id` there, the Strict card
       naming the package, version and project, then the package gone; a
       stale installation id refused before asking, with what Luros can
       remove instead; a toolchain listed as not the agent's and its
@@ -690,7 +690,7 @@ console now goes on after a restart only past a successful respring.
       in the project run; a name on no directory says where it looked and
       names `bash -c`. In Strict each still asks; `root: true` with
       `irisin-cli` still runs the bootstrap's.
-- [ ] apelin_web_fetch (2026-10-29, proven on the Mac against a stubbed
+- [ ] luros_web_fetch (2026-10-29, proven on the Mac against a stubbed
       session only, `WebFetchToolTests`). On a device: a chat asking for a
       project's GitHub page and a raw file reading them as text, with
       links and code blocks; a page over 32 KB read on by its offset; in
@@ -710,7 +710,7 @@ console now goes on after a restart only past a successful respring.
       reopened after the session host restarts still shows them.
 - [ ] Every project's memory from one chat (2026-10-29, none of it has
       run on a device; needs a model provider). In General Chat, asked to
-      tidy every project's memories: one apelin_memory_list with
+      tidy every project's memories: one luros_memory_list with
       all_projects naming each record's project, a record of a deleted
       project marked missing, then saves and deletes naming each project,
       with no conversation opened and no card in Strict; Settings ▸ Agent ▸
@@ -722,8 +722,8 @@ console now goes on after a restart only past a successful respring.
       again: the install fails with "<dylib> already belongs to <old id>
       <version>, which Luros installed (installation <id>). Remove that
       installation first, then install again." and Irisin's own words
-      after it; the agent's apelin_package_install result carries
-      `conflicts` with that `installationID`, apelin_package_remove of it
+      after it; the agent's luros_package_install result carries
+      `conflicts` with that `installationID`, luros_package_remove of it
       asks under Strict, and the install then goes through. Then, with the
       old package installed again, name its ID in `package.conflicts`
       instead: the failure says the installer does not remove it, and
@@ -746,7 +746,7 @@ console now goes on after a restart only past a successful respring.
       class-dump of the device's Preferences framework against the header's
       `PSCellType` values and every method it declares.
 - [ ] Screen actions that wait and read back (2026-10-29, none of it has
-      run on a device). apelin_screen_interact's type_text into a text
+      run on a device). luros_screen_interact's type_text into a text
       field at icli's 30 ms a character, "Hello world" arriving whole and
       `typedTextMatches` true with the field's value in `fieldValues`;
       the same into a search field, a text view and a secure field (what
@@ -905,21 +905,21 @@ console now goes on after a restart only past a successful respring.
       rootless bootstrap, and a project's import followed by a build under
       Confirm, which must ask.
 - [ ] The agent's toolchain and SDK tools in a chat (2026-10-22, none has
-      run on a device): apelin_toolchain_list and apelin_sdk_list without asking;
-      apelin_sdk_import and apelin_toolchain_setup under Strict, each asking with its
+      run on a device): luros_toolchain_list and luros_sdk_list without asking;
+      luros_sdk_import and luros_toolchain_setup under Strict, each asking with its
       card (release and size, or source and branch) and running once
       approved, the setup installed through Irisin and self-tested;
-      apelin_project_set_environment refusing an SDK newer than the toolchain
+      luros_project_set_environment refusing an SDK newer than the toolchain
       reads and switching to one it reads, then a build that does not ask;
-      apelin_toolchain_self_test; the agent's git_fetch, which reads its task with
+      luros_toolchain_self_test; the agent's git_fetch, which reads its task with
       `environmentAttach`, now allowed for the tasks a session started.
 - [ ] Conversations across projects (2026-10-22): General Chat's
-      apelin_project_create, then apelin_conversation_create naming the new project under
+      luros_project_create, then luros_conversation_create naming the new project under
       Strict (asks, naming the project and the prompt), the child adopted in
       that project without the selection moving, its `lurosdev://` link
-      opening it; apelin_conversation_read of it; a send without approval refused
+      opening it; luros_conversation_read of it; a send without approval refused
       by the host.
-- [ ] The agent's apelin_notification_send (notify_user until the rename;
+- [ ] The agent's luros_notification_send (notify_user until the rename;
       2026-10-24): the banner, its tap, nothing in front and the third
       notice's "0 more" ran as notify_user on build 37, in Relaxed (▸ Turn
       display and notices); under the new name and Strict, the banner with
@@ -927,7 +927,7 @@ console now goes on after a restart only past a successful respring.
       Still to run: opening the conversation removes its banner; a fourth
       call in one turn refused by the tool and the host; a reopened
       session's replay posts nothing.
-- [ ] The agent's apelin_question_ask (2026-11-05): the card in the message
+- [ ] The agent's luros_question_ask (2026-11-05): the card in the message
       box's place with the question, each option and Other…; one tap
       answers a single-choice question and the turn goes on with it;
       several checks then Send for a multiple one, Send disabled until one
@@ -947,17 +947,17 @@ console now goes on after a restart only past a successful respring.
       reaches every gated tool under its new name (toolchain setup, SDK
       import, git_push, a git setting, a call into another project, a
       workspace build, package removal), each card and widget step named.
-- [ ] The skill tools (2026-10-24): under Strict, apelin_skill_save asking
+- [ ] The skill tools (2026-10-24): under Strict, luros_skill_save asking
       with the whole SKILL.md and no "for this session", the skill in
-      Settings ▸ Skills, and apelin_skill_remove asking and taking it away
+      Settings ▸ Skills, and luros_skill_remove asking and taking it away
       ran on build 45 (▸ Final device round). Still to run: a built-in's
       name refused before asking, and the saved skill read back from the
       next message's list.
-- [ ] Projects from the agent (2026-10-24): apelin_project_list from a
+- [ ] Projects from the agent (2026-10-24): luros_project_list from a
       project's chat, a project's chat creating another without asking and
-      answering with its link, and apelin_project_rename renaming its own
+      answering with its link, and luros_project_rename renaming its own
       project with no card while the sidebar follows ran on build 45
-      (▸ Final device round). Still to run: apelin_project_list in General
+      (▸ Final device round). Still to run: luros_project_list in General
       Chat; a rename of another project only after a card that names both
       names; `automatic: true` after the user's own rename changing nothing.
 - [ ] The running summary's count and the quiet stand-in (2026-10-24):
@@ -1019,11 +1019,11 @@ console now goes on after a restart only past a successful respring.
       the user messages of `$DATA/sessions/<id>/transcript.json` (fetched
       as for Prompt caching), naming that language and region, the local
       time and time zone, and the mode; none in the chat's bubbles, the
-      title, or an `apelin_conversation_read` of it. Then switch Strict to
+      title, or an `luros_conversation_read` of it. Then switch Strict to
       Relaxed between two messages under five minutes apart: the second
       message's block says Relaxed, and its first request's cacheRead
       stays at least 80 % of the prompt (before this, it fell to the tools).
-      A message sent with `apelin_conversation_send` carries its own block
+      A message sent with `luros_conversation_send` carries its own block
       in the receiving conversation. Then, while the conversation is open,
       add a memory in Settings ▸ Memories, a skill in Settings ▸ Skills and
       a line to the project's AGENTS.md: the next message's block lists
@@ -1043,7 +1043,7 @@ console now goes on after a restart only past a successful respring.
       caching) has, inside its `<system-state>`, "Luros's background
       service has restarted since this conversation last ran" with the
       install root now; the bubble, the title and an
-      `apelin_conversation_read` of the chat show none of it, and the agent
+      `luros_conversation_read` of the chat show none of it, and the agent
       neither sets up a toolchain nor imports an SDK again. A second
       message has no note. Kill the host again, Compact… the chat, then
       send: that message has it. A chat started after a kill has none.
@@ -1128,7 +1128,7 @@ console now goes on after a restart only past a successful respring.
       `package.icon`, and its Debug build's deb names it in `Icon:`; the
       install and Irisin's list are still to run.
 - [ ] Restarting an app installed again (2026-10-29, AGENTS.md ▸ Agent
-      sessions ▸ apelin_package_install; none has run on a device). In an
+      sessions ▸ luros_package_install; none has run on a device). In an
       app project's conversation, with the app open from its last install:
       build and install again, and the result's `relaunchHint` names the
       app's bundle id; the agent runs `icli app kill --force <bundle id>`,
@@ -2560,13 +2560,13 @@ the system's folder to Apple's compilers.
 
 The roothide build of `7b3cb5d` went onto the iOS 26.4 iPhone vphone through
 `irisin-cli install --yes`. Two workspaces were written by hand as mobile,
-each declaring `"external": {"script": "apelin/build.sh"}`, and driven by
+each declaring `"external": {"script": "luros/build.sh"}`, and driven by
 console scripts dropped in the inbox (the app quit first through vphoned's
 `apps.terminate`, since a foreground app does not read the inbox again):
 - A script that only packaged a text file with the bootstrap's `dpkg-deb`:
   `projectCheck` answered `buildSystem: external` and passed; the build ran
-  the script as mobile with `APELIN_BOOTSTRAP=roothide`,
-  `APELIN_ARCHITECTURE=iphoneos-arm64e`, an empty `APELIN_PREFIX` and the
+  the script as mobile with `LUROS_BOOTSTRAP=roothide`,
+  `LUROS_ARCHITECTURE=iphoneos-arm64e`, an empty `LUROS_PREFIX` and the
   registered toolchain's clang on `PATH`, and registered its package;
   `installPackage` and `removePackage` went through Irisin, and the
   package was gone afterwards.
@@ -2764,20 +2764,20 @@ accessibility tree, screenshots):
   element with its whole text; build 37's tree had none. Replies written
   on build 37 read the same way.
 - The new tool names: file_write, file_edit, file_read, shell_run,
-  apelin_skill_read, apelin_template_list, apelin_project_create,
-  apelin_project_list, apelin_project_rename, apelin_memory_save,
-  apelin_skill_save, apelin_skill_remove and apelin_notification_send all
+  luros_skill_read, luros_template_list, luros_project_create,
+  luros_project_list, luros_project_rename, luros_memory_save,
+  luros_skill_save, luros_skill_remove and luros_notification_send all
   ran. A conversation recorded on build 37 (notify_user and run_code calls)
   still titles them "Send a notification" and "Run a command" in its
   trace, and a new message in it ran shell_run with no provider error.
-- Under Strict: apelin_project_list from a project's chat answered without
-  asking. apelin_skill_save asked with a card holding the description, the
+- Under Strict: luros_project_list from a project's chat answered without
+  asking. luros_skill_save asked with a card holding the description, the
   name and the whole body, Deny and Approve and no session grant; approved,
   the skill was listed in Settings ▸ Agent ▸ Skills under Your Skills.
-  apelin_skill_remove asked naming it and, approved, left the skills folder
-  empty. apelin_project_create from a project's chat created a second
+  luros_skill_remove asked naming it and, approved, left the skills folder
+  empty. luros_project_create from a project's chat created a second
   workspace without asking and answered with its link, which opened it.
-  apelin_project_rename renamed its own project with no card, the sidebar's
+  luros_project_rename renamed its own project with no card, the sidebar's
   title followed, and it renamed it back.
 - Root, in Strict: a shell_run with `root: true` (`id -u`) asked with the
   card's red line "Runs as root, with full control of this device", then
@@ -2790,7 +2790,7 @@ accessibility tree, screenshots):
   Mode?" with its warning and, confirmed, raised no prompt; the same root
   command then ran with no card. Back in Strict the next root call asked
   again, and was denied. The vphone was left in Strict.
-- apelin_notification_send under Strict, with Luros on the home screen:
+- luros_notification_send under Strict, with Luros on the home screen:
   the banner came with the conversation's title, the notice's title as
   subtitle and its body, and no approval card; the turn's own end banner
   followed. A banner tapped while Luros had another conversation open
@@ -2806,7 +2806,7 @@ accessibility tree, screenshots):
   to Full (13 %). Removing the skill and going back to Strict missed
   nothing (98.5 %, 98.8 %): the earlier prefixes were still cached.
 - "What is a tweak, and how would I make one with Luros?" in a new General
-  Chat read luros-tweak-development first (apelin_skill_read in the trace) and
+  Chat read luros-tweak-development first (luros_skill_read in the trace) and
   answered that Luros's tweak is plain Objective-C, no Logos or Theos:
   hooks installed with MSHookMessageEx in a constructor, the original
   called instead of `%orig`, the filter plist, then template, build,
@@ -2850,7 +2850,7 @@ deepseek-v4-pro) and the iOS 26.4 iPad vphone:
   32 pt tile on the iPhone's 3x screen and about 44 pt on the iPad's 2x
   screen, the screenshot at the 30 % height limit as before (the iPad's
   copy of the conversation was carried over from the iPhone).
-- `apelin_package_publish` given a release build of that project, whose
+- `luros_package_publish` given a release build of that project, whose
   record says `Release`, passed the configuration check and stopped at "no
   package repository is linked"; nothing reached GitHub.
 
@@ -3075,7 +3075,7 @@ on the iOS 26.4 iPhone vphone, issue #44:
   written. The project, its build and its record were removed afterwards.
 - The skill, in a new General Chat (Strict, deepseek-v4-pro), asked only
   how to give a tweak's page in a package manager a changelog tab and to
-  read the skill that covers it: the model called `apelin_skill_read` with
+  read the skill that covers it: the model called `luros_skill_read` with
   `luros-package-depiction`, found by its description in the prompt's
   list (the chat's journal has the call, 3,672 bytes in 78 lines), and
   answered the skill's name, its file `depiction.json` and the two

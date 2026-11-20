@@ -42,7 +42,7 @@ as the app's `ProjectIconPreferences` image set draws it, which the entry's
   method `Documents/Research/LurosHello` hooked on the iOS 27 vphone) and
   logs, under the package id's os_log subsystem, `LurosLoaded <build id> in
   <process>` from its constructor and `LurosHooked <build id> …` from the
-  hook. `apelin_package_confirm_loaded` matches the first; the second shows the hook API was
+  hook. `luros_package_confirm_loaded` matches the first; the second shows the hook API was
   really called.
 - **uikit-objc / uikit-swift** — a scene-based app whose `main` deletes this
   bundle's saved scene state before `UIApplicationMain`, one screen with its
@@ -121,7 +121,7 @@ bootstrap it names — a stand-in for `luros-build`, to prove the sources,
 headers and stubs compile and link. `--write-digests` refreshes each
 template's digest after a template edit.
 
-`package-extensions.sh` runs the check (set `APELIN_EXTENSIONS_NO_BUILD=1` to
+`package-extensions.sh` runs the check (set `LUROS_EXTENSIONS_NO_BUILD=1` to
 skip the build half), then for each extension and flavor stages the folder
 at `@PREFIX@/usr/share/luros/development/<id>/` (`@PREFIX@` empty for
 roothide, `/var/jb` for rootless), fills `Packaging/<id>/control`, builds

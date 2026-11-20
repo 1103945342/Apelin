@@ -10,7 +10,7 @@ import XCTest
 /// pushes, the `lease` event, and the reasons a refusal carries. Against a
 /// bare repository on disk (`acceptsLocalRemotes`).
 final class GitForcePushServiceTests: XCTestCase {
-    private let author = GitSignature(name: "Luros Test", email: "test@apelin.invalid")
+    private let author = GitSignature(name: "Luros Test", email: "test@luros.invalid")
     private let id = "8a6f3c1e-0000-4000-8000-000000000201"
 
     /// A workspace cloned from a bare remote, both sides with a commit of
@@ -102,7 +102,7 @@ final class GitForcePushServiceTests: XCTestCase {
         let git = diverged.git
         let ordinary = try git.preparePush(GitPushRequest(projectID: id))
         XCTAssertThrowsError(try git.push(ordinary, reporter: .silent)) {
-            XCTAssertEqual(GitService.apelinError($0).reason?.rawValue, "rejected", "never forced without a lease")
+            XCTAssertEqual(GitService.lurosError($0).reason?.rawValue, "rejected", "never forced without a lease")
         }
 
         let log = EventLog()
@@ -134,7 +134,7 @@ final class GitForcePushServiceTests: XCTestCase {
         let stale = GitPushLease(expectedCommit: diverged.mine, localCommit: again)
         let refusedLog = EventLog()
         XCTAssertThrowsError(try git.push(git.preparePush(GitPushRequest(projectID: id, forceWithLease: stale)), reporter: refusedLog.reporter)) {
-            let error = GitService.apelinError($0)
+            let error = GitService.lurosError($0)
             XCTAssertEqual(error.code, .conflict)
             XCTAssertEqual(error.reason, .remoteChanged)
             XCTAssertTrue(error.message.contains("nothing was pushed"), error.message)
@@ -145,8 +145,8 @@ final class GitForcePushServiceTests: XCTestCase {
     }
 
     func testTheLeasesReasonsReachTheTasksState() {
-        XCTAssertEqual(GitService.apelinError(GitError(.remoteChanged, "x")).reason, .remoteChanged)
-        XCTAssertEqual(GitService.apelinError(GitError(.localChanged, "x")).reason, .localChanged)
-        XCTAssertEqual(GitService.apelinError(GitError(.remoteChanged, "x")).code, .conflict)
+        XCTAssertEqual(GitService.lurosError(GitError(.remoteChanged, "x")).reason, .remoteChanged)
+        XCTAssertEqual(GitService.lurosError(GitError(.localChanged, "x")).reason, .localChanged)
+        XCTAssertEqual(GitService.lurosError(GitError(.remoteChanged, "x")).code, .conflict)
     }
 }

@@ -27,7 +27,7 @@ struct EnvironmentToolTests {
     @Test
     func `the catalog names them with their risks`() {
         #expect(Self.tools.map(\.rawValue) == [
-            "apelin_toolchain_list", "apelin_sdk_list", "apelin_toolchain_setup", "apelin_sdk_import", "apelin_toolchain_self_test", "apelin_project_set_environment",
+            "luros_toolchain_list", "luros_sdk_list", "luros_toolchain_setup", "luros_sdk_import", "luros_toolchain_self_test", "luros_project_set_environment",
         ])
         #expect(AgentToolName.toolchainList.risk == .readOnly && AgentToolName.sdkList.risk == .readOnly)
         for tool in [AgentToolName.toolchainSetup, .sdkImport, .toolchainSelfTest] {
@@ -58,7 +58,7 @@ struct EnvironmentToolTests {
         for tool in [AgentToolName.toolchainList, .sdkList, .toolchainSetup, .sdkImport, .toolchainSelfTest] {
             #expect(offered.contains(tool.rawValue), "\(tool.rawValue)")
         }
-        #expect(!offered.contains("apelin_project_set_environment"))
+        #expect(!offered.contains("luros_project_set_environment"))
     }
 
     @Test
@@ -66,8 +66,8 @@ struct EnvironmentToolTests {
         let home = try TemporaryHome()
         defer { home.remove() }
         let prompt = SystemPrompt.make(project: home.project, projectRoot: home.projectURL.path, skills: [], mcpServers: [])
-        #expect(prompt.contains("environment.* errors") && prompt.contains("apelin_project_set_environment"))
-        #expect(prompt.contains("apelin_toolchain_setup or apelin_sdk_import") && prompt.contains("toolchain and SDK installs"))
+        #expect(prompt.contains("environment.* errors") && prompt.contains("luros_project_set_environment"))
+        #expect(prompt.contains("luros_toolchain_setup or luros_sdk_import") && prompt.contains("toolchain and SDK installs"))
     }
 
     // MARK: Approval
@@ -131,7 +131,7 @@ struct EnvironmentToolTests {
         defer { harness.home.remove() }
         let (result, asked) = try await harness.run(.toolchainSetup, ["version": "15.3", "swift": true])
         #expect(asked.count == 1)
-        #expect(asked.first?.tool == "apelin_toolchain_setup" && asked.first?.allowsSessionScope == false)
+        #expect(asked.first?.tool == "luros_toolchain_setup" && asked.first?.allowsSessionScope == false)
         #expect(asked.first?.detail == .toolchainSetup(ToolchainSetupApproval(productID: "082-15", version: "15.3", components: ["c", "swift"], sizeBytes: 700_000_000)))
         #expect(asked.first?.reason.contains("700") == true, "\(asked.first?.reason ?? "")")
         #expect(text(result).contains("\"succeeded\" : true"))
@@ -212,7 +212,7 @@ struct EnvironmentToolTests {
         "sdk": { "id": "iPhoneOS18.2-aaaaaaaa", "digest": "sha256:old-sdk" }
       },
       "language": "objc",
-      "package": { "id": "local.apelin.hello", "description": "sdk \\"quoted\\" — ünïcode" }
+      "package": { "id": "local.luros.hello", "description": "sdk \\"quoted\\" — ünïcode" }
     }
 
     """
@@ -242,7 +242,7 @@ struct EnvironmentToolTests {
           },
           "language": "objc",
           "package": {
-            "id": "local.apelin.hello",
+            "id": "local.luros.hello",
             "description": "sdk \\"quoted\\" — ünïcode"
           }
         }
@@ -280,7 +280,7 @@ struct EnvironmentToolTests {
         let same = try ProjectEnvironmentEdit.rebind(edited.data, toolchain: toolchain, sdk: sdk)
         #expect(same.changed.isEmpty && same.data == edited.data)
         // The same document on one line comes out the same.
-        let oneLine = #"{"schemaVersion":1,"projectID":"p","environment":{"toolchain":{"id":"clt-16.4-c","digest":"sha256:old-toolchain"},"sdk":{"id":"iPhoneOS18.2-aaaaaaaa","digest":"sha256:old-sdk"}},"language":"objc","package":{"id":"local.apelin.hello","description":"sdk \"quoted\" — ünïcode"}}"#
+        let oneLine = #"{"schemaVersion":1,"projectID":"p","environment":{"toolchain":{"id":"clt-16.4-c","digest":"sha256:old-toolchain"},"sdk":{"id":"iPhoneOS18.2-aaaaaaaa","digest":"sha256:old-sdk"}},"language":"objc","package":{"id":"local.luros.hello","description":"sdk \"quoted\" — ünïcode"}}"#
         #expect(try ProjectEnvironmentEdit.rebind(Data(oneLine.utf8), toolchain: toolchain, sdk: sdk).data == edited.data)
         // One the strict reader refuses is written as the edit left it.
         let lenient = #"{"schemaVersion": 1.0, "environment": {"toolchain": {"id": "a", "digest": "b"}, "sdk": {"id": "c", "digest": "d"}}}"#

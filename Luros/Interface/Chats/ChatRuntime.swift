@@ -1147,7 +1147,7 @@ final class ChatRuntime {
                             if let response = try? await LurosService.app.projectRename(
                                 .init(projectID: project, displayName: name, onlyIfAutomatic: true),
                             ), response.changed {
-                                NotificationCenter.default.post(name: .apelinProjectsChanged, object: nil)
+                                NotificationCenter.default.post(name: .lurosProjectsChanged, object: nil)
                             }
                         }
                     }

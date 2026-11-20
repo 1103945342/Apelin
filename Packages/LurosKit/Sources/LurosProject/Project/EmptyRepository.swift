@@ -9,7 +9,7 @@ import Foundation
 /// `.git/info/exclude`, the repository's own list, which is never committed
 /// or pushed; `.gitignore` is the project's.
 public enum ProjectExcludes {
-    public static let apelinFiles = [
+    public static let lurosFiles = [
         "/Attachments/",
         "/.luros-metadata-*",
         ".*.luros-*",
@@ -20,7 +20,7 @@ public enum ProjectExcludes {
 /// hand because luros-build, which makes projects, does not link libgit2.
 /// HEAD names `main`, which has no commit yet, and the config is git init's
 /// own, with nothing in it that runs; `info/exclude` holds
-/// `ProjectExcludes.apelinFiles`. It is written into the staging folder,
+/// `ProjectExcludes.lurosFiles`. It is written into the staging folder,
 /// so the project and its repository arrive in `Projects/` together; the
 /// first commit is the agent's or the user's. A workspace importing a
 /// repository later replaces it while it is still untouched.
@@ -45,7 +45,7 @@ enum EmptyRepository {
         }
         try Data("ref: refs/heads/\(branch)\n".utf8).write(to: git.appendingPathComponent("HEAD"), options: .withoutOverwriting)
         try Data(config.utf8).write(to: git.appendingPathComponent("config"), options: .withoutOverwriting)
-        let excludes = ProjectExcludes.apelinFiles.joined(separator: "\n") + "\n"
+        let excludes = ProjectExcludes.lurosFiles.joined(separator: "\n") + "\n"
         try Data(excludes.utf8).write(to: git.appendingPathComponent("info/exclude"), options: .withoutOverwriting)
     }
 }

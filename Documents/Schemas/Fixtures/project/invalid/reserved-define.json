@@ -41,7 +41,7 @@
       "optimization": "2",
       "debugInfo": true,
       "defines": {
-        "APELIN_BUILD_ID": "\"forged\""
+        "LUROS_BUILD_ID": "\"forged\""
       }
     }
   },
@@ -103,7 +103,7 @@
     ]
   },
   "package": {
-    "id": "com.example.apelintweak",
+    "id": "com.example.lurostweak",
     "name": "Luros Tweak",
     "version": "0.0.1",
     "description": "Built on this device with Luros.",

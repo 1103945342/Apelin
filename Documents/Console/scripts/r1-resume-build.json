@@ -5,7 +5,7 @@
     {"op": "projectCreate", "label": "project", "request": {
       "templateID": "com.fluoxetine.luros.dev.tweak/objc-hook",
       "name": "R1 Resume Tweak",
-      "values": {"packageID": "local.apelin.r1-resume", "displayName": "R1 Resume Tweak"}
+      "values": {"packageID": "local.luros.r1-resume", "displayName": "R1 Resume Tweak"}
     }},
     {"op": "buildStart", "label": "build", "follow": false, "request": {
       "projectID": "${project.response.projectID}",

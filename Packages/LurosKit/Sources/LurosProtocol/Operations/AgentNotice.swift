@@ -1,6 +1,6 @@
 import Foundation
 
-/// A banner an agent asks for during a turn (`apelin_notification_send`, 2026-10-24),
+/// A banner an agent asks for during a turn (`luros_notification_send`, 2026-10-24),
 /// for something the reader would want to know while away from Luros.
 ///
 /// No operation carries it. The tool records a `notice` event {title?, body}

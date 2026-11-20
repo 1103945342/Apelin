@@ -260,7 +260,7 @@ enum AgentRunCode {
             "LANG=en_US.UTF-8",
             "TERM=dumb",
             "TMPDIR=\(prefix(for: installRoot))/var/tmp",
-            "APELIN_PROJECT_ROOT=\(project.path)",
+            "LUROS_PROJECT_ROOT=\(project.path)",
         ]
         if let preset {
             return preset.environment + ["PATH=\(base.joined(separator: ":"))"] + common

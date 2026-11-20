@@ -101,7 +101,7 @@ final class ProjectPickerController: UIViewController {
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(reloadProjects),
-            name: .apelinProjectsChanged,
+            name: .lurosProjectsChanged,
             object: nil,
         )
         title = String(localized: "Projects")

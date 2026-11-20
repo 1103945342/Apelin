@@ -15,7 +15,7 @@ import Foundation
 /// Who put an app under `Applications`.
 public enum ApplicationSource: String, Codable, Sendable {
     /// Luros installed it from an `.ipa`; `installationID` names the record.
-    case apelin
+    case luros
     /// An installed package lists the bundle: the package manager's to remove.
     case package
     /// Neither: copied in by another tool, or a registration whose bundle is

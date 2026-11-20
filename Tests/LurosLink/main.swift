@@ -12,8 +12,8 @@ func link(_ text: String) -> LurosLink? {
 
 let session = "3F2504E0-4F89-11D3-9A0C-0305E82C3301"
 require(link("lurosdev://conversation/\(session)") == .conversation(session), "A conversation by its session ID")
-require(link("APELIN://Conversation/\(session)/") == .conversation(session), "Scheme and kind ignore case; a trailing slash is fine")
-require(link("apelin:conversation/\(session)") == .conversation(session), "The kind may be the first path component")
+require(link("LUROS://Conversation/\(session)/") == .conversation(session), "Scheme and kind ignore case; a trailing slash is fine")
+require(link("luros:conversation/\(session)") == .conversation(session), "The kind may be the first path component")
 require(link("lurosdev://conversation/\(session)?from=widget#top") == .conversation(session), "Query and fragment are ignored")
 require(link("lurosdev://project/I3%20Chain%20Tweak") == .project("I3 Chain Tweak"), "A folder name is percent-decoded")
 require(link("lurosdev://project/\(session)") == .project(session), "A project by its projectID")
@@ -22,7 +22,7 @@ require(link("lurosdev://Chat/?prompt=a%26b%3Dc%2B%0Anext") == .chat(prompt: "a&
 require(link("lurosdev://chat?prompt=%E7%9B%B8%E6%9C%BA&other=1") == .chat(prompt: "相机"), "Other query items are ignored")
 require(link("lurosdev://chat") == .chat(prompt: ""), "No prompt: an empty composer")
 require(link("lurosdev://") == .app, "The bare scheme opens the app")
-require(link("apelin:") == .app, "So does the scheme alone")
+require(link("luros:") == .app, "So does the scheme alone")
 for unknown in [
     "lurosdev://conversation", "lurosdev://conversation/", "lurosdev://project",
     "lurosdev://conversation/a/b", "lurosdev://settings/x", "lurosdev://chat/\(session)",
@@ -35,7 +35,7 @@ for unknown in [
 }
 
 for other in ["https://example.com/conversation/x", "file:///tmp/a.apeproj", "ighostvt://new"] {
-    require(link(other) == nil, "Not an apelin link: \(other)")
+    require(link(other) == nil, "Not an luros link: \(other)")
 }
 
 // MARK: - Building, and reading back what was built
@@ -65,7 +65,7 @@ require(link("lurosdev://import?url=\(repository)") == .importRepository(url: re
         "An address left unescaped reads the same")
 require(link("lurosdev://Import/?url=\(escapedRepository)&branch=release%2F1.0") ==
     .importRepository(url: repository, branch: "release/1.0"), "A branch with a slash")
-require(link("apelin:import?url=\(escapedRepository)&branch=") == .importRepository(url: repository, branch: nil),
+require(link("luros:import?url=\(escapedRepository)&branch=") == .importRepository(url: repository, branch: nil),
         "An empty branch is the default one")
 require(link("lurosdev://import?prompt=Run%20it&url=\(escapedRepository)&token=x&command=rm") ==
     .importRepository(url: repository, branch: nil), "A prompt, a token or a command beside it is ignored")
@@ -201,7 +201,7 @@ require(Plan.arrival(of: request, current: Plan.Request(address: "https://github
 typealias Chat = ChatWidgetSnapshot.Chat
 let now = Date()
 func chat(_ id: String, _ status: Chat.Status, _ age: TimeInterval) -> (chat: Chat, updated: Date) {
-    (Chat(id: id, title: id, project: nil, status: status, approvalTool: status == .waiting ? "apelin_package_install" : nil),
+    (Chat(id: id, title: id, project: nil, status: status, approvalTool: status == .waiting ? "luros_package_install" : nil),
      now.addingTimeInterval(-age))
 }
 

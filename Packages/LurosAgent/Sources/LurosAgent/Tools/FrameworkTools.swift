@@ -1,7 +1,7 @@
 import Foundation
 import KWWKAI
 
-/// `apelin_sdk_analyze_framework` and `apelin_sdk_read_header`: read a registered SDK's
+/// `luros_sdk_analyze_framework` and `luros_sdk_read_header`: read a registered SDK's
 /// `.tbd` stubs and headers directly, as mobile. The SDK root comes from the
 /// host; every read stays inside it.
 ///
@@ -181,7 +181,7 @@ struct FrameworkTools: Sendable {
         guard !headers.isEmpty else { return noHeaders(framework) }
         return declarations(of: symbol, in: framework, headers: headers)
             ?? "\(symbol) is not declared in the headers of \(framework.name).framework; "
-            + "apelin_sdk_analyze_framework with symbol_filter shows whether its .tbd exports it"
+            + "luros_sdk_analyze_framework with symbol_filter shows whether its .tbd exports it"
     }
 
     /// Where `symbol` is declared among `headers`, each declaring line with
@@ -225,7 +225,7 @@ struct FrameworkTools: Sendable {
     }
 
     private func noHeaders(_ framework: Location) -> String {
-        "\(framework.name).framework has no headers in this SDK; apelin_sdk_analyze_framework lists the "
+        "\(framework.name).framework has no headers in this SDK; luros_sdk_analyze_framework lists the "
             + "classes and symbols its .tbd exports: declare the interface you call in a local header"
     }
 

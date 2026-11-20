@@ -3,7 +3,7 @@ import Foundation
 
 /// A project whose folder has gone from `Projects/` takes its conversations
 /// with it, as the app's own Delete takes them (`ChatRuntime.deleteProject`):
-/// an agent deleted it with apelin_project_delete, after the host closed
+/// an agent deleted it with luros_project_delete, after the host closed
 /// its sessions, or a command or another app removed it. Nothing else
 /// tells the app, so the folder is what it goes by.
 ///

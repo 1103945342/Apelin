@@ -290,8 +290,8 @@ private struct FoldLog {
         }
         // Today's names, and now and then one an earlier release recorded.
         let tools = [
-            "file_write", "file_read", "shell_run", "file_edit", "apelin_project_build", "apelin_notification_send",
-            "apelin_project_create", "patch_file", "build",
+            "file_write", "file_read", "shell_run", "file_edit", "luros_project_build", "luros_notification_send",
+            "luros_project_create", "patch_file", "build",
         ]
         while log.events.count < count {
             switch random.int(in: 0 ... 29) {

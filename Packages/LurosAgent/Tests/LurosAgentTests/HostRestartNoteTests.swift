@@ -138,7 +138,7 @@ struct HostRestartNoteTests {
         defer { provider.unregister() }
         let requests = Requests()
         provider.setResponses([
-            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove it", "installation_id": "inst-1"])], stopReason: .toolUse)),
+            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "luros_package_remove", arguments: ["reason": "Remove it", "installation_id": "inst-1"])], stopReason: .toolUse)),
             .factory { context, _, _, _ in
                 await requests.add(context)
                 return fauxAssistantMessage("One.")

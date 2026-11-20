@@ -43,7 +43,7 @@ extension BuiltInSkills {
           commits and pushes. The source shows it once the workflow has run,
           usually within a few minutes; Pages may serve the old index for up
           to ten more.
-        - From a conversation, `apelin_package_publish` does the same with
+        - From a conversation, `luros_package_publish` does the same with
           release builds already made: the roothide and the rootless build
           of one version in one call, each exactly as its build made it.
           Call it only when the user asked to publish them, or agreed when

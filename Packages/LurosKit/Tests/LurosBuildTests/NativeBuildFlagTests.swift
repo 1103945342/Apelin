@@ -266,8 +266,8 @@ final class NativeBuildFlagTests: XCTestCase {
     """
 
     private static let cxxHeader = """
-    #ifndef APELIN_MIXED_CXX_HELPER_H
-    #define APELIN_MIXED_CXX_HELPER_H
+    #ifndef LUROS_MIXED_CXX_HELPER_H
+    #define LUROS_MIXED_CXX_HELPER_H
 
     #include <string>
 
@@ -306,8 +306,8 @@ final class NativeBuildFlagTests: XCTestCase {
     ]
 
     private static let bridgeHeader = """
-    #ifndef APELIN_MIXED_BRIDGE_H
-    #define APELIN_MIXED_BRIDGE_H
+    #ifndef LUROS_MIXED_BRIDGE_H
+    #define LUROS_MIXED_BRIDGE_H
 
     int bridged_value(void);
 

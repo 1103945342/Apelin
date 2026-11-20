@@ -645,7 +645,7 @@ func terminalChecks(scratch: URL, scratchPath: String) async throws {
     // macOS keeps /bin/sh; a bootstrap's shell is somewhere else, and
     // build/termcheck passes the one it found.
     var shells: [String] = ["/bin/sh", "/usr/bin/sh", "/usr/bin/bash"]
-    if let chosen = ProcessInfo.processInfo.environment["APELIN_TERMINAL_SHELL"], !chosen.isEmpty {
+    if let chosen = ProcessInfo.processInfo.environment["LUROS_TERMINAL_SHELL"], !chosen.isEmpty {
         shells.insert(chosen, at: 0)
     }
     let shell = shells.first { access($0, X_OK) == 0 }

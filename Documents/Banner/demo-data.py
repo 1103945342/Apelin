@@ -84,9 +84,9 @@ c.user("Make the dock frosted glass, and give app icons a little bounce when the
 c.think("The dock background is SBDockView's backgroundView. I'll swap it for a UIVisualEffectView, then hook SBIconView's launch to add a spring animation.", 6)
 c.tool("file_read", {"path": "Sources/Tweak.m"}, "1\t// From Luros's tweak template.\n2\t#import <UIKit/UIKit.h>\n...", "Read the template's hook")
 c.tool("file_edit", {"path": "Sources/Tweak.m"}, "Patched Sources/Tweak.m +38 -4", "Add the dock and launch hooks")
-c.tool("apelin_project_build", {}, "{\"state\":\"succeeded\",\"bootstrap\":\"roothide\"}", "Build the tweak", 9)
-c.tool("apelin_package_install", {}, "Installed local.apelin.dockglass 0.0.2", "Install the package", 4)
-c.tool("apelin_package_confirm_loaded", {"respring": True}, "{\"loaded\":true}", "Respring and check it loaded", 12)
+c.tool("luros_project_build", {}, "{\"state\":\"succeeded\",\"bootstrap\":\"roothide\"}", "Build the tweak", 9)
+c.tool("luros_package_install", {}, "Installed local.luros.dockglass 0.0.2", "Install the package", 4)
+c.tool("luros_package_confirm_loaded", {"respring": True}, "{\"loaded\":true}", "Respring and check it loaded", 12)
 c.say("""Done — built, installed and **confirmed loaded** in SpringBoard.
 
 ```objc
@@ -109,7 +109,7 @@ hero = c.write()
 c = Chat("Choosing a Toolchain", None, 42)
 c.user("Which toolchain should I set up on this iPhone? I want Swift too.")
 c.think("Reading the catalog and this device's CPU features.", 3)
-c.tool("apelin_toolchain_list", {}, "...", "See what this device can run")
+c.tool("luros_toolchain_list", {}, "...", "See what this device can run")
 c.say("""Your iPhone 15 Pro runs every release Luros sets up. For Swift, pick **CLT 27.0**:
 
 | Release | Swift | Newest SDK | Size |
@@ -128,7 +128,7 @@ c = Chat("Battery Health", "batt", 95)
 c.user("Write a command-line tool that prints battery health and cycle count.")
 c.think("IOKit's AppleSmartBattery service has CycleCount, DesignCapacity and NominalChargeCapacity.", 5)
 c.tool("file_write", {"path": "Sources/main.c"}, "Wrote Sources/main.c +41 -0", "Write the tool")
-c.tool("apelin_project_build", {}, "{\"state\":\"succeeded\"}", "Build it", 6)
+c.tool("luros_project_build", {}, "{\"state\":\"succeeded\"}", "Build it", 6)
 c.tool("shell_run", {"argv": ["batt"]}, "Health   94%\nCycles   312\nTemp     31.2 °C", "Run it once")
 c.say("""`batt` reads IOKit's `AppleSmartBattery` and prints:
 
@@ -147,7 +147,7 @@ c = Chat("Heart Rate Chart", "Pulse", 60 * 22)
 c.user("Add a chart of the last 24 hours to the main screen.")
 c.think("Swift Charts is available from iOS 16, the project's deployment target.", 4)
 c.tool("file_edit", {"path": "Sources/ContentView.swift"}, "Patched +27 -3", "Add the chart view")
-c.tool("apelin_project_build", {}, "{\"state\":\"succeeded\"}", "Build the app", 14)
+c.tool("luros_project_build", {}, "{\"state\":\"succeeded\"}", "Build the app", 14)
 c.say("""Added a `LineMark` chart above the list, with a gradient area underneath.
 
 ```swift
@@ -168,8 +168,8 @@ c.write()
 c = Chat("Why Did SpringBoard Crash?", "DockGlass", 48)
 c.user("SpringBoard crashed right after I installed the last build. What happened?")
 c.think("Open the newest SpringBoard report and symbolicate it against this project's dSYMs.", 4)
-c.tool("apelin_crash_list", {}, "SpringBoard-2026-10-26-0912.ips", "Find the report")
-c.tool("apelin_crash_symbolicate", {"id": "SpringBoard-2026-10-26-0912.ips"}, "...", "Symbolicate it", 3)
+c.tool("luros_crash_list", {}, "SpringBoard-2026-10-26-0912.ips", "Find the report")
+c.tool("luros_crash_symbolicate", {"id": "SpringBoard-2026-10-26-0912.ips"}, "...", "Symbolicate it", 3)
 c.say("""It's ours: an `EXC_BAD_ACCESS` in the dock hook, build `0.0.1`.
 
 ```
@@ -187,8 +187,8 @@ c.write()
 c = Chat("Publish to My Repository", "DockGlass", 130)
 c.user("Build a release for both bootstraps and publish it to my package repository.")
 c.think("Release builds for roothide and rootless, then publish both debs.", 3)
-c.tool("apelin_project_build", {"configuration": "release", "bootstrap": "roothide"}, "{}", "Release build for roothide", 8)
-c.tool("apelin_project_build", {"configuration": "release", "bootstrap": "rootless"}, "{}", "Release build for rootless", 8)
+c.tool("luros_project_build", {"configuration": "release", "bootstrap": "roothide"}, "{}", "Release build for roothide", 8)
+c.tool("luros_project_build", {"configuration": "release", "bootstrap": "rootless"}, "{}", "Release build for rootless", 8)
 c.tool("git_push", {}, "main -> main", "Push the packages", 3)
 c.say("""Published **Dock Glass 1.0** to `lakr233.github.io/packages`:
 

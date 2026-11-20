@@ -7,7 +7,7 @@ import Foundation
 /// a list that differs, when it comes back.
 ///
 /// Kept by the app beside its other preferences, never by deleting the
-/// agent's list: the agent still reads its own list with apelin_todo_list,
+/// agent's list: the agent still reads its own list with luros_todo_list,
 /// and the store is one file every conversation writes, which the app does
 /// not write to.
 enum TodoListHiding {

@@ -81,7 +81,7 @@ final class LogsController: TableController {
         load()
     }
 
-    @objc(apelin_load) private dynamic func load() {
+    @objc(luros_load) private dynamic func load() {
         loader?.cancel()
         dataSource.beginLoad()
         let directory = Self.directory

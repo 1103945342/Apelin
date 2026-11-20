@@ -2,7 +2,7 @@ import LurosCore
 import LurosProtocol
 import Foundation
 
-/// An agent's `projectRename` (apelin_project_rename, owner, 2026-10-24):
+/// An agent's `projectRename` (luros_project_rename, owner, 2026-10-24):
 /// its own session's project's displayName in every mode — a label the
 /// file tools may write there anyway and no approval digest counts —, and
 /// another project's under Confirm only by spending an approval the app

@@ -6,7 +6,7 @@ import Foundation
 import KWWKAgent
 import KWWKAI
 
-/// `apelin_run_mode` (2026-11-11): the conversation changing its own run mode,
+/// `luros_run_mode` (2026-11-11): the conversation changing its own run mode,
 /// as the composer's pill would.
 ///
 /// A switch to `plan` is the agent's to make and asks nobody: a plan run can
@@ -55,8 +55,8 @@ enum RunModes {
         case .plan:
             """
             This conversation is a plan now: read what you need, work out what you would \
-            change, then write the steps to apelin_todo_write. A plan edits, creates, \
-            builds and installs nothing. When the plan is ready, call apelin_run_mode with \
+            change, then write the steps to luros_todo_write. A plan edits, creates, \
+            builds and installs nothing. When the plan is ready, call luros_run_mode with \
             mode build and the reason it should start, and wait for the reader's answer \
             before you touch a file — or answer with the plan if they keep it a plan.
             """

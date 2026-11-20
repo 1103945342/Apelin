@@ -6,7 +6,7 @@
     {"op": "projectCreate", "label": "project", "request": {
       "templateID": "com.fluoxetine.luros.dev.tweak/objc-hook",
       "name": "I3 Chain Tweak",
-      "values": {"packageID": "local.apelin.i3-chain", "displayName": "I3 Chain Tweak"}
+      "values": {"packageID": "local.luros.i3-chain", "displayName": "I3 Chain Tweak"}
     }},
     {"op": "expect", "request": {"step": "project", "path": "response.baseline.projectID", "exists": true}},
     {"op": "projectRename", "label": "renamed", "request": {"projectID": "${project.response.projectID}", "displayName": "I3 Chain Verification", "onlyIfAutomatic": false}},
@@ -27,7 +27,7 @@
     {"op": "expect", "request": {"step": "install", "state": "succeeded"}},
     {"op": "installationList", "label": "installed", "request": {"projectID": "${project.response.projectID}"}},
     {"op": "expect", "request": {"step": "installed", "path": "response.installations.0.installationID", "equals": "${install.lastEvent.payload.result.installationID}"}},
-    {"op": "expect", "request": {"step": "installed", "path": "response.installations.0.packageID", "equals": "local.apelin.i3-chain"}},
+    {"op": "expect", "request": {"step": "installed", "path": "response.installations.0.packageID", "equals": "local.luros.i3-chain"}},
     {"op": "confirmLoaded", "label": "loaded", "timeoutSeconds": 120, "request": {
       "buildID": "${build.lastEvent.payload.buildID}",
       "targetID": "com.apple.springboard",

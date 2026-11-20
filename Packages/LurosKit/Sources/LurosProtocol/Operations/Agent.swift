@@ -23,7 +23,7 @@ public enum AgentRunMode: String, Codable, Sendable, CaseIterable {
     public var instruction: String {
         switch self {
         case .plan:
-            "This run is a plan: read what you need — the files, the log, the read-only commands of shell_run's presets (ls, cat, head, tail, wc, file, stat, plutil -p, and git status, git diff, git log) — write the steps with apelin_todo_write, and answer with what you would change and why. Do not edit, create or delete a file, and do not build, install or run anything that changes the device."
+            "This run is a plan: read what you need — the files, the log, the read-only commands of shell_run's presets (ls, cat, head, tail, wc, file, stat, plutil -p, and git status, git diff, git log) — write the steps with luros_todo_write, and answer with what you would change and why. Do not edit, create or delete a file, and do not build, install or run anything that changes the device."
         case .build:
             "This run is a build: make the change the user asked for, as the approval mode allows."
         case .auto:
@@ -366,7 +366,7 @@ public struct AgentModelDefaults: Codable, Sendable, Equatable, Hashable {
     public var vision: AgentModelSelection?
     public var imageGeneration: AgentModelSelection?
     /// The model a conversation an agent opens starts with
-    /// (`apelin_conversation_create`). Absent leaves it on the model of the
+    /// (`luros_conversation_create`). Absent leaves it on the model of the
     /// conversation that opened it.
     public var derivedConversation: AgentModelSelection?
 
@@ -525,7 +525,7 @@ public struct AgentOpenRequest: OperationRequest {
     /// when it completed, `failed` or `cancelled` otherwise. For headless
     /// runs that follow the session task until it ends.
     public var closeWhenFinished: Bool?
-    /// A name for the conversation, from an agent's apelin_conversation_create;
+    /// A name for the conversation, from an agent's luros_conversation_create;
     /// the host keeps it as the session's title and puts it on
     /// `conversationOpened`.
     public var title: String?
@@ -996,7 +996,7 @@ public struct AgentCloseRequest: OperationRequest {
     public static let operation = AppOperation.agentClose
     public var sessionID: String
     /// The app is closing this conversation to delete it. The agent's own
-    /// `apelin_conversation_stop(close:)` closes one the user may reopen, and
+    /// `luros_conversation_stop(close:)` closes one the user may reopen, and
     /// leaves this nil: what the host still owed a closed conversation stays
     /// until the conversation itself goes.
     public var deleted: Bool?

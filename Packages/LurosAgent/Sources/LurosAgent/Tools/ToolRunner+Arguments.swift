@@ -33,7 +33,7 @@ extension ToolRunner {
     }
 
     /// One parameter's value as the call gave it; luros-build judges it
-    /// against the parameter's kind, which apelin_template_list names.
+    /// against the parameter's kind, which luros_template_list names.
     private static func templateValue(_ value: JSONValue, named name: String) throws -> TemplateValue {
         switch value {
         case let .string(text): return .string(text)

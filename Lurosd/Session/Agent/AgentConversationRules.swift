@@ -150,7 +150,7 @@ enum AgentConversationRules {
     }
 
     /// Whether `asked`, one of the opener's own `approvalRequested` events,
-    /// approves exactly this open in another project: apelin_conversation_create
+    /// approves exactly this open in another project: luros_conversation_create
     /// naming `target` with this prompt.
     static func coversOpen(_ open: AgentOpenRequest, target: ResolvedProject, asked: JSONValue) -> Bool {
         guard asked["tool"]?.stringValue == AgentToolName.conversationCreate.rawValue,
@@ -166,7 +166,7 @@ enum AgentConversationRules {
     }
 
     /// Whether `asked` approves exactly this message to a conversation of
-    /// another project: apelin_conversation_send naming it, its project and this text.
+    /// another project: luros_conversation_send naming it, its project and this text.
     static func coversSend(_ prompt: AgentPromptRequest, target: AgentSessionTable.Entry, asked: JSONValue) -> Bool {
         guard asked["tool"]?.stringValue == AgentToolName.conversationSend.rawValue,
               let detail = asked["detail"]?[otherProjectDetail],

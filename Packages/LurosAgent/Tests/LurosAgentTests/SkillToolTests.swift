@@ -5,7 +5,7 @@ import KWWKAgent
 import KWWKAI
 import Testing
 
-/// apelin_skill_list, apelin_skill_save and apelin_skill_remove: the user's
+/// luros_skill_list, luros_skill_save and luros_skill_remove: the user's
 /// skills folder, as Settings ▸ Skills writes it, each change asked about
 /// in Strict mode with the whole skill on the card, never for the session.
 @Suite("Skill tools")

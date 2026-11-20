@@ -101,7 +101,7 @@ struct EventRelayMappingTests {
     @Test
     func `a credential call recorded under either name reaches the app masked`() {
         var waiting = 0
-        for name in ["apelin_git_save_credential", "git_save_credential"] {
+        for name in ["luros_git_save_credential", "git_save_credential"] {
             let call = ToolCallRecord(id: "c", name: name, arguments: #"{"host":"github.com","token":"ghp_secret","username":"octocat"}"#)
             let relayed = EventRelay.events(for: .toolCallStarted(call), waiting: &waiting)
             let arguments = relayed.first?.1?["arguments"]?.stringValue ?? ""
@@ -195,14 +195,14 @@ struct EventRelayMappingTests {
             return
         }
         let request = ApprovalRequest(
-            id: "a", toolCallID: "c", tool: "apelin_package_remove", arguments: "{}", workingDirectory: ".",
+            id: "a", toolCallID: "c", tool: "luros_package_remove", arguments: "{}", workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: reason, detail: detail, allowsSessionScope: false,
         )
         let payload = EventRelay.approvalPayload(request)
         let expected: LurosCore.JSONValue = .object([
             "packageRemoval": .object(["installationID": .string("inst-1")]),
         ])
-        #expect(payload["tool"]?.stringValue == "apelin_package_remove")
+        #expect(payload["tool"]?.stringValue == "luros_package_remove")
         #expect(payload["detail"] == expected)
     }
 

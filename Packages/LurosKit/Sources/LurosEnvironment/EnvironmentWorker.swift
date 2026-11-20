@@ -415,7 +415,7 @@ public final class EnvironmentWorker: @unchecked Sendable {
                 try await body(reporter, staging)
                 state = reporter.isCancelled ? .cancelled : .succeeded
             } catch {
-                let failure = GitService.apelinError(error)
+                let failure = GitService.lurosError(error)
                 if reporter.isCancelled || failure.code == .cancelled || error is CancellationError {
                     state = .cancelled
                 } else {

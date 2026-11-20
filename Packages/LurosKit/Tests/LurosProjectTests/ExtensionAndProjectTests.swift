@@ -214,7 +214,7 @@ final class ExtensionAndProjectTests: XCTestCase {
         let created = try store.create(templateID: template, name: "Hello", values: ["displayName": .string(#"Quote " and \ back"#)], catalog: catalog, registry: sampleRegistry())
         let project = try ProjectStore(dataFolder: store.dataFolder).locate(created.projectID)
         XCTAssertEqual(project.project.package.name, #"Quote " and \ back"#)
-        XCTAssertEqual(project.project.package.id, "local.apelin.hello")
+        XCTAssertEqual(project.project.package.id, "local.luros.hello")
         XCTAssertThrowsError(try store.create(templateID: template, name: "Hello", values: [:], catalog: catalog, registry: sampleRegistry())) { error in
             XCTAssertTrue(String(describing: error).contains("already exists"))
         }

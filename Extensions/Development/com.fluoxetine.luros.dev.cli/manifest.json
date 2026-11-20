@@ -5,7 +5,7 @@
   "kind": "cli",
   "displayName": "Command-Line Tool Development",
   "summary": "C and Objective-C command-line tools installed into the bootstrap's /usr/bin.",
-  "apelinCompatibility": {
+  "lurosCompatibility": {
     "minimumAppVersion": "0.1.0",
     "projectSchemaVersions": [1],
     "manifestSchemaVersion": 1
@@ -44,7 +44,7 @@
         { "path": "Sources/main.c", "format": "c" },
         { "path": "Packaging/Tool.entitlements", "format": "plist-xml" }
       ],
-      "digest": "sha256:e3fd3fddc2e76ac98f3c86d96dfc10071a47201e976f006106085f5bbb161d5b"
+      "digest": "sha256:548227b92501fae5e203e74435686e94c3ee22e7c851b85c2f7ac16b2abccccc"
     },
     {
       "id": "objc",
@@ -65,7 +65,7 @@
         { "path": "Sources/main.m", "format": "objc" },
         { "path": "Packaging/Tool.entitlements", "format": "plist-xml" }
       ],
-      "digest": "sha256:26ce57765a64e4b3d587aa7fc0768be3224180df7627adc9944512f60f0d2f90"
+      "digest": "sha256:dbde1e101fa930ef46e3aea901bdc5ab5b52acfb5eea14688ba94a8643ce070a"
     }
   ],
   "provenance": [

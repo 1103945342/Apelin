@@ -6,7 +6,7 @@ import Foundation
 import KWWKAgent
 import KWWKAI
 
-/// `apelin_question_ask` (2026-11-05): a question the call waits on, asked
+/// `luros_question_ask` (2026-11-05): a question the call waits on, asked
 /// through the approval gate as `detail.question`, so it waits as an
 /// approval does — through a closed app, a reconnect, the host's banner —
 /// and a stop ends it as one. The answer is the call's result.

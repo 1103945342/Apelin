@@ -1,7 +1,7 @@
 import Foundation
 import KWWKAI
 
-/// `apelin_skill_read`: a skill's instructions, or a file from its folder, read
+/// `luros_skill_read`: a skill's instructions, or a file from its folder, read
 /// when a task calls for them. The catalogue is loaded again on each call,
 /// so a skill added or edited during a session is the one read.
 struct SkillReader {
@@ -33,7 +33,7 @@ struct SkillReader {
         var text = Self.bounded(Data(skill.body.utf8), Self.maxBodyBytes)
         let files = skill.files.keys.sorted() + (skill.directory.map(Self.files(in:)) ?? [])
         if !files.isEmpty {
-            text += "\n\nFiles in this skill's folder (apelin_skill_read with file): " + files.joined(separator: ", ")
+            text += "\n\nFiles in this skill's folder (luros_skill_read with file): " + files.joined(separator: ", ")
         }
         return text
     }

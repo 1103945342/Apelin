@@ -146,13 +146,13 @@ public enum ApprovalDetail: Sendable, Hashable, Codable {
     /// never granted for the session; the host lets through only the
     /// reset it names, once.
     case resetToRemote(ResetToRemoteApproval)
-    /// A question the agent asks the reader (`apelin_question_ask`): the
+    /// A question the agent asks the reader (`luros_question_ask`): the
     /// card shows its options in place of Approve and Deny, and the reply
     /// carries the answer (`ApprovalGate.request(question:)`). Asked in
     /// every mode, a plan run included, and never granted for the session.
     case question(AgentQuestion)
     /// The conversation's own run mode going back to a build
-    /// (`apelin_run_mode`): what is asked, and the agent's reason, which the
+    /// (`luros_run_mode`): what is asked, and the agent's reason, which the
     /// card shows. A switch to a plan asks nobody. The host matches nothing
     /// to it; the answer reaches only the model.
     case runMode(AgentRunModeRequest)
@@ -169,7 +169,7 @@ public enum ScreenControlApproval: Sendable, Hashable, Codable {
     case command(RunCodeInvocation, asRoot: Bool)
 }
 
-/// What an apelin_package_publish card names, and the host matches its
+/// What an luros_package_publish card names, and the host matches its
 /// request to (AgentPublishRules): the linked repository, then each
 /// package — its build, what it is, the file the build wrote and the
 /// digest it recorded —, in the order they are sent.
@@ -215,7 +215,7 @@ public struct PackagePublishApproval: Sendable, Hashable, Codable {
     }
 }
 
-/// What an apelin_git_create_repository card names, and the host matches
+/// What an luros_git_create_repository card names, and the host matches
 /// its request to (AgentRepositoryCreateRules): the request as the tool
 /// sends it. A nil owner is the signed-in account.
 public struct RepositoryCreateApproval: Sendable, Hashable, Codable {
@@ -231,7 +231,7 @@ public struct RepositoryCreateApproval: Sendable, Hashable, Codable {
     }
 }
 
-/// What an apelin_git_create_issue card names, and the host matches its
+/// What an luros_git_create_issue card names, and the host matches its
 /// issue to (AgentIssueCreateRules): the repository, the title and the
 /// body, as the tool sends them.
 public struct IssueCreateApproval: Sendable, Hashable, Codable {
@@ -246,7 +246,7 @@ public struct IssueCreateApproval: Sendable, Hashable, Codable {
     }
 }
 
-/// What an apelin_project_delete card names, and the host matches its
+/// What an luros_project_delete card names, and the host matches its
 /// deletion to (AgentProjectDeleteRules): the project, its folder and the
 /// name the sidebar shows.
 public struct ProjectDeleteApproval: Sendable, Hashable, Codable {
@@ -260,7 +260,7 @@ public struct ProjectDeleteApproval: Sendable, Hashable, Codable {
     }
 }
 
-/// What an apelin_feedback_send card names, and the host matches its issue
+/// What an luros_feedback_send card names, and the host matches its issue
 /// to (AgentFeedbackRules): the repository, the title and the body, as the
 /// tool sends them.
 public struct FeedbackApproval: Sendable, Hashable, Codable {
@@ -274,7 +274,7 @@ public struct FeedbackApproval: Sendable, Hashable, Codable {
     }
 }
 
-/// What an apelin_feedback_edit card names, and the host matches its edit to
+/// What an luros_feedback_edit card names, and the host matches its edit to
 /// (AgentFeedbackRules): the issue, the title and body it puts in — nil for
 /// one that stays — and the title and body it was made against, as the
 /// tool read them just before asking.
@@ -305,7 +305,7 @@ public struct FeedbackEditApproval: Sendable, Hashable, Codable {
     }
 }
 
-/// What an apelin_project_rename card names for another project, and the
+/// What an luros_project_rename card names for another project, and the
 /// host matches its rename to (AgentProjectRenameRules): the project and
 /// the name it is given.
 public struct ProjectRenameApproval: Sendable, Hashable, Codable {
@@ -322,7 +322,7 @@ public struct ProjectRenameApproval: Sendable, Hashable, Codable {
     }
 }
 
-/// What an apelin_skill_save or apelin_skill_remove card names: the skill,
+/// What an luros_skill_save or luros_skill_remove card names: the skill,
 /// its place in the skills folder, and for a save the `SKILL.md` it writes.
 public struct SkillChangeApproval: Sendable, Hashable, Codable {
     /// `save` or `remove`.
@@ -362,7 +362,7 @@ public struct ExternalBuildApproval: Sendable, Hashable, Codable {
     }
 }
 
-/// What a apelin_toolchain_setup card names, and the host matches its setup to.
+/// What a luros_toolchain_setup card names, and the host matches its setup to.
 public struct ToolchainSetupApproval: Sendable, Hashable, Codable {
     public var productID: String
     public var version: String
@@ -377,7 +377,7 @@ public struct ToolchainSetupApproval: Sendable, Hashable, Codable {
     }
 }
 
-/// What an apelin_sdk_import card names, and the host matches its import to.
+/// What an luros_sdk_import card names, and the host matches its import to.
 public struct SDKImportApproval: Sendable, Hashable, Codable {
     public var source: String
     public var url: String

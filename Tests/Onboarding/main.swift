@@ -79,7 +79,7 @@ import Foundation
         for kind in ["app", "cli", "preferences"] {
             precondition(ProjectBuildMethod(manifest: .object(["kind": .string(kind), "build": build])) == .description)
         }
-        let script: JSONValue = .object(["script": .string("apelin/build.sh")])
+        let script: JSONValue = .object(["script": .string("luros/build.sh")])
         let workspace: JSONValue = .object([
             "projectID": .string("w"), "kind": .string("workspace"), "buildSystem": .string("external"),
         ])

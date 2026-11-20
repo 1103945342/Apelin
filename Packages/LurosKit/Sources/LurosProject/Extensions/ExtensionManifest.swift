@@ -10,7 +10,7 @@ public struct ExtensionManifest: Codable, Sendable, Equatable {
     public var kind: ProjectKind
     public var displayName: String
     public var summary: String
-    public var apelinCompatibility: Compatibility
+    public var lurosCompatibility: Compatibility
     public var requirements: Requirements
     public var support: [String: SupportComponent]?
     public var templates: [Template]

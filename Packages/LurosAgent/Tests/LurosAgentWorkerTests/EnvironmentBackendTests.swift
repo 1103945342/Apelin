@@ -27,7 +27,7 @@ struct EnvironmentBackendTests {
     }
 
     @Test
-    func `apelin_toolchain_list carries each release's requirements and this project's binding`() async throws {
+    func `luros_toolchain_list carries each release's requirements and this project's binding`() async throws {
         let fixture = try Fixture(manifest: Self.manifest)
         fixture.host.on(.toolchainStatus, reply: ToolchainStatusResponse(
             toolchains: [Self.toolchain("clt-16.4-c", version: "16.4", newestSDK: "18.5", productID: "082-16")],
@@ -65,7 +65,7 @@ struct EnvironmentBackendTests {
     }
 
     @Test
-    func `apelin_toolchain_list still answers when Apple's catalog cannot be read`() async throws {
+    func `luros_toolchain_list still answers when Apple's catalog cannot be read`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.toolchainStatus, reply: ToolchainStatusResponse())
         fixture.host.on(.toolchainCatalog) { _ in throw LurosError(.unavailable, "offline") }
@@ -74,7 +74,7 @@ struct EnvironmentBackendTests {
     }
 
     @Test
-    func `apelin_sdk_list offers the enabled sources' branches not yet registered, with the toolchains that read each`() async throws {
+    func `luros_sdk_list offers the enabled sources' branches not yet registered, with the toolchains that read each`() async throws {
         let fixture = try Fixture(manifest: Self.manifest)
         fixture.host.on(.sdkList) { request in
             let asked = try request.decode(SDKListRequest.self)
@@ -100,7 +100,7 @@ struct EnvironmentBackendTests {
     }
 
     @Test
-    func `apelin_toolchain_setup starts the named catalog product and reads its task to the end, keeping only the stages`() async throws {
+    func `luros_toolchain_setup starts the named catalog product and reads its task to the end, keeping only the stages`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.toolchainSetup, reply: TaskHandle(taskID: TaskID("setup-task"), kind: .environment))
         try fixture.host.on(.environmentAttach, reply: batch("setup-task", [
@@ -132,7 +132,7 @@ struct EnvironmentBackendTests {
     }
 
     @Test
-    func `apelin_sdk_import imports the source's branch and reads its task`() async throws {
+    func `luros_sdk_import imports the source's branch and reads its task`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.sdkImport, reply: TaskHandle(taskID: TaskID("import-task"), kind: .environment))
         try fixture.host.on(.environmentAttach, reply: batch("import-task", [
@@ -170,7 +170,7 @@ struct EnvironmentBackendTests {
     }
 
     @Test
-    func `a switch on a description apelin_project_create never wrote says it is none, and what builds a workspace`() async throws {
+    func `a switch on a description luros_project_create never wrote says it is none, and what builds a workspace`() async throws {
         let fixture = try Fixture()
         fixture.host.on(.projectCheck, reply: ProjectCheckResponse(passed: false, diagnostics: [
             ProjectDiagnostic(code: "project.invalid", severity: .error, message: "missing template", file: "luros-project.json", field: "/"),
@@ -239,7 +239,7 @@ struct EnvironmentBackendTests {
         let reach = detail(.otherProject(OtherProjectApproval(action: "send", projectID: "far-id", projectName: "Far", sessionID: "s", text: "go")))
         #expect(reach?["otherProject"]?["action"]?.stringValue == "send" && reach?["otherProject"]?["projectID"]?.stringValue == "far-id")
         #expect(reach?["otherProject"]?["sessionID"]?.stringValue == "s" && reach?["otherProject"]?["text"]?.stringValue == "go")
-        let build = detail(.externalBuild(ExternalBuildApproval(projectID: "w", script: "apelin/build.sh", configuration: "debug", bootstrap: nil)))
+        let build = detail(.externalBuild(ExternalBuildApproval(projectID: "w", script: "luros/build.sh", configuration: "debug", bootstrap: nil)))
         #expect(build?["externalBuild"]?["projectID"]?.stringValue == "w" && build?["externalBuild"]?["configuration"]?.stringValue == "debug")
         #expect(build?["externalBuild"]?["bootstrap"] == nil, "no bootstrap named, none written: the host matches it to none")
     }

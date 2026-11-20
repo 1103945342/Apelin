@@ -1,6 +1,6 @@
 import Foundation
 
-/// A request that the conversation change its run mode (`apelin_run_mode`,
+/// A request that the conversation change its run mode (`luros_run_mode`,
 /// 2026-11-11): the mode asked for, and the agent's own sentence saying why,
 /// which the card shows the reader before they agree.
 ///

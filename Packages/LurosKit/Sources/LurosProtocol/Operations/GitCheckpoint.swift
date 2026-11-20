@@ -4,14 +4,14 @@ import Foundation
 // reader can put the code back there (Checkpoint & Rewind). Served by
 // luros-environment (libgit2) as mobile, in the project's own repository:
 // each checkpoint is a commit of every file the repository does not ignore,
-// tracked or not, under `refs/apelin/checkpoints/<message id>`, a ref no
+// tracked or not, under `refs/luros/checkpoints/<message id>`, a ref no
 // branch, push or clone carries. The index, HEAD and the branches are never
 // touched by a save.
 
 public enum GitCheckpointRules {
     /// The ref a message's checkpoint is kept under.
     public static func reference(for messageID: UUID) -> String {
-        "refs/apelin/checkpoints/" + messageID.uuidString.lowercased()
+        "refs/luros/checkpoints/" + messageID.uuidString.lowercased()
     }
 
     /// A work tree with more changed or untracked files than this, or more

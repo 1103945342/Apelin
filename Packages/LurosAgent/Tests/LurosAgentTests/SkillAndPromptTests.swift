@@ -54,14 +54,14 @@ struct SkillAndPromptTests {
         #expect(prompt.contains("<skill name=\"luros-tweak-development\">"))
         #expect(!prompt.contains("skill-body-marker"))
         #expect(!prompt.contains(BuiltInSkills.all[0].body))
-        #expect(prompt.contains("call apelin_skill_read"))
+        #expect(prompt.contains("call luros_skill_read"))
         // The date and the mode on are each message's (`SystemState`).
         #expect(!prompt.contains("Current date"))
         #expect(prompt.hasSuffix("</available_skills>"))
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func `apelin_skill_read answers a body, lists and reads the skill's files, and stays in its folder`() async throws {
+    func `luros_skill_read answers a body, lists and reads the skill's files, and stays in its folder`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         try writeSkill(home, folder: "theme", name: "theme-colours", body: "Use the palette.",
@@ -100,7 +100,7 @@ struct SkillAndPromptTests {
         }
         #expect(try await call(["name": "luros-tweak-development", "file": ""]).contains("# Tweak development"))
         let guide = try await call(["name": "luros-project-description"])
-        #expect(guide.contains("Files in this skill's folder (apelin_skill_read with file): luros-project.schema.json"))
+        #expect(guide.contains("Files in this skill's folder (luros_skill_read with file): luros-project.schema.json"))
         let schema = try await call(["name": "luros-project-description", "file": "luros-project.schema.json"])
         #expect(schema.contains(#""title": "Luros project description, version 1""#))
     }
@@ -133,7 +133,7 @@ struct SkillAndPromptTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func `every built-in skill is listed by name and apelin_skill_read serves its body`() async throws {
+    func `every built-in skill is listed by name and luros_skill_read serves its body`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let skills = BuiltInSkills.all
@@ -153,13 +153,13 @@ struct SkillAndPromptTests {
         for skill in skills {
             let body = try await text(runner.run(.local(.skillRead), toolCallID: UUID().uuidString,
                                                  arguments: ["name": .string(skill.name)], cancellation: nil, mcp: nil))
-            #expect(body.contains(skill.body.prefix(32)), "apelin_skill_read did not serve \(skill.name)")
+            #expect(body.contains(skill.body.prefix(32)), "luros_skill_read did not serve \(skill.name)")
             #expect(!prompt.contains(skill.body), "the prompt leaked \(skill.name)'s body")
         }
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func `the luros-bootstrap-paths skill carries its C helper and apelin_skill_read serves it`() async throws {
+    func `the luros-bootstrap-paths skill carries its C helper and luros_skill_read serves it`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let skill = try #require(BuiltInSkills.all.first { $0.name == "luros-bootstrap-paths" })
@@ -168,7 +168,7 @@ struct SkillAndPromptTests {
         // branch finds the jbroot from its own image, the rootless branch is
         // the fixed prefix.
         #expect(header.contains("LurosBootstrapPath"))
-        #expect(header.contains("APELIN_BOOTSTRAP_ROOTHIDE"))
+        #expect(header.contains("LUROS_BOOTSTRAP_ROOTHIDE"))
         #expect(header.contains(".jbroot-"))
         #expect(header.contains("@\"/var/jb\""))
         // A resolved jbroot path is never written down: roothide renames it.
@@ -187,7 +187,7 @@ struct SkillAndPromptTests {
 
     /// A package's page in a package manager comes from the depiction its
     /// control names (issue #44). The skill is loaded on demand like the
-    /// others: the prompt has its name and description, apelin_skill_read
+    /// others: the prompt has its name and description, luros_skill_read
     /// its body, and its page to start from is a file read only when asked
     /// for. That page draws in Irisin: it uses the view classes Irisin's
     /// renderer has, a tab name and a class on every tab.
@@ -213,7 +213,7 @@ struct SkillAndPromptTests {
         {
             #expect(body.contains(named), "the skill no longer says \(named)")
         }
-        #expect(body.contains("Files in this skill's folder (apelin_skill_read with file): depiction.json"))
+        #expect(body.contains("Files in this skill's folder (luros_skill_read with file): depiction.json"))
         // the project description's guide sends the reader here
         #expect(BuiltInSkills.projectDescription.body.contains("luros-package-depiction"))
 
@@ -381,14 +381,14 @@ struct SkillAndPromptTests {
         let device = try #require(prompt.range(of: "# This device")?.lowerBound)
         let section = prompt[working ..< device]
         #expect(section.contains("After a change that shows on screen, exercise it"))
-        #expect(section.contains("act with apelin_screen_interact"))
+        #expect(section.contains("act with luros_screen_interact"))
         #expect(section.contains("the user declines the call"))
         #expect(section.contains("that behaviour is Not tested: say so, never guess how it behaves"))
         // The tweak loop ends on the behaviour, not on the load check.
         let loop = BuiltInSkills.tweakDevelopment.body
             .split(whereSeparator: \.isWhitespace).joined(separator: " ")
         #expect(loop.contains("5. Check the behaviour itself, not only that it loaded"))
-        #expect(loop.contains("drive it with `apelin_screen_interact`"))
+        #expect(loop.contains("drive it with `luros_screen_interact`"))
         #expect(loop.contains("Report what you could not drive or see as Not tested."))
     }
 
@@ -449,7 +449,7 @@ struct SkillAndPromptTests {
             let section = prompt[working ..< device]
             #expect(section.contains("An Luros tweak is plain Objective-C: hooks installed with MSHookMessageEx"))
             #expect(section.contains("There is no Logos (%hook, .x files) and no Theos here."))
-            #expect(section.contains("a question included, read the matching skill with apelin_skill_read"))
+            #expect(section.contains("a question included, read the matching skill with luros_skill_read"))
         }
         // The file the prompt names is the tweak template's.
         let template = Self.repository.appendingPathComponent(
@@ -483,27 +483,27 @@ struct SkillAndPromptTests {
     /// packages put the .deb files together itself and left them in the
     /// project's Dist/, past Luros's build, signing and packaging checks.
     @Test
-    func `a package is apelin_project_build's in every project, and a workspace's script makes it`() throws {
+    func `a package is luros_project_build's in every project, and a workspace's script makes it`() throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         func prompt(_ buildSystem: ProjectBuildSystem) -> String {
             SystemPrompt.make(project: home.project, projectRoot: home.projectURL.path, skills: [],
                               mcpServers: [], buildSystem: buildSystem)
         }
-        for buildSystem in [ProjectBuildSystem.apelin, .external] {
+        for buildSystem in [ProjectBuildSystem.luros, .external] {
             let text = prompt(buildSystem)
             let working = try #require(text.range(of: "# Working")?.upperBound)
             let device = try #require(text.range(of: "# This device")?.lowerBound)
             let section = text[working ..< device]
-            #expect(section.contains("A package comes only from apelin_project_build"))
+            #expect(section.contains("A package comes only from luros_project_build"))
             #expect(section.contains("Never put a .deb together yourself (dpkg-deb -b, ar, tar) or copy one into the project"))
             #expect(section.contains("takes it from Distribute… in a project chat's More (…) menu"))
             // and a conversation opened for one is asked for a build
-            #expect(text.contains("Ask for a package as an apelin_project_build that succeeds, never as a .deb file in the project."))
+            #expect(text.contains("Ask for a package as an luros_project_build that succeeds, never as a .deb file in the project."))
         }
-        let script = "That script, run by apelin_project_build, is the one thing that makes this workspace's .deb"
+        let script = "That script, run by luros_project_build, is the one thing that makes this workspace's .deb"
         #expect(prompt(.external).contains(script))
-        #expect(!prompt(.apelin).contains(script))
+        #expect(!prompt(.luros).contains(script))
     }
 
     @Test
@@ -516,7 +516,7 @@ struct SkillAndPromptTests {
         #expect(BuiltInSkills.packageDependencies.body.contains("build or place a `.deb` yourself"))
         // A workspace's declared script is where dpkg-deb builds one.
         let external = BuiltInSkills.externalBuild.body
-        let step = try #require(external.range(of: "4. Write exactly one `.deb` into `$APELIN_PACKAGE_DIR`"))
+        let step = try #require(external.range(of: "4. Write exactly one `.deb` into `$LUROS_PACKAGE_DIR`"))
         let command = try #require(external.range(of: "dpkg-deb -b --root-owner-group"))
         #expect(step.upperBound <= command.lowerBound)
         for skill in BuiltInSkills.all where skill.body.contains("dpkg-deb") {
@@ -525,7 +525,7 @@ struct SkillAndPromptTests {
     }
 
     @Test
-    func `the prompt keeps apelin_notification_send for what the user would want to know while away`() throws {
+    func `the prompt keeps luros_notification_send for what the user would want to know while away`() throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let prompt = SystemPrompt.make(project: home.project, projectRoot: home.projectURL.path,
@@ -533,7 +533,7 @@ struct SkillAndPromptTests {
         let working = try #require(prompt.range(of: "# Working")?.upperBound)
         let device = try #require(prompt.range(of: "# This device")?.lowerBound)
         let section = prompt[working ..< device]
-        #expect(section.contains("tell them with apelin_notification_send"))
+        #expect(section.contains("tell them with luros_notification_send"))
         #expect(section.contains("never for routine progress, instead of your reply, or to say you are done"))
     }
 
@@ -584,12 +584,12 @@ struct SkillAndPromptTests {
     }
 
     @Test
-    func `apelin_skill_read needs no approval in Confirm mode`() throws {
+    func `luros_skill_read needs no approval in Confirm mode`() throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let verdict = try ApprovalPolicy(mode: .confirm)
             .evaluate(InvocationFacts(tool: .local(.skillRead)), root: ScopedRoot(home.projectURL))
-        #expect(verdict == .allow(.preset("apelin_skill_read")))
+        #expect(verdict == .allow(.preset("luros_skill_read")))
     }
 
     @Test

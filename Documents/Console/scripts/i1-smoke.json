@@ -2,10 +2,10 @@
   "name": "i1-smoke",
   "setup": [
     "Run as root on the device before dropping this script into console/inbox/ (JB is the install root hello answers: the jbroot on roothide, /var/jb on rootless):",
-    "printf 'apelin smoke original\\n' > $JB/etc/luros-smoke.conf && chown 0:0 $JB/etc/luros-smoke.conf && chmod 644 $JB/etc/luros-smoke.conf",
+    "printf 'luros smoke original\\n' > $JB/etc/luros-smoke.conf && chown 0:0 $JB/etc/luros-smoke.conf && chmod 644 $JB/etc/luros-smoke.conf",
     "Copy Documents/Console/fixtures/luros-smoke_1.0_all.deb to ~mobile/Documents/com.fluoxetine.luros/console/luros-smoke_1.0_all.deb (owned by mobile)",
     "Irisin 4.7.3 or later must be installed; com.example.luros-smoke must not be installed already.",
-    "Afterwards: cat $JB/etc/luros-smoke.conf reads 'apelin smoke edited', the backup is in ~mobile/Documents/com.fluoxetine.luros/backups/, and $JB/usr/share/luros-smoke/ is gone again."
+    "Afterwards: cat $JB/etc/luros-smoke.conf reads 'luros smoke edited', the backup is in ~mobile/Documents/com.fluoxetine.luros/backups/, and $JB/usr/share/luros-smoke/ is gone again."
   ],
   "steps": [
     {"op": "hello", "label": "hello"},

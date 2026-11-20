@@ -129,7 +129,7 @@ public struct DistributionService: Sendable {
             let project = try ProjectStore(dataFolder: layout.data).createEmpty(name: name)
             let root = URL(fileURLWithPath: project.path, isDirectory: true)
             let repository = try GitRepository(at: root)
-            try repository.addExcludes(GitService.apelinFiles)
+            try repository.addExcludes(GitService.lurosFiles)
             try repository.addRemote("origin", url: remoteURL(created.fullName))
             let source = Self.sourceURL(owner: created.owner.login, name: created.name)
             let branch = repository.head().branch ?? EmptyRepositoryBranch.name
@@ -147,7 +147,7 @@ public struct DistributionService: Sendable {
                 reporter: reporter,
             )
         } catch {
-            var failure = GitService.apelinError(error)
+            var failure = GitService.lurosError(error)
             if failure.code != .cancelled {
                 failure.message += " GitHub has the repository \(created.fullName) now: Link Distribution Repository finishes setting it up."
             }
@@ -195,7 +195,7 @@ public struct DistributionService: Sendable {
                 _ = try GitClone.into(
                     root,
                     url: url,
-                    excluding: GitService.apelinFiles,
+                    excluding: GitService.lurosFiles,
                     credentials: git.credentialLookup,
                     progress: GitService.fetchProgress(reporter),
                 )
@@ -203,11 +203,11 @@ public struct DistributionService: Sendable {
                 // An empty repository has no branch to check out: it takes
                 // the template as a new one does, under its own origin.
                 let repository = try GitRepository(at: root)
-                try repository.addExcludes(GitService.apelinFiles)
+                try repository.addExcludes(GitService.lurosFiles)
                 try repository.addRemote("origin", url: url)
             } catch {
                 try? FileManager.default.removeItem(at: root)
-                throw GitService.apelinError(error)
+                throw GitService.lurosError(error)
             }
         }
         try reporter.checkCancelled()

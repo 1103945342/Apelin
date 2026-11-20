@@ -182,7 +182,7 @@ actor MockBackend: AgentHostBackend {
         return done
     }
 
-    /// What apelin_package_publish reads before it asks: a linked
+    /// What luros_package_publish reads before it asks: a linked
     /// repository, a sign-in, and the builds a test records.
     var publishRepository: PackagePublication.Repository? = .init(
         fullName: "someone/packages",
@@ -221,7 +221,7 @@ actor MockBackend: AgentHostBackend {
         )
     }
 
-    /// What apelin_toolchain_list and apelin_sdk_list answer.
+    /// What luros_toolchain_list and luros_sdk_list answer.
     var toolchainList = ToolchainListToolResponse(
         installed: [InstalledToolchain(id: "clt-16.4-c", version: "16.4", components: ["c"], newestSDK: "18.5", boundByThisProject: true)],
         available: [
@@ -236,12 +236,12 @@ actor MockBackend: AgentHostBackend {
             AvailableSDK(version: "17.5", branch: "sdk/iPhoneOS17.5", source: "OwnGoal iOS SDKs", sourceURL: "https://github.com/1103945342/iOS-SDKs.git", readBy: ["clt-16.4-c"]),
         ],
     )
-    /// What apelin_project_set_environment's check answers, by SDK id.
+    /// What luros_project_set_environment's check answers, by SDK id.
     var environmentFindings: [String: [EnvironmentDiagnostic]] = [:]
     /// Other projects resolve_project finds, by name or id.
     var otherProjects: [String: ProjectIdentity] = [:]
 
-    /// What apelin_project_list answers: none, as a backend without other
+    /// What luros_project_list answers: none, as a backend without other
     /// projects answers, unless a test lists some.
     var listedProjects = ProjectListToolResponse(projects: [], truncated: false)
 
@@ -322,7 +322,7 @@ actor MockBackend: AgentHostBackend {
         )
     }
 
-    /// What apelin_package_list answers, newest first, as the host would;
+    /// What luros_package_list answers, newest first, as the host would;
     /// nil for a host that cannot list them, so a removal goes by its id.
     var installedPackages: [ListedInstallation]?
     /// Whether that list was cut short.
@@ -547,7 +547,7 @@ actor MockBackend: AgentHostBackend {
 
     func conversationCreate(_ request: ConversationCreateToolRequest) -> ConversationCreateToolResponse {
         if let target = request.target {
-            calls.append(.conversationElsewhere(tool: "apelin_conversation_create", project: target.id, evidence: request.context.approval))
+            calls.append(.conversationElsewhere(tool: "luros_conversation_create", project: target.id, evidence: request.context.approval))
         } else {
             calls.append(.conversationCreate(prompt: request.prompt, title: request.title))
         }
@@ -556,7 +556,7 @@ actor MockBackend: AgentHostBackend {
 
     func conversationSend(_ request: ConversationSendToolRequest) -> ConversationActionToolResponse {
         if let target = request.target {
-            calls.append(.conversationElsewhere(tool: "apelin_conversation_send", project: target.id, evidence: request.context.approval))
+            calls.append(.conversationElsewhere(tool: "luros_conversation_send", project: target.id, evidence: request.context.approval))
         } else {
             calls.append(.conversationSend(sessionID: request.sessionID, text: request.text))
         }
@@ -565,7 +565,7 @@ actor MockBackend: AgentHostBackend {
 
     func conversationList(_ request: ConversationListToolRequest) -> ConversationListToolResponse {
         if let target = request.target {
-            calls.append(.conversationElsewhere(tool: "apelin_conversation_list", project: target.id, evidence: request.context.approval))
+            calls.append(.conversationElsewhere(tool: "luros_conversation_list", project: target.id, evidence: request.context.approval))
         } else {
             calls.append(.conversationList)
         }
@@ -574,7 +574,7 @@ actor MockBackend: AgentHostBackend {
 
     func conversationRead(_ request: ConversationReadToolRequest) -> ConversationReadToolResponse {
         if let target = request.target {
-            calls.append(.conversationElsewhere(tool: "apelin_conversation_read", project: target.id, evidence: request.context.approval))
+            calls.append(.conversationElsewhere(tool: "luros_conversation_read", project: target.id, evidence: request.context.approval))
         } else {
             calls.append(.conversationRead(sessionID: request.sessionID, afterSeq: request.afterSeq, waitSeconds: request.waitSeconds))
         }
@@ -631,7 +631,7 @@ actor MockBackend: AgentHostBackend {
         return FeedbackToolResponse(repository: "1103945342/Luros", issue: 7, url: "https://github.com/1103945342/Luros/issues/7")
     }
 
-    /// What apelin_feedback_read answers, by number: #12, the user's own,
+    /// What luros_feedback_read answers, by number: #12, the user's own,
     /// unless a test sets others.
     var feedbackIssues: [Int: FeedbackReadToolResponse] = [12: FeedbackReadToolResponse(
         repository: "1103945342/Luros",

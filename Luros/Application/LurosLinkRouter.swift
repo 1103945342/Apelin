@@ -6,7 +6,7 @@ import UIKit
 /// conversation, which opens in place rather than through the system.
 @MainActor
 enum LurosLinkRouter {
-    /// Opens `url` when it is an `apelin:` link and says so; any other URL
+    /// Opens `url` when it is an `luros:` link and says so; any other URL
     /// is left to its caller.
     @discardableResult
     static func open(_ url: URL, in scene: UIWindowScene?) -> Bool {

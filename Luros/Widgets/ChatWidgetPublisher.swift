@@ -10,7 +10,7 @@ import WidgetKit
 /// The runtime says when anything changed; the publisher looks at most once
 /// a second, and writes, reloads or updates only when what the widgets show
 /// changed — streamed text changes nothing they show. Project display names
-/// are read again when a project changes (`.apelinProjectsChanged`).
+/// are read again when a project changes (`.lurosProjectsChanged`).
 @MainActor
 final class ChatWidgetPublisher {
     static let shared = ChatWidgetPublisher()
@@ -36,7 +36,7 @@ final class ChatWidgetPublisher {
 
     private init() {
         NotificationCenter.default.addObserver(
-            forName: .apelinProjectsChanged,
+            forName: .lurosProjectsChanged,
             object: nil,
             queue: .main,
         ) { _ in

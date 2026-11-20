@@ -2,7 +2,7 @@
 """Exercise BuildPipeline's real compile/link methods with the on-device CLT.
 
 Run in the repository: python3 Scripts/test-mixed-build-device.py
-Requires Luros's APELIN_PROJECT_ROOT, APELIN_TOOLCHAIN_BIN, SDKROOT and ldid.
+Requires Luros's LUROS_PROJECT_ROOT, LUROS_TOOLCHAIN_BIN, SDKROOT and ldid.
 All generated files stay in .build/mixed-device; no app/package is installed.
 This is a compile/link/runtime smoke test, NOT a substitute for make check or
 BuildService/Mach-O verification/packaging tests. Full XCTest runs on CI.
@@ -283,7 +283,7 @@ def check_importer_macros(name, log):
     lines = [line for line in log.splitlines() if line.startswith("$ ")]
     swift = [line for line in lines if "/swiftc " in line]
     native = [line for line in lines if "/clang " in line]
-    identity = ("APELIN_BUILD_ID", "APELIN_PACKAGE_ID", "APELIN_VERSION")
+    identity = ("LUROS_BUILD_ID", "LUROS_PACKAGE_ID", "LUROS_VERSION")
     for line in swift:
         for macro in identity:
             if "-Xcc -D" + macro in line:
@@ -312,7 +312,7 @@ def refusals():
 
 
 def main():
-    for key in ["APELIN_PROJECT_ROOT", "APELIN_TOOLCHAIN_BIN", "SDKROOT"]:
+    for key in ["LUROS_PROJECT_ROOT", "LUROS_TOOLCHAIN_BIN", "SDKROOT"]:
         if not os.environ.get(key):
             raise SystemExit("missing environment: " + key)
     OUT.mkdir(parents=True, exist_ok=True)

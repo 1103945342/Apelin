@@ -607,7 +607,7 @@ echo; echo "@@end"
         }
         return self.facts
 
-    def require_apelin(self):
+    def require_luros(self):
         facts = self.facts or self.gather()
         if not facts['root']:
             raise HarnessError(f'Luros is not installed on {self.describe()}. Install it once with your preferred '
@@ -794,7 +794,7 @@ echo "fired at $(date +%H:%M:%S.%N | cut -c1-12)"
     def execute(self):
         target = self.target
         target.gather()
-        facts = target.require_apelin()
+        facts = target.require_luros()
         say(Style.bold(f'▸ {self.name}') + Style.dim(f'  {target.describe()}'))
         if self.entry.get('manual') and not self.options.explicit:
             return self.done('SKIP', f'manual: {self.entry["manual"]}')
@@ -1060,7 +1060,7 @@ echo "fired at $(date +%H:%M:%S.%N | cut -c1-12)"
 def run_scripts(target, names, options):
     manifest = load_manifest()
     entries = manifest.get('scripts', {})
-    target.require_apelin()
+    target.require_luros()
     results = []
     for name in names:
         path = resolve_script(name)
@@ -1112,7 +1112,7 @@ def command_status(target, arguments):
         f'app {"running" if facts["appRunning"] else "not running"}')
     interesting = [(package, v) for package, v in sorted(facts['packages'].items())
                    if package.startswith('com.fluoxetine.luros.') or package in ('wiki.qaq.irisin', 'ellekit', 'wiki.qaq.icli')
-                   or package.startswith('local.apelin.') or package == 'com.example.luros-smoke']
+                   or package.startswith('local.luros.') or package == 'com.example.luros-smoke']
     say(f'{Style.bold("Packages  ")}' + (', '.join(f'{p} {v}' for p, v in interesting) or 'none beside Luros'))
     daemon = target.text(r'''
 launchctl print system/com.fluoxetine.lurosd 2>/dev/null | awk -F' = ' '/^\t(state|pid) = /{printf "%s %s ", $1, $2}' | tr -d '\t'
@@ -1212,7 +1212,7 @@ def command_list(target, arguments):
 
 
 def command_out(target, arguments):
-    target.require_apelin()
+    target.require_luros()
     if arguments.run:
         run_id = arguments.run
     else:
@@ -1240,14 +1240,14 @@ def command_out(target, arguments):
 
 
 def command_open(target, arguments):
-    target.require_apelin()
+    target.require_luros()
     target.open_app(fresh=arguments.fresh)
     say('opened' if target.app_running() else Style.bad('the app is not running after the launch'))
     return 0
 
 
 def command_kill_host(target, arguments):
-    target.require_apelin()
+    target.require_luros()
     old, new = target.kill_session_host()
     say(f'killed the session host {old}; ' + (f'the proxy started {new}' if new else 'no new one yet (it starts again when it has work)'))
     return 0

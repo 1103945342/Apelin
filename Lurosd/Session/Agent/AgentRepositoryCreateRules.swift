@@ -2,7 +2,7 @@ import LurosCore
 import LurosProtocol
 import Foundation
 
-/// An agent's `gitRepositoryCreate` (apelin_git_create_repository, owner,
+/// An agent's `gitRepositoryCreate` (luros_git_create_repository, owner,
 /// 2026-10-29): a repository on GitHub under the user's account, public or
 /// private, which outlives the conversation; so, like a push, it asks under
 /// Confirm every time. Each one spends an approval the app gave this session

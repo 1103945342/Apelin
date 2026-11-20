@@ -76,7 +76,7 @@ printable ASCII bytes).
 | `error` | ext → host | `error {code, message}` |
 
 ```
-→ {"protocolVersion":1,"type":"hello","requestID":"hello","supportedVersions":[1],"peer":{"name":"apelin","version":"1.0"},"maxConcurrentCalls":4,"maxFrameBytes":1048576}
+→ {"protocolVersion":1,"type":"hello","requestID":"hello","supportedVersions":[1],"peer":{"name":"luros","version":"1.0"},"maxConcurrentCalls":4,"maxFrameBytes":1048576}
 ← {"protocolVersion":1,"type":"hello","requestID":"hello","peer":{"name":"com.fluoxetine.luros.agent-tools.example","version":"1.0.0"},"tools":["example"],"maxConcurrentCalls":4,"maxFrameBytes":1048576,"supportedVersions":[1]}
 → {"protocolVersion":1,"type":"call","requestID":"c1","tool":"example","args":{}}
 ← {"protocolVersion":1,"type":"result","requestID":"c1","content":[{"type":"text","text":"done"}]}
@@ -119,7 +119,7 @@ host makes a new client.
 ### Attachments
 
 Files never travel as base64. The host passes an `AF_UNIX` datagram socket
-as descriptor 3 (named in `APELIN_TOOL_ATTACHMENT_FD`). The sender sends
+as descriptor 3 (named in `LUROS_TOOL_ATTACHMENT_FD`). The sender sends
 each file over it first — the attachment ID as the payload, exactly one
 descriptor as `SCM_RIGHTS` — and then the frame naming that ID. The receiver
 maps the ID to the descriptor the kernel installed in *its own* table; a

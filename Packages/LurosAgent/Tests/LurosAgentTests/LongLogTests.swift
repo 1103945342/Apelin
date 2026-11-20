@@ -254,7 +254,7 @@ struct LongLogTests {
         ApprovalRequest(
             id: id,
             toolCallID: "call-\(id)",
-            tool: "apelin_package_remove",
+            tool: "luros_package_remove",
             arguments: "{}",
             workingDirectory: "/",
             projectID: "project",

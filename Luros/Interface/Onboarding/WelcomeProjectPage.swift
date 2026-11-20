@@ -121,7 +121,7 @@ final class WelcomeProjectPage: WelcomeListPage {
                     name: draft.trimmedName,
                     automaticallyName: true,
                 ))
-                NotificationCenter.default.post(name: .apelinProjectsChanged, object: nil)
+                NotificationCenter.default.post(name: .lurosProjectsChanged, object: nil)
                 flow.project = ProjectSummary(
                     name: created.name,
                     kind: row.kind,

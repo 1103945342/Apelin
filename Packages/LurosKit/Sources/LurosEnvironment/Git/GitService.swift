@@ -88,7 +88,7 @@ public struct GitService: Sendable {
         }
         let repository = try mapped {
             let repository = try GitRepository.create(at: project.root, initialBranch: Self.initialBranch)
-            try repository.addExcludes(ProjectExcludes.apelinFiles)
+            try repository.addExcludes(ProjectExcludes.lurosFiles)
             return repository
         }
         return GitInitResponse(branch: repository.head().branch ?? Self.initialBranch)
@@ -114,7 +114,7 @@ public struct GitService: Sendable {
     /// What a resumed clone answers when the clone it repeats had already
     /// ended — its marker cleared — before the host heard the task's final
     /// `state`: the project folder is there, a repository of the request's
-    /// URL with its branch checked out, whose `apelin.cloneTask` is this
+    /// URL with its branch checked out, whose `luros.cloneTask` is this
     /// task's ID. Nil otherwise, and the clone runs as a new one. Only a
     /// resumed task asks, after the worker's start swept every folder a
     /// cut-off clone left, so a repository still there is a complete one;
@@ -133,7 +133,7 @@ public struct GitService: Sendable {
     /// The clone itself, run as a task. With a task ID, the folder it makes
     /// is named in `Environment/clones/<taskID>` until the clone ends, so a
     /// worker that starts after one was cut off knows the folder is its own;
-    /// one that ended keeps the task ID as `apelin.cloneTask` in its
+    /// one that ended keeps the task ID as `luros.cloneTask` in its
     /// `.git/config` and is answered by `finishedClone` if the host resumes
     /// it.
     public func clone(
@@ -162,7 +162,7 @@ public struct GitService: Sendable {
         } catch {
             // A failed or stopped clone leaves nothing behind in Projects/.
             try? FileManager.default.removeItem(at: root)
-            throw Self.apelinError(error)
+            throw Self.lurosError(error)
         }
     }
 
@@ -192,8 +192,8 @@ public struct GitService: Sendable {
     /// repository's, so a repository taken into a workspace keeps it out
     /// through `.git/info/exclude`: the description and the icon beside it,
     /// and what every repository Luros makes keeps out
-    /// (`ProjectExcludes.apelinFiles`).
-    static let apelinFiles = ["/luros-project.json", "/luros-icon.png"] + ProjectExcludes.apelinFiles
+    /// (`ProjectExcludes.lurosFiles`).
+    static let lurosFiles = ["/luros-project.json", "/luros-icon.png"] + ProjectExcludes.lurosFiles
 
     /// Validates a clone-into request before the task is accepted: the
     /// project is an empty workspace's kind, has no repository yet, or only
@@ -238,7 +238,7 @@ public struct GitService: Sendable {
                 root,
                 url: request.url,
                 branch: request.branch,
-                excluding: Self.apelinFiles,
+                excluding: Self.lurosFiles,
                 replacing: manifest.map { [$0.replacement] } ?? [],
                 credentials: credentialLookup,
                 progress: Self.fetchProgress(reporter),
@@ -646,7 +646,7 @@ public struct GitService: Sendable {
     }
 
     /// The configuration key a finished clone keeps its task ID under.
-    static let cloneTaskKey = "apelin.cloneTask"
+    static let cloneTaskKey = "luros.cloneTask"
 
     /// `Projects/<name>` when `name` is a valid project name and that entry
     /// is a real folder, not a link; nil otherwise. What a resumed clone and
@@ -717,14 +717,14 @@ public struct GitService: Sendable {
         } catch let error as GitError where error.kind == .notFound {
             throw LurosError(.notFound, "project \(project.name) is not a git repository", reason: .notARepository)
         } catch {
-            throw Self.apelinError(error)
+            throw Self.lurosError(error)
         }
         keepLurosFilesOut(of: repository, in: project)
         return (project, repository)
     }
 
     /// A repository made before every one Luros makes kept its own files
-    /// out (`ProjectExcludes.apelinFiles`) is given them once the agent has
+    /// out (`ProjectExcludes.lurosFiles`) is given them once the agent has
     /// saved an attachment in the project, before anything reads the work
     /// tree, so the chat's files are never a change to show or commit.
     /// What is tracked stays tracked; a failure leaves it for the next call.
@@ -732,7 +732,7 @@ public struct GitService: Sendable {
         var metadata = stat()
         guard lstat(project.root.appendingPathComponent("Attachments").path, &metadata) == 0,
               metadata.st_mode & S_IFMT == S_IFDIR else { return }
-        try? repository.addExcludes(ProjectExcludes.apelinFiles)
+        try? repository.addExcludes(ProjectExcludes.lurosFiles)
     }
 
     private func checkedPaths(_ paths: [String], in project: ProjectLocator.Project) throws -> [String] {
@@ -760,7 +760,7 @@ public struct GitService: Sendable {
         do {
             return try body()
         } catch {
-            throw Self.apelinError(error)
+            throw Self.lurosError(error)
         }
     }
 
@@ -769,11 +769,11 @@ public struct GitService: Sendable {
         do {
             return try body()
         } catch {
-            throw apelinError(error)
+            throw lurosError(error)
         }
     }
 
-    static func apelinError(_ error: Error) -> LurosError {
+    static func lurosError(_ error: Error) -> LurosError {
         if let error = error as? LurosError {
             return error
         }

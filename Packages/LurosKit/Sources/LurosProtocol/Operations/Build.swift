@@ -18,7 +18,7 @@ public struct BuildArtifact: Codable, Sendable, Equatable {
     public var packageID: String
     public var version: String
     public var dsymUUIDs: [String]
-    /// `APELIN_BUILD_ID` of the build that made it: what `confirmLoaded` takes.
+    /// `LUROS_BUILD_ID` of the build that made it: what `confirmLoaded` takes.
     public var buildID: String?
     /// `rootless` or `roothide`: the layout the package was written for.
     public var bootstrap: String?

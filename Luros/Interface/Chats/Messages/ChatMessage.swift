@@ -103,7 +103,7 @@ struct ChatMessage: Identifiable, Hashable {
     var runsAsRoot = false
     var approvalSections: [ApprovalCardText.Section] = []
     /// An approval that is a question the agent asked
-    /// (`apelin_question_ask`): the card offers its options instead of
+    /// (`luros_question_ask`): the card offers its options instead of
     /// Approve and Deny, and the decision sends the answer.
     var question: AgentQuestion?
     /// When the reader sent it: a user message's, for the line under it.

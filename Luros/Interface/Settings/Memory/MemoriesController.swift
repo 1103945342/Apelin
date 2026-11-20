@@ -87,7 +87,7 @@ final class MemoriesController: TableController {
         load()
     }
 
-    @objc(apelin_load) private dynamic func load() {
+    @objc(luros_load) private dynamic func load() {
         loader?.cancel()
         pacing.beginLoad()
         let store = store

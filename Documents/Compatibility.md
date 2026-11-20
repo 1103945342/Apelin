@@ -174,9 +174,9 @@ To inspect the table without a device or network request, run
 `luros-toolchain-probe compatibility`. To review a new Apple package:
 
 1. Verify its source identity and digest, then prepare a static inventory with
-   the opt-in `StaticInventoryTests` test. Set `APELIN_STATIC_PACKAGE` to the
-   downloaded package, `APELIN_STATIC_VERSION` to its release, and
-   `APELIN_STATIC_WORKSPACE` to a new private output directory. The test uses
+   the opt-in `StaticInventoryTests` test. Set `LUROS_STATIC_PACKAGE` to the
+   downloaded package, `LUROS_STATIC_VERSION` to its release, and
+   `LUROS_STATIC_WORKSPACE` to a new private output directory. The test uses
    Luros's own dependency selection, retains arm64 host images and never
    executes or installs them.
 2. Run `Scripts/inspect-toolchain-imports.py <workspace>/host-images

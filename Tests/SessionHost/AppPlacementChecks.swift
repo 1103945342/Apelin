@@ -6,34 +6,34 @@ import Foundation
 func appPlacementChecks() {
     for existing in [AppPlacement.Existing.free, .sameBundle] {
         check(
-            AppPlacement.plan(destinationName: "Mow", bundleID: "local.apelin.mow", existing: existing, ours: false)
+            AppPlacement.plan(destinationName: "Mow", bundleID: "local.luros.mow", existing: existing, ours: false)
                 != .refuse(""),
             "\(existing) is not a refusal"
         )
     }
     check(
-        AppPlacement.plan(destinationName: "Mow", bundleID: "local.apelin.mow", existing: .free, ours: false) == .install,
+        AppPlacement.plan(destinationName: "Mow", bundleID: "local.luros.mow", existing: .free, ours: false) == .install,
         "an empty path takes the bundle"
     )
     check(
-        AppPlacement.plan(destinationName: "Mow", bundleID: "local.apelin.mow", existing: .sameBundle, ours: true)
+        AppPlacement.plan(destinationName: "Mow", bundleID: "local.luros.mow", existing: .sameBundle, ours: true)
             == .replace(adopt: false),
         "our own record's app is replaced in place"
     )
     check(
-        AppPlacement.plan(destinationName: "Mow", bundleID: "local.apelin.mow", existing: .sameBundle, ours: false)
+        AppPlacement.plan(destinationName: "Mow", bundleID: "local.luros.mow", existing: .sameBundle, ours: false)
             == .replace(adopt: true),
         "an app no record of ours holds is taken over"
     )
     check(
-        AppPlacement.plan(destinationName: "Mow", bundleID: "local.apelin.mow", existing: .free, ours: true) == .install,
+        AppPlacement.plan(destinationName: "Mow", bundleID: "local.luros.mow", existing: .free, ours: true) == .install,
         "a record whose app is gone does not make the path occupied"
     )
 
     // Another app at the folder: refused, and the message names both.
     if case let .refuse(why) = AppPlacement.plan(
         destinationName: "Mow",
-        bundleID: "local.apelin.mow",
+        bundleID: "local.luros.mow",
         existing: .otherBundle("com.example.other"),
         ours: false
     ) {
@@ -45,7 +45,7 @@ func appPlacementChecks() {
     // A folder with nothing readable in it.
     if case let .refuse(why) = AppPlacement.plan(
         destinationName: "Mow",
-        bundleID: "local.apelin.mow",
+        bundleID: "local.luros.mow",
         existing: .unreadable,
         ours: false
     ) {
@@ -57,11 +57,11 @@ func appPlacementChecks() {
     // A package's app: still refused, and it says which package.
     if case let .refuse(why) = AppPlacement.plan(
         destinationName: "Mow",
-        bundleID: "local.apelin.mow",
-        existing: .ownedByPackage("local.apelin.mow.pkg"),
+        bundleID: "local.luros.mow",
+        existing: .ownedByPackage("local.luros.mow.pkg"),
         ours: true
     ) {
-        check(why.contains("local.apelin.mow.pkg"), "the package that lists the app is named (\(why))")
+        check(why.contains("local.luros.mow.pkg"), "the package that lists the app is named (\(why))")
     } else {
         check(false, "a package's app is never replaced")
     }

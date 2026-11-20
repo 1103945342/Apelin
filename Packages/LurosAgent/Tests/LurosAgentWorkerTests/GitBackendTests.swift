@@ -217,7 +217,7 @@ struct GitBackendTests {
         } throws: { error in
             let message = (error as? GitToolFailure)?.message ?? ""
             return message.contains("git_push with url") && message.contains("empty repository")
-                && message.contains("apelin_git_create_repository")
+                && message.contains("luros_git_create_repository")
         }
         await #expect {
             _ = try await fixture.backend.gitDiff(GitDiffToolRequest(context: fixture.context(), path: "Sources/Gone.m"))

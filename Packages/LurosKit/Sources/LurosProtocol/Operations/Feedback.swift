@@ -2,7 +2,7 @@ import LurosCore
 import Foundation
 
 /// What feedback filed on Luros's own repository may say (`feedbackSend`,
-/// the agent's `apelin_feedback_send`; owner, 2026-10-29). It is a public
+/// the agent's `luros_feedback_send`; owner, 2026-10-29). It is a public
 /// issue under the user's GitHub account, so the repository is fixed here,
 /// never a request's, and the title and body are checked — by the agent
 /// before it asks, by luros-environment again before it posts, with this
@@ -67,11 +67,11 @@ public enum FeedbackRules {
     /// The line luros-environment writes below the body: only what a report
     /// needs to be reproduced, never the device's name, model or identifier.
     public static func footer(appVersion: String?, appBuild: String?, osVersion: String, bootstrap: BuildBootstrap) -> String {
-        var apelin = "Luros " + (appVersion ?? "(version unknown)")
+        var luros = "Luros " + (appVersion ?? "(version unknown)")
         if appVersion != nil, let appBuild {
-            apelin += " (\(appBuild))"
+            luros += " (\(appBuild))"
         }
-        return "Sent with \(apelin) · iOS \(osVersion) · \(bootstrap.rawValue)"
+        return "Sent with \(luros) · iOS \(osVersion) · \(bootstrap.rawValue)"
     }
 
     /// The issue's body: the text as given, then a rule and the footer.

@@ -176,18 +176,18 @@ public final class BuildPipeline: @unchecked Sendable {
     // MARK: What the build always adds
 
     @objc private dynamic var bootstrapDefine: String {
-        "APELIN_BOOTSTRAP_\(inputs.bootstrap.rawValue.uppercased())"
+        "LUROS_BOOTSTRAP_\(inputs.bootstrap.rawValue.uppercased())"
     }
 
     @objc private dynamic var configurationDefine: String {
-        "APELIN_CONFIGURATION_\(inputs.configuration == .debug ? "DEBUG" : "RELEASE")"
+        "LUROS_CONFIGURATION_\(inputs.configuration == .debug ? "DEBUG" : "RELEASE")"
     }
 
     private var defines: [(String, String)] {
         var out: [(String, String)] = [
-            ("APELIN_BUILD_ID", "\"\(inputs.buildID)\""),
-            ("APELIN_PACKAGE_ID", "\"\(project.package.id)\""),
-            ("APELIN_VERSION", "\"\(project.package.version)\""),
+            ("LUROS_BUILD_ID", "\"\(inputs.buildID)\""),
+            ("LUROS_PACKAGE_ID", "\"\(project.package.id)\""),
+            ("LUROS_VERSION", "\"\(project.package.version)\""),
             (bootstrapDefine, "1"),
             (configurationDefine, "1"),
         ]
@@ -256,13 +256,13 @@ public final class BuildPipeline: @unchecked Sendable {
     /// every imported header compile again, the C++ standard library's
     /// included: measured on device, a warm import of `<vector>` and
     /// `<string>` takes 4 s, the same import with one more `-D` takes 183 s
-    /// and leaves a fresh copy of every module in the cache. `APELIN_BUILD_ID`
-    /// changes with every build and `APELIN_VERSION` with every release, and
-    /// no header's interface may depend on either; `APELIN_BOOTSTRAP_*` and
-    /// `APELIN_CONFIGURATION_*` stay, since a header may legitimately select
+    /// and leaves a fresh copy of every module in the cache. `LUROS_BUILD_ID`
+    /// changes with every build and `LUROS_VERSION` with every release, and
+    /// no header's interface may depend on either; `LUROS_BOOTSTRAP_*` and
+    /// `LUROS_CONFIGURATION_*` stay, since a header may legitimately select
     /// declarations by them.
     private var importerDefines: [(String, String)] {
-        let identity: Set<String> = ["APELIN_BUILD_ID", "APELIN_PACKAGE_ID", "APELIN_VERSION"]
+        let identity: Set<String> = ["LUROS_BUILD_ID", "LUROS_PACKAGE_ID", "LUROS_VERSION"]
         return defines.filter { !identity.contains($0.0) }
     }
 
@@ -673,7 +673,7 @@ public final class BuildPipeline: @unchecked Sendable {
                 if bridge != nil || interop.enabled {
                     let seen = interop.enabled ? importerDefines : defines
                     argv += seen.flatMap { ["-Xcc", "-D\($0.0)=\($0.1)"] }
-                    argv += ["-Xcc", "-DAPELIN_PRODUCT_NAME=\"\(product.name)\""]
+                    argv += ["-Xcc", "-DLUROS_PRODUCT_NAME=\"\(product.name)\""]
                 }
                 if plan.usesObjC {
                     argv += ["-emit-objc-header", "-emit-objc-header-path", swiftHeader]
@@ -727,7 +727,7 @@ public final class BuildPipeline: @unchecked Sendable {
                     argv.append("-fobjc-arc")
                 }
                 argv += defines.map { "-D\($0.0)=\($0.1)" }
-                argv.append("-DAPELIN_PRODUCT_NAME=\"\(product.name)\"")
+                argv.append("-DLUROS_PRODUCT_NAME=\"\(product.name)\"")
                 argv += includes.map { "-I" + $0 }
                 argv += frameworks.map { "-F" + $0 }
                 if plan.usesSwift, source.language.isObjC {

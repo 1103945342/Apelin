@@ -18,11 +18,11 @@
     "i1-smoke": {
       "needs": ["package:wiki.qaq.irisin>=4.7.3", "!package:com.example.luros-smoke"],
       "before": [
-        {"root": "printf 'apelin smoke original\\n' > \"$JB/etc/luros-smoke.conf\" && chown 0:0 \"$JB/etc/luros-smoke.conf\" && chmod 644 \"$JB/etc/luros-smoke.conf\""},
+        {"root": "printf 'luros smoke original\\n' > \"$JB/etc/luros-smoke.conf\" && chown 0:0 \"$JB/etc/luros-smoke.conf\" && chmod 644 \"$JB/etc/luros-smoke.conf\""},
         {"push": "Documents/Console/fixtures/luros-smoke_1.0_all.deb", "to": "console/luros-smoke_1.0_all.deb"}
       ],
       "verify": [
-        {"root": "grep -qx 'apelin smoke edited' \"$JB/etc/luros-smoke.conf\""},
+        {"root": "grep -qx 'luros smoke edited' \"$JB/etc/luros-smoke.conf\""},
         {"root": "test ! -e \"$JB/usr/share/luros-smoke\""}
       ],
       "after": [

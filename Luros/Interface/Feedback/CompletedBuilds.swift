@@ -3,7 +3,7 @@ import LurosProtocol
 import Foundation
 
 /// The builds a conversation's new events say completed, for the star
-/// prompt: each apelin_project_build call whose result says the build
+/// prompt: each luros_project_build call whose result says the build
 /// succeeded. A failed build is a result too, with `succeeded` false, and
 /// a refused one an error, so neither counts. Nor does an answer the
 /// session cut at 64 KB (hundreds of warnings): `succeeded`, the last of

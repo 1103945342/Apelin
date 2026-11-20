@@ -1,7 +1,7 @@
 import Foundation
 import KWWKAI
 
-/// apelin_web_fetch: one public http or https page as text. The worker
+/// luros_web_fetch: one public http or https page as text. The worker
 /// fetches it itself, as mobile, with no host request, through a session
 /// that keeps no cookie, cache or credential. An address on the local
 /// network is refused before anything is sent (`PublicHost`), and so is
@@ -54,7 +54,7 @@ struct WebFetch: Sendable {
             throw ToolArgumentError("url does not read as an address: \(address)")
         }
         if let refusal = refusal(url) {
-            throw ToolArgumentError("not fetched: \(refusal); apelin_web_fetch reads public http and https pages")
+            throw ToolArgumentError("not fetched: \(refusal); luros_web_fetch reads public http and https pages")
         }
         return withoutFragment(url)
     }
@@ -117,7 +117,7 @@ struct WebFetch: Sendable {
             let size = response.expectedContentLength >= 0
                 ? ByteCountFormatter.string(fromByteCount: response.expectedContentLength, countStyle: .file)
                 : "of unknown size"
-            throw ToolDeniedError(message: "not read: \(url.absoluteString) is \(type ?? ""), \(size); apelin_web_fetch reads text, HTML, JSON and XML")
+            throw ToolDeniedError(message: "not read: \(url.absoluteString) is \(type ?? ""), \(size); luros_web_fetch reads text, HTML, JSON and XML")
         }
         var body: [UInt8] = []
         body.reserveCapacity(Int(min(Int64(maximumBodyBytes), max(0, response.expectedContentLength))))

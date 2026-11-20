@@ -49,7 +49,7 @@ final class RunningJobs: @unchecked Sendable {
         lock.withLock { keys.insert(key).inserted }
     }
 
-    @objc(apelin_release:) dynamic func release(_ key: String) {
+    @objc(luros_release:) dynamic func release(_ key: String) {
         _ = lock.withLock { keys.remove(key) }
     }
 }

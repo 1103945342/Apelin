@@ -20,7 +20,7 @@ final class GitSquashServiceTests: XCTestCase {
         try Data(description.utf8).write(to: root.appendingPathComponent("luros-project.json"))
         let repository = try GitRepository.create(at: root)
         try repository.addExcludes(["/luros-project.json"])
-        let author = GitSignature(name: "Luros Test", email: "test@apelin.invalid")
+        let author = GitSignature(name: "Luros Test", email: "test@luros.invalid")
         var commits: [String] = []
         for name in ["First", "Two", "Three", "Four"] {
             try Data(name.utf8).write(to: root.appendingPathComponent("\(name).txt"))
@@ -28,7 +28,7 @@ final class GitSquashServiceTests: XCTestCase {
             try commits.append(repository.commit(message: name, author: author))
         }
         let git = GitService(layout: home.layout)
-        _ = try git.setAuthor(GitAuthorSetRequest(authorName: "Settings Author", authorEmail: "settings@apelin.invalid"))
+        _ = try git.setAuthor(GitAuthorSetRequest(authorName: "Settings Author", authorEmail: "settings@luros.invalid"))
         return (git, repository, commits)
     }
 

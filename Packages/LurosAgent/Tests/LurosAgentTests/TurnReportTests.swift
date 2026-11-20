@@ -113,7 +113,7 @@ struct TurnReportTests {
         defer { faux.unregister() }
         faux.setResponses([
             .message(fauxAssistantMessage(blocks: [fauxToolCall(
-                name: "apelin_package_remove",
+                name: "luros_package_remove",
                 arguments: ["reason": "Remove", "installation_id": "inst-1"],
             )], stopReason: .toolUse)),
             .message(fauxAssistantMessage("Resumed.")),
@@ -187,7 +187,7 @@ struct TurnReportTests {
         defer { faux.unregister() }
         faux.setResponses([
             .message(fauxAssistantMessage(blocks: [fauxToolCall(
-                name: "apelin_package_remove",
+                name: "luros_package_remove",
                 arguments: ["reason": "Remove", "installation_id": "inst-1"],
             )], stopReason: .toolUse)),
             .message(fauxAssistantMessage("Steered.")),
@@ -304,7 +304,7 @@ struct TurnReportTests {
         defer { faux.unregister() }
         faux.setResponses([
             .message(fauxAssistantMessage(blocks: [fauxToolCall(
-                name: "apelin_package_remove",
+                name: "luros_package_remove",
                 arguments: ["reason": "Remove", "installation_id": "inst-1"],
             )], stopReason: .toolUse)),
             .message(fauxAssistantMessage("Resumed.")),
@@ -389,7 +389,7 @@ struct TurnReportTests {
         defer { faux.unregister() }
         faux.setResponses([
             .message(fauxAssistantMessage(blocks: [fauxToolCall(
-                name: "apelin_package_remove",
+                name: "luros_package_remove",
                 arguments: ["reason": "Remove", "installation_id": "inst-1"],
             )], stopReason: .toolUse)),
             .message(fauxAssistantMessage("Steered.")),

@@ -22,10 +22,10 @@ mkdir -p build
 # The shell here is the bootstrap's, whose view of a path is not the one a
 # program it runs opens: the folder is made through the relative path, and
 # the program is handed the real absolute path, taken at run time from
-# $APELIN_PROJECT_ROOT and never written down.
+# $LUROS_PROJECT_ROOT and never written down.
 work="$(mktemp -d build/file-browser.XXXXXX)"
 mkdir -p "$work/tmp"
-export TMPDIR="${APELIN_PROJECT_ROOT:-$root}/$work/tmp"
+export TMPDIR="${LUROS_PROJECT_ROOT:-$root}/$work/tmp"
 trap 'rm -rf -- "${work:?}"' EXIT
 
 compiler=(xcrun --sdk macosx swiftc -target arm64-apple-macos13.0)

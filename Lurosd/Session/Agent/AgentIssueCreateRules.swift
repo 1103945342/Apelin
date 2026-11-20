@@ -2,7 +2,7 @@ import LurosCore
 import LurosProtocol
 import Foundation
 
-/// An agent's `gitIssueCreate` (apelin_git_create_issue, owner,
+/// An agent's `gitIssueCreate` (luros_git_create_issue, owner,
 /// 2026-10-30): an issue under the user's GitHub account on a repository
 /// the user chose, which anyone who can see that repository reads; so, like
 /// feedback, it asks under Confirm every time. Each one spends an approval

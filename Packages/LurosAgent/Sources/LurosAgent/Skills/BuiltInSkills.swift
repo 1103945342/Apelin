@@ -30,7 +30,7 @@ enum BuiltInSkills {
     /// Every built-in's name begins `luros-` (owner, 2026-10-25), so none
     /// is taken for a user's skill of the same subject. Transcripts,
     /// memories and project instructions from before name them without it;
-    /// `apelin_skill_read` still finds them by the old name when no skill
+    /// `luros_skill_read` still finds them by the old name when no skill
     /// has it now.
     static let legacyNames: [String: String] = [
         "tweak-development": "luros-tweak-development",

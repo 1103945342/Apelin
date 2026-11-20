@@ -619,7 +619,7 @@ actor AgentReportRelay {
     /// This compact index is never silently truncated to the last child.
     static func snapshotText(_ snapshot: AgentAssignmentSnapshot) -> String {
         var text = "\n## Team account — group \(snapshot.groupID), revision \(snapshot.groupRevision), sealed=\(snapshot.isSealed)\n"
-        text += "Read apelin_conversation_plan(action: read, session_id: your own session) for every objective, artifact claim, check, missing check and blocker. The figures below are this revision's snapshot, not a claim that the group is finished.\n"
+        text += "Read luros_conversation_plan(action: read, session_id: your own session) for every objective, artifact claim, check, missing check and blocker. The figures below are this revision's snapshot, not a claim that the group is finished.\n"
         for member in snapshot.members {
             text += "- \(member.childSessionID): \(member.state.rawValue), \(member.verification.rawValue); member revision \(member.memberRevision); outputs \(member.outputs.count), checks \(member.checks.count), missing checks \(member.missingChecks.count), blockers \(member.blockers.count)\n"
         }
@@ -645,7 +645,7 @@ actor AgentReportRelay {
                     + report.answered.map { $0.uuidString }.joined(separator: ", ") + "\n"
             }
             if report.truncated {
-                text += "- Its answer was cut here; `apelin_conversation_read` has the rest.\n"
+                text += "- Its answer was cut here; `luros_conversation_read` has the rest.\n"
             }
             let body = report.text.isEmpty ? "(the turn ended with no answer)" : report.text
             text += "\n" + body + "\n\n"

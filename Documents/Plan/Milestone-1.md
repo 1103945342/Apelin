@@ -164,7 +164,7 @@ clangd 不进 v1（owner 2026-10-16 决定），闭包不包含它，见 §10。
 
 ### 3.4 存放、升级与恢复 [设计]
 
-- 下载缓存、staging、日志、注册元数据放在 `~/Documents/com.fluoxetine.luros/` 下；可执行工具链的最终安装目录约定为 `<install-root>/usr/lib/apelin/toolchains/<id>/`。采用包管理的 root-owned 目录，以便安装适配、签名和卸载归同一事务管理；mobile 可写的 `var` 数据目录只作暂存，不作为最终工具来源。该布局在 roothide 真机上的安装后重签与执行仍须 B 验证。`install-root` 来自 `hello`。
+- 下载缓存、staging、日志、注册元数据放在 `~/Documents/com.fluoxetine.luros/` 下；可执行工具链的最终安装目录约定为 `<install-root>/usr/lib/luros/toolchains/<id>/`。采用包管理的 root-owned 目录，以便安装适配、签名和卸载归同一事务管理；mobile 可写的 `var` 数据目录只作暂存，不作为最终工具来源。该布局在 roothide 真机上的安装后重签与执行仍须 B 验证。`install-root` 来自 `hello`。
 - 工具链 ID 由来源摘要与改造方案版本生成；注册记录保存组件、包标识、版本、内容摘要、冒烟结果和最终路径。项目绑定该 ID，不随“默认工具链”升级而偷偷切换。
 - 新版本使用独立 ID 和可共存的本地包标识/目录，验证后再切换默认值。旧版本仍被项目或运行中任务引用时，不直接删除；界面列出引用者并要求先迁移或结束任务。卸载经 Irisin，更新注册表，不能只删目录而留下包记录。
 - 设置任务记录 `downloading → extracting → adapting → packaging → installing → validating → ready` 及失败阶段。app 被杀后可重新附着；进程中断后只恢复可验证的阶段。安装中的取消由 Irisin 的事务语义处理，不能强杀到一半再标成已撤销；不支持事务取消时等待安装结束再处理清理。
@@ -234,7 +234,7 @@ app 启动、从安装界面返回和手动刷新时重新扫描，通过 daemon
 |---|---|
 | `schemaVersion`、`id`、`version`、`kind` | 协议版本、稳定 ID、扩展版本、四种开发类型之一 |
 | `displayName`、`summary` | 可显示的名称与用途，按应用本地化规则处理 |
-| `apelinCompatibility` | 最低可用应用/构建描述版本，未知新版本明确提示 |
+| `lurosCompatibility` | 最低可用应用/构建描述版本，未知新版本明确提示 |
 | `requirements` | 工具链组件、语言、SDK 能力、支持的 bootstrap/架构、运行依赖 |
 | `templates` | 模板 ID、相对目录、参数说明和构建描述位置 |
 | `provenance`、`licenses` | 源仓库、固定 commit、内容摘要和包内许可文件相对路径 |

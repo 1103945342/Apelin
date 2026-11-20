@@ -14,10 +14,10 @@ public enum ToolProtocol {
     /// Every version this build can speak, newest last.
     public static let supportedVersions = [1]
     /// The descriptor the host passes the attachment socket on, also named in
-    /// the environment as `APELIN_TOOL_ATTACHMENT_FD`.
+    /// the environment as `LUROS_TOOL_ATTACHMENT_FD`.
     public static let attachmentDescriptor: Int32 = 3
-    public static let attachmentEnvironmentKey = "APELIN_TOOL_ATTACHMENT_FD"
-    public static let protocolEnvironmentKey = "APELIN_TOOL_PROTOCOL"
+    public static let attachmentEnvironmentKey = "LUROS_TOOL_ATTACHMENT_FD"
+    public static let protocolEnvironmentKey = "LUROS_TOOL_PROTOCOL"
     /// A request ID is at most this many bytes of printable ASCII.
     public static let maxRequestIDBytes = 128
 }

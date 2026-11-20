@@ -24,7 +24,7 @@ func checkWebAddress() {
     precondition(address("example.com/a%20b") == "https://example.com/a%20b", "its own escapes are kept")
 
     for refused in [
-        "", "   ", "https://", "apelin", "two words", "example.com/a b",
+        "", "   ", "https://", "luros", "two words", "example.com/a b",
         "ftp://example.com/file", "file:///etc/passwd", "javascript:alert(1)",
         "mailto:someone@example.com", "user:secret@example.com", "https://user:secret@example.com/",
         "tel:+123456", "lurosdev://chat?prompt=hi",

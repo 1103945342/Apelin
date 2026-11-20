@@ -562,17 +562,17 @@ private final class Builder {
 
     /// The macros Luros's build defines on every compile, plus this
     /// configuration's own: a source that selects code by
-    /// `APELIN_CONFIGURATION_RELEASE` or the package id compiles the same way
-    /// on both sides. `APELIN_BUILD_ID` has no build to name, so it is
+    /// `LUROS_CONFIGURATION_RELEASE` or the package id compiles the same way
+    /// on both sides. `LUROS_BUILD_ID` has no build to name, so it is
     /// `"xcode"`.
     private func defines(_ kind: Kind) -> [String] {
         let configuration = project.configuration(kind == .debug ? .debug : .release)
         var out = [
-            "APELIN_BUILD_ID=\"xcode\"",
-            "APELIN_PACKAGE_ID=\"\(project.package.id)\"",
-            "APELIN_VERSION=\"\(project.package.version)\"",
-            "APELIN_BOOTSTRAP_\(bootstrap.rawValue.uppercased())=1",
-            "APELIN_CONFIGURATION_\(kind == .debug ? "DEBUG" : "RELEASE")=1",
+            "LUROS_BUILD_ID=\"xcode\"",
+            "LUROS_PACKAGE_ID=\"\(project.package.id)\"",
+            "LUROS_VERSION=\"\(project.package.version)\"",
+            "LUROS_BOOTSTRAP_\(bootstrap.rawValue.uppercased())=1",
+            "LUROS_CONFIGURATION_\(kind == .debug ? "DEBUG" : "RELEASE")=1",
         ]
         out += (configuration.defines ?? [:]).sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }
         return out

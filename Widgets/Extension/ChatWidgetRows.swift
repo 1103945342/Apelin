@@ -26,22 +26,22 @@ extension ChatWidgetSnapshot.Chat {
     /// The step a waiting approval is for, in a word.
     private var approvalStep: String? {
         switch approvalTool {
-        case "apelin_package_install": String(localized: "Install")
-        case "apelin_package_remove": String(localized: "Remove")
-        case "apelin_project_build": String(localized: "Build")
+        case "luros_package_install": String(localized: "Install")
+        case "luros_package_remove": String(localized: "Remove")
+        case "luros_project_build": String(localized: "Build")
         case "shell_run": String(localized: "Run")
-        case "apelin_device_respring": String(localized: "Respring")
+        case "luros_device_respring": String(localized: "Respring")
         case "file_write", "file_create", "file_edit": String(localized: "Edit")
         case "git_commit": String(localized: "Commit")
         case "git_pull": String(localized: "Pull")
         case "git_push": String(localized: "Push")
-        case "apelin_package_publish": String(localized: "Publish")
-        case "apelin_git_set_author", "apelin_git_save_credential", "apelin_git_remove_credential": String(localized: "Git Settings")
-        case "apelin_project_create": String(localized: "Create Project")
-        case "apelin_project_rename": String(localized: "Rename Project")
-        case "apelin_skill_save": String(localized: "Save Skill")
-        case "apelin_skill_remove": String(localized: "Remove Skill")
-        case "apelin_screen_interact": String(localized: "Control Screen")
+        case "luros_package_publish": String(localized: "Publish")
+        case "luros_git_set_author", "luros_git_save_credential", "luros_git_remove_credential": String(localized: "Git Settings")
+        case "luros_project_create": String(localized: "Create Project")
+        case "luros_project_rename": String(localized: "Rename Project")
+        case "luros_skill_save": String(localized: "Save Skill")
+        case "luros_skill_remove": String(localized: "Remove Skill")
+        case "luros_screen_interact": String(localized: "Control Screen")
         default: nil
         }
     }

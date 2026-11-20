@@ -53,7 +53,7 @@ final class ProjectCatalogMonitor {
         let work = DispatchWorkItem { [weak self] in
             guard let self else { return }
             updateWatches()
-            NotificationCenter.default.post(name: .apelinProjectsChanged, object: nil)
+            NotificationCenter.default.post(name: .lurosProjectsChanged, object: nil)
         }
         pending = work
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: work)

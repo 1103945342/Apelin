@@ -19,9 +19,9 @@ final class ToolRunnerTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: scratch) }
         let pwd = try ToolRunner.run(ToolInvocation(executable: "/bin/pwd", arguments: [], workingDirectory: scratch.path, environment: environment), cancellation: BuildCancellation())
         XCTAssertEqual(pwd.output.trimmingCharacters(in: .newlines), scratch.path)
-        let failing = try ToolRunner.run(ToolInvocation(executable: "/bin/ls", arguments: ["/nonexistent-apelin"], workingDirectory: "/", environment: environment), cancellation: BuildCancellation())
+        let failing = try ToolRunner.run(ToolInvocation(executable: "/bin/ls", arguments: ["/nonexistent-luros"], workingDirectory: "/", environment: environment), cancellation: BuildCancellation())
         XCTAssertNotEqual(failing.status, 0)
-        XCTAssertTrue(failing.output.contains("nonexistent-apelin"), "stderr is collected")
+        XCTAssertTrue(failing.output.contains("nonexistent-luros"), "stderr is collected")
     }
 
     /// No descriptor of the caller's leaks into a tool.
@@ -138,7 +138,7 @@ final class PackagerControlTests: XCTestCase {
         XCTAssertNil(control["Depiction"])
         XCTAssertNil(control["SileoDepiction"])
         XCTAssertFalse(try control.rendered().contains("Depiction"))
-        let page = "https://example.github.io/repo/depictions/local.apelin.icon-tweak/"
+        let page = "https://example.github.io/repo/depictions/local.luros.icon-tweak/"
         let native = page + "depiction.json"
         inputs.project.package.icon = icon
         inputs.project.package.depiction = page

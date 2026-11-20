@@ -36,13 +36,13 @@ struct ProjectCreationTests {
         let names = { (runner: ToolRunner) in Set(runner.agentTools(mcp: []).map(\.name)) }
         for chat in try [home.project, generalChat()] {
             let offered = try names(runner(home, project: chat, backend: MockBackend()))
-            #expect(offered.contains("apelin_template_list") && offered.contains("apelin_project_create"), "\(chat.id)")
-            #expect(offered.contains("apelin_project_list"))
+            #expect(offered.contains("luros_template_list") && offered.contains("luros_project_create"), "\(chat.id)")
+            #expect(offered.contains("luros_project_list"))
         }
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func `apelin_project_create takes a template and runs under Confirm without asking`() async throws {
+    func `luros_project_create takes a template and runs under Confirm without asking`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let backend = MockBackend()
@@ -67,7 +67,7 @@ struct ProjectCreationTests {
     /// call that gave one was refused, and the model settled for the
     /// default SpringBoard filter (five conversations on a device).
     @Test(.timeLimit(.minutes(1)))
-    func `apelin_project_create passes a list of strings on, and names the value it refuses`() async throws {
+    func `luros_project_create passes a list of strings on, and names the value it refuses`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let backend = MockBackend()
@@ -113,7 +113,7 @@ struct ProjectCreationTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
-    func `apelin_project_create needs a template, and a project's chat creates another without asking`() async throws {
+    func `luros_project_create needs a template, and a project's chat creates another without asking`() async throws {
         let home = try TemporaryHome()
         defer { home.remove() }
         let backend = MockBackend()
@@ -134,7 +134,7 @@ struct ProjectCreationTests {
         defer { home.remove() }
         let general = try SystemPrompt.make(project: generalChat(), projectRoot: home.projectURL.path, skills: [], mcpServers: [])
         #expect(general.contains("# General Chat"))
-        #expect(general.contains("apelin_template_list"))
+        #expect(general.contains("luros_template_list"))
         let project = SystemPrompt.make(project: home.project, projectRoot: home.projectURL.path, skills: [], mcpServers: [])
         #expect(!project.contains("# General Chat"))
     }
@@ -146,7 +146,7 @@ struct ProjectCreationTests {
     func `Every chat imports a repository through an Empty workspace's conversation`() throws {
         let home = try TemporaryHome()
         defer { home.remove() }
-        let steps = ["com.fluoxetine.luros.workspace/empty", "apelin_conversation_create", "git_clone"]
+        let steps = ["com.fluoxetine.luros.workspace/empty", "luros_conversation_create", "git_clone"]
         func namesEveryStep(_ text: String) -> Bool {
             steps.allSatisfy { text.contains($0) }
         }
@@ -156,7 +156,7 @@ struct ProjectCreationTests {
             #expect(line.map(namesEveryStep) == true, "\(chat.id)")
         }
         #expect(namesEveryStep(AgentToolName.projectCreate.summary))
-        #expect(AgentToolName.gitClone.summary.contains("apelin_project_create"))
+        #expect(AgentToolName.gitClone.summary.contains("luros_project_create"))
         #expect(namesEveryStep(BuiltInSkills.gitWorkflow.body))
     }
 
@@ -166,9 +166,9 @@ struct ProjectCreationTests {
         defer { home.remove() }
         #expect(AgentToolName.screenInteract.summary.contains("Never in Luros itself (com.fluoxetine.luros)"))
         // A project is deleted by its own tool, never by taps through All Projects.
-        #expect(AgentToolName.screenInteract.summary.contains("a project is deleted with apelin_project_delete"))
+        #expect(AgentToolName.screenInteract.summary.contains("a project is deleted with luros_project_delete"))
         let prompt = SystemPrompt.make(project: home.project, projectRoot: home.projectURL.path, skills: [], mcpServers: [])
         let line = prompt.split(separator: "\n").first { $0.contains("never on Luros's own screen") }
-        #expect(line?.contains("A project is deleted with apelin_project_delete, never through Luros's screen.") == true)
+        #expect(line?.contains("A project is deleted with luros_project_delete, never through Luros's screen.") == true)
     }
 }

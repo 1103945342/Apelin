@@ -113,7 +113,7 @@ extension DistributionService {
         ]
         if !added.isEmpty {
             try repository.stage(added.map { "debs/" + $0.name })
-            let login = (try? credentials.credential(forHost: GitHubHost.name))?.username ?? "apelin"
+            let login = (try? credentials.credential(forHost: GitHubHost.name))?.username ?? "luros"
             result["commit"] = try .string(repository.commit(
                 message: "Publish " + titles.joined(separator: ", "),
                 author: author(repository, login: login),

@@ -289,7 +289,7 @@ final class DistributionTests: XCTestCase {
         let seed = try GitRepository.create(at: fixture.home.home.appendingPathComponent("seed", isDirectory: true))
         try Data("mine\n".utf8).write(to: seed.workdir.appendingPathComponent("index.html"))
         try seed.stage(["index.html"])
-        try seed.commit(message: "My page", author: GitSignature(name: "Someone", email: "someone@apelin.invalid"))
+        try seed.commit(message: "My page", author: GitSignature(name: "Someone", email: "someone@luros.invalid"))
         try seed.addRemote("origin", url: bare.path)
         _ = try seed.push()
         fixture.github.repositories["someone/apt"] = fixture.github.repository("apt")
@@ -324,7 +324,7 @@ final class DistributionTests: XCTestCase {
             try Data(text.utf8).write(to: seed.workdir.appendingPathComponent(path))
         }
         try seed.stage(mine.map(\.0))
-        try seed.commit(message: "Old template", author: GitSignature(name: "Someone", email: "someone@apelin.invalid"))
+        try seed.commit(message: "Old template", author: GitSignature(name: "Someone", email: "someone@luros.invalid"))
         try seed.addRemote("origin", url: bare.path)
         _ = try seed.push()
         fixture.github.repositories["someone/apt"] = fixture.github.repository("apt")

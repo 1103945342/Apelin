@@ -43,7 +43,7 @@ func checkDeletedProjects() {
     precondition(DeletedProjects.gone(from: chats, in: folder) == DeletedProjects.Gone(), "the first reading has seen nothing go")
     precondition(DeletedProjects.gone(from: chats, in: folder) == DeletedProjects.Gone(), "nor does a second with both there")
 
-    // apelin_project_delete, a command or another app takes the folder away:
+    // luros_project_delete, a command or another app takes the folder away:
     // its conversations go, and again until they are gone.
     try? manager.removeItem(at: folder.projects.appendingPathComponent("Weather"))
     let removed = DeletedProjects.gone(from: chats, in: folder)

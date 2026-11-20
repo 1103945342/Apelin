@@ -4,7 +4,7 @@ import Foundation
 import XCTest
 
 final class GitRepositoryTests: XCTestCase {
-    private let author = GitSignature(name: "Luros Test", email: "test@apelin.invalid")
+    private let author = GitSignature(name: "Luros Test", email: "test@luros.invalid")
 
     private func temporaryRepository() throws -> (URL, GitRepository) {
         let base = URL(fileURLWithPath: CanonicalPath.resolve(NSTemporaryDirectory())!, isDirectory: true)
@@ -112,14 +112,14 @@ final class GitRepositoryTests: XCTestCase {
     }
 }
 
-/// These talk to github.com. Set APELIN_SKIP_NETWORK_TESTS=1 to skip them.
+/// These talk to github.com. Set LUROS_SKIP_NETWORK_TESTS=1 to skip them.
 final class GitNetworkTests: XCTestCase {
     static let url = "https://github.com/libgit2/TestGitRepository.git"
     static let branch = "first-merge"
     static let tip = "0966a434eb1a025db6b71485ab63a3bfbea520b6"
 
     override func setUpWithError() throws {
-        try XCTSkipIf(ProcessInfo.processInfo.environment["APELIN_SKIP_NETWORK_TESTS"] != nil, "APELIN_SKIP_NETWORK_TESTS is set")
+        try XCTSkipIf(ProcessInfo.processInfo.environment["LUROS_SKIP_NETWORK_TESTS"] != nil, "LUROS_SKIP_NETWORK_TESTS is set")
     }
 
     private func destination() -> URL {

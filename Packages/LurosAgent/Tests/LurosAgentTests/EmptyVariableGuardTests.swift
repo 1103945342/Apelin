@@ -27,7 +27,7 @@ struct EmptyVariableGuardTests {
             #expect(section.contains("which on roothide is the bootstrap's root, and a maintainer script runs as root"))
         }
         #expect(Self.words(BuiltInSkills.packagingAndInstall.body).contains("spells it `${name:?}`, so the script stops when the variable is empty"))
-        #expect(Self.words(BuiltInSkills.bootstrapPaths.body).contains("Each is checked before it is used (`${APELIN_PACKAGE_DIR:?}`)"))
+        #expect(Self.words(BuiltInSkills.bootstrapPaths.body).contains("Each is checked before it is used (`${LUROS_PACKAGE_DIR:?}`)"))
     }
 
     /// The skill's script, its block as the model reads it, with a line
@@ -65,27 +65,27 @@ struct EmptyVariableGuardTests {
         // A shell_run of the script: none of Luros's variables.
         let bare = try run(script, environment: ["PATH": "/usr/bin:/bin"])
         #expect(bare.status != 0)
-        #expect(bare.output.contains("run this through apelin_project_build"))
+        #expect(bare.output.contains("run this through luros_project_build"))
         #expect(!bare.output.contains("stage="))
 
         // One of them empty is as good as missing.
         var built: [String: String] = [
             "PATH": "/usr/bin:/bin",
-            "APELIN_PACKAGE_DIR": temporary.appendingPathComponent("package").path,
-            "APELIN_PROJECT_ROOT": temporary.path,
-            "APELIN_BOOTSTRAP": "roothide",
-            "APELIN_ARCHITECTURE": "iphoneos-arm64e",
-            "APELIN_BUILD_ID": "build",
-            "APELIN_PREFIX": "",
+            "LUROS_PACKAGE_DIR": temporary.appendingPathComponent("package").path,
+            "LUROS_PROJECT_ROOT": temporary.path,
+            "LUROS_BOOTSTRAP": "roothide",
+            "LUROS_ARCHITECTURE": "iphoneos-arm64e",
+            "LUROS_BUILD_ID": "build",
+            "LUROS_PREFIX": "",
             "TMPDIR": temporary.path + "/",
         ]
         var emptied = built
-        emptied["APELIN_PROJECT_ROOT"] = ""
+        emptied["LUROS_PROJECT_ROOT"] = ""
         let empty = try run(script, environment: emptied)
         #expect(empty.status != 0)
         #expect(!empty.output.contains("stage="))
 
-        // As apelin_project_build runs it: an empty prefix is roothide's,
+        // As luros_project_build runs it: an empty prefix is roothide's,
         // and the stage goes when the script ends.
         let ran = try run(script, environment: built)
         #expect(ran.status == 0, "\(ran.output)")
@@ -93,7 +93,7 @@ struct EmptyVariableGuardTests {
         #expect(stage.hasPrefix(temporary.path + "/stage."))
         #expect(!FileManager.default.fileExists(atPath: String(stage)))
 
-        built.removeValue(forKey: "APELIN_PREFIX")
+        built.removeValue(forKey: "LUROS_PREFIX")
         let unset = try run(script, environment: built)
         #expect(unset.status != 0, "an unset prefix is not roothide's empty one")
     }

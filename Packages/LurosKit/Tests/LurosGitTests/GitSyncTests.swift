@@ -6,7 +6,7 @@ import XCTest
 /// Fetch, pull, push and the clone into a folder, against a bare repository
 /// on disk through libgit2's local transport: no network.
 final class GitSyncTests: XCTestCase {
-    private let author = GitSignature(name: "Luros Test", email: "test@apelin.invalid")
+    private let author = GitSignature(name: "Luros Test", email: "test@luros.invalid")
 
     /// A bare remote and a seed repository that has pushed one commit to it.
     private struct Remote {

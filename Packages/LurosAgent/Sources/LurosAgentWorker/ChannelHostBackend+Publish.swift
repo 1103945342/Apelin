@@ -4,7 +4,7 @@ import LurosProtocol
 import Darwin
 import Foundation
 
-/// apelin_package_publish → `distributionPublish` with every file's digest
+/// luros_package_publish → `distributionPublish` with every file's digest
 /// and the repository the card named, read to its end. What the tool checks
 /// before anyone is asked is read here, as mobile, from the data folder —
 /// the link the app made (`Settings/distribution.json`, while its project

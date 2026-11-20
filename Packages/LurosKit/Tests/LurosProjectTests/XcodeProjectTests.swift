@@ -36,7 +36,7 @@ final class XcodeProjectTests: XCTestCase {
       }],
       "build": { "steps": [{ "type": "compile", "product": "tweak" }, { "type": "link", "product": "tweak" }] },
       "package": {
-        "id": "local.apelin.smoke", "name": "Smoke", "version": "0.0.1", "description": "Smoke",
+        "id": "local.luros.smoke", "name": "Smoke", "version": "0.0.1", "description": "Smoke",
         "author": "Smoke", "section": "Tweaks",
         "layout": [{ "path": "/Library/MobileSubstrate/DynamicLibraries/SmokeTweak.dylib", "product": "tweak" }],
         "tweakFilter": { "dylib": "tweak", "bundles": ["com.apple.SpringBoard"] }
@@ -70,7 +70,7 @@ final class XcodeProjectTests: XCTestCase {
       }],
       "build": { "steps": [{ "type": "compile", "product": "app" }, { "type": "link", "product": "app" }] },
       "package": {
-        "id": "local.apelin.smoke", "name": "Smoke", "version": "0.0.1", "description": "Smoke",
+        "id": "local.luros.smoke", "name": "Smoke", "version": "0.0.1", "description": "Smoke",
         "author": "Smoke", "section": "Applications",
         "layout": [{ "path": "/Applications/SmokeApp.app", "product": "app" }]
       }
@@ -208,7 +208,7 @@ final class XcodeProjectTests: XCTestCase {
         let values = try XCTUnwrap(settings["buildSettings"] as? [String: Any])
         XCTAssertEqual(values["INFOPLIST_FILE"] as? String, "Resources/Info.plist")
         XCTAssertEqual(values["CODE_SIGN_ENTITLEMENTS"] as? String, "Packaging/App.entitlements")
-        XCTAssertEqual(values["PRODUCT_BUNDLE_IDENTIFIER"] as? String, "local.apelin.smoke")
+        XCTAssertEqual(values["PRODUCT_BUNDLE_IDENTIFIER"] as? String, "local.luros.smoke")
 
         // Nothing is signed here: the device's package comes from Luros.
         let project = try XCTUnwrap(

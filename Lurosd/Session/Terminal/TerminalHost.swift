@@ -302,7 +302,7 @@ actor TerminalHost {
     /// nil for none) on top: its toolchain first on `PATH`, `SDKROOT` and
     /// `IPHONEOS_DEPLOYMENT_TARGET`, as the agent's shell_run gets them. A
     /// login shell's `/etc/profile` replaces `PATH`; the package's profile
-    /// snippet puts the toolchain back from `APELIN_TOOLCHAIN_BIN`.
+    /// snippet puts the toolchain back from `LUROS_TOOLCHAIN_BIN`.
     static func launch(
         installRoot: String,
         home: String,
@@ -333,7 +333,7 @@ actor TerminalHost {
             // This shell is Luros's own: the login profile snippet shortens
             // its prompt only when it is set, so a terminal opened anywhere
             // else keeps the prompt its user configured.
-            "APELIN_TERMINAL": "1",
+            "LUROS_TERMINAL": "1",
             "HOME": home,
             "USER": "mobile",
             "LOGNAME": "mobile",

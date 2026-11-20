@@ -11,7 +11,7 @@ enum Preferences {
         case title
         case vision
         case imageGeneration
-        /// A conversation an agent opens (`apelin_conversation_create`),
+        /// A conversation an agent opens (`luros_conversation_create`),
         /// listed in the sidebar under Delegated Chats.
         case derivedConversation
 

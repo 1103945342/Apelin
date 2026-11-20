@@ -80,7 +80,7 @@ func toolchainPruneChecks() async throws {
     for id in ["..", ".", "", ".hidden", "a/b", "a\u{0}b", "UPPER"] {
         check(isKept(ToolchainTreePruner.prune(installRoot: root, id: id)), "prune: \(id.debugDescription) is not a toolchain's folder")
     }
-    check(entryExists(root + "/usr/lib/apelin") && entryExists(toolchains + "/sibling"), "prune: nothing above the toolchains folder is reached")
+    check(entryExists(root + "/usr/lib/luros") && entryExists(toolchains + "/sibling"), "prune: nothing above the toolchains folder is reached")
     check(ToolchainTreePruner.toolchainID(packageID: ManagedPackagePolicy.toolchainPrefix + "a1b2") == "a1b2", "prune: a toolchain package names its folder")
     for package in ["com.example.hello", ManagedPackagePolicy.toolchainPrefix, ManagedPackagePolicy.toolchainPrefix + ".", ManagedPackagePolicy.toolchainPrefix + "..", "com.fluoxetine.luros"] {
         check(ToolchainTreePruner.toolchainID(packageID: package) == nil, "prune: \(package) names no toolchain folder")
@@ -88,7 +88,7 @@ func toolchainPruneChecks() async throws {
 
     // The toolchains folder itself a link out of the install root.
     let otherRoot = base + "/other-root"
-    try FileManager.default.createDirectory(atPath: otherRoot + "/usr/lib/apelin", withIntermediateDirectories: true)
+    try FileManager.default.createDirectory(atPath: otherRoot + "/usr/lib/luros", withIntermediateDirectories: true)
     makeToolchainSkeleton(base + "/foreign", "skeleton", folders: ["usr"], link: outside)
     symlink(base + "/foreign", otherRoot + "/usr/lib/luros/toolchains")
     check(isKept(ToolchainTreePruner.prune(installRoot: otherRoot, id: "skeleton")), "prune: a toolchains folder leading out of the install root is refused")

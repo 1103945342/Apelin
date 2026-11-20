@@ -27,7 +27,7 @@ struct ChatWidgetSnapshot: Codable, Hashable, Sendable {
         /// The project's display name; nil for General Chat.
         var project: String?
         var status: Status
-        /// The tool the newest waiting approval is for (`apelin_package_install`,
+        /// The tool the newest waiting approval is for (`luros_package_install`,
         /// `git_push`, …), for the status line to name.
         var approvalTool: String?
 

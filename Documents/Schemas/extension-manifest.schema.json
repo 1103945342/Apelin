@@ -12,7 +12,7 @@
     "kind",
     "displayName",
     "summary",
-    "apelinCompatibility",
+    "lurosCompatibility",
     "requirements",
     "templates",
     "provenance",
@@ -31,7 +31,7 @@
     "kind": { "enum": ["app", "tweak", "cli", "preferences"] },
     "displayName": { "$ref": "#/$defs/text" },
     "summary": { "$ref": "#/$defs/text" },
-    "apelinCompatibility": {
+    "lurosCompatibility": {
       "type": "object",
       "additionalProperties": false,
       "required": ["minimumAppVersion", "projectSchemaVersions", "manifestSchemaVersion"],

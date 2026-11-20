@@ -11,7 +11,7 @@ extension BuiltInSkills {
         build reads. It is checked strictly: an unknown member, a duplicate
         key or a wrong type is an error naming its field, such as
         `/products/0/sources`. The complete schema is this skill's file
-        `luros-project.schema.json` (apelin_skill_read with that file).
+        `luros-project.schema.json` (luros_skill_read with that file).
         Luros writes it two spaces a level, one member or element a line,
         and every build puts it back in that form, values unchanged: keep to
         it, and read the file again before file_edit after a build.
@@ -23,10 +23,10 @@ extension BuiltInSkills {
         - `template`: the template the project was made from.
         - `environment` `{toolchain, sdk}`, each `{id, digest}`: the
           registered toolchain and SDK. Change them only with
-          apelin_project_set_environment; never type a digest.
+          luros_project_set_environment; never type a digest.
         - `displayName` and `autoName`: the name Luros shows.
 
-        Only apelin_project_create writes `template` and `environment`, so a
+        Only luros_project_create writes `template` and `environment`, so a
         description written from scratch lacks them: it does not build, and
         no toolchain or SDK can be bound to it. Never rewrite a workspace
         (`"kind": "workspace"`) as one: it builds with a script of its own
@@ -51,7 +51,7 @@ extension BuiltInSkills {
           goes to the product's Swift compile. Keep language-specific flags
           here, not in a shared compile step's `flags`.
           `optimization` is "0", "1", "2", "3", "s" or "z". `defines` maps a
-          name to its value; no name starts with `APELIN_`. Each flag is one
+          name to its value; no name starts with `LUROS_`. Each flag is one
           argument starting with `-`, never shell text: `-framework X` is two
           items. The member is `linkFlags`, not `linkerFlags`.
 
@@ -152,7 +152,7 @@ extension BuiltInSkills {
           C++, and without it the C functions are exported C++-mangled and
           fail only at link, with no diagnostic.
         - The product's `cFlags` and `cxxFlags` reach the importer as `-Xcc`,
-          and its defines as `-Xcc -D…`; `APELIN_PRODUCT_NAME` stays a
+          and its defines as `-Xcc -D…`; `LUROS_PRODUCT_NAME` stays a
           product's own.
         - It needs Command Line Tools 15.0 (Swift 5.9) or newer and a CPU
           that can build clang modules (A13 on); `projectCheck` says which is
@@ -165,8 +165,8 @@ extension BuiltInSkills {
           `Builds/.swift-module-cache`, shared by builds; it is keyed on the
           preprocessor state, so it is compiled once per bootstrap and
           configuration (and per project, since the project's defines count
-          too). The importer is never given `APELIN_BUILD_ID`,
-          `APELIN_PACKAGE_ID` or `APELIN_VERSION`, so rebuilding, or bumping
+          too). The importer is never given `LUROS_BUILD_ID`,
+          `LUROS_PACKAGE_ID` or `LUROS_VERSION`, so rebuilding, or bumping
           the version, costs nothing. Keep C++ out of the headers Swift
           imports (a pimpl or a C facade) where that matters.
 
@@ -213,7 +213,7 @@ extension BuiltInSkills {
         ## package
         `{id, name, version, description, author, section, layout, …}`:
         - `id`: the Debian package name; a new project's is a
-          `local.apelin.` placeholder to settle with the user before its
+          `local.luros.` placeholder to settle with the user before its
           first install (the luros-packaging-and-install skill's Package
           identity). `version`: a Debian version.
           `section`: Tweaks, Utilities, Development, System, Applications or
@@ -227,9 +227,9 @@ extension BuiltInSkills {
           `Payload/<app>.app/PlugIns/<name>.appex`, so a widget or a share
           sheet travels with the app. It has no `layout`, relations,
           `tweakFilter` or `maintainerScripts`, and installs nothing as a
-          package: `apelin_package_install` on the ipa artifact puts the app
+          package: `luros_package_install` on the ipa artifact puts the app
           on the device instead — unpacked, signed with ldid and registered
-          with uicache, its extensions beside it — and `apelin_package_remove`
+          with uicache, its extensions beside it — and `luros_package_remove`
           takes it off again. Share `.ipa` in Distribute… hands the file out.
           Never publish one to a package repository.
         - `icon`: the image a package manager shows beside the package, its
@@ -264,7 +264,7 @@ extension BuiltInSkills {
           beside the dylib, which must be laid out under
           `/Library/MobileSubstrate/DynamicLibraries/`; do not ship one
           yourself. A new tweak's `bundles` come from the template's
-          `filterBundles`, an array of bundle IDs in apelin_project_create's
+          `filterBundles`, an array of bundle IDs in luros_project_create's
           `values`, such as `["com.apple.Preferences"]`.
         - `maintainerScripts`: `{preinst?, postinst?, prerm?, postrm?}`, each
           a project file. Only `@PREFIX@` and `@ROOTFS@` are substituted;
@@ -273,11 +273,11 @@ extension BuiltInSkills {
           luros-packaging-and-install skill says.
 
         ## What the build defines
-        On every C and Objective-C compile: `APELIN_BUILD_ID`,
-        `APELIN_PACKAGE_ID`, `APELIN_VERSION` and `APELIN_PRODUCT_NAME`
-        (string literals); `APELIN_BOOTSTRAP_ROOTLESS` or
-        `APELIN_BOOTSTRAP_ROOTHIDE` (1, for the bootstrap being built); and
-        `APELIN_CONFIGURATION_DEBUG` or `APELIN_CONFIGURATION_RELEASE` (1).
+        On every C and Objective-C compile: `LUROS_BUILD_ID`,
+        `LUROS_PACKAGE_ID`, `LUROS_VERSION` and `LUROS_PRODUCT_NAME`
+        (string literals); `LUROS_BOOTSTRAP_ROOTLESS` or
+        `LUROS_BOOTSTRAP_ROOTHIDE` (1, for the bootstrap being built); and
+        `LUROS_CONFIGURATION_DEBUG` or `LUROS_CONFIGURATION_RELEASE` (1).
         Swift gets the bootstrap and configuration as conditions. Code that
         behaves differently per bootstrap tests these; a repository's own
         macro is defined from them in a header. The build always passes the

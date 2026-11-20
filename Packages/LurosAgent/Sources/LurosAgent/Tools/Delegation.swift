@@ -26,7 +26,7 @@ import KWWKAI
 ///   until a scoped export adapter exists. Nothing in this file may treat it
 ///   as a managed artifact that bypasses the roots.
 
-/// `apelin_conversation_create`'s `brief` and `apelin_conversation_plan`'s
+/// `luros_conversation_create`'s `brief` and `luros_conversation_plan`'s
 /// `step`, in the snake_case the tools take.
 struct DelegationStepArguments: Decodable {
     var id: String?
@@ -75,7 +75,7 @@ struct DelegationStepArguments: Decodable {
     }
 }
 
-/// A whole brief, as `apelin_conversation_create` takes it.
+/// A whole brief, as `luros_conversation_create` takes it.
 struct DelegationBriefArguments: Decodable {
     var objective: String?
     var acceptance: [String]?
@@ -123,7 +123,7 @@ struct DelegationTicket: Sendable, Equatable {
     var revision: UInt64
 }
 
-/// `apelin_conversation_plan` as the agent may call it: the action, the
+/// `luros_conversation_plan` as the agent may call it: the action, the
 /// revision it is based on, and the step or the reason that goes with it.
 ///
 /// The revision is not one thing: a step action carries the plan's revision,

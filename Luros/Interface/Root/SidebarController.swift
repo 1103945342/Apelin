@@ -172,7 +172,7 @@ final class SidebarController: UIViewController {
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(projectsChanged),
-            name: .apelinProjectsChanged,
+            name: .lurosProjectsChanged,
             object: nil,
         )
         applyPage()
@@ -352,7 +352,7 @@ final class SidebarController: UIViewController {
                     projects.removeAll { $0.name == summary.name }
                     if project?.name == summary.name { switchWorkspace(to: nil) }
                     workspacesPage.update(projects: projects, current: project, chats: runtime?.summaries ?? [])
-                    NotificationCenter.default.post(name: .apelinProjectsChanged, object: nil)
+                    NotificationCenter.default.post(name: .lurosProjectsChanged, object: nil)
                 } catch {
                     presentNotice(title: "Unable to Delete Workspace", message: error.readableMessage)
                 }

@@ -3,7 +3,7 @@ import CryptoKit
 import Foundation
 import KWWKAI
 
-/// apelin_feedback_read and apelin_feedback_edit (owner, 2026-10-30): an
+/// luros_feedback_read and luros_feedback_edit (owner, 2026-10-30): an
 /// issue on Luros's own repository read, and one the user's GitHub account
 /// opened there changed, rather than filed again. The edit names the
 /// revision of the read it was made against; before anyone is asked the
@@ -38,10 +38,10 @@ enum FeedbackEdit {
             throw ToolDeniedError(message: "Nothing was changed: #\(issue.issue) was opened by \(issue.author), not by the user's GitHub account, and only an issue the account opened can be edited. The user can comment on it on GitHub.")
         }
         guard let revision = arguments.argNonEmptyString(revisionKey) else {
-            throw ToolArgumentError("Nothing was changed: read the issue with apelin_feedback_read first and pass the revision it answered.")
+            throw ToolArgumentError("Nothing was changed: read the issue with luros_feedback_read first and pass the revision it answered.")
         }
         guard revision == issue.revision else {
-            throw ToolDeniedError(message: "Nothing was changed: #\(issue.issue) changed on GitHub since the read that revision came from, perhaps by the user. Read it again with apelin_feedback_read, keep what changed there, and show the user the edit against what it says now before asking again.")
+            throw ToolDeniedError(message: "Nothing was changed: #\(issue.issue) changed on GitHub since the read that revision came from, perhaps by the user. Read it again with luros_feedback_read, keep what changed there, and show the user the edit against what it says now before asking again.")
         }
         let title = arguments.argString("title").map { $0.trimmingCharacters(in: .whitespaces) }
         let body = arguments.argString("body")

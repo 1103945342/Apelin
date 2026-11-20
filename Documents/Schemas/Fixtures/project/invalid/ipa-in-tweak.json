@@ -96,7 +96,7 @@
     ]
   },
   "package": {
-    "id": "com.example.apelinapp",
+    "id": "com.example.lurosapp",
     "name": "Luros App",
     "version": "0.0.1",
     "description": "Built on this device with Luros.",

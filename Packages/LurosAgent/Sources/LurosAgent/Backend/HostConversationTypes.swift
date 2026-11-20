@@ -145,7 +145,7 @@ public struct ConversationListToolResponse: Sendable, Hashable, Codable {
 }
 
 public struct ConversationReadToolRequest: Sendable, Hashable, Codable {
-    /// apelin_conversation_read waits at most three minutes. The provider
+    /// luros_conversation_read waits at most three minutes. The provider
     /// keeps a conversation's prompt cached for five minutes from the start
     /// of the request that last used it (Anthropic's default; OpenAI's is
     /// about as short), and a longer wait makes the reader's next request

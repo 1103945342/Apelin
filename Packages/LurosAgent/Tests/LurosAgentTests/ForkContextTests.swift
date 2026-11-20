@@ -279,7 +279,7 @@ struct ForkContextTests {
         defer { faux.unregister() }
         faux.setResponses([
             .message(fauxAssistantMessage(blocks: [fauxToolCall(
-                name: "apelin_package_remove",
+                name: "luros_package_remove",
                 arguments: ["reason": "Remove it", "installation_id": "inst-1"],
             )], stopReason: .toolUse)),
             .message(fauxAssistantMessage("Not reached")),
@@ -600,8 +600,8 @@ struct ForkContextTests {
         // already buffered. kwwk retains that assistant message but (correctly)
         // executes none of its calls when its stop reason is aborted.
         faux.setResponses([.message(fauxAssistantMessage(blocks: [
-            fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove first", "installation_id": "first"], id: "first"),
-            fauxToolCall(name: "apelin_package_remove", arguments: ["reason": "Remove second", "installation_id": "second"], id: "second"),
+            fauxToolCall(name: "luros_package_remove", arguments: ["reason": "Remove first", "installation_id": "first"], id: "first"),
+            fauxToolCall(name: "luros_package_remove", arguments: ["reason": "Remove second", "installation_id": "second"], id: "second"),
         ], stopReason: .aborted))])
         let configuration = AgentSessionConfiguration(project: home.project, provider: .registered(faux.getModel()), approval: ApprovalPolicy(mode: .confirm), dataRoot: home.dataRoot)
         let session = try await AgentSession(configuration: configuration, backend: MockBackend(), digests: MockDigestLedger(), credentials: DeliveredCredentialSource())

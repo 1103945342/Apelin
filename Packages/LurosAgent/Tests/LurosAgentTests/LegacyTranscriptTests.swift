@@ -59,10 +59,10 @@ struct LegacyTranscriptTests {
         let recorded = Self.recorded()
         let migrated = LegacyToolNames.migrate(recorded)
         #expect(Self.toolNames(migrated) == [
-            "file_read", "apelin_project_build", "mcp__docs__search",
+            "file_read", "luros_project_build", "mcp__docs__search",
             "file_read", "mcp__docs__search",
             "file_read", "mcp__docs__search",
-            "apelin_project_build",
+            "luros_project_build",
         ])
         #expect(migrated[1] == recorded[1], "the user's words are theirs")
         guard case let .toolResult(result) = migrated[3], case let .text(text)? = result.content.first else {

@@ -8,12 +8,12 @@
 # The runtime is never booted: a program built for the simulator runs against
 # its libraries through DYLD_ROOT_PATH, so nothing here needs a GPU or a
 # window. The first run downloads 5.4 GB and keeps about 4.5 GB in
-# $APELIN_OLD_RUNTIME_CACHE (default ~/Library/Caches/luros-old-runtime).
+# $LUROS_OLD_RUNTIME_CACHE (default ~/Library/Caches/luros-old-runtime).
 set -euo pipefail
 
 here=${0:A:h}
 repository=${here:h:h}
-cache=${APELIN_OLD_RUNTIME_CACHE:-$HOME/Library/Caches/luros-old-runtime}
+cache=${LUROS_OLD_RUNTIME_CACHE:-$HOME/Library/Caches/luros-old-runtime}
 image=https://devimages-cdn.apple.com/downloads/xcode/simulators/com.apple.pkg.iPhoneSimulatorSDK15_5-15.5.1.1653527639.dmg
 target=arm64-apple-ios15.5-simulator
 runtime=$cache/iOS-15.5

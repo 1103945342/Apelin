@@ -2,12 +2,12 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
-__attribute__((visibility("default"))) int apelin_fixture(void) {
+__attribute__((visibility("default"))) int luros_fixture(void) {
     return (int)CFAbsoluteTimeGetCurrent() & 1;
 }
 
 #ifdef FIXTURE_MAIN
 int main(void) {
-    return apelin_fixture();
+    return luros_fixture();
 }
 #endif

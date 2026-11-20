@@ -159,9 +159,9 @@ public struct InstalledSDK: Sendable, Hashable, Codable {
 public struct AvailableSDK: Sendable, Hashable, Codable {
     public var version: String
     public var branch: String
-    /// The source's name, as apelin_sdk_import takes it.
+    /// The source's name, as luros_sdk_import takes it.
     public var source: String
-    /// The source repository, which apelin_sdk_import fetches; never a credential.
+    /// The source repository, which luros_sdk_import fetches; never a credential.
     public var sourceURL: String
     /// Registered toolchains whose tools would read it.
     public var readBy: [String]
@@ -244,7 +244,7 @@ public struct ToolchainTaskToolResponse: Sendable, Hashable, Codable {
 
 public struct SDKImportToolRequest: Sendable, Hashable, Codable {
     public var context: HostCallContext
-    /// An enabled source's repository, as apelin_sdk_list named it.
+    /// An enabled source's repository, as luros_sdk_list named it.
     public var url: String
     public var branch: String
     public init(context: HostCallContext, url: String, branch: String) {
@@ -325,7 +325,7 @@ public struct EnvironmentToolFailure: Error, LocalizedError, Sendable, Equatable
     }
 }
 
-/// What apelin_project_set_environment wrote.
+/// What luros_project_set_environment wrote.
 public struct ProjectEnvironmentSetToolResponse: Sendable, Hashable, Codable {
     public var toolchain: ComponentBinding
     public var sdk: ComponentBinding

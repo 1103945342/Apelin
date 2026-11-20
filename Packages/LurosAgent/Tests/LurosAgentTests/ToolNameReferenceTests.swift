@@ -31,7 +31,7 @@ struct ToolNameReferenceTests {
             device: .current,
         ))
         var prompts: [String] = []
-        for (project, buildSystem) in [(home.project, ProjectBuildSystem.apelin), (home.project, .external), (temporary, .apelin)] {
+        for (project, buildSystem) in [(home.project, ProjectBuildSystem.luros), (home.project, .external), (temporary, .luros)] {
             prompts.append(SystemPrompt.make(
                 project: project,
                 projectRoot: home.projectURL.path,

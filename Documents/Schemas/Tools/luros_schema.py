@@ -646,7 +646,7 @@ def build_description(project: dict, root: Path) -> dict:
     for step in project["build"]["steps"]:
         if step["type"] == "script":
             files[step["file"]] = sha256_tag(read_inside(root, step["file"]))
-    return {"description": "apelin.build", "version": 1, "project": selected, "files": files}
+    return {"description": "luros.build", "version": 1, "project": selected, "files": files}
 
 
 def packaging_description(project: dict, root: Path) -> dict:
@@ -658,7 +658,7 @@ def packaging_description(project: dict, root: Path) -> dict:
         if "file" in entry:
             files[entry["file"]] = sha256_tag(read_inside(root, entry["file"]))
     return {
-        "description": "apelin.packaging",
+        "description": "luros.packaging",
         "version": 1,
         "project": {"kind": project["kind"], "package": package},
         "files": files,
@@ -746,7 +746,7 @@ def template_digest(template_root: Path, files: list[dict]) -> str:
         if "mode" in entry:
             item["mode"] = entry["mode"]
         entries.append(item)
-    return digest_of({"description": "apelin.template", "version": 1, "files": entries})
+    return digest_of({"description": "luros.template", "version": 1, "files": entries})
 
 
 def _parameter_types(template: dict) -> dict[str, dict]:

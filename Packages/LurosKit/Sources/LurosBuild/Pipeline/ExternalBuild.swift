@@ -8,18 +8,18 @@ import Foundation
 /// A workspace's build (`ExternalBuildDeclaration`, owner 2026-10-23): its
 /// own script, run as mobile in the project with the development
 /// environment shell_run and the terminal get, then the one `.deb` it wrote
-/// into `APELIN_PACKAGE_DIR` checked and registered as the build's artifact,
+/// into `LUROS_PACKAGE_DIR` checked and registered as the build's artifact,
 /// as `BuildService` registers its own. Luros neither compiles, signs nor
 /// packages here: the script does all of it, and the package is judged by
 /// what it holds.
 ///
 /// The script gets, beside the toolchain first on `PATH`, `SDKROOT` and
-/// `IPHONEOS_DEPLOYMENT_TARGET`: `APELIN_BUILD_ID` (the marker
-/// `apelin_package_confirm_loaded` matches, `LurosLoaded <id>` under the package ID's
-/// subsystem), `APELIN_BOOTSTRAP` and `APELIN_ARCHITECTURE` (the package's
-/// `Architecture`), `APELIN_PREFIX` (what `@PREFIX@` is: `/var/jb` rootless,
-/// empty roothide), `APELIN_CONFIGURATION` (`debug` or `release`),
-/// `APELIN_PROJECT_ROOT` and `APELIN_PACKAGE_DIR`, a fresh folder in
+/// `IPHONEOS_DEPLOYMENT_TARGET`: `LUROS_BUILD_ID` (the marker
+/// `luros_package_confirm_loaded` matches, `LurosLoaded <id>` under the package ID's
+/// subsystem), `LUROS_BOOTSTRAP` and `LUROS_ARCHITECTURE` (the package's
+/// `Architecture`), `LUROS_PREFIX` (what `@PREFIX@` is: `/var/jb` rootless,
+/// empty roothide), `LUROS_CONFIGURATION` (`debug` or `release`),
+/// `LUROS_PROJECT_ROOT` and `LUROS_PACKAGE_DIR`, a fresh folder in
 /// `Builds/<projectID>/<buildID>/`, outside the project, so no package
 /// already in the repository is taken for the build's.
 ///
@@ -126,7 +126,7 @@ public enum ExternalBuild {
         }
         guard control.architecture == expected else {
             throw BuildFailure(
-                "\(deb.lastPathComponent) is for \(control.architecture ?? "no architecture"), not \(expected), the \(inputs.bootstrap.rawValue) package architecture (APELIN_ARCHITECTURE)",
+                "\(deb.lastPathComponent) is for \(control.architecture ?? "no architecture"), not \(expected), the \(inputs.bootstrap.rawValue) package architecture (LUROS_ARCHITECTURE)",
             )
         }
         let bytes = try Data(contentsOf: deb)
@@ -221,13 +221,13 @@ public enum ExternalBuild {
         variables["TMPDIR"] = temporary.path + "/"
         variables["LANG"] = "en_US.UTF-8"
         variables["TERM"] = "dumb"
-        variables["APELIN_BUILD_ID"] = inputs.buildID
-        variables["APELIN_BOOTSTRAP"] = inputs.bootstrap.rawValue
-        variables["APELIN_ARCHITECTURE"] = inputs.layout.architecture
-        variables["APELIN_PREFIX"] = inputs.layout.installPrefix
-        variables["APELIN_CONFIGURATION"] = inputs.configuration == .debug ? "debug" : "release"
-        variables["APELIN_PROJECT_ROOT"] = projectRoot
-        variables["APELIN_PACKAGE_DIR"] = packages.path
+        variables["LUROS_BUILD_ID"] = inputs.buildID
+        variables["LUROS_BOOTSTRAP"] = inputs.bootstrap.rawValue
+        variables["LUROS_ARCHITECTURE"] = inputs.layout.architecture
+        variables["LUROS_PREFIX"] = inputs.layout.installPrefix
+        variables["LUROS_CONFIGURATION"] = inputs.configuration == .debug ? "debug" : "release"
+        variables["LUROS_PROJECT_ROOT"] = projectRoot
+        variables["LUROS_PACKAGE_DIR"] = packages.path
         return variables
     }
 
@@ -238,14 +238,14 @@ public enum ExternalBuild {
         guard debs.count == 1 else {
             throw BuildFailure(
                 debs.isEmpty
-                    ? "the build script wrote no package: write one .deb into APELIN_PACKAGE_DIR"
-                    : "the build script wrote \(debs.count) packages into APELIN_PACKAGE_DIR (\(debs.joined(separator: ", "))): write exactly one",
+                    ? "the build script wrote no package: write one .deb into LUROS_PACKAGE_DIR"
+                    : "the build script wrote \(debs.count) packages into LUROS_PACKAGE_DIR (\(debs.joined(separator: ", "))): write exactly one",
             )
         }
         let url = folder.appendingPathComponent(debs[0])
         var info = stat()
         guard lstat(url.path, &info) == 0, info.st_mode & S_IFMT == S_IFREG else {
-            throw BuildFailure("\(debs[0]) in APELIN_PACKAGE_DIR is not a regular file")
+            throw BuildFailure("\(debs[0]) in LUROS_PACKAGE_DIR is not a regular file")
         }
         return url
     }
@@ -269,7 +269,7 @@ public enum ExternalBuild {
             .array([.string(entry.path), .string(kindName(entry.kind)), .integer(Int64(entry.mode))])
         }
         let description: [(key: String, value: JSONDocument)] = [
-            (key: "description", value: .string("apelin.external-packaging")),
+            (key: "description", value: .string("luros.external-packaging")),
             (key: "version", value: .integer(1)),
             (key: "control", value: .array(fields)),
             (key: "members", value: .object(JSONObject(members))),
@@ -288,7 +288,7 @@ public enum ExternalBuild {
         }
     }
 
-    /// What `apelin_package_confirm_loaded` checks, when the package installs exactly one
+    /// What `luros_package_confirm_loaded` checks, when the package installs exactly one
     /// tweak: a dylib in MobileSubstrate's folder with its filter plist
     /// beside it. The marker is the template's, under the package ID.
     static func loadCheck(_ contents: DebArchiveReader.Contents, packageID: String, inputs: Inputs) -> BuildLoadCheck? {

@@ -13,7 +13,7 @@ extension BuiltInSkills {
         ## The project
         - `luros-project.json` is the build description: sources, compile and
           link flags, frameworks, the deployment target (16.0) and build steps.
-          Changing it, or a build script it names, makes the next `apelin_project_build` ask the
+          Changing it, or a build script it names, makes the next `luros_project_build` ask the
           user once (Strict mode); editing sources never does. Change it only
           when the task needs it, and say why. The luros-project-description skill
           lists every member; read it before you edit the file.
@@ -33,11 +33,11 @@ extension BuiltInSkills {
           luros-bootstrap-paths skill says; logging is the luros-tweak-runtime skill's.
 
         ## Finding the API you hook
-        - `apelin_sdk_analyze_framework` lists a framework's exported symbols and
+        - `luros_sdk_analyze_framework` lists a framework's exported symbols and
           Objective-C classes from the SDK's `.tbd`; `symbol_filter` narrows
           them. Both SDK tools look in `Frameworks`, then `PrivateFrameworks`,
           so `private` can be left out.
-        - `apelin_sdk_read_header` reads a public header; with `symbol` in place
+        - `luros_sdk_read_header` reads a public header; with `symbol` in place
           of `header` it finds the header that declares a class, protocol, type
           or function. Private frameworks usually have no headers in the SDK:
           declare the interface you need in a local header, only the selectors
@@ -51,7 +51,7 @@ extension BuiltInSkills {
         - Never block the main thread in SpringBoard; a hang there is a
           respring loop for the user.
         - Keep the template's load-time marker log line intact so
-          `apelin_package_confirm_loaded` can see it.
+          `luros_package_confirm_loaded` can see it.
         - Symbols are hidden by default (`-fvisibility=hidden`); export only
           what the loader needs.
 
@@ -92,7 +92,7 @@ extension BuiltInSkills {
         - Logos gave every hook a mangled name unique to the tweak
           (`_logos_method$…`); a rewrite names them itself, by the rules in
           Beside other tweaks. A Swift or C++ function is hooked by its
-          mangled symbol, as apelin_sdk_analyze_framework lists it, looked up with
+          mangled symbol, as luros_sdk_analyze_framework lists it, looked up with
           `dlsym` or `MSFindSymbol`: a demangled name finds nothing. Check
           the symbol on each iOS version the package supports.
         - A `.x` file becomes `.m`; an `.xm` that uses C++ is rewritten
@@ -119,21 +119,21 @@ extension BuiltInSkills {
         1. Read the relevant files (`file_read`, `file_grep`, `file_find`).
         2. Edit with `file_edit` (exact snippet, one occurrence) or
            `file_write`/`file_create` for new files.
-        3. `apelin_project_build`. Fix every error diagnostic by file and line, rebuild.
+        3. `luros_project_build`. Fix every error diagnostic by file and line, rebuild.
            Treat warnings as work unless they are in the template.
         4. Install and confirm as the luros-packaging-and-install skill describes.
         5. Check the behaviour itself, not only that it loaded: bring up what
-           you changed, read it with `apelin_screen_read_tree`, drive it with
-           `apelin_screen_interact`, and read it again after each action;
+           you changed, read it with `luros_screen_read_tree`, drive it with
+           `luros_screen_interact`, and read it again after each action;
            while Ask Before Using the Screen is on, first tell the user what
            you will open, read and do there and why, and go on only once
            they consent explicitly (the prompt's rule, in every mode);
            behaviour that does not show in the UI tree is checked in what it
-           logs (`apelin_log_read`), or in a screenshot only once the user
+           logs (`luros_log_read`), or in a screenshot only once the user
            has agreed to that one (the prompt's rule, in every mode). Report
            what you could not drive or see as Not tested.
         Keep each step its own call: build, install, respring and
-        apelin_package_confirm_loaded are approved one by one.
+        luros_package_confirm_loaded are approved one by one.
         """,
     )
 }

@@ -99,7 +99,7 @@ let package = Package(
             path: "Tests/LurosAgentTests",
         ),
         // Talks to a real provider. Every test here is skipped unless
-        // APELIN_LIVE_OAUTH_PATH names a kwwk-format credential file.
+        // LUROS_LIVE_OAUTH_PATH names a kwwk-format credential file.
         .testTarget(
             name: "LurosAgentLiveTests",
             dependencies: [

@@ -116,7 +116,7 @@ enum ApplicationCensus {
                 version: version,
                 path: present ? resolved : nil,
                 registeredPath: registeredPath,
-                source: owned == nil ? .apelin : .package,
+                source: owned == nil ? .luros : .package,
                 installationID: record.installationID,
                 packageID: owned,
                 removable: owned == nil && application.bundleID != ownBundleID,

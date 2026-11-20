@@ -756,8 +756,8 @@ final class TerminalSession {
     // MARK: - Ending
 
     private func isHostLost(_ error: Error) -> Bool {
-        guard let apelin = error as? LurosError else { return false }
-        return apelin.code == .notFound
+        guard let luros = error as? LurosError else { return false }
+        return luros.code == .notFound
     }
 
     private func finish(ending: TerminalEnding) {

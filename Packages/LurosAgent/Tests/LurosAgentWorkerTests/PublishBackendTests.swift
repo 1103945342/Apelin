@@ -5,7 +5,7 @@ import LurosProtocol
 import Foundation
 import Testing
 
-@Suite("apelin_package_publish is one distributionPublish task")
+@Suite("luros_package_publish is one distributionPublish task")
 struct PublishBackendTests {
     /// A data folder with a linked package repository's project and two
     /// release builds' records and packages, as luros-build leaves them.
@@ -174,7 +174,7 @@ struct PublishBackendTests {
     @Test
     func `the approval carries the repository, files and digests the host matches`() throws {
         let request = ApprovalRequest(
-            id: "a", toolCallID: "c", tool: "apelin_package_publish", arguments: "{}", workingDirectory: ".",
+            id: "a", toolCallID: "c", tool: "luros_package_publish", arguments: "{}", workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Publishes these 2 packages.",
             detail: .packagePublish(Self.publication), allowsSessionScope: false,
         )

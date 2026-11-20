@@ -30,7 +30,7 @@ if [[ "${1:-}" == --device ]]; then
     work="$(mktemp -d build/report-checks.XXXXXX)"
     trap 'rm -rf -- "${work:?}"' EXIT
     mkdir -p "$work/tmp"
-    export TMPDIR="${APELIN_PROJECT_ROOT:-$root}/$work/tmp"
+    export TMPDIR="${LUROS_PROJECT_ROOT:-$root}/$work/tmp"
 
     # The two files are the device toolchain's: it predates trailing commas in
     # calls, so the copies it reads are the repository's with those removed.
@@ -179,4 +179,4 @@ done
 xcrun --sdk macosx swiftc -swift-version 5 -target arm64-apple-macos13.0 \
     -I "$root/Shared/XPCShim" -I "$modules" \
     "${objects[@]}" "${sources[@]}" -o "$work/session-host"
-APELIN_REPOSITORY="$root" APELIN_ENVIRONMENT_HARNESS="$harness" "$work/session-host"
+LUROS_REPOSITORY="$root" LUROS_ENVIRONMENT_HARNESS="$harness" "$work/session-host"

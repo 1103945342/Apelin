@@ -1,8 +1,8 @@
 import Foundation
 
-// MARK: - apelin_package_publish
+// MARK: - luros_package_publish
 
-/// What apelin_package_publish reads before anyone is asked: the package
+/// What luros_package_publish reads before anyone is asked: the package
 /// repository Settings ▸ Git ▸ Publishing linked, whether the user is signed
 /// in to GitHub, and what each build recorded of its package.
 public struct PackagePublicationRequest: Sendable, Hashable, Codable {
@@ -84,7 +84,7 @@ public struct PackageBuildRecord: Sendable, Hashable, Codable {
     }
 }
 
-/// The packages apelin_package_publish's card named, published together:
+/// The packages luros_package_publish's card named, published together:
 /// their files and digests to the repository it named, nothing else.
 public struct PackagePublishToolRequest: Sendable, Hashable, Codable {
     public var context: HostCallContext

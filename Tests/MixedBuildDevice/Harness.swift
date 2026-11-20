@@ -13,7 +13,7 @@ struct DeviceToolchain {
     var id = "device-test"
     var version = "15.3"
     func tool(_ name: String) -> URL {
-        URL(fileURLWithPath: ProcessInfo.processInfo.environment["APELIN_TOOLCHAIN_BIN"]!)
+        URL(fileURLWithPath: ProcessInfo.processInfo.environment["LUROS_TOOLCHAIN_BIN"]!)
             .appendingPathComponent(name)
     }
 }
@@ -43,12 +43,12 @@ final class DevicePipelineCheck {
     var architectures: [Architecture] { project.architectures[inputs.bootstrap] ?? [] }
     var root: String { inputs.projectRoot.path }
     var work: URL { inputs.workDirectory }
-    var bootstrapDefine: String { "APELIN_BOOTSTRAP_" + inputs.bootstrap.rawValue.uppercased() }
-    var configurationDefine: String { "APELIN_CONFIGURATION_DEBUG" }
+    var bootstrapDefine: String { "LUROS_BOOTSTRAP_" + inputs.bootstrap.rawValue.uppercased() }
+    var configurationDefine: String { "LUROS_CONFIGURATION_DEBUG" }
     var defines: [(String, String)] {
-        [("APELIN_BUILD_ID", "\"\(inputs.buildID)\""),
-         ("APELIN_PACKAGE_ID", "\"\(project.package.id)\""),
-         ("APELIN_VERSION", "\"\(project.package.version)\""),
+        [("LUROS_BUILD_ID", "\"\(inputs.buildID)\""),
+         ("LUROS_PACKAGE_ID", "\"\(project.package.id)\""),
+         ("LUROS_VERSION", "\"\(project.package.version)\""),
          (bootstrapDefine, "1"), (configurationDefine, "1")]
             + (configuration.defines ?? [:]).sorted { $0.key < $1.key }.map { ($0.key, $0.value) }
     }
@@ -102,7 +102,7 @@ final class DevicePipelineCheck {
         // command and its output.
         setvbuf(stdout, nil, _IONBF, 0)
         let env = ProcessInfo.processInfo.environment
-        let repo = URL(fileURLWithPath: env["APELIN_PROJECT_ROOT"]!)
+        let repo = URL(fileURLWithPath: env["LUROS_PROJECT_ROOT"]!)
         let relative = CommandLine.arguments[1]
         let root = repo.appendingPathComponent(relative)
         let project = try JSONDecoder().decode(ProjectDocument.self, from: Data(contentsOf: root.appendingPathComponent("project.json")))

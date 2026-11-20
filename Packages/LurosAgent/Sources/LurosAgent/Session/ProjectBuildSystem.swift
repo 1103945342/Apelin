@@ -4,7 +4,7 @@ import Foundation
 /// build tool from the build description, or the project's own tools.
 enum ProjectBuildSystem: Equatable {
     /// `buildStart` from the manifest's configurations and products.
-    case apelin
+    case luros
     /// A workspace: `kind` is `workspace` or `buildSystem` is `external`. A
     /// workspace written before `buildSystem` existed has neither recipe nor
     /// field, so it is external too.
@@ -17,11 +17,11 @@ enum ProjectBuildSystem: Equatable {
     /// counts from the next prompt. A manifest that is missing, too large or
     /// not JSON is Luros's: the build tool then reports what is wrong.
     static func read(in root: ScopedRoot) -> ProjectBuildSystem {
-        guard let manifest = manifest(in: root) else { return .apelin }
+        guard let manifest = manifest(in: root) else { return .luros }
         if manifest["kind"] as? String == "workspace" || manifest["buildSystem"] as? String == "external" {
             return .external
         }
-        return .apelin
+        return .luros
     }
 
     /// The script a workspace declares it builds with (`external.script`,
@@ -45,8 +45,8 @@ enum ProjectBuildSystem: Equatable {
         return try? JSONSerialization.jsonObject(with: data) as? [String: Any]
     }
 
-    /// What apelin_project_build answers on a workspace that declares no build,
+    /// What luros_project_build answers on a workspace that declares no build,
     /// instead of the build worker's error about a description the
     /// workspace never had.
-    static let externalBuildRefusal = "This workspace declares no build yet. Write a script in the project that builds the package with the repository's own tools and writes one .deb into $APELIN_PACKAGE_DIR, then declare it in luros-project.json as \"external\": {\"script\": \"<its path>\"}; read the luros-external-build skill first."
+    static let externalBuildRefusal = "This workspace declares no build yet. Write a script in the project that builds the package with the repository's own tools and writes one .deb into $LUROS_PACKAGE_DIR, then declare it in luros-project.json as \"external\": {\"script\": \"<its path>\"}; read the luros-external-build skill first."
 }

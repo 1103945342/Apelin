@@ -36,9 +36,6 @@ enum LurosLink: Hashable, Sendable {
     case unknown
 
     static let scheme = "lurosdev"
-    /// A link the official Luros writes still opens here: the scheme this
-    /// app registers is its own, but the format is shared.
-    static let previousSchemes: Set<String> = ["apelin"]
 
     /// The longest prompt a link may carry, in UTF-8 bytes.
     static let maximumPromptLength = 32768
@@ -47,13 +44,12 @@ enum LurosLink: Hashable, Sendable {
     /// The longest branch name an import link may carry, in UTF-8 bytes.
     static let maximumBranchLength = 255
 
-    /// The link `url` spells, or nil when it is not an `apelin:` URL.
+    /// The link `url` spells, or nil when it is not an `luros:` URL.
     init?(url: URL) {
-        guard let scheme = url.scheme?.lowercased(),
-              scheme == Self.scheme || Self.previousSchemes.contains(scheme)
+        guard let scheme = url.scheme?.lowercased(), scheme == Self.scheme
         else { return nil }
         // `lurosdev://conversation/x` names the kind as the host; a lenient
-        // `apelin:conversation/x` has it as the first path component.
+        // `luros:conversation/x` has it as the first path component.
         var components = url.pathComponents.filter { $0 != "/" }
         if let host = url.host, !host.isEmpty {
             components.insert(host, at: 0)

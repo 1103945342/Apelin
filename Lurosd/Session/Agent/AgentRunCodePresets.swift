@@ -115,7 +115,7 @@ extension AgentRunCode {
     /// The keys a repository's own config may hold for a git preset to run
     /// without asking, as `git config --list` names them (section and key
     /// lowercased): what `git init` and a clone write, the author, and the
-    /// task a clone was made by (`apelin.cloneTask`, LurosEnvironment's
+    /// task a clone was made by (`luros.cloneTask`, LurosEnvironment's
     /// GitService). Anything else — a filter, a textconv or external diff
     /// driver, an fsmonitor, a pager, an include — is something git might
     /// run.
@@ -125,7 +125,7 @@ extension AgentRunCode {
             "precomposeunicode", "symlinks",
         ],
         "user": ["name", "email"],
-        "apelin": ["clonetask"],
+        "luros": ["clonetask"],
     ]
 
     /// The keys that are inert only under a subsection: `[remote "origin"]`.

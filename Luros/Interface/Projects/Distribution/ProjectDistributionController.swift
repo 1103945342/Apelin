@@ -490,11 +490,11 @@ final class ProjectDistributionController: TableController {
     @objc private dynamic func prepare() {
         guard !checking, let onPrepare else { return }
         let prompt = if method == .script {
-            String(localized: "Prepare this workspace for distribution: run apelin_project_check_distribution and fix everything it lists, and make sure its build script writes a release package for each target when APELIN_CONFIGURATION is release, with the package’s real name, identifier, author and a new version. Then tell me what you changed. Do not build yet.")
+            String(localized: "Prepare this workspace for distribution: run luros_project_check_distribution and fix everything it lists, and make sure its build script writes a release package for each target when LUROS_CONFIGURATION is release, with the package’s real name, identifier, author and a new version. Then tell me what you changed. Do not build yet.")
         } else if let target = selectedTarget, !isIPA {
-            String(localized: "Prepare this project for distribution to \(target.rawValue): run apelin_project_check_distribution, fix everything it lists (the package’s name, description, author and version, its identifiers, and the app’s icon if it has one), then tell me what you changed. Do not build yet.")
+            String(localized: "Prepare this project for distribution to \(target.rawValue): run luros_project_check_distribution, fix everything it lists (the package’s name, description, author and version, its identifiers, and the app’s icon if it has one), then tell me what you changed. Do not build yet.")
         } else {
-            String(localized: "Prepare this project for distribution: run apelin_project_check_distribution, fix everything it lists (the package’s name, description, author and version, its identifiers, and the app’s icon if it has one), then tell me what you changed. Do not build yet.")
+            String(localized: "Prepare this project for distribution: run luros_project_check_distribution, fix everything it lists (the package’s name, description, author and version, its identifiers, and the app’s icon if it has one), then tell me what you changed. Do not build yet.")
         }
         dismiss(animated: true) { onPrepare(prompt) }
     }

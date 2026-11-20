@@ -39,6 +39,6 @@ extension GitService {
     /// must not cost the reader the code they would go back to.
     private func checkpointAuthor(_ repository: GitRepository) -> GitSignature {
         (try? author(name: nil, email: nil, repository: repository))
-            ?? GitSignature(name: "Luros", email: "apelin@localhost")
+            ?? GitSignature(name: "Luros", email: "luros@localhost")
     }
 }

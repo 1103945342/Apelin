@@ -96,7 +96,7 @@ public extension GitService {
         let files = try settledFiles(target, remoteCommit: request.expectedRemoteCommit)
         reporter.stage("resetting")
         let backupAuthor = (try? author(name: nil, email: nil, repository: target.repository))
-            ?? GitSignature(name: "Luros", email: "apelin@localhost.invalid")
+            ?? GitSignature(name: "Luros", email: "luros@localhost.invalid")
         let result = try mapped {
             try target.repository.reset(
                 toRemote: target.remote,

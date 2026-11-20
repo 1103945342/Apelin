@@ -5,8 +5,8 @@ import struct LurosCore.TodoStore
 import Foundation
 import KWWKAI
 
-/// The conversation's todo list, as `apelin_todo_list` and
-/// `apelin_todo_write` reach it.
+/// The conversation's todo list, as `luros_todo_list` and
+/// `luros_todo_write` reach it.
 ///
 /// The write replaces the whole list rather than patching one item: the model
 /// thinks in steps, and a call that says what the list is now cannot drift out

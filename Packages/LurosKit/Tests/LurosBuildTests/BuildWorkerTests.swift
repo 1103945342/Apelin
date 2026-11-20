@@ -224,7 +224,7 @@ final class BuildWorkerTests: XCTestCase {
         var text = try String(contentsOf: manifest, encoding: .utf8)
         for (old, new) in [
             ("\"Luros App\"", "\"Shipping Notes\""), ("Built on this device with Luros.", "Notes that ship."),
-            ("\"Luros User\"", "\"Ada\""), ("\"0.0.1\"", "\"1.0.0\""), ("local.apelin.shipping", "wiki.example.shipping"),
+            ("\"Luros User\"", "\"Ada\""), ("\"0.0.1\"", "\"1.0.0\""), ("local.luros.shipping", "wiki.example.shipping"),
         ] {
             XCTAssertTrue(text.contains(old), old)
             text = text.replacingOccurrences(of: old, with: new)

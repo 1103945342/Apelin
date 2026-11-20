@@ -97,7 +97,7 @@ struct ToolchainTransferTests {
         #expect(throws: (any Error).self) { try ToolchainTransfer.verifyImported(tree) }
     }
 
-    @Test func `releases sources and schemes this apelin does not take are refused`() throws {
+    @Test func `releases sources and schemes this luros does not take are refused`() throws {
         let release = try #require(CommandLineToolsSupport.releases.first { !$0.sources.isEmpty })
         let (productID, digest) = try #require(release.sources.first)
         #expect(ToolchainTransfer.refusal(version: release.version, productID: productID, sourceSHA256: digest, scheme: ToolchainSetup.schemeVersion, swift: false) == nil)

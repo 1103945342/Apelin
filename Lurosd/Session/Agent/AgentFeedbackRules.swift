@@ -2,7 +2,7 @@ import LurosCore
 import LurosProtocol
 import Foundation
 
-/// An agent's `feedbackSend` (apelin_feedback_send, owner, 2026-10-29): a
+/// An agent's `feedbackSend` (luros_feedback_send, owner, 2026-10-29): a
 /// public issue on `FeedbackRules.repository` under the user's GitHub
 /// account, so, like a push, it asks under Confirm every time. Each one
 /// spends an approval the app gave this session whose own
@@ -11,7 +11,7 @@ import Foundation
 /// Full send it as they push. luros-environment checks the text again
 /// (`FeedbackRules`) and writes the footer itself.
 ///
-/// Its `feedbackEdit` (apelin_feedback_edit, owner, 2026-10-30) of an issue
+/// Its `feedbackEdit` (luros_feedback_edit, owner, 2026-10-30) of an issue
 /// the account opened there is held the same way: under Confirm it spends
 /// the approval naming exactly that issue, the title and body it puts in
 /// (absent for one that stays) and the ones it was made against

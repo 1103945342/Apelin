@@ -143,7 +143,7 @@ enum ApprovalCardText {
         return ToolCallDetail(detail: String(decoding: encoded, as: UTF8.self), title: title)
     }
 
-    /// An apelin_package_publish card's arguments: not the build IDs the
+    /// An luros_package_publish card's arguments: not the build IDs the
     /// call names but what the approval is bound to, its
     /// `detail.packagePublish` — the repository, then each package by its
     /// ID, version and architecture with the digest it is held to. Nil for
@@ -163,7 +163,7 @@ enum ApprovalCardText {
         return (try? JSONCoding.encode(JSONValue.object(shown))).map { String(decoding: $0, as: UTF8.self) }
     }
 
-    /// An apelin_feedback_edit card's arguments: not the call's, which carry
+    /// An luros_feedback_edit card's arguments: not the call's, which carry
     /// the revision it was read at, but what the approval is bound to, its
     /// `detail.feedbackEdit` — the repository, the issue, and the new title
     /// or body in full, each only when it changes. Nil for any other request.

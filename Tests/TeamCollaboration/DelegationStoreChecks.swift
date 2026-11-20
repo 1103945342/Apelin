@@ -31,7 +31,7 @@ struct DelegationStoreChecks {
         await denied("child cannot accept") { _ = try await store.apply(.init(sessionID: child, action: .accept, expectedRevision: 1), caller: child) }
         await denied("stale tool revision") { _ = try await store.apply(.init(sessionID: child, action: .admit, expectedRevision: 0, tool: "file_edit", path: "Sources/a"), caller: child) }
         await denied("scope prefix escape") { _ = try await store.apply(.init(sessionID: child, action: .admit, expectedRevision: 1, tool: "file_edit", path: "SourcesOther/a"), caller: child) }
-        for tool in ["shell_run", "apelin_project_build", "git_commit", "apelin_package_install", "apelin_conversation_create", "unknown_plugin"] {
+        for tool in ["shell_run", "luros_project_build", "git_commit", "luros_package_install", "luros_conversation_create", "unknown_plugin"] {
             await denied("unsupported \(tool)") { _ = try await store.apply(.init(sessionID: child, action: .admit, expectedRevision: 1, tool: tool), caller: child) }
         }
         _ = try await store.apply(.init(sessionID: child, action: .admit, expectedRevision: 1, tool: "file_read"), caller: child)

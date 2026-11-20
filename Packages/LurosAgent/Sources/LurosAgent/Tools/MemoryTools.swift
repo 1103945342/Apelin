@@ -19,7 +19,7 @@ struct MemoryTools {
     }
 
     /// Every record, each project's with the project it is kept for as
-    /// apelin_project_list names it (`projects`, by projectID), or marked
+    /// luros_project_list names it (`projects`, by projectID), or marked
     /// missing when no project has that id now.
     static func listEveryProject(_ snapshot: MemorySnapshot, projects: [String: MemoryListing.Project]) -> MemoryListing {
         MemoryListing(revision: snapshot.revision, records: snapshot.records.map { record in
@@ -87,7 +87,7 @@ struct MemoryTools {
             return ToolArgumentError("Memory \(id) is kept for another project: pass project: \(owner) to change it.")
         }
         let hint = creating ? " To add a new record, leave id out." : ""
-        return ToolArgumentError("No memory has id \(id); apelin_memory_list shows the ids.\(hint)")
+        return ToolArgumentError("No memory has id \(id); luros_memory_list shows the ids.\(hint)")
     }
 
     /// The section for `records`, the ones this session sees; nil when the
@@ -98,7 +98,7 @@ struct MemoryTools {
         // records this session sees go in, never the revision: that changes
         // with every write, another project's included, and a change of the
         // prompt makes the provider write the whole conversation into its
-        // cache again. apelin_memory_list answers the revision a change needs.
+        // cache again. luros_memory_list answers the revision a change needs.
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
         let contents = records.flatMap { try? encoder.encode(PromptRecords(records: $0)) }
@@ -117,7 +117,7 @@ struct MemoryTools {
     }
 }
 
-/// apelin_memory_list with all_projects: every record, as Settings ▸
+/// luros_memory_list with all_projects: every record, as Settings ▸
 /// Memories lists them, one of a project that is gone included, to clean up.
 struct MemoryListing: Encodable {
     /// A project's folder and the name the sidebar shows.

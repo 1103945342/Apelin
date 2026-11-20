@@ -459,7 +459,7 @@ final class TransferTests: XCTestCase {
         try Data("int main(void) { return 0; }\n".utf8).write(to: root.appendingPathComponent("main.c"))
         try Data("build/\n*.o\n".utf8).write(to: root.appendingPathComponent(".gitignore"))
         try repository.stage(["luros-project.json", "main.c", ".gitignore"])
-        _ = try repository.commit(message: "Start", author: GitSignature(name: "A", email: "a@apelin.invalid"))
+        _ = try repository.commit(message: "Start", author: GitSignature(name: "A", email: "a@luros.invalid"))
         // Work in progress, and what the ignore rules name.
         try Data("// new\n".utf8).write(to: root.appendingPathComponent("new.c"))
         try FileManager.default.createDirectory(at: root.appendingPathComponent("build"), withIntermediateDirectories: true)

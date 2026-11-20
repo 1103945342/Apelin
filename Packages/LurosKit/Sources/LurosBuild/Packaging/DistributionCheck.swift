@@ -15,7 +15,7 @@ public struct DistributionCheck: Sendable {
     public var catalog: ExtensionCatalog
 
     /// The prefix `projectCreate` gives identifiers nobody chose.
-    static let localPrefix = "local.apelin."
+    static let localPrefix = "local.luros."
 
     /// The Info.plist keys any of which names an app's icon.
     static let iconKeys = [

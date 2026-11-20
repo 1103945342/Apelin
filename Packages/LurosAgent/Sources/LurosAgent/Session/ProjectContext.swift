@@ -89,7 +89,7 @@ enum ProjectContext {
         switch buildSystem {
         case .external:
             lines.append("- Build: external. No Luros build description; build with the project's own tools through shell_run.")
-        case .apelin:
+        case .luros:
             var build = "Luros's build tool"
             if case let .array(steps)? = manifest.value(at: "build.steps") {
                 build += ", \(steps.count) steps"

@@ -27,14 +27,14 @@ final class ExternalBuildTests: XCTestCase {
         try? FileManager.default.removeItem(at: scratch)
     }
 
-    /// An empty workspace with `apelin/build.sh` as `script`, declared with
+    /// An empty workspace with `luros/build.sh` as `script`, declared with
     /// `external` unless that is nil.
-    private func workspace(script: String, external: String? = #"{"script": "apelin/build.sh"}"#) throws -> (id: String, root: URL) {
+    private func workspace(script: String, external: String? = #"{"script": "luros/build.sh"}"#) throws -> (id: String, root: URL) {
         let template = try XCTUnwrap(worker.extensionList().extensions.first { $0.kind == .workspace }?.templates.first)
         let created = try worker.projectCreate(ProjectCreateRequest(templateID: template.id, name: "Imported \(UUID().uuidString.prefix(8))"))
         let root = URL(fileURLWithPath: created.path, isDirectory: true)
-        try FileManager.default.createDirectory(at: root.appendingPathComponent("apelin"), withIntermediateDirectories: true)
-        try Data(script.utf8).write(to: root.appendingPathComponent("apelin/build.sh"))
+        try FileManager.default.createDirectory(at: root.appendingPathComponent("luros"), withIntermediateDirectories: true)
+        try Data(script.utf8).write(to: root.appendingPathComponent("luros/build.sh"))
         if let external {
             let manifest = root.appendingPathComponent("luros-project.json")
             var document = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: manifest)) as? [String: Any])
@@ -160,8 +160,8 @@ final class ExternalBuildTests: XCTestCase {
     func testBuildRunsTheScriptAndRegistersItsOnePackage() throws {
         let deb = try package(.roothide)
         let project = try workspace(
-            script: "env > \"$APELIN_PROJECT_ROOT/env.txt\"\necho building\ncp \"$1\" \"$APELIN_PACKAGE_DIR/\"\n",
-            external: #"{"script": "apelin/build.sh", "arguments": ["\#(deb.path)"]}"#,
+            script: "env > \"$LUROS_PROJECT_ROOT/env.txt\"\necho building\ncp \"$1\" \"$LUROS_PACKAGE_DIR/\"\n",
+            external: #"{"script": "luros/build.sh", "arguments": ["\#(deb.path)"]}"#,
         )
         let (taskID, events) = try build(project.id)
         let last = try XCTUnwrap(events.last)
@@ -199,8 +199,8 @@ final class ExternalBuildTests: XCTestCase {
 
         let environment = try String(contentsOf: project.root.appendingPathComponent("env.txt"), encoding: .utf8)
         for line in [
-            "APELIN_BUILD_ID=\(taskID.rawValue)", "APELIN_BOOTSTRAP=roothide", "APELIN_ARCHITECTURE=iphoneos-arm64e",
-            "APELIN_PREFIX=", "APELIN_CONFIGURATION=debug", "APELIN_PACKAGE_DIR=\(work.appendingPathComponent("package").path)",
+            "LUROS_BUILD_ID=\(taskID.rawValue)", "LUROS_BOOTSTRAP=roothide", "LUROS_ARCHITECTURE=iphoneos-arm64e",
+            "LUROS_PREFIX=", "LUROS_CONFIGURATION=debug", "LUROS_PACKAGE_DIR=\(work.appendingPathComponent("package").path)",
         ] {
             XCTAssertTrue(environment.split(separator: "\n").contains(Substring(line)), "\(line) in\n\(environment)")
         }
@@ -213,8 +213,8 @@ final class ExternalBuildTests: XCTestCase {
     func testABuildFormatsTheManifestOnceAndThenLeavesItAlone() throws {
         let deb = try package(.roothide)
         let project = try workspace(
-            script: "cp luros-project.json \"$APELIN_PACKAGE_DIR/../seen.json\"\ncp \"$1\" \"$APELIN_PACKAGE_DIR/\"\n",
-            external: #"{"script": "apelin/build.sh", "arguments": ["\#(deb.path)"]}"#,
+            script: "cp luros-project.json \"$LUROS_PACKAGE_DIR/../seen.json\"\ncp \"$1\" \"$LUROS_PACKAGE_DIR/\"\n",
+            external: #"{"script": "luros/build.sh", "arguments": ["\#(deb.path)"]}"#,
         )
         let manifest = project.root.appendingPathComponent("luros-project.json")
         XCTAssertEqual(chmod(manifest.path, 0o640), 0)
@@ -262,11 +262,11 @@ final class ExternalBuildTests: XCTestCase {
     /// version already packaged for the target, and a package other than
     /// the other target's latest release. A debug build says nothing.
     func testReleaseBuildReportsWhatThePackageShouldNotCarry() throws {
-        let local = try package(.roothide, id: "local.apelin.imported")
+        let local = try package(.roothide, id: "local.luros.imported")
         let rootless = try package(.rootless, id: "com.example.other")
         let project = try workspace(
-            script: "if [ \"$APELIN_BOOTSTRAP\" = rootless ]; then cp \"$2\" \"$APELIN_PACKAGE_DIR/\"; else cp \"$1\" \"$APELIN_PACKAGE_DIR/\"; fi\n",
-            external: #"{"script": "apelin/build.sh", "arguments": ["\#(local.path)", "\#(rootless.path)"]}"#,
+            script: "if [ \"$LUROS_BOOTSTRAP\" = rootless ]; then cp \"$2\" \"$LUROS_PACKAGE_DIR/\"; else cp \"$1\" \"$LUROS_PACKAGE_DIR/\"; fi\n",
+            external: #"{"script": "luros/build.sh", "arguments": ["\#(local.path)", "\#(rootless.path)"]}"#,
         )
         func findings(_ events: Events) -> [String] {
             XCTAssertEqual(events.last?["state"]?.stringValue, "succeeded", "\(events.payloads("log"))")
@@ -298,13 +298,13 @@ final class ExternalBuildTests: XCTestCase {
         let roothide = try package(.roothide)
         let rootless = try package(.rootless)
         for (script, arguments, expected) in [
-            ("echo broken >&2\nexit 3\n", "[]", "apelin/build.sh failed with status 3"),
+            ("echo broken >&2\nexit 3\n", "[]", "luros/build.sh failed with status 3"),
             ("exit 0\n", "[]", "wrote no package"),
-            ("cp \"$1\" \"$APELIN_PACKAGE_DIR/a.deb\"\ncp \"$1\" \"$APELIN_PACKAGE_DIR/b.deb\"\n", #"["\#(roothide.path)"]"#, "wrote 2 packages"),
-            ("cp \"$1\" \"$APELIN_PACKAGE_DIR/\"\n", #"["\#(rootless.path)"]"#, "is for iphoneos-arm64, not iphoneos-arm64e"),
-            ("echo not a package > \"$APELIN_PACKAGE_DIR/x.deb\"\n", "[]", "is not a package Luros can read"),
+            ("cp \"$1\" \"$LUROS_PACKAGE_DIR/a.deb\"\ncp \"$1\" \"$LUROS_PACKAGE_DIR/b.deb\"\n", #"["\#(roothide.path)"]"#, "wrote 2 packages"),
+            ("cp \"$1\" \"$LUROS_PACKAGE_DIR/\"\n", #"["\#(rootless.path)"]"#, "is for iphoneos-arm64, not iphoneos-arm64e"),
+            ("echo not a package > \"$LUROS_PACKAGE_DIR/x.deb\"\n", "[]", "is not a package Luros can read"),
         ] {
-            let project = try workspace(script: script, external: #"{"script": "apelin/build.sh", "arguments": \#(arguments)}"#)
+            let project = try workspace(script: script, external: #"{"script": "luros/build.sh", "arguments": \#(arguments)}"#)
             let (_, events) = try build(project.id)
             XCTAssertEqual(events.last?["state"]?.stringValue, "failed", script)
             let message = events.last?["message"]?.stringValue ?? ""
@@ -318,7 +318,7 @@ final class ExternalBuildTests: XCTestCase {
             buildID: TaskID.make().rawValue,
             projectID: project.id,
             projectRoot: project.root,
-            declaration: ExternalBuildDeclaration(script: "apelin/build.sh"),
+            declaration: ExternalBuildDeclaration(script: "luros/build.sh"),
             configuration: .debug,
             bootstrap: .roothide,
             workDirectory: scratch.appendingPathComponent("timeout-work"),
@@ -328,7 +328,7 @@ final class ExternalBuildTests: XCTestCase {
         )
         let started = Date()
         XCTAssertThrowsError(try ExternalBuild.run(inputs: inputs, store: worker.store, reporter: Collector(), cancellation: BuildCancellation())) { error in
-            XCTAssertEqual("\(error)", "apelin/build.sh ran past 1 seconds and was stopped")
+            XCTAssertEqual("\(error)", "luros/build.sh ran past 1 seconds and was stopped")
         }
         XCTAssertLessThan(Date().timeIntervalSince(started), 15)
     }

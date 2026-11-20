@@ -63,7 +63,7 @@ def sample_values(manifest: dict, template: dict) -> dict:
     product = next((p["default"] for p in template["parameters"] if p["name"] == "productName"), "Sample")
     return {
         "projectName": f"{product} Project",
-        "projectID": str(uuid.uuid5(uuid.NAMESPACE_URL, f"apelin:{manifest['id']}:{template['id']}")),
+        "projectID": str(uuid.uuid5(uuid.NAMESPACE_URL, f"luros:{manifest['id']}:{template['id']}")),
         "bundleID": f"com.example.{product.lower()}",
         "packageID": f"com.example.{product.lower()}",
         "deploymentTarget": "16.0",
@@ -126,12 +126,12 @@ def reference_build(project_root: Path, extensions: dict[str, tuple[Path, dict]]
                     stub_dirs.append(str(ext_root / stub))
                 rpaths += [r.replace("@PREFIX@", PREFIX[bootstrap]) for r in component.get("rpaths", {}).get(bootstrap, [])]
             defines = {
-                "APELIN_BUILD_ID": f'"{build_id}"',
-                "APELIN_PACKAGE_ID": f'"{project["package"]["id"]}"',
-                "APELIN_VERSION": f'"{project["package"]["version"]}"',
-                "APELIN_PRODUCT_NAME": f'"{product["name"]}"',
-                f"APELIN_BOOTSTRAP_{bootstrap.upper()}": "1",
-                f"APELIN_CONFIGURATION_{configuration_name.upper()}": "1",
+                "LUROS_BUILD_ID": f'"{build_id}"',
+                "LUROS_PACKAGE_ID": f'"{project["package"]["id"]}"',
+                "LUROS_VERSION": f'"{project["package"]["version"]}"',
+                "LUROS_PRODUCT_NAME": f'"{product["name"]}"',
+                f"LUROS_BOOTSTRAP_{bootstrap.upper()}": "1",
+                f"LUROS_CONFIGURATION_{configuration_name.upper()}": "1",
                 **configuration.get("defines", {}),
             }
             if step["type"] == "compile":
@@ -146,7 +146,7 @@ def reference_build(project_root: Path, extensions: dict[str, tuple[Path, dict]]
                                 "-debug-prefix-map", f"{project_root}=."]
                         if configuration["debugInfo"]:
                             argv.append("-g")
-                        argv += [f"-D{k}" for k in defines if k.startswith(("APELIN_BOOTSTRAP_", "APELIN_CONFIGURATION_"))]
+                        argv += [f"-D{k}" for k in defines if k.startswith(("LUROS_BOOTSTRAP_", "LUROS_CONFIGURATION_"))]
                         argv += configuration.get("swiftFlags", []) + step.get("flags", [])
                         argv += [str(s) for s in expand(project_root, product["sources"])] + ["-o", str(obj)]
                         run(argv)

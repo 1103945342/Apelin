@@ -300,9 +300,9 @@ final class DiagnosticsTests: XCTestCase {
     func testTheTreeWaitsForTheForegroundToSettle() throws {
         let icli = try FakeIcli()
         let unverified: [String: Any] = ["bundle_id": "com.apple.springboard", "verified": false, "source": "unavailable"]
-        let apelin: [String: Any] = ["bundle_id": "com.fluoxetine.luros", "verified": true, "source": "runningboard"]
+        let luros: [String: Any] = ["bundle_id": "com.fluoxetine.luros", "verified": true, "source": "runningboard"]
         let settings: [String: Any] = ["bundle_id": "com.apple.Preferences", "verified": true, "source": "runningboard"]
-        icli.frontmostAnswers = [unverified, settings, unverified, apelin, apelin]
+        icli.frontmostAnswers = [unverified, settings, unverified, luros, luros]
         var diagnostics = Diagnostics(icli: icli)
         diagnostics.settleInterval = 0
         XCTAssertEqual(try diagnostics.uiTree().pid, 800)
@@ -320,18 +320,18 @@ final class DiagnosticsTests: XCTestCase {
     /// that one.
     func testASettleThatExpectsAnAppWaitsForIt() throws {
         let icli = try FakeIcli()
-        let apelin: [String: Any] = ["bundle_id": "com.fluoxetine.luros", "verified": true, "source": "runningboard"]
+        let luros: [String: Any] = ["bundle_id": "com.fluoxetine.luros", "verified": true, "source": "runningboard"]
         let fila: [String: Any] = ["bundle_id": "wiki.qaq.fila", "verified": true, "source": "runningboard"]
-        icli.frontmostAnswers = [apelin, apelin, fila, fila]
+        icli.frontmostAnswers = [luros, luros, fila, fila]
         var diagnostics = Diagnostics(icli: icli)
         diagnostics.settleInterval = 0
         XCTAssertEqual(diagnostics.settledForegroundApp(expecting: "wiki.qaq.fila").bundleIdentifier, "wiki.qaq.fila")
         XCTAssertEqual(icli.calls.filter { $0 == "frontmostApp" }.count, 4)
 
-        icli.frontmostAnswers = [apelin, apelin, fila, fila]
+        icli.frontmostAnswers = [luros, luros, fila, fila]
         XCTAssertEqual(diagnostics.settledForegroundApp().bundleIdentifier, "com.fluoxetine.luros", "any app settles a plain read")
 
-        icli.frontmostAnswers = [apelin]
+        icli.frontmostAnswers = [luros]
         diagnostics.settleTimeout = 0.05
         diagnostics.settleInterval = 0.01
         XCTAssertEqual(

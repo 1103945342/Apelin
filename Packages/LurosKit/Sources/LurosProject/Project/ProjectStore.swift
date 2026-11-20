@@ -155,8 +155,8 @@ public struct ProjectStore: Sendable {
             "templateDigest": .string(template.digest),
         ]
         let slug = Self.slug(name)
-        resolved["bundleID"] = values["bundleID"] ?? .string("local.apelin.\(slug)")
-        resolved["packageID"] = values["packageID"] ?? .string("local.apelin.\(slug)")
+        resolved["bundleID"] = values["bundleID"] ?? .string("local.luros.\(slug)")
+        resolved["packageID"] = values["packageID"] ?? .string("local.luros.\(slug)")
         resolved["deploymentTarget"] = values["deploymentTarget"] ?? .string("16.0")
         resolved["architectures"] = values["architectures"]
             ?? .object(JSONObject(Bootstrap.allCases.compactMap { bootstrap in
@@ -301,8 +301,8 @@ public struct ProjectStore: Sendable {
             return Created(projectID: projectID, name: name, root: destination, baseline: baseline)
         } catch {
             try? FileManager.default.removeItem(at: staging)
-            if let apelin = error as? LurosError {
-                throw apelin
+            if let luros = error as? LurosError {
+                throw luros
             }
             throw LurosError(.badRequest, String(describing: error))
         }

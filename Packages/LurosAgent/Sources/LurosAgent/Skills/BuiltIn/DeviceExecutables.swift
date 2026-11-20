@@ -16,7 +16,7 @@ extension BuiltInSkills {
         starts: shell_run answers exit 137 with no output. Sign it with ldid
         and this skill's entitlements before the first run, and again after
         every link, since a link writes a new file:
-        1. Read this skill's file `Tool.entitlements` (apelin_skill_read with
+        1. Read this skill's file `Tool.entitlements` (luros_skill_read with
            that file) and write it once beside the program, such as
            `tools/Tool.entitlements`; never over a cli project's
            `Packaging/Tool.entitlements`, which its build signs with.

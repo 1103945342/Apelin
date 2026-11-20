@@ -3,7 +3,7 @@ import Foundation
 
 public extension SkillCatalog {
     /// Settings ▸ Skills: the skills a session is offered, read as a session
-    /// reads them, each with the instructions and files `apelin_skill_read` would
+    /// reads them, each with the instructions and files `luros_skill_read` would
     /// serve, and what in the skills folder is not offered as it stands.
     static func listing(userDirectory: URL) -> AgentSkillListResponse {
         let catalog = load(userDirectory: userDirectory)

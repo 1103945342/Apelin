@@ -156,7 +156,7 @@ struct ConversationBackendTests {
         let events = batch([
             ("prompt", text("Remove the old tweak")),
             ("message", text("Removing it")),
-            ("approvalRequested", .object(["approvalID": .string("a1"), "tool": .string("apelin_package_remove"), "reason": .string("Removing a package")])),
+            ("approvalRequested", .object(["approvalID": .string("a1"), "tool": .string("luros_package_remove"), "reason": .string("Removing a package")])),
             (TaskEvent.stateKind, .object(["state": .string("waitingForApproval")])),
             (TaskEvent.stateKind, .object(["state": .string("interrupted")])),
         ], state: .interrupted)
@@ -202,7 +202,7 @@ struct ConversationBackendTests {
         let listed = try await fixture.backend.projects()
         #expect(listed.projects.map(\.folder) == ["Hello", "Workspace"], "no link out, no unreadable or id-less manifest, nothing hidden")
         #expect(listed.projects.first == ListedProject(
-            folder: "Hello", projectID: "6f1c5b0e-0000-4000-8000-000000000001", displayName: "Hello Tweak", buildSystem: "apelin", isThisProject: true,
+            folder: "Hello", projectID: "6f1c5b0e-0000-4000-8000-000000000001", displayName: "Hello Tweak", buildSystem: "luros", isThisProject: true,
         ))
         #expect(listed.projects.last == ListedProject(folder: "Workspace", projectID: "w-1", displayName: "Workspace", buildSystem: "external", isThisProject: false))
         #expect(listed.projects.last?.link == "lurosdev://project/w-1")
@@ -218,8 +218,8 @@ struct ConversationBackendTests {
             _ = try await fixture.backend.conversationCreate(ConversationCreateToolRequest(context: fixture.context(), prompt: "x"))
             Issue.record("the host refused")
         } catch let failure as ConversationToolFailure {
-            #expect(failure.message.hasPrefix("apelin_conversation_create failed: 6 conversations"))
-            #expect(failure.message.contains("apelin_conversation_stop"))
+            #expect(failure.message.hasPrefix("luros_conversation_create failed: 6 conversations"))
+            #expect(failure.message.contains("luros_conversation_stop"))
         }
         fixture.host.on(.agentList, reply: AgentListResponse(sessions: []))
         await #expect(throws: ConversationToolFailure.self) {

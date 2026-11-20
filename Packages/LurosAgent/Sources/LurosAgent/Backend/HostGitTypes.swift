@@ -266,7 +266,7 @@ public struct GitCredentialRemoveToolRequest: Sendable, Hashable, Codable {
     }
 }
 
-/// An empty repository apelin_git_create_repository makes on GitHub: what
+/// An empty repository luros_git_create_repository makes on GitHub: what
 /// its card named, nothing else. A nil owner is the signed-in account.
 public struct RepositoryCreateToolRequest: Sendable, Hashable, Codable {
     public var context: HostCallContext
@@ -306,7 +306,7 @@ public struct RepositoryCreateToolResponse: Sendable, Hashable, Codable {
     }
 }
 
-/// An issue apelin_git_create_issue opens on a repository the user chose:
+/// An issue luros_git_create_issue opens on a repository the user chose:
 /// what its card named, nothing else. The footer is luros-environment's.
 public struct IssueCreateToolRequest: Sendable, Hashable, Codable {
     public var context: HostCallContext

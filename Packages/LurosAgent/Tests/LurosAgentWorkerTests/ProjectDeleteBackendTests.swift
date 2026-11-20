@@ -5,7 +5,7 @@ import LurosProtocol
 import Foundation
 import Testing
 
-@Suite("apelin_project_delete is one projectDelete request")
+@Suite("luros_project_delete is one projectDelete request")
 struct ProjectDeleteBackendTests {
     @Test
     func `the project goes as projectDelete with its id and the folder the card named`() async throws {
@@ -25,7 +25,7 @@ struct ProjectDeleteBackendTests {
     @Test
     func `the approval carries the project the host matches`() {
         let request = ApprovalRequest(
-            id: "a", toolCallID: "c", tool: "apelin_project_delete", arguments: "{}", workingDirectory: ".",
+            id: "a", toolCallID: "c", tool: "luros_project_delete", arguments: "{}", workingDirectory: ".",
             projectID: "p", fingerprint: "f", reason: "Deletes the project Weather.",
             detail: .projectDelete(ProjectDeleteApproval(projectID: "p-weather", folder: "Weather", displayName: "Rain Gauge")),
             allowsSessionScope: false,

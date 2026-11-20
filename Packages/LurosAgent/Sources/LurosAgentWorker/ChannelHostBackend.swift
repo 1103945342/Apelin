@@ -10,44 +10,44 @@ import Foundation
 /// channel (`ChannelTransport`); tests pass a fake.
 ///
 /// Mapping (tool → host operation):
-/// apelin_project_build → `buildStart`, then its task read to the end;
-/// apelin_package_install → `installPackage` likewise; apelin_package_remove →
-/// `removePackage`; apelin_package_list (and apelin_package_remove's package id)
+/// luros_project_build → `buildStart`, then its task read to the end;
+/// luros_package_install → `installPackage` likewise; luros_package_remove →
+/// `removePackage`; luros_package_list (and luros_package_remove's package id)
 /// → `installationList`, every project's;
-/// apelin_device_respring → `respring`; apelin_package_confirm_loaded → a `confirmLoaded` task with the session's
+/// luros_device_respring → `respring`; luros_package_confirm_loaded → a `confirmLoaded` task with the session's
 /// project (and `trigger: respring` when asked), read to its end, the image
 /// list never asked for;
-/// apelin_log_read → a bounded `logStream` read to its end; apelin_crash_list →
-/// `crashList`; apelin_crash_read → `crashOpen` (a read-only descriptor);
-/// apelin_crash_symbolicate → `crashSymbolicate` (luros-diagnostics, the project's
-/// dSYMs); apelin_screen_capture / apelin_screen_read_tree / apelin_screen_interact → `captureScreen` /
-/// `readUITree` / `uiAction`; apelin_sdk_analyze_framework and apelin_sdk_read_header's SDK →
+/// luros_log_read → a bounded `logStream` read to its end; luros_crash_list →
+/// `crashList`; luros_crash_read → `crashOpen` (a read-only descriptor);
+/// luros_crash_symbolicate → `crashSymbolicate` (luros-diagnostics, the project's
+/// dSYMs); luros_screen_capture / luros_screen_read_tree / luros_screen_interact → `captureScreen` /
+/// `readUITree` / `uiAction`; luros_sdk_analyze_framework and luros_sdk_read_header's SDK →
 /// `sdkList`, the project's pinned SDK first; shell_run → `agentRunCode`,
 /// which the host runs as mobile in the project (as root, with `asRoot`, when
-/// Full mode or the user's approval of that root request lets it); apelin_template_list →
-/// `extensionList`, isolated extensions left out; apelin_project_create →
-/// `projectCreate`; apelin_project_rename → `projectRename`;
-/// apelin_project_delete → `projectDelete`; git_status / git_diff / git_stage / git_unstage /
+/// Full mode or the user's approval of that root request lets it); luros_template_list →
+/// `extensionList`, isolated extensions left out; luros_project_create →
+/// `projectCreate`; luros_project_rename → `projectRename`;
+/// luros_project_delete → `projectDelete`; git_status / git_diff / git_stage / git_unstage /
 /// git_commit, git_init → `gitStatus` / `gitDiff` / `gitStage` /
 /// `gitUnstage` / `gitCommit` / `gitInit` on the session's project (no
 /// author: the host's settings);
 /// git_fetch / git_pull / git_push / git_clone → `gitFetch` / `gitPull` /
 /// `gitPush` / `gitCloneInto`, each task read to its end;
-/// apelin_conversation_create → `agentOpen` with this session's provider, model
+/// luros_conversation_create → `agentOpen` with this session's provider, model
 /// and effort, in this session's project or the one named, answered
-/// without waiting; apelin_conversation_send → `agentPrompt` with the text alone;
-/// apelin_conversation_list → `agentList` of a project; apelin_conversation_read →
+/// without waiting; luros_conversation_send → `agentPrompt` with the text alone;
+/// luros_conversation_list → `agentList` of a project; luros_conversation_read →
 /// `agentList` for the task, then `agentAttach` (`ConversationReader`);
-/// apelin_conversation_stop → `agentAbort`, then `agentClose` when asked. The host
+/// luros_conversation_stop → `agentAbort`, then `agentClose` when asked. The host
 /// keeps them to this session's project, and to another one only as the
-/// user approved. apelin_toolchain_list, apelin_sdk_list, apelin_toolchain_setup,
-/// apelin_toolchain_self_test, apelin_sdk_import and apelin_project_set_environment's check:
-/// ChannelHostBackend+Environment. apelin_feedback_send → `feedbackSend`;
-/// apelin_feedback_read → `feedbackRead`; apelin_feedback_edit →
+/// user approved. luros_toolchain_list, luros_sdk_list, luros_toolchain_setup,
+/// luros_toolchain_self_test, luros_sdk_import and luros_project_set_environment's check:
+/// ChannelHostBackend+Environment. luros_feedback_send → `feedbackSend`;
+/// luros_feedback_read → `feedbackRead`; luros_feedback_edit →
 /// `feedbackRead`, then `feedbackEdit` against what it read;
-/// apelin_git_create_repository → `gitRepositoryCreate`;
-/// apelin_git_create_issue → `gitIssueCreate`;
-/// apelin_package_publish → `distributionPublish` with each file's digest
+/// luros_git_create_repository → `gitRepositoryCreate`;
+/// luros_git_create_issue → `gitIssueCreate`;
+/// luros_package_publish → `distributionPublish` with each file's digest
 /// and the repository, read to its end (ChannelHostBackend+Publish). An
 /// agent tool extension's tools → `toolHostOpen`, `toolHostCall` and
 /// `toolHostClose`: ChannelHostBackend+ToolExtensions.
@@ -59,7 +59,7 @@ public struct ChannelHostBackend: AgentHostBackend {
     public let projectURL: URL
     /// `Projects/`, where a conversation call finds the other project it names.
     public let projectsURL: URL
-    /// What the session runs with now, which apelin_conversation_create passes on.
+    /// What the session runs with now, which luros_conversation_create passes on.
     public let modelChoice: SessionModelChoice
     /// Auxiliary defaults inherited by conversations this session creates.
     public let modelDefaults: AgentModelDefaults
@@ -68,12 +68,12 @@ public struct ChannelHostBackend: AgentHostBackend {
     static let logExcerptBytes = 8 * 1024
     /// git_diff hands the model at most this much; a path narrows it.
     public static let maximumDiffBytes = 64 * 1024
-    /// apelin_package_list hands the model at most this many installations.
+    /// luros_package_list hands the model at most this many installations.
     public static let maximumInstallations = 50
 
-    /// apelin_conversation_read hands the model at most this much text.
+    /// luros_conversation_read hands the model at most this much text.
     public static let maximumConversationBytes = 32 * 1024
-    /// One attach while apelin_conversation_read waits: short, so a stop is quick.
+    /// One attach while luros_conversation_read waits: short, so a stop is quick.
     static let conversationPollMilliseconds = 5000
 
     public init(
@@ -183,7 +183,7 @@ public struct ChannelHostBackend: AgentHostBackend {
                         name: file ?? "\(artifact.packageID)_\(artifact.version)\(bootstrap).deb",
                         digest: artifact.digest,
                     ))
-                    // The artifact names the APELIN_BUILD_ID apelin_package_confirm_loaded matches.
+                    // The artifact names the LUROS_BUILD_ID luros_package_confirm_loaded matches.
                     if let named = artifact.buildID, !named.isEmpty {
                         buildID = named
                     }
@@ -195,7 +195,7 @@ public struct ChannelHostBackend: AgentHostBackend {
             default:
                 break
             }
-            // Another event may name the APELIN_BUILD_ID before an artifact does.
+            // Another event may name the LUROS_BUILD_ID before an artifact does.
             if event.kind != "artifact", buildID == handle.taskID.rawValue,
                let named = event.payload?["buildID"]?.stringValue, !named.isEmpty
             {
@@ -395,7 +395,7 @@ public struct ChannelHostBackend: AgentHostBackend {
     /// says which.
     static let schemaErrorCode = "project.invalid"
 
-    static let schemaPointer = "luros-project.json does not match its schema; each error's field is the member to fix. Read the luros-project-description skill and its file luros-project.schema.json (apelin_skill_read) before editing it."
+    static let schemaPointer = "luros-project.json does not match its schema; each error's field is the member to fix. Read the luros-project-description skill and its file luros-project.schema.json (luros_skill_read) before editing it."
 
     /// A finding as the check first wrote it, its field in front:
     /// `/configurations/Debug/linkerFlags: unknown member`.
@@ -469,7 +469,7 @@ public struct ChannelHostBackend: AgentHostBackend {
         )
     }
 
-    // MARK: apelin_package_confirm_loaded
+    // MARK: luros_package_confirm_loaded
 
     public func confirmLoaded(
         _ request: LurosAgent.ConfirmLoadedRequest,
@@ -657,7 +657,7 @@ public struct ChannelHostBackend: AgentHostBackend {
         return try await gitSettings(context: request.context)
     }
 
-    // MARK: apelin_git_create_repository
+    // MARK: luros_git_create_repository
 
     /// Without a github.com sign-in, or with one GitHub refused, the model
     /// hears where the user signs in, read from the reply's reason; any
@@ -684,7 +684,7 @@ public struct ChannelHostBackend: AgentHostBackend {
 
     static let repositorySignInNeeded = "Nothing was created: GitHub authorization is needed. Ask the user to Sign In with GitHub in Settings ▸ Git, then try again."
 
-    // MARK: apelin_git_create_issue
+    // MARK: luros_git_create_issue
 
     /// Without a github.com sign-in, or with one GitHub refused, the model
     /// hears where the user signs in, read from the reply's reason; any
@@ -709,7 +709,7 @@ public struct ChannelHostBackend: AgentHostBackend {
         return "Nothing was posted on \(repository): \(words) Tell the user what blocks it; never post it to another repository, or through a browser or the screen, instead."
     }
 
-    // MARK: apelin_feedback_send
+    // MARK: luros_feedback_send
 
     /// Without a github.com sign-in, or with one GitHub refused, the model
     /// hears where the user signs in, read from the reply's reason.
@@ -725,7 +725,7 @@ public struct ChannelHostBackend: AgentHostBackend {
 
     static let gitHubSignInNeeded = "Nothing was posted: GitHub authorization is needed. Ask the user to Sign In with GitHub in Settings ▸ Git, then send again."
 
-    // MARK: apelin_feedback_read, apelin_feedback_edit
+    // MARK: luros_feedback_read, luros_feedback_edit
 
     public func readFeedback(_ request: FeedbackReadToolRequest) async throws -> FeedbackReadToolResponse {
         let issue: FeedbackReadResponse

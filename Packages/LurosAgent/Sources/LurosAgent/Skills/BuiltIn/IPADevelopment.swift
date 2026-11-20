@@ -12,7 +12,7 @@ extension BuiltInSkills {
         configurations, steps — is an app project's (luros-project-description).
 
         ## Creating one
-        - `apelin_project_create` with an app template (`com.fluoxetine.luros.dev.app/…`)
+        - `luros_project_create` with an app template (`com.fluoxetine.luros.dev.app/…`)
           and `output_format: "ipa"`. Never the empty workspace, and never a deb
           project whose `format` is edited afterwards: the create path writes the
           whole description in one go, and its packaging baseline is that
@@ -55,19 +55,19 @@ extension BuiltInSkills {
           out of an ipa project.
 
         ## Build
-        - `apelin_project_build` compiles, links, makes the dSYM, signs with the
+        - `luros_project_build` compiles, links, makes the dSYM, signs with the
           project's entitlements and only then writes the `.ipa`, so the file it
           records with `format: "ipa"` carries the bytes that were signed.
         - The artifact is a `package` artifact like a deb's, with an `id` and a
           `digest`. It is never a deb: do not rename it, do not wrap it into a
           package of your own, and do not copy it into the project.
         - A release build of an ipa project goes to the user only through
-          Distribute… ▸ Share `.ipa`. `apelin_package_publish` takes debs;
+          Distribute… ▸ Share `.ipa`. `luros_package_publish` takes debs;
           never publish an ipa to a package repository, and never write one into
           `debs/`.
 
         ## Installing it on this device
-        - `apelin_package_install` takes the ipa artifact's `id` and `digest`. The
+        - `luros_package_install` takes the ipa artifact's `id` and `digest`. The
           host checks the digest against the record, unpacks the `.ipa` in private
           staging, refuses a `com.apple.` bundle id, signs every Mach-O with `ldid`
           where staging holds it, reads the signed copy back, ends whatever still
@@ -77,8 +77,8 @@ extension BuiltInSkills {
           bundle that was there is renamed aside first and put back if anything
           after it fails. It then registers
           with `uicache -p`, reads `uicache -l` back as the receipt, and appears
-          in `apelin_package_list` with an `installationID`.
-        - `apelin_package_remove` takes it off: `uicache -u`, then the bundle goes.
+          in `luros_package_list` with an `installationID`.
+        - `luros_package_remove` takes it off: `uicache -u`, then the bundle goes.
         - Never install, uninstall or register it another way: not `icli app
           install`, not `icli pkg install`, not `dpkg`, not `apt`, and no
           `uicache` of your own.
@@ -97,13 +97,13 @@ extension BuiltInSkills {
         ## Testing the app it made
         - Launch it with `icli` or the screen tools and read what it draws; a blank
           template page is enough to prove it installed and runs. A log line the
-          app writes with `os_log` comes back from `apelin_log_read` with the
+          app writes with `os_log` comes back from `luros_log_read` with the
           app's process name.
         - A crash is read before anything is changed (luros-crash-triage). Keep
           the build's dSYM.
         - The whole loop — build, install, launch, remove — is run with
-          `apelin_project_build`, `apelin_package_install`,
-          `apelin_package_remove`: nothing about it needs the terminal.
+          `luros_project_build`, `luros_package_install`,
+          `luros_package_remove`: nothing about it needs the terminal.
         """,
     )
 }

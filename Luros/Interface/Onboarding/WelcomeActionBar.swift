@@ -22,7 +22,7 @@ final class WelcomeActionBar: UIView {
         set { button.configuration?.title = newValue }
     }
 
-    @objc(apelin_isEnabled) dynamic var isEnabled: Bool {
+    @objc(luros_isEnabled) dynamic var isEnabled: Bool {
         get { button.isEnabled }
         set { button.isEnabled = newValue }
     }

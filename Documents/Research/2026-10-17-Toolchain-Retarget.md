@@ -441,8 +441,8 @@ The build pipeline omits the unsupported dependency-scanner option for
 [`Documents/Compatibility.md`](../Compatibility.md) explain the choices.
 Per-device production-flow results remain in `Device-Validation.md`.
 
-To reproduce preparation, set `APELIN_LEGACY_SWIFT_VERSION` to `14.2` or
-`15.0`, and `APELIN_LEGACY_SWIFT_WORKSPACE` to a new absolute scratch
+To reproduce preparation, set `LUROS_LEGACY_SWIFT_VERSION` to `14.2` or
+`15.0`, and `LUROS_LEGACY_SWIFT_WORKSPACE` to a new absolute scratch
 directory, then run the matching Swift Testing fixture on macOS. It
 uses the ordinary reviewed setup to download Apple's package and verify
 the resulting tree, but never installs it. The research helper and compiler binaries are not shipped.

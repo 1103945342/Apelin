@@ -6,7 +6,7 @@
 // below with the method you are changing, and keep the filter in
 // luros-project.json scoped to the processes that actually need it.
 //
-// The build defines APELIN_PACKAGE_ID, APELIN_VERSION and APELIN_BUILD_ID as
+// The build defines LUROS_PACKAGE_ID, LUROS_VERSION and LUROS_BUILD_ID as
 // string literals on every compile.
 #import <UIKit/UIKit.h>
 #import <os/log.h>
@@ -16,7 +16,7 @@ static os_log_t TweakLog(void) {
     static os_log_t log;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        log = os_log_create(APELIN_PACKAGE_ID, "tweak");
+        log = os_log_create(LUROS_PACKAGE_ID, "tweak");
     });
     return log;
 }
@@ -29,13 +29,13 @@ static void HookedDidFinishLaunching(id self, SEL _cmd, id application) {
     if (OriginalDidFinishLaunching != NULL) {
         OriginalDidFinishLaunching(self, _cmd, application);
     }
-    os_log(TweakLog(), "LurosHooked %{public}s -[SpringBoard applicationDidFinishLaunching:]", APELIN_BUILD_ID);
+    os_log(TweakLog(), "LurosHooked %{public}s -[SpringBoard applicationDidFinishLaunching:]", LUROS_BUILD_ID);
 }
 
 __attribute__((constructor)) static void TweakInitialize(void) {
     // Luros's confirm_loaded looks for this exact marker and build id under
     // the package id's subsystem. Keep the line, and keep it public.
-    os_log(TweakLog(), "LurosLoaded %{public}s in %{public}s", APELIN_BUILD_ID, getprogname());
+    os_log(TweakLog(), "LurosLoaded %{public}s in %{public}s", LUROS_BUILD_ID, getprogname());
 
     Class springBoard = objc_getClass("SpringBoard");
     if (springBoard == Nil) {

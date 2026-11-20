@@ -125,7 +125,7 @@ enum ProjectActions {
                                 projectID: current?.projectID ?? projectName,
                                 displayName: name,
                             ))
-                            NotificationCenter.default.post(name: .apelinProjectsChanged, object: nil)
+                            NotificationCenter.default.post(name: .lurosProjectsChanged, object: nil)
                         } catch {
                             presenter?.presentNotice(title: "Unable to Rename Project", message: error.readableMessage)
                         }

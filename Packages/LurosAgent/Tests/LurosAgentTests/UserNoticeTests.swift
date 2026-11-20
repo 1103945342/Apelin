@@ -6,7 +6,7 @@ import KWWKAgent
 import KWWKAI
 import Testing
 
-@Suite("apelin_notification_send")
+@Suite("luros_notification_send")
 struct UserNoticeTests {
     private static func runner(
         _ home: TemporaryHome,
@@ -53,7 +53,7 @@ struct UserNoticeTests {
         let general = try ProjectIdentity(id: "temporary:" + id, name: ProjectName(id))
         for project in [home.project, general] {
             let offered = try Self.runner(home, project: project).agentTools(mcp: []).map(\.name)
-            #expect(offered.contains("apelin_notification_send"), "\(project.id)")
+            #expect(offered.contains("luros_notification_send"), "\(project.id)")
         }
         let schema = ToolReason.adding(to: AgentToolName.notificationSend.parameters)
         #expect(schema["required"] == .array(["body", "reason"]))
@@ -133,7 +133,7 @@ struct UserNoticeTests {
         let faux = await registerFauxProvider()
         defer { faux.unregister() }
         faux.setResponses([
-            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "apelin_notification_send", arguments: [
+            .message(fauxAssistantMessage(blocks: [fauxToolCall(name: "luros_notification_send", arguments: [
                 "reason": "Tell the user the build is done",
                 "title": "Build done",
                 "body": "The tweak built; installing it next.",
@@ -157,13 +157,13 @@ struct UserNoticeTests {
         let notice = try #require(events.firstIndex(of: .notice(title: "Build done", body: "The tweak built; installing it next.")))
         let call = try #require(events.firstIndex {
             if case let .toolCallStarted(call) = $0 {
-                return call.name == "apelin_notification_send"
+                return call.name == "luros_notification_send"
             }
             return false
         })
         let result = try #require(events.firstIndex {
             if case let .toolCallFinished(result) = $0 {
-                return result.name == "apelin_notification_send" && !result.isError
+                return result.name == "luros_notification_send" && !result.isError
             }
             return false
         })

@@ -149,7 +149,7 @@ Host verification:
 swift test --package-path Packages/LurosToolchain \
   --scratch-path /private/tmp/luros-toolchain-tests
 # Optional: a locally downloaded Apple package, never a committed fixture.
-APELIN_TEST_PACKAGE=/path/to/CLTools_Executables.pkg swift test \
+LUROS_TEST_PACKAGE=/path/to/CLTools_Executables.pkg swift test \
   --package-path Packages/LurosToolchain \
   --scratch-path /private/tmp/luros-toolchain-tests --filter LivePackageTests
 ```

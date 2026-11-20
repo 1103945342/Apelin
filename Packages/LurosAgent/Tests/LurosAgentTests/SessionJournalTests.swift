@@ -245,7 +245,7 @@ struct SessionJournalTests {
         let stopped = try #require(Self.line(in: text, containing: "Ended call=call-stopped "))
         #expect(stopped.contains(" status=cancelled "), "\(stopped)")
         #expect(text.contains("[Approval]\n") && text.contains("| Asked approval="))
-        #expect(text.contains(#"call=call-declined tool=apelin_package_remove after="#))
+        #expect(text.contains(#"call=call-declined tool=luros_package_remove after="#))
         #expect(text.contains(#"decision="denied: not now""#))
         #expect(text.contains("| Run 2 ended reason=aborted "))
     }
@@ -353,13 +353,13 @@ struct SessionJournalTests {
             .write("Tool", "Started call=crashed-1 tool=shell_run session=\(id) at=10:00:00.000 arguments={}")
 
         let session = try await Self.open(home, faux: faux, id: id)
-        session.journal.toolStarted(id: "running-1", name: "apelin_project_build", arguments: .object([:]))
+        session.journal.toolStarted(id: "running-1", name: "luros_project_build", arguments: .object([:]))
         await session.close()
         var text = try Self.journal(of: session, in: home)
         let crashed = try #require(Self.line(in: text, containing: "Ended call=crashed-1 tool=shell_run session=\(id) "))
         #expect(crashed.hasPrefix("* |error| ") && crashed.contains(" status=interrupted "), "\(crashed)")
         #expect(crashed.contains("found when the conversation opened again"))
-        let closed = try #require(Self.line(in: text, containing: "Ended call=running-1 tool=apelin_project_build "))
+        let closed = try #require(Self.line(in: text, containing: "Ended call=running-1 tool=luros_project_build "))
         #expect(closed.contains(" status=interrupted ") && closed.contains("the conversation closed while it ran"))
 
         // opened again, nothing is left to end
@@ -376,11 +376,11 @@ struct SessionJournalTests {
     func `a content tool's result is its size, any other's a short redacted summary`() {
         let redaction = JournalRedaction(home: "/var/mobile", installRoot: "/var/jb")
         let file = AgentToolResult(content: [.text(TextContent(text: "1 let password = \"hunter2\"\n2 return\n"))])
-        for tool in ["file_read", "file_grep", "apelin_memory_list", "apelin_web_fetch", "apelin_screen_read_tree"] {
+        for tool in ["file_read", "file_grep", "luros_memory_list", "luros_web_fetch", "luros_screen_read_tree"] {
             #expect(redaction.result(file, tool: tool, isError: false) == #""36 bytes in 2 lines""#, "\(tool)")
         }
         let screenshot = AgentToolResult(content: [.image(ImageContent(data: "AAAA", mimeType: "image/png"))])
-        #expect(redaction.result(screenshot, tool: "apelin_screen_capture", isError: false) == #""1 image""#)
+        #expect(redaction.result(screenshot, tool: "luros_screen_capture", isError: false) == #""1 image""#)
         // its own error says what went wrong, not what the user holds
         let missing = AgentToolResult(content: [.text(TextContent(text: "no such file: Sources/Tweak.m"))])
         #expect(redaction.result(missing, tool: "file_read", isError: true) == "no such file: Sources/Tweak.m")
@@ -529,7 +529,7 @@ struct SessionJournalTests {
     private static func removal(id: String) -> FauxResponseStep {
         .message(fauxAssistantMessage(
             blocks: [fauxToolCall(
-                name: "apelin_package_remove",
+                name: "luros_package_remove",
                 arguments: ["reason": "Remove it", "installation_id": "inst-1"],
                 id: id,
             )],

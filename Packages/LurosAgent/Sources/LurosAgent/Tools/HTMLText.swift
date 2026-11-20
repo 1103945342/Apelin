@@ -1,6 +1,6 @@
 import Foundation
 
-/// An HTML page as the text a reader sees, for apelin_web_fetch. What
+/// An HTML page as the text a reader sees, for luros_web_fetch. What
 /// head, script, style, noscript, svg and template elements and comments
 /// hold is left out; a block or `br` ends a line, a list item starts with
 /// "- ", a heading with its level of "#", a table cell after a row's first

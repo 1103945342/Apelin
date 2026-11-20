@@ -23,7 +23,7 @@ public extension ChannelHostBackend {
         let target = request.target ?? project
         // The host opens it in that project, resolved again, under this
         // session's mode; the mode here is a placeholder.
-        let opened = try await conversation("apelin_conversation_create") {
+        let opened = try await conversation("luros_conversation_create") {
             try await service.agentOpen(AgentOpenRequest(
                 projectID: target.id,
                 projectName: target.name.rawValue,
@@ -49,7 +49,7 @@ public extension ChannelHostBackend {
     func conversationSend(
         _ request: ConversationSendToolRequest,
     ) async throws -> ConversationActionToolResponse {
-        try await conversation("apelin_conversation_send") {
+        try await conversation("luros_conversation_send") {
             _ = try await service.send(AgentPromptRequest(sessionID: request.sessionID, text: request.text, delivery: request.delivery))
         }
         return ConversationActionToolResponse(sessionID: request.sessionID, done: request.delivery == .steer ? "steer requested; retained in the queue until taken" : "queued for a new run after the active run succeeds")
@@ -58,7 +58,7 @@ public extension ChannelHostBackend {
     /// General Chat names no project and gets every project's it may reach,
     /// each with its project; the host says how many it left out.
     func conversationList(_ request: ConversationListToolRequest) async throws -> ConversationListToolResponse {
-        let listed = try await conversation("apelin_conversation_list") {
+        let listed = try await conversation("luros_conversation_list") {
             try await service.agentList(projectID: request.target?.id)
         }
         let conversations = listed.sessions.map { summary in
@@ -76,25 +76,25 @@ public extension ChannelHostBackend {
         }
         let note = listed.unreachedProjects.map { count in
             let projects = count == 1 ? "1 more project" : "\(count) more projects"
-            return "The conversations of \(projects) are not listed: name one with project to list its conversations; the user is asked each time in Strict mode. apelin_project_list names every project."
+            return "The conversations of \(projects) are not listed: name one with project to list its conversations; the user is asked each time in Strict mode. luros_project_list names every project."
         }
         return ConversationListToolResponse(conversations: conversations, note: note)
     }
 
     func conversationRead(_ request: ConversationReadToolRequest) async throws -> ConversationReadToolResponse {
-        let sessions = try await conversation("apelin_conversation_read") {
+        let sessions = try await conversation("luros_conversation_read") {
             try await service.agentList(projectID: request.target?.id).sessions
         }
         guard let summary = sessions.first(where: { $0.sessionID == request.sessionID }) else {
             let scope = request.target.map { "the project \($0.name.rawValue)" } ?? "this project"
-            throw ConversationToolFailure(message: "apelin_conversation_read failed: \(scope) has no conversation \(request.sessionID). apelin_conversation_list names them; pass project for another project's.")
+            throw ConversationToolFailure(message: "luros_conversation_read failed: \(scope) has no conversation \(request.sessionID). luros_conversation_list names them; pass project for another project's.")
         }
         var reader = ConversationReader(afterSeq: request.afterSeq ?? 0, byteLimit: Self.maximumConversationBytes)
         // The whole log, a batch at a time: the state and the approvals still
         // waiting depend on what came before `afterSeq` too.
         var cursor = EventSeq.start
         while true {
-            let batch = try await conversation("apelin_conversation_read") {
+            let batch = try await conversation("luros_conversation_read") {
                 try await service.agentAttach(AgentAttachRequest(
                     taskID: summary.task.taskID,
                     afterSeq: cursor,
@@ -117,7 +117,7 @@ public extension ChannelHostBackend {
                 break
             }
             let wait = min(Self.conversationPollMilliseconds, max(1, Int(remaining * 1000)))
-            let batch = try await conversation("apelin_conversation_read") {
+            let batch = try await conversation("luros_conversation_read") {
                 try await service.agentAttach(AgentAttachRequest(
                     taskID: summary.task.taskID,
                     afterSeq: reader.lastSeq,
@@ -132,11 +132,11 @@ public extension ChannelHostBackend {
     func conversationStop(
         _ request: ConversationStopToolRequest,
     ) async throws -> ConversationActionToolResponse {
-        try await conversation("apelin_conversation_stop") { try await service.agentAbort(sessionID: request.sessionID) }
+        try await conversation("luros_conversation_stop") { try await service.agentAbort(sessionID: request.sessionID) }
         guard request.close else {
             return ConversationActionToolResponse(sessionID: request.sessionID, done: "stopped")
         }
-        try await conversation("apelin_conversation_stop") { try await service.agentClose(sessionID: request.sessionID) }
+        try await conversation("luros_conversation_stop") { try await service.agentClose(sessionID: request.sessionID) }
         return ConversationActionToolResponse(sessionID: request.sessionID, done: "closed")
     }
 
@@ -157,9 +157,9 @@ public extension ChannelHostBackend {
                 text += "."
             }
             switch (operation, error.code) {
-            case ("apelin_conversation_create", .conflict):
-                text += " Wait for one to finish, or end one you opened with apelin_conversation_stop and close: true."
-            case ("apelin_conversation_send", .notFound):
+            case ("luros_conversation_create", .conflict):
+                text += " Wait for one to finish, or end one you opened with luros_conversation_stop and close: true."
+            case ("luros_conversation_send", .notFound):
                 text += " That conversation is not running any more; the user can reopen it from the sidebar."
             case (_, .denied) where error.message.hasPrefix("approval required"):
                 text += " If it is in another project, name that project with project; the user is asked each time."
@@ -187,10 +187,10 @@ public extension ChannelHostBackend {
                 return found.identity
             }
         }
-        throw ConversationToolFailure(message: "no project is named or has the id \(reference); apelin_project_list names them, or ask the user")
+        throw ConversationToolFailure(message: "no project is named or has the id \(reference); luros_project_list names them, or ask the user")
     }
 
-    /// apelin_project_list: every project `resolveProject` would find, by
+    /// luros_project_list: every project `resolveProject` would find, by
     /// folder, at most `maximumListedProjects`.
     func projects() async throws -> ProjectListToolResponse {
         let root = projectsURL.resolvingSymlinksInPath()
@@ -206,7 +206,7 @@ public extension ChannelHostBackend {
                 folder: name,
                 projectID: found.identity.id,
                 displayName: manifest["displayName"]?.stringValue.flatMap { $0.isEmpty ? nil : $0 } ?? name,
-                buildSystem: external ? "external" : "apelin",
+                buildSystem: external ? "external" : "luros",
                 isThisProject: found.identity.id == project.id,
             ))
         }

@@ -1,7 +1,7 @@
 extension BuiltInSkills {
     static let packageDependencies = SkillDocument(
         name: "luros-package-dependencies",
-        description: "Getting a package installed: your project's own build goes through apelin_package_install; a dependency from the user's repositories goes through shell_run as root with irisin-cli, with the user's approval. Diagnosing a refused install or upgrade with irisin-cli's questions and dry runs, as root. Why apt and dpkg are never the way.",
+        description: "Getting a package installed: your project's own build goes through luros_package_install; a dependency from the user's repositories goes through shell_run as root with irisin-cli, with the user's approval. Diagnosing a refused install or upgrade with irisin-cli's questions and dry runs, as root. Why apt and dpkg are never the way.",
         body: """
         # Installing packages
 
@@ -10,9 +10,9 @@ extension BuiltInSkills {
         dedicated tools, except the two cases below that run as root: a
         dependency's install, and Irisin's questions and dry runs.
 
-        ## Your project's build → apelin_package_install
-        A package you built installs with `apelin_package_install` (the package artifact's id
-        and digest), then `apelin_package_confirm_loaded` and `apelin_package_remove`, as the
+        ## Your project's build → luros_package_install
+        A package you built installs with `luros_package_install` (the package artifact's id
+        and digest), then `luros_package_confirm_loaded` and `luros_package_remove`, as the
         luros-packaging-and-install skill says. That path keeps the approval, the
         load check and the removal handle working; nothing else does. Never
         build or place a `.deb` yourself, and never install it with irisin-cli.
@@ -73,16 +73,16 @@ extension BuiltInSkills {
           found, and never `--allow-system-removal`, `irisin-cli respring`,
           `irisin-cli vendor` or `irisin-cli udid`. A change the diagnosis
           points to is made in Irisin by the user, or by you as a dependency
-          install above, through apelin_package_install and
-          apelin_package_remove for your own packages, or as root only when
+          install above, through luros_package_install and
+          luros_package_remove for your own packages, or as root only when
           the user explicitly asks you to make exactly that change.
 
         ## The toolchain and the SDK are different
         A missing **compiler toolchain** or **iPhoneOS SDK** is not a package
-        dependency: set those up with `apelin_toolchain_setup` and `apelin_sdk_import`
+        dependency: set those up with `luros_toolchain_setup` and `luros_sdk_import`
         (which ask the user and download from Apple's catalogue and the SDK
         sources), or bind the project to an installed one with
-        `apelin_project_set_environment`. The environment section of the prompt lists
+        `luros_project_set_environment`. The environment section of the prompt lists
         what is installed; do not look for compilers on the device.
         """,
     )

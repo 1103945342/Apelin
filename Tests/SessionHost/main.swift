@@ -795,7 +795,7 @@ do {
         return .object(["tool": .string(tool), "detail": .object([AgentConversationRules.otherProjectDetail: .object(detail)])])
     }
     let openAsk = otherProjectAsk(
-        "apelin_conversation_create",
+        "luros_conversation_create",
         action: "create",
         projectID: other.id,
         text: "Import the repository",
@@ -809,7 +809,7 @@ do {
             crossChild,
             target: other,
             asked: otherProjectAsk(
-                "apelin_conversation_create",
+                "luros_conversation_create",
                 action: "create",
                 projectID: other.id,
                 text: "Import the repository",
@@ -823,7 +823,7 @@ do {
             crossChild,
             target: other,
             asked: otherProjectAsk(
-                "apelin_conversation_create",
+                "luros_conversation_create",
                 action: "create",
                 projectID: other.id,
                 text: "Import the repository",
@@ -846,7 +846,7 @@ do {
             crossChild,
             target: other,
             asked: otherProjectAsk(
-                "apelin_conversation_send",
+                "luros_conversation_send",
                 action: "send",
                 projectID: other.id,
                 text: "Import the repository",
@@ -943,11 +943,11 @@ do {
         descriptorCount: 0,
     )
     check(toElsewhere.fromSessionID == "c-opener", "a message goes to another project's conversation the same way")
-    let sendAsk = otherProjectAsk("apelin_conversation_send", action: "send", projectID: other.id, sessionID: "c-elsewhere", text: "Build it")
+    let sendAsk = otherProjectAsk("luros_conversation_send", action: "send", projectID: other.id, sessionID: "c-elsewhere", text: "Build it")
     check(AgentConversationRules.coversSend(toElsewhere, target: elsewhere, asked: sendAsk), "an approval of this message to this conversation covers it")
     var steerElsewhere = toElsewhere
     steerElsewhere.delivery = .steer
-    let steerAsk = otherProjectAsk("apelin_conversation_send", action: "send", projectID: other.id, sessionID: "c-elsewhere", text: "Build it", delivery: "steer")
+    let steerAsk = otherProjectAsk("luros_conversation_send", action: "send", projectID: other.id, sessionID: "c-elsewhere", text: "Build it", delivery: "steer")
     check(!AgentConversationRules.coversSend(steerElsewhere, target: elsewhere, asked: sendAsk), "a queued-message approval never authorizes steering")
     check(AgentConversationRules.coversSend(steerElsewhere, target: elsewhere, asked: steerAsk), "steering is covered by approval of that delivery")
     check(!AgentConversationRules.coversSend(toElsewhere, target: elsewhere, asked: steerAsk), "a steering approval is not reused for a queued message")
@@ -1510,43 +1510,43 @@ do {
     let rows = ApplicationCensus.rows(
         installRoot: root,
         registered: [
-            ("local.apelin.demo", demo),
-            ("local.apelin.gone", gone),
-            ("local.apelin.owned", owned),
+            ("local.luros.demo", demo),
+            ("local.luros.gone", gone),
+            ("local.luros.owned", owned),
             ("com.example.stranger", stranger),
         ],
         records: [
             record(
-                package: "local.apelin.demo", version: "1.0",
+                package: "local.luros.demo", version: "1.0",
                 created: Date(timeIntervalSinceNow: -30),
-                application: .init(bundleID: "local.apelin.demo", name: "Demo", bundlePath: demo),
+                application: .init(bundleID: "local.luros.demo", name: "Demo", bundlePath: demo),
             ),
             record(
-                package: "local.apelin.gone", version: "0.9",
+                package: "local.luros.gone", version: "0.9",
                 created: Date(timeIntervalSinceNow: -20),
-                application: .init(bundleID: "local.apelin.gone", name: "Gone", bundlePath: gone),
+                application: .init(bundleID: "local.luros.gone", name: "Gone", bundlePath: gone),
             ),
             record(
-                package: "local.apelin.owned", version: "2.0",
+                package: "local.luros.owned", version: "2.0",
                 created: Date(timeIntervalSinceNow: -10),
-                application: .init(bundleID: "local.apelin.owned", name: "Owned", bundlePath: owned),
+                application: .init(bundleID: "local.luros.owned", name: "Owned", bundlePath: owned),
             ),
             record(
-                package: "local.apelin.lost", version: "1.0",
+                package: "local.luros.lost", version: "1.0",
                 created: Date(timeIntervalSinceNow: -5),
-                application: .init(bundleID: "local.apelin.lost", name: "Lost", bundlePath: lost),
+                application: .init(bundleID: "local.luros.lost", name: "Lost", bundlePath: lost),
             ),
             // Not installed any more: nothing to list.
             record(
-                package: "local.apelin.old", version: "1.0", status: .removed,
-                application: .init(bundleID: "local.apelin.old", name: "Old", bundlePath: applications + "/Old.app"),
+                package: "local.luros.old", version: "1.0", status: .removed,
+                application: .init(bundleID: "local.luros.old", name: "Old", bundlePath: applications + "/Old.app"),
             ),
         ],
         owners: ["/Applications/Owned.app": "com.example.owner"],
         describe: { path in
             switch path {
-            case demo: ("local.apelin.demo", "Demo", "1.0")
-            case owned: ("local.apelin.owned", "Owned", "2.0")
+            case demo: ("local.luros.demo", "Demo", "1.0")
+            case owned: ("local.luros.owned", "Owned", "2.0")
             default: nil
             }
         },
@@ -1555,7 +1555,7 @@ do {
     check(rows.map(\.name) == ["Demo", "Gone", "Owned"],
           "only Luros's own apps are listed, and only while something of them is left: \(rows.map(\.name))")
     let byName = Dictionary(uniqueKeysWithValues: rows.map { ($0.name, $0) })
-    check(byName["Demo"]?.source == .apelin && byName["Demo"]?.removable == true
+    check(byName["Demo"]?.source == .luros && byName["Demo"]?.removable == true
         && byName["Demo"]?.path == demo && byName["Demo"]?.installationID != nil,
           "an app Luros installed is its own to remove")
     check(byName["Gone"]?.path == nil && byName["Gone"]?.registeredPath == gone
@@ -1564,8 +1564,8 @@ do {
     check(byName["Owned"]?.source == .package && byName["Owned"]?.packageID == "com.example.owner"
         && byName["Owned"]?.removable == false, "an app a package now lists is the package manager's")
     check(!rows.contains { $0.bundleID == "com.example.stranger" }, "an app Luros never installed is not listed")
-    check(ApplicationCensus.parseRegistered("local.apelin.demo : /Applications/Demo.app\nnonsense\n")
-        .first?.bundleID == "local.apelin.demo", "uicache's own list is read")
+    check(ApplicationCensus.parseRegistered("local.luros.demo : /Applications/Demo.app\nnonsense\n")
+        .first?.bundleID == "local.luros.demo", "uicache's own list is read")
 }
 
 // MARK: - Deb control
@@ -1584,7 +1584,7 @@ do {
     do { _ = try DebControlPeek.read(descriptor: other) } catch DebControlPeek.Failure.notADebian { refused = true }
     check(refused, "a file that is not ar is not a deb")
     // dpkg-deb's own output (GNU tar, gzip): the console smoke fixture.
-    if let repository = ProcessInfo.processInfo.environment["APELIN_REPOSITORY"] {
+    if let repository = ProcessInfo.processInfo.environment["LUROS_REPOSITORY"] {
         let fixture = open(repository + "/Documents/Console/fixtures/luros-smoke_1.0_all.deb", O_RDONLY)
         defer { close(fixture) }
         let smoke = try? DebControlPeek.read(descriptor: fixture)
@@ -2105,7 +2105,7 @@ do {
     await AgentSessionTable.shared.add(removalSession)
     await registry.append(removalSession.task.taskID, kind: "approvalRequested", payload: .object([
         "approvalID": .string("remove-hello"),
-        "tool": .string("apelin_package_remove"),
+        "tool": .string("luros_package_remove"),
         "arguments": .string(#"{"installation_id":"\#(installationID)"}"#),
         "detail": .object(["packageRemoval": .object(["installationID": .string(installationID)])]),
     ]))
@@ -2379,11 +2379,11 @@ do {
     let dylib = "/Library/MobileSubstrate/DynamicLibraries/DockFlip.dylib"
     let foreignDylib = "/Library/MobileSubstrate/DynamicLibraries/Foreign.dylib"
     // DockFlip before its rename, which Luros installed.
-    let renamed = record(package: "local.apelin.dockflip", version: "0.1")
+    let renamed = record(package: "local.luros.dockflip", version: "0.1")
     try await installations.save(renamed)
     let installed = Dictionary(uniqueKeysWithValues: [
-        ("local.apelin.dockflip", "0.1"), ("com.example.foreign", "2.0"), ("local.apelin.old", "1.0"),
-        ("local.apelin.versioned", "1.0"), ("local.apelin.taken", "1.0"), ("mobilesubstrate", "0.9"),
+        ("local.luros.dockflip", "0.1"), ("com.example.foreign", "2.0"), ("local.luros.old", "1.0"),
+        ("local.luros.versioned", "1.0"), ("local.luros.taken", "1.0"), ("mobilesubstrate", "0.9"),
     ].map { id, version in
         (id, InstalledPackage(packageID: id, version: version, status: "install ok installed", essential: false, priority: nil))
     })
@@ -2395,9 +2395,9 @@ do {
         installations: installations,
         packages: FakeDatabase(irisin: irisin, extra: installed),
         fileLists: FakeFileLists(lists: [
-            "local.apelin.dockflip": ["/Library", dylib, "/Library/MobileSubstrate/DynamicLibraries/DockFlip.plist"],
+            "local.luros.dockflip": ["/Library", dylib, "/Library/MobileSubstrate/DynamicLibraries/DockFlip.plist"],
             "com.example.foreign": [foreignDylib],
-            "local.apelin.taken": ["/usr/lib/libtaken.dylib"],
+            "local.luros.taken": ["/usr/lib/libtaken.dylib"],
             "mobilesubstrate": ["/usr/lib/libsubstrate.dylib"],
         ]),
         approvals: ApprovalLedger(directory: state.appendingPathComponent("approvals")),
@@ -2436,39 +2436,39 @@ do {
     }
 
     // A package renamed from one Luros installed: that installation, to remove.
-    let owned = "\(dylib) is owned by local.apelin.dockflip; Replaces is required"
-    let rename = try await refused("local.apelin.flipdock", files: [dylib], text: owned)
-    check(rename.conflicts == [InstallConflict(relation: .file, file: dylib, packageID: "local.apelin.dockflip", version: "0.1", installationID: renamed.installationID, projectID: "p")], "the renamed package's installation is named (\(rename.conflicts))")
-    check(rename.message == "\(dylib) already belongs to local.apelin.dockflip 0.1, which Luros installed (installation \(renamed.installationID)). Remove that installation first, then install again. Irisin reported: \(owned)", "the message names the package and the removal, then irisind's words (\(rename.message))")
+    let owned = "\(dylib) is owned by local.luros.dockflip; Replaces is required"
+    let rename = try await refused("local.luros.flipdock", files: [dylib], text: owned)
+    check(rename.conflicts == [InstallConflict(relation: .file, file: dylib, packageID: "local.luros.dockflip", version: "0.1", installationID: renamed.installationID, projectID: "p")], "the renamed package's installation is named (\(rename.conflicts))")
+    check(rename.message == "\(dylib) already belongs to local.luros.dockflip 0.1, which Luros installed (installation \(renamed.installationID)). Remove that installation first, then install again. Irisin reported: \(owned)", "the message names the package and the removal, then irisind's words (\(rename.message))")
 
     // Conflicts and Breaks without a version name an installed package; a
     // versioned one, an absent one and a file the package Replaces do not.
-    let conflicting = "Conflicting final packages: local.apelin.newer, local.apelin.old"
+    let conflicting = "Conflicting final packages: local.luros.newer, local.luros.old"
     let declared = try await refused(
-        "local.apelin.newer",
+        "local.luros.newer",
         files: ["/usr/lib/libtaken.dylib"],
-        fields: "Conflicts: local.apelin.old, local.apelin.versioned (<< 0.5)\nBreaks: local.apelin.absent | local.apelin.old\nReplaces: local.apelin.taken\n",
+        fields: "Conflicts: local.luros.old, local.luros.versioned (<< 0.5)\nBreaks: local.luros.absent | local.luros.old\nReplaces: local.luros.taken\n",
         text: conflicting,
     )
-    check(declared.conflicts.map(\.relation) == [.conflicts, .breaks] && declared.conflicts.allSatisfy { $0.packageID == "local.apelin.old" && $0.installationID == nil }, "Conflicts and Breaks name the installed package (\(declared.conflicts))")
-    check(declared.message == "This package's Conflicts names local.apelin.old 1.0, which is installed. The installer does not remove it: remove it with your preferred package manager first, then install again. Irisin reported: \(conflicting)", "one sentence for the package, the installer's limit and the fix (\(declared.message))")
+    check(declared.conflicts.map(\.relation) == [.conflicts, .breaks] && declared.conflicts.allSatisfy { $0.packageID == "local.luros.old" && $0.installationID == nil }, "Conflicts and Breaks name the installed package (\(declared.conflicts))")
+    check(declared.message == "This package's Conflicts names local.luros.old 1.0, which is installed. The installer does not remove it: remove it with your preferred package manager first, then install again. Irisin reported: \(conflicting)", "one sentence for the package, the installer's limit and the fix (\(declared.message))")
 
     // A file another source installed: no installation, the package manager's to remove.
-    let foreign = try await refused("local.apelin.copy", files: [foreignDylib], text: "\(foreignDylib) is owned by com.example.foreign; Replaces is required")
+    let foreign = try await refused("local.luros.copy", files: [foreignDylib], text: "\(foreignDylib) is owned by com.example.foreign; Replaces is required")
     check(foreign.conflicts == [InstallConflict(relation: .file, file: foreignDylib, packageID: "com.example.foreign", version: "2.0")], "a foreign owner has no installation")
     check(foreign.message.hasPrefix("\(foreignDylib) already belongs to com.example.foreign 2.0, which Luros did not install. Remove it with your preferred package manager first, then install again. Add com.example.foreign to this package's Replaces only if"), "a foreign owner is the package manager's to remove (\(foreign.message))")
 
     // A protected package is never offered for removal.
-    let core = try await refused("local.apelin.shim", files: ["/usr/lib/libsubstrate.dylib"], text: "owned")
+    let core = try await refused("local.luros.shim", files: ["/usr/lib/libsubstrate.dylib"], text: "owned")
     check(core.message.hasPrefix("/usr/lib/libsubstrate.dylib already belongs to mobilesubstrate 0.9, a protected system package. Leave that file out of this package"), "a protected owner's file is left out instead (\(core.message))")
 
     // An upgrade of the package itself is not in its own way.
-    let upgrade = try await refused("local.apelin.dockflip", files: [dylib], text: "the preinst failed")
+    let upgrade = try await refused("local.luros.dockflip", files: [dylib], text: "the preinst failed")
     check(upgrade.conflicts.isEmpty && upgrade.message == "the preinst failed", "a package does not conflict with itself")
 
     // A build recorded before its files were: irisind's words alone.
-    let older = try await refused("local.apelin.plain", files: nil, text: "\(dylib) is owned by local.apelin.dockflip; Replaces is required")
-    check(older.conflicts.isEmpty && older.message == "\(dylib) is owned by local.apelin.dockflip; Replaces is required", "without the package's files the message is irisind's (\(older.message))")
+    let older = try await refused("local.luros.plain", files: nil, text: "\(dylib) is owned by local.luros.dockflip; Replaces is required")
+    check(older.conflicts.isEmpty && older.message == "\(dylib) is owned by local.luros.dockflip; Replaces is required", "without the package's files the message is irisind's (\(older.message))")
 }
 
 // MARK: - Removed toolchains leave no folders behind (ToolchainPruneChecks.swift)
@@ -2477,10 +2477,10 @@ try await toolchainPruneChecks()
 
 // MARK: - Toolchain setup end to end
 
-if let harness = ProcessInfo.processInfo.environment["APELIN_ENVIRONMENT_HARNESS"], !harness.isEmpty {
+if let harness = ProcessInfo.processInfo.environment["LUROS_ENVIRONMENT_HARNESS"], !harness.isEmpty {
     try await toolchainEndToEnd(harness: harness)
 } else {
-    print("skip: toolchain setup end to end (APELIN_ENVIRONMENT_HARNESS is not set)")
+    print("skip: toolchain setup end to end (LUROS_ENVIRONMENT_HARNESS is not set)")
 }
 
 // MARK: - Tool attachment copies
@@ -2663,8 +2663,8 @@ do {
     check(path.dropFirst().first == "/usr/local/bin" && path.contains("/usr/bin"), "then the bootstrap's and the system's directories: \(path)")
     check(environment["SDKROOT"] == developmentNewSDK, "SDKROOT is the newest SDK it reads: \(String(describing: environment["SDKROOT"]))")
     check(environment["IPHONEOS_DEPLOYMENT_TARGET"] == "16.0", "outside a project the deployment target is Luros's default")
-    check(environment["APELIN_TOOLCHAIN_BIN"] == developmentBin, "the toolchain is named for the login profile snippet")
-    check(environment["APELIN_TERMINAL"] == "1", "the terminal says the shell is Luros's own, for the profile snippet's short prompt")
+    check(environment["LUROS_TOOLCHAIN_BIN"] == developmentBin, "the toolchain is named for the login profile snippet")
+    check(environment["LUROS_TERMINAL"] == "1", "the terminal says the shell is Luros's own, for the profile snippet's short prompt")
     check(environment.values.allSatisfy { !$0.contains("tok3n") && !$0.contains("inst-secret") }, "no record field but paths reaches the terminal")
     check(environment["GIT_CONFIG_KEY_0"] == "safe.bareRepository", "the terminal keeps its protected git config")
 }
@@ -2693,7 +2693,7 @@ do {
           "shell_run's PATH is the toolchain's tools, then its search path, then the tools the bundle carries: \(String(describing: variables["PATH"]))")
     check(variables["SDKROOT"] == developmentOldSDK && variables["IPHONEOS_DEPLOYMENT_TARGET"] == "15.0",
           "shell_run has the project's SDK and deployment target, as its terminal does")
-    check(variables["HOME"] == developmentHome && variables["APELIN_PROJECT_ROOT"] == developmentProject && variables["TMPDIR"] == "/var/jb/var/tmp",
+    check(variables["HOME"] == developmentHome && variables["LUROS_PROJECT_ROOT"] == developmentProject && variables["TMPDIR"] == "/var/jb/var/tmp",
           "and what it had before")
     check(entries.allSatisfy { !$0.contains("tok3n") && !$0.contains("inst-secret") }, "no record field but paths reaches shell_run")
 
@@ -2709,7 +2709,7 @@ do {
     let presetEntries = AgentRunCode.environment(preset: preset, project: project, installRoot: "/var/jb", home: developmentHome)
     check(presetEntries.first == "GIT_PAGER=cat", "a preset's own environment comes first")
     check(presetEntries.contains("PATH=/var/jb/usr/bin:/var/jb/bin:/var/jb/usr/local/bin:/usr/bin:/bin"), "a preset keeps the bare search path")
-    check(!presetEntries.contains { $0.hasPrefix("SDKROOT=") || $0.hasPrefix("APELIN_TOOLCHAIN_BIN=") || $0.contains(developmentBin) },
+    check(!presetEntries.contains { $0.hasPrefix("SDKROOT=") || $0.hasPrefix("LUROS_TOOLCHAIN_BIN=") || $0.contains(developmentBin) },
           "and no toolchain or SDK: \(presetEntries)")
 }
 
@@ -2882,7 +2882,7 @@ do {
     let changed: JSONValue = .object([
         "descriptionChanged": .object(["kind": .string("build"), "digest": .string(digest)]),
     ])
-    await ask(long, "late-build", tool: "apelin_project_build", detail: changed)
+    await ask(long, "late-build", tool: "luros_project_build", detail: changed)
     await ask(long, "late-run", tool: "shell_run", detail: makeCommand)
     let approveBuild = AgentApproveRequest(sessionID: long.sessionID, approvalID: "late-build", decision: .approve)
     try await AgentApprovals.recordInLedger(approveBuild, entry: long, registry: registry, ledger: ledger)
@@ -2902,7 +2902,7 @@ do {
 
     // An approval that does not apply is refused and left as the app gave it.
     let short = await session("agent-short")
-    await ask(short, "for-build", tool: "apelin_project_build")
+    await ask(short, "for-build", tool: "luros_project_build")
     await sessions.record(short.sessionID, approvalID: "for-build", decision: .approve)
     await expectErrorAsync("an approval asked for another tool", code: .denied) {
         try await AgentApprovals.authorize(
@@ -3001,7 +3001,7 @@ do {
         await sessions.add(entry)
         return entry
     }
-    // What luros-agent writes into apelin_toolchain_setup's and apelin_sdk_import's
+    // What luros-agent writes into luros_toolchain_setup's and luros_sdk_import's
     // approvalRequested `detail` (LurosAgentWorker's tests hold that shape).
     func ask(_ entry: AgentSessionTable.Entry, _ approvalID: String, tool: String, detail: JSONValue) async {
         await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object([
@@ -3053,7 +3053,7 @@ do {
     // Under Confirm: exactly the approved setup, once.
     let unapproved = await authorized(setup, strict)
     check(!unapproved, "a Strict session needs the user's approval")
-    await ask(strict, "setup-1", tool: "apelin_toolchain_setup", detail: setupDetail)
+    await ask(strict, "setup-1", tool: "luros_toolchain_setup", detail: setupDetail)
     let notYetGiven = await authorized(setup, strict)
     check(!notYetGiven, "asking is not approving")
     await sessions.record(strict.sessionID, approvalID: "setup-1", decision: .approve)
@@ -3066,7 +3066,7 @@ do {
     let again = await authorized(setup, strict)
     check(!again, "once: a second setup asks again")
     let importRequest = SDKImportRequest(source: .repository(url: sourceURL, branch: "sdk/iPhoneOS17.5"))
-    await ask(strict, "import-1", tool: "apelin_sdk_import", detail: importDetail)
+    await ask(strict, "import-1", tool: "luros_sdk_import", detail: importDetail)
     await sessions.record(strict.sessionID, approvalID: "import-1", decision: .approve)
     let otherBranch = await authorized(SDKImportRequest(source: .repository(url: sourceURL, branch: "sdk/iPhoneOS18.5")), strict)
     check(!otherBranch, "an import approval covers its branch only")
@@ -3074,7 +3074,7 @@ do {
     check(!setupFromImport, "and no setup")
     let approvedImport = await authorized(importRequest, strict)
     check(approvedImport, "the approved import goes through")
-    await ask(strict, "denied-1", tool: "apelin_sdk_import", detail: importDetail)
+    await ask(strict, "denied-1", tool: "luros_sdk_import", detail: importDetail)
     await sessions.record(strict.sessionID, approvalID: "denied-1", decision: .deny)
     let afterDenial = await authorized(importRequest, strict)
     check(!afterDenial, "a denied approval lets nothing through")
@@ -3108,11 +3108,11 @@ do {
     // when the build names none.
     func ask(_ approvalID: String, configuration: String, bootstrap: String? = nil) async {
         var detail: [String: JSONValue] = [
-            "projectID": .string("p-workspace"), "script": .string("apelin/build.sh"), "configuration": .string(configuration),
+            "projectID": .string("p-workspace"), "script": .string("luros/build.sh"), "configuration": .string(configuration),
         ]
         detail["bootstrap"] = bootstrap.map(JSONValue.string)
         await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object([
-            "approvalID": .string(approvalID), "tool": .string("apelin_project_build"),
+            "approvalID": .string(approvalID), "tool": .string("luros_project_build"),
             "detail": .object([AgentExternalBuildRules.detailKey: .object(detail)]),
         ]))
     }
@@ -3178,7 +3178,7 @@ do {
     let unasked = await authorized(theirs, strict)
     check(!unasked, "another project's rename needs the user's approval under Confirm")
     await registry.append(strict.task.taskID, kind: "approvalRequested", payload: .object([
-        "approvalID": .string("rename-1"), "tool": .string("apelin_project_rename"),
+        "approvalID": .string("rename-1"), "tool": .string("luros_project_rename"),
         "detail": .object([AgentProjectRenameRules.detailKey: .object([
             "projectID": .string("p-rename-theirs"), "folder": .string("Theirs"),
             "currentName": .string("Theirs"), "displayName": .string("Weather"),
@@ -3268,9 +3268,9 @@ do {
     func authorized(_ entry: AgentSessionTable.Entry?, _ project: ResolvedProject = target) async -> LurosError? {
         await AgentProjectDeleteRules.authorize(project, session: entry?.sessionID, registry: registry)
     }
-    // What luros-agent writes into apelin_project_delete's approvalRequested
+    // What luros-agent writes into luros_project_delete's approvalRequested
     // (LurosAgentWorker's tests hold that shape).
-    func ask(_ approvalID: String, tool: String = "apelin_project_delete", projectID: String = "p-delete-theirs", folder: String = "Theirs") async {
+    func ask(_ approvalID: String, tool: String = "luros_project_delete", projectID: String = "p-delete-theirs", folder: String = "Theirs") async {
         await registry.append(strict.task.taskID, kind: "approvalRequested", payload: .object([
             "approvalID": .string(approvalID), "tool": .string(tool),
             "detail": .object([AgentProjectDeleteRules.detailKey: .object([
@@ -3282,7 +3282,7 @@ do {
     check(unasked?.code == .denied, "Strict deletes another project only as the user approved it")
     await ask("delete-1", folder: "Mine")
     await sessions.record(strict.sessionID, approvalID: "delete-1", decision: .approve)
-    await ask("delete-2", tool: "apelin_project_rename")
+    await ask("delete-2", tool: "luros_project_rename")
     await sessions.record(strict.sessionID, approvalID: "delete-2", decision: .approve)
     let otherFolder = await authorized(strict)
     let unspent = await sessions.approvedIDs(strict.sessionID)
@@ -3351,11 +3351,11 @@ do {
     }
     let strict = await session("feedback-strict", mode: .confirm)
     let feedback = FeedbackSendRequest(title: "The build log stops early", body: "It ends before the link step.")
-    // What luros-agent writes into apelin_feedback_send's approvalRequested
+    // What luros-agent writes into luros_feedback_send's approvalRequested
     // (LurosAgentWorker's tests hold that shape).
     func ask(_ approvalID: String, body: String, repository: String = FeedbackRules.repository) async {
         await registry.append(strict.task.taskID, kind: "approvalRequested", payload: .object([
-            "approvalID": .string(approvalID), "tool": .string("apelin_feedback_send"),
+            "approvalID": .string(approvalID), "tool": .string("luros_feedback_send"),
             "detail": .object([AgentFeedbackRules.detailKey: .object([
                 "repository": .string(repository), "title": .string(feedback.title), "body": .string(body),
             ])]),
@@ -3420,11 +3420,11 @@ do {
         expectedTitle: "The build log stops early",
         expectedBody: "It ends before the link step.",
     )
-    // What luros-agent writes into apelin_feedback_edit's approvalRequested
+    // What luros-agent writes into luros_feedback_edit's approvalRequested
     // (LurosAgentWorker's tests hold that shape): no title, since it stays.
     func ask(
         _ approvalID: String,
-        tool: String = "apelin_feedback_edit",
+        tool: String = "luros_feedback_edit",
         number: Double = 12,
         title: String? = nil,
         body: String = "It ends before the link step, on roothide and rootless.",
@@ -3453,7 +3453,7 @@ do {
     await ask("edit-body", body: "Another body.")
     await ask("edit-title", title: "A title it does not change")
     await ask("edit-against", currentBody: "What the issue said before the user edited it.")
-    await ask("edit-tool", tool: "apelin_feedback_send")
+    await ask("edit-tool", tool: "luros_feedback_send")
     let near = await authorized(strict)
     let unspent = await sessions.approvedIDs(strict.sessionID)
     check(
@@ -3500,7 +3500,7 @@ do {
     }
     let strict = await session("repository-strict", mode: .confirm)
     let create = GitRepositoryCreateRequest(name: "clock-tweak", visibility: .private, description: "A clock in the status bar")
-    // What luros-agent writes into apelin_git_create_repository's
+    // What luros-agent writes into luros_git_create_repository's
     // approvalRequested (LurosAgentWorker's tests hold that shape).
     func ask(_ approvalID: String, owner: String? = nil, visibility: String = "private") async {
         var detail: [String: JSONValue] = [
@@ -3510,7 +3510,7 @@ do {
             detail["owner"] = .string(owner)
         }
         await registry.append(strict.task.taskID, kind: "approvalRequested", payload: .object([
-            "approvalID": .string(approvalID), "tool": .string("apelin_git_create_repository"),
+            "approvalID": .string(approvalID), "tool": .string("luros_git_create_repository"),
             "detail": .object([AgentRepositoryCreateRules.detailKey: .object(detail)]),
         ]))
     }
@@ -3569,11 +3569,11 @@ do {
         title: "The installer stops at 90%",
         body: "Installing a package from the inbox stops at 90%.",
     )
-    // What luros-agent writes into apelin_git_create_issue's
+    // What luros-agent writes into luros_git_create_issue's
     // approvalRequested (LurosAgentWorker's tests hold that shape).
     func ask(
         _ approvalID: String,
-        tool: String = "apelin_git_create_issue",
+        tool: String = "luros_git_create_issue",
         repository: String = "Lakr233/Irisin",
         body: String = "Installing a package from the inbox stops at 90%.",
     ) async {
@@ -3592,7 +3592,7 @@ do {
     check(unasked?.code == .denied, "Strict opens an issue only as the user approved it")
     await ask("issue-elsewhere", repository: "1103945342/Luros")
     await ask("issue-body", body: "Another body.")
-    await ask("issue-tool", tool: "apelin_feedback_send")
+    await ask("issue-tool", tool: "luros_feedback_send")
     let near = await authorized(strict)
     let unspent = await sessions.approvedIDs(strict.sessionID)
     check(
@@ -3806,14 +3806,14 @@ do {
     }
     let publish = DistributionPublishRequest(files: files, digests: digests, repository: "someone/packages")
     let strict = await session("publish-strict", mode: .confirm)
-    // What luros-agent writes into apelin_package_publish's
+    // What luros-agent writes into luros_package_publish's
     // approvalRequested (LurosAgentWorker's tests hold that shape).
     func ask(_ approvalID: String, _ asked: DistributionPublishRequest) async {
         let packages: [JSONValue] = zip(asked.files, asked.digests ?? []).map { file, digest in
             .object(["file": .string(file), "digest": .string(digest), "packageID": .string("com.example.clock")])
         }
         await registry.append(strict.task.taskID, kind: "approvalRequested", payload: .object([
-            "approvalID": .string(approvalID), "tool": .string("apelin_package_publish"),
+            "approvalID": .string(approvalID), "tool": .string("luros_package_publish"),
             "detail": .object([AgentPublishRules.detailKey: .object([
                 "repository": .string(asked.repository ?? ""), "packages": .array(packages),
             ])]),
@@ -3902,7 +3902,7 @@ do {
     }
     let detail: JSONValue = .object([AgentConversationRules.otherProjectDetail: .object(reachDetail)])
     await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object([
-        "approvalID": .string("reach-1"), "tool": .string("apelin_conversation_create"), "detail": detail,
+        "approvalID": .string("reach-1"), "tool": .string("luros_conversation_create"), "detail": detail,
     ]))
     let before = await sessions.mayReach("p-far", session: entry.sessionID)
     check(!before, "another project is out of reach until the user approves a call naming it")
@@ -3963,7 +3963,7 @@ do {
     ]
     for (approvalID, detail) in asks {
         await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object([
-            "approvalID": .string(approvalID), "tool": .string("apelin_project_build"), "detail": detail,
+            "approvalID": .string(approvalID), "tool": .string("luros_project_build"), "detail": detail,
         ]))
     }
     func relay(_ approvalID: String, workerTakesIt: Bool) async throws {
@@ -4016,7 +4016,7 @@ do {
         )
         await sessions.add(session)
         await registry.append(session.task.taskID, kind: "approvalRequested", payload: .object([
-            "approvalID": .string("shared-build"), "tool": .string("apelin_project_build"), "detail": sharedBuild,
+            "approvalID": .string("shared-build"), "tool": .string("luros_project_build"), "detail": sharedBuild,
         ]))
         pair.append(session)
     }
@@ -4050,7 +4050,7 @@ do {
     ])])
     for session in pair {
         await registry.append(session.task.taskID, kind: "approvalRequested", payload: .object([
-            "approvalID": .string("unheld-build"), "tool": .string("apelin_project_build"), "detail": unheldBuild,
+            "approvalID": .string("unheld-build"), "tool": .string("luros_project_build"), "detail": unheldBuild,
         ]))
     }
     func approveUnheld(_ session: AgentSessionTable.Entry) -> AgentApproveRequest {
@@ -4102,7 +4102,7 @@ do {
     await AgentSessionTable.shared.add(entry)
     await registry.append(entry.task.taskID, kind: "approvalRequested", payload: .object([
         "approvalID": .string("evict-build"),
-        "tool": .string("apelin_project_build"),
+        "tool": .string("luros_project_build"),
         "detail": .object(["descriptionChanged": .object([
             "kind": .string("build"), "digest": .string(digest(1000)),
         ])]),
@@ -4355,7 +4355,7 @@ do {
     [branch "main"]
     \tremote = origin
     \tmerge = refs/heads/main
-    [apelin]
+    [luros]
     \tcloneTask = 0f1e2d3c-task
 
     """

@@ -61,7 +61,7 @@ precondition(!fastThought.isWorking)
 let orphanTool = ChatTranscript(events: [event(1, "toolCall", ["id": .string("tool"), "tool": .string("file_list")]), event(2, "finished")]) { _ in nil }
 precondition(orphanTool.messages[0].role == .thinking(seconds: 0, tools: 1), "A tool without supplied thinking still counts once")
 let notified = ChatTranscript(events: [
-    event(1, "toolCall", ["id": .string("n1"), "tool": .string("apelin_notification_send"), "arguments": .string("{\"body\":\"Built.\"}")]),
+    event(1, "toolCall", ["id": .string("n1"), "tool": .string("luros_notification_send"), "arguments": .string("{\"body\":\"Built.\"}")]),
     event(2, "notice", ["body": .string("Built.")]),
     event(3, "toolResult", ["id": .string("n1"), "output": .string("Sent to Luros as a notification.")]),
     event(4, "finished"),
@@ -95,7 +95,7 @@ print("ok: empty thoughts, subsecond reasoning, standalone tools, shown files an
 let installApproval = ChatTranscript(events: [
     event(1, "prompt", ["text": .string("Install it")]),
     event(2, "approvalRequested", [
-        "approvalID": .string("a2"), "tool": .string("apelin_package_install"), "arguments": .string("{\"artifact_id\":\"x\"}"),
+        "approvalID": .string("a2"), "tool": .string("luros_package_install"), "arguments": .string("{\"artifact_id\":\"x\"}"),
         "reason": .string("the packaging description changed since the template or the last approval"),
         "detail": .object(["descriptionChanged": .object([
             "kind": .string("packaging"), "digest": .string("d"), "diff": .string("+postinst"),
@@ -118,7 +118,7 @@ print("ok: an approval card carries the reason and the description diff before t
 let publishApproval = ChatTranscript(events: [
     event(1, "prompt", ["text": .string("Publish both")]),
     event(2, "approvalRequested", [
-        "approvalID": .string("p1"), "tool": .string("apelin_package_publish"),
+        "approvalID": .string("p1"), "tool": .string("luros_package_publish"),
         "arguments": .string("{\"build_ids\":[\"b-hide\",\"b-less\"]}"),
         "reason": .string("Publishes these 2 packages to your package repository someone/packages on GitHub."),
         "detail": .object(["packagePublish": .object([
@@ -149,7 +149,7 @@ print("ok: a publication's card names the repository and every package's digest"
 let feedbackEditApproval = ChatTranscript(events: [
     event(1, "prompt", ["text": .string("Broaden #12")]),
     event(2, "approvalRequested", [
-        "approvalID": .string("e1"), "tool": .string("apelin_feedback_edit"),
+        "approvalID": .string("e1"), "tool": .string("luros_feedback_edit"),
         "arguments": .string("{\"body\":\"It ends early on both bootstraps.\",\"number\":12,\"revision\":\"0123abcd\"}"),
         "reason": .string("Replaces the body of issue #12 on 1103945342/Luros."),
         "detail": .object(["feedbackEdit": .object([
@@ -418,7 +418,7 @@ let written = thinkingAfter + [
 ]
 precondition(banner(written) == ToolCallBanner(reason: "Add the preferences", file: "Root.plist", change: .init(added: 24, removed: 0)),
              "the newest call")
-let buildCall = written + [call(10, "t3", "apelin_project_build", "{}")]
+let buildCall = written + [call(10, "t3", "luros_project_build", "{}")]
 precondition(banner(buildCall) == ToolCallBanner(reason: "Build the project"), "a call without a reason shows its title, and no file")
 let readWithPath = written + [call(10, "t3", "file_read", "{\"reason\":\"Check the hook\",\"path\":\"Sources/Tweak.x\"}")]
 precondition(banner(readWithPath) == ToolCallBanner(reason: "Check the hook"), "only a file tool names its file")
@@ -458,7 +458,7 @@ let retriedReplies = ChatTranscript(events: cutOffRetried) { _ in nil }.messages
 precondition(retriedReplies.map(\.text) == ["The hook chains to the original."], "the reply is drawn once: \(retriedReplies.map(\.text))")
 let callThenRetry = [
     event(1, "prompt", ["text": .string("Build it")]), event(2, "messageStarted"),
-    event(3, "toolCall", ["id": .string("t1"), "tool": .string("apelin_project_build"), "arguments": .string("{}")]),
+    event(3, "toolCall", ["id": .string("t1"), "tool": .string("luros_project_build"), "arguments": .string("{}")]),
     event(4, "toolResult", ["id": .string("t1"), "output": .string("Built")]),
     event(5, "reconnecting"),
 ]
@@ -565,8 +565,8 @@ precondition(summaryShown.messages.count == 2 && summaryShown.quietDeadline == n
 let asking = [
     event(1, "prompt", ["text": .string("Install it")]), event(2, "messageStarted"),
     event(3, "message", ["text": .string("Installing.")]),
-    event(4, "toolCall", ["id": .string("t1"), "tool": .string("apelin_package_install"), "arguments": .string("{}")]),
-    event(5, "approvalRequested", ["approvalID": .string("a1"), "tool": .string("apelin_package_install"), "arguments": .string("{}")]),
+    event(4, "toolCall", ["id": .string("t1"), "tool": .string("luros_package_install"), "arguments": .string("{}")]),
+    event(5, "approvalRequested", ["approvalID": .string("a1"), "tool": .string("luros_package_install"), "arguments": .string("{}")]),
 ]
 let waitingForUser = ChatTranscript(events: asking, now: Date(timeIntervalSince1970: 60)) { _ in nil }
 precondition(waitingForUser.messages.last?.role.needsApproval == true && waitingForUser.quietDeadline == nil,
@@ -595,7 +595,7 @@ let textBeforeCall = [
     event(2, "messageStarted"), event(3, "text", ["text": .string("I'll build the release")]),
     event(4, "toolCallPreparing"),
     event(5, "message", ["text": .string("I'll build the release, install it and open it.")]),
-    event(6, "toolCall", ["id": .string("t1"), "tool": .string("apelin_project_build"), "arguments": .string("{}")]),
+    event(6, "toolCall", ["id": .string("t1"), "tool": .string("luros_project_build"), "arguments": .string("{}")]),
 ]
 let building = ChatTranscript(events: textBeforeCall) { _ in nil }.messages
 precondition(building.filter { $0.role == .assistant }.map(\.text) == ["I'll build the release, install it and open it."], "One message's text is one row")
@@ -622,7 +622,7 @@ let twoSummaries = [
     event(10, "toolCall", ["id": .string("t2"), "tool": .string("file_edit"), "arguments": .string("{\"path\":\"Tweak.x\"}")]),
     event(11, "toolResult", ["id": .string("t2"), "output": .string("Patched Tweak.x (1 replacement, +1 -1)")]),
     event(12, "messageStarted"), event(13, "toolCallPreparing"), event(14, "message", ["text": .string("")]),
-    event(15, "toolCall", ["id": .string("t3"), "tool": .string("apelin_project_build"), "arguments": .string("{}")]),
+    event(15, "toolCall", ["id": .string("t3"), "tool": .string("luros_project_build"), "arguments": .string("{}")]),
     event(16, "toolResult", ["id": .string("t3"), "output": .string("Built")]),
     event(17, "messageStarted"), event(18, "message", ["text": .string("Built.")]), event(19, "finished"),
 ]

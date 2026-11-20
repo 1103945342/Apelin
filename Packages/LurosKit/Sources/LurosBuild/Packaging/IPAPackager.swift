@@ -6,7 +6,7 @@ import Foundation
 /// What an app project's build hands back when the description asks for an
 /// `.ipa`: the `.app` the build produced, inside `Payload/`, zipped — the
 /// bytes the build signed, unchanged, for a signing tool of one's own to
-/// sign for a certificate of its own — and `apelin_package_install` installs
+/// sign for a certificate of its own — and `luros_package_install` installs
 /// on this device as an app (`InstallBridge`, ApplicationInstall), never
 /// through a package manager.
 ///

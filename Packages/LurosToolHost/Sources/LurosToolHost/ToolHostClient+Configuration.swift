@@ -25,7 +25,7 @@ public extension ToolHostClient {
             arguments: [String] = [],
             environment: [String: String] = Configuration.defaultEnvironment(),
             limits: ToolProtocolLimits = .init(),
-            host: ToolPeer = ToolPeer(name: "apelin", version: "0"),
+            host: ToolPeer = ToolPeer(name: "luros", version: "0"),
             manifest: ToolManifest? = nil,
             allowRoot: Bool = false,
             runAs: ToolProcessIdentity? = nil,

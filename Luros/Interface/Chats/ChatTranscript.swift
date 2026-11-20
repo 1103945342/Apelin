@@ -23,7 +23,7 @@ struct ChatTranscript {
     /// the agent recorded: the figure the ring beside the composer shows.
     var contextUsage: ChatContextUsage?
     /// The run mode the agent last changed this conversation to itself
-    /// (`apelin_run_mode`): the page writes it where the pill reads it, so a
+    /// (`luros_run_mode`): the page writes it where the pill reads it, so a
     /// change made while the app was away is not lost.
     var runMode: ComposerMode?
     var approvalIDs: [UUID: String] = [:]

@@ -137,12 +137,12 @@ enum EnvironmentPrompt {
             // folder printed /var/mobile/Documents/…, the system's folder to
             // clang.
             lines.append(
-                "- On roothide the bootstrap's shell and tools see the bootstrap as `/` and the real root as `/rootfs`, so `pwd -P`, `realpath` and the like print `/var/mobile/…` or `/rootfs/…` for a path the toolchain's compilers know by another name: give the compilers paths relative to the working directory, or under `$APELIN_PROJECT_ROOT`, the project's real path.",
+                "- On roothide the bootstrap's shell and tools see the bootstrap as `/` and the real root as `/rootfs`, so `pwd -P`, `realpath` and the like print `/var/mobile/…` or `/rootfs/…` for a path the toolchain's compilers know by another name: give the compilers paths relative to the working directory, or under `$LUROS_PROJECT_ROOT`, the project's real path.",
             )
             // The jbroot was renamed on a device between two runs of one
             // chat, which trusted the paths it had written down.
             lines.append(
-                "- roothide can rename the install root when the device is rebooted or jailbroken again, and everything under it moves: Luros's data folder (in the jbroot's own `var/mobile`), the project's real path, `$APELIN_PROJECT_ROOT`, `$APELIN_TOOLCHAIN_BIN`, `SDKROOT`, every toolchain and SDK path above. Never write such a path into anything that outlives this run (project files, build scripts, Makefiles, AGENTS.md or CLAUDE.md, memory, skills, package scripts, code): code finds it at run time as roothide's `jbroot()` does (the luros-bootstrap-paths skill's `LurosBootstrapPath()`), plists and maintainer scripts use `@PREFIX@` and `@ROOTFS@`, and a script uses the variables Luros sets when it runs or paths relative to the project.",
+                "- roothide can rename the install root when the device is rebooted or jailbroken again, and everything under it moves: Luros's data folder (in the jbroot's own `var/mobile`), the project's real path, `$LUROS_PROJECT_ROOT`, `$LUROS_TOOLCHAIN_BIN`, `SDKROOT`, every toolchain and SDK path above. Never write such a path into anything that outlives this run (project files, build scripts, Makefiles, AGENTS.md or CLAUDE.md, memory, skills, package scripts, code): code finds it at run time as roothide's `jbroot()` does (the luros-bootstrap-paths skill's `LurosBootstrapPath()`), plists and maintainer scripts use `@PREFIX@` and `@ROOTFS@`, and a script uses the variables Luros sets when it runs or paths relative to the project.",
             )
         }
         if let found = inputs.commandsFound {
@@ -254,10 +254,10 @@ enum EnvironmentPrompt {
         if !found.isEmpty, !missing.isEmpty {
             line += " Not installed: " + missing.joined(separator: ", ") + "."
         }
-        // A package is apelin_project_build's: dpkg-deb builds one only in
+        // A package is luros_project_build's: dpkg-deb builds one only in
         // the script a workspace declares for it.
         if found.contains("dpkg-deb") {
-            line += " dpkg-deb builds a package only inside a workspace's declared build script, which apelin_project_build runs; never build one with it yourself."
+            line += " dpkg-deb builds a package only inside a workspace's declared build script, which luros_project_build runs; never build one with it yourself."
         }
         return line + " The bootstrap's other commands are not macOS's (GNU sed, a different plutil): read a Mac build script's commands before running it, and say what is missing rather than looking for it."
     }
@@ -292,7 +292,7 @@ enum EnvironmentPrompt {
             ? "; swiftc takes the SDK too but needs -target arm64-apple-ios\(target). "
             : ". "
         line += "So do not look for compilers, SDKs or paths, and never set up or import again a toolchain or SDK listed here. "
-            + "A project with an Luros build description builds with apelin_project_build."
+            + "A project with an Luros build description builds with luros_project_build."
         return line
     }
 
