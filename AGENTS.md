@@ -377,7 +377,7 @@ the same executable in session mode; the workers are its children.
   `.github/workflows/model-catalog.yml` reads `https://models.dev/api.json`
   every day at 12:00 UTC (20:00 Asia/Shanghai), trims it with
   `Scripts/refresh-models-dev.py` to the fields `ModelDataSnapshot` keeps, and
-  commits `Luros/Resources/models.dev.json` only when a model's figures
+  commits `Apelin/Resources/models.dev.json` only when a model's figures
   changed — that commit's `generatedAt` is the stamp the app measures a week
   from. The app ships the file, writes it into
   `~/Documents/com.fluoxetine.luros/ModelData/models.json` on the first launch (the
@@ -1154,7 +1154,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   is exactly that one, once per operation; an authentication failure is
   `denied` with reason `authenticationRequired`. `gitSettings`,
   `gitAuthorSet`, `gitCredentialSet` and `gitCredentialRemove` are the
-  app's and the agent's (Settings ▸ Git, `Luros/Interface/Settings/Git/`): the list names
+  app's and the agent's (Settings ▸ Git, `Apelin/Interface/Settings/Git/`): the list names
   hosts and usernames, never a token, and the console refuses
   `gitCredentialSet` before sending it. github.com is signed in to with a
   code, the device flow `gh auth login` runs (owner, 2026-10-25;
@@ -1373,14 +1373,14 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `t2-toolchain-remove.json` and `t3-toolchain-side-by-side.json`.
 - **Transfer files** (2026-10-21; `Operations/Transfer.swift`,
   `ApelinEnvironment/Transfer/`, `Apelind/Dispatch/TransferHandler.swift`,
-  `Luros/Interface/Transfer/`). A registered toolchain (`.apetc`), a
+  `Apelin/Interface/Transfer/`). A registered toolchain (`.apetc`), a
   registered SDK (`.apesdk`) or a project (`.apeproj`) goes from one device
   to another as one file, user to own device: nothing is uploaded, and the
   export's confirmation says so in a line. The app declares the exported
   types `com.fluoxetine.luros.toolchain-package`, `…sdk-package` and
   `…project-package` (conforming to `public.data` and `public.archive`, by
   extension) and owns them in `CFBundleDocumentTypes`, in the partial
-  `Luros/Resources/Info.plist` merged with the generated one (kept out of
+  `Apelin/Resources/Info.plist` merged with the generated one (kept out of
   the target's resources by the synced folder's exception set), with
   `LSSupportsOpeningDocumentsInPlace`; no document icon, the system draws
   one from the app's. *The format*: a pax tar through zstd whose first
@@ -1478,10 +1478,10 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   unified log (`com.fluoxetine.luros`, `console`). It calls `ApelinService`, the
   one typed surface — one async method per operation — that the UI and the
   agent's tools (over `ChannelTransport`) call too; `ApelinService.app`
-  (`Luros/Service/`) binds it to `DaemonClient`. The runner is the
+  (`Apelin/Service/`) binds it to `DaemonClient`. The runner is the
   `ApelinConsole` library (ApelinCore and ApelinProtocol only), given an
   `ApelinService`, a `DataFolder` and a log sink; the app keeps the binding
-  and the launch and foreground hooks (`Luros/Console/`). A step answering
+  and the launch and foreground hooks (`Apelin/Console/`). A step answering
   a task handle, or an attach answering an unfinished batch, follows the
   task to its end (an attach by ID reads a task an earlier run started). A followed task
   is announced by a `step.task` line, so a launch after the app died
@@ -2666,7 +2666,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   instance named `credential-import`, so the item is written and read by
   the same signed executable.
 - **Agent sign-in** (`Packages/ApelinAgent/Sources/ApelinAgentWorker/SignIn/`,
-  `Luros/Interface/Settings/Accounts/`). Settings ▸ Model Providers (one
+  `Apelin/Interface/Settings/Accounts/`). Settings ▸ Model Providers (one
   row on the Settings root, the signed-in count beside it, pushing
   `ModelProvidersController`: signed in first with who as and a `…` menu,
   then the rest under Sign In with an Account and API Keys, searchable)
@@ -2993,7 +2993,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   unlinked temporary file's descriptor, JPEG.
 - **The hello** has a five-second bound per attempt, guarded by connection
   generation, retried every second; the fallback to the unprivileged backend
-  comes ten seconds after the first miss (`Luros/DaemonClient.swift`). After
+  comes ten seconds after the first miss (`Apelin/DaemonClient.swift`). After
   it answers, the connection stays open — a connected app is work that keeps
   apelind up — and is said hello to again after it drops. Without the
   backend, calls fail with `backendUnavailable` after one fresh hello.
@@ -3015,10 +3015,10 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   default may be newer. A layout reads size class and the space it has,
   insets each edge by its own safe-area inset, and leaves bars to the
   navigation controllers; nothing asks whether it is on an iPhone Duo.
-- **Strings**: one catalogue, `Luros/Resources/Localizable.xcstrings`, kept
+- **Strings**: one catalogue, `Apelin/Resources/Localizable.xcstrings`, kept
   the manual way — a key Xcode cannot see stays `extractionState: manual`,
   `make check` refuses `stale`. Prune by hand with Xcode closed, passing every
-  source root: `Scripts/prune-xcstrings.py Luros/Resources/Localizable.xcstrings
+  source root: `Scripts/prune-xcstrings.py Apelin/Resources/Localizable.xcstrings
   Luros Apelind Shared Widgets Workers Packages`. Never `--delete-orphans`: the
   project has several targets now. The widget extension is a bundle of its own
   and keeps its own, `Widgets/Extension/Resources/Localizable.xcstrings`, the
@@ -3027,7 +3027,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   French, Italian, Japanese, Korean, Portuguese (Brazil), Russian,
   Vietnamese and Chinese (Simplified and Traditional, Taiwan usage), all
   in the project's `knownRegions`. A key goes in with all twelve
-  translations, and so does a key of `Luros/Resources/<language>.lproj/
+  translations, and so does a key of `Apelin/Resources/<language>.lproj/
   InfoPlist.strings` (the camera prompt and the three document type
   names): `make check` runs `Scripts/check-translations.py`, which refuses
   a key missing one. Use the words the siblings already use for the same
@@ -3107,7 +3107,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   xcframework with all 38 languages in use made it 55.0 MB.
 - **The root** is laid out as ChatGPT's and FlowDown's (owner,
   2026-10-21): `RootInterfaceController`
-  (`Luros/Interface/Root/`), a container of its own, no
+  (`Apelin/Interface/Root/`), a container of its own, no
   `UISplitViewController`, with the sidebar's navigation controller and
   `DetailNavigator`, whose picked page — `ChatController` or the icon —
   is the stack's root. The window's horizontal size
@@ -3231,7 +3231,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   selected page, and the first transcript layout jumps to the bottom without
   animating. Never hide a
   `UITabBarController`'s bar to simulate that hierarchy.
-  *The conversation page* (`Luros/Interface/Chats/`, owner, 2026-10-21)
+  *The conversation page* (`Apelin/Interface/Chats/`, owner, 2026-10-21)
   is made once: the root keeps one `ChatController`, picking a
   conversation hands it over with `use(_:)`, and the navigator shows it
   again only when something else is its root. Switching never builds a
@@ -3461,7 +3461,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   line to the unified log under its own subsystem, `com.lakr233.dog`. It
   is the app's alone: apelind and the workers never link it and keep their
   own logging, and no task, scope or operation reads the journal.
-  Settings ▸ About ▸ Logs (`Luros/Interface/Settings/Logs/`) reads it
+  Settings ▸ About ▸ Logs (`Apelin/Interface/Settings/Logs/`) reads it
   back: every launch Dog keeps (`JournalFiles`, tested by
   `Tests/Journal`), this one first, each opening Irisin's log page
   (`LogViewerController`: level and category filters, Errors Only, a search
@@ -3785,7 +3785,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
 - **Distribution repository** (owner, 2026-10-25;
   `Operations/Distribution.swift`, `ApelinEnvironment/Distribution/`,
   `Apelind/Dispatch/DistributionHandler.swift`,
-  `Luros/Interface/Settings/Git/DistributionRepository*`). The user's own
+  `Apelin/Interface/Settings/Git/DistributionRepository*`). The user's own
   package repository: a GitHub repository of theirs that GitHub Actions
   indexes and GitHub Pages serves as an APT source
   (`https://<owner>.github.io/<name>/`), laid out after
@@ -3843,7 +3843,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   organizations', with those organizations (`/user/orgs`, which the `repo`
   scope may not fill, and every organization owner the list names);
   `distributionRepositoryUnlink` forgets the link only. Its card (Repository
-  Card…, `Luros/Interface/Settings/Git/RepositoryCard/`) is a badge the
+  Card…, `Apelin/Interface/Settings/Git/RepositoryCard/`) is a badge the
   Camera scans to add the source in Irisin: icon, title, the source address,
   a QR code of `irisin://repository/add?url=<source address>` (Irisin's
   `IrisinLink`) and `@<owner>`, every line the body size in SF Rounded,
@@ -3905,7 +3905,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   Answers {number, url, title, body}. Both the app's and the agent's.
   Tested by `FeedbackEditTests`; `distribution.json` reads issue 0 and
   edits a title to nothing, both refused before GitHub.
-  *The star* (owner, 2026-10-29; `Luros/Interface/Feedback/`). Once the
+  *The star* (owner, 2026-10-29; `Apelin/Interface/Feedback/`). Once the
   reader has signed in with GitHub, builds that complete ask "Do You Like
   Luros?" — "Please star us on GitHub. It helps us go further.", Maybe
   Later (下次一定) beside Star Now (立即标记) — and Star Now stars
@@ -4107,7 +4107,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
 ## Layout
 
 ```
-Luros/                  the app: main.swift (manual UIApplicationMain), Application/
+Apelin/                  the app: main.swift (manual UIApplicationMain), Application/
                          (delegate, ExecutableWatch, QuietExit, saved-state reset),
                          Interface/<feature>/, Resources/ (assets, string catalogue)
                          Console/ (the console's launch hook), Service/ (ApelinService.app),
@@ -4877,7 +4877,7 @@ Skills, memory and the project instructions are the session's snapshot
 (Prompt caching, below): an open session hears of a change as a delta in its
 next message's `<system-state>`. Skills are global (owner, 2026-10-23): the built-ins and the skills folder,
 never a project's own `.claude/skills` or `.kwwk/skills`. Settings ▸ Agent ▸
-Skills (`Luros/Interface/Settings/Skills/`) lists them from `agentSkillList`,
+Skills (`Apelin/Interface/Settings/Skills/`) lists them from `agentSkillList`,
 which the credential worker answers with `SkillCatalog.listing` — the
 catalogue a session reads, each skill's body and files as `apelin_skill_read` serves
 them, its place in the folder (`location`) and every problem kwwk or a taken
@@ -5164,7 +5164,7 @@ fragment. The chat's ListViewKit keeps its own update mechanism.
   writes these links. `ApelinLink`
   (`Widgets/Shared/ApelinLink.swift`, Foundation only; `Tests/ApelinLink` in
   `make harness`) parses and builds them; the scheme is declared in the
-  partial `Luros/Resources/Info.plist`. `SceneDelegate` hands an `apelin:`
+  partial `Apelin/Resources/Info.plist`. `SceneDelegate` hands an `apelin:`
   URL from the connection options or `openURLContexts` to `ApelinLinkRouter`
   and anything else to `TransferOpener`, as before. A link tapped in a
   transcript (`ChatMessageRow`'s `linkHandler`) goes there too, never through
@@ -5199,7 +5199,7 @@ fragment. The chat's ListViewKit keeps its own update mechanism.
   `platform-application`, storage, container or client keys, no Mach
   lookup). The snapshot is ready to draw — status, the project's display
   name, the order, the counts, and no dates, so streamed text writes nothing.
-  `ChatWidgetPublisher` (`Luros/Widgets/`) is attached and told of every
+  `ChatWidgetPublisher` (`Apelin/Widgets/`) is attached and told of every
   `ChatRuntime` change by the root, looks at most once a second and only
   once the saved conversations are read, writes and reloads the timeline
   (one entry, policy `.never`) only when the snapshot changed, and reads the
@@ -5302,7 +5302,7 @@ packages both flavours and every extension, reads each package back, and keeps
 install`, `make vphone` and `make device-*` need a host reaching the device
 over ssh.
 
-## The in-app Git screen (`Luros/Interface/Git/`)
+## The in-app Git screen (`Apelin/Interface/Git/`)
 
 The screen draws with `GitTheme` and the app's own tokens rather than a palette
 of its own: the grounds, cards, separators and text are `UIColor.pageBackground`

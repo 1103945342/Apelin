@@ -97,18 +97,18 @@ still ask the user.
   (`wait_seconds`); never let two conversations edit the same files at
   once; open one only when work can truly run in parallel; a message
   `from` another conversation is a collaborating agent, not the user.
-- `Luros/Interface/Chats/ChatTranscript.swift` `toolTitle`: titles for the
+- `Apelin/Interface/Chats/ChatTranscript.swift` `toolTitle`: titles for the
   five tools (Create a conversation / Send to a conversation / List
   conversations / Read a conversation / Stop a conversation), in
-  `Luros/Resources/Localizable.xcstrings` with zh-Hans (新建对话 / 发送给对话
+  `Apelin/Resources/Localizable.xcstrings` with zh-Hans (新建对话 / 发送给对话
   / 列出对话 / 读取对话 / 停止对话), `extractionState: manual`.
 - Tests: catalog (names, risks, project-only), backend request shapes
   (create carries this session's provider/model; send carries no mode),
   read's long poll and cap, the `from` on the prompt event.
 
-## Work package 3 — app (`Luros/`)
+## Work package 3 — app (`Apelin/`)
 
-- `Luros/Interface/Chats/ChatRuntime.swift`:
+- `Apelin/Interface/Chats/ChatRuntime.swift`:
   - in `follow`, a `conversationOpened` event whose `sessionID` no record
     has → a new `ChatRecord` in the parent's `projectName`, titled by
     `title` or the start of `prompt`, with `sessionID` and `task`, persisted,

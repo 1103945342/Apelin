@@ -1,7 +1,7 @@
 import Foundation
 import LocalAuthentication
 
-// The app's device-owner decision (Luros/Application/DeviceOwnerCheck.swift):
+// The app's device-owner decision (Apelin/Application/DeviceOwnerCheck.swift):
 // approving a command as root, or turning on Full mode, sends nothing to the
 // host unless this passes. Only a successful evaluation, or a device with no
 // passcode (`passcodeNotSet` at `canEvaluatePolicy`), passes; every other

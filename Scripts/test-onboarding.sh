@@ -17,8 +17,8 @@ done
 [[ ${#objects[@]} -ge 2 ]] || { echo "error: onboarding tests need the harness modules" >&2; exit 1; }
 xcrun --sdk macosx swiftc -swift-version 5 -parse-as-library -target arm64-apple-macos13.0 \
     -I "$root/Shared/XPCShim" -I "$modules" "${objects[@]}" \
-    "$root/Luros/Interface/Onboarding/WelcomeEnvironmentRecommendation.swift" \
-    "$root/Luros/Interface/Projects/ProjectCreationDraft.swift" \
-    "$root/Luros/Interface/Projects/ProjectBuildMethod.swift" \
+    "$root/Apelin/Interface/Onboarding/WelcomeEnvironmentRecommendation.swift" \
+    "$root/Apelin/Interface/Projects/ProjectCreationDraft.swift" \
+    "$root/Apelin/Interface/Projects/ProjectBuildMethod.swift" \
     "$root/Tests/Onboarding/main.swift" -o "$work/onboarding"
 "$work/onboarding"

@@ -4,7 +4,7 @@ The `apelin-assembler` executable in this package contains Keystone, which
 is licensed under the GNU General Public License version 2 only (`COPYING`
 beside this file; LLVM-derived parts also under `LLVM-LICENSE.TXT`). You may
 copy, modify and redistribute it under that license. Luros's own code in it
-is MIT (`../Luros/LICENSE`).
+is MIT (`../Apelin/LICENSE`).
 
 The complete corresponding source of this executable, with the scripts used
 to build and package it, is:
@@ -19,10 +19,10 @@ to build and package it, is:
 
 To rebuild: install Xcode and run
 `Extensions/AgentTools/Disassembler/Scripts/build-agent-tools.sh` in an
-Luros checkout. The archive holds that tree under `Luros/`, and the two
+Luros checkout. The archive holds that tree under `Apelin/`, and the two
 Swift packages it depends on under `Dependencies/` (libkeystone-spm, and
 libcapstone-spm, which the same package graph names); to build from the
 archive without the network, first run, in
-`Luros/Extensions/AgentTools/Disassembler`,
+`Apelin/Extensions/AgentTools/Disassembler`,
 `swift package edit libkeystone-spm --path ../../../../Dependencies/libkeystone-spm`
 and the same for libcapstone-spm.

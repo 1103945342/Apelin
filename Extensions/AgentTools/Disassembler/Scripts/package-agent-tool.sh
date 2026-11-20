@@ -169,11 +169,11 @@ if [[ "$tool" == assembler ]]; then
     archive="$output_directory/$archive_name"
     if [[ ! -f "$archive" ]]; then
         source_tree="$scratch/source"
-        mkdir -p "$source_tree/Luros/Packages" "$source_tree/Luros/Extensions/AgentTools" "$source_tree/Dependencies"
+        mkdir -p "$source_tree/Apelin/Packages" "$source_tree/Apelin/Extensions/AgentTools" "$source_tree/Dependencies"
         excludes=(--exclude .build --exclude .swiftpm --exclude build --exclude .DS_Store --exclude .git)
-        rsync -a "${excludes[@]}" "$repository_root/LICENSE" "$source_tree/Luros/"
-        rsync -a "${excludes[@]}" "$repository_root/Packages/ApelinToolHost" "$source_tree/Luros/Packages/"
-        rsync -a "${excludes[@]}" "$extension_root" "$source_tree/Luros/Extensions/AgentTools/"
+        rsync -a "${excludes[@]}" "$repository_root/LICENSE" "$source_tree/Apelin/"
+        rsync -a "${excludes[@]}" "$repository_root/Packages/ApelinToolHost" "$source_tree/Apelin/Packages/"
+        rsync -a "${excludes[@]}" "$extension_root" "$source_tree/Apelin/Extensions/AgentTools/"
         rsync -a "${excludes[@]}" "$checkouts/libkeystone-spm" "$checkouts/libcapstone-spm" "$source_tree/Dependencies/"
         tar --uid 0 --gid 0 --uname root --gname wheel --no-xattrs --no-mac-metadata -cJf "$scratch/$archive_name" -C "$source_tree" Luros Dependencies
         mv "$scratch/$archive_name" "$archive"

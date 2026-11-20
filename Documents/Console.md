@@ -14,7 +14,7 @@ parameterised on an `ApelinService`, a `DataFolder` and a log sink, and
 tested on the Mac by `make harness` (`Packages/ApelinKit/Tests/ApelinConsoleTests`) against a
 fake transport. The app keeps only the binding — `ApelinService.app`,
 `DataFolder.app`, the unified log — and the launch and foreground hooks
-(`Luros/Console/ConsoleLaunch.swift`).
+(`Apelin/Console/ConsoleLaunch.swift`).
 
 ## Start a Run
 

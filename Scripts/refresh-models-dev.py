@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Keep this repository's copy of models.dev's catalog: Luros/Resources/models.dev.json.
+"""Keep this repository's copy of models.dev's catalog: Apelin/Resources/models.dev.json.
 
 The app ships this file and writes it into the data folder on the first launch,
 so a device reads a model the catalog kwwk ships does not name without reaching
@@ -20,7 +20,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-RELATIVE = Path("Luros/Resources/models.dev.json")
+RELATIVE = Path("Apelin/Resources/models.dev.json")
 DEFAULT_SOURCE = "https://models.dev/api.json"
 
 

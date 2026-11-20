@@ -127,7 +127,7 @@ platformize-app-ios's; the quoted name is its section.
 
 - [x] `Scripts/check-accessibility.py` is copied in and wired into `make check`, so a label on a cell or view that UIKit will never read fails the build.
       SKILL.md "The contract": a label on a container that is not an accessibility element is never read.
-      **Done:** Wired over `Luros/`.
+      **Done:** Wired over `Apelin/`.
 - [x] Every icon-only button and bar button item is labelled as it is written, the label is set beside the state it describes rather than once at construction, and no label repeats what VoiceOver already reads.
       SKILL.md "The contract": a control with no text has no name.
       **Done:** The one icon-only button, Settings, is labelled where it is made; nothing repeats a read label.
@@ -157,7 +157,7 @@ platformize-app-ios's; the quoted name is its section.
       **Done:** The manual discipline (`AGENTS.md` ▸ Decisions); `check-stale-strings.py` is the gate.
 - [x] `Scripts/check-stale-strings.py` is copied in and wired into `make check`, so a key Xcode reaped during a build cannot ride into a commit unseen.
       SKILL.md "Localization is verified against the compiler": nothing else catches the marker.
-      **Done:** Wired over `Luros/`.
+      **Done:** Wired over `Apelin/`.
 - [x] Every target's source root is written down for `prune-xcstrings.py` — app, extensions, macOS, visionOS, packages — and `--delete-orphans` is used only if this app has one target.
       SKILL.md: stale does not mean dead; a missing root deletes live strings and their translations.
       **Done:** `Luros Apelind Shared` (`AGENTS.md` ▸ Decisions); one target, `--delete-orphans` still not used.

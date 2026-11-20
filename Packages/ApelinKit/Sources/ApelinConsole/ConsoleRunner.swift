@@ -6,7 +6,7 @@ import Foundation
 /// `ApelinService` the UI and the agent's tools call. It is the app itself,
 /// not a second peer of apelind, so "No CLI" holds; the app binds it to
 /// `ApelinService.app` and `DataFolder.app` and starts it from
-/// `didFinishLaunching` (Luros/Console/ConsoleLaunch.swift).
+/// `didFinishLaunching` (Apelin/Console/ConsoleLaunch.swift).
 ///
 /// Scripts come from the launch argument `-apelin-console <path>` and from
 /// `~/Documents/com.fluoxetine.luros/console/inbox/*.json`, checked at launch and

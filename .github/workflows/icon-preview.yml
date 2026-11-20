@@ -9,7 +9,7 @@ name: Icon Sheet
 on:
   push:
     paths:
-      - Luros/Resources/Assets.xcassets/Provider*.imageset/**
+      - Apelin/Resources/Assets.xcassets/Provider*.imageset/**
       - .github/workflows/icon-preview.yml
   workflow_dispatch:
 
@@ -40,7 +40,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/icons Documents/Icon
-          for svg in Luros/Resources/Assets.xcassets/Provider*.imageset/*.svg; do
+          for svg in Apelin/Resources/Assets.xcassets/Provider*.imageset/*.svg; do
             name="$(basename "$(dirname "$svg")" .imageset)"
             rsvg-convert -w 256 -h 256 --keep-aspect-ratio "$svg" -o "/tmp/icons/$name.png"
           done

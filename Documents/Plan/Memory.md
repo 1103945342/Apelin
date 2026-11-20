@@ -32,7 +32,7 @@ This is not a leak (no retain cycle, no unbounded timer; the thumbnail `NSCache`
 is capped at 128 entries / 32 MB). It is "everything resident" by design, in both
 processes:
 
-- `ChatRecord.events` (`Luros/Interface/Chats/ChatStore.swift:17`) only ever grows
+- `ChatRecord.events` (`Apelin/Interface/Chats/ChatStore.swift:17`) only ever grows
   (`take`), and `ChatRuntime.load` (`ChatRuntime.swift:99`) reads every `Chats/*.json`
   at launch.
 - `TaskRegistry.load()` (`Apelind/Session/TaskRegistry.swift:105`) reads and decodes

@@ -51,12 +51,12 @@ core=(
     -c -o "$work/ApelinCore.o" "${core[@]}"
 
 model=(
-    Luros/Interface/Terminal/TerminalTarget.swift
-    Luros/Interface/Terminal/TerminalAttachment.swift
-    Luros/Interface/Terminal/TerminalInputRouter.swift
-    Luros/Interface/Terminal/TerminalWireEvent.swift
-    Luros/Interface/Terminal/TerminalSessionRecord.swift
-    Luros/Interface/Terminal/TerminalSessionList.swift
+    Apelin/Interface/Terminal/TerminalTarget.swift
+    Apelin/Interface/Terminal/TerminalAttachment.swift
+    Apelin/Interface/Terminal/TerminalInputRouter.swift
+    Apelin/Interface/Terminal/TerminalWireEvent.swift
+    Apelin/Interface/Terminal/TerminalSessionRecord.swift
+    Apelin/Interface/Terminal/TerminalSessionList.swift
 )
 checks=(
     Tests/TerminalUI/TerminalTargetCheck.swift

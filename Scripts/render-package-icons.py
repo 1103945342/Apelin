@@ -28,7 +28,7 @@ SOURCES = ROOT / "Documents/Icon/Packages"
 OUTPUT = ROOT / "Documents/Site/icons"
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 SIZE = 512
-ASSETS = ROOT / "Luros/Resources/Assets.xcassets"
+ASSETS = ROOT / "Apelin/Resources/Assets.xcassets"
 # The image sets are drawn at 40 points, the most the app shows one at.
 ASSET_POINTS = 40
 

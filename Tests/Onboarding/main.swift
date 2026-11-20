@@ -36,7 +36,7 @@ import Foundation
         // while the catalogue has it as a key, word for word.
         let catalogue = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("Luros/Resources/Localizable.xcstrings")
+            .appendingPathComponent("Apelin/Resources/Localizable.xcstrings")
         let strings = (try? JSONSerialization.jsonObject(with: Data(contentsOf: catalogue)) as? [String: Any])?["strings"] as? [String: Any]
         precondition(strings?[HostSigning.bootstrapRefusal] != nil, "The catalogue keys roothide Bootstrap's refusal")
         precondition(WelcomeEnvironmentRecommendation.resolve(catalog: [swift], status: .init(), sdks: .init(sources: [.init(name: "Old", url: "https://example.com", enabled: true, branches: ["sdk/iPhoneOS18.5"])])) == nil, "Swift requires matching SDK major")
