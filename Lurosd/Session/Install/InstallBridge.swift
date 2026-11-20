@@ -1084,7 +1084,7 @@ actor InstallBridge {
     /// the removal's log; nil for another package, or nothing left behind.
     private func pruneToolchainTree(of packageID: String) -> String? {
         guard let id = ToolchainTreePruner.toolchainID(packageID: packageID) else { return nil }
-        let folder = "usr/lib/apelin/toolchains/" + id
+        let folder = "usr/lib/luros/toolchains/" + id
         switch ToolchainTreePruner.prune(installRoot: paths.installRoot, id: id) {
         case .pruned: return "Removed the empty folders the toolchain left in \(folder)."
         case .absent: return nil

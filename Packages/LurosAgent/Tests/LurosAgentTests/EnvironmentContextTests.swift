@@ -21,7 +21,7 @@ struct EnvironmentContextTests {
     @discardableResult
     static func register(in home: TemporaryHome, deploymentTarget: String = "15.0") throws -> (bin: String, sdk: String) {
         let manager = FileManager.default
-        let toolchain = home.home.appendingPathComponent("jb/usr/lib/apelin/toolchains/\(toolchainID)")
+        let toolchain = home.home.appendingPathComponent("jb/usr/lib/luros/toolchains/\(toolchainID)")
         try manager.createDirectory(at: toolchain.appendingPathComponent("usr/bin"), withIntermediateDirectories: true)
         let sdk = home.dataRoot.url.appendingPathComponent("SDKs/\(sdkID)")
         let older = home.dataRoot.url.appendingPathComponent("SDKs/\(olderSDKID)")

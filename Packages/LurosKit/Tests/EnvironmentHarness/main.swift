@@ -124,7 +124,7 @@ struct HarnessBackend: ToolchainBackend {
         progress(ToolchainBackendProgress(stage: "packaging"))
         let manifest = try Data(contentsOf: output.appendingPathComponent("manifest.json"))
         let files = try (JSONSerialization.jsonObject(with: manifest) as? [String: Any])?["files"] as? [String: String] ?? [:]
-        return PreparedToolchain(id: Self.id, product: product, components: components, tree: output, files: files, installRelativePath: "usr/lib/apelin/toolchains/" + Self.id, manifest: manifest)
+        return PreparedToolchain(id: Self.id, product: product, components: components, tree: output, files: files, installRelativePath: "usr/lib/luros/toolchains/" + Self.id, manifest: manifest)
     }
 
     func installAndValidate(_ prepared: PreparedToolchain, installRoot: URL, sdk: URL, journal _: URL, scratch _: URL, install: @escaping ToolchainInstallStep, progress: @escaping @Sendable (ToolchainBackendProgress) -> Void) async throws -> [ToolchainSelfTestResult] {

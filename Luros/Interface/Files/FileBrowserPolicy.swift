@@ -162,13 +162,13 @@ struct FileBrowserPolicy: Equatable {
 
     /// The folders Luros installed inside the bootstrap, each named by the
     /// page that manages it. Read at run time off the root the app's own path
-    /// carries: the toolchains' payload is under `usr/lib/apelin/toolchains`
+    /// carries: the toolchains' payload is under `usr/lib/luros/toolchains`
     /// (the catalog under the data folder is only the record), and the app's
     /// own parts under `usr/share/luros` and `usr/libexec/luros`.
     private static func installedRoots(bootstrapRoot: String?) -> [FileBrowserRoot] {
         guard let bootstrapRoot else { return [] }
         let spelled = [
-            (bootstrapRoot + "/usr/lib/apelin/toolchains", FileBrowserProtectedRecord.toolchains),
+            (bootstrapRoot + "/usr/lib/luros/toolchains", FileBrowserProtectedRecord.toolchains),
             (bootstrapRoot + "/usr/share/luros", .applicationPayload),
             (bootstrapRoot + "/usr/libexec/luros", .applicationPayload)
         ]

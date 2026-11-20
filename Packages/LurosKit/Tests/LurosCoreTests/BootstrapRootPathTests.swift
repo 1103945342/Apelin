@@ -17,10 +17,10 @@ final class BootstrapRootPathTests: XCTestCase {
     }
 
     func testAPathMovesToTheCurrentRoot() {
-        let recorded = old + "/usr/lib/apelin/toolchains/clt-27.0-abcdef01"
+        let recorded = old + "/usr/lib/luros/toolchains/clt-27.0-abcdef01"
         XCTAssertEqual(
             BootstrapRootPath.rebased(recorded, onto: new + "/var/mobile/Documents/com.fluoxetine.luros"),
-            new + "/usr/lib/apelin/toolchains/clt-27.0-abcdef01",
+            new + "/usr/lib/luros/toolchains/clt-27.0-abcdef01",
         )
         XCTAssertEqual(BootstrapRootPath.rebased(old, onto: new), new)
     }
@@ -46,7 +46,7 @@ final class BootstrapRootPathTests: XCTestCase {
     }
 
     func testRootlessPathsAreLeftAlone() {
-        let recorded = "/var/jb/usr/lib/apelin/toolchains/clt-27.0-abcdef01"
+        let recorded = "/var/jb/usr/lib/luros/toolchains/clt-27.0-abcdef01"
         XCTAssertEqual(BootstrapRootPath.rebased(recorded, onto: new + "/var/mobile"), recorded)
         XCTAssertEqual(BootstrapRootPath.rebased(old + "/usr/lib", onto: "/var/jb"), old + "/usr/lib")
     }

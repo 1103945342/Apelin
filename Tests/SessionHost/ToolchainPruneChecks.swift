@@ -90,7 +90,7 @@ func toolchainPruneChecks() async throws {
     let otherRoot = base + "/other-root"
     try FileManager.default.createDirectory(atPath: otherRoot + "/usr/lib/apelin", withIntermediateDirectories: true)
     makeToolchainSkeleton(base + "/foreign", "skeleton", folders: ["usr"], link: outside)
-    symlink(base + "/foreign", otherRoot + "/usr/lib/apelin/toolchains")
+    symlink(base + "/foreign", otherRoot + "/usr/lib/luros/toolchains")
     check(isKept(ToolchainTreePruner.prune(installRoot: otherRoot, id: "skeleton")), "prune: a toolchains folder leading out of the install root is refused")
     check(entryExists(base + "/foreign/skeleton/usr/.jbroot"), "prune: and what it leads to is untouched")
     check(ToolchainTreePruner.toolchainIDs(installRoot: otherRoot).isEmpty, "prune: nor listed")

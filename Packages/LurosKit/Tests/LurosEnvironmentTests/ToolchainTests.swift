@@ -52,7 +52,7 @@ struct FakeBackend: ToolchainBackend {
         try FileManager.default.createDirectory(at: output.appendingPathComponent("usr/bin"), withIntermediateDirectories: true)
         try Self.tool.write(to: output.appendingPathComponent("usr/bin/clang"))
         progress(ToolchainBackendProgress(stage: "packaging"))
-        return PreparedToolchain(id: Self.id, product: product, components: components, tree: output, files: ["usr/bin/clang": "digest"], installRelativePath: "usr/lib/apelin/toolchains/\(Self.id)", manifest: Data("{}".utf8))
+        return PreparedToolchain(id: Self.id, product: product, components: components, tree: output, files: ["usr/bin/clang": "digest"], installRelativePath: "usr/lib/luros/toolchains/\(Self.id)", manifest: Data("{}".utf8))
     }
 
     func installAndValidate(_ prepared: PreparedToolchain, installRoot: URL, sdk: URL, journal _: URL, scratch _: URL, install: @escaping ToolchainInstallStep, progress: @escaping @Sendable (ToolchainBackendProgress) -> Void) async throws -> [ToolchainSelfTestResult] {
@@ -115,7 +115,7 @@ final class FakeInstaller: PackageInstaller, @unchecked Sendable {
     }
 
     private func folder(_ id: String) -> String? {
-        installRoot.map { $0 + "/usr/lib/apelin/toolchains/" + id }
+        installRoot.map { $0 + "/usr/lib/luros/toolchains/" + id }
     }
 
     private var tasks: [String: LocalArtifact] = [:]
@@ -186,7 +186,7 @@ final class ToolchainServiceTests: XCTestCase {
     }
 
     private func installedPath(_ home: TemporaryHome) -> String {
-        home.layout.installRoot + "/usr/lib/apelin/toolchains/" + FakeBackend.id
+        home.layout.installRoot + "/usr/lib/luros/toolchains/" + FakeBackend.id
     }
 
     func testSetDefaultPersistsWithoutChangingRecordsAndRejectsUnknownIDs() throws {
@@ -798,7 +798,7 @@ final class ToolchainPackagerTests: XCTestCase {
 
     private func prepared(_ tree: URL) -> PreparedToolchain {
         PreparedToolchain(id: FakeBackend.id, product: ToolchainProduct(productID: "001", version: "27.0", url: "https://example.invalid/x.pkg", size: 1),
-                          components: [.c], tree: tree, files: [:], installRelativePath: "usr/lib/apelin/toolchains/\(FakeBackend.id)", manifest: Data())
+                          components: [.c], tree: tree, files: [:], installRelativePath: "usr/lib/luros/toolchains/\(FakeBackend.id)", manifest: Data())
     }
 
     func testThePackageIsWhatTheBridgeAcceptsInBothLayouts() throws {
@@ -823,7 +823,7 @@ final class ToolchainPackagerTests: XCTestCase {
             XCTAssertEqual(control["Name"]?.hasSuffix(" (Luros)"), true)
             XCTAssertEqual(Set(contents.controlFiles.keys), ["control"], "no maintainer scripts")
 
-            let root = prefix + "/usr/lib/apelin/toolchains/" + FakeBackend.id
+            let root = prefix + "/usr/lib/luros/toolchains/" + FakeBackend.id
             let entries = Dictionary(uniqueKeysWithValues: contents.entries.map { ($0.path, $0) })
             XCTAssertTrue(contents.entries.allSatisfy { $0.path == root || $0.path.hasPrefix(root + "/") || root.hasPrefix($0.path) }, "\(contents.entries.map(\.path))")
             XCTAssertTrue(contents.entries.allSatisfy { $0.userID == 0 && $0.groupID == 0 }, "root's")

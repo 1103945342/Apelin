@@ -24,7 +24,7 @@ import Foundation
 ///                               for resume until it reaches ready
 /// ```
 ///
-/// The final toolchain goes to `<install root>/usr/lib/apelin/toolchains/<id>/`
+/// The final toolchain goes to `<install root>/usr/lib/luros/toolchains/<id>/`
 /// through the install bridge, never here.
 public struct EnvironmentLayout: Sendable {
     public let data: DataFolder

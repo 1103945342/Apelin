@@ -92,7 +92,7 @@ public struct PreparedToolchain: Sendable {
     public var tree: URL
     /// Relative path → SHA-256.
     public var files: [String: String]
-    /// `usr/lib/apelin/toolchains/<id>`, relative to the install root.
+    /// `usr/lib/luros/toolchains/<id>`, relative to the install root.
     public var installRelativePath: String
     /// The backend's own manifest, encoded; handed back to `installAndValidate`.
     public var manifest: Data

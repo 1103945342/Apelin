@@ -38,7 +38,7 @@ final class EnvironmentStoresTests: XCTestCase {
         let installed = ToolchainRecord(id: "clt-27.0-abcdef01", version: "27.0", components: [
             ToolchainComponent(kind: .c, selfCheckPassed: true),
             ToolchainComponent(kind: .swift, selfCheckPassed: false, problem: "Swift did not pass its self-test"),
-        ], path: "/var/jb/usr/lib/apelin/toolchains/clt-27.0-abcdef01", contentDigest: String(repeating: "c", count: 64))
+        ], path: "/var/jb/usr/lib/luros/toolchains/clt-27.0-abcdef01", contentDigest: String(repeating: "c", count: 64))
         let unfinished = ToolchainRecord(id: "clt-26.0", version: "26.0", components: [ToolchainComponent(kind: .c)])
         let registry: JSONValue = try .object([
             "toolchains": .array([JSONValue(encoding: installed), JSONValue(encoding: unfinished)]),
@@ -98,7 +98,7 @@ final class EnvironmentStoresTests: XCTestCase {
 
         let toolchain = ToolchainRecord(
             id: toolchainID, version: "27.0", components: [ToolchainComponent(kind: .c, selfCheckPassed: true)],
-            path: old + "/usr/lib/apelin/toolchains/" + toolchainID, contentDigest: String(repeating: "c", count: 64),
+            path: old + "/usr/lib/luros/toolchains/" + toolchainID, contentDigest: String(repeating: "c", count: 64),
         )
         struct Registry: Encodable { let toolchains: [ToolchainRecord] }
         try JSONEncoder().encode(Registry(toolchains: [toolchain])).write(to: data.toolchainRegistry)
@@ -110,11 +110,11 @@ final class EnvironmentStoresTests: XCTestCase {
         try JSONCoding.encode(sdk).write(to: data.sdkRegistry.appendingPathComponent(sdkID + ".json"))
 
         let stores = EnvironmentStores(dataFolder: data)
-        XCTAssertEqual(try stores.toolchains().first?.path, new.path + "/usr/lib/apelin/toolchains/" + toolchainID)
+        XCTAssertEqual(try stores.toolchains().first?.path, new.path + "/usr/lib/luros/toolchains/" + toolchainID)
         XCTAssertEqual(try stores.sdks().first?.path, data.sdks.path + "/" + sdkID)
 
         let registered = RegisteredEnvironment.read(data)
-        XCTAssertEqual(registered.toolchains.first?.path, new.path + "/usr/lib/apelin/toolchains/" + toolchainID)
+        XCTAssertEqual(registered.toolchains.first?.path, new.path + "/usr/lib/luros/toolchains/" + toolchainID)
         XCTAssertEqual(registered.sdks.first?.path, data.sdks.path + "/" + sdkID)
     }
 }

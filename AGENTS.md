@@ -741,7 +741,7 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
     themselves stay root's. The installed state is read from
     `var/lib/dpkg/status`, never through a package manager's binary.
     After a toolchain package's removal, and at start (before anything is
-    resumed) for each `usr/lib/apelin/toolchains/<id>` whose package dpkg
+    resumed) for each `usr/lib/luros/toolchains/<id>` whose package dpkg
     does not list and no install or removal still handles, the host takes
     away the folders roothide's `.jbroot` links kept (`ToolchainTreePruner`):
     only when every entry is a folder or a `.jbroot` link, the links

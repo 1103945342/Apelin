@@ -20,7 +20,7 @@ extension FakeBackend {
         return PreparedToolchain(
             id: Self.id, product: product, components: [.c], tree: tree,
             files: ["usr/bin/clang": "digest"],
-            installRelativePath: "usr/lib/apelin/toolchains/\(Self.id)",
+            installRelativePath: "usr/lib/luros/toolchains/\(Self.id)",
             manifest: Data(facts.utf8),
         )
     }
@@ -220,7 +220,7 @@ final class TransferTests: XCTestCase {
         let imported = try XCTUnwrap(result["toolchain"]).decode(ToolchainRecord.self)
         XCTAssertEqual(imported.id, record.id)
         XCTAssertEqual(imported.installationID, "inst-1")
-        XCTAssertEqual(imported.path, second.layout.installRoot + "/usr/lib/apelin/toolchains/" + FakeBackend.id)
+        XCTAssertEqual(imported.path, second.layout.installRoot + "/usr/lib/luros/toolchains/" + FakeBackend.id)
         XCTAssertEqual(imported.components, [ToolchainComponent(kind: .c, selfCheckPassed: true)])
         XCTAssertEqual(installer.installed.map(\.packageID), ["com.fluoxetine.luros.toolchain.\(FakeBackend.id)"])
         let stages = log.events.filter { $0.0 == "stage" }.compactMap { $0.1?["stage"]?.stringValue }

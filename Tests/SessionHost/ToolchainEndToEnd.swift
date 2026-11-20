@@ -202,7 +202,7 @@ func toolchainEndToEnd(harness: String) async throws {
     }
     irisin.onRemove = { packageID in
         let id = String(packageID.dropFirst(ManagedPackagePolicy.toolchainPrefix.count))
-        let tree = installRoot + "/usr/lib/apelin/toolchains/" + id
+        let tree = installRoot + "/usr/lib/luros/toolchains/" + id
         var folders = [tree]
         for case let entry as String in FileManager.default.enumerator(atPath: tree)?.allObjects ?? [] {
             var metadata = stat()
@@ -263,7 +263,7 @@ func toolchainEndToEnd(harness: String) async throws {
 
     let toolchainID = "a1b2c3d4e5f60718293a4b5c"
     let packageID = ManagedPackagePolicy.toolchainPrefix + toolchainID
-    let installed = installRoot + "/usr/lib/apelin/toolchains/" + toolchainID
+    let installed = installRoot + "/usr/lib/luros/toolchains/" + toolchainID
     let environment = data.environment
     let request = ToolchainSetupRequest(source: .appleCatalog(productID: nil), components: [.c])
 
@@ -339,7 +339,7 @@ func toolchainEndToEnd(harness: String) async throws {
     let removedRecord = await installations.record(record?.installationID ?? "")
     check(removedRecord?.status == .removed, "e2e: the bridge's record says removed")
     check(!manager.fileExists(atPath: installed), "e2e: the installed tree is gone, the folders roothide leaves with it")
-    check(manager.fileExists(atPath: installRoot + "/usr/lib/apelin/toolchains"), "e2e: the toolchains folder stays")
+    check(manager.fileExists(atPath: installRoot + "/usr/lib/luros/toolchains"), "e2e: the toolchains folder stays")
     let pruned = removal.events.contains {
         $0.kind == "install.log" && $0.payload?["line"]?.stringValue?.hasPrefix("Removed the empty folders") == true
     }

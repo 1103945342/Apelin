@@ -39,7 +39,7 @@ RSA certificate chain: catalog/transport authentication relies on HTTPS.
 claim to have installed anything. The tree contains `usr/bin`, compiler
 resources, dependency libraries, and `manifest.json`. Its eventual location is
 `<hello.installRoot>/<manifest.installRelativePath>`; the latter is
-`usr/lib/apelin/toolchains/<id>`. No bootstrap prefix is compiled into Swift.
+`usr/lib/luros/toolchains/<id>`. No bootstrap prefix is compiled into Swift.
 The ID includes the source SHA256, retarget scheme, target OS and components.
 
 `installAndValidate` owns the subsequent installing → validating → ready

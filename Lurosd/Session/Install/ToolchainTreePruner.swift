@@ -10,7 +10,7 @@ import Foundation
 /// root: after the bridge removed a toolchain package, and at start for a
 /// toolchain whose package is not on the device.
 ///
-/// Only `<install root>/usr/lib/apelin/toolchains/<id>`, and only when every
+/// Only `<install root>/usr/lib/luros/toolchains/<id>`, and only when every
 /// entry below it is a folder or a link named `.jbroot`: a file, any other
 /// link, anything that cannot be read and anything past the caps keeps the
 /// whole tree as it is. Nothing is followed, a `.jbroot` link is unlinked
@@ -34,7 +34,7 @@ enum ToolchainTreePruner {
 
     /// Where irisind lays toolchain packages down (`ToolchainManifest.installRelativePath`).
     static func folder(installRoot: String) -> String {
-        (installRoot == "/" ? "" : installRoot) + "/usr/lib/apelin/toolchains"
+        (installRoot == "/" ? "" : installRoot) + "/usr/lib/luros/toolchains"
     }
 
     /// `com.fluoxetine.luros.toolchain.<id>` → `<id>`; nil for any other package.
@@ -63,7 +63,7 @@ enum ToolchainTreePruner {
         guard let parent = openFolder(installRoot: installRoot) else {
             var metadata = stat()
             let missing = lstat(folder(installRoot: installRoot), &metadata) != 0 && errno == ENOENT
-            return missing ? .absent : .kept("usr/lib/apelin/toolchains is not a folder inside the install root")
+            return missing ? .absent : .kept("usr/lib/luros/toolchains is not a folder inside the install root")
         }
         defer { close(parent) }
         var metadata = stat()

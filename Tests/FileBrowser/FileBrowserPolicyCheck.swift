@@ -38,7 +38,7 @@ func checkFileBrowserPolicy() throws {
     // A bootstrap wearing the shape the app installs into: the toolchains'
     // payload is here, not in the data folder, whose folder is only a record.
     let bootstrap = work.appendingPathComponent("jbroot", isDirectory: true)
-    let toolchainPayload = bootstrap.appendingPathComponent("usr/lib/apelin/toolchains/clt-15.3", isDirectory: true)
+    let toolchainPayload = bootstrap.appendingPathComponent("usr/lib/luros/toolchains/clt-15.3", isDirectory: true)
     let sharePayload = bootstrap.appendingPathComponent("usr/share/luros", isDirectory: true)
     for folder in [toolchainPayload, sharePayload] {
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)

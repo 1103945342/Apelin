@@ -2625,7 +2625,7 @@ do {
 /// origin with a credential in it, neither of which may reach a variable.
 let developmentHome = scratchPath + "/development-home"
 let developmentData = developmentHome + "/Documents/com.fluoxetine.luros"
-let developmentToolchain = scratchPath + "/development-jb/usr/lib/apelin/toolchains/clt-27.0"
+let developmentToolchain = scratchPath + "/development-jb/usr/lib/luros/toolchains/clt-27.0"
 let developmentBin = developmentToolchain + "/usr/bin"
 let developmentNewSDK = developmentData + "/SDKs/iphoneos27.0-1a2b3c4d"
 let developmentOldSDK = developmentData + "/SDKs/iphoneos18.5-5e6f7a8b"

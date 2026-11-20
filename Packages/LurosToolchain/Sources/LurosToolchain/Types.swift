@@ -61,7 +61,7 @@ public struct ToolchainManifest: Codable, Sendable {
     public var clangModuleCPUFeatures: [String]?
     public var compatibility: ReleaseCompatibility?
     public var installRelativePath: String {
-        "usr/lib/apelin/toolchains/" + id
+        "usr/lib/luros/toolchains/" + id
     }
 }
 

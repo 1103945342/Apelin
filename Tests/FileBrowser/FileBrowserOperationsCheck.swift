@@ -168,7 +168,7 @@ func checkFileBrowserOperations() throws {
         precondition(failure == .record(.dataFolder), "\(failure)")
     }
     let bootstrap = work.appendingPathComponent("jbroot", isDirectory: true)
-    let payload = bootstrap.appendingPathComponent("usr/lib/apelin/toolchains/clt", isDirectory: true)
+    let payload = bootstrap.appendingPathComponent("usr/lib/luros/toolchains/clt", isDirectory: true)
     try FileManager.default.createDirectory(at: payload, withIntermediateDirectories: true)
     let guarded = FileBrowserPolicy(dataFolder: data, bootstrapRoot: bootstrap.path)
     do {

@@ -15,7 +15,7 @@ live=()
 if [[ "${1:-}" == --device ]]; then
     : "${APELIN_PROJECT_ROOT:?}" "${APELIN_TOOLCHAIN_BIN:?}" "${2:?tool entitlements required}"
     compiler=(swiftc -target arm64-apple-ios16.0)
-    install_root="${APELIN_TOOLCHAIN_BIN%%/usr/lib/apelin/toolchains/*}"
+    install_root="${APELIN_TOOLCHAIN_BIN%%/usr/lib/luros/toolchains/*}"
     [[ -n "$install_root" && "$install_root" != "$APELIN_TOOLCHAIN_BIN" ]] || exit 64
     printf 'int main(void) { return 0; }\n' > "$work/fixture.c"
     clang -arch arm64 "$work/fixture.c" -o "$work/fixture"
