@@ -152,10 +152,10 @@ final class GlassRenderer {
             size: SIMD2<Float>(Float(width), Float(height)),
             radius: Float(request.radius * scale),
             bevel: Float(28 * scale),
-            pull: Float(32 * scale),
-            tint: dark ? SIMD4(0.02, 0.02, 0.03, 0.45) : SIMD4(0.98, 0.98, 0.99, 0.40),
-            specular: dark ? 0.65 : 0.90,
-            thickness: dark ? 0.40 : 0.25
+            pull: Float(42 * scale),  // 增加折射强度从 32 到 42
+            tint: dark ? SIMD4(0.02, 0.02, 0.03, 0.65) : SIMD4(0.98, 0.98, 0.99, 0.55),  // 增加 tint alpha
+            specular: dark ? 0.85 : 1.15,  // 增加高光强度
+            thickness: dark ? 0.50 : 0.35  // 增加厚度对比度
         )
 
         encoder.setRenderPipelineState(pipeline)
@@ -245,32 +245,32 @@ final class GlassRenderer {
             float2(0.896, 0.412), float2(-0.321, -0.937), float2(0.052, 0.119)
         };
         float3 sum = float3(0);
-        float blurRadius = middle * 4.5 / u.size.x;
+        float blurRadius = middle * 5.5 / u.size.x;  // 增加模糊半径
         for (int i = 0; i < 12; i++) {
             sum += backdrop.sample(s, uvC + taps[i] * blurRadius).rgb;
         }
         float3 colour = sum / 12.0;
-        colour.r = mix(colour.r, backdrop.sample(s, uvR).r, 0.7);
-        colour.b = mix(colour.b, backdrop.sample(s, uvB).b, 0.7);
+        colour.r = mix(colour.r, backdrop.sample(s, uvR).r, 0.8);  // 增加色散效果
+        colour.b = mix(colour.b, backdrop.sample(s, uvB).b, 0.8);
 
         // Desaturate and tint.
         float lum = dot(colour, float3(0.299, 0.587, 0.114));
-        colour = mix(colour, float3(lum), 0.28);
+        colour = mix(colour, float3(lum), 0.35);  // 增加去饱和度
         colour = mix(colour, u.tint.rgb, u.tint.a);
 
         // Specular highlight: a soft band across the top where the glass catches
         // the light, brightest at the leading corner.
         float2 toTop = float2(-rel.x, -rel.y + half.y * 0.6);
         float topDist = length(toTop);
-        float highlight = exp(-topDist / (u.size.y * 0.15)) * u.specular;
-        float cornerBias = 1.0 - smoothstep(0.0, half.x * 0.4, abs(rel.x));
-        colour += highlight * (0.5 + 0.5 * cornerBias);
+        float highlight = exp(-topDist / (u.size.y * 0.18)) * u.specular;  // 扩大高光区域
+        float cornerBias = 1.0 - smoothstep(0.0, half.x * 0.35, abs(rel.x));  // 增强角落亮度
+        colour += highlight * (0.6 + 0.6 * cornerBias);  // 增强高光强度
 
         // The rim: bright where the normal faces the light.
         float3 lit = normalize(float3(-0.5, -0.7, 0.6));
         float facing = saturate(dot(normalize(float3(n, 0.5)), lit));
-        float rim = smoothstep(3.0, 0.0, t);
-        colour += rim * facing * u.specular * 0.8;
+        float rim = smoothstep(4.0, 0.0, t);  // 扩大边缘光晕范围
+        colour += rim * facing * u.specular * 1.0;  // 增强边缘亮度
 
         // Thickness: the middle is darker where the glass is thick.
         colour *= 1.0 - middle * u.thickness;
