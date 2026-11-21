@@ -350,6 +350,14 @@ final class ServiceTableTests: XCTestCase {
             return Row(reply: GitCheckpointRestoreResponse(backupBranch: nil, written: 0, removed: 0)) {
                 _ = try await $0.gitCheckpointRestore(projectID: "p", messageID: UUID())
             }
+        case .storageUsage:
+            return Row(reply: StorageUsageResponse(usage: [StorageUsage(area: .builds, bytes: 1, files: 1)])) {
+                _ = try await $0.storageUsage(areas: [.builds], children: true, includeDisk: true)
+            }
+        case .storagePurge:
+            return Row(reply: StoragePurgeResponse(reclaimed: 1, purged: [.temporary])) {
+                _ = try await $0.storagePurge([.temporary])
+            }
         }
     }
 

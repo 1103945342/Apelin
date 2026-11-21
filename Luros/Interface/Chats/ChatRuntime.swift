@@ -343,6 +343,16 @@ final class ChatRuntime {
         return records[summary.id]?.summary ?? summary
     }
 
+    /// Whether any conversation is working right now: a turn running, a
+    /// message sending, a session opening. What removes the sessions a turn
+    /// depends on asks first.
+    var hasWorkingConversations: Bool {
+        if records.values.contains(where: { $0.summary.isWorking || $0.sending != nil }) {
+            return true
+        }
+        return !opening.isEmpty
+    }
+
     /// Nothing sent, typed or attached, no session opening, not pinned and
     /// not named: a row that holds nothing but its place.
     private func isUntouched(_ record: ChatRecord) -> Bool {

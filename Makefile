@@ -462,6 +462,7 @@ harness:
 	@bash "$(ROOT_DIR)/Scripts/test-team-report-relay.sh"
 	@bash "$(ROOT_DIR)/Scripts/test-application-install.sh"
 	@bash "$(ROOT_DIR)/Scripts/test-file-browser.sh"
+	@bash "$(ROOT_DIR)/Scripts/test-storage.sh"
 	@bash "$(ROOT_DIR)/Tests/TerminalUI/run.sh"
 	@python3 -I -B "$(ROOT_DIR)/Tests/ToolchainAudit/test_inventory.py"
 	@harness_dir="$$(mktemp -d /private/tmp/luros-harness.XXXXXX)"; \

@@ -26,6 +26,8 @@ final class ConsoleScriptsTests: XCTestCase {
         .channelVerifyCode: "The number WeChat shows goes in on the page that is signing in; it comes from the phone, not from a script.",
         .channelConfigure: "Where a channel's conversations run, and under which approval mode, is set on its page in Settings.",
         .channelSignOut: "Signing out of a channel is the reader's, on its page in Settings.",
+        .storageUsage: "Space is measured on the Storage page that draws each figure as its own walk ends.",
+        .storagePurge: "Emptying a folder is the reader's tap on the Storage page, where what it costs is shown beside it.",
     ]
 
     private static func consoleFolder(_ name: String) -> URL {

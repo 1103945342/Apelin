@@ -45,6 +45,12 @@ final class RootInterfaceController: UIViewController {
         return page
     }()
 
+    /// The app's one runtime, for a page that deletes a project or a
+    /// conversation outside the sidebar: Settings ▸ Storage.
+    var conversations: ChatRuntime {
+        chatRuntime
+    }
+
     /// Beside the page, the sidebar is always this wide.
     private static let sidebarWidth: CGFloat = 340
     /// The narrowest page the sidebar goes beside: an iPhone's width.
