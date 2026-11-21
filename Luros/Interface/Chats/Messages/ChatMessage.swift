@@ -102,6 +102,10 @@ struct ChatMessage: Identifiable, Hashable {
     /// the card says so, and Approve checks the device owner first.
     var runsAsRoot = false
     var approvalSections: [ApprovalCardText.Section] = []
+    /// An approval whose card offers a note field: a run mode switch, where
+    /// what the reader adds goes to the agent with their answer
+    /// (`AgentApproveRequest.note`).
+    var allowsNote = false
     /// An approval that is a question the agent asked
     /// (`luros_question_ask`): the card offers its options instead of
     /// Approve and Deny, and the decision sends the answer.

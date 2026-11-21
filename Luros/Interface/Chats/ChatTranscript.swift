@@ -360,6 +360,9 @@ struct ChatTranscript {
                     }
                     if let modeSwitch {
                         request.text = title + "\n\n" + modeSwitch.reason
+                        // The card offers a field for a word of the reader's
+                        // own, which the agent reads with the answer.
+                        request.allowsNote = true
                     }
                     add(request)
                 }

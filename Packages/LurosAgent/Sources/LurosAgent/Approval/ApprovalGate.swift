@@ -1,4 +1,5 @@
 import struct LurosProtocol.AgentQuestionAnswer
+import enum LurosProtocol.AgentRunModeRules
 import enum LurosProtocol.AgentQuestionRules
 import Foundation
 import KWWKAI
@@ -26,6 +27,10 @@ actor ApprovalGate {
     )] = [:]
     /// The answers given to questions, from `resolve` until `ask` takes them.
     private var answers: [String: AgentQuestionAnswer] = [:]
+    /// What the reader added to an approval, from `resolve` until the call
+    /// that asked takes it (`takeNote`): a word about the run that is
+    /// starting, which only the model reads.
+    private var notes: [String: String] = [:]
     private var sessionFingerprints: Set<String> = []
     private let emit: @Sendable (AgentSessionEvent) async -> Void
 
@@ -63,7 +68,12 @@ actor ApprovalGate {
         }
     }
 
-    func resolve(_ id: String, decision: ApprovalDecision, answer: AgentQuestionAnswer? = nil) async throws {
+    func resolve(
+        _ id: String,
+        decision: ApprovalDecision,
+        answer: AgentQuestionAnswer? = nil,
+        note: String? = nil,
+    ) async throws {
         guard let entry = waiting[id] else { throw ApprovalError.unknownRequest }
         // A question is answered with approve and an answer that fits it,
         // or skipped with deny; nothing else carries an answer. Refused
@@ -79,6 +89,14 @@ actor ApprovalGate {
             throw ApprovalError.answerDoesNotFit
         }
         waiting[id] = nil
+        // A denial carries its reason in the decision; a note belongs to an
+        // approval, and an empty one is no note at all.
+        if case .approve = decision,
+           let note = note?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !note.isEmpty
+        {
+            notes[id] = String(note.prefix(AgentRunModeRules.maximumNoteLength))
+        }
         if case .approve(.session) = decision, entry.request.allowsSessionScope {
             sessionFingerprints.insert(entry.request.fingerprint)
         }
@@ -93,6 +111,11 @@ actor ApprovalGate {
         let answer = answers.removeValue(forKey: request.id)
         guard case .approve = decision else { return nil }
         return answer
+    }
+
+    /// What the reader added to this request's approval, once.
+    func takeNote(_ id: String) -> String? {
+        notes.removeValue(forKey: id)
     }
 
     func cancel(_ id: String, reason: String) async {

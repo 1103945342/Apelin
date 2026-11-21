@@ -798,6 +798,7 @@ final class ChatRuntime {
         decision: ApprovalDecision,
         ownerVerified: Bool? = nil,
         answer: AgentQuestionAnswer? = nil,
+        note: String? = nil,
     ) async throws {
         guard let sessionID = records[id]?.sessionID,
               let approvalID = transcript(id).approvalIDs[messageID]
@@ -808,6 +809,7 @@ final class ChatRuntime {
             decision: decision,
             ownerVerified: ownerVerified,
             answer: answer,
+            note: note,
         )
     }
 

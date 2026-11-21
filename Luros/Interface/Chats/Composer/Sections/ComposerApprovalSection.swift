@@ -11,9 +11,11 @@ import UIKit
 /// that takes one option keeps the option just chosen and drops the one
 /// before; one that takes several toggles each.
 final class ComposerApprovalSection: ComposerSectionView {
-    /// The request and the decision; Approve on a request as root waits on
-    /// the device owner's check there before anything is sent.
-    var onDecision: ((ChatMessage, ApprovalDecision) -> Void)?
+    /// The request, the decision and what the reader typed beside it —
+    /// nil when the card offered no field or they left it empty. Approve on
+    /// a request as root waits on the device owner's check there before
+    /// anything is sent.
+    var onDecision: ((ChatMessage, ApprovalDecision, String?) -> Void)?
     /// A question answered with the labels chosen, or skipped (nil).
     var onAnswer: ((ChatMessage, AgentQuestionAnswer?) -> Void)?
     /// Other… was tapped: the reader writes an answer of their own, sent
@@ -38,6 +40,10 @@ final class ComposerApprovalSection: ComposerSectionView {
     private let textScroll = UIScrollView()
     private let approveButton = UIButton(type: .system)
     private let denyButton = UIButton(type: .system)
+    /// A word of the reader's own, offer alongside Approve and Deny when the
+    /// request takes one (`ChatMessage.allowsNote`): a run mode switch sends
+    /// it to the agent with either answer.
+    private let noteField = UITextField()
 
     override func initializeViews() {
         super.initializeViews()
@@ -76,11 +82,26 @@ final class ComposerApprovalSection: ComposerSectionView {
         setButtons(for: nil)
         approveButton.addAction(UIAction { [weak self] _ in self?.decide(.approve) }, for: .touchUpInside)
         denyButton.addAction(UIAction { [weak self] _ in self?.decide(.deny) }, for: .touchUpInside)
+        noteField.borderStyle = .roundedRect
+        noteField.font = .preferredFont(forTextStyle: .callout)
+        noteField.adjustsFontForContentSizeCategory = true
+        noteField.returnKeyType = .done
+        noteField.clearButtonMode = .whileEditing
+        noteField.placeholder = String(localized: "Add a note (optional)")
+        noteField.accessibilityLabel = String(localized: "Note")
+        noteField.accessibilityHint = String(
+            localized: "Sent to the agent with your answer, whether you approve or deny.",
+        )
+        noteField.addAction(
+            UIAction { [weak self] _ in self?.noteField.resignFirstResponder() },
+            for: .editingDidEndOnExit,
+        )
+        noteField.isHidden = true
         textScroll.contentInsetAdjustmentBehavior = .never
         for view in [titleLabel, rootLabel] {
             textScroll.addSubview(view)
         }
-        for view in [textScroll, denyButton, approveButton] {
+        for view in [textScroll, noteField, denyButton, approveButton] {
             addSubview(view)
         }
         alpha = 0
@@ -128,6 +149,10 @@ final class ComposerApprovalSection: ComposerSectionView {
 
     private func setText(of message: ChatMessage) {
         titleLabel.text = message.approvalTitle
+        // The field belongs to the request that asked for it: a request of
+        // another kind shows none, and nothing typed for the last one stays.
+        noteField.text = ""
+        noteField.isHidden = !message.allowsNote
         rootLabel.isHidden = !message.runsAsRoot
         detailViews.forEach { $0.removeFromSuperview() }
         detailViews = []
@@ -258,6 +283,9 @@ final class ComposerApprovalSection: ComposerSectionView {
 
     private func decide(_ decision: ApprovalDecision) {
         guard let request else { return }
+        let note = noteField.isHidden
+            ? nil
+            : noteField.text?.trimmingCharacters(in: .whitespacesAndNewlines)
         if let question = request.question {
             switch decision {
             case .approve:
@@ -269,7 +297,7 @@ final class ComposerApprovalSection: ComposerSectionView {
             }
             return
         }
-        onDecision?(request, decision)
+        onDecision?(request, decision, (note?.isEmpty ?? true) ? nil : note)
     }
 
     override func layoutSubviews() {
@@ -314,7 +342,12 @@ final class ComposerApprovalSection: ComposerSectionView {
             width: contentWidth,
             height: min(textHeight, (window?.bounds.height ?? .greatestFiniteMagnitude) / 2),
         )
-        let actionY = textScroll.frame.maxY + ChatMarkdownView.blockSpacing
+        var actionY = textScroll.frame.maxY + ChatMarkdownView.blockSpacing
+        if !noteField.isHidden {
+            let noteHeight = max(44, ceil(noteField.font?.lineHeight ?? 17) + 20)
+            noteField.frame = CGRect(x: 0, y: actionY, width: contentWidth, height: noteHeight)
+            actionY = noteField.frame.maxY + ChatMarkdownView.blockSpacing
+        }
         let buttonHeight = max(44, ceil(UIFont.preferredFont(forTextStyle: .headline).lineHeight + 22))
         let row = CGRect(x: 0, y: actionY, width: contentWidth, height: buttonHeight)
         let buttonWidth = (contentWidth - ChatMarkdownView.blockSpacing) / 2

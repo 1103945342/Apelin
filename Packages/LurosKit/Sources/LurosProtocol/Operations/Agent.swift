@@ -931,6 +931,11 @@ public struct AgentApproveRequest: OperationRequest {
     /// The reader's answer, with `approve`, to a request whose
     /// `detail.question` asked one (`AgentQuestion`); absent for any other.
     public var answer: AgentQuestionAnswer?
+    /// What the reader added to their answer, when the card offered a field
+    /// for it (a run mode switch does). With approve it is a word about the
+    /// run that is starting; a denial carries its reason in the decision
+    /// itself, which is what the model reads.
+    public var note: String?
 
     public init(
         sessionID: String,
@@ -939,6 +944,7 @@ public struct AgentApproveRequest: OperationRequest {
         scope: ApprovalScope? = nil,
         ownerVerified: Bool? = nil,
         answer: AgentQuestionAnswer? = nil,
+        note: String? = nil,
     ) {
         self.sessionID = sessionID
         self.approvalID = approvalID
@@ -946,6 +952,7 @@ public struct AgentApproveRequest: OperationRequest {
         self.scope = scope
         self.ownerVerified = ownerVerified
         self.answer = answer
+        self.note = note
     }
 }
 
@@ -1048,6 +1055,7 @@ public extension LurosService {
         scope: ApprovalScope? = nil,
         ownerVerified: Bool? = nil,
         answer: AgentQuestionAnswer? = nil,
+        note: String? = nil,
     ) async throws {
         _ = try await send(AgentApproveRequest(
             sessionID: sessionID,
@@ -1056,6 +1064,7 @@ public extension LurosService {
             scope: scope,
             ownerVerified: ownerVerified,
             answer: answer,
+            note: note,
         ))
     }
 

@@ -567,14 +567,25 @@ actor WorkerState {
         // The host records a description or removal approval in its own
         // ledger as it relays this decision; the agent keeps nothing. An
         // answer to a question goes with it, checked by the session's gate.
-        try await session.approve(requestID: approve.approvalID, decision: Self.decision(approve), answer: approve.answer)
+        try await session.approve(
+            requestID: approve.approvalID,
+            decision: Self.decision(approve),
+            answer: approve.answer,
+            note: approve.decision == .approve ? approve.note : nil,
+        )
     }
 
     /// The app's decision as the session's gate takes it: "for this
     /// session" where the app said so (the gate keeps it only for a request
     /// that offered it, and the host records the matching grant).
+    /// The wire's yes or no, and what the reader typed beside it: a denial's
+    /// reason is that text, which the model reads, and a bare denial keeps
+    /// the sentence it always had.
     static func decision(_ approve: AgentApproveRequest) -> LurosAgent.ApprovalDecision {
-        guard approve.decision == .approve else { return .deny(reason: "denied in Luros") }
+        guard approve.decision == .approve else {
+            let typed = approve.note?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return .deny(reason: typed.isEmpty ? "denied in Luros" : typed)
+        }
         return .approve(approve.scope == .session ? .session : .once)
     }
 

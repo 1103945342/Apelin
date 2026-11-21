@@ -1450,9 +1450,14 @@ public actor AgentSession {
     /// `answer` goes with an approval of a question (`detail.question`).
     /// A gate's refusal is rethrown as a message: the worker would send the
     /// bare case name, which is what an alert read as "answerDoesNotFit".
-    public func approve(requestID: String, decision: ApprovalDecision, answer: AgentQuestionAnswer? = nil) async throws {
+    public func approve(
+        requestID: String,
+        decision: ApprovalDecision,
+        answer: AgentQuestionAnswer? = nil,
+        note: String? = nil,
+    ) async throws {
         do {
-            try await gate.resolve(requestID, decision: decision, answer: answer)
+            try await gate.resolve(requestID, decision: decision, answer: answer, note: note)
         } catch let error as ApprovalError {
             throw LurosError(.badRequest, error.errorDescription ?? String(describing: error))
         }

@@ -50,7 +50,15 @@ enum RunModes {
     }
 
     /// What the model reads once the mode changed.
-    static func changed(_ request: AgentRunModeRequest) -> String {
+    static func changed(_ request: AgentRunModeRequest, note: String? = nil) -> String {
+        let text = changedText(request)
+        guard let note = note?.trimmingCharacters(in: .whitespacesAndNewlines), !note.isEmpty else {
+            return text
+        }
+        return text + "\n\nThe user added, and it is part of the work: “\(note)”. Follow it as you go."
+    }
+
+    private static func changedText(_ request: AgentRunModeRequest) -> String {
         switch request.mode {
         case .plan:
             """
@@ -72,6 +80,15 @@ enum RunModes {
     }
 
     /// What the model reads when the reader kept the conversation a plan.
+    /// A reason they typed is part of it: the plan is measured against that,
+    /// not only against keeping it a plan.
+    static func declined(note: String?) -> String {
+        guard let note = note?.trimmingCharacters(in: .whitespacesAndNewlines), !note.isEmpty else {
+            return declined
+        }
+        return declined + "\n\nThe user added: “\(note)”. Answer that too: it says what the plan should leave out, change or do first."
+    }
+
     static let declined = """
     The user did not switch this conversation to a build. Do not make the change: answer \
     with the plan you have, what you would do first, and what you would need changed \
@@ -121,11 +138,19 @@ extension ToolRunner {
         try cancellation?.throwIfCancelled()
         try Task.checkCancellation()
         guard case .approve = decision else {
+            // A denial's reason is in the decision: it is the card's note
+            // field, and the model reads it as what to change about the plan.
+            var reason: String?
+            if case let .deny(note) = decision {
+                reason = note
+            }
             journal?.note(ToolCallOutcome(.denied, "the user kept this conversation a plan"), for: toolCallID)
-            return AgentToolResult(content: [.text(TextContent(text: RunModes.declined))])
+            return AgentToolResult(content: [.text(TextContent(text: RunModes.declined(note: reason)))])
         }
+        // What the reader typed beside Approve, which only the model reads.
+        let note = await gate.takeNote(request.id)
         setRunMode(.build)
         try await record(.runModeChanged(runMode: .build, reason: asked.reason))
-        return AgentToolResult(content: [.text(TextContent(text: RunModes.changed(asked)))])
+        return AgentToolResult(content: [.text(TextContent(text: RunModes.changed(asked, note: note)))])
     }
 }

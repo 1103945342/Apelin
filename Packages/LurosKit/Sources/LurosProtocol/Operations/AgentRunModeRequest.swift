@@ -24,6 +24,9 @@ public enum AgentRunModeRules {
     public static let detailKey = "runMode"
     /// One or two sentences: why the conversation should go the other way.
     public static let maximumReasonLength = 300
+    /// What the reader may add in the card's note field, long enough for a
+    /// sentence of their own and short enough to stay one line.
+    public static let maximumNoteLength = 500
     /// The modes an agent may ask for. `auto` is the reader's alone: a run
     /// that stops asking is a choice about the device, not about the task.
     public static let requestable: [AgentRunMode] = [.plan, .build]

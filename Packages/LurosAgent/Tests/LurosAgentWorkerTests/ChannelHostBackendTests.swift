@@ -606,6 +606,19 @@ struct ChannelHostBackendTests {
         #expect(WorkerState.decision(AgentApproveRequest(sessionID: "s", approvalID: "a", decision: .approve, scope: .once)) == .approve(.once))
         #expect(WorkerState.decision(AgentApproveRequest(sessionID: "s", approvalID: "a", decision: .approve, scope: .session)) == .approve(.session))
         #expect(WorkerState.decision(AgentApproveRequest(sessionID: "s", approvalID: "a", decision: .deny, scope: .session)) == .deny(reason: "denied in Luros"))
+        // What the reader typed beside Deny is the reason the model reads.
+        #expect(
+            WorkerState.decision(AgentApproveRequest(
+                sessionID: "s", approvalID: "a", decision: .deny, note: "  not the storage page yet  ",
+            )) == .deny(reason: "not the storage page yet"),
+        )
+        // Typed beside Approve, it is no reason at all: the approval stands,
+        // and the note rides the gate for the run that starts.
+        #expect(
+            WorkerState.decision(AgentApproveRequest(
+                sessionID: "s", approvalID: "a", decision: .approve, note: "one file at a time",
+            )) == .approve(.once),
+        )
     }
 
     @Test

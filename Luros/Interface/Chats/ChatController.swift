@@ -189,9 +189,9 @@ final class ChatController: UIViewController {
         composer.queuePanel.onEdit = { [weak self] message in self?.editPendingMessage(message) }
         composer.queuePanel.onReorder = { [weak self] order in self?.changeQueue(.reorder, order: order) }
         composer.queuePanel.onResume = { [weak self] in self?.changeQueue(.resume) }
-        composer.approvalSection.onDecision = { [weak self] request, decision in
+        composer.approvalSection.onDecision = { [weak self] request, decision, note in
             guard let self, let chat else { return }
-            Task { await self.decide(request, decision, in: chat.id) }
+            Task { await self.decide(request, decision, note: note, in: chat.id) }
         }
         composer.approvalSection.onAnswer = { [weak self] request, answer in
             guard let self, let chat else { return }
@@ -837,7 +837,16 @@ final class ChatController: UIViewController {
     /// Sends the reader's decision. Approving a command as root first asks
     /// for Face ID, Touch ID or the passcode (`DeviceOwnerCheck`); when that
     /// does not pass, nothing is sent and the request goes on waiting.
-    private func decide(_ request: ChatMessage, _ decision: ApprovalDecision, in chatID: UUID) async {
+    /// `note`: what the reader typed beside their answer, when the card
+    /// offered a field for it. A denial carries it as its reason, an
+    /// approval as the word the agent reads about the run it is starting.
+    private func decide(
+        _ request: ChatMessage,
+        _ decision: ApprovalDecision,
+        note: String? = nil,
+        in chatID: UUID,
+    ) async {
+        let note = note.map { String($0.prefix(AgentRunModeRules.maximumNoteLength)) }
         var ownerVerified: Bool?
         if decision == .approve, request.runsAsRoot {
             guard checkingOwner == nil else { return }
@@ -857,8 +866,17 @@ final class ChatController: UIViewController {
             }
             ownerVerified = true
         }
+        // The wire's decision says yes or no; what was typed travels beside
+        // it, and the agent reads it either way — as the reason a denial
+        // gives, or as a word about the run an approval starts.
         do {
-            try await runtime.approve(request.id, in: chatID, decision: decision, ownerVerified: ownerVerified)
+            try await runtime.approve(
+                request.id,
+                in: chatID,
+                decision: decision,
+                ownerVerified: ownerVerified,
+                note: note,
+            )
         } catch {
             presentNotice(title: "Unable to Send Decision", message: error.readableMessage)
         }
