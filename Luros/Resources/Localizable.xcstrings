@@ -136658,88 +136658,6 @@
         }
       }
     },
-    "Measured when this page opens, one folder at a time." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "يُقاس عند فتح هذه الصفحة، مجلدًا واحدًا في كل مرة."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gemessen beim Öffnen dieser Seite, Ordner für Ordner."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Measured when this page opens, one folder at a time."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Se mide al abrir esta página, carpeta por carpeta."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesuré à l’ouverture de cette page, dossier par dossier."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Misurato all’apertura di questa pagina, cartella per cartella."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "このページを開いたときに、フォルダーごとに計測します。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 페이지를 열 때 폴더별로 측정합니다."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Medido ao abrir esta página, pasta por pasta."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Измеряется при открытии страницы, папка за папкой."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đo khi mở trang này, từng thư mục một."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "打开本页时才统计，逐项计算。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "開啟此頁時才統計，逐項計算。"
-          }
-        }
-      }
-    },
     "A project and a conversation are deleted here for good, with their Git history and their messages. An SDK and a toolchain are removed on their own pages." : {
       "localizations" : {
         "ar" : {
@@ -138321,55 +138239,55 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ available of %@"
+            "value" : "%@ disponibles de %@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ disponible de %@"
+            "value" : "%@ disponibles sur %@"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ disponibles sur %@"
+            "value" : "%@ disponibili su %@"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ disponibili di %@"
+            "value" : "%@ 空き（全 %@）"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ 空き / %@"
+            "value" : "%@ 사용 가능 / %@"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ 사용 가능 / %@"
+            "value" : "%@ disponíveis de %@"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ disponível de %@"
+            "value" : "Доступно %@ из %@"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Доступно %@ из %@"
+            "value" : "%@ trống trên %@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ trống trên %@"
+            "value" : "可用 %@，共 %@"
           }
         },
         "zh-Hant" : {

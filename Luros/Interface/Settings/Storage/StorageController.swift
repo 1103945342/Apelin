@@ -132,7 +132,7 @@ final class StorageController: TableController {
     private func footer(for section: Section) -> String? {
         switch section {
         case .disk:
-            String(localized: "Measured when this page opens, one folder at a time.")
+            nil
         case .areas:
             String(localized: """
             A project and a conversation are deleted here for good, with their Git history and their \
