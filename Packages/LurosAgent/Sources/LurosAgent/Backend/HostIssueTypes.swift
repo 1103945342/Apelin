@@ -15,6 +15,8 @@ public struct IssueQueryToolRequest: Sendable, Hashable, Codable {
     public var limit: Int?
     /// comment: the comment's text.
     public var body: String?
+    /// edit: the issue's new title.
+    public var title: String?
 
     public init(
         context: HostCallContext,
@@ -24,6 +26,7 @@ public struct IssueQueryToolRequest: Sendable, Hashable, Codable {
         state: String? = nil,
         limit: Int? = nil,
         body: String? = nil,
+        title: String? = nil,
     ) {
         self.context = context
         self.repository = repository
@@ -32,6 +35,7 @@ public struct IssueQueryToolRequest: Sendable, Hashable, Codable {
         self.state = state
         self.limit = limit
         self.body = body
+        self.title = title
     }
 }
 
@@ -72,6 +76,8 @@ public struct PullRequestQueryToolRequest: Sendable, Hashable, Codable {
     public var base: String?
     public var draft: Bool?
     public var method: String?
+    /// review: approve, requestChanges or comment.
+    public var verdict: String?
 
     public init(
         context: HostCallContext,
@@ -86,6 +92,7 @@ public struct PullRequestQueryToolRequest: Sendable, Hashable, Codable {
         base: String? = nil,
         draft: Bool? = nil,
         method: String? = nil,
+        verdict: String? = nil,
     ) {
         self.context = context
         self.repository = repository
@@ -99,6 +106,7 @@ public struct PullRequestQueryToolRequest: Sendable, Hashable, Codable {
         self.base = base
         self.draft = draft
         self.method = method
+        self.verdict = verdict
     }
 }
 

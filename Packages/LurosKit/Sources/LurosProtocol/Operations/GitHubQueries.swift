@@ -22,6 +22,8 @@ public struct IssueQueryRequest: OperationRequest {
         case close
         /// One issue reopened.
         case reopen
+        /// Its title, its body or both replaced.
+        case edit
     }
 
     /// `owner/name`, as the user named it.
@@ -35,6 +37,8 @@ public struct IssueQueryRequest: OperationRequest {
     public var limit: Int?
     /// `comment`: the comment's text, which GitHub takes as Markdown.
     public var body: String?
+    /// `edit`: the issue's new title; nil keeps the one it has.
+    public var title: String?
 
     public init(
         repository: String,
@@ -43,6 +47,7 @@ public struct IssueQueryRequest: OperationRequest {
         state: String? = nil,
         limit: Int? = nil,
         body: String? = nil,
+        title: String? = nil,
     ) {
         self.repository = repository
         self.action = action
@@ -50,6 +55,7 @@ public struct IssueQueryRequest: OperationRequest {
         self.state = state
         self.limit = limit
         self.body = body
+        self.title = title
     }
 
     /// Nil when the request is one GitHub could answer, else why not.
@@ -79,6 +85,13 @@ public struct IssueQueryRequest: OperationRequest {
             }
             guard text.utf8.count <= 65536 else {
                 return "A comment is at most 64 KB of text."
+            }
+        case .edit:
+            guard let number, number > 0 else {
+                return "Name the issue by its number."
+            }
+            guard title != nil || body != nil else {
+                return "An edit replaces the title, the body or both."
             }
         }
         return nil
@@ -162,6 +175,10 @@ public struct PullRequestQueryRequest: OperationRequest {
         case create
         /// One pull request merged on GitHub.
         case merge
+        /// One pull request closed without merging.
+        case close
+        /// A review left on one: approve, request changes or comment.
+        case review
     }
 
     /// `owner/name`, as the user named it.
@@ -185,6 +202,8 @@ public struct PullRequestQueryRequest: OperationRequest {
     public var draft: Bool?
     /// `merge`: merge, squash or rebase. Default merge.
     public var method: String?
+    /// `review`: approve, requestChanges or comment.
+    public var verdict: String?
 
     public init(
         repository: String,
@@ -198,6 +217,7 @@ public struct PullRequestQueryRequest: OperationRequest {
         base: String? = nil,
         draft: Bool? = nil,
         method: String? = nil,
+        verdict: String? = nil,
     ) {
         self.repository = repository
         self.action = action
@@ -210,6 +230,7 @@ public struct PullRequestQueryRequest: OperationRequest {
         self.base = base
         self.draft = draft
         self.method = method
+        self.verdict = verdict
     }
 
     /// Nil when the request is one GitHub could answer, else why not.
@@ -241,6 +262,17 @@ public struct PullRequestQueryRequest: OperationRequest {
             }
             if let method, !["merge", "squash", "rebase"].contains(method) {
                 return "method is merge, squash or rebase."
+            }
+        case .close:
+            guard let number, number > 0 else {
+                return "Name the pull request by its number."
+            }
+        case .review:
+            guard let number, number > 0 else {
+                return "Name the pull request by its number."
+            }
+            guard let verdict, ["approve", "requestChanges", "comment"].contains(verdict) else {
+                return "verdict is approve, requestChanges or comment."
             }
         }
         return nil

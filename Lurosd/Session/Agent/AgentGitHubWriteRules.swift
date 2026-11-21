@@ -3,45 +3,57 @@ import LurosProtocol
 import Foundation
 
 /// An agent's `gitIssue` and `gitPullRequest` when the action changes GitHub
-/// — a comment, a close or reopen, a pull request made or merged: what it
-/// changes, everyone who can see the repository reads. So, as an issue
-/// opened is, each one asks under Confirm and spends only the approval whose
-/// own `approvalRequested` named exactly the same call
-/// (`detail.githubWrite`), once, never for the session. Relaxed and Full let
-/// it through. The reads of the same operations ask nobody and never reach
-/// here.
+/// — a comment, an edit, a close or reopen of an issue, or a pull request
+/// made, merged, closed or reviewed: what it changes, everyone who can see
+/// the repository reads. So, as an issue opened is, each one asks under
+/// Confirm and spends only the approval whose own `approvalRequested` named
+/// exactly the same call (`detail.githubWrite`), once, never for the
+/// session. Relaxed and Full let it through. The reads of the same
+/// operations ask nobody and never reach here.
 enum AgentGitHubWriteRules {
+    /// What an issue edit's approval carries, rebuilt the same way
+    /// `ToolRunner.githubWrite` builds it: the new title's mark, then the
+    /// body's.
+    private static func editText(title: String?, body: String?) -> String {
+        (title ?? "") + "\n\n" + (body ?? "")
+    }
+
     /// Whether `asked`, the payload of one of the session's own
     /// `approvalRequested` events, approves exactly this issue request.
     static func covers(_ issue: IssueQueryRequest, asked: JSONValue) -> Bool {
         guard let write = asked["detail"]?["githubWrite"] else { return false }
+        let text: String?
+        switch issue.action {
+        case .comment: text = issue.body
+        case .edit: text = editText(title: issue.title, body: issue.body)
+        default: text = nil
+        }
         return matches(
             write,
             action: issue.action.rawValue,
             repository: issue.repository,
             number: issue.number,
-            text: issue.body,
+            text: text,
             head: nil,
             base: nil,
             method: nil,
+            verdict: nil,
         )
     }
 
     /// Whether `asked` approves exactly this pull request request.
     static func covers(_ pull: PullRequestQueryRequest, asked: JSONValue) -> Bool {
         guard let write = asked["detail"]?["githubWrite"] else { return false }
-        let text: String? = pull.action == .create
-            ? (pull.title ?? "") + "\n\n" + (pull.body ?? "")
-            : nil
         return matches(
             write,
             action: pull.action.rawValue,
             repository: pull.repository,
             number: pull.number,
-            text: text,
+            text: pull.action == .create ? editText(title: pull.title, body: pull.body) : pull.body,
             head: pull.head,
             base: pull.base,
             method: pull.method,
+            verdict: pull.verdict,
         )
     }
 
@@ -54,6 +66,7 @@ enum AgentGitHubWriteRules {
         head: String?,
         base: String?,
         method: String?,
+        verdict: String?,
     ) -> Bool {
         write["action"]?.stringValue == action
             && write["repository"]?.stringValue == repository
@@ -62,6 +75,7 @@ enum AgentGitHubWriteRules {
             && write["head"]?.stringValue == head
             && write["base"]?.stringValue == base
             && write["method"]?.stringValue == method
+            && write["verdict"]?.stringValue == verdict
     }
 
     /// Nil when the session may make the call, else why not; under Confirm
@@ -78,11 +92,11 @@ enum AgentGitHubWriteRules {
     }
 
     static func isWrite(_ issue: IssueQueryRequest) -> Bool {
-        [.comment, .close, .reopen].contains(issue.action)
+        [.comment, .close, .reopen, .edit].contains(issue.action)
     }
 
     static func isWrite(_ pull: PullRequestQueryRequest) -> Bool {
-        [.create, .merge].contains(pull.action)
+        [.create, .merge, .close, .review].contains(pull.action)
     }
 
     private static func spend(

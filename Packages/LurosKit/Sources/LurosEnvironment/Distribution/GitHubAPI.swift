@@ -267,6 +267,21 @@ struct GitHubAPI: Sendable {
         try await send("GET", "/repos/\(fullName)/pulls/\(number)", as: PullRow.self)
     }
 
+    /// Pull request `number` closed without merging.
+    func setPullState(_ fullName: String, number: Int, state: String) async throws -> PullRow {
+        try await send("PATCH", "/repos/\(fullName)/pulls/\(number)", body: ["state": state], as: PullRow.self)
+    }
+
+    /// A review on pull request `number`: `event` is APPROVE,
+    /// REQUEST_CHANGES or COMMENT, and the body may be empty.
+    func reviewPull(_ fullName: String, number: Int, event: String, body: String) async throws {
+        try await sendExpectingNothing(
+            "POST",
+            "/repos/\(fullName)/pulls/\(number)/reviews",
+            body: ["event": event, "body": body],
+        )
+    }
+
     /// A comment added to issue `number`; answers its page.
     func commentIssue(_ fullName: String, number: Int, body: String) async throws -> String {
         struct Comment: Decodable {

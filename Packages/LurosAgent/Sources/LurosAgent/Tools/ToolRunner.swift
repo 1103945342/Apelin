@@ -513,21 +513,24 @@ actor ToolRunner {
     /// as the card shows it and the host matches it; nil for a read.
     static func githubWrite(name: AgentToolName, arguments: JSONValue) -> GitHubWriteApproval? {
         let writes: [String: Set<String>] = [
-            AgentToolName.gitIssue.rawValue: ["comment", "close", "reopen"],
-            AgentToolName.gitPullRequest.rawValue: ["create", "merge"],
+            AgentToolName.gitIssue.rawValue: ["comment", "close", "reopen", "edit"],
+            AgentToolName.gitPullRequest.rawValue: ["create", "merge", "close", "review"],
         ]
         guard let action = arguments.argString("action"),
               writes[name.rawValue]?.contains(action) == true,
               let repository = arguments.argNonEmptyString("repository")
         else { return nil }
         let text: String?
-        if action == "comment" {
+        switch action {
+        case "comment", "review":
             text = arguments.argString("body")
-        } else if action == "create" {
+        case "create":
             // The title and the body both travel; the host rebuilds the same
             // pair from the request.
             text = (arguments.argString("title") ?? "") + "\n\n" + (arguments.argString("body") ?? "")
-        } else {
+        case "edit":
+            text = (arguments.argString("title") ?? "") + "\n\n" + (arguments.argString("body") ?? "")
+        default:
             text = nil
         }
         return GitHubWriteApproval(
@@ -538,6 +541,7 @@ actor ToolRunner {
             head: arguments.argString("head"),
             base: arguments.argString("base"),
             method: arguments.argString("method"),
+            verdict: arguments.argString("verdict"),
         )
     }
 
@@ -1068,8 +1072,8 @@ actor ToolRunner {
                 throw ToolArgumentError("name the repository as owner/name, such as octocat/hello-world")
             }
             let allowed = name == .gitIssue
-                ? ["list", "read", "comment", "close", "reopen"]
-                : ["list", "read", "create", "merge"]
+                ? ["list", "read", "comment", "close", "reopen", "edit"]
+                : ["list", "read", "create", "merge", "close", "review"]
             guard let action = arguments.argNonEmptyString("action"), allowed.contains(action) else {
                 throw ToolArgumentError("action is one of \(allowed.joined(separator: ", "))")
             }
@@ -1085,6 +1089,7 @@ actor ToolRunner {
                     state: state,
                     limit: limit,
                     body: arguments.argString("body"),
+                    title: arguments.argString("title"),
                 )))
             }
             return try await json(backend.gitPullRequest(PullRequestQueryToolRequest(
@@ -1100,6 +1105,7 @@ actor ToolRunner {
                 base: arguments.argString("base"),
                 draft: arguments.argBool("draft"),
                 method: arguments.argString("method"),
+                verdict: arguments.argString("verdict"),
             )))
 
         case .gitRemoteSet:

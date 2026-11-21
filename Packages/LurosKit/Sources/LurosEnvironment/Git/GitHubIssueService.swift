@@ -80,6 +80,17 @@ public struct GitHubIssueService: Sendable {
                 state: request.action == .close ? "closed" : "open",
             )
             return IssueQueryResponse(repository: request.repository, issue: Self.summary(detail))
+        case .edit:
+            guard let number = request.number else {
+                throw LurosError(.badRequest, "Name the issue by its number.")
+            }
+            let detail = try await api.editIssue(
+                request.repository,
+                number: number,
+                title: request.title,
+                body: request.body,
+            )
+            return IssueQueryResponse(repository: request.repository, issue: Self.summary(detail))
         }
     }
 
@@ -146,6 +157,33 @@ public struct GitHubIssueService: Sendable {
                 pullRequest: Self.summary(try await api.pull(request.repository, number: number)),
                 merged: answer.merged,
                 message: answer.message,
+            )
+        case .close:
+            guard let number = request.number else {
+                throw LurosError(.badRequest, "Name the pull request by its number.")
+            }
+            let row = try await api.setPullState(request.repository, number: number, state: "closed")
+            return PullRequestQueryResponse(repository: request.repository, pullRequest: Self.summary(row))
+        case .review:
+            guard let number = request.number, let verdict = request.verdict else {
+                throw LurosError(.badRequest, "A review needs the pull request's number and its verdict.")
+            }
+            let event: String
+            switch verdict {
+            case "approve": event = "APPROVE"
+            case "requestChanges": event = "REQUEST_CHANGES"
+            default: event = "COMMENT"
+            }
+            try await api.reviewPull(
+                request.repository,
+                number: number,
+                event: event,
+                body: request.body ?? "",
+            )
+            return PullRequestQueryResponse(
+                repository: request.repository,
+                pullRequest: Self.summary(try await api.pull(request.repository, number: number)),
+                message: nil,
             )
         }
     }

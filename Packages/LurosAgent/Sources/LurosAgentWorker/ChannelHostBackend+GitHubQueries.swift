@@ -18,6 +18,7 @@ public extension ChannelHostBackend {
                 state: request.state,
                 limit: request.limit,
                 body: request.body,
+                title: request.title,
             ))
         } catch let error as LurosError where error.reason == .authenticationRequired {
             throw GitToolFailure(message: Self.issueSignInNeededToRead)
@@ -50,6 +51,7 @@ public extension ChannelHostBackend {
                 base: request.base,
                 draft: request.draft,
                 method: request.method,
+                verdict: request.verdict,
             ))
         } catch let error as LurosError where error.reason == .authenticationRequired {
             throw GitToolFailure(message: Self.issueSignInNeededToRead)

@@ -253,8 +253,8 @@ public struct IssueCreateApproval: Sendable, Hashable, Codable {
 /// What a comment, a close or reopen, or a pull request made or merged on
 /// GitHub names: exactly the fields the card showed and the host matches.
 public struct GitHubWriteApproval: Sendable, Hashable, Codable {
-    /// The action the tool was called with: comment, close, reopen, create
-    /// or merge.
+    /// The action the tool was called with: comment, close, reopen or edit
+    /// for an issue; create, merge, close or review for a pull request.
     public var action: String
     /// `owner/name`.
     public var repository: String
@@ -263,6 +263,8 @@ public struct GitHubWriteApproval: Sendable, Hashable, Codable {
     public var head: String?
     public var base: String?
     public var method: String?
+    /// `review`: approve, requestChanges or comment.
+    public var verdict: String?
     public init(
         action: String,
         repository: String,
@@ -271,6 +273,7 @@ public struct GitHubWriteApproval: Sendable, Hashable, Codable {
         head: String? = nil,
         base: String? = nil,
         method: String? = nil,
+        verdict: String? = nil,
     ) {
         self.action = action
         self.repository = repository
@@ -279,6 +282,7 @@ public struct GitHubWriteApproval: Sendable, Hashable, Codable {
         self.head = head
         self.base = base
         self.method = method
+        self.verdict = verdict
     }
 }
 

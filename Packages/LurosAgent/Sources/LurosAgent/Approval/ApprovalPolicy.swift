@@ -814,14 +814,18 @@ public struct ApprovalPolicy: Sendable, Hashable {
         switch write.action {
         case "comment":
             return "Posts this comment on issue \(where_) under your GitHub account, where everyone who can see that repository can read it. Each comment needs your approval."
+        case "edit":
+            return "Replaces the text of issue \(where_) on GitHub, which everyone who can see that repository reads. Each edit needs your approval."
         case "close":
-            return "Closes issue \(where_) on GitHub, for everyone who can see that repository. Each close needs your approval."
+            return "Closes \(where_) on GitHub, for everyone who can see that repository. Each close needs your approval."
         case "reopen":
             return "Reopens issue \(where_) on GitHub, for everyone who can see that repository. Each reopen needs your approval."
         case "create":
             return "Opens a pull request on \(write.repository) from \(write.head ?? "?") into \(write.base ?? "?"), under your GitHub account, where everyone who can see that repository can read it. Each one needs your approval."
         case "merge":
             return "Merges pull request \(where_) on GitHub, \(write.method ?? "merge")ing its commits into its base branch for everyone who can see that repository. Each merge needs your approval."
+        case "review":
+            return "Leaves a \(write.verdict ?? "review") verdict on pull request \(where_) under your GitHub account, where everyone who can see that repository reads it. Each review needs your approval."
         default:
             return "Changes \(write.repository) on GitHub under your GitHub account. Each change needs your approval."
         }
