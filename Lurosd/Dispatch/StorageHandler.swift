@@ -32,7 +32,7 @@ enum StorageHandler: DomainHandler {
             let disk = ask.includeDisk
                 ? await Task.detached(priority: .utility) { StorageKeeper.disk(at: data.root) }.value
                 : nil
-            return .success(request.requestID, StorageUsageResponse(usage: usage, disk: disk))
+            return (.success(request.requestID, StorageUsageResponse(usage: usage, disk: disk)), [])
         } catch {
             return request.fail(error)
         }
@@ -56,7 +56,7 @@ enum StorageHandler: DomainHandler {
                 }.value
                 purged.append(area)
             }
-            return .success(request.requestID, StoragePurgeResponse(reclaimed: reclaimed, purged: purged))
+            return (.success(request.requestID, StoragePurgeResponse(reclaimed: reclaimed, purged: purged)), [])
         } catch {
             return request.fail(error)
         }
