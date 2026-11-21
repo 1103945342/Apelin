@@ -1,11 +1,11 @@
 # Tag vX.Y.Z → the packages CI built for the tagged commit, published.
 #
-# Nothing is tested or compiled here. The push of the commit to main ran
-# `ci.yml`: the host tests in one job and, beside them, the IDE's two
-# packages and every extension's compiled, packaged and verified in
-# another, kept as the artifact `luros-<sha>`. The tag publishes that artifact, and only once that run
-# has succeeded: a failed test fails the run, and the release with it. What
-# ships is the file CI verified, not a second build of the same commit.
+# Nothing is tested or compiled here. The push of the tag ran `ci.yml` on the
+# same commit, which built the IDE's two packages and every extension,
+# verified them and kept them as the artifact `luros-<sha>`. The tag publishes
+# that artifact, and only once that run has succeeded. What ships is the file
+# CI verified, not a second build of the same commit. `make harness` is run on
+# a Mac before a tag: it is not part of this gate.
 #
 # The commit says its version (`make set-version`, the release notes, then
 # the tag), and the IDE's packages CI built are named for it: when they are
