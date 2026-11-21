@@ -995,6 +995,11 @@ actor EventRelay {
         // gitIssueCreate to (AgentIssueCreateRules).
         case let .issueCreate(issue):
             payload["detail"] = .object(["issueCreate": (try? LurosCore.JSONValue(encoding: issue)) ?? .null])
+        // What the host matches an agent's comment, edit, close, reopen, pull
+        // request made, merged, closed or reviewed to
+        // (AgentGitHubWriteRules).
+        case let .githubWrite(write):
+            payload["detail"] = .object(["githubWrite": (try? LurosCore.JSONValue(encoding: write)) ?? .null])
         // The project the host matches an agent's projectDelete to
         // (AgentProjectDeleteRules).
         case let .projectDelete(deletion):
