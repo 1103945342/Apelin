@@ -318,6 +318,10 @@ public final class EnvironmentWorker: @unchecked Sendable {
             await WorkerMain.serve(GitRepositoryCreateRequest.self, request) { [self] in try await repositories.create($0) }
         case .gitIssueCreate:
             await WorkerMain.serve(GitIssueCreateRequest.self, request) { [self] in try await issues.create($0) }
+        case .gitIssue:
+            await WorkerMain.serve(IssueQueryRequest.self, request) { [self] in try await issues.query($0) }
+        case .gitPullRequest:
+            await WorkerMain.serve(PullRequestQueryRequest.self, request) { [self] in try await issues.query($0) }
         case .gitSquash:
             await WorkerMain.serve(GitSquashRequest.self, request) { [self] in try git.squash($0) }
         case .transferInspect:

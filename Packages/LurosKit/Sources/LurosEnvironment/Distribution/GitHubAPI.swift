@@ -206,6 +206,67 @@ struct GitHubAPI: Sendable {
         try await send("GET", "/repos/\(fullName)/issues/\(number)", as: IssueDetail.self)
     }
 
+    /// An issue as a list names it, with the mark that makes a pull request
+    /// one too.
+    struct IssueRow: Decodable, Sendable {
+        let number: Int
+        let title: String
+        let state: String
+        let htmlURL: String
+        let body: String?
+        let user: Owner?
+        let comments: Int?
+        let pullRequest: IssueDetail.PullRequestMark?
+
+        enum CodingKeys: String, CodingKey {
+            case number, title, state, body, user, comments
+            case htmlURL = "html_url"
+            case pullRequest = "pull_request"
+        }
+    }
+
+    /// The repository's issues, most recently updated first. GitHub counts
+    /// its pull requests among them; `issueRow` tells which is which.
+    func listIssues(_ fullName: String, state: String, limit: Int) async throws -> [IssueRow] {
+        try await send("GET", "/repos/\(fullName)/issues?state=\(state)&per_page=\(limit)", as: [IssueRow].self)
+    }
+
+    /// A pull request as GitHub's REST API shows it: never the diff.
+    struct PullRow: Decodable, Sendable {
+        let number: Int
+        let title: String
+        let state: String
+        let htmlURL: String
+        let body: String?
+        let user: Owner?
+        let head: Branch
+        let base: Branch
+        let draft: Bool?
+        let merged: Bool?
+
+        struct Branch: Decodable, Sendable {
+            let ref: String
+            /// `owner:branch`, which names the fork a head comes from.
+            let label: String?
+            let user: Owner?
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case number, title, state, body, user, head, base, draft, merged
+            case htmlURL = "html_url"
+        }
+    }
+
+    /// The repository's pull requests, most recently updated first.
+    func listPulls(_ fullName: String, state: String, limit: Int) async throws -> [PullRow] {
+        try await send("GET", "/repos/\(fullName)/pulls?state=\(state)&per_page=\(limit)", as: [PullRow].self)
+    }
+
+    /// Pull request `number` on `fullName`.
+    func pull(_ fullName: String, number: Int) async throws -> PullRow {
+        try await send("GET", "/repos/\(fullName)/pulls/\(number)", as: PullRow.self)
+    }
+
     /// The title, the body or both of issue `number` on `fullName` changed;
     /// a field not given is not sent, and GitHub keeps it.
     func editIssue(_ fullName: String, number: Int, title: String?, body: String?) async throws -> IssueDetail {

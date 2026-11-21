@@ -18,6 +18,8 @@ final class ConsoleScriptsTests: XCTestCase {
         .agentQueue: "Pending input is managed in the conversation, never by a console script.",
         .agentConfigure: "A conversation's model is picked in the composer's row, where the total it must fit is shown beside it; the console leaves that choice to the reader.",
         .gitCredentialSet: "A git credential comes only from Sign In with GitHub in Settings ▸ Git; the console refuses it before sending.",
+        .gitIssue: "An issue list is GitHub's answer to the reader's own sign-in; a console script has no account to read.",
+        .gitPullRequest: "Pull requests are GitHub's answer to the reader's own sign-in; a console script has no account to read.",
         .feedbackStar: "A star is given on the reader's GitHub account only by their tap in the app; the console refuses it before sending.",
         .channelStatus: "A channel is read on its Settings page, where the code it is waiting for is drawn; the console has nothing to show for it.",
         .channelSignIn: "A sign-in is a QR code scanned with a phone and drawn on the page that asked for it.",

@@ -688,6 +688,7 @@ public struct ApprovalPolicy: Sendable, Hashable {
              .packageList, .packageConfirmLoaded, .logRead, .crashList, .crashRead, .crashSymbolicate,
              .screenCapture, .screenReadTree, .memoryList, .skillList, .skillRead, .projectCheckDistribution,
              .templateList, .projectList, .gitStatus, .gitDiff, .gitReadSettings, .gitRemoteList,
+             .gitIssue, .gitPullRequest,
              .gitBranches, .gitLog, .gitCommitDetail,
              .conversationList, .conversationRead, .toolchainList, .sdkList, .webSearch, .webFetch, .feedbackRead,
              .todoList:

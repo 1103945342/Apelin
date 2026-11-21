@@ -88,6 +88,8 @@ public enum AgentToolName: String, Sendable, Hashable, Codable, CaseIterable {
     case gitRemoteList = "git_remote_list"
     case gitRemoteSet = "git_remote_set"
     case gitRemoteRemove = "git_remote_remove"
+    case gitIssue = "git_issue"
+    case gitPullRequest = "git_pull_request"
     case gitResetToRemote = "git_reset_to_remote"
     case gitReadSettings = "luros_git_read_settings"
     case gitSetAuthor = "luros_git_set_author"

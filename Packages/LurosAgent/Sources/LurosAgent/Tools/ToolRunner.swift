@@ -1029,6 +1029,37 @@ actor ToolRunner {
         case .gitRemoteList:
             return try await json(backend.gitRemoteList(GitRemoteListToolRequest(context: context)))
 
+        case .gitIssue, .gitPullRequest:
+            // A repository named as owner/name, read through GitHub: no
+            // project is needed, so General Chat may read them too.
+            guard let repository = arguments.argNonEmptyString("repository") else {
+                throw ToolArgumentError("name the repository as owner/name, such as octocat/hello-world")
+            }
+            guard let action = arguments.argNonEmptyString("action"), ["list", "read"].contains(action) else {
+                throw ToolArgumentError("action is list or read")
+            }
+            let number = arguments.argInt("number")
+            let state = arguments.argNonEmptyString("state")
+            let limit = arguments.argInt("limit")
+            if name == .gitIssue {
+                return try await json(backend.gitIssue(IssueQueryToolRequest(
+                    context: context,
+                    repository: repository,
+                    action: action,
+                    number: number,
+                    state: state,
+                    limit: limit,
+                )))
+            }
+            return try await json(backend.gitPullRequest(PullRequestQueryToolRequest(
+                context: context,
+                repository: repository,
+                action: action,
+                number: number,
+                state: state,
+                limit: limit,
+            )))
+
         case .gitRemoteSet:
             return try await json(backend.gitRemoteSet(GitRemoteSetToolRequest(
                 context: context,

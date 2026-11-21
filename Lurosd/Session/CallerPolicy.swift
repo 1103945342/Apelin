@@ -87,6 +87,10 @@ enum CallerPolicy {
         // chose, under Confirm only as the user approved exactly it
         // (AgentIssueCreateRules).
         .gitIssueCreate,
+        // A repository's issues and pull requests, read through GitHub's REST
+        // API with the user's sign-in: nothing is opened, changed or merged,
+        // so these ask nobody.
+        .gitIssue, .gitPullRequest,
         // A public issue on Luros's own repository with the user's GitHub
         // sign-in, filed or, when the account opened it, edited under
         // Confirm only as the user approved exactly it (AgentFeedbackRules),

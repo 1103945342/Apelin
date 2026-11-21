@@ -124,6 +124,8 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
     case gitCredentialRemove
     case gitRepositoryCreate
     case gitIssueCreate
+    case gitIssue
+    case gitPullRequest
     case gitSquash
     case gitRemoteList
     case gitRemoteSet
@@ -206,7 +208,7 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .gitStatus, .gitDiff, .gitStage, .gitUnstage, .gitCommit, .gitInit, .gitClone, .gitCloneInto, .gitFetch,
              .gitPull,
              .gitPush, .gitSettings, .gitAuthorSet, .gitCredentialSet, .gitCredentialRemove, .gitRepositoryCreate,
-             .gitIssueCreate, .gitSquash, .gitRemoteList, .gitRemoteSet, .gitRemoteRemove, .gitResetPreview,
+             .gitIssueCreate, .gitIssue, .gitPullRequest, .gitSquash, .gitRemoteList, .gitRemoteSet, .gitRemoteRemove, .gitResetPreview,
              .gitResetToRemote, .gitBranches, .gitBranchCreate, .gitBranchCheckout, .gitBranchDelete,
              .gitBranchRename, .gitMerge, .gitMergeAbort, .gitTagCreate, .gitTagDelete, .gitLog,
              .gitCommitDetail, .gitCommitFileDiff, .gitFileVersions, .gitRestore, .gitDeletePaths,
@@ -320,6 +322,8 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .gitCredentialRemove: GitCredentialRemoveRequest.self
         case .gitRepositoryCreate: GitRepositoryCreateRequest.self
         case .gitIssueCreate: GitIssueCreateRequest.self
+        case .gitIssue: IssueQueryRequest.self
+        case .gitPullRequest: PullRequestQueryRequest.self
         case .gitSquash: GitSquashRequest.self
         case .gitRemoteList: GitRemoteListRequest.self
         case .gitRemoteSet: GitRemoteSetRequest.self

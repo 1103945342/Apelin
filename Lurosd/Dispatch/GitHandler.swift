@@ -16,6 +16,7 @@ enum GitHandler: DomainHandler {
         case .gitStatus, .gitDiff, .gitStage, .gitUnstage, .gitCommit, .gitInit,
              .gitRemoteList, .gitRemoteSet, .gitRemoteRemove,
              .gitBranches, .gitLog, .gitCommitDetail,
+             .gitIssue, .gitPullRequest,
              .gitSettings, .gitAuthorSet, .gitCredentialSet, .gitCredentialRemove:
             return await host.forward(request, to: .environment)
         case .gitBranchCreate, .gitBranchCheckout, .gitBranchDelete, .gitBranchRename, .gitMerge, .gitMergeAbort,

@@ -300,7 +300,7 @@ enum ToolSymbol {
              .gitBranchRename, .gitMerge, .gitMergeAbort, .gitFetch, .gitPull, .gitPush, .gitClone,
              .gitSquash, .gitRemoteSet, .gitRemoteRemove, .gitResetToRemote, .gitReadSettings,
              .gitSetAuthor, .gitSaveCredential, .gitRemoveCredential, .gitCreateRepository,
-             .gitCreateIssue:
+             .gitCreateIssue, .gitIssue, .gitPullRequest:
             "arrow.triangle.branch"
         case .projectBuild, .toolchainSelfTest:
             "hammer"
