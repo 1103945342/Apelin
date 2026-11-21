@@ -61,8 +61,9 @@ enum ChatStreamPacing {
     /// The newest `streamingLength` characters of `newest`, marked when any
     /// were left out.
     private static func shortened(_ newest: String) -> String {
-        guard newest.count > streamingLength else { return newest }
-        return mark + newest.suffix(streamingLength)
+        let tail = newest.suffix(streamingLength)
+        guard tail.startIndex != newest.startIndex else { return newest }
+        return mark + tail
     }
 
     private static func forgetOlder(than date: Date) {

@@ -181,6 +181,18 @@ final class ChatToolCallRow: UIView {
 
     /// The sections under the line: each argument by name, then the result.
     /// A call not opened has none, so it measures as its line alone.
+    // Sizing and display use separate views but the same decoded sections.
+    // Keep only the most recent call; include the payload to reject late results.
+    private static var lastSections: (shape: ChatMessageShape, values: [ToolCallDetail.Section])?
+
+    private static func sections(for step: ChatMessage) -> [ToolCallDetail.Section] {
+        let shape = ChatMessageShape(step)
+        if let cached = lastSections, cached.shape == shape { return cached.values }
+        let values = ToolCallSections.sections(of: step)
+        lastSections = (shape, values)
+        return values
+    }
+
     private func rebuildBody(_ step: ChatMessage) {
         for view in body.arrangedSubviews {
             body.removeArrangedSubview(view)
@@ -190,7 +202,7 @@ final class ChatToolCallRow: UIView {
         body.alpha = 1
         body.transform = .identity
         if showsBody {
-            for section in ToolCallSections.sections(of: step) {
+            for section in Self.sections(for: step) {
                 // aimini caps a tool's instruction and result and scrolls the
                 // rest inside the panel; a command's box is much shorter than
                 // a result's, which is what the reader came to read.

@@ -157,10 +157,13 @@ final class ChatActivityRow: ListRowView {
         let textWidth = max(1, bounds.width - insets.left - insets.right)
         let sourceHeight = Self.sourceHeight(ChatActivityContent.source(message), width: textWidth)
         let titleHeight = Self.titleHeight(for: message, width: textWidth)
-        let stepsHeight = expansion.isHidden ? 0 : expansion.fittingHeight(width: textWidth)
+        // The list has already fitted the steps to assign this row its bounds.
+        // They are the last item: give them the remaining space rather than
+        // fitting a second copy of the whole stack on the display path.
+        let hasSteps = !expansion.isHidden && expansion.hasSteps
         let layout = ChatActivityLayout(
             source: sourceHeight, title: titleHeight,
-            banner: bannerView.isHidden ? 0 : ToolCallBannerView.height, steps: stepsHeight,
+            banner: bannerView.isHidden ? 0 : ToolCallBannerView.height, steps: hasSteps ? 1 : 0,
             top: message.activityJoinsPrevious ? 0 : insets.top, bottom: insets.bottom,
         )
         sourceLabel.font = .preferredFont(forTextStyle: .caption1)
@@ -182,6 +185,7 @@ final class ChatActivityRow: ListRowView {
                 right: max(0, bounds.width - bannerView.frame.maxX),
             )
         }
+        let stepsHeight = hasSteps ? max(0, bounds.height - layout.stepsY - insets.bottom) : 0
         expansion.frame = expansion.isHidden ? .zero : CGRect(
             x: insets.left, y: layout.stepsY, width: textWidth, height: stepsHeight,
         )

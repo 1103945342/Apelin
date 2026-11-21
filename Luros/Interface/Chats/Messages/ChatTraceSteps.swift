@@ -14,6 +14,7 @@ final class ChatTraceSteps: UIView {
     @objc dynamic var onExpansionChange: (() -> Void)?
 
     private let stack = UIStackView()
+    var hasSteps: Bool { !order.isEmpty }
     private var order: [UUID] = []
     private var views: [UUID: UIView] = [:]
     /// What each view shows now. Compare only the fields it draws rather
