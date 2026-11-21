@@ -26,6 +26,7 @@ final class ConsoleScriptsTests: XCTestCase {
         .channelVerifyCode: "The number WeChat shows goes in on the page that is signing in; it comes from the phone, not from a script.",
         .channelConfigure: "Where a channel's conversations run, and under which approval mode, is set on its page in Settings.",
         .channelSignOut: "Signing out of a channel is the reader's, on its page in Settings.",
+        .agentSetRunMode: "A conversation's mode is the composer's pill, which records the reader's choice and tells the open session; a console script has no page to show it on.",
         .storageUsage: "Space is measured on the Storage page that draws each figure as its own walk ends.",
         .storagePurge: "Emptying a folder is the reader's tap on the Storage page, where what it costs is shown beside it.",
     ]

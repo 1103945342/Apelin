@@ -781,6 +781,15 @@ final class ChatRuntime {
         changed(id)
     }
 
+    /// The mode the conversation's next run goes with, for a session that is
+    /// already open: while one runs, the queued message after it is what this
+    /// reaches. A conversation with no session open needs nothing — its next
+    /// prompt carries the mode itself.
+    func setRunMode(_ mode: ComposerMode, in id: UUID) async {
+        guard let sessionID = records[id]?.sessionID else { return }
+        try? await LurosService.app.agentSetRunMode(sessionID: sessionID, mode: mode.runMode)
+    }
+
     func manageQueue(in id: UUID, action: AgentQueueAction, messageID: UUID? = nil,
                      text: String? = nil, order: [UUID]? = nil) async throws {
         let opened = try await open(id)

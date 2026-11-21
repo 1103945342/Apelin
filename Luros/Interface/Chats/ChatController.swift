@@ -210,6 +210,12 @@ final class ChatController: UIViewController {
             // that leaves from this page will find it.
             guard let self else { return }
             ComposerModeStore.set(mode, for: self.chat?.id)
+            // A run already working is not disturbed, but the message queued
+            // behind it starts in this mode: a queue's next run has no prompt
+            // to carry one, so the session is told now.
+            guard let id = self.chat?.id else { return }
+            let runtime = self.runtime
+            Task { await runtime?.setRunMode(mode, in: id) }
         }
         composer.onCompactContext = { [weak self] in
             guard let self, let chat else { return }

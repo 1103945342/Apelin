@@ -159,6 +159,12 @@ public enum AgentWorker {
         // The reader picked another model in the composer's row: applied
         // between runs, and the total that model reads is recorded, so the
         // ring is right before a prompt is sent.
+        case .agentSetRunMode:
+            await WorkerMain.serve(AgentSetRunModeRequest.self, request) { set in
+                let session = try await state.session(set.sessionID)
+                await session.setNextRunMode(set.mode)
+                return Acknowledged()
+            }
         case .agentConfigure:
             await WorkerMain.serve(AgentConfigureRequest.self, request) { configure in
                 let session = try await state.session(configure.sessionID)

@@ -451,7 +451,8 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `distributionPublish`, `feedbackSend`, `feedbackRead`, `feedbackEdit`,
   `feedbackStarState`, `feedbackStar`; `channelStatus`, `channelSignIn`,
   `channelVerifyCode`, `channelConfigure`, `channelSignOut`;
-  `transferExport`, `transferInspect`, `transferImport`; `storageUsage`,
+  `transferExport`, `transferInspect`, `transferImport`; `agentSetRunMode`;
+  `storageUsage`,
   `storagePurge`. Every one is
   in the list today; most answer `unimplemented` until their domain lands.
   The envelope (protocol version 2) carries `op`, `protocolVersion`,

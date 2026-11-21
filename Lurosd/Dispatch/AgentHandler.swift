@@ -40,6 +40,8 @@ enum AgentHandler: DomainHandler {
             return await forward(request, AgentQueueRequest.self, host: host) { $0.sessionID }
         case .agentConfigure:
             return await forward(request, AgentConfigureRequest.self, host: host) { $0.sessionID }
+        case .agentSetRunMode:
+            return await forward(request, AgentSetRunModeRequest.self, host: host) { $0.sessionID }
         // The reader's changes to the history, the app's alone (CallerPolicy):
         // the session's worker makes each one, between runs.
         case .agentRewind:

@@ -452,6 +452,16 @@ public actor AgentSession {
     /// between messages, and the system prompt is the session's snapshot.
     /// The runner hears it too: a plan run's reads-only wall is the runner's,
     /// and an automatic run's "stop asking" is the approval gate's.
+    /// The mode the run after this one goes with, told while a run works:
+    /// applied as that run ends, so the queued message behind it starts that
+    /// way and the working run is not limited halfway. A prompt carries its
+    /// own mode and wins over this one.
+    public func setNextRunMode(_ mode: LurosProtocol.AgentRunMode?) async {
+        nextRunMode = mode
+    }
+
+    private var nextRunMode: LurosProtocol.AgentRunMode?
+
     public func setRunMode(_ mode: LurosProtocol.AgentRunMode?) async {
         await runner.setRunMode(mode)
         // An automatic run is a build run that stops asking; the other two
@@ -787,6 +797,9 @@ public actor AgentSession {
         reports: [AgentTurnReport]? = nil,
     ) async throws {
         let id = messageID ?? UUID()
+        // A prompt arrives with the mode the app has now: what it said before
+        // this message is spent.
+        nextRunMode = nil
         guard !submitted.contains(id), !pending.state.seen.contains(id) else {
             // A retry also repairs a missed acceptance event after an I/O failure.
             try await publishPending().value
@@ -1986,6 +1999,12 @@ public actor AgentSession {
         await recordContextUsage()
         do { try await log.append(.finished(reason: reason)) }
         catch { await pausePending(error: error) }
+        // What the reader chose while this run was working takes effect now,
+        // for the queued message `next` starts with; this run is over.
+        if let planned = nextRunMode {
+            nextRunMode = nil
+            await setRunMode(planned)
+        }
         // a stop or a failed durable write meanwhile blocks continuation
         runTask = next.isEmpty || aborted || pendingBlocked ? nil : carryOver(next)
         runEnding = false

@@ -76,6 +76,10 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
     /// The model the next message will use, applied to a session that is
     /// already open, so the total the ring draws is the new model's at once.
     case agentConfigure
+    /// The run mode the next run uses, told to a session that is already
+    /// open: a pill changed while a run works must not disturb that run, but
+    /// the message queued behind it starts in the mode the reader chose.
+    case agentSetRunMode
     case agentQueue
     case agentApprove
     case agentAttach
@@ -203,7 +207,7 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .ptyOpen, .ptyAttach, .ptyResize, .ptyClose: .terminal
         case .logStream, .crashList, .crashOpen, .crashSymbolicate: .logs
         case .confirmLoaded, .confirmLoadedAttach, .captureScreen, .readUITree, .uiAction: .diagnostics
-        case .agentDelegation, .agentOpen, .agentPrompt, .agentGenerateImage, .agentSteer, .agentAbort, .agentCompact, .agentConfigure, .agentQueue, .agentApprove, .agentAttach, .agentList,
+        case .agentDelegation, .agentOpen, .agentPrompt, .agentGenerateImage, .agentSteer, .agentAbort, .agentCompact, .agentConfigure, .agentSetRunMode, .agentQueue, .agentApprove, .agentAttach, .agentList,
              .agentClose, .agentRunCode, .agentCredentialImport, .agentAccountList, .agentSkillList,
              .agentRewritePrompt, .agentModelTest,
              .agentAPIConfiguration, .agentModelList,
@@ -288,6 +292,7 @@ public enum AppOperation: String, Codable, CaseIterable, Sendable {
         case .agentCompact: AgentCompactRequest.self
         case .agentQueue: AgentQueueRequest.self
         case .agentConfigure: AgentConfigureRequest.self
+        case .agentSetRunMode: AgentSetRunModeRequest.self
         case .agentApprove: AgentApproveRequest.self
         case .agentAttach: AgentAttachRequest.self
         case .agentList: AgentListRequest.self
