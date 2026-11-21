@@ -91,21 +91,37 @@ jobs:
           mkdir -p "$repo/debs"
           gh release download "$tag" --pattern '*.deb' --dir "$repo/debs"
           cp Documents/Site/icon.png "$repo/CydiaIcon.png"
-          # Both tools write the source and neither is promised on the image:
-          # dpkg-scanpackages comes with dpkg-dev, apt-ftparchive with
-          # apt-utils, and the runner has the first without the second.
-          for tool in dpkg-scanpackages apt-ftparchive; do
-            command -v "$tool" > /dev/null 2>&1 && continue
+          # dpkg-scanpackages writes the index; it comes with dpkg-dev.
+          if ! command -v dpkg-scanpackages > /dev/null 2>&1; then
             sudo apt-get update -qq
-            sudo apt-get install -y -qq dpkg-dev apt-utils > /dev/null
-            break
-          done
+            sudo apt-get install -y -qq dpkg-dev > /dev/null
+          fi
           cd "$repo"
           dpkg-scanpackages -m debs /dev/null > Packages
           gzip -9c Packages > Packages.gz
           # A flat repository: the Release file sits beside the index it sums,
-          # and the source is the address of this folder.
-          apt-ftparchive release . > Release
+          # and the source is the address of this folder. Its fields are
+          # written out rather than left to apt-ftparchive, whose flat release
+          # carries no Architectures — and a package manager that finds none
+          # refuses the source ("Didn't find any architectures").
+          {
+            printf 'Origin: Luros\n'
+            printf 'Label: Luros\n'
+            printf 'Suite: stable\n'
+            printf 'Version: 1.0\n'
+            printf 'Codename: ios\n'
+            printf 'Architectures: iphoneos-arm64 iphoneos-arm64e\n'
+            printf 'Components: main\n'
+            printf 'Description: Luros, an on-device IDE for jailbroken iOS\n'
+            printf 'Date: %s\n' "$(date -Ru)"
+            for pair in 'MD5Sum md5sum' 'SHA1 sha1sum' 'SHA256 sha256sum'; do
+              set -- $pair
+              printf '%s:\n' "$1"
+              for file in Packages Packages.gz; do
+                printf ' %s %s %s\n' "$("$2" "$file" | cut -d' ' -f1)" "$(wc -c < "$file" | tr -d ' ')" "$file"
+              done
+            done
+          } > Release
           ls -l Packages Packages.gz Release debs
       # A Pages site is made once, by hand: Settings ▸ Pages ▸ Source "GitHub
       # Actions". The workflow cannot make one — the API answers "Resource not
