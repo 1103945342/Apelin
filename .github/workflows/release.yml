@@ -9,16 +9,17 @@
 #
 # The commit says its version (`make set-version`, the release notes, then
 # the tag), and the IDE's packages CI built are named for it: when they are
-# not named for the tag, nothing is published. Each extension keeps its own
-# id and version; the release carries exactly one roothide and one rootless
-# deb of each, and the assembler's corresponding-source archive beside its
-# debs (it is GPL-2.0), or nothing is published.
+# not named for the tag, nothing is published. The release carries exactly
+# one roothide and one rootless package, the assembler's
+# corresponding-source archive beside them (it is GPL-2.0), and
+# `SHA256SUMS` — the extensions, the templates and the dSYMs stay in CI's
+# artifact, because the app carries the first two inside itself.
 #
-# The tag and the branch usually arrive together, so the run may not exist
-# yet when this starts, and it is waited for. A commit that never reached
-# main has no run: dispatch CI on the tag (`gh workflow run ci.yml
-# --ref vX.Y.Z`), which is also the way back once the artifact is past its
-# thirty days, and re-run this.
+# `push: tags` starts CI on the same commit, and the tag usually arrives with
+# the branch, so the run may not exist yet when this starts, and it is waited
+# for. A commit that never reached CI has no run: dispatch CI on the tag
+# (`gh workflow run ci.yml --ref vX.Y.Z`), which is also the way back once the
+# artifact is past its thirty days, and re-run this.
 
 name: Release
 
@@ -94,19 +95,16 @@ jobs:
           }
           files=("com.fluoxetine.luros_${version}_iphoneos-arm64e.deb"
                  "com.fluoxetine.luros_${version}_iphoneos-arm64.deb")
-          for id in com.fluoxetine.luros.dev.app com.fluoxetine.luros.dev.tweak \
-                    com.fluoxetine.luros.dev.cli com.fluoxetine.luros.dev.preferences \
-                    com.fluoxetine.luros.agent-tools.disassembler com.fluoxetine.luros.agent-tools.assembler; do
-            for architecture in iphoneos-arm64e iphoneos-arm64; do
-              files+=("$(one "${id}_*_${architecture}.deb")")
-            done
-          done
-          # The assembler's corresponding source, for the version its debs carry.
+          # The development extensions, the templates and the dSYMs stay in
+          # CI's artifact: the app carries the extensions and the templates
+          # inside itself, so no reader installs them, and a symbolication uses
+          # the build's own dSYM. What the release keeps beside the two
+          # packages is the assembler's corresponding source — Keystone is
+          # GPLv2 and its binary ships inside the app — and SHA256SUMS.
           assembler="$(one "com.fluoxetine.luros.agent-tools.assembler_*_iphoneos-arm64.deb")"
           assembler_version="${assembler#com.fluoxetine.luros.agent-tools.assembler_}"
           assembler_version="${assembler_version%_iphoneos-arm64.deb}"
           files+=("$(one "com.fluoxetine.luros.agent-tools.assembler_${assembler_version}_source.tar.xz")")
-          files+=("Luros_${version}_dSYMs.zip" "Luros_${version}_Templates.tar.zst")
           for file in "${files[@]}"; do
             [ -f "$file" ] || { echo "::error::$file is missing from CI's packages"; exit 1; }
           done
