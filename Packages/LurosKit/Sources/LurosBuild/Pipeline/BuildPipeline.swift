@@ -516,11 +516,20 @@ public final class BuildPipeline: @unchecked Sendable {
     ) throws -> [(String, JSONDocument)] {
         var members = commonKeyMembers(arch: arch)
         let closure = try moduleClosureKeys(of: product, arch: arch)
+        // The product's own sources are what this compile reads: without their
+        // bytes in the key, a build after an edit reused the object compiled
+        // before it and linked the old code (or failed on symbols the new
+        // source no longer had).
+        let digests: [JSONDocument] = try plan.swift.map { source in
+            let file = try ProjectFiles.resolve(source.path, in: inputs.projectRoot)
+            return .array([.string(source.path), .string(try BuildCache.fileDigest(file))])
+        }
         members += [
             ("product", .string(product.id)),
             ("name", .string(product.name)),
             ("type", .string(product.type.rawValue)),
             ("parseAsLibrary", .bool(plan.parsesSwiftAsLibrary(type: product.type))),
+            ("sources", .array(digests)),
             ("objc", .bool(plan.usesObjC)),
             ("bootstrap", .string(bootstrapDefine)),
             ("configuration", .string(configurationDefine)),

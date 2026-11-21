@@ -3667,7 +3667,11 @@ What `CHECKLIST.md` asked to be written down, and where the answer lives.
   `-target`, `optimization`, `debugInfo`, the flags and defines that compile
   passes, every source's SHA-256, every regular file under the declared
   `headerSearchPaths` and the `bridgingHeader`, and the keys of the modules
-  it imports. Never a modification time, never `LUROS_BUILD_ID` for Swift
+  it imports. A product's own Swift compile is no exception: the bytes of the
+  product's Swift sources are in its key beside the modules it imports —
+  without them an edit reused the object compiled before it and linked stale
+  code or failed on symbols the source no longer had (issue #1). Never a
+  modification time, never `LUROS_BUILD_ID` for Swift
   (it is not passed to it; a C-family object's key carries the whole define
   list, the build ID among it, so those compile every build — a documented
   macro, not a bug), never the work directory or a path under the project or
