@@ -118,6 +118,13 @@ public protocol AgentHostBackend: Sendable {
     /// An issue on a GitHub repository the user chose, with the user's
     /// sign-in; the host checks it was approved.
     func createIssue(_ request: IssueCreateToolRequest) async throws -> IssueCreateToolResponse
+    /// A repository's issues, read or changed through GitHub's REST API. A
+    /// requirement, not only an extension: through `AgentHostBackend` a
+    /// method the protocol does not ask for resolves to the extension's
+    /// refusal even when the backend defines it.
+    func gitIssue(_ request: IssueQueryToolRequest) async throws -> IssueQueryToolResponse
+    /// A repository's pull requests, read or changed the same way.
+    func gitPullRequest(_ request: PullRequestQueryToolRequest) async throws -> PullRequestQueryToolResponse
     /// Another conversation in the session's project, opened with a first
     /// message; answers without waiting for it.
     func conversationCreate(_ request: ConversationCreateToolRequest) async throws -> ConversationCreateToolResponse
