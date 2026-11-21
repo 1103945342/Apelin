@@ -143,15 +143,6 @@ final class ChatToolCallRow: UIView {
 
     /// The same call with more of its result, or a new one: what the line
     /// says changes in place, and a call the reader opened stays open.
-    /// Fitted at `width` without being laid out: each open block measures
-    /// its text with Core Text first, so the stack's fit never asks a label
-    /// to lay a thousand lines out.
-    func prepare(width: CGFloat) {
-        for case let section as ToolCallSectionView in body.arrangedSubviews {
-            section.prepare(width: width)
-        }
-    }
-
     func show(_ step: ChatMessage) {
         let shape = ChatMessageShape(step)
         guard shape != shownShape else { return }
