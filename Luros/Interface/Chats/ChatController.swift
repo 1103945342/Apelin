@@ -1346,7 +1346,14 @@ extension ChatController {
         ComposerModelSelection(
             provider: account.provider,
             model: model,
-            supportedEfforts: (account.reasoningEfforts?[model] ?? []).filter { [.low, .high, .max].contains($0) },
+            // Every level the model's entry offers, in the enum's own order:
+            // the pill, the sheet and the lightning's colours all know all of
+            // them, and narrowing them to three left a model whose entry says
+            // medium and xhigh — or minimal alone — with no level at all, so
+            // its pill vanished and nothing could be chosen.
+            supportedEfforts: AgentReasoningEffort.allCases.filter {
+                (account.reasoningEfforts?[model] ?? []).contains($0)
+            },
             supportedTiers: account.serviceTiers?[model] ?? [],
         )
     }
