@@ -91,10 +91,15 @@ jobs:
           mkdir -p "$repo/debs"
           gh release download "$tag" --pattern '*.deb' --dir "$repo/debs"
           cp Documents/Site/icon.png "$repo/CydiaIcon.png"
-          if ! command -v dpkg-scanpackages > /dev/null 2>&1; then
+          # Both tools write the source and neither is promised on the image:
+          # dpkg-scanpackages comes with dpkg-dev, apt-ftparchive with
+          # apt-utils, and the runner has the first without the second.
+          for tool in dpkg-scanpackages apt-ftparchive; do
+            command -v "$tool" > /dev/null 2>&1 && continue
             sudo apt-get update -qq
             sudo apt-get install -y -qq dpkg-dev apt-utils > /dev/null
-          fi
+            break
+          done
           cd "$repo"
           dpkg-scanpackages -m debs /dev/null > Packages
           gzip -9c Packages > Packages.gz
