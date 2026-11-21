@@ -28,7 +28,7 @@ final class ChatTraceSteps: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         stack.axis = .vertical
-        stack.spacing = 4
+        stack.spacing = Self.stackSpacing
         stack.translatesAutoresizingMaskIntoConstraints = true
         addSubview(stack)
     }
@@ -134,30 +134,49 @@ final class ChatTraceSteps: UIView {
     }
 
     /// The same for a summary the list is measuring, which it does without
-    /// the row that will show it. The answer is kept, because the list asks
-    /// on every pass and on every event of a running turn: building the
-    /// steps again each time — each call's arguments decoded and its text
-    /// laid out — is what made a run stutter, and opening a call in it
-    /// slower still.
+    /// the row that will show it. Each step is measured and kept on its own:
+    /// a summary's shape changes with every token of the thought it is
+    /// writing, and measuring the whole stack for that laid out every opened
+    /// call beside it again — which is what made a run with several calls
+    /// open stutter, and opening another slower still.
     static func height(for summary: ChatMessage, width: CGFloat) -> CGFloat {
         guard width > 1 else { return 0 }
         let steps = drawn(summary).map { paced($0) }
         guard !steps.isEmpty else { return 0 }
-        let key = Measure(
-            shapes: steps.map(ChatMessageShape.init),
+        let size = UIApplication.shared.preferredContentSizeCategory
+        var total: CGFloat = 0
+        for (index, step) in steps.enumerated() {
+            if index > 0 {
+                total += stackSpacing
+            }
+            total += height(of: step, width: width, size: size, opened: Self.isOpened(step))
+        }
+        return ceil(total)
+    }
+
+    /// One step's height at `width`, fitted once for as long as that step and
+    /// whether it is open stay as they are.
+    private static func height(
+        of step: ChatMessage,
+        width: CGFloat,
+        size: UIContentSizeCategory,
+        opened: Bool,
+    ) -> CGFloat {
+        let key = StepMeasure(
+            shape: ChatMessageShape(step),
             width: width,
-            size: UIApplication.shared.preferredContentSizeCategory,
-            opened: steps.map(Self.isOpened),
+            size: size,
+            opened: opened,
         )
-        if let measured = measures[key] {
+        if let measured = stepMeasures[key] {
             return measured
         }
-        sizing.show(summary)
+        sizing.rebuild(with: [step])
         let measured = height(of: sizing.stack, width: width)
-        if measures.count >= measureCapacity {
-            measures.removeAll(keepingCapacity: true)
+        if stepMeasures.count >= measureCapacity {
+            stepMeasures.removeAll(keepingCapacity: true)
         }
-        measures[key] = measured
+        stepMeasures[key] = measured
         return measured
     }
 
@@ -192,18 +211,22 @@ final class ChatTraceSteps: UIView {
 
     /// What a height was measured from: exact step identities/content, width,
     /// text size and expansion state. Equal byte counts are not equal layout.
-    private struct Measure: Hashable {
-        let shapes: [ChatMessageShape]
+    private struct StepMeasure: Hashable {
+        let shape: ChatMessageShape
         let width: CGFloat
         let size: UIContentSizeCategory
-        let opened: [Bool]
+        let opened: Bool
     }
 
-    /// Past this many the cache starts again: it only ever holds the
-    /// summaries a list is showing and the widths they are shown at, and a
-    /// long conversation shows many of them.
-    private static let measureCapacity = 256
-    private static var measures: [Measure: CGFloat] = [:]
+    /// Past this many the cache starts again: it only ever holds the steps a
+    /// list is showing and the widths they are shown at, and a long
+    /// conversation shows many of them.
+    private static let measureCapacity = 512
+    private static var stepMeasures: [StepMeasure: CGFloat] = [:]
+
+    /// The gap between two steps, which `height(for:width:)` adds up itself
+    /// now that a step is measured alone.
+    private static let stackSpacing: CGFloat = 4
 
     private static func height(of stack: UIStackView, width: CGFloat) -> CGFloat {
         let fitted = stack.systemLayoutSizeFitting(
@@ -392,7 +415,7 @@ final class ChatThoughtRow: UIView {
         // A folded thought draws one line of it: the whole text is only put
         // into the label when it is open, or a stream copies it on every
         // token for a label nobody is looking at.
-        if showsBody {
+        if showsBody, textLabel.text != step.text {
             textLabel.text = step.text
         }
         textLabel.layer.removeAllAnimations()
