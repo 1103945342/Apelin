@@ -36,9 +36,8 @@ final class SettingsViewController: TableController {
         /// Settings ▸ Plugins: the WeChat ClawBot channel.
         case weChat
         case git
-        case version
-        case licenses
-        case logs
+        /// Settings ▸ About: the icon, the slogan and what names this build.
+        case about
     }
 
     private struct RowContent: Equatable {
@@ -133,7 +132,7 @@ final class SettingsViewController: TableController {
         case .environment: [.toolchain, .sdks, .developmentTools, .apps, .templates]
         case .git: [.git]
         case .plugins: [.weChat]
-        case .about: [.version, .licenses, .logs]
+        case .about: [.about]
         }
     }
 
@@ -157,7 +156,8 @@ final class SettingsViewController: TableController {
         case .environment: String(localized: "Environment")
         case .git: nil
         case .plugins: String(localized: "Plugins")
-        case .about: String(localized: "About")
+        // The row names itself; a heading over that one word is noise.
+        case .about: nil
         }
     }
 
@@ -209,28 +209,15 @@ final class SettingsViewController: TableController {
             content.text = String(localized: "WeChat ClawBot")
         case .git:
             content.text = String(localized: "Git")
-        case .version:
-            let info = Bundle.main.infoDictionary
-            let version = info?["CFBundleShortVersionString"] as? String ?? "?"
-            let build = info?["CFBundleVersion"] as? String ?? "?"
-            content.text = String(localized: "Version")
-            content.secondaryText = "\(version) (\(build))"
-            cell.accessoryType = .none
-            cell.selectionStyle = .none
-        case .licenses:
-            content.text = String(localized: "Open Source Licenses")
-        case .logs:
-            content.text = String(localized: "Logs")
+        case .about:
+            content.text = String(localized: "About")
         }
         cell.contentConfiguration = content
         return cell
     }
 
     override func tableView(_: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
-        if case .version = dataSource.value(at: indexPath)?.row {
-            return false
-        }
-        return true
+        true
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -252,9 +239,7 @@ final class SettingsViewController: TableController {
         case .templates: page = TemplatesController()
         case .weChat: page = ChannelController()
         case .git: page = GitSettingsController()
-        case .licenses: page = LicensesViewController()
-        case .logs: page = LogsController()
-        case .version: return
+        case .about: page = AboutViewController()
         }
         navigationController?.pushViewController(page, animated: true)
     }
