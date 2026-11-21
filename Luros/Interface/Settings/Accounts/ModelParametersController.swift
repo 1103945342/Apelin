@@ -7,9 +7,17 @@ import UIKit
 final class ModelParametersController: TableController {
     private let account: AgentAccount
     private var models: [String]
+    /// What the catalogs say about these models: the listing the page was
+    /// opened with, then whatever a read that asks the agent about exactly
+    /// these ids answers. The full listing names only the models the
+    /// provider's own catalog holds, so a model models.dev knows and the
+    /// provider's list does not came out "Not in Any Catalog" here.
+    private var capabilities: [String: AgentModelCapabilities]
+    private var capabilitiesTask: Task<Void, Never>?
 
     init(account: AgentAccount) {
         self.account = account
+        capabilities = account.capabilities ?? [:]
         let enabled = EnabledModels.ids(for: account.provider)
         let known = account.models ?? []
         models = Set(known)
@@ -25,6 +33,33 @@ final class ModelParametersController: TableController {
         fatalError("Use init(account:)")
     }
 
+    deinit {
+        capabilitiesTask?.cancel()
+    }
+
+    /// Asks the agent about exactly the models this page lists, so one the
+    /// provider's own list does not name is measured from its catalog entry
+    /// rather than left blank.
+    private func loadCapabilities() {
+        let provider = account.provider
+        let models = models
+        guard !models.isEmpty else { return }
+        capabilitiesTask?.cancel()
+        capabilitiesTask = Task { [weak self] in
+            let response = try? await LurosService.app.agentAccountList(
+                extraModels: [provider.rawValue: models],
+                onlyExtraModels: true,
+            )
+            guard !Task.isCancelled,
+                  let found = response?.accounts.first(where: { $0.provider == provider })?.capabilities,
+                  !found.isEmpty,
+                  let self
+            else { return }
+            capabilities.merge(found) { _, newer in newer }
+            dataSource.update([(0, self.models)])
+        }
+    }
+
     private lazy var dataSource = TableDataSource<Int, String, String>(
         tableView: tableView,
         identifier: { $0 },
@@ -36,7 +71,7 @@ final class ModelParametersController: TableController {
         content.text = self?.account.displayName(for: model) ?? model
         content.textProperties.numberOfLines = 0
         let values = self.map { ModelParameters.values(for: $0.account.provider, model: model) }
-        let catalog = self?.account.capabilities?[model]
+        let catalog = self?.capabilities[model]
         // The figure a conversation is read against: the user's when set, and
         // the catalog entry's otherwise.
         let window = values?.contextWindow ?? catalog?.contextWindow
@@ -61,6 +96,7 @@ final class ModelParametersController: TableController {
             String(localized: "A figure set here is the one your conversations read this model against, in place of what the catalog and the provider report.")
         }
         dataSource.update([(0, models)])
+        loadCapabilities()
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -70,7 +106,7 @@ final class ModelParametersController: TableController {
             ModelParameterFormController(
                 model: model,
                 provider: account.provider,
-                catalog: account.capabilities?[model],
+                catalog: capabilities[model],
                 onSave: { [weak self] in self?.dataSource.update([(0, self?.models ?? [])], reconfigure: true) },
             ),
             animated: true,
