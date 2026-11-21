@@ -13,28 +13,36 @@ func checkFileBrowserLocation() throws {
     precondition(FileBrowserLocation(path: missing) == nil, "a name nothing is at is not a location")
     precondition(FileBrowserListing.openReason(for: URL(fileURLWithPath: missing)) == .missing)
 
-    // `/var` is an alias of `/private/var`: two spellings of one place are one
-    // location, compared by components and never by string prefix.
-    let home = FileBrowserLocation(path: "/var/mobile")
-    precondition(home?.title == "mobile")
-    precondition(home?.parent?.path == "/private/var", "the parent is the resolved one")
-    precondition(home?.ancestors.map(\.path) == ["/", "/private", "/private/var", "/private/var/mobile"])
+    // `/var` is an alias of `/private/var` on the Mac the harness also runs
+    // on, and a folder of its own on iOS: two spellings of one place are one
+    // location when they resolve to the same path, compared by components and
+    // never by string prefix. `/var/mobile` is the home on a device and does
+    // not exist on the Mac, so what the home says is checked where it is.
+    guard let varFolder = CanonicalPath.resolve("/var") else { preconditionFailure("/var resolves") }
+    if let home = FileBrowserLocation(path: "/var/mobile") {
+        precondition(home.title == "mobile")
+        precondition(home.parent?.path == varFolder, "the parent is the resolved one")
+        precondition(home.ancestors.first?.path == "/" && home.ancestors.last == home, "the trail runs from the root")
+        precondition(home.ancestors.count == home.path.split(separator: "/").count + 1, "one step per folder")
+    }
 
     let root = FileBrowserLocation(path: "/")!
     precondition(root.parent == nil, "the top of the file system has nothing above it")
     precondition(root.title == "/")
     precondition(root.ancestors.map(\.path) == ["/"])
 
+    // Somewhere with something above it, on a device and on the Mac alike.
+    let place = FileBrowserLocation(path: "/var/mobile")
+        ?? FileBrowserLocation(path: NSTemporaryDirectory())!
     var navigation = FileBrowserNavigation(directory: root)
     precondition(!navigation.goUp(), "Up at the root is refused")
     precondition(navigation.current == root, "and leaves the page where it is")
-    guard let home else { preconditionFailure("the home exists") }
-    navigation.go(to: home)
+    navigation.go(to: place)
     precondition(navigation.canGoBack && navigation.history.map(\.path) == ["/"])
-    precondition(navigation.goUp() && navigation.current.path == "/private/var", "Up is the enclosing folder")
-    precondition(navigation.goBack() && navigation.current == home, "Back returns to the place it came from")
+    precondition(navigation.goUp() && navigation.current == place.parent, "Up is the enclosing folder")
+    precondition(navigation.goBack() && navigation.current == place, "Back returns to the place it came from")
     let trail = navigation.history.count
-    navigation.go(to: home)
+    navigation.go(to: place)
     precondition(navigation.history.count == trail, "the place it is already at is no move")
 
     // A link is browsed as what it leads to, and a link that leads nowhere is
