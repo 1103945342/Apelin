@@ -146,11 +146,20 @@ final class ToolCallSectionView: UIView {
     /// and the rest of the text is reached by scrolling inside it.
     private let panelScroll = BlockScrollView()
     private let panelLabel = UILabel()
+    /// The text's own height and the panel's, set from a Core Text measure
+    /// rather than by letting Auto Layout lay the label out: a result of a
+    /// thousand lines costs one framesetter over its width, not a label
+    /// layout on every pass of the list that holds it.
+    private var labelHeight: NSLayoutConstraint?
+    private var panelHeight: NSLayoutConstraint?
+    private var measured: (text: String, width: CGFloat, height: CGFloat)?
+    private let maximumBlockHeight: CGFloat?
 
     /// `maximumBlockHeight`: the tallest a block is drawn, as aimini's tool
     /// sections are. Nil draws a block as tall as it is, which is what the
     /// trace's page does with the room it has.
     init(section: ToolCallDetail.Section, maximumBlockHeight: CGFloat? = nil) {
+        self.maximumBlockHeight = maximumBlockHeight
         super.init(frame: .zero)
 
         stack.axis = .vertical
@@ -198,21 +207,16 @@ final class ToolCallSectionView: UIView {
             panelLabel.widthAnchor.constraint(equalTo: panelScroll.frameLayoutGuide.widthAnchor),
         ])
 
-        // The panel is as tall as its text while that fits, and as tall as
-        // the limit once it does not: the height it would take from the text
-        // is the stronger wish, the limit is what is left when the text is
-        // longer, and the view scrolls the part it cannot show. Both are
-        // constraints, so the row measured before it is laid out and the row
-        // drawn come out the same height.
-        let fits = panelScroll.heightAnchor.constraint(equalTo: panelLabel.heightAnchor)
-        fits.priority = UILayoutPriority(999)
-        fits.isActive = true
-        if let maximumBlockHeight {
-            panelScroll.heightAnchor.constraint(lessThanOrEqualToConstant: maximumBlockHeight).isActive = true
-            let holds = panelScroll.heightAnchor.constraint(equalToConstant: maximumBlockHeight)
-            holds.priority = UILayoutPriority(750)
-            holds.isActive = true
-        }
+        // The text is as tall as it is, and the panel is that tall up to the
+        // limit: both are constants measured in `layoutSubviews`, so the row
+        // measured before it is drawn and the row drawn come out the same
+        // height, and neither asks UIKit to lay the whole text out.
+        let labelHeight = panelLabel.heightAnchor.constraint(equalToConstant: 0)
+        labelHeight.isActive = true
+        self.labelHeight = labelHeight
+        let panelHeight = panelScroll.heightAnchor.constraint(equalToConstant: 0)
+        panelHeight.isActive = true
+        self.panelHeight = panelHeight
 
         for view in [rule as UIView, nameLabel, valueLabel, panel] {
             stack.addArrangedSubview(view)
@@ -224,6 +228,48 @@ final class ToolCallSectionView: UIView {
     @available(*, unavailable)
     required init?(coder _: NSCoder) {
         fatalError("Use init(section:)")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard !panel.isHidden else { return }
+        let width = floor(panelScroll.bounds.width)
+        guard width > 1 else { return }
+        let text = panelLabel.attributedText?.string ?? ""
+        if let measured, measured.text == text, measured.width == width {
+            return
+        }
+        let height = ceil(Self.height(of: panelLabel.attributedText, width: width))
+        measured = (text, width, height)
+        labelHeight?.constant = height
+        panelHeight?.constant = min(height, maximumBlockHeight ?? height)
+    }
+
+    /// The same measurement for a row being fitted at `width` without being
+    /// laid out: the width a section will be given, its own padding taken
+    /// off, measured before Auto Layout asks anything of it.
+    func prepare(width: CGFloat) {
+        guard !panel.isHidden else { return }
+        let textWidth = floor(width - 2 * TraceBody.Style.panelPadding)
+        guard textWidth > 1 else { return }
+        let text = panelLabel.attributedText?.string ?? ""
+        if let measured, measured.text == text, measured.width == textWidth {
+            return
+        }
+        let height = ceil(Self.height(of: panelLabel.attributedText, width: textWidth))
+        measured = (text, textWidth, height)
+        labelHeight?.constant = height
+        panelHeight?.constant = min(height, maximumBlockHeight ?? height)
+    }
+
+    /// The height `text` takes at `width`: TextKit's own answer, without a
+    /// label being laid out. `usesLineFragmentOrigin` is what makes it the
+    /// height a multi-line label takes rather than a single line's, and
+    /// `usesFontLeading` keeps the first line's leading in it, as a label has
+    /// it. `Scripts/test-text-height.sh` holds this to a label's answer on
+    /// the device.
+    static func height(of text: NSAttributedString?, width: CGFloat) -> CGFloat {
+        ChatTextMetrics.height(of: text, width: width)
     }
 
     func configure(_ section: ToolCallDetail.Section) {
@@ -240,6 +286,8 @@ final class ToolCallSectionView: UIView {
         panel.isHidden = !isBlock
         if isBlock {
             panelLabel.attributedText = Self.blockText(section, kind: kind)
+            measured = nil
+            setNeedsLayout()
         } else {
             valueLabel.attributedText = Self.lineText(section, kind: kind)
         }

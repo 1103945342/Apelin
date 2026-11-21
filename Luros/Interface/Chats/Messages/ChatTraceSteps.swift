@@ -75,6 +75,18 @@ final class ChatTraceSteps: UIView {
         }
     }
 
+    /// Every row measured before the stack is fitted: a block measures its
+    /// text with Core Text at the width it will be drawn at, which is what
+    /// keeps the fit from laying every opened result out in full.
+    func prepare(width: CGFloat) {
+        for case let row as ChatToolCallRow in stack.arrangedSubviews {
+            row.prepare(width: width)
+        }
+        for case let row as ChatThoughtRow in stack.arrangedSubviews {
+            row.prepare(width: width)
+        }
+    }
+
     /// A content or expansion change invalidates the fitted height.
     private func changed() {
         generation &+= 1
@@ -172,6 +184,7 @@ final class ChatTraceSteps: UIView {
             return measured
         }
         sizing.rebuild(with: [step])
+        sizing.prepare(width: width)
         let measured = height(of: sizing.stack, width: width)
         if stepMeasures.count >= measureCapacity {
             stepMeasures.removeAll(keepingCapacity: true)
@@ -265,6 +278,12 @@ final class ChatThoughtRow: UIView {
     private let chevron = UIImageView()
     private let textLabel = UILabel()
     private var showsBody = false
+    /// The opened text's height, set from a measure rather than from the
+    /// label: a thought still being written is re-fitted a few times a
+    /// second, and laying the whole text out each time is what stalled the
+    /// list while it streamed.
+    private var textHeight: NSLayoutConstraint?
+    private var measured: (text: String, width: CGFloat, height: CGFloat)?
     /// What this row was last given, without its strings.
     private var shownShape: ChatMessageShape?
     /// When the preview last rolled: a stream arrives faster than a line can
@@ -409,6 +428,30 @@ final class ChatThoughtRow: UIView {
         return true
     }
 
+    /// Fitted at `width` without being laid out.
+    func prepare(width: CGFloat) {
+        measure(width: width)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        measure(width: floor(textLabel.bounds.width))
+    }
+
+    private func measure(width: CGFloat) {
+        guard showsBody, width > 1 else {
+            textHeight?.constant = 0
+            return
+        }
+        let text = step.text
+        if let measured, measured.text == text, measured.width == width {
+            return
+        }
+        let height = ChatTextMetrics.height(of: text, font: textLabel.font, width: width)
+        measured = (text, width, height)
+        textHeight?.constant = height
+    }
+
     private func configure(_ step: ChatMessage, animated: Bool = false) {
         titleLabel.text = Self.title(for: step)
         showsBody = ChatTraceExpansion.isExpanded(thought: step.id)
@@ -417,11 +460,18 @@ final class ChatThoughtRow: UIView {
         // token for a label nobody is looking at.
         if showsBody, textLabel.text != step.text {
             textLabel.text = step.text
+            measured = nil
+            setNeedsLayout()
         }
         textLabel.layer.removeAllAnimations()
         textLabel.alpha = 1
         textLabel.transform = .identity
         textLabel.isHidden = !showsBody
+        if textHeight == nil {
+            let height = textLabel.heightAnchor.constraint(equalToConstant: 0)
+            height.isActive = true
+            textHeight = height
+        }
         stack.setCustomSpacing(showsBody ? Style.bodySpacing : 0, after: line)
         if animated, showsBody, window != nil, !UIAccessibility.isReduceMotionEnabled {
             // as aimini unfolds a thought: the text fades in and settles
