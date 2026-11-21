@@ -4,12 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
-    <meta http-equiv="refresh" content="0; url=https://apt.owngoal.dev/">
-    <link rel="canonical" href="https://apt.owngoal.dev/">
     <title>Luros</title>
-    <script>location.replace("https://apt.owngoal.dev/");</script>
+    <style>
+      :root { color-scheme: light dark; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+        background: Canvas;
+        color: CanvasText;
+      }
+      main { max-width: 30rem; padding: 2rem; text-align: center; }
+      img { width: 96px; height: 96px; border-radius: 22px; display: block; margin: 0 auto 1rem; }
+      h1 { font-size: 1.6rem; margin: 0 0 0.5rem; }
+      p { margin: 0 0 1rem; color: GrayText; }
+      .button {
+        display: inline-block;
+        padding: 0.7rem 1.2rem;
+        border-radius: 0.8rem;
+        background: LinkText;
+        color: Canvas;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .button:active { opacity: 0.8; }
+      code { font-size: 0.85rem; word-break: break-all; color: CanvasText; }
+      .small { font-size: 0.85rem; }
+      a { color: LinkText; }
+    </style>
   </head>
   <body>
-    <p>Redirecting to <a href="https://apt.owngoal.dev/">apt.owngoal.dev</a>…</p>
+    <main>
+      <img src="repo/CydiaIcon.png" alt="" onerror="this.remove()">
+      <h1>Luros</h1>
+      <p>Luros 的软件源 · Luros's package source, for RootHide and rootless iOS 16 and later.</p>
+      <p><a class="button" id="add" href="repo/">Add to Sileo</a></p>
+      <p class="small">Source address: <code id="address">repo/</code></p>
+      <p class="small">
+        <a href="repo/">the package index</a> ·
+        <a href="repo/Release">Release file</a> ·
+        <a href="https://github.com/1103945342/Luros/releases">GitHub releases</a>
+      </p>
+    </main>
+    <script>
+      // The address this page was served from, so the same file works at any
+      // host or sub-path: a package manager takes <site>/repo/ as its source.
+      const base = location.origin + location.pathname.replace(/index\.html$/, "");
+      const source = base + "repo/";
+      document.getElementById("address").textContent = source;
+      document.getElementById("add").href = "sileo://source/" + source;
+    </script>
   </body>
 </html>
