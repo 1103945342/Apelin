@@ -266,7 +266,7 @@ final class ChatBackgroundController: TableController {
             message: detail,
             preferredStyle: .alert,
         )
-        alert.addAction(UIAlertAction(title: String(localized: "OK"), style: .default))
+        alert.addAction(UIAlertAction(title: String(localized: "Done"), style: .default))
         present(alert, animated: true)
     }
 }
