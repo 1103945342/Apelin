@@ -17,9 +17,9 @@ on:
 permissions:
   contents: read
 
-# A pull request's new push cancels the run of its old one. A push to
-# main keeps its own run however soon the next one follows, since a tag
-# on that commit publishes what the run built.
+# A pull request's new push cancels the run of its old one. A tag's run and a
+# manual one are keyed by their ref and commit, so a tag never cancels the run
+# whose packages it is about to publish.
 concurrency:
   group: luros-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: true
