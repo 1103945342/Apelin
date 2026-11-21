@@ -7,8 +7,8 @@ Description: An on-device IDE where an agent writes, builds and installs tweaks,
 Icon: https://1103945342.github.io/Luros/icon.png
 Depiction: https://1103945342.github.io/Luros/
 SileoDepiction: https://1103945342.github.io/Luros/depiction.json
-Maintainer: 1103945342 <1103945342@users.noreply.github.com>
-Author: 1103945342 <1103945342@users.noreply.github.com>
+Maintainer: Vasen <1103945342@users.noreply.github.com>
+Author: Vasen <1103945342@users.noreply.github.com>
 Section: Utilities
 Priority: optional
 Depends: firmware (>= 16.0), uikittools, launchctl
