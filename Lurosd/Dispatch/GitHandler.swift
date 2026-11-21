@@ -89,9 +89,13 @@ enum GitHandler: DomainHandler {
     /// What names no project: the device's author and credentials, which an
     /// agent changes only through the user's approval of each call, a
     /// repository made on GitHub, which AgentRepositoryCreateRules decides,
-    /// and an issue opened on one, which AgentIssueCreateRules decides.
+    /// an issue opened on one, which AgentIssueCreateRules decides, and a
+    /// repository's issues and pull requests read or changed there, which
+    /// name their repository rather than a project
+    /// (AgentGitHubWriteRules).
     private static let unscoped: Set<AppOperation> = [
         .gitSettings, .gitAuthorSet, .gitCredentialSet, .gitCredentialRemove, .gitRepositoryCreate, .gitIssueCreate,
+        .gitIssue, .gitPullRequest,
     ]
 
     /// An agent's git call acts on its own session's project and no other:
