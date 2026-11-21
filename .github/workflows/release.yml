@@ -57,7 +57,7 @@ jobs:
             sleep 20
           done
           if [ -z "$run" ]; then
-            echo "::error::CI has not run on $GITHUB_SHA: dispatch it on $GITHUB_REF_NAME, then re-run this"
+            echo "::error::CI has not run on $GITHUB_SHA: the tag should have started it; dispatch CI on this commit, then re-run this"
             exit 1
           fi
           echo "CI run $run on $GITHUB_SHA"
