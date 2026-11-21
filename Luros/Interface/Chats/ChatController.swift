@@ -32,6 +32,10 @@ final class ChatController: UIViewController {
     @objc dynamic private var openingQueueEditor = false
     private let composer = ComposerView()
     private let topBlur = ChatTopBlurView()
+    /// Behind everything: the paper or picture the reader chose, drawn under
+    /// the message list and the composer, which both stay transparent where
+    /// they can.
+    private let chatBackground = ChatBackgroundView()
     /// A tap on the page, anywhere the composer is not, puts the keyboard
     /// away; the tap still reaches what it landed on.
     private let keyboardDismissTap = UITapGestureRecognizer()
@@ -171,6 +175,16 @@ final class ChatController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .pageBackground
+        chatBackground.frame = view.bounds
+        chatBackground.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(chatBackground)
+        reloadBackground()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(reloadBackground),
+            name: ChatBackground.changed,
+            object: nil,
+        )
 
         // The keyboard goes when the page is tapped anywhere but on the
         // composer. `cancelsTouchesInView` stays false, so the tap still
@@ -471,7 +485,9 @@ final class ChatController: UIViewController {
                     }
                 }
         }
-        view.insertSubview(messageList, at: 0)
+        // Above the page's own background and nothing else: the background
+        // view stays at the bottom, the list sits on it.
+        view.insertSubview(messageList, aboveSubview: chatBackground)
         // The composer is another overlay; explicitly identify the list
         // whose scroll position drives the navigation bar's edge treatment.
         setContentScrollView(messageList, for: .top)
@@ -571,6 +587,17 @@ final class ChatController: UIViewController {
         // inside the sidebar's animation the list rides it, as the latest
         // message does (`holdLatestMessage`)
         messageList.contentOffset = CGPoint(x: messageList.contentOffset.x, y: target)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    /// The paper or the reader's picture, as Settings last left it.
+    @objc private func reloadBackground() {
+        chatBackground.opacity = ChatBackground.opacity
+        chatBackground.background = ChatBackground.current
+        topBlur.paper = ChatBackground.current.paper
     }
 
     override func viewDidLayoutSubviews() {

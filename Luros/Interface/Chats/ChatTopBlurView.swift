@@ -7,6 +7,12 @@ final class ChatTopBlurView: UIView {
         NSClassFromString("CABackdropLayer") ?? CALayer.self
     }
 
+    /// The paper the conversation is drawn on, so the frost above it fades
+    /// into that colour rather than the app's own background.
+    var paper: ChatBackground.Paper? {
+        didSet { updateFrost() }
+    }
+
     private let frost = CAGradientLayer()
 
     override init(frame: CGRect) {
@@ -57,7 +63,9 @@ final class ChatTopBlurView: UIView {
     }
 
     @objc dynamic private func updateFrost() {
-        let color = UIColor.pageBackground.resolvedColor(with: traitCollection)
+        let color = paper.map {
+            ChatBackgroundView.base($0, traits: traitCollection).resolvedColor(with: traitCollection)
+        } ?? UIColor.pageBackground.resolvedColor(with: traitCollection)
         frost.colors = [color.withAlphaComponent(1).cgColor, color.withAlphaComponent(0).cgColor]
     }
 

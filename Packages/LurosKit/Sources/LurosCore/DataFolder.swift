@@ -68,6 +68,19 @@ public struct DataFolder: Sendable, Equatable {
         folder("skills")
     }
 
+    /// `Background/`: the picture the reader chose for the chat, copied here
+    /// so it outlives the photo picker's temporary file.
+    public var background: URL {
+        folder("Background")
+    }
+
+    /// `Background/chat.jpg`, the one picture the chat draws behind itself.
+    /// A JPEG, because the picker's picture is scaled down and re-encoded
+    /// before it lands here.
+    public var chatBackgroundImage: URL {
+        background.appendingPathComponent("chat.jpg")
+    }
+
     /// `Exports/<kind>-<id>/`: transfer files written for the app to share.
     public var exports: URL {
         folder("Exports")

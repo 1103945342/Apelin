@@ -292,6 +292,7 @@ final class ChatPreferencesController: TableController {
         case launch
         case returnKey
         case compression
+        case background
     }
 
     private struct RowContent: Equatable {
@@ -337,6 +338,7 @@ final class ChatPreferencesController: TableController {
                     : String(localized: "Send"),
             ),
             RowContent(row: .compression, detail: Preferences.percentText(Preferences.compressionThreshold)),
+            RowContent(row: .background, detail: Self.backgroundSummary),
         ])], reconfigure: true)
     }
 
@@ -349,6 +351,7 @@ final class ChatPreferencesController: TableController {
         case .launch: content.text = String(localized: "On Launch")
         case .returnKey: content.text = String(localized: "Return Key")
         case .compression: content.text = String(localized: "Compression Threshold")
+        case .background: content.text = String(localized: "Chat Background")
         }
         cell.contentConfiguration = content
         cell.accessoryType = .disclosureIndicator
@@ -379,6 +382,8 @@ final class ChatPreferencesController: TableController {
                     selected: ComposerBehavior.useConfirmationOnSend ? 1 : 0,
                 ) { index in ComposerBehavior.useConfirmationOnSend = index == 1 },
             )
+        case .background:
+            push(ChatBackgroundController())
         case .compression:
             let choices = Preferences.compressionChoices
             let current = Preferences.compressionThreshold
@@ -392,6 +397,15 @@ final class ChatPreferencesController: TableController {
         }
     }
 
+    /// What the Background row says the chat is drawn on.
+    private static var backgroundSummary: String {
+        switch ChatBackground.current {
+        case .none: String(localized: "None")
+        case let .paper(paper): paper.title
+        case .image: String(localized: "Your Own Image")
+        }
+    }
+
     private func push(_ page: UIViewController) {
         navigationController?.pushViewController(page, animated: true)
     }
@@ -400,7 +414,7 @@ final class ChatPreferencesController: TableController {
 /// A handful of answers with the one in use ticked. The page stays open after
 /// a tap, as Permission Mode does, so the reader sees what they picked before
 /// going back.
-private final class SettingChoiceController: TableController {
+final class SettingChoiceController: TableController {
     private enum Section: Hashable { case options }
 
     private struct Row: Equatable {
