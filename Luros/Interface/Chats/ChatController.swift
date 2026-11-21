@@ -802,10 +802,17 @@ final class ChatController: UIViewController {
             // The agent may have changed the run mode itself
             // (`luros_run_mode`): the log's last word is what the pill shows
             // and what the next prompt goes out with, whether the change came
-            // while this page was open or while the app was away.
-            if let mode = transcript.runMode, ComposerModeStore.mode(for: chat.id) != mode {
-                ComposerModeStore.set(mode, for: chat.id)
-                composer.modelBar.modePill.set(mode: mode)
+            // while this page was open or while the app was away. Only a
+            // change newer than the one the store already holds counts — a
+            // pill the reader set by hand must not be undone by an event
+            // recorded before their tap, which is what happened on every
+            // update while a run streamed in.
+            if let mode = transcript.runMode, let changed = transcript.runModeChangedAt {
+                let held = ComposerModeStore.changedAt(for: chat.id)
+                if held == nil || changed > held! {
+                    ComposerModeStore.adopt(mode, at: changed, for: chat.id)
+                    composer.modelBar.modePill.set(mode: mode)
+                }
             }
             composer.setContextUsage(
                 usedTokens: transcript.contextUsage?.tokens ?? 0,

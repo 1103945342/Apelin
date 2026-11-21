@@ -91,8 +91,32 @@ enum ComposerModeStore {
         return seed
     }
 
+    /// The reader chose this one, now: a change the agent recorded before
+    /// this moment no longer speaks for the conversation.
     static func set(_ mode: ComposerMode, for id: UUID?) {
         guard let id else { return }
-        UserDefaults.standard.set(mode.rawValue, forKey: key(for: id))
+        adopt(mode, at: Date(), for: id)
+    }
+
+    /// When the mode this store holds was chosen — by the reader tapping the
+    /// pill, or by the agent's own change being taken in (`adopt`).
+    static func changedAt(for id: UUID?) -> Date? {
+        guard let id else { return nil }
+        let seconds = UserDefaults.standard.double(forKey: changedAtKey(for: id))
+        return seconds > 0 ? Date(timeIntervalSince1970: seconds) : nil
+    }
+
+    /// The agent changed the mode at `time` (`runModeChanged`): written with
+    /// the moment, so the same event is not taken in twice and an older one
+    /// never undoes what was chosen after it.
+    static func adopt(_ mode: ComposerMode, at time: Date, for id: UUID?) {
+        guard let id else { return }
+        let defaults = UserDefaults.standard
+        defaults.set(mode.rawValue, forKey: key(for: id))
+        defaults.set(time.timeIntervalSince1970, forKey: changedAtKey(for: id))
+    }
+
+    private static func changedAtKey(for id: UUID) -> String {
+        "composer.mode.changedAt." + id.uuidString
     }
 }
