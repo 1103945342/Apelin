@@ -57,23 +57,24 @@ struct StorageChecks {
         let root = scratch()
         defer { try? FileManager.default.removeItem(at: root) }
         let data = DataFolder(root: root.appendingPathComponent("data", isDirectory: true))
+        let bootstrap = root.appendingPathComponent("bootstrap", isDirectory: true)
         try FileManager.default.createDirectory(at: data.root, withIntermediateDirectories: true)
 
         // An area costs every regular file below it, and nothing else.
         write(1000, to: data.root.appendingPathComponent("Builds/build-1/product.zip"))
         write(2000, to: data.root.appendingPathComponent("Builds/build-1/logs/build.log"))
         write(500, to: data.root.appendingPathComponent("Temporary/staging/thing.bin"))
-        let builds = StorageKeeper.measure(.builds, data: data, children: false)
+        let builds = StorageKeeper.measure(.builds, data: data, installRoot: bootstrap.path, children: false)
         check(builds.bytes == 3000 && builds.files == 2, "a build folder is measured byte for byte")
         check(builds.failure == nil, "a readable area reports no failure")
-        let temporary = StorageKeeper.measure(.temporary, data: data, children: false)
+        let temporary = StorageKeeper.measure(.temporary, data: data, installRoot: bootstrap.path, children: false)
         check(temporary.bytes == 500 && temporary.files == 1, "a second area is measured on its own")
         note("areas are measured one at a time")
 
         // A folder that is not there yet costs nothing.
-        let exports = StorageKeeper.measure(.exports, data: data, children: false)
+        let exports = StorageKeeper.measure(.exports, data: data, installRoot: bootstrap.path, children: false)
         check(exports.bytes == 0 && exports.failure == nil, "an absent area is zero, not a failure")
-        let nowhere = StorageKeeper.measure(.backups, data: DataFolder(root: root.appendingPathComponent("gone")), children: false)
+        let nowhere = StorageKeeper.measure(.backups, data: DataFolder(root: root.appendingPathComponent("gone")), installRoot: bootstrap.path, children: false)
         check(nowhere.bytes == 0 && nowhere.failure == nil, "a data folder that is not there has no areas")
         note("absent folders answer zero")
 
@@ -83,7 +84,7 @@ struct StorageChecks {
         check(reclaimed == 500, "the temporary folder's bytes are reported as reclaimed")
         check(!FileManager.default.fileExists(atPath: data.root.appendingPathComponent("Temporary").path),
               "an emptied area leaves no empty folder behind")
-        check(StorageKeeper.measure(.builds, data: data, children: false).bytes == 3000,
+        check(StorageKeeper.measure(.builds, data: data, installRoot: bootstrap.path, children: false).bytes == 3000,
               "emptying one area leaves the others alone")
         note("temporary is emptied")
 
@@ -143,7 +144,7 @@ struct StorageChecks {
             atPath: data.root.appendingPathComponent("Builds").path,
             withDestinationPath: elsewhere.path,
         )
-        let linked = StorageKeeper.measure(.builds, data: data, children: false)
+        let linked = StorageKeeper.measure(.builds, data: data, installRoot: bootstrap.path, children: false)
         check(linked.failure != nil, "a folder that is a link is not measured")
         var linkRefused: LurosError?
         do {
@@ -161,17 +162,28 @@ struct StorageChecks {
         try? FileManager.default.removeItem(at: data.root.appendingPathComponent("Builds"))
         write(40, to: data.root.appendingPathComponent("Projects/Alpha/a.swift"))
         write(60, to: data.root.appendingPathComponent("Projects/Beta/b.swift"))
-        let projects = StorageKeeper.measure(.projects, data: data, children: true)
+        let projects = StorageKeeper.measure(.projects, data: data, installRoot: bootstrap.path, children: true)
         check(projects.entries?.count == 2, "each project is an entry")
         check(projects.entries?.first?.name == "Beta" && projects.entries?.first?.bytes == 60,
               "the largest project comes first")
         write(70, to: data.root.appendingPathComponent("Chats/ABC.json"))
         write(30, to: data.root.appendingPathComponent("Chats/ABC.events.jsonl"))
-        let chats = StorageKeeper.measure(.chats, data: data, children: true)
+        let chats = StorageKeeper.measure(.chats, data: data, installRoot: bootstrap.path, children: true)
         check(chats.entries?.count == 1, "a conversation is one entry")
         check(chats.entries?.first?.bytes == 100 && chats.entries?.first?.files == 2,
               "a conversation counts its record and its event log together")
         note("children are listed by size")
+
+        // A toolchain is unpacked into the bootstrap, not into the data
+        // folder: measuring Environment/ alone answered a few kilobytes.
+        write(1500, to: bootstrap.appendingPathComponent("usr/lib/luros/toolchains/clt-1/usr/bin/swiftc"))
+        write(90, to: data.root.appendingPathComponent("Environment/Toolchains/registry.json"))
+        let toolchains = StorageKeeper.measure(
+            .toolchains, data: data, installRoot: bootstrap.path, children: false,
+        )
+        check(toolchains.bytes == 1590, "a toolchain is measured where it is unpacked, not only its registry")
+        check(toolchains.failure == nil, "the toolchains area reads both folders")
+        note("toolchains are measured in the bootstrap")
 
         // A running build or environment task stops an emptying; nothing else does.
         check(StorageKeeper.busy(["build": 1])?.code == .conflict, "a running build refuses an emptying")

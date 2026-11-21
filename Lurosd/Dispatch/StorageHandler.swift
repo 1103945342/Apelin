@@ -24,9 +24,15 @@ enum StorageHandler: DomainHandler {
         do {
             let ask = try request.decode(StorageUsageRequest.self)
             let data = host.dataFolder
+            let installRoot = host.installRoot
             let usage = await Task.detached(priority: .utility) {
                 ask.areas.map { area in
-                    StorageKeeper.measure(area, data: data, children: ask.children)
+                    StorageKeeper.measure(
+                        area,
+                        data: data,
+                        installRoot: installRoot,
+                        children: ask.children,
+                    )
                 }
             }.value
             let disk = ask.includeDisk

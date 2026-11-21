@@ -20,10 +20,11 @@ enum StorageKeeper {
     static func measure(
         _ area: StorageArea,
         data: DataFolder,
+        installRoot: String,
         children: Bool,
     ) -> StorageUsage {
         do {
-            let folders = try roots(area, data: data)
+            let folders = try roots(area, data: data, installRoot: installRoot)
             var bytes: Int64 = 0
             var files: Int64 = 0
             var entries: [StorageEntry]?
@@ -59,7 +60,7 @@ enum StorageKeeper {
             throw LurosError(.badRequest, "\(area.rawValue) is not the host's to empty")
         }
         var reclaimed: Int64 = 0
-        for folder in try roots(area, data: data) {
+        for folder in try roots(area, data: data, installRoot: "/") {
             var metadata = stat()
             guard lstat(folder.path, &metadata) == 0 else { continue }
             for child in try children(of: folder) {
@@ -118,7 +119,7 @@ enum StorageKeeper {
     /// The folders one area is made of, each checked to be inside the data
     /// folder and spelled as this app spells it. A data folder that is not
     /// there yet has no areas.
-    private static func roots(_ area: StorageArea, data: DataFolder) throws -> [URL] {
+    private static func roots(_ area: StorageArea, data: DataFolder, installRoot: String) throws -> [URL] {
         var rootMetadata = stat()
         guard lstat(data.root.path, &rootMetadata) == 0 else {
             if errno == ENOENT { return [] }
@@ -141,7 +142,7 @@ enum StorageKeeper {
         case .toolchains: names = ["Environment"]
         }
         let root = try checked(data.root, inside: data.root)
-        return try names.map { name in
+        var folders = try names.map { name in
             let url = data.root.appendingPathComponent(name, isDirectory: true)
             var metadata = stat()
             if lstat(url.path, &metadata) != 0 {
@@ -157,6 +158,26 @@ enum StorageKeeper {
             }
             return url
         }
+        // A toolchain is unpacked into the bootstrap, not into the data
+        // folder: `usr/lib/luros/toolchains/<id>` beside lurosd itself.
+        // `Environment/` holds only its registry and job records, which is why
+        // measuring that alone answered a few kilobytes.
+        if area == .toolchains {
+            let toolchains = URL(fileURLWithPath: installRoot, isDirectory: true)
+                .appendingPathComponent("usr/lib/luros/toolchains", isDirectory: true)
+            var metadata = stat()
+            if lstat(toolchains.path, &metadata) == 0 {
+                let base = CanonicalPath.resolve(installRoot) ?? installRoot
+                let expected = (base.hasSuffix("/") ? base : base + "/") + "usr/lib/luros/toolchains"
+                guard metadata.st_mode & S_IFMT == S_IFDIR,
+                      CanonicalPath.resolve(toolchains.path) == expected
+                else {
+                    throw LurosError(.denied, "the toolchains folder leads somewhere else")
+                }
+                folders.append(toolchains)
+            }
+        }
+        return folders
     }
 
     /// The path as it really is, refused unless it is `root` itself or a
