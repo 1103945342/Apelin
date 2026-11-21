@@ -73,7 +73,7 @@ public enum AgentDelegationToolPolicy {
              "luros_template_list", "luros_project_list", "luros_project_check_distribution",
              "luros_package_list", "luros_toolchain_list", "luros_sdk_list",
              "git_status", "git_diff", "git_branches", "git_log", "git_commit_detail",
-             "git_remote_list", "git_issue", "git_pull_request", "luros_git_read_settings",
+             "git_remote_list", "luros_git_read_settings",
              "luros_conversation_list", "luros_conversation_read",
              "luros_todo_list", "luros_crash_list", "luros_crash_read", "luros_log_read",
              "luros_screen_read_tree", "luros_screen_capture", "luros_feedback_read",

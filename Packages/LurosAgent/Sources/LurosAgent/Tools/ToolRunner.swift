@@ -509,6 +509,38 @@ actor ToolRunner {
     /// forced push, which takes commits off the remote's branch, nor for a
     /// squash, which replaces the project's own, nor for a reset to a
     /// remote, which discards work.
+    /// What a git_issue or git_pull_request call that changes GitHub names,
+    /// as the card shows it and the host matches it; nil for a read.
+    static func githubWrite(name: AgentToolName, arguments: JSONValue) -> GitHubWriteApproval? {
+        let writes: [String: Set<String>] = [
+            AgentToolName.gitIssue.rawValue: ["comment", "close", "reopen"],
+            AgentToolName.gitPullRequest.rawValue: ["create", "merge"],
+        ]
+        guard let action = arguments.argString("action"),
+              writes[name.rawValue]?.contains(action) == true,
+              let repository = arguments.argNonEmptyString("repository")
+        else { return nil }
+        let text: String?
+        if action == "comment" {
+            text = arguments.argString("body")
+        } else if action == "create" {
+            // The title and the body both travel; the host rebuilds the same
+            // pair from the request.
+            text = (arguments.argString("title") ?? "") + "\n\n" + (arguments.argString("body") ?? "")
+        } else {
+            text = nil
+        }
+        return GitHubWriteApproval(
+            action: action,
+            repository: repository,
+            number: arguments.argInt("number"),
+            text: text,
+            head: arguments.argString("head"),
+            base: arguments.argString("base"),
+            method: arguments.argString("method"),
+        )
+    }
+
     static func allowsSessionScope(_ tool: InvocationFacts.Tool, detail: ApprovalDetail) -> Bool {
         switch tool {
         case .local(.packageRemove), .local(.gitPush), .local(.toolchainSetup), .local(.sdkImport),
@@ -524,7 +556,7 @@ actor ToolRunner {
         }
         switch detail {
         case .gitSettings, .descriptionChanged, .toolchainSetup, .sdkImport, .otherProject, .externalBuild, .skillChange,
-             .projectRename, .rootCommand, .feedback, .feedbackEdit, .repositoryCreate, .issueCreate, .projectDelete,
+             .projectRename, .rootCommand, .feedback, .feedbackEdit, .repositoryCreate, .issueCreate, .githubWrite, .projectDelete,
              .packagePublish, .screenControl, .forcePush, .squash, .resetToRemote, .question, .runMode:
             return false
         case .none, .command, .packageRemoval, .gitPush:
@@ -1035,8 +1067,11 @@ actor ToolRunner {
             guard let repository = arguments.argNonEmptyString("repository") else {
                 throw ToolArgumentError("name the repository as owner/name, such as octocat/hello-world")
             }
-            guard let action = arguments.argNonEmptyString("action"), ["list", "read"].contains(action) else {
-                throw ToolArgumentError("action is list or read")
+            let allowed = name == .gitIssue
+                ? ["list", "read", "comment", "close", "reopen"]
+                : ["list", "read", "create", "merge"]
+            guard let action = arguments.argNonEmptyString("action"), allowed.contains(action) else {
+                throw ToolArgumentError("action is one of \(allowed.joined(separator: ", "))")
             }
             let number = arguments.argInt("number")
             let state = arguments.argNonEmptyString("state")
@@ -1049,6 +1084,7 @@ actor ToolRunner {
                     number: number,
                     state: state,
                     limit: limit,
+                    body: arguments.argString("body"),
                 )))
             }
             return try await json(backend.gitPullRequest(PullRequestQueryToolRequest(
@@ -1058,6 +1094,12 @@ actor ToolRunner {
                 number: number,
                 state: state,
                 limit: limit,
+                title: arguments.argString("title"),
+                body: arguments.argString("body"),
+                head: arguments.argString("head"),
+                base: arguments.argString("base"),
+                draft: arguments.argBool("draft"),
+                method: arguments.argString("method"),
             )))
 
         case .gitRemoteSet:

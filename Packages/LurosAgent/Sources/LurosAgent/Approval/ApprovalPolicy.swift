@@ -158,6 +158,9 @@ public struct InvocationFacts: Sendable, Hashable {
     /// For luros_git_create_issue: the repository and the issue, checked
     /// before asking, as they are sent.
     public var issueCreate: IssueCreateApproval?
+    /// For git_issue and git_pull_request, when the action writes: exactly
+    /// what the card shows and the host matches.
+    public var githubWrite: GitHubWriteApproval?
     /// For luros_project_delete: the project, resolved before asking,
     /// which is the one deleted.
     public var projectDeletion: ProjectDeleteApproval?
@@ -657,6 +660,19 @@ public struct ApprovalPolicy: Sendable, Hashable {
             }
             return .ask(reason: Self.repositoryReason(repository), detail: .repositoryCreate(repository))
 
+        // An issue commented on, closed or reopened, or a pull request made
+        // or merged: it changes GitHub for everyone who can see the
+        // repository, so every one asks, the card naming exactly the call.
+        // Reading the same repository asks nobody.
+        case .gitIssue, .gitPullRequest:
+            if let write = facts.githubWrite {
+                return .ask(reason: Self.githubWriteReason(write), detail: .githubWrite(write))
+            }
+            if presets.readTools.contains(tool) {
+                return .allow(.preset(tool.rawValue))
+            }
+            return .ask(reason: "This action is not in your approved presets. Review it before running.", detail: .none)
+
         // An issue under the user's GitHub account on a repository they
         // chose, as feedback is filed: every one asks, the card showing the
         // repository and the whole text.
@@ -688,7 +704,6 @@ public struct ApprovalPolicy: Sendable, Hashable {
              .packageList, .packageConfirmLoaded, .logRead, .crashList, .crashRead, .crashSymbolicate,
              .screenCapture, .screenReadTree, .memoryList, .skillList, .skillRead, .projectCheckDistribution,
              .templateList, .projectList, .gitStatus, .gitDiff, .gitReadSettings, .gitRemoteList,
-             .gitIssue, .gitPullRequest,
              .gitBranches, .gitLog, .gitCommitDetail,
              .conversationList, .conversationRead, .toolchainList, .sdkList, .webSearch, .webFetch, .feedbackRead,
              .todoList:
@@ -792,6 +807,24 @@ public struct ApprovalPolicy: Sendable, Hashable {
 
     static func issueReason(_ issue: IssueCreateApproval) -> String {
         "Opens this issue on \(issue.repository) under your GitHub account, where everyone who can see that repository can read it; Luros adds its version, the iOS version and the bootstrap below it. Each one needs your approval."
+    }
+
+    static func githubWriteReason(_ write: GitHubWriteApproval) -> String {
+        let where_ = "#\(write.number.map(String.init) ?? "?") on \(write.repository)"
+        switch write.action {
+        case "comment":
+            return "Posts this comment on issue \(where_) under your GitHub account, where everyone who can see that repository can read it. Each comment needs your approval."
+        case "close":
+            return "Closes issue \(where_) on GitHub, for everyone who can see that repository. Each close needs your approval."
+        case "reopen":
+            return "Reopens issue \(where_) on GitHub, for everyone who can see that repository. Each reopen needs your approval."
+        case "create":
+            return "Opens a pull request on \(write.repository) from \(write.head ?? "?") into \(write.base ?? "?"), under your GitHub account, where everyone who can see that repository can read it. Each one needs your approval."
+        case "merge":
+            return "Merges pull request \(where_) on GitHub, \(write.method ?? "merge")ing its commits into its base branch for everyone who can see that repository. Each merge needs your approval."
+        default:
+            return "Changes \(write.repository) on GitHub under your GitHub account. Each change needs your approval."
+        }
     }
 
     static func feedbackEditReason(_ edit: FeedbackEditApproval) -> String {

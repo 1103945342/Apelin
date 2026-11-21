@@ -16,7 +16,6 @@ enum GitHandler: DomainHandler {
         case .gitStatus, .gitDiff, .gitStage, .gitUnstage, .gitCommit, .gitInit,
              .gitRemoteList, .gitRemoteSet, .gitRemoteRemove,
              .gitBranches, .gitLog, .gitCommitDetail,
-             .gitIssue, .gitPullRequest,
              .gitSettings, .gitAuthorSet, .gitCredentialSet, .gitCredentialRemove:
             return await host.forward(request, to: .environment)
         case .gitBranchCreate, .gitBranchCheckout, .gitBranchDelete, .gitBranchRename, .gitMerge, .gitMergeAbort,
@@ -42,6 +41,32 @@ enum GitHandler: DomainHandler {
             return await host.forward(request, to: .environment)
         case .gitRepositoryCreate:
             return await createRepository(request, host: host)
+        case .gitIssue:
+            if case let .worker(.agent, instance) = request.caller {
+                let issue: IssueQueryRequest
+                do {
+                    issue = try request.decode(IssueQueryRequest.self)
+                } catch {
+                    return request.fail(error)
+                }
+                if let refusal = await AgentGitHubWriteRules.authorize(issue, session: instance, registry: host.registry) {
+                    return request.fail(refusal)
+                }
+            }
+            return await host.forward(request, to: .environment)
+        case .gitPullRequest:
+            if case let .worker(.agent, instance) = request.caller {
+                let pull: PullRequestQueryRequest
+                do {
+                    pull = try request.decode(PullRequestQueryRequest.self)
+                } catch {
+                    return request.fail(error)
+                }
+                if let refusal = await AgentGitHubWriteRules.authorize(pull, session: instance, registry: host.registry) {
+                    return request.fail(refusal)
+                }
+            }
+            return await host.forward(request, to: .environment)
         case .gitIssueCreate:
             return await createIssue(request, host: host)
         case .gitClone:

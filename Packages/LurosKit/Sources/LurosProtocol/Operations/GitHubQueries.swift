@@ -16,17 +16,25 @@ public struct IssueQueryRequest: OperationRequest {
         case list
         /// One issue by its number.
         case read
+        /// A comment added to one issue.
+        case comment
+        /// One issue closed.
+        case close
+        /// One issue reopened.
+        case reopen
     }
 
     /// `owner/name`, as the user named it.
     public var repository: String
     public var action: Action
-    /// `read`: the issue's number.
+    /// `read`, `comment`, `close` and `reopen`: the issue's number.
     public var number: Int?
     /// `list`: open, closed or all. Default open.
     public var state: String?
     /// `list`: at most this many, from 1 to 100. Default 20.
     public var limit: Int?
+    /// `comment`: the comment's text, which GitHub takes as Markdown.
+    public var body: String?
 
     public init(
         repository: String,
@@ -34,12 +42,14 @@ public struct IssueQueryRequest: OperationRequest {
         number: Int? = nil,
         state: String? = nil,
         limit: Int? = nil,
+        body: String? = nil,
     ) {
         self.repository = repository
         self.action = action
         self.number = number
         self.state = state
         self.limit = limit
+        self.body = body
     }
 
     /// Nil when the request is one GitHub could answer, else why not.
@@ -55,9 +65,20 @@ public struct IssueQueryRequest: OperationRequest {
             if let limit, !(1 ... 100).contains(limit) {
                 return "limit is a whole number from 1 to 100."
             }
-        case .read:
+        case .read, .close, .reopen:
             guard let number, number > 0 else {
-                return "Reading one issue takes its number."
+                return "Name the issue by its number."
+            }
+        case .comment:
+            guard let number, number > 0 else {
+                return "Name the issue by its number."
+            }
+            let text = body?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            guard !text.isEmpty else {
+                return "A comment needs its text."
+            }
+            guard text.utf8.count <= 65536 else {
+                return "A comment is at most 64 KB of text."
             }
         }
         return nil
@@ -107,13 +128,21 @@ public struct IssueQueryResponse: Codable, Sendable, Equatable {
     public var repository: String
     /// `list`: the issues, newest first.
     public var issues: [IssueSummary]?
-    /// `read`: the issue.
+    /// `read`, `comment`, `close` and `reopen`: the issue as it stands.
     public var issue: IssueSummary?
+    /// `comment`: the comment's page on GitHub.
+    public var commentURL: String?
 
-    public init(repository: String, issues: [IssueSummary]? = nil, issue: IssueSummary? = nil) {
+    public init(
+        repository: String,
+        issues: [IssueSummary]? = nil,
+        issue: IssueSummary? = nil,
+        commentURL: String? = nil,
+    ) {
         self.repository = repository
         self.issues = issues
         self.issue = issue
+        self.commentURL = commentURL
     }
 }
 
@@ -129,17 +158,33 @@ public struct PullRequestQueryRequest: OperationRequest {
         case list
         /// One pull request by its number.
         case read
+        /// A pull request from `head` into `base`.
+        case create
+        /// One pull request merged on GitHub.
+        case merge
     }
 
     /// `owner/name`, as the user named it.
     public var repository: String
     public var action: Action
-    /// `read`: the pull request's number.
+    /// `read` and `merge`: the pull request's number.
     public var number: Int?
     /// `list`: open, closed or all. Default open.
     public var state: String?
     /// `list`: at most this many, from 1 to 100. Default 20.
     public var limit: Int?
+    /// `create`: its title.
+    public var title: String?
+    /// `create`: its body, Markdown.
+    public var body: String?
+    /// `create`: the branch it comes from, `owner:branch` for a fork.
+    public var head: String?
+    /// `create`: the branch it merges into.
+    public var base: String?
+    /// `create`: opened as a draft.
+    public var draft: Bool?
+    /// `merge`: merge, squash or rebase. Default merge.
+    public var method: String?
 
     public init(
         repository: String,
@@ -147,12 +192,24 @@ public struct PullRequestQueryRequest: OperationRequest {
         number: Int? = nil,
         state: String? = nil,
         limit: Int? = nil,
+        title: String? = nil,
+        body: String? = nil,
+        head: String? = nil,
+        base: String? = nil,
+        draft: Bool? = nil,
+        method: String? = nil,
     ) {
         self.repository = repository
         self.action = action
         self.number = number
         self.state = state
         self.limit = limit
+        self.title = title
+        self.body = body
+        self.head = head
+        self.base = base
+        self.draft = draft
+        self.method = method
     }
 
     /// Nil when the request is one GitHub could answer, else why not.
@@ -170,7 +227,20 @@ public struct PullRequestQueryRequest: OperationRequest {
             }
         case .read:
             guard let number, number > 0 else {
-                return "Reading one pull request takes its number."
+                return "Name the pull request by its number."
+            }
+        case .create:
+            for (value, name) in [(title, "A title"), (head, "A head branch"), (base, "A base branch")] {
+                guard let value, !value.trimmingCharacters(in: .whitespaces).isEmpty else {
+                    return "\(name) is needed to open a pull request."
+                }
+            }
+        case .merge:
+            guard let number, number > 0 else {
+                return "Name the pull request by its number."
+            }
+            if let method, !["merge", "squash", "rebase"].contains(method) {
+                return "method is merge, squash or rebase."
             }
         }
         return nil
@@ -226,17 +296,25 @@ public struct PullRequestQueryResponse: Codable, Sendable, Equatable {
     public var repository: String
     /// `list`: the pull requests, newest first.
     public var pullRequests: [PullRequestSummary]?
-    /// `read`: the pull request.
+    /// `read`, `create` and `merge`: the pull request as it stands.
     public var pullRequest: PullRequestSummary?
+    /// `merge`: whether GitHub merged it.
+    public var merged: Bool?
+    /// `merge`: GitHub's own words about the merge.
+    public var message: String?
 
     public init(
         repository: String,
         pullRequests: [PullRequestSummary]? = nil,
         pullRequest: PullRequestSummary? = nil,
+        merged: Bool? = nil,
+        message: String? = nil,
     ) {
         self.repository = repository
         self.pullRequests = pullRequests
         self.pullRequest = pullRequest
+        self.merged = merged
+        self.message = message
     }
 }
 

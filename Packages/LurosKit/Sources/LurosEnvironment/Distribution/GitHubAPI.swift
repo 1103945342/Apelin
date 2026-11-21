@@ -267,6 +267,58 @@ struct GitHubAPI: Sendable {
         try await send("GET", "/repos/\(fullName)/pulls/\(number)", as: PullRow.self)
     }
 
+    /// A comment added to issue `number`; answers its page.
+    func commentIssue(_ fullName: String, number: Int, body: String) async throws -> String {
+        struct Comment: Decodable {
+            let htmlURL: String
+            enum CodingKeys: String, CodingKey { case htmlURL = "html_url" }
+        }
+        return try await send(
+            "POST",
+            "/repos/\(fullName)/issues/\(number)/comments",
+            body: ["body": body],
+            as: Comment.self,
+        ).htmlURL
+    }
+
+    /// Issue `number` closed or reopened.
+    func setIssueState(_ fullName: String, number: Int, state: String) async throws -> IssueDetail {
+        try await send("PATCH", "/repos/\(fullName)/issues/\(number)", body: ["state": state], as: IssueDetail.self)
+    }
+
+    /// A pull request from `head` into `base`.
+    func createPull(
+        _ fullName: String,
+        title: String,
+        body: String,
+        head: String,
+        base: String,
+        draft: Bool,
+    ) async throws -> PullRow {
+        var fields: [String: Any] = ["title": title, "body": body, "head": head, "base": base]
+        if draft {
+            fields["draft"] = true
+        }
+        return try await send("POST", "/repos/\(fullName)/pulls", body: fields, as: PullRow.self)
+    }
+
+    /// Pull request `number` merged on GitHub, by `method` — merge, squash or
+    /// rebase. GitHub answers 200 with `merged: false` and why for one it
+    /// could not merge.
+    func mergePull(_ fullName: String, number: Int, method: String) async throws -> (merged: Bool, message: String?) {
+        struct Answer: Decodable {
+            let merged: Bool
+            let message: String?
+        }
+        let answer = try await send(
+            "PUT",
+            "/repos/\(fullName)/pulls/\(number)/merge",
+            body: ["merge_method": method],
+            as: Answer.self,
+        )
+        return (answer.merged, answer.message)
+    }
+
     /// The title, the body or both of issue `number` on `fullName` changed;
     /// a field not given is not sent, and GitHub keeps it.
     func editIssue(_ fullName: String, number: Int, title: String?, body: String?) async throws -> IssueDetail {

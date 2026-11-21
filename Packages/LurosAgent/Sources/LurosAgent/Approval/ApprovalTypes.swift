@@ -129,6 +129,10 @@ public enum ApprovalDetail: Sendable, Hashable, Codable {
     /// user chose: the repository and the whole title and body. The host
     /// lets through only the issue it names, once.
     case issueCreate(IssueCreateApproval)
+    /// A comment on, close or reopen of an issue, or a pull request made or
+    /// merged, on a GitHub repository the user named: the card shows what
+    /// the host then matches, once.
+    case githubWrite(GitHubWriteApproval)
     /// Another project deleted for good. The host lets through only the
     /// deletion of the project it names, once.
     case projectDelete(ProjectDeleteApproval)
@@ -243,6 +247,38 @@ public struct IssueCreateApproval: Sendable, Hashable, Codable {
         self.repository = repository
         self.title = title
         self.body = body
+    }
+}
+
+/// What a comment, a close or reopen, or a pull request made or merged on
+/// GitHub names: exactly the fields the card showed and the host matches.
+public struct GitHubWriteApproval: Sendable, Hashable, Codable {
+    /// The action the tool was called with: comment, close, reopen, create
+    /// or merge.
+    public var action: String
+    /// `owner/name`.
+    public var repository: String
+    public var number: Int?
+    public var text: String?
+    public var head: String?
+    public var base: String?
+    public var method: String?
+    public init(
+        action: String,
+        repository: String,
+        number: Int? = nil,
+        text: String? = nil,
+        head: String? = nil,
+        base: String? = nil,
+        method: String? = nil,
+    ) {
+        self.action = action
+        self.repository = repository
+        self.number = number
+        self.text = text
+        self.head = head
+        self.base = base
+        self.method = method
     }
 }
 

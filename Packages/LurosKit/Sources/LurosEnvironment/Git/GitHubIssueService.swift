@@ -58,19 +58,41 @@ public struct GitHubIssueService: Sendable {
                 throw LurosError(.badRequest, "Reading one issue takes its number.")
             }
             let detail = try await api.issue(request.repository, number: number)
+            return IssueQueryResponse(repository: request.repository, issue: Self.summary(detail))
+        case .comment:
+            guard let number = request.number, let body = request.body else {
+                throw LurosError(.badRequest, "A comment needs the issue's number and its text.")
+            }
+            let url = try await api.commentIssue(request.repository, number: number, body: body)
+            let detail = try await api.issue(request.repository, number: number)
             return IssueQueryResponse(
                 repository: request.repository,
-                issue: IssueSummary(
-                    number: detail.number,
-                    title: detail.title,
-                    state: detail.state,
-                    url: detail.htmlURL,
-                    author: detail.user?.login,
-                    body: detail.body,
-                    isPullRequest: detail.pullRequest != nil,
-                ),
+                issue: Self.summary(detail),
+                commentURL: url,
             )
+        case .close, .reopen:
+            guard let number = request.number else {
+                throw LurosError(.badRequest, "Name the issue by its number.")
+            }
+            let detail = try await api.setIssueState(
+                request.repository,
+                number: number,
+                state: request.action == .close ? "closed" : "open",
+            )
+            return IssueQueryResponse(repository: request.repository, issue: Self.summary(detail))
         }
+    }
+
+    private static func summary(_ detail: GitHubAPI.IssueDetail) -> IssueSummary {
+        IssueSummary(
+            number: detail.number,
+            title: detail.title,
+            state: detail.state,
+            url: detail.htmlURL,
+            author: detail.user?.login,
+            body: detail.body,
+            isPullRequest: detail.pullRequest != nil,
+        )
     }
 
     /// The repository's pull requests, or one of them (`git_pull_request`).
@@ -96,6 +118,34 @@ public struct GitHubIssueService: Sendable {
             return PullRequestQueryResponse(
                 repository: request.repository,
                 pullRequest: Self.summary(try await api.pull(request.repository, number: number)),
+            )
+        case .create:
+            guard let title = request.title, let head = request.head, let base = request.base else {
+                throw LurosError(.badRequest, "Opening a pull request takes a title, a head branch and a base branch.")
+            }
+            let row = try await api.createPull(
+                request.repository,
+                title: title,
+                body: request.body ?? "",
+                head: head,
+                base: base,
+                draft: request.draft ?? false,
+            )
+            return PullRequestQueryResponse(repository: request.repository, pullRequest: Self.summary(row))
+        case .merge:
+            guard let number = request.number else {
+                throw LurosError(.badRequest, "Name the pull request by its number.")
+            }
+            let answer = try await api.mergePull(
+                request.repository,
+                number: number,
+                method: request.method ?? "merge",
+            )
+            return PullRequestQueryResponse(
+                repository: request.repository,
+                pullRequest: Self.summary(try await api.pull(request.repository, number: number)),
+                merged: answer.merged,
+                message: answer.message,
             )
         }
     }

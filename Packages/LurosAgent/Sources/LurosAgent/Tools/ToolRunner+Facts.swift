@@ -235,6 +235,10 @@ extension ToolRunner {
                 throw ToolArgumentError("Nothing was posted: \(problem).")
             }
             facts.issueCreate = IssueCreateApproval(repository: request.repository, title: request.title, body: request.body)
+        case .gitIssue, .gitPullRequest:
+            // Only the actions that change GitHub carry a detail; the reads
+            // carry none, and ask nobody.
+            facts.githubWrite = Self.githubWrite(name: name, arguments: arguments)
         case .packageConfirmLoaded where arguments.argBool("respring") == true:
             // It resprings the device, so it is gated as respring is.
             facts.tool = .local(.deviceRespring)

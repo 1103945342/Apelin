@@ -101,15 +101,16 @@ extension BuiltInSkills {
           `git_remote_remove` takes one away. `git_fetch`, `git_pull` and
           `git_push` name a remote, never its address.
         - Issues and pull requests are not git, and libgit2 never helps with
-          them: `git_issue` reads a GitHub repository's issues (action `list`,
-          or `read` with a number) and `git_pull_request` reads its pull
-          requests, both through GitHub's REST API with the sign-in from
-          Settings ▸ Git. Name the repository as `owner/name`. A pull
-          request's code can still be fetched as the ref
+          them: `git_issue` reads a GitHub repository's issues and can comment
+          on, close or reopen one, and `git_pull_request` reads its pull
+          requests and can open or merge one — all through GitHub's REST API
+          with the sign-in from Settings ▸ Git. Name the repository as
+          `owner/name`. A pull request's code can still be fetched as the ref
           `refs/pull/<number>/head`; the request itself, its reviews and its
-          merge are GitHub's alone. These tools only read — creating an
-          issue is `luros_git_create_issue`, and nothing here closes,
-          comments on, opens or merges anything.
+          merge are GitHub's alone. Reading asks nobody; a comment, a close or
+          reopen, a new pull request or a merge changes what everyone who can
+          see the repository reads, so under Confirm each asks for exactly
+          that call, once. Creating an issue is `luros_git_create_issue`.
         - When the user explicitly asks for the project to match a remote,
           overwriting what is local ("make it the same as the remote",
           "overwrite my code with the latest"), `git_reset_to_remote` does
